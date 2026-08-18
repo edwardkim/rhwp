@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "id": "s400-empty-50x50",
+  "width": 50.0,
+  "height": 50.0,
+  "contract": "빈 50x50 페이지",
+  "ops": [],
+  "expectedKinds": [],
+  "expectedTrace": [
+    "begin_page 50.00x50.00",
+    "end_page ops=0"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptHashVectors",
+  "count": 84,
+  "meta": [
+    {
+      "ident": "empty_bytes",
+      "input": "",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "why": "빈 바이트 SHA-256 고정값. 64hex 가드 표본."
+    },
+    {
+      "ident": "zero64_is_valid_hex_not_a_hash_of_empty",
+      "input": "0000000000000000000000000000000000000000000000000000000000000000",
+      "sha256": "60e05bd1b195af2f94112fa7197a5c88289058840ce7c6df9693756bc6250f55",
+      "why": "ZERO64 는 유효한 64hex 이지만 빈 바이트의 해시가 아니다. verify 불일치 주장에 쓰는 센티널."
+    },
+    {
+      "ident": "expect_upper_hex",
+      "input": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "normalized": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "accepted": true,
+      "why": "CLI 는 expect 값을 trim + ascii_lowercase 한다. 대문자 64hex 는 통과."
+    },
+    {
+      "ident": "expect_short",
+      "input": "abc",
+      "accepted": false,
+      "needle": "--expect-output-sha256 값은 64자리 16진이어야 합니다",
+      "why": "짧은 값은 usage. 엔진을 타지 않는다."
+    }
+  ],
+  "planCount": 80,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

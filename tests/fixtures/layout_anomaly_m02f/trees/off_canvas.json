@@ -1,0 +1,2675 @@
+[
+  {
+    "id": "offy-table-y-0.5",
+    "family": "off-canvas",
+    "hypothesis": "표 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": -0.5,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 20.5,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 20.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    20.50px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-table-y-1",
+    "family": "off-canvas",
+    "hypothesis": "표 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": -1.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 21.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 21.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    21.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-table-y-8",
+    "family": "off-canvas",
+    "hypothesis": "표 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": -8.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [
+        "Table"
+      ],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Table0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 28.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 28.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    28.00px  Page/Body/Table0 (Table)",
+        "  [OFF-CANVAS] page   0     8.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-table-y-80",
+    "family": "off-canvas",
+    "hypothesis": "표 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": -80.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [
+        "Table"
+      ],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Table0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 100.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 100.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0   100.00px  Page/Body/Table0 (Table)",
+        "  [OFF-CANVAS] page   0    80.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-table-right0.5",
+    "family": "off-canvas",
+    "hypothesis": "표 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 190.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 10.5,
+      "overBottom": 0.0,
+      "maxOver": 10.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    10.50px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-table-bottom0.5",
+    "family": "off-canvas",
+    "hypothesis": "표 가 페이지 높이를 0.5px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 100.5
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 20.5,
+      "maxOver": 20.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    20.50px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-table-right1.25",
+    "family": "off-canvas",
+    "hypothesis": "표 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 191.25,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [
+        "Table"
+      ],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Table0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 11.25,
+      "overBottom": 0.0,
+      "maxOver": 11.25,
+      "reportLines": [
+        "  [OVERFLOW] page   0    11.25px  Page/Body/Table0 (Table)",
+        "  [OFF-CANVAS] page   0     1.25px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-table-bottom1.25",
+    "family": "off-canvas",
+    "hypothesis": "표 가 페이지 높이를 1.25px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 101.25
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [
+        "Table"
+      ],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Table0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 21.25,
+      "maxOver": 21.25,
+      "reportLines": [
+        "  [OVERFLOW] page   0    21.25px  Page/Body/Table0 (Table)",
+        "  [OFF-CANVAS] page   0     1.25px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-table-right50",
+    "family": "off-canvas",
+    "hypothesis": "표 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 240.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [
+        "Table"
+      ],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Table0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 60.0,
+      "overBottom": 0.0,
+      "maxOver": 60.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    60.00px  Page/Body/Table0 (Table)",
+        "  [OFF-CANVAS] page   0    50.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-table-bottom50",
+    "family": "off-canvas",
+    "hypothesis": "표 가 페이지 높이를 50px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 150.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [
+        "Table"
+      ],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Table0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 70.0,
+      "maxOver": 70.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    70.00px  Page/Body/Table0 (Table)",
+        "  [OFF-CANVAS] page   0    50.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-image-y-0.5",
+    "family": "off-canvas",
+    "hypothesis": "그림 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": -0.5,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Image"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Image0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 20.5,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 20.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    20.50px  Page/Body/Image0 (Image)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-image-y-1",
+    "family": "off-canvas",
+    "hypothesis": "그림 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": -1.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Image"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Image0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 21.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 21.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    21.00px  Page/Body/Image0 (Image)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-image-y-8",
+    "family": "off-canvas",
+    "hypothesis": "그림 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": -8.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Image"
+      ],
+      "offCanvasTypes": [
+        "Image"
+      ],
+      "overflowPaths": [
+        "Page/Body/Image0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Image0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 28.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 28.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    28.00px  Page/Body/Image0 (Image)",
+        "  [OFF-CANVAS] page   0     8.00px  Page/Body/Image0 (Image)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-image-y-80",
+    "family": "off-canvas",
+    "hypothesis": "그림 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": -80.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Image"
+      ],
+      "offCanvasTypes": [
+        "Image"
+      ],
+      "overflowPaths": [
+        "Page/Body/Image0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Image0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 100.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 100.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0   100.00px  Page/Body/Image0 (Image)",
+        "  [OFF-CANVAS] page   0    80.00px  Page/Body/Image0 (Image)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-image-right0.5",
+    "family": "off-canvas",
+    "hypothesis": "그림 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 190.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Image"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Image0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 10.5,
+      "overBottom": 0.0,
+      "maxOver": 10.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    10.50px  Page/Body/Image0 (Image)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-image-bottom0.5",
+    "family": "off-canvas",
+    "hypothesis": "그림 가 페이지 높이를 0.5px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 100.5
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Image"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Image0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 20.5,
+      "maxOver": 20.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    20.50px  Page/Body/Image0 (Image)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-image-right1.25",
+    "family": "off-canvas",
+    "hypothesis": "그림 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 191.25,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Image"
+      ],
+      "offCanvasTypes": [
+        "Image"
+      ],
+      "overflowPaths": [
+        "Page/Body/Image0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Image0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 11.25,
+      "overBottom": 0.0,
+      "maxOver": 11.25,
+      "reportLines": [
+        "  [OVERFLOW] page   0    11.25px  Page/Body/Image0 (Image)",
+        "  [OFF-CANVAS] page   0     1.25px  Page/Body/Image0 (Image)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-image-bottom1.25",
+    "family": "off-canvas",
+    "hypothesis": "그림 가 페이지 높이를 1.25px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 101.25
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Image"
+      ],
+      "offCanvasTypes": [
+        "Image"
+      ],
+      "overflowPaths": [
+        "Page/Body/Image0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Image0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 21.25,
+      "maxOver": 21.25,
+      "reportLines": [
+        "  [OVERFLOW] page   0    21.25px  Page/Body/Image0 (Image)",
+        "  [OFF-CANVAS] page   0     1.25px  Page/Body/Image0 (Image)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-image-right50",
+    "family": "off-canvas",
+    "hypothesis": "그림 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 240.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Image"
+      ],
+      "offCanvasTypes": [
+        "Image"
+      ],
+      "overflowPaths": [
+        "Page/Body/Image0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Image0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 60.0,
+      "overBottom": 0.0,
+      "maxOver": 60.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    60.00px  Page/Body/Image0 (Image)",
+        "  [OFF-CANVAS] page   0    50.00px  Page/Body/Image0 (Image)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-image-bottom50",
+    "family": "off-canvas",
+    "hypothesis": "그림 가 페이지 높이를 50px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 150.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Image"
+      ],
+      "offCanvasTypes": [
+        "Image"
+      ],
+      "overflowPaths": [
+        "Page/Body/Image0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Image0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 70.0,
+      "maxOver": 70.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    70.00px  Page/Body/Image0 (Image)",
+        "  [OFF-CANVAS] page   0    50.00px  Page/Body/Image0 (Image)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-textbox-y-0.5",
+    "family": "off-canvas",
+    "hypothesis": "글상자 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": -0.5,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 20.5,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 20.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    20.50px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-textbox-y-1",
+    "family": "off-canvas",
+    "hypothesis": "글상자 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": -1.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 21.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 21.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    21.00px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-textbox-y-8",
+    "family": "off-canvas",
+    "hypothesis": "글상자 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": -8.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [
+        "TextBox"
+      ],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 28.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 28.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    28.00px  Page/Body/TextBox0 (TextBox)",
+        "  [OFF-CANVAS] page   0     8.00px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-textbox-y-80",
+    "family": "off-canvas",
+    "hypothesis": "글상자 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": -80.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [
+        "TextBox"
+      ],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 100.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 100.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0   100.00px  Page/Body/TextBox0 (TextBox)",
+        "  [OFF-CANVAS] page   0    80.00px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-textbox-right0.5",
+    "family": "off-canvas",
+    "hypothesis": "글상자 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 190.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 10.5,
+      "overBottom": 0.0,
+      "maxOver": 10.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    10.50px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-textbox-bottom0.5",
+    "family": "off-canvas",
+    "hypothesis": "글상자 가 페이지 높이를 0.5px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 100.5
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 20.5,
+      "maxOver": 20.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    20.50px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-textbox-right1.25",
+    "family": "off-canvas",
+    "hypothesis": "글상자 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 191.25,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [
+        "TextBox"
+      ],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 11.25,
+      "overBottom": 0.0,
+      "maxOver": 11.25,
+      "reportLines": [
+        "  [OVERFLOW] page   0    11.25px  Page/Body/TextBox0 (TextBox)",
+        "  [OFF-CANVAS] page   0     1.25px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-textbox-bottom1.25",
+    "family": "off-canvas",
+    "hypothesis": "글상자 가 페이지 높이를 1.25px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 101.25
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [
+        "TextBox"
+      ],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 21.25,
+      "maxOver": 21.25,
+      "reportLines": [
+        "  [OVERFLOW] page   0    21.25px  Page/Body/TextBox0 (TextBox)",
+        "  [OFF-CANVAS] page   0     1.25px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-textbox-right50",
+    "family": "off-canvas",
+    "hypothesis": "글상자 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 240.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [
+        "TextBox"
+      ],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 60.0,
+      "overBottom": 0.0,
+      "maxOver": 60.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    60.00px  Page/Body/TextBox0 (TextBox)",
+        "  [OFF-CANVAS] page   0    50.00px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-textbox-bottom50",
+    "family": "off-canvas",
+    "hypothesis": "글상자 가 페이지 높이를 50px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 150.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [
+        "TextBox"
+      ],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 70.0,
+      "maxOver": 70.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    70.00px  Page/Body/TextBox0 (TextBox)",
+        "  [OFF-CANVAS] page   0    50.00px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-rect-y-0.5",
+    "family": "off-canvas",
+    "hypothesis": "사각형 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": -0.5,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Rect"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Rect0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 20.5,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 20.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    20.50px  Page/Body/Rect0 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-rect-y-1",
+    "family": "off-canvas",
+    "hypothesis": "사각형 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": -1.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Rect"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Rect0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 21.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 21.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    21.00px  Page/Body/Rect0 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-rect-y-8",
+    "family": "off-canvas",
+    "hypothesis": "사각형 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": -8.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Rect"
+      ],
+      "offCanvasTypes": [
+        "Rect"
+      ],
+      "overflowPaths": [
+        "Page/Body/Rect0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Rect0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 28.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 28.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    28.00px  Page/Body/Rect0 (Rect)",
+        "  [OFF-CANVAS] page   0     8.00px  Page/Body/Rect0 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offy-rect-y-80",
+    "family": "off-canvas",
+    "hypothesis": "사각형 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": -80.0,
+        "w": 80.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Rect"
+      ],
+      "offCanvasTypes": [
+        "Rect"
+      ],
+      "overflowPaths": [
+        "Page/Body/Rect0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Rect0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 100.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 100.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0   100.00px  Page/Body/Rect0 (Rect)",
+        "  [OFF-CANVAS] page   0    80.00px  Page/Body/Rect0 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-rect-right0.5",
+    "family": "off-canvas",
+    "hypothesis": "사각형 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 190.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Rect"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Rect0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 10.5,
+      "overBottom": 0.0,
+      "maxOver": 10.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    10.50px  Page/Body/Rect0 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-rect-bottom0.5",
+    "family": "off-canvas",
+    "hypothesis": "사각형 가 페이지 높이를 0.5px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 100.5
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Rect"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Rect0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 20.5,
+      "maxOver": 20.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0    20.50px  Page/Body/Rect0 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-rect-right1.25",
+    "family": "off-canvas",
+    "hypothesis": "사각형 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 191.25,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Rect"
+      ],
+      "offCanvasTypes": [
+        "Rect"
+      ],
+      "overflowPaths": [
+        "Page/Body/Rect0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Rect0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 11.25,
+      "overBottom": 0.0,
+      "maxOver": 11.25,
+      "reportLines": [
+        "  [OVERFLOW] page   0    11.25px  Page/Body/Rect0 (Rect)",
+        "  [OFF-CANVAS] page   0     1.25px  Page/Body/Rect0 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-rect-bottom1.25",
+    "family": "off-canvas",
+    "hypothesis": "사각형 가 페이지 높이를 1.25px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 101.25
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Rect"
+      ],
+      "offCanvasTypes": [
+        "Rect"
+      ],
+      "overflowPaths": [
+        "Page/Body/Rect0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Rect0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 21.25,
+      "maxOver": 21.25,
+      "reportLines": [
+        "  [OVERFLOW] page   0    21.25px  Page/Body/Rect0 (Rect)",
+        "  [OFF-CANVAS] page   0     1.25px  Page/Body/Rect0 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offw-rect-right50",
+    "family": "off-canvas",
+    "hypothesis": "사각형 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 240.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Rect"
+      ],
+      "offCanvasTypes": [
+        "Rect"
+      ],
+      "overflowPaths": [
+        "Page/Body/Rect0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Rect0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 60.0,
+      "overBottom": 0.0,
+      "maxOver": 60.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    60.00px  Page/Body/Rect0 (Rect)",
+        "  [OFF-CANVAS] page   0    50.00px  Page/Body/Rect0 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "offh-rect-bottom50",
+    "family": "off-canvas",
+    "hypothesis": "사각형 가 페이지 높이를 50px 넘긴다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 200.0,
+        "w": 80.0,
+        "h": 150.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Rect"
+      ],
+      "offCanvasTypes": [
+        "Rect"
+      ],
+      "overflowPaths": [
+        "Page/Body/Rect0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Rect0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 70.0,
+      "maxOver": 70.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    70.00px  Page/Body/Rect0 (Rect)",
+        "  [OFF-CANVAS] page   0    50.00px  Page/Body/Rect0 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "off-body-only-not-page",
+    "family": "off-canvas",
+    "hypothesis": "표가 본문 오른쪽만 넘치고 페이지 상자 안에 남으면 overflow 만 있고 off-canvas 는 없다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 185.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 5.0,
+      "overBottom": 0.0,
+      "maxOver": 5.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     5.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "off-nested-table-once",
+    "family": "off-canvas",
+    "hypothesis": "음수 y 표 안의 줄은 off-canvas suppress 로 표 한 번만 보고한다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": -80.0,
+        "y": -80.0,
+        "w": 80.0,
+        "h": 120.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": -80.0,
+            "y": -80.0,
+            "w": 30.0,
+            "h": 10.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": -80.0,
+                "y": -80.0,
+                "w": 30.0,
+                "h": 10.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": -80.0,
+                    "y": -80.0,
+                    "w": 30.0,
+                    "h": 10.0,
+                    "text": "x"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [
+        "Table"
+      ],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Table0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 90.0,
+      "overTop": 100.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 100.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0   100.00px  Page/Body/Table0 (Table)",
+        "  [OFF-CANVAS] page   0    80.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  }
+]

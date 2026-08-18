@@ -1,0 +1,15 @@
+scope	requiresIncludeFields	label
+body	False	body
+tableCell	False	tableCell
+textBox	False	textBox
+equation	False	equation
+footnote	False	footnote
+endnote	False	endnote
+header	False	header
+footer	False	footer
+caption	False	caption
+fieldName	True	fieldName
+fieldGuide	True	fieldGuide
+fieldCommand	True	fieldCommand
+hiddenComment	True	hiddenComment
+fieldMemo	True	fieldMemo

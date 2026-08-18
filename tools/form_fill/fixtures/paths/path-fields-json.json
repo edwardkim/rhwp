@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-fields-json",
+  "axis": "fields",
+  "title": "fields --json 조사",
+  "why": "채우기 전 읽기 전용 조사. 키가 --data 에 그대로 복제된다.",
+  "argv": [
+    "fields",
+    "samples/field-01.hwp",
+    "--json"
+  ],
+  "exit": 0,
+  "writesFile": false
+}

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "footnote_star",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "각주",
+  "title": "각주 * 표기 유지",
+  "why": "각주 표식은 본문 문자열. 렌더 각주 레이아웃 석과 무관.",
+  "notes": "idempotent 각주 표식",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/footnote-star.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/footnote-star.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "* 자세한 사항은 붙임",
+        "replace": "* 자세한 사항은 붙임"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/footnote-star.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"* 자세한 사항은 붙임\",\"replace\":\"* 자세한 사항은 붙임\"}]}",
+  "planSha256": "db9726871c81a5b40537549a77ec48da64b6751d6db2b5ac9c4b1e85adfd4e94",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "2d6588b354728bdbcd766e033135a177191e8b6a19a99d12cddb92f308e883d0",
+    "planSha256": "db9726871c81a5b40537549a77ec48da64b6751d6db2b5ac9c4b1e85adfd4e94",
+    "outputSha256": "d6b696184776ca2b11fd1ed6523fa489a19c059a6bb4312822ab3999326930f3",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "d6b696184776ca2b11fd1ed6523fa489a19c059a6bb4312822ab3999326930f3"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

@@ -1,0 +1,1718 @@
+[
+  {
+    "id": "empty-p0-of1-blank",
+    "family": "empty-page",
+    "hypothesis": "page=0/1, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 1,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p0-of1-text",
+    "family": "empty-page",
+    "hypothesis": "page=0/1 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 1,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p0-of2-blank",
+    "family": "empty-page",
+    "hypothesis": "page=0/2, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 2,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p0-of2-text",
+    "family": "empty-page",
+    "hypothesis": "page=0/2 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 2,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p1-of2-blank",
+    "family": "empty-page",
+    "hypothesis": "page=1/2, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 1,
+    "pageCount": 2,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p1-of2-text",
+    "family": "empty-page",
+    "hypothesis": "page=1/2 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 1,
+    "pageCount": 2,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p0-of3-blank",
+    "family": "empty-page",
+    "hypothesis": "page=0/3, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p0-of3-text",
+    "family": "empty-page",
+    "hypothesis": "page=0/3 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p1-of3-blank",
+    "family": "empty-page",
+    "hypothesis": "page=1/3, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 1,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": true,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [EMPTY_PAGE?] page   1  콘텐츠 없음 (가능성 신호 — 의도된 빈 쪽일 수 있음)"
+      ],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p1-of3-text",
+    "family": "empty-page",
+    "hypothesis": "page=1/3 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 1,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p2-of3-blank",
+    "family": "empty-page",
+    "hypothesis": "page=2/3, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 2,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p2-of3-text",
+    "family": "empty-page",
+    "hypothesis": "page=2/3 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 2,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p0-of4-blank",
+    "family": "empty-page",
+    "hypothesis": "page=0/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 4,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p0-of4-text",
+    "family": "empty-page",
+    "hypothesis": "page=0/4 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 4,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p1-of4-blank",
+    "family": "empty-page",
+    "hypothesis": "page=1/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 1,
+    "pageCount": 4,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": true,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [EMPTY_PAGE?] page   1  콘텐츠 없음 (가능성 신호 — 의도된 빈 쪽일 수 있음)"
+      ],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p1-of4-text",
+    "family": "empty-page",
+    "hypothesis": "page=1/4 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 1,
+    "pageCount": 4,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p2-of4-blank",
+    "family": "empty-page",
+    "hypothesis": "page=2/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 2,
+    "pageCount": 4,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": true,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [EMPTY_PAGE?] page   2  콘텐츠 없음 (가능성 신호 — 의도된 빈 쪽일 수 있음)"
+      ],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p2-of4-text",
+    "family": "empty-page",
+    "hypothesis": "page=2/4 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 2,
+    "pageCount": 4,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p3-of4-blank",
+    "family": "empty-page",
+    "hypothesis": "page=3/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 3,
+    "pageCount": 4,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p3-of4-text",
+    "family": "empty-page",
+    "hypothesis": "page=3/4 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 3,
+    "pageCount": 4,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p0-of5-blank",
+    "family": "empty-page",
+    "hypothesis": "page=0/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 5,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p0-of5-text",
+    "family": "empty-page",
+    "hypothesis": "page=0/5 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 5,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p1-of5-blank",
+    "family": "empty-page",
+    "hypothesis": "page=1/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 1,
+    "pageCount": 5,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": true,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [EMPTY_PAGE?] page   1  콘텐츠 없음 (가능성 신호 — 의도된 빈 쪽일 수 있음)"
+      ],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p1-of5-text",
+    "family": "empty-page",
+    "hypothesis": "page=1/5 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 1,
+    "pageCount": 5,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p2-of5-blank",
+    "family": "empty-page",
+    "hypothesis": "page=2/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 2,
+    "pageCount": 5,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": true,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [EMPTY_PAGE?] page   2  콘텐츠 없음 (가능성 신호 — 의도된 빈 쪽일 수 있음)"
+      ],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p2-of5-text",
+    "family": "empty-page",
+    "hypothesis": "page=2/5 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 2,
+    "pageCount": 5,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p3-of5-blank",
+    "family": "empty-page",
+    "hypothesis": "page=3/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 3,
+    "pageCount": 5,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": true,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [EMPTY_PAGE?] page   3  콘텐츠 없음 (가능성 신호 — 의도된 빈 쪽일 수 있음)"
+      ],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p3-of5-text",
+    "family": "empty-page",
+    "hypothesis": "page=3/5 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 3,
+    "pageCount": 5,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p4-of5-blank",
+    "family": "empty-page",
+    "hypothesis": "page=4/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 4,
+    "pageCount": 5,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-p4-of5-text",
+    "family": "empty-page",
+    "hypothesis": "page=4/5 에 보이는 글자가 있으면 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 4,
+    "pageCount": 5,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "empty-middle-image-is-content",
+    "family": "empty-page",
+    "hypothesis": "중간 쪽에 그림만 있어도 has_content 이라 empty_page 가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 1,
+    "pageCount": 4,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  }
+]

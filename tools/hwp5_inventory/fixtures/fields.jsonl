@@ -1,0 +1,23 @@
+{"record_kind":"CTRL_HEADER","field_name":"ctrl_id","offset":0,"offset_hex":"0x00","width":4,"kind":"u32","probe_axis":null,"observation_name":false,"meaning":"Table fourcc 0x74626c20"}
+{"record_kind":"CTRL_HEADER","field_name":"common_attr","offset":4,"offset_hex":"0x04","width":4,"kind":"u32_hex","probe_axis":"ctrl_common_attr","observation_name":false,"meaning":"TABLE control wrapper 공통 속성 비트"}
+{"record_kind":"CTRL_HEADER","field_name":"x","offset":8,"offset_hex":"0x08","width":4,"kind":"i32","probe_axis":null,"observation_name":false,"meaning":"바깥 상자 x (HWPUNIT)"}
+{"record_kind":"CTRL_HEADER","field_name":"y","offset":12,"offset_hex":"0x0c","width":4,"kind":"i32","probe_axis":null,"observation_name":false,"meaning":"바깥 상자 y (HWPUNIT)"}
+{"record_kind":"CTRL_HEADER","field_name":"width","offset":16,"offset_hex":"0x10","width":4,"kind":"i32","probe_axis":null,"observation_name":false,"meaning":"바깥 상자 폭"}
+{"record_kind":"CTRL_HEADER","field_name":"height","offset":20,"offset_hex":"0x14","width":4,"kind":"i32","probe_axis":null,"observation_name":false,"meaning":"바깥 상자 높이"}
+{"record_kind":"CTRL_HEADER","field_name":"z_order_or_instance","offset":24,"offset_hex":"0x18","width":4,"kind":"u32","probe_axis":null,"observation_name":true,"meaning":"관찰명. 확정 계약 이름 아님"}
+{"record_kind":"CTRL_HEADER","field_name":"out_margin_left","offset":28,"offset_hex":"0x1c","width":2,"kind":"u16","probe_axis":"ctrl_outer_margin","observation_name":false,"meaning":"바깥 여백 왼쪽"}
+{"record_kind":"CTRL_HEADER","field_name":"out_margin_right","offset":30,"offset_hex":"0x1e","width":2,"kind":"u16","probe_axis":"ctrl_outer_margin","observation_name":false,"meaning":"바깥 여백 오른쪽"}
+{"record_kind":"CTRL_HEADER","field_name":"out_margin_top","offset":32,"offset_hex":"0x20","width":2,"kind":"u16","probe_axis":"ctrl_outer_margin","observation_name":false,"meaning":"바깥 여백 위"}
+{"record_kind":"CTRL_HEADER","field_name":"out_margin_bottom","offset":34,"offset_hex":"0x22","width":2,"kind":"u16","probe_axis":"ctrl_outer_margin","observation_name":false,"meaning":"바깥 여백 아래"}
+{"record_kind":"CTRL_HEADER","field_name":"tail_after_0x24","offset":36,"offset_hex":"0x24","width":16,"kind":"hex","probe_axis":null,"observation_name":true,"meaning":"관찰명. 0x24 이후 16바이트"}
+{"record_kind":"TABLE","field_name":"table_attr","offset":0,"offset_hex":"0x00","width":4,"kind":"u32_hex","probe_axis":"table_attr","observation_name":false,"meaning":"TABLE record 첫 4바이트 속성 비트"}
+{"record_kind":"TABLE","field_name":"rows","offset":4,"offset_hex":"0x04","width":2,"kind":"u16","probe_axis":null,"observation_name":false,"meaning":"행 수"}
+{"record_kind":"TABLE","field_name":"cols","offset":6,"offset_hex":"0x06","width":2,"kind":"u16","probe_axis":null,"observation_name":false,"meaning":"열 수"}
+{"record_kind":"TABLE","field_name":"cell_spacing","offset":8,"offset_hex":"0x08","width":2,"kind":"u16","probe_axis":null,"observation_name":false,"meaning":"셀 간격"}
+{"record_kind":"TABLE","field_name":"in_margin_left","offset":10,"offset_hex":"0x0a","width":2,"kind":"u16","probe_axis":null,"observation_name":false,"meaning":"안쪽 여백 왼쪽"}
+{"record_kind":"TABLE","field_name":"in_margin_right","offset":12,"offset_hex":"0x0c","width":2,"kind":"u16","probe_axis":null,"observation_name":false,"meaning":"안쪽 여백 오른쪽"}
+{"record_kind":"TABLE","field_name":"in_margin_top","offset":14,"offset_hex":"0x0e","width":2,"kind":"u16","probe_axis":null,"observation_name":false,"meaning":"안쪽 여백 위"}
+{"record_kind":"TABLE","field_name":"in_margin_bottom","offset":16,"offset_hex":"0x10","width":2,"kind":"u16","probe_axis":null,"observation_name":false,"meaning":"안쪽 여백 아래"}
+{"record_kind":"TABLE","field_name":"row_count_hint","offset":18,"offset_hex":"0x12","width":2,"kind":"u16","probe_axis":null,"observation_name":true,"meaning":"관찰명. 행 힌트"}
+{"record_kind":"TABLE","field_name":"col_count_hint","offset":20,"offset_hex":"0x14","width":2,"kind":"u16","probe_axis":null,"observation_name":true,"meaning":"관찰명. 열 힌트"}
+{"record_kind":"TABLE","field_name":"tail_after_0x16","offset":22,"offset_hex":"0x16","width":16,"kind":"hex","probe_axis":"table_tail","observation_name":true,"meaning":"관찰명. 0x16 이후 tail. table-probe 는 전체 tail 을 이식"}

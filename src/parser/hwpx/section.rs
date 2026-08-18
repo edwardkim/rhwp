@@ -428,8 +428,10 @@ fn parse_page_margin(e: &quick_xml::events::BytesStart, page: &mut PageDef) {
 /// `parse_paragraph` 를 경유**하므로, 그 진입 깊이를 스레드-로컬 카운터로 세어 한
 /// 곳에서 전 경로를 막는다(파라미터를 여러 호출부에 관통시키지 않는다). 그룹
 /// (`<hp:container>`) 자기재귀는 별도로 `MAX_HWPX_CONTAINER_DEPTH` 가 막는다.
-/// 상한 64 는 그 형제 가드와 같은 값이다(실문서의 표 중첩은 이에 한참 못 미친다).
-const MAX_HWPX_SECTION_DEPTH: u32 = 64;
+/// 상한은 컨테이너(64)보다 작다. 한 겹마다 `parse_paragraph`·`parse_table`·
+/// `parse_table_cell` 큰 프레임이 겹쳐, 64 로 두면 기본/WASM 스택에서 가드보다
+/// SIGSEGV 가 앞선다. 실문서의 표 중첩은 이에 한참 못 미친다.
+const MAX_HWPX_SECTION_DEPTH: u32 = 16;
 
 thread_local! {
     // 완전 경로 — 이 모듈의 `Cell` 은 이미 `crate::model::table::Cell`(표 셀)이다.
@@ -517,7 +519,17 @@ fn parse_paragraph(
     reader: &mut Reader<&[u8]>,
 ) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
     // [#4759] 문단-경유 상호재귀(표·글상자·서브리스트) 깊이 상한 — 위 가드 참고.
+    // 가드는 큰 본문 프레임을 쌓기 전에 실행한다. 상한 초과 호출이
+    // `Paragraph`·`SectionDef` 지역 상태를 먼저 잡으면 기본 스택에서
+    // 가드보다 SIGSEGV 가 앞설 수 있다.
     let _depth_guard = SectionDepthGuard::enter()?;
+    parse_paragraph_body(e, reader)
+}
+
+fn parse_paragraph_body(
+    e: &quick_xml::events::BytesStart,
+    reader: &mut Reader<&[u8]>,
+) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
     let mut para = Paragraph::default();
     let mut sec_def: Option<SectionDef> = None;
 
@@ -605,14 +617,13 @@ fn parse_paragraph(
                     b"tbl" => {
                         // 표 파싱
                         let table = parse_table(ce, reader)?;
-                        // 표 위치에 제어 문자(0x0002) 삽입
-                        text_parts.push("\u{0002}".to_string());
+                        push_object_slot_placeholder(&mut text_parts);
                         para.controls.push(Control::Table(Box::new(table)));
                     }
                     b"pic" => {
                         // 이미지 파싱
                         let pic = parse_picture(ce, reader)?;
-                        text_parts.push("\u{0002}".to_string());
+                        push_object_slot_placeholder(&mut text_parts);
                         para.controls.push(pic);
                     }
                     b"switch" => {
@@ -669,7 +680,7 @@ fn parse_paragraph(
                     | b"curve" => {
                         // 그리기 객체 파싱
                         let shape = parse_shape_object(local, ce, reader)?;
-                        text_parts.push("\u{0002}".to_string());
+                        push_object_slot_placeholder(&mut text_parts);
                         para.controls.push(shape);
                     }
                     b"container" => {
@@ -2273,7 +2284,18 @@ fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     // table.attr bit0 for some inline-table decisions. Only mirror the minimum
     // renderer compatibility bit here; the HWP5 storage attr is packed later by
     // the HWP adapter.
-    table.attr = if table.common.treat_as_char && table.common.flow_with_text {
+    //
+    // 순수 HWPX 의 TAC 판정은 `treatAsChar && flowWithText` (#3930) 다. HWP5 원본은
+    // CTRL_HEADER bit0 = treatAsChar 만으로 TAC 이다. HWP5-origin HWPX 가 후자
+    // 계약을 잃으면 synam-001 문단 237 같은 flowWithText=0 TAC 표가 블록 RowBreak로
+    // 쪼개져 35→36 이 된다 (#3521). 원본 HWP3도 treatAsChar만으로 인라인 표이며,
+    // HWP3-origin HWPX가 이를 잃으면 sample11 문단 3701..3704가 151→152로 갈라진다
+    // (#3737).
+    table.attr = if table.common.treat_as_char
+        && (table.common.flow_with_text
+            || HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get())
+            || HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.get()))
+    {
         0x01
     } else {
         0
@@ -2860,6 +2882,7 @@ fn parse_picture(
                                 b"width" => {
                                     let v = parse_u32(&attr);
                                     shape_attr.original_width = v;
+                                    shape_attr.original_width_was_zero = v == 0;
                                     if common.width == 0 {
                                         common.width = v;
                                     }
@@ -2867,6 +2890,7 @@ fn parse_picture(
                                 b"height" => {
                                     let v = parse_u32(&attr);
                                     shape_attr.original_height = v;
+                                    shape_attr.original_height_was_zero = v == 0;
                                     if common.height == 0 {
                                         common.height = v;
                                     }
@@ -3438,6 +3462,7 @@ fn parse_object_layout_child(
                     b"width" => {
                         let v = parse_u32(&attr);
                         shape_attr.current_width = v;
+                        shape_attr.current_width_was_zero = v == 0;
                         if v > 0 {
                             common.width = v;
                         }
@@ -3445,6 +3470,7 @@ fn parse_object_layout_child(
                     b"height" => {
                         let v = parse_u32(&attr);
                         shape_attr.current_height = v;
+                        shape_attr.current_height_was_zero = v == 0;
                         if v > 0 {
                             common.height = v;
                         }
@@ -3459,6 +3485,7 @@ fn parse_object_layout_child(
                     b"width" => {
                         let v = parse_u32(&attr);
                         shape_attr.original_width = v;
+                        shape_attr.original_width_was_zero = v == 0;
                         if common.width == 0 {
                             common.width = v;
                         }
@@ -3466,6 +3493,7 @@ fn parse_object_layout_child(
                     b"height" => {
                         let v = parse_u32(&attr);
                         shape_attr.original_height = v;
+                        shape_attr.original_height_was_zero = v == 0;
                         if common.height == 0 {
                             common.height = v;
                         }
@@ -4571,6 +4599,10 @@ const MAX_HWPX_CONTAINER_DEPTH: u32 = 64;
 /// `depth` 는 중첩 그룹의 현재 깊이다(최상위 호출은 0). 최대 64개 그룹을
 /// 허용하며, 그 다음 그룹은 스택을 고갈시키기 전에 오류로 거부한다 — 위
 /// `MAX_HWPX_CONTAINER_DEPTH` 참고.
+///
+/// 가드는 큰 지역 상태를 가진 본문보다 먼저 실행돼야 한다. 상한 검사를
+/// 본문과 같은 프레임에서 하면 거절하는 65번째 호출도 큰 프레임을 먼저
+/// 쌓아, 기본/WASM 스택에서 가드보다 SIGSEGV 가 앞설 수 있다.
 fn parse_container(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
@@ -4582,6 +4614,14 @@ fn parse_container(
             MAX_HWPX_CONTAINER_DEPTH
         )));
     }
+    parse_container_body(e, reader, depth)
+}
+
+fn parse_container_body(
+    e: &quick_xml::events::BytesStart,
+    reader: &mut Reader<&[u8]>,
+    depth: u32,
+) -> Result<Control, HwpxError> {
     let mut common = CommonObjAttr::default();
     let mut shape_attr = ShapeComponentAttr::default();
     let mut has_pos = false;
@@ -5300,7 +5340,7 @@ fn parse_ctrl_footnote(
     }
     note.paragraphs = parse_sublist_paragraphs(reader, b"footNote")?;
     for paragraph in &mut note.paragraphs {
-        normalize_hwpx_note_line_vpos(paragraph);
+        normalize_hwpx_note_line_vpos(paragraph, true);
     }
     Ok(Control::Footnote(Box::new(note)))
 }
@@ -5356,7 +5396,7 @@ fn parse_ctrl_endnote(
     }
     note.paragraphs = parse_sublist_paragraphs(reader, b"endNote")?;
     for paragraph in &mut note.paragraphs {
-        normalize_hwpx_note_line_vpos(paragraph);
+        normalize_hwpx_note_line_vpos(paragraph, false);
     }
     Ok(Control::Endnote(Box::new(note)))
 }
@@ -5365,6 +5405,29 @@ thread_local! {
     /// [#4916/#4660/#3531/#4882 계열] 지금 파싱 중인 HWPX 가 rhwp 자기 산출
     /// (HWP5-origin 마커 보유)인가 — `parse_hwpx` 가 구역 파싱 동안 세운다.
     static HWPX_HWP5_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    /// 원본 HWP3→HWPX (hwp3-origin 마커, hwp5-origin 없음).
+    static HWPX_HWP3_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// [#3518] HWP3 는 개체를 U+FFFC 1유닛으로 남긴다. HWPX 슬롯 `\u{0002}`(8유닛)를
+/// 그 위에 또 쌓으면 char_count 가 부풀어(sample16 문단 394: 6→30) TAC 표가
+/// 블록 표로 빠지며 쪽이 +1 된다. 아직 짝이 없는 FFFC 가 있으면 8유닛을 넣지 않는다.
+fn push_object_slot_placeholder(text_parts: &mut Vec<String>) {
+    if HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.get()) {
+        let fffc = text_parts
+            .iter()
+            .flat_map(|s| s.chars())
+            .filter(|&c| c == '\u{fffc}')
+            .count();
+        let slots = text_parts
+            .iter()
+            .filter(|s| s.as_str() == "\u{0002}")
+            .count();
+        if fffc > slots {
+            return;
+        }
+    }
+    text_parts.push("\u{0002}".to_string());
 }
 
 /// [#4916 계열] HWP5-origin 마커 문서 파싱 구간 표식 — RAII 로 해제된다.
@@ -5383,14 +5446,34 @@ impl Drop for Hwp5OriginSourceGuard {
     }
 }
 
-fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph) {
-    // [#4916/#4660/#3531/#4882 계열] rhwp 자기 산출 HWPX(HWP5-origin 마커)는
-    // 보정하지 않는다 — HWP5 원본의 각주·미주 subList 저장 lineseg 는 후속 줄
-    // vpos=0 이 **정당한 저장값**이라(마커 계약: lineSeg 시멘틱은 HWP5 원본을
-    // 따른다, #1770), 여기서 합성하면 h2x 왕복 IR 이 원본 파싱과 어긋나고
-    // (--verify vertpos 차이) 쪽수 자기정합도 깨진다. 실물 한컴 HWPX 의
-    // "미주 내부 후속 줄 vpos=0 아티팩트" 보정(task 1692, SO-SUEOP)은 종전 유지.
-    if HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get()) {
+/// [#3518, #3737] 원본 HWP3→HWPX 파싱 구간 표식.
+pub(crate) struct Hwp3OriginSourceGuard;
+
+impl Hwp3OriginSourceGuard {
+    pub(crate) fn set(active: bool) -> Self {
+        HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.set(active));
+        Hwp3OriginSourceGuard
+    }
+}
+
+impl Drop for Hwp3OriginSourceGuard {
+    fn drop(&mut self) {
+        HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.set(false));
+    }
+}
+
+fn is_hwp5_stored_note_zero_vpos(paragraph: &Paragraph) -> bool {
+    // [#4882] HWP5 note sublists preserve vertical_pos=0 on every stored line.
+    paragraph.line_segs.len() > 1 && paragraph.line_segs.iter().all(|seg| seg.vertical_pos == 0)
+}
+
+fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph, preserve_all_zero: bool) {
+    // [#4882] HWP5-origin HWPX는 note lineSeg 저장값 전체를 보존한다. marker가
+    // 없는 HWP5 footnote는 all-zero 저장 패턴만 보존하고, 일반 HWPX endnote의
+    // 후속 줄 0은 연속줄 아티팩트라 종전 정규화 계약을 적용한다 (#1692).
+    if HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get())
+        || (preserve_all_zero && is_hwp5_stored_note_zero_vpos(paragraph))
+    {
         return;
     }
     if paragraph.line_segs.len() <= 1 {
@@ -5669,6 +5752,30 @@ fn open_param_frame<'a>(
     }
 }
 
+/// [#4436] `<hp:listParam>` 중첩 상한. 루트 `<hp:parameters>` 는 세지 않는다.
+///
+/// OWPML `hp:ParameterList` 는 재귀 `listParam` 을 막지 않아, 손상·적대 HWPX 가
+/// 극단적으로 깊게 중첩할 수 있다. 트리 빌더는 반복 스택이라 네이티브 스택은
+/// 당장 안 넘지만, 만든 `Parameter::List` 트리는 이후 render/Drop 이 재귀한다.
+/// 실문서는 두세 단계를 넘지 않는다. 8 도 넉넉하고, 여기서는 그 위에 여유를 둔다.
+const MAX_LIST_PARAM_DEPTH: usize = 32;
+
+/// 새 `listParam` 을 열기 직전 — 이미 열린 List 프레임(루트 + 조상 listParam)이
+/// 상한에 있으면 파싱 오류. 조용히 자르지 않는다(#4436).
+fn ensure_list_param_depth(stack: &[ParamFrame]) -> Result<(), HwpxError> {
+    let nested = stack
+        .iter()
+        .filter(|frame| matches!(frame, ParamFrame::List { .. }))
+        .count()
+        .saturating_sub(1);
+    if nested >= MAX_LIST_PARAM_DEPTH {
+        return Err(HwpxError::XmlError(format!(
+            "listParam nesting exceeds {MAX_LIST_PARAM_DEPTH} levels"
+        )));
+    }
+    Ok(())
+}
+
 fn parse_field_parameters(
     start: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
@@ -5737,6 +5844,9 @@ fn parse_field_parameters(
                     }
                 }
                 if let Some(frame) = open_param_frame(local, ce.attributes().flatten()) {
+                    if matches!(frame, ParamFrame::List { .. }) {
+                        ensure_list_param_depth(&stack)?;
+                    }
                     stack.push(frame);
                 }
             }
@@ -5762,6 +5872,9 @@ fn parse_field_parameters(
                 }
                 // 자기닫힘(빈 값) — 여닫 없이 즉시 부모에 붙인다.
                 if let Some(frame) = open_param_frame(local, ce.attributes().flatten()) {
+                    if matches!(frame, ParamFrame::List { .. }) {
+                        ensure_list_param_depth(&stack)?;
+                    }
                     if let Some(ParamFrame::List { items, .. }) = stack.last_mut() {
                         items.push(frame.finish());
                     }
@@ -7285,6 +7398,18 @@ mod tests {
         );
     }
 
+    fn assert_section_nesting_xml_error(result: Result<Section, HwpxError>, needle: &str) {
+        match result {
+            Err(HwpxError::XmlError(msg)) => {
+                assert!(
+                    msg.contains(needle),
+                    "XmlError 메시지에 `{needle}` 가 없다: {msg}"
+                );
+            }
+            other => panic!("상한 초과가 XmlError 로 거부되지 않았다: {other:?}"),
+        }
+    }
+
     // ---------- [#4730] <hp:container> 무한 중첩 → 스택 오버플로 DoS 가드 ----------
 
     fn nested_container_section_xml(depth: usize) -> String {
@@ -7309,11 +7434,7 @@ mod tests {
         // 기본 테스트 스레드에서 실행해, 실제 호출자가 흔히 쓰는 스택에서도 가드가
         // 재귀 프레임 고갈보다 먼저 동작함을 검증한다.
         let xml = nested_container_section_xml(MAX_HWPX_CONTAINER_DEPTH as usize + 1);
-        let rejected = parse_hwpx_section(&xml).is_err();
-        assert!(
-            rejected,
-            "상한 초과 container 중첩이 거부되지 않았다 — 재귀 깊이 가드 회귀"
-        );
+        assert_section_nesting_xml_error(parse_hwpx_section(&xml), "container nesting exceeds");
     }
 
     #[test]
@@ -8751,6 +8872,67 @@ mod tests {
             "바깥 </hp:listParam> 누락(중첩 불균형): {raw}"
         );
         assert!(raw.ends_with("</hp:parameters>"), "params close: {raw}");
+
+        // [#4436] 상한 안쪽은 성공, 초과는 조용히 자르지 않고 XmlError.
+        let at_limit = parse_parameters_xml(&nested_list_param_xml(MAX_LIST_PARAM_DEPTH))
+            .expect("정상 깊이 listParam 이 거부됐다 — 가드가 과잉 차단");
+        assert_eq!(
+            list_param_tree_depth(&at_limit.parameters),
+            MAX_LIST_PARAM_DEPTH
+        );
+        match parse_parameters_xml(&nested_list_param_xml(MAX_LIST_PARAM_DEPTH + 1)) {
+            Err(HwpxError::XmlError(msg)) => {
+                assert!(
+                    msg.contains("listParam nesting exceeds"),
+                    "XmlError 메시지에 `listParam nesting exceeds` 가 없다: {msg}"
+                );
+            }
+            other => panic!("상한 초과 listParam 이 XmlError 로 거부되지 않았다: {other:?}"),
+        }
+    }
+
+    fn nested_list_param_xml(depth: usize) -> String {
+        let mut xml = String::from(
+            r#"<hp:parameters xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" cnt="1" name="">"#,
+        );
+        for i in 0..depth {
+            xml.push_str(&format!(r#"<hp:listParam cnt="1" name="L{i}">"#));
+        }
+        xml.push_str(r#"<hp:stringParam name="A">x</hp:stringParam>"#);
+        for _ in 0..depth {
+            xml.push_str("</hp:listParam>");
+        }
+        xml.push_str("</hp:parameters>");
+        xml
+    }
+
+    fn parse_parameters_xml(xml: &str) -> Result<Field, HwpxError> {
+        let mut reader = Reader::from_str(xml);
+        let mut buf = Vec::new();
+        let mut field = Field::default();
+        loop {
+            match reader.read_event_into(&mut buf).unwrap() {
+                Event::Start(ref e) if local_name(e.name().as_ref()) == b"parameters" => {
+                    let start = e.to_owned();
+                    parse_field_parameters(&start, &mut reader, &mut field)?;
+                    return Ok(field);
+                }
+                Event::Eof => panic!("parameters not found"),
+                _ => {}
+            }
+            buf.clear();
+        }
+    }
+
+    fn list_param_tree_depth(list: &ParameterList) -> usize {
+        list.items
+            .iter()
+            .filter_map(|param| match param {
+                Parameter::List(inner) => Some(1 + list_param_tree_depth(inner)),
+                _ => None,
+            })
+            .max()
+            .unwrap_or(0)
     }
 
     #[test]

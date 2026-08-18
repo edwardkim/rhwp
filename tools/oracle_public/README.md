@@ -125,3 +125,33 @@ python tools/oracle_public/tests/test_oracle_resolver.py
 | `byHancomVersion` | 연도별 링크 수 |
 | `pairs[]` | `sample`, `pdf`, `hancomVersion`, `variant`, `oracleRoot` |
 | `unmatched[]` | 짝 없는 샘플과 `reason` |
+
+## M01-f 매니페스트·스윕 고도화
+
+`fatten_catalog.py` 가 기존 resolver·page_smoke·issue_draft 를 읽어
+쌍 픽스처·커버리지 표·cheap 스윕 전사·짝 없는 샘플 카탈로그·이슈 초안
+예시를 `tools/oracle_public/` 아래에 다시 쓴다. 렌더·`visual_sweep.py` 없음.
+
+```text
+python tools/oracle_public/fatten_catalog.py
+python tools/oracle_public/test_fatten_catalog.py
+```
+
+| 경로 | 내용 |
+| --- | --- |
+| `fixtures/pairs/by_year/{2018,2020,2022,2024}.json` | 연도별 쌍 픽스처 |
+| `fixtures/pairs/by_format/*.jsonl` | 형식별 쌍 |
+| `fixtures/pairs/by_root/*.jsonl` | 오라클 루트별 쌍 |
+| `fixtures/pairs/index.tsv` | 전 쌍 색인 |
+| `reports/coverage_matrix.md` | 형식×연도 행렬 |
+| `reports/coverage_by_directory.md` | 디렉터리별 커버리지 |
+| `reports/coverage_by_family.md` | 문서군별 커버리지 |
+| `reports/pair_index.md` | 전 쌍 표 |
+| `transcripts/cheap_sweep.json` | PDF `/Count`+바이트 전사 |
+| `transcripts/cheap_sweep.ndjson` | 같은 전사 1행=1쌍 |
+| `catalogs/unmatched.json` | 짝 없는 샘플 + 근접 PDF |
+| `catalogs/unused_oracle_pdfs.json` | 매니페스트에 안 묶인 PDF |
+| `drafts/examples/` | `issue_draft.py` 가 쓴 초안 (제출 안 함) |
+
+cheap 스윕은 `rhwp dump-pages` 를 부르지 않는다. 한컴 PDF 쪽수와 파일
+크기만 잰다. 목표 줄 수는 산출물 실측이며, 주석으로 부풀리지 않는다.

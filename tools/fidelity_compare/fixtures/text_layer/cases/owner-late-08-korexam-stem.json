@@ -1,0 +1,63 @@
+{
+  "id": "owner-late-08-korexam-stem",
+  "schema": "rhwp.fidelity_compare.text_layer_case.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "kind": "loss",
+  "classification": "loss",
+  "family": "owner_shift",
+  "genre": "법학적성 언어이해",
+  "registeredKey": "korexam",
+  "title": "지문 도입 지연",
+  "why": "A3 2단 지문. 도입문이 빠지면 소실. 방향=rhwp_later_than_reference.",
+  "page": 38,
+  "page1based": 39,
+  "referenceText": "본문고정영역ABCDEFGH이번쪽공통다음 글을 읽고 물음에 답하시오. 정의의 관념은 시대와 사회에 따라 다르게 해석되어 왔다.",
+  "svgText": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceNfc": "본문고정영역ABCDEFGH이번쪽공통다음 글을 읽고 물음에 답하시오. 정의의 관념은 시대와 사회에 따라 다르게 해석되어 왔다.",
+  "svgNfc": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceSequence": "본문고정영역ABCDEFGH이번쪽공통다음글을읽고물음에답하시오.정의의관념은시대와사회에따라다르게해석되어왔다.",
+  "svgSequence": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceOnly": 38,
+  "svgOnly": 0,
+  "referenceOnlyChars": "U+002E:.×2,U+AC8C:\\uac8c×1,U+ACE0:\\uace0×1,U+AD00:\\uad00×1,U+AE00:\\uae00×1,U+B150:\\ub150×1,U+B2E4:\\ub2e4×3,U+B2F5:\\ub2f5×1,U+B300:\\ub300×1,U+B418:\\ub418×1,U+B530:\\ub530×1,U+B77C:\\ub77c×1,U+B974:\\ub974×1,U+BB3C:\\ubb3c×1,U+C0AC:\\uc0ac×1,U+C11D:\\uc11d×1,U+C2DC:\\uc2dc×2,U+C5B4:\\uc5b4×1,U+C5D0:\\uc5d0×2,U+C624:\\uc624×1,U+C640:\\uc640×1,U+C654:\\uc654×1,U+C740:\\uc740×1,U+C744:\\uc744×1,U+C74C:\\uc74c×2,U+C758:\\uc758×2,U+C77D:\\uc77d×1,U+C815:\\uc815×1,U+D558:\\ud558×1,U+D574:\\ud574×1,U+D68C:\\ud68c×1",
+  "svgOnlyChars": "",
+  "glyphRiskCount": 0,
+  "glyphRisks": "",
+  "referenceGlyphRiskCount": 0,
+  "referenceGlyphRisks": "",
+  "ownerShift": [
+    {
+      "page": 38,
+      "next_page": 39,
+      "direction": "rhwp_later_than_reference",
+      "shared_count": 38,
+      "source_coverage": 1.0,
+      "target_coverage": 1.0,
+      "shared": "U+002E:.×2,U+AC8C:\\uac8c×1,U+ACE0:\\uace0×1,U+AD00:\\uad00×1,U+AE00:\\uae00×1,U+B150:\\ub150×1,U+B2E4:\\ub2e4×3,U+B2F5:\\ub2f5×1,U+B300:\\ub300×1,U+B418:\\ub418×1,U+B530:\\ub530×1,U+B77C:\\ub77c×1,U+B974:\\ub974×1,U+BB3C:\\ubb3c×1,U+C0AC:\\uc0ac×1,U+C11D:\\uc11d×1,U+C2DC:\\uc2dc×2,U+C5B4:\\uc5b4×1,U+C5D0:\\uc5d0×2,U+C624:\\uc624×1,U+C640:\\uc640×1,U+C654:\\uc654×1,U+C740:\\uc740×1,U+C744:\\uc744×1,U+C74C:\\uc74c×2,U+C758:\\uc758×2,U+C77D:\\uc77d×1,U+C815:\\uc815×1,U+D558:\\ud558×1,U+D574:\\ud574×1,U+D68C:\\ud68c×1"
+    }
+  ],
+  "sequence": [
+    {
+      "page": 38,
+      "next_page": 39,
+      "direction": "rhwp_later_than_reference",
+      "chars": 38,
+      "sequence": "다음글을읽고물음에답하시오.정의의관념은시대와사회에따라다르게해석되어왔다."
+    }
+  ],
+  "visibleExcess": [],
+  "clipExcludedChars": 0,
+  "nextReferenceText": "본문고정영역ABCDEFGH이번쪽공통",
+  "nextSvgText": "본문고정영역ABCDEFGH이번쪽공통다음 글을 읽고 물음에 답하시오. 정의의 관념은 시대와 사회에 따라 다르게 해석되어 왔다.",
+  "textOnly": true,
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "candidateNotVerdict": true,
+  "reviewHint": "PDF 쪽이 한 쪽 앞선 후보. 시트 없이 확정 금지.",
+  "relatedIssue": "#3389",
+  "notes": "rhwp_later_than_reference",
+  "digest": "dd8b54101a8e"
+}

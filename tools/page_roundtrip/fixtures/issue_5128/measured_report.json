@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "kind": "issue5128MeasuredReport",
+  "sample": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+  "sampleBytes": 342528,
+  "hwpx": "tools/page_roundtrip/fixtures/issue_5128/export.hwpx",
+  "hwpxBytes": 272076,
+  "hwpxSha256": "1866a26e4bad764fe62b15bef154d0e52831310f8f4312e5c81af064e87b79c2",
+  "pagesOriginal": 69,
+  "pagesReimport": 69,
+  "contract": {
+    "issue": 5128,
+    "sample": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+    "pages": 69,
+    "sections": 6,
+    "paragraphs": 619,
+    "p015": {
+      "kind": "partialTable",
+      "paraIndex": 73
+    },
+    "p016": {
+      "kind": "partialParagraph",
+      "paraIndex": 84
+    },
+    "splitTables": [
+      73,
+      174,
+      193,
+      203,
+      284,
+      343,
+      363,
+      380
+    ]
+  },
+  "probeSummary": {
+    "paragraphs": 619,
+    "tables": 166,
+    "rowBreakTables": 0,
+    "pageBreakParas": 0,
+    "vposResetParas": 2,
+    "pageFirstSegs": 0,
+    "pictures": 28,
+    "lineSegs": 728
+  },
+  "sectionCount": 6,
+  "drift": {
+    "doc": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+    "before": 69,
+    "after": 69,
+    "delta": 0,
+    "primary": "unknown",
+    "axes": [
+      {
+        "name": "unknown",
+        "issue": 5128,
+        "inScope": false,
+        "weight": 0,
+        "evidence": []
+      }
+    ],
+    "notes": []
+  }
+}

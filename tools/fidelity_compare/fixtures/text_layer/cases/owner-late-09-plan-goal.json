@@ -1,0 +1,63 @@
+{
+  "id": "owner-late-09-plan-goal",
+  "schema": "rhwp.fidelity_compare.text_layer_case.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "kind": "loss",
+  "classification": "loss",
+  "family": "owner_shift",
+  "genre": "업무계획",
+  "registeredKey": "plan",
+  "title": "추진목표 문단 지연",
+  "why": "장문 목표 문단. 한 문장 소실·과잉·치환을 나눈다. 방향=rhwp_later_than_reference.",
+  "page": 39,
+  "page1based": 40,
+  "referenceText": "본문고정영역ABCDEFGH이번쪽공통추진목표 국민이 체감하는 디지털 행정서비스를 확대하고 데이터 기반 정책을 정착시킨다.",
+  "svgText": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceNfc": "본문고정영역ABCDEFGH이번쪽공통추진목표 국민이 체감하는 디지털 행정서비스를 확대하고 데이터 기반 정책을 정착시킨다.",
+  "svgNfc": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceSequence": "본문고정영역ABCDEFGH이번쪽공통추진목표국민이체감하는디지털행정서비스를확대하고데이터기반정책을정착시킨다.",
+  "svgSequence": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceOnly": 38,
+  "svgOnly": 0,
+  "referenceOnlyChars": "U+002E:.×1,U+AC10:\\uac10×1,U+ACE0:\\uace0×1,U+AD6D:\\uad6d×1,U+AE30:\\uae30×1,U+B294:\\ub294×1,U+B2E4:\\ub2e4×1,U+B300:\\ub300×1,U+B370:\\ub370×1,U+B514:\\ub514×1,U+B97C:\\ub97c×1,U+BAA9:\\ubaa9×1,U+BBFC:\\ubbfc×1,U+BC18:\\ubc18×1,U+BE44:\\ube44×1,U+C11C:\\uc11c×1,U+C2A4:\\uc2a4×1,U+C2DC:\\uc2dc×1,U+C744:\\uc744×1,U+C774:\\uc774×2,U+C815:\\uc815×3,U+C9C0:\\uc9c0×1,U+C9C4:\\uc9c4×1,U+CC29:\\ucc29×1,U+CC45:\\ucc45×1,U+CCB4:\\uccb4×1,U+CD94:\\ucd94×1,U+D0A8:\\ud0a8×1,U+D130:\\ud130×1,U+D138:\\ud138×1,U+D45C:\\ud45c×1,U+D558:\\ud558×2,U+D589:\\ud589×1,U+D655:\\ud655×1",
+  "svgOnlyChars": "",
+  "glyphRiskCount": 0,
+  "glyphRisks": "",
+  "referenceGlyphRiskCount": 0,
+  "referenceGlyphRisks": "",
+  "ownerShift": [
+    {
+      "page": 39,
+      "next_page": 40,
+      "direction": "rhwp_later_than_reference",
+      "shared_count": 38,
+      "source_coverage": 1.0,
+      "target_coverage": 1.0,
+      "shared": "U+002E:.×1,U+AC10:\\uac10×1,U+ACE0:\\uace0×1,U+AD6D:\\uad6d×1,U+AE30:\\uae30×1,U+B294:\\ub294×1,U+B2E4:\\ub2e4×1,U+B300:\\ub300×1,U+B370:\\ub370×1,U+B514:\\ub514×1,U+B97C:\\ub97c×1,U+BAA9:\\ubaa9×1,U+BBFC:\\ubbfc×1,U+BC18:\\ubc18×1,U+BE44:\\ube44×1,U+C11C:\\uc11c×1,U+C2A4:\\uc2a4×1,U+C2DC:\\uc2dc×1,U+C744:\\uc744×1,U+C774:\\uc774×2,U+C815:\\uc815×3,U+C9C0:\\uc9c0×1,U+C9C4:\\uc9c4×1,U+CC29:\\ucc29×1,U+CC45:\\ucc45×1,U+CCB4:\\uccb4×1,U+CD94:\\ucd94×1,U+D0A8:\\ud0a8×1,U+D130:\\ud130×1,U+D138:\\ud138×1,U+D45C:\\ud45c×1,U+D558:\\ud558×2,U+D589:\\ud589×1,U+D655:\\ud655×1"
+    }
+  ],
+  "sequence": [
+    {
+      "page": 39,
+      "next_page": 40,
+      "direction": "rhwp_later_than_reference",
+      "chars": 38,
+      "sequence": "추진목표국민이체감하는디지털행정서비스를확대하고데이터기반정책을정착시킨다."
+    }
+  ],
+  "visibleExcess": [],
+  "clipExcludedChars": 0,
+  "nextReferenceText": "본문고정영역ABCDEFGH이번쪽공통",
+  "nextSvgText": "본문고정영역ABCDEFGH이번쪽공통추진목표 국민이 체감하는 디지털 행정서비스를 확대하고 데이터 기반 정책을 정착시킨다.",
+  "textOnly": true,
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "candidateNotVerdict": true,
+  "reviewHint": "PDF 쪽이 한 쪽 앞선 후보. 시트 없이 확정 금지.",
+  "relatedIssue": "#3389",
+  "notes": "rhwp_later_than_reference",
+  "digest": "1a70375c323a"
+}

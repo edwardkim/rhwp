@@ -586,9 +586,63 @@ fn add_font_fallbacks(svg: &str, options: &PdfExportOptions) -> String {
     )
 }
 
+/// #3772: bold `<text>`/`<tspan>` 에서만 ExtraLight 를 뺀다.
+///
+/// SVG 생성기가 이미 뺀 경우 no-op. 외부 SVG 나 옛 골든을 svg2pdf 에 넣을 때도
+/// ExtraLight(200) 이 bold 로 남지 않게 하는 PDF 직전 안전망이다.
 #[cfg(not(target_arch = "wasm32"))]
-fn apply_pdf_font_options(svg: &str, options: &PdfExportOptions) -> String {
+fn drop_extralight_from_bold_svg_runs(svg: &str) -> String {
+    let mut out = String::with_capacity(svg.len());
+    let mut rest = svg;
+    while let Some(rel) = rest.find('<') {
+        out.push_str(&rest[..rel]);
+        rest = &rest[rel..];
+        let end = rest.find('>').map(|i| i + 1).unwrap_or(rest.len());
+        let tag = &rest[..end];
+        rest = &rest[end..];
+        if svg_tag_is_text_run(tag) && svg_tag_is_bold_weight(tag) {
+            out.push_str(&crate::renderer::drop_noto_sans_kr_extralight(tag));
+        } else {
+            out.push_str(tag);
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn svg_tag_is_text_run(tag: &str) -> bool {
+    let Some(rest) = tag.strip_prefix('<') else {
+        return false;
+    };
+    let name = rest
+        .split(|c: char| c.is_ascii_whitespace() || c == '>' || c == '/')
+        .next()
+        .unwrap_or("");
+    name.eq_ignore_ascii_case("text") || name.eq_ignore_ascii_case("tspan")
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn svg_tag_is_bold_weight(tag: &str) -> bool {
+    let lower = tag.to_ascii_lowercase();
+    if lower.contains("font-weight=\"bold\"") || lower.contains("font-weight='bold'") {
+        return true;
+    }
+    for weight in ["600", "700", "800", "900"] {
+        if lower.contains(&format!("font-weight=\"{weight}\""))
+            || lower.contains(&format!("font-weight='{weight}'"))
+        {
+            return true;
+        }
+    }
+    false
+}
+
+/// SVG→PDF 직전에 generic 폴백·수식 폰트·bold ExtraLight 제거를 적용한다.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn apply_pdf_font_options(svg: &str, options: &PdfExportOptions) -> String {
     let svg = add_font_fallbacks(svg, options);
+    let svg = drop_extralight_from_bold_svg_runs(&svg);
     if let Some(equation_font) = options.equation_font.as_deref() {
         let attr = format!(
             "font-family=\"{}\"",
@@ -801,6 +855,108 @@ pub fn svg_to_pdf_with_options(
     svgs_to_pdf_with_options(&[svg_content.to_string()], options)
 }
 
+/// #3773: 한 페이지의 svg2pdf `SubsetError` 를 문서 전체 실패로 올리지 않는다.
+#[cfg(not(target_arch = "wasm32"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Svg2pdfPageIsolation {
+    /// 서브셋과 무관한 변환 오류. 문서 전체를 실패시킨다.
+    Fatal,
+    /// `embed_text=true` 첫 실패. 글리프 path 변환으로 한 번 재시도한다.
+    RetryWithoutEmbedText,
+    /// 재시도 뒤에도 `SubsetError`. 해당 페이지만 건너뛴다.
+    SkipPage,
+}
+
+/// svg2pdf 페이지 변환 오류를 격리 정책으로 분류한다.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn classify_svg2pdf_page_error(
+    err: &svg2pdf::ConversionError,
+    embed_text: bool,
+    already_retried: bool,
+) -> Svg2pdfPageIsolation {
+    if !matches!(err, svg2pdf::ConversionError::SubsetError(_)) {
+        return Svg2pdfPageIsolation::Fatal;
+    }
+    if embed_text && !already_retried {
+        Svg2pdfPageIsolation::RetryWithoutEmbedText
+    } else {
+        Svg2pdfPageIsolation::SkipPage
+    }
+}
+
+/// 시험용 dummy `SubsetError`. 실제 폰트 ID 가 없어도 격리 분기를 탈 수 있다.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn svg2pdf_subset_error_stub() -> svg2pdf::ConversionError {
+    svg2pdf::ConversionError::SubsetError(usvg::fontdb::ID::dummy())
+}
+
+/// 시험용 비-Subset 변환 오류. 문서 전체 실패 분기를 고정한다.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn svg2pdf_invalid_image_error() -> svg2pdf::ConversionError {
+    svg2pdf::ConversionError::InvalidImage
+}
+
+/// svg2pdf `to_chunk` 래퍼. 시험이 성공 경로를 재사용할 때 쓴다.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn svg2pdf_to_chunk(
+    tree: &usvg::Tree,
+    embed_text: bool,
+) -> Result<(pdf_writer::Chunk, pdf_writer::Ref), svg2pdf::ConversionError> {
+    let mut conversion = svg2pdf::ConversionOptions::default();
+    conversion.embed_text = embed_text;
+    svg2pdf::to_chunk(tree, conversion)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn convert_page_chunk<F>(
+    tree: &usvg::Tree,
+    embed_text: bool,
+    page_index: usize,
+    to_chunk: &mut F,
+) -> Result<Option<(pdf_writer::Chunk, pdf_writer::Ref)>, String>
+where
+    F: FnMut(
+        &usvg::Tree,
+        bool,
+    ) -> Result<(pdf_writer::Chunk, pdf_writer::Ref), svg2pdf::ConversionError>,
+{
+    match to_chunk(tree, embed_text) {
+        Ok(ok) => Ok(Some(ok)),
+        Err(err) => match classify_svg2pdf_page_error(&err, embed_text, false) {
+            Svg2pdfPageIsolation::Fatal => Err(format!("SVG→chunk 변환 실패: {:?}", err)),
+            Svg2pdfPageIsolation::RetryWithoutEmbedText => {
+                eprintln!(
+                    "WARN: 페이지 {} svg2pdf SubsetError({err:?}) — embed_text=false 로 재시도합니다.",
+                    page_index + 1
+                );
+                match to_chunk(tree, false) {
+                    Ok(ok) => Ok(Some(ok)),
+                    Err(err2) => match classify_svg2pdf_page_error(&err2, false, true) {
+                        Svg2pdfPageIsolation::SkipPage => {
+                            eprintln!(
+                                "WARN: 페이지 {} svg2pdf SubsetError({err2:?}) — 이 페이지만 건너뛰고 PDF 를 계속합니다.",
+                                page_index + 1
+                            );
+                            Ok(None)
+                        }
+                        Svg2pdfPageIsolation::Fatal
+                        | Svg2pdfPageIsolation::RetryWithoutEmbedText => {
+                            Err(format!("SVG→chunk 변환 실패: {:?}", err2))
+                        }
+                    },
+                }
+            }
+            Svg2pdfPageIsolation::SkipPage => {
+                eprintln!(
+                    "WARN: 페이지 {} svg2pdf SubsetError({err:?}) — 이 페이지만 건너뛰고 PDF 를 계속합니다.",
+                    page_index + 1
+                );
+                Ok(None)
+            }
+        },
+    }
+}
+
 /// 여러 SVG 페이지를 단일 다중 페이지 PDF로 생성
 #[cfg(not(target_arch = "wasm32"))]
 pub fn svgs_to_pdf(svg_pages: &[String]) -> Result<Vec<u8>, String> {
@@ -813,6 +969,24 @@ pub fn svgs_to_pdf_with_options(
     svg_pages: &[String],
     export_options: &PdfExportOptions,
 ) -> Result<Vec<u8>, String> {
+    svgs_to_pdf_with_to_chunk(svg_pages, export_options, svg2pdf_to_chunk)
+}
+
+/// 페이지별 `to_chunk` 를 주입할 수 있는 PDF 변환.
+///
+/// #3773: `SubsetError` 는 경고로 강등하고 나머지 페이지를 계속한다.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn svgs_to_pdf_with_to_chunk<F>(
+    svg_pages: &[String],
+    export_options: &PdfExportOptions,
+    mut to_chunk: F,
+) -> Result<Vec<u8>, String>
+where
+    F: FnMut(
+        &usvg::Tree,
+        bool,
+    ) -> Result<(pdf_writer::Chunk, pdf_writer::Ref), svg2pdf::ConversionError>,
+{
     if svg_pages.is_empty() {
         return Err("페이지가 없습니다".to_string());
     }
@@ -837,18 +1011,19 @@ pub fn svgs_to_pdf_with_options(
 
     let mut page_datas: Vec<PageData> = Vec::new();
 
-    for svg in svg_pages {
+    for (page_index, svg) in svg_pages.iter().enumerate() {
         let svg_with_fallback = apply_pdf_font_options(svg, export_options);
         let tree = usvg::Tree::from_str(&svg_with_fallback, &options)
             .map_err(|e| format!("SVG 파싱 실패: {}", e))?;
 
         // [Task #2264] 텍스트 임베드(폰트 서브셋)가 PDF 변환 메모리의 지배항이다.
         // `embed_text=false` 면 글리프를 path 로 변환해 서브셋 경로를 통째로 건너뛴다.
-        let mut conversion = svg2pdf::ConversionOptions::default();
-        conversion.embed_text = export_options.embed_text;
-
-        let (chunk, svg_ref) = svg2pdf::to_chunk(&tree, conversion)
-            .map_err(|e| format!("SVG→chunk 변환 실패: {:?}", e))?;
+        // [#3773] SubsetError 는 페이지 단위로 격리한다.
+        let Some((chunk, svg_ref)) =
+            convert_page_chunk(&tree, export_options.embed_text, page_index, &mut to_chunk)?
+        else {
+            continue;
+        };
 
         let dpi_ratio = 72.0 / 96.0; // 96 DPI → 72 pt
         let w = tree.size().width() * dpi_ratio;
@@ -860,6 +1035,10 @@ pub fn svgs_to_pdf_with_options(
             width: w,
             height: h,
         });
+    }
+
+    if page_datas.is_empty() {
+        return Err("모든 페이지의 SVG→PDF 변환이 SubsetError 로 건너뛰어졌습니다".to_string());
     }
 
     // 각 chunk를 재번호화하고 페이지 참조 수집

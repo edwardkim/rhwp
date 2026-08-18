@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "id": "c06-ellipse-path-line",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "flow 클러스터 ellipse+path+line 순서 유지",
+  "ops": [
+    {
+      "kind": "ellipse",
+      "x": 10.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "path",
+      "x": 70.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 130.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "ellipse",
+    "path",
+    "line"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  ellipse bbox=10.00,10.00,40.00,20.00",
+    "  path bbox=70.00,10.00,40.00,20.00",
+    "  line bbox=130.00,10.00,40.00,20.00",
+    "end_page ops=3"
+  ]
+}

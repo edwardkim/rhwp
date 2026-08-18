@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "gian-1-notfound",
+  "axis": "notFound",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "gian-1",
+  "title": "일반기안문 별지 제1호서식 없는 이름",
+  "family": "공문서",
+  "genre": "기안",
+  "sample": "tools/forms/일반기안문_서식.hwpx",
+  "format": "hwpx",
+  "relatedIssue": "#3372",
+  "why": "없는 이름은 조용히 무시하지 않는다. notFound 에 호출자 키.",
+  "firstFieldName": "행정기관명",
+  "fieldCount": 23,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "tools/forms/일반기안문_서식.hwpx",
+    "--data",
+    "{\"존재하지않는필드XYZ\": \"값\"}",
+    "--dry-run",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "존재하지않는필드XYZ": "값"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "tools/forms/일반기안문_서식.hwpx",
+    "dryRun": true,
+    "filledCount": 0,
+    "filled": [],
+    "notFound": [
+      "존재하지않는필드XYZ"
+    ],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null
+  },
+  "exit": 0
+}

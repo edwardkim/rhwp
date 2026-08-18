@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "set_cell_name",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "표",
+  "genre": "성명셀",
+  "title": "표 (0,1,0) 성명 칸",
+  "why": "명단 표 성명. 금액 셀과 좌표·의미가 다르다.",
+  "notes": "성명 셀",
+  "input": "samples/basic/calendar_year.hwp",
+  "output": "out/cell-name.hwp",
+  "ext": "hwp",
+  "actions": [
+    "set_cell"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/calendar_year.hwp",
+    "output": "out/cell-name.hwp",
+    "steps": [
+      {
+        "action": "set_cell",
+        "table": 0,
+        "row": 1,
+        "col": 0,
+        "text": "홍길동"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/calendar_year.hwp\",\"output\":\"out/cell-name.hwp\",\"steps\":[{\"action\":\"set_cell\",\"table\":0,\"row\":1,\"col\":0,\"text\":\"홍길동\"}]}",
+  "planSha256": "7709b0cc6b5bc28b9d5e6a0e73048f50db75ac7afa9600bd612095a240e4beab",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/calendar_year.hwp",
+    "inputSha256": "7f80d92a29abbb9e6c953cb2bd19148a00150bb33662633016f413e9ad9b7629",
+    "planSha256": "7709b0cc6b5bc28b9d5e6a0e73048f50db75ac7afa9600bd612095a240e4beab",
+    "outputSha256": "d67fc4ffb7c27938d79e5c6a125ca8a462a9d2610a76d47c9536924b069c5550",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "d67fc4ffb7c27938d79e5c6a125ca8a462a9d2610a76d47c9536924b069c5550"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

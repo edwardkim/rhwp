@@ -3,6 +3,7 @@
 //! 토큰 리스트를 AST(EqNode)로 변환한다.
 
 use super::ast::*;
+use super::dispatch::{classify_command, matrix_style, pile_align, EqCommandClass};
 use super::symbols::{
     self, is_big_operator, is_function, is_structure_command, lookup_function, lookup_symbol,
     FontStyleKind, DECORATIONS, FONT_STYLES,
@@ -309,288 +310,167 @@ impl EqParser {
     fn parse_command_inner(&mut self, cmd: &str) -> EqNode {
         let cmd_upper = cmd.to_ascii_uppercase();
         let cu = cmd_upper.as_str();
+        match classify_command(cmd) {
+            EqCommandClass::InfixDiscard => EqNode::Empty,
+            EqCommandClass::LatexFraction => self.parse_latex_fraction(),
+            EqCommandClass::RomanText => {
+                // 제한: 토크나이저가 일반 공백을 건너뛰므로 \text{a b} 내부 공백은 보존되지 않음.
+                // 공백이 필요하면 hwpeq 관례대로 ~ 사용 (\text{if~}).
+                let body = self.parse_single_or_group();
+                EqNode::FontStyle {
+                    style: FontStyleKind::Roman,
+                    body: Box::new(body),
+                }
+            }
+            EqCommandClass::Phantom => {
+                self.parse_single_or_group();
+                EqNode::Text(" ".to_string())
+            }
+            EqCommandClass::LatexSpacing => {
+                let space = lookup_symbol(cu).unwrap_or(" ");
+                EqNode::Text(space.to_string())
+            }
+            EqCommandClass::Overset => {
+                let over = self.parse_single_or_group();
+                let base = self.parse_single_or_group();
+                EqNode::Superscript {
+                    base: Box::new(base),
+                    sup: Box::new(over),
+                }
+            }
+            EqCommandClass::Underset => {
+                let under = self.parse_single_or_group();
+                let base = self.parse_single_or_group();
+                EqNode::Subscript {
+                    base: Box::new(base),
+                    sub: Box::new(under),
+                }
+            }
+            EqCommandClass::BeginEnv => self.parse_latex_environment(),
+            EqCommandClass::EndEnv => {
+                self.skip_brace_arg();
+                EqNode::Empty
+            }
+            EqCommandClass::Sqrt => self.parse_sqrt(),
+            EqCommandClass::IntegralNolimits => {
+                // nolimits: 큰 기호 + 일반 첨자 (BigOp이 아닌 MathSymbol로 처리)
+                let symbol = lookup_symbol(cu)
+                    .or_else(|| lookup_symbol(cmd))
+                    .unwrap_or("∫")
+                    .to_string();
+                let node = EqNode::MathSymbol(symbol);
+                self.try_parse_scripts(node)
+            }
+            EqCommandClass::BigOperator => {
+                let symbol = if is_big_operator(cu) {
+                    lookup_symbol(cu).unwrap_or("?").to_string()
+                } else {
+                    lookup_symbol(cmd).unwrap_or("?").to_string()
+                };
+                self.parse_big_op(symbol)
+            }
+            EqCommandClass::Limit => self.parse_limit(cmd == "Lim"),
+            EqCommandClass::Matrix => self.parse_matrix(matrix_style(cu)),
+            EqCommandClass::Cases => self.parse_cases(),
+            EqCommandClass::EqAlign => self.parse_eqalign(),
+            EqCommandClass::Pile => self.parse_pile(pile_align(cu)),
+            EqCommandClass::LeftDelim => {
+                // ★ KeepGong fix: 구분기호 그룹(left|...right| 등) 뒤 첨자(^/_)를 그룹 전체에 부착.
+                //   기존엔 try_parse_scripts 를 안 거쳐 |x|^3 의 ^3 가 base 없는 고아 첨자가 됐다.
+                let node = self.parse_left_right();
+                self.try_parse_scripts(node)
+            }
+            EqCommandClass::RightDiscard => EqNode::Empty,
+            EqCommandClass::Rel => {
+                let is_buildrel = cu == "BUILDREL";
+                let arrow_node = self.parse_element();
+                let arrow = match &arrow_node {
+                    EqNode::MathSymbol(s) => s.clone(),
+                    EqNode::Symbol(s) => s.clone(),
+                    EqNode::Text(s) => s.clone(),
+                    _ => "→".to_string(),
+                };
+                let over = self.parse_single_or_group();
+                let under = if !is_buildrel {
+                    Some(Box::new(self.parse_single_or_group()))
+                } else {
+                    None
+                };
+                EqNode::Rel {
+                    arrow,
+                    over: Box::new(over),
+                    under,
+                }
+            }
+            EqCommandClass::LongDiv => {
+                let divisor = self.parse_single_or_group();
+                let quotient = self.parse_single_or_group();
+                let body = self.parse_single_or_group();
+                EqNode::Row(vec![
+                    quotient,
+                    EqNode::Symbol("÷".to_string()),
+                    divisor,
+                    EqNode::Symbol("=".to_string()),
+                    body,
+                ])
+            }
+            EqCommandClass::Ladder => self.parse_matrix(MatrixStyle::Plain),
+            EqCommandClass::Benzene => EqNode::MathSymbol("⌬".to_string()),
+            EqCommandClass::Bigg => self.parse_element(),
+            EqCommandClass::Choose => {
+                // n CHOOSE r → 이전 요소와 다음 요소를 조합으로
+                let body = self.parse_single_or_group();
+                EqNode::Paren {
+                    left: "(".to_string(),
+                    right: ")".to_string(),
+                    body: Box::new(EqNode::Atop {
+                        top: Box::new(EqNode::Empty), // 이전 요소는 상위에서 처리
+                        bottom: Box::new(body),
+                    }),
+                }
+            }
+            EqCommandClass::Binom => {
+                let top = self.parse_single_or_group();
+                let bottom = self.parse_single_or_group();
+                EqNode::Paren {
+                    left: "(".to_string(),
+                    right: ")".to_string(),
+                    body: Box::new(EqNode::Atop {
+                        top: Box::new(top),
+                        bottom: Box::new(bottom),
+                    }),
+                }
+            }
+            EqCommandClass::Color => self.parse_color(),
+            EqCommandClass::LeftScript => {
+                let script = self.parse_single_or_group();
+                let body = self.parse_single_or_group();
+                if cu == "LSUB" {
+                    EqNode::Subscript {
+                        base: Box::new(body),
+                        sub: Box::new(script),
+                    }
+                } else {
+                    EqNode::Superscript {
+                        base: Box::new(body),
+                        sup: Box::new(script),
+                    }
+                }
+            }
+            EqCommandClass::Sup | EqCommandClass::Sub => {
+                let body = self.parse_single_or_group();
+                self.try_parse_scripts(body)
+            }
+            EqCommandClass::Fallback => self.parse_command_fallback(cmd),
+        }
+    }
+
+    /// 장식·글꼴·기호·함수·미지 명령. 분류표에 없는 이름만 여기로 온다.
+    fn parse_command_fallback(&mut self, cmd: &str) -> EqNode {
         // [#1204] hwpeq 명령은 대소문자 무시 — DECORATIONS/FONT_STYLES 는 소문자 키이므로
         // 1차 lookup 실패 시 소문자 fallback (`RM`/`BAR` 등 대문자 변형이 leak 되지 않도록).
         let cmd_lower = cmd.to_ascii_lowercase();
 
-        // OVER/ATOP은 parse_expression에서 처리됨 (단독 발생 시)
-        if cu == "OVER" {
-            return EqNode::Empty;
-        }
-
-        if cu == "ATOP" {
-            return EqNode::Empty;
-        }
-
-        // LaTeX 분수: \frac{a}{b}, \dfrac{a}{b}, \tfrac{a}{b}
-        if matches!(cu, "FRAC" | "DFRAC" | "TFRAC") {
-            return self.parse_latex_fraction();
-        }
-
-        // LaTeX \text{...} — 로만체 텍스트
-        // 제한: 토크나이저가 일반 공백을 건너뛰므로 \text{a b} 내부 공백은 보존되지 않음.
-        // 공백이 필요하면 hwpeq 관례대로 ~ 사용 (\text{if~}).
-        if cu == "TEXT" {
-            let body = self.parse_single_or_group();
-            return EqNode::FontStyle {
-                style: FontStyleKind::Roman,
-                body: Box::new(body),
-            };
-        }
-
-        // LaTeX \operatorname{...} — 로만체 연산자명
-        if cu == "OPERATORNAME" {
-            let body = self.parse_single_or_group();
-            return EqNode::FontStyle {
-                style: FontStyleKind::Roman,
-                body: Box::new(body),
-            };
-        }
-
-        // LaTeX \phantom{...} — 보이지 않는 공간 (레이아웃 정렬용)
-        if matches!(cu, "PHANTOM" | "VPHANTOM" | "HPHANTOM") {
-            self.parse_single_or_group();
-            return EqNode::Text(" ".to_string());
-        }
-
-        // LaTeX spacing: \quad, \qquad, \,, \:, \;, \!
-        if matches!(
-            cu,
-            "QUAD" | "QQUAD" | "THINSPACE" | "MEDSPACE" | "THICKSPACE" | "NEGSPACE" | "ENSPACE"
-        ) {
-            let space = lookup_symbol(cu).unwrap_or(" ");
-            return EqNode::Text(space.to_string());
-        }
-
-        // LaTeX \overset{over}{base}, \underset{under}{base}, \stackrel{over}{base}
-        if matches!(cu, "OVERSET" | "STACKREL") {
-            let over = self.parse_single_or_group();
-            let base = self.parse_single_or_group();
-            return EqNode::Superscript {
-                base: Box::new(base),
-                sup: Box::new(over),
-            };
-        }
-        if cu == "UNDERSET" {
-            let under = self.parse_single_or_group();
-            let base = self.parse_single_or_group();
-            return EqNode::Subscript {
-                base: Box::new(base),
-                sub: Box::new(under),
-            };
-        }
-
-        // LaTeX \begin{env}...\end{env}
-        if cu == "BEGIN" {
-            return self.parse_latex_environment();
-        }
-        if cu == "END" {
-            self.skip_brace_arg();
-            return EqNode::Empty;
-        }
-
-        // 제곱근
-        if cu == "SQRT" || cu == "ROOT" {
-            return self.parse_sqrt();
-        }
-
-        // 적분 기호 — nolimits: 큰 기호 + 일반 첨자 (BigOp이 아닌 MathSymbol로 처리)
-        if matches!(
-            cu,
-            "INT"
-                | "INTEGRAL"
-                | "SMALLINT"
-                | "DINT"
-                | "TINT"
-                | "OINT"
-                | "SMALLOINT"
-                | "ODINT"
-                | "OTINT"
-        ) {
-            let symbol = lookup_symbol(cu)
-                .or_else(|| lookup_symbol(cmd))
-                .unwrap_or("∫")
-                .to_string();
-            let node = EqNode::MathSymbol(symbol);
-            return self.try_parse_scripts(node);
-        }
-
-        // 큰 연산자 (∑, ∏ 등) — limits: 기호 위/아래 중앙
-        if is_big_operator(cu) {
-            let symbol = lookup_symbol(cu).unwrap_or("?").to_string();
-            return self.parse_big_op(symbol);
-        }
-        // 원본 대소문자로도 확인 (대소문자 구분 명령어)
-        if is_big_operator(cmd) {
-            let symbol = lookup_symbol(cmd).unwrap_or("?").to_string();
-            return self.parse_big_op(symbol);
-        }
-
-        // 극한 (대소문자 구분)
-        if cmd == "lim" || cmd == "Lim" {
-            return self.parse_limit(cmd == "Lim");
-        }
-
-        // 행렬
-        if matches!(cu, "MATRIX" | "PMATRIX" | "BMATRIX" | "DMATRIX") {
-            let style = match cu {
-                "PMATRIX" => MatrixStyle::Paren,
-                "BMATRIX" => MatrixStyle::Bracket,
-                "DMATRIX" => MatrixStyle::Vert,
-                _ => MatrixStyle::Plain,
-            };
-            return self.parse_matrix(style);
-        }
-
-        // 조건식
-        if cu == "CASES" {
-            return self.parse_cases();
-        }
-
-        // 칸 맞춤 정렬
-        if cu == "EQALIGN" {
-            return self.parse_eqalign();
-        }
-
-        // 세로 쌓기
-        if matches!(cu, "PILE" | "LPILE" | "RPILE") {
-            let align = match cu {
-                "LPILE" => PileAlign::Left,
-                "RPILE" => PileAlign::Right,
-                _ => PileAlign::Center,
-            };
-            return self.parse_pile(align);
-        }
-
-        // LEFT-RIGHT 괄호
-        if cu == "LEFT" {
-            // ★ KeepGong fix: 구분기호 그룹(left|...right| 등) 뒤 첨자(^/_)를 그룹 전체에 부착.
-            //   기존엔 try_parse_scripts 를 안 거쳐 |x|^3 의 ^3 가 base 없는 고아 첨자가 됐다.
-            let node = self.parse_left_right();
-            return self.try_parse_scripts(node);
-        }
-
-        if cu == "RIGHT" {
-            return EqNode::Empty;
-        }
-
-        // REL / BUILDREL
-        if cu == "REL" || cu == "BUILDREL" {
-            let is_buildrel = cu == "BUILDREL";
-            // 화살표 기호 읽기 (다음 요소를 파싱하여 화살표로 사용)
-            let arrow_node = self.parse_element();
-            let arrow = match &arrow_node {
-                EqNode::MathSymbol(s) => s.clone(),
-                EqNode::Symbol(s) => s.clone(),
-                EqNode::Text(s) => s.clone(),
-                _ => "→".to_string(),
-            };
-            // {위 내용}
-            let over = self.parse_single_or_group();
-            // {아래 내용} (REL만)
-            let under = if !is_buildrel {
-                Some(Box::new(self.parse_single_or_group()))
-            } else {
-                None
-            };
-            return EqNode::Rel {
-                arrow,
-                over: Box::new(over),
-                under,
-            };
-        }
-
-        // LONGDIV: LONGDIV {제수}{몫}{피제수#나머지...}
-        if cu == "LONGDIV" {
-            let divisor = self.parse_single_or_group();
-            let quotient = self.parse_single_or_group();
-            let body = self.parse_single_or_group();
-            // 간이 표현: 몫 위에 줄, 제수)피제수 형태
-            return EqNode::Row(vec![
-                quotient,
-                EqNode::Symbol("÷".to_string()),
-                divisor,
-                EqNode::Symbol("=".to_string()),
-                body,
-            ]);
-        }
-
-        // LADDER / SLADDER: 사다리꼴 레이아웃 → Matrix로 fallback
-        if cu == "LADDER" || cu == "SLADDER" {
-            return self.parse_matrix(MatrixStyle::Plain);
-        }
-
-        // BENZENE: 벤젠 분자 구조 → 텍스트 placeholder
-        if cu == "BENZENE" {
-            return EqNode::MathSymbol("⌬".to_string());
-        }
-
-        // BIGG: 크기 확대 (현재 크기 변경 무시, 내부 요소만 반환)
-        if cu == "BIGG" {
-            let inner = self.parse_element();
-            return inner;
-        }
-
-        // CHOOSE / BINOM
-        if cu == "CHOOSE" {
-            // n CHOOSE r → 이전 요소와 다음 요소를 조합으로
-            let body = self.parse_single_or_group();
-            return EqNode::Paren {
-                left: "(".to_string(),
-                right: ")".to_string(),
-                body: Box::new(EqNode::Atop {
-                    top: Box::new(EqNode::Empty), // 이전 요소는 상위에서 처리
-                    bottom: Box::new(body),
-                }),
-            };
-        }
-
-        if cu == "BINOM" {
-            let top = self.parse_single_or_group();
-            let bottom = self.parse_single_or_group();
-            return EqNode::Paren {
-                left: "(".to_string(),
-                right: ")".to_string(),
-                body: Box::new(EqNode::Atop {
-                    top: Box::new(top),
-                    bottom: Box::new(bottom),
-                }),
-            };
-        }
-
-        // 색상
-        if cu == "COLOR" {
-            return self.parse_color();
-        }
-
-        // 왼쪽 첨자
-        if cu == "LSUB" || cu == "LSUP" {
-            let script = self.parse_single_or_group();
-            let body = self.parse_single_or_group();
-            if cu == "LSUB" {
-                return EqNode::Subscript {
-                    base: Box::new(body),
-                    sub: Box::new(script),
-                };
-            } else {
-                return EqNode::Superscript {
-                    base: Box::new(body),
-                    sup: Box::new(script),
-                };
-            }
-        }
-
-        // SUP/SUB 동의어
-        if cu == "SUP" {
-            let body = self.parse_single_or_group();
-            return self.try_parse_scripts(body);
-        }
-        if cu == "SUB" {
-            let body = self.parse_single_or_group();
-            return self.try_parse_scripts(body);
-        }
-
-        // 글자 장식
         if let Some(&deco) = DECORATIONS
             .get(cmd)
             .or_else(|| DECORATIONS.get(cmd_lower.as_str()))
@@ -602,7 +482,6 @@ impl EqParser {
             };
         }
 
-        // 글꼴 스타일
         if let Some(&style) = FONT_STYLES
             .get(cmd)
             .or_else(|| FONT_STYLES.get(cmd_lower.as_str()))
@@ -628,7 +507,6 @@ impl EqParser {
             return self.try_parse_scripts(node);
         }
 
-        // 함수 (sin, cos, log 등)
         if is_function(cmd) {
             let func_name = lookup_function(cmd).unwrap_or(cmd).to_string();
             if self.current_type() == TokenType::Whitespace && self.current_value() == "`" {
@@ -638,7 +516,6 @@ impl EqParser {
             return self.try_parse_scripts(node);
         }
 
-        // 알 수 없는 명령어 → 텍스트로 처리
         let node = EqNode::Text(cmd.to_string());
         self.try_parse_scripts(node)
     }

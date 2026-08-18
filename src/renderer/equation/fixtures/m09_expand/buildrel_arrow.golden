@@ -1,0 +1,24 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: BUILDREL -> {def}
+honesty: rel-buildrel
+
+=== ast ===
+Rel {
+    arrow: "→",
+    over: Text(
+        "def",
+    ),
+    under: None,
+}
+
+=== layout ===
+Rel x=0.0000 y=0.0000 w=24.2550 h=36.0000 bl=26.0000
+  arrow:
+    MathSymbol("→") x=0.0000 y=16.0000 w=24.2550 h=20.0000 bl=16.0000
+  over:
+    Text("def") x=0.0000 y=0.0000 w=24.2550 h=14.0000 bl=11.2000
+
+=== svg ===
+<text x="0.00" y="11.20" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">def</text>
+<text x="0.00" y="32.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">→</text>

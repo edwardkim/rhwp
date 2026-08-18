@@ -92,13 +92,15 @@ class CatalogTests(unittest.TestCase):
     def test_shipped_catalog_lists_m05_issues(self) -> None:
         entries = prt.load_catalog(HERE / "catalog.json")
         issues = {e.issue for e in entries}
-        self.assertEqual(issues, {3518, 3521, 3737, 4056, 4882, 5128})
+        self.assertEqual(issues, {3518, 3521, 3737, 4056})
+        self.assertNotIn(4882, issues)
+        self.assertNotIn(5128, issues)
         self.assertTrue(all(e.route == "hwpx" for e in entries))
         docs = {e.doc for e in entries}
         self.assertIn("samples/hwp3-sample16.hwp", docs)
         self.assertIn("samples/issue-505-equations.hwp", docs)
-        self.assertTrue(any("중간진도보고서" in e.doc for e in entries))
-        self.assertTrue(any("revision1.3" in e.doc for e in entries))
+        self.assertFalse(any("중간진도보고서" in e.doc for e in entries))
+        self.assertFalse(any("revision1.3" in e.doc for e in entries))
 
     def test_ci_subset_includes_cataloged_fixture(self) -> None:
         docs = prt.load_manifest(HERE / "fixtures" / "ci-subset.json", HERE.parents[1])
@@ -376,6 +378,36 @@ class CliTests(unittest.TestCase):
         self.assertIn("# REPRO python tools/page_roundtrip/harness.py --file samples/foo.hwp --route hwpx", text)
         self.assertIn("# CATALOG held\tsamples/known.hwp\thwpx\t#3518", text)
         self.assertIn("판정은 데이터다", text)
+
+    def test_transcript_dir_writes_jsonl(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            _touch(repo / "samples" / "z.hwp")
+            cat = repo / "cat.json"
+            cat.write_text(json.dumps({"entries": []}), encoding="utf-8")
+            out = repo / "tr"
+            fake = FakeRhwp((215, 215))
+            with patch.object(prt, "find_rhwp", return_value=Path("rhwp-fake")):
+                with patch.object(prt.subprocess, "run", fake):
+                    with patch.object(sys, "stdout"):
+                        rc = prt.main(
+                            [
+                                "--repo",
+                                str(repo),
+                                "--catalog",
+                                str(cat),
+                                "--file",
+                                "samples/z.hwp",
+                                "--transcript-dir",
+                                str(out),
+                            ]
+                        )
+            self.assertEqual(rc, 0)
+            files = list(out.glob("*.jsonl"))
+            self.assertEqual(len(files), 1)
+            text = files[0].read_text(encoding="utf-8")
+            self.assertIn("215", text)
+            self.assertIn("MATCH", text)
 
 
 if __name__ == "__main__":

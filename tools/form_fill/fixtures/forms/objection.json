@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.form_catalog.v1",
+  "id": "objection",
+  "title": "이의신청서",
+  "family": "민원",
+  "genre": "이의",
+  "sample": "fixtures/forms/이의신청서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "원처분 번호 + 신청인 단건.",
+  "notes": "",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "fieldCount": 9,
+  "firstFieldName": "원처분기관",
+  "repeatedNames": [],
+  "nameCounts": {"원처분기관": 1, "원처분번호": 1, "원처분일": 1, "이의내용": 1, "성명": 1, "주소": 1, "연락처": 1, "전자우편": 1, "신청일": 1},
+  "hash": "4249776ec3fe",
+  "surveyFieldCount": 9,
+  "textSecurity": {"status": "clean"},
+  "fields": [
+    {"name": "원처분기관", "guide": "처분 기관", "value": "", "memo": "", "paragraph": 0, "nested": []},
+    {"name": "원처분번호", "guide": "처분 번호", "value": "", "memo": "", "paragraph": 1, "nested": []},
+    {"name": "원처분일", "guide": "처분일", "value": "", "memo": "", "paragraph": 2, "nested": []},
+    {"name": "이의내용", "guide": "이의 요지", "value": "", "memo": "", "paragraph": 3, "nested": []},
+    {"name": "성명", "guide": "신청인", "value": "", "memo": "", "paragraph": 4, "nested": []},
+    {"name": "주소", "guide": "주소", "value": "", "memo": "", "paragraph": 5, "nested": []},
+    {"name": "연락처", "guide": "전화", "value": "", "memo": "", "paragraph": 6, "nested": []},
+    {"name": "전자우편", "guide": "메일", "value": "", "memo": "", "paragraph": 7, "nested": []},
+    {"name": "신청일", "guide": "신청일", "value": "", "memo": "", "paragraph": 8, "nested": []}
+  ]
+}

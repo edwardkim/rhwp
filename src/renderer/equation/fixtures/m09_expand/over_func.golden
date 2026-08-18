@@ -1,0 +1,41 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: sin x OVER cos x
+honesty: implemented-variant
+
+=== ast ===
+Row(
+    [
+        Function(
+            "sin",
+        ),
+        Fraction {
+            numer: Text(
+                "x",
+            ),
+            denom: Function(
+                "cos",
+            ),
+        },
+        Text(
+            "x",
+        ),
+    ],
+)
+
+=== layout ===
+Row x=0.0000 y=0.0000 w=86.3500 h=48.8000 bl=29.4000
+  Function("sin") x=0.0000 y=13.4000 w=33.4000 h=20.0000 bl=16.0000
+  Fraction x=33.4000 y=0.0000 w=41.4000 h=48.8000 bl=29.4000
+    numer:
+      Text("x") x=14.9250 y=4.0000 w=11.5500 h=20.0000 bl=16.0000
+    denom:
+      Function("cos") x=4.0000 y=24.8000 w=33.4000 h=20.0000 bl=16.0000
+  Text("x") x=74.8000 y=13.4000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="29.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">sin</text>
+<text x="48.32" y="20.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>
+<line x1="34.40" y1="24.40" x2="73.80" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="37.40" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">cos</text>
+<text x="74.80" y="29.40" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>

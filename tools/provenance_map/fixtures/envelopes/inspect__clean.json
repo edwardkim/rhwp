@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "inspect__clean",
+  "command": "inspect",
+  "family": "security",
+  "mode": "clean",
+  "flags": [
+    "inspect",
+    "injection",
+    "--json"
+  ],
+  "cli": "rhwp inspect <축> <파일> --json injection",
+  "whyThisMode": "0건이면 표지 false. clean 은 검사한 축만",
+  "sampleKind": "typical",
+  "risk": "critical",
+  "note": "hiddenText·injectionSignals·findings의 문장·표시 문자열만 문서 파생이며, 종류·주소·근거·집계는 엔진 판정값이다.",
+  "declaredUntrusted": [
+    "hiddenText[].excerpt",
+    "injectionSignals[].excerpt",
+    "injectionSignals[].matched",
+    "findings[].excerpt",
+    "findings[].rendered",
+    "findings[].raw",
+    "findings[].hidden"
+  ],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "source": "C",
+    "clean": "R",
+    "signalCount": "R",
+    "findingCount": "R",
+    "hiddenCharCount": "R",
+    "highestConfidence": "R",
+    "scanScopes": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "신호는 흐름을 바꾼다(B5). 발췌는 화면·격벽. 도구 인자에 넣지 않는다.",
+  "trap": "samples/ 음성 코퍼스가 clean:true 인 것은 정상. 탐지기 고장이 아니다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [
+    "system_prompt",
+    "tool_name",
+    "shell_command",
+    "url_destination",
+    "http_request_body"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "<repo>/samples/fixture-inspect.hwp",
+    "clean": true,
+    "signalCount": 0,
+    "findingCount": 0,
+    "hiddenCharCount": 0,
+    "highestConfidence": "engine:inspect:highestConfidence",
+    "scanScopes": "engine:inspect:scanScopes",
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rhwp.work_receipt.exception_envelope.v1",
+  "title": "replay/audit/lineage 예외 봉투",
+  "type": "object",
+  "required": [
+    "ident",
+    "command",
+    "argv",
+    "exit",
+    "why"
+  ],
+  "properties": {
+    "exit": {
+      "enum": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "kind": {
+      "const": "workReceiptExceptionEnvelope"
+    }
+  }
+}

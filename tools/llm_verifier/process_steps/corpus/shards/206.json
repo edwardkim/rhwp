@@ -1,0 +1,5575 @@
+{
+  "schemaVersion": "v-step.1.0",
+  "shardId": "206",
+  "records": [
+    {
+      "recordId": "vstep-002473-s0",
+      "episodeId": "ep-002473",
+      "sourceTag": "병무청/예산서/2023/2473#delete-text/s0/2/layout-strict-overflow",
+      "stepIndex": 0,
+      "stepKind": "delete-text",
+      "source": "samples/gov/병무청_예산서_2023_2473.hwpx",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/병무청_예산서_2023_2473.hwpx",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/병무청_예산서_2023_2473_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/병무청_예산서_2023_2473_s0.hwpx",
+            "--expect-pages",
+            "8",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2023_2473_s0.hwpx",
+            "pageCount": 8,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 8,
+                "actual": 8,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 152,
+                "actual": 152,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당부서",
+                "actual": "담당부서",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 8
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/병무청_예산서_2023_2473_s0.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2023_2473_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 10.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/병무청_예산서_2023_2473_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2023_2473_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 362664,
+            "version": "owpml-1.0",
+            "sections": 1,
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false,
+            "paraCount": 55,
+            "title": "규제 심사(안) 개요",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/병무청_예산서_2023_2473.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/병무청_예산서_2023_2473_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2023_2473_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "담당부서",
+                "occurrence": 0,
+                "value": "담당부서-값-2472-0"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 1,
+                "value": "담당자-값-2472-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002473-s1",
+      "episodeId": "ep-002473",
+      "sourceTag": "병무청/예산서/2023/2473#insert-text/s1/5/verify-io",
+      "stepIndex": 1,
+      "stepKind": "insert-text",
+      "source": "samples/gov/병무청_예산서_2023_2473.hwpx",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/병무청_예산서_2023_2473.hwpx",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/병무청_예산서_2023_2473_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/병무청_예산서_2023_2473_s1.hwpx",
+            "--expect-pages",
+            "7",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/병무청_예산서_2023_2473_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2023_2473_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/병무청_예산서_2023_2473_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2023_2473_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 364993,
+            "version": "owpml-1.0",
+            "sections": 2,
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false,
+            "paraCount": 72,
+            "title": "출장여비 정산서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/병무청_예산서_2023_2473.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/병무청_예산서_2023_2473_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2023_2473_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "담당자",
+                "occurrence": 0,
+                "value": "담당자-값-2489-0"
+              },
+              {
+                "name": "문서번호",
+                "occurrence": 1,
+                "value": "문서번호-값-2489-1"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 2,
+                "value": "시행일자-값-2489-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002474-s0",
+      "episodeId": "ep-002474",
+      "sourceTag": "산림청/예산서/2023/2474#insert-text/s0/3/pagecount-mismatch",
+      "stepIndex": 0,
+      "stepKind": "insert-text",
+      "source": "samples/gov/산림청_예산서_2023_2474.hwp",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/산림청_예산서_2023_2474.hwp",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/산림청_예산서_2023_2474_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산림청_예산서_2023_2474_s0.hwp",
+            "--expect-pages",
+            "9",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2023_2474_s0.hwp",
+            "pageCount": 9,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 9,
+                "actual": 9,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 153,
+                "actual": 153,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당자",
+                "actual": "담당자",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 9
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산림청_예산서_2023_2474_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2023_2474_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산림청_예산서_2023_2474_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2023_2474_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 362801,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 11,
+            "expectedPageCount": 9,
+            "pageCountMismatch": true,
+            "paraCount": 56,
+            "title": "개인정보 처리방침 개정 고시",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 9,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산림청_예산서_2023_2474.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산림청_예산서_2023_2474_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2023_2474_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "담당자",
+                "occurrence": 0,
+                "value": "담당자-값-2473-0"
+              },
+              {
+                "name": "문서번호",
+                "occurrence": 1,
+                "value": "문서번호-값-2473-1"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 2,
+                "value": "시행일자-값-2473-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002474-s1",
+      "episodeId": "ep-002474",
+      "sourceTag": "산림청/예산서/2023/2474#redact/s1/6/layout-usage",
+      "stepIndex": 1,
+      "stepKind": "redact",
+      "source": "samples/gov/산림청_예산서_2023_2474.hwp",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/산림청_예산서_2023_2474.hwp",
+        "-o",
+        "output/gov/산림청_예산서_2023_2474_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산림청_예산서_2023_2474_s1.hwp",
+            "--expect-pages",
+            "8",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2023_2474_s1.hwp",
+            "pageCount": 8,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 8,
+                "actual": 8,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 170,
+                "actual": 170,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "문서번호",
+                "actual": "문서번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 8
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산림청_예산서_2023_2474_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산림청_예산서_2023_2474_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2023_2474_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 365130,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false,
+            "paraCount": 73,
+            "title": "예산 전용 요구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산림청_예산서_2023_2474.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산림청_예산서_2023_2474_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2023_2474_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "문서번호",
+                "occurrence": 0,
+                "value": "문서번호-값-2490-0"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 1,
+                "value": "시행일자-값-2490-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002475-s0",
+      "episodeId": "ep-002475",
+      "sourceTag": "농촌진흥청/예산서/2023/2475#redact/s0/4/fill-verify-ir-diff",
+      "stepIndex": 0,
+      "stepKind": "redact",
+      "source": "samples/gov/농촌진흥청_예산서_2023_2475.hwp",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/농촌진흥청_예산서_2023_2475.hwp",
+        "-o",
+        "output/gov/농촌진흥청_예산서_2023_2475_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/농촌진흥청_예산서_2023_2475_s0.hwp",
+            "--expect-pages",
+            "10",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2023_2475_s0.hwp",
+            "pageCount": 10,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 10,
+                "actual": 10,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 154,
+                "actual": 154,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "문서번호",
+                "actual": "문서번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 10
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/농촌진흥청_예산서_2023_2475_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2023_2475_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/농촌진흥청_예산서_2023_2475_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2023_2475_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 362938,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 10,
+            "expectedPageCount": 10,
+            "pageCountMismatch": false,
+            "paraCount": 57,
+            "title": "지방세 감면 신청서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 10,
+            "expectedPageCount": 10,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/농촌진흥청_예산서_2023_2475.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/농촌진흥청_예산서_2023_2475_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2023_2475_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "문서번호",
+                "occurrence": 0,
+                "value": "문서번호-값-2474-0"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 1,
+                "value": "시행일자-값-2474-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 3
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 3,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "fill-verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002475-s1",
+      "episodeId": "ep-002475",
+      "sourceTag": "농촌진흥청/예산서/2023/2475#sanitize/s1/7/verify-and-layout-fail",
+      "stepIndex": 1,
+      "stepKind": "sanitize",
+      "source": "samples/gov/농촌진흥청_예산서_2023_2475.hwp",
+      "argv": [
+        "edit",
+        "sanitize",
+        "samples/gov/농촌진흥청_예산서_2023_2475.hwp",
+        "-o",
+        "output/gov/농촌진흥청_예산서_2023_2475_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/농촌진흥청_예산서_2023_2475_s1.hwp",
+            "--expect-pages",
+            "9",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2023_2475_s1.hwp",
+            "pageCount": 9,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 9,
+                "actual": 9,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 171,
+                "actual": 156,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "시행일자",
+                "actual": "시행일자",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 9
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/농촌진흥청_예산서_2023_2475_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2023_2475_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 4,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": true,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": [
+                  {
+                    "kind": "text-text",
+                    "a": {
+                      "section": 0,
+                      "paragraph": 4
+                    },
+                    "b": {
+                      "section": 0,
+                      "paragraph": 5
+                    },
+                    "overlapPx": 4.0
+                  }
+                ]
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 4,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/농촌진흥청_예산서_2023_2475_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2023_2475_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 365267,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 9,
+            "expectedPageCount": 9,
+            "pageCountMismatch": false,
+            "paraCount": 74,
+            "title": "민원 처리 결과 통지",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 9,
+            "expectedPageCount": 9,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/농촌진흥청_예산서_2023_2475.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/농촌진흥청_예산서_2023_2475_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2023_2475_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "시행일자",
+                "occurrence": 0,
+                "value": "시행일자-값-2491-0"
+              },
+              {
+                "name": "수신",
+                "occurrence": 1,
+                "value": "수신-값-2491-1"
+              },
+              {
+                "name": "제목",
+                "occurrence": 2,
+                "value": "제목-값-2491-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "verify",
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002476-s0",
+      "episodeId": "ep-002476",
+      "sourceTag": "중소벤처기업부/예산서/2023/2476#sanitize/s0/5/verify-io",
+      "stepIndex": 0,
+      "stepKind": "sanitize",
+      "source": "samples/gov/중소벤처기업부_예산서_2023_2476.hwpx",
+      "argv": [
+        "edit",
+        "sanitize",
+        "samples/gov/중소벤처기업부_예산서_2023_2476.hwpx",
+        "-o",
+        "output/gov/중소벤처기업부_예산서_2023_2476_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/중소벤처기업부_예산서_2023_2476_s0.hwpx",
+            "--expect-pages",
+            "11",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/중소벤처기업부_예산서_2023_2476_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2023_2476_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/중소벤처기업부_예산서_2023_2476_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2023_2476_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 363075,
+            "version": "owpml-1.0",
+            "sections": 4,
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false,
+            "paraCount": 58,
+            "title": "공사계약 일반조건",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/중소벤처기업부_예산서_2023_2476.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/중소벤처기업부_예산서_2023_2476_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2023_2476_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "시행일자",
+                "occurrence": 0,
+                "value": "시행일자-값-2475-0"
+              },
+              {
+                "name": "수신",
+                "occurrence": 1,
+                "value": "수신-값-2475-1"
+              },
+              {
+                "name": "제목",
+                "occurrence": 2,
+                "value": "제목-값-2475-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002476-s1",
+      "episodeId": "ep-002476",
+      "sourceTag": "중소벤처기업부/예산서/2023/2476#csv-to-table/s1/8/pagecount-and-fill-fail",
+      "stepIndex": 1,
+      "stepKind": "csv-to-table",
+      "source": "samples/gov/중소벤처기업부_예산서_2023_2476.hwpx",
+      "argv": [
+        "edit",
+        "csv-to-table",
+        "samples/gov/중소벤처기업부_예산서_2023_2476.hwpx",
+        "--csv",
+        "@table.csv",
+        "-o",
+        "output/gov/중소벤처기업부_예산서_2023_2476_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/중소벤처기업부_예산서_2023_2476_s1.hwpx",
+            "--expect-pages",
+            "10",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2023_2476_s1.hwpx",
+            "pageCount": 10,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 10,
+                "actual": 10,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 172,
+                "actual": 172,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "수신",
+                "actual": "수신",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 10
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/중소벤처기업부_예산서_2023_2476_s1.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2023_2476_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/중소벤처기업부_예산서_2023_2476_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2023_2476_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 365404,
+            "version": "owpml-1.0",
+            "sections": 1,
+            "pageCount": 12,
+            "expectedPageCount": 10,
+            "pageCountMismatch": true,
+            "paraCount": 75,
+            "title": "감사 지적사항 조치 결과",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 12,
+            "expectedPageCount": 10,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/중소벤처기업부_예산서_2023_2476.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/중소벤처기업부_예산서_2023_2476_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2023_2476_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "수신",
+                "occurrence": 0,
+                "value": "수신-값-2492-0"
+              },
+              {
+                "name": "제목",
+                "occurrence": 1,
+                "value": "제목-값-2492-1"
+              }
+            ],
+            "notFound": [
+              "없는필드8"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 3
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 3,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002477-s0",
+      "episodeId": "ep-002477",
+      "sourceTag": "과학기술정보통신부/예산서/2023/2477#csv-to-table/s0/6/layout-usage",
+      "stepIndex": 0,
+      "stepKind": "csv-to-table",
+      "source": "samples/gov/과학기술정보통신부_예산서_2023_2477.hwp",
+      "argv": [
+        "edit",
+        "csv-to-table",
+        "samples/gov/과학기술정보통신부_예산서_2023_2477.hwp",
+        "--csv",
+        "@table.csv",
+        "-o",
+        "output/gov/과학기술정보통신부_예산서_2023_2477_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/과학기술정보통신부_예산서_2023_2477_s0.hwp",
+            "--expect-pages",
+            "12",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2023_2477_s0.hwp",
+            "pageCount": 12,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 12,
+                "actual": 12,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 156,
+                "actual": 156,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "수신",
+                "actual": "수신",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 12
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/과학기술정보통신부_예산서_2023_2477_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/과학기술정보통신부_예산서_2023_2477_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2023_2477_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 363212,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false,
+            "paraCount": 59,
+            "title": "정보공개 청구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/과학기술정보통신부_예산서_2023_2477.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/과학기술정보통신부_예산서_2023_2477_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2023_2477_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "수신",
+                "occurrence": 0,
+                "value": "수신-값-2476-0"
+              },
+              {
+                "name": "제목",
+                "occurrence": 1,
+                "value": "제목-값-2476-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002477-s1",
+      "episodeId": "ep-002477",
+      "sourceTag": "과학기술정보통신부/예산서/2023/2477#insert-table/s1/9/all-pass-empty-page",
+      "stepIndex": 1,
+      "stepKind": "insert-table",
+      "source": "samples/gov/과학기술정보통신부_예산서_2023_2477.hwp",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/과학기술정보통신부_예산서_2023_2477.hwp",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/과학기술정보통신부_예산서_2023_2477_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/과학기술정보통신부_예산서_2023_2477_s1.hwp",
+            "--expect-pages",
+            "11",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2023_2477_s1.hwp",
+            "pageCount": 11,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 11,
+                "actual": 11,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 173,
+                "actual": 173,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "제목",
+                "actual": "제목",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 11
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/과학기술정보통신부_예산서_2023_2477_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2023_2477_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/과학기술정보통신부_예산서_2023_2477_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2023_2477_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 365541,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false,
+            "paraCount": 76,
+            "title": "회의 결과 보고",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/과학기술정보통신부_예산서_2023_2477.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/과학기술정보통신부_예산서_2023_2477_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2023_2477_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "제목",
+                "occurrence": 0,
+                "value": "제목-값-2493-0"
+              },
+              {
+                "name": "금액",
+                "occurrence": 1,
+                "value": "금액-값-2493-1"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 2,
+                "value": "계좌번호-값-2493-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002478-s0",
+      "episodeId": "ep-002478",
+      "sourceTag": "문화체육관광부/예산서/2023/2478#insert-table/s0/7/verify-and-layout-fail",
+      "stepIndex": 0,
+      "stepKind": "insert-table",
+      "source": "samples/gov/문화체육관광부_예산서_2023_2478.hwp",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/문화체육관광부_예산서_2023_2478.hwp",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/문화체육관광부_예산서_2023_2478_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/문화체육관광부_예산서_2023_2478_s0.hwp",
+            "--expect-pages",
+            "13",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2023_2478_s0.hwp",
+            "pageCount": 13,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 13,
+                "actual": 13,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 157,
+                "actual": 142,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "제목",
+                "actual": "제목",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 13
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/문화체육관광부_예산서_2023_2478_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2023_2478_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 5,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": true,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": [
+                  {
+                    "kind": "text-text",
+                    "a": {
+                      "section": 0,
+                      "paragraph": 4
+                    },
+                    "b": {
+                      "section": 0,
+                      "paragraph": 5
+                    },
+                    "overlapPx": 5.0
+                  }
+                ]
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 5,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/문화체육관광부_예산서_2023_2478_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2023_2478_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 363349,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false,
+            "paraCount": 60,
+            "title": "출장여비 정산서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/문화체육관광부_예산서_2023_2478.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/문화체육관광부_예산서_2023_2478_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2023_2478_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "제목",
+                "occurrence": 0,
+                "value": "제목-값-2477-0"
+              },
+              {
+                "name": "금액",
+                "occurrence": 1,
+                "value": "금액-값-2477-1"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 2,
+                "value": "계좌번호-값-2477-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "verify",
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002478-s1",
+      "episodeId": "ep-002478",
+      "sourceTag": "문화체육관광부/예산서/2023/2478#delete-row/s1/0/all-pass",
+      "stepIndex": 1,
+      "stepKind": "delete-row",
+      "source": "samples/gov/문화체육관광부_예산서_2023_2478.hwp",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/문화체육관광부_예산서_2023_2478.hwp",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/문화체육관광부_예산서_2023_2478_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/문화체육관광부_예산서_2023_2478_s1.hwp",
+            "--expect-pages",
+            "12",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2023_2478_s1.hwp",
+            "pageCount": 12,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 12,
+                "actual": 12,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 174,
+                "actual": 174,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "금액",
+                "actual": "금액",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 12
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/문화체육관광부_예산서_2023_2478_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2023_2478_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/문화체육관광부_예산서_2023_2478_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2023_2478_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 365678,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false,
+            "paraCount": 77,
+            "title": "보안 점검 체크리스트",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/문화체육관광부_예산서_2023_2478.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/문화체육관광부_예산서_2023_2478_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2023_2478_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "금액",
+                "occurrence": 0,
+                "value": "금액-값-2494-0"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 1,
+                "value": "계좌번호-값-2494-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002479-s0",
+      "episodeId": "ep-002479",
+      "sourceTag": "환경부/예산서/2023/2479#delete-row/s0/8/pagecount-and-fill-fail",
+      "stepIndex": 0,
+      "stepKind": "delete-row",
+      "source": "samples/gov/환경부_예산서_2023_2479.hwpx",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/환경부_예산서_2023_2479.hwpx",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/환경부_예산서_2023_2479_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/환경부_예산서_2023_2479_s0.hwpx",
+            "--expect-pages",
+            "14",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2023_2479_s0.hwpx",
+            "pageCount": 14,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 14,
+                "actual": 14,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 158,
+                "actual": 158,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "금액",
+                "actual": "금액",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 14
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/환경부_예산서_2023_2479_s0.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2023_2479_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/환경부_예산서_2023_2479_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2023_2479_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 363486,
+            "version": "owpml-1.0",
+            "sections": 3,
+            "pageCount": 16,
+            "expectedPageCount": 14,
+            "pageCountMismatch": true,
+            "paraCount": 61,
+            "title": "예산 전용 요구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 14,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/환경부_예산서_2023_2479.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/환경부_예산서_2023_2479_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2023_2479_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "금액",
+                "occurrence": 0,
+                "value": "금액-값-2478-0"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 1,
+                "value": "계좌번호-값-2478-1"
+              }
+            ],
+            "notFound": [
+              "없는필드3"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 1,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002479-s1",
+      "episodeId": "ep-002479",
+      "sourceTag": "환경부/예산서/2023/2479#apply-char-format/s1/1/verify-fail",
+      "stepIndex": 1,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/환경부_예산서_2023_2479.hwpx",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/환경부_예산서_2023_2479.hwpx",
+        "--bold",
+        "-o",
+        "output/gov/환경부_예산서_2023_2479_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/환경부_예산서_2023_2479_s1.hwpx",
+            "--expect-pages",
+            "13",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2023_2479_s1.hwpx",
+            "pageCount": 13,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 13,
+                "actual": 13,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 175,
+                "actual": 160,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "계좌번호",
+                "actual": "계좌번호",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 13
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/환경부_예산서_2023_2479_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2023_2479_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/환경부_예산서_2023_2479_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2023_2479_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 365815,
+            "version": "owpml-1.0",
+            "sections": 4,
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false,
+            "paraCount": 78,
+            "title": "누름틀 일괄 채움 점검",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/환경부_예산서_2023_2479.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/환경부_예산서_2023_2479_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2023_2479_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "계좌번호",
+                "occurrence": 0,
+                "value": "계좌번호-값-2495-0"
+              },
+              {
+                "name": "신청인",
+                "occurrence": 1,
+                "value": "신청인-값-2495-1"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 2,
+                "value": "생년월일-값-2495-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002480-s0",
+      "episodeId": "ep-002480",
+      "sourceTag": "해양수산부/예산서/2023/2480#apply-char-format/s0/9/all-pass-empty-page",
+      "stepIndex": 0,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/해양수산부_예산서_2023_2480.hwp",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/해양수산부_예산서_2023_2480.hwp",
+        "--bold",
+        "-o",
+        "output/gov/해양수산부_예산서_2023_2480_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/해양수산부_예산서_2023_2480_s0.hwp",
+            "--expect-pages",
+            "15",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2023_2480_s0.hwp",
+            "pageCount": 15,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 15,
+                "actual": 15,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 159,
+                "actual": 159,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "계좌번호",
+                "actual": "계좌번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 15
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/해양수산부_예산서_2023_2480_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2023_2480_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/해양수산부_예산서_2023_2480_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2023_2480_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 363623,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 15,
+            "expectedPageCount": 15,
+            "pageCountMismatch": false,
+            "paraCount": 62,
+            "title": "민원 처리 결과 통지",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 15,
+            "expectedPageCount": 15,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/해양수산부_예산서_2023_2480.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/해양수산부_예산서_2023_2480_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2023_2480_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "계좌번호",
+                "occurrence": 0,
+                "value": "계좌번호-값-2479-0"
+              },
+              {
+                "name": "신청인",
+                "occurrence": 1,
+                "value": "신청인-값-2479-1"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 2,
+                "value": "생년월일-값-2479-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002480-s1",
+      "episodeId": "ep-002480",
+      "sourceTag": "해양수산부/예산서/2023/2480#fill-fields/s1/2/layout-strict-overflow",
+      "stepIndex": 1,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/해양수산부_예산서_2023_2480.hwp",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/해양수산부_예산서_2023_2480.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/해양수산부_예산서_2023_2480_s1.hwp",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/해양수산부_예산서_2023_2480_s1.hwp",
+            "--expect-pages",
+            "14",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2023_2480_s1.hwp",
+            "pageCount": 14,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 14,
+                "actual": 14,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 176,
+                "actual": 176,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "신청인",
+                "actual": "신청인",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 14
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/해양수산부_예산서_2023_2480_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2023_2480_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 7.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/해양수산부_예산서_2023_2480_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2023_2480_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 365952,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 14,
+            "expectedPageCount": 14,
+            "pageCountMismatch": false,
+            "paraCount": 79,
+            "title": "규제 심사(안) 개요",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 14,
+            "expectedPageCount": 14,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/해양수산부_예산서_2023_2480.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/해양수산부_예산서_2023_2480_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2023_2480_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "신청인",
+                "occurrence": 0,
+                "value": "신청인-값-2496-0"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 1,
+                "value": "생년월일-값-2496-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002481-s0",
+      "episodeId": "ep-002481",
+      "sourceTag": "산업통상자원부/예산서/2023/2481#fill-fields/s0/0/all-pass",
+      "stepIndex": 0,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/산업통상자원부_예산서_2023_2481.hwp",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/산업통상자원부_예산서_2023_2481.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/산업통상자원부_예산서_2023_2481_s0.hwp",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산업통상자원부_예산서_2023_2481_s0.hwp",
+            "--expect-pages",
+            "16",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2023_2481_s0.hwp",
+            "pageCount": 16,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 16,
+                "actual": 16,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 160,
+                "actual": 160,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "신청인",
+                "actual": "신청인",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 16
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산업통상자원부_예산서_2023_2481_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2023_2481_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산업통상자원부_예산서_2023_2481_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2023_2481_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 363760,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false,
+            "paraCount": 63,
+            "title": "감사 지적사항 조치 결과",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산업통상자원부_예산서_2023_2481.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산업통상자원부_예산서_2023_2481_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2023_2481_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "신청인",
+                "occurrence": 0,
+                "value": "신청인-값-2480-0"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 1,
+                "value": "생년월일-값-2480-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002481-s1",
+      "episodeId": "ep-002481",
+      "sourceTag": "산업통상자원부/예산서/2023/2481#replace-text/s1/3/pagecount-mismatch",
+      "stepIndex": 1,
+      "stepKind": "replace-text",
+      "source": "samples/gov/산업통상자원부_예산서_2023_2481.hwp",
+      "argv": [
+        "edit",
+        "replace-text",
+        "samples/gov/산업통상자원부_예산서_2023_2481.hwp",
+        "--find",
+        "임시",
+        "--replace",
+        "확정",
+        "-o",
+        "output/gov/산업통상자원부_예산서_2023_2481_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산업통상자원부_예산서_2023_2481_s1.hwp",
+            "--expect-pages",
+            "15",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2023_2481_s1.hwp",
+            "pageCount": 15,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 15,
+                "actual": 15,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 177,
+                "actual": 177,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "생년월일",
+                "actual": "생년월일",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 15
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산업통상자원부_예산서_2023_2481_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2023_2481_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산업통상자원부_예산서_2023_2481_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2023_2481_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 366089,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 17,
+            "expectedPageCount": 15,
+            "pageCountMismatch": true,
+            "paraCount": 80,
+            "title": "개인정보 처리방침 개정 고시",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 17,
+            "expectedPageCount": 15,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산업통상자원부_예산서_2023_2481.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산업통상자원부_예산서_2023_2481_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2023_2481_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "생년월일",
+                "occurrence": 0,
+                "value": "생년월일-값-2497-0"
+              },
+              {
+                "name": "주소",
+                "occurrence": 1,
+                "value": "주소-값-2497-1"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 2,
+                "value": "연락처-값-2497-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002482-s0",
+      "episodeId": "ep-002482",
+      "sourceTag": "여성가족부/예산서/2023/2482#replace-text/s0/1/verify-fail",
+      "stepIndex": 0,
+      "stepKind": "replace-text",
+      "source": "samples/gov/여성가족부_예산서_2023_2482.hwpx",
+      "argv": [
+        "edit",
+        "replace-text",
+        "samples/gov/여성가족부_예산서_2023_2482.hwpx",
+        "--find",
+        "임시",
+        "--replace",
+        "확정",
+        "-o",
+        "output/gov/여성가족부_예산서_2023_2482_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/여성가족부_예산서_2023_2482_s0.hwpx",
+            "--expect-pages",
+            "17",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2023_2482_s0.hwpx",
+            "pageCount": 17,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 17,
+                "actual": 17,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 161,
+                "actual": 146,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "생년월일",
+                "actual": "생년월일",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": false
+              }
+            ],
+            "passCount": 2,
+            "failCount": 3,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 3,
+            "passCount": 2,
+            "pageCount": 17
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/여성가족부_예산서_2023_2482_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2023_2482_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/여성가족부_예산서_2023_2482_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2023_2482_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 363897,
+            "version": "owpml-1.0",
+            "sections": 2,
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false,
+            "paraCount": 64,
+            "title": "회의 결과 보고",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/여성가족부_예산서_2023_2482.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/여성가족부_예산서_2023_2482_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2023_2482_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "생년월일",
+                "occurrence": 0,
+                "value": "생년월일-값-2481-0"
+              },
+              {
+                "name": "주소",
+                "occurrence": 1,
+                "value": "주소-값-2481-1"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 2,
+                "value": "연락처-값-2481-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002482-s1",
+      "episodeId": "ep-002482",
+      "sourceTag": "여성가족부/예산서/2023/2482#delete-text/s1/4/fill-verify-ir-diff",
+      "stepIndex": 1,
+      "stepKind": "delete-text",
+      "source": "samples/gov/여성가족부_예산서_2023_2482.hwpx",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/여성가족부_예산서_2023_2482.hwpx",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/여성가족부_예산서_2023_2482_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/여성가족부_예산서_2023_2482_s1.hwpx",
+            "--expect-pages",
+            "16",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2023_2482_s1.hwpx",
+            "pageCount": 16,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 16,
+                "actual": 16,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 178,
+                "actual": 178,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "주소",
+                "actual": "주소",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 16
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/여성가족부_예산서_2023_2482_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2023_2482_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/여성가족부_예산서_2023_2482_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2023_2482_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 366226,
+            "version": "owpml-1.0",
+            "sections": 3,
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false,
+            "paraCount": 81,
+            "title": "지방세 감면 신청서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/여성가족부_예산서_2023_2482.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/여성가족부_예산서_2023_2482_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2023_2482_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "주소",
+                "occurrence": 0,
+                "value": "주소-값-2498-0"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 1,
+                "value": "연락처-값-2498-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 3
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 3,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "fill-verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002483-s0",
+      "episodeId": "ep-002483",
+      "sourceTag": "통일부/예산서/2023/2483#delete-text/s0/2/layout-strict-overflow",
+      "stepIndex": 0,
+      "stepKind": "delete-text",
+      "source": "samples/gov/통일부_예산서_2023_2483.hwp",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/통일부_예산서_2023_2483.hwp",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/통일부_예산서_2023_2483_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/통일부_예산서_2023_2483_s0.hwp",
+            "--expect-pages",
+            "18",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2023_2483_s0.hwp",
+            "pageCount": 18,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 18,
+                "actual": 18,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 162,
+                "actual": 162,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "주소",
+                "actual": "주소",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 18
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/통일부_예산서_2023_2483_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2023_2483_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 4,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 11.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 4,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/통일부_예산서_2023_2483_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2023_2483_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 364034,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false,
+            "paraCount": 65,
+            "title": "보안 점검 체크리스트",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/통일부_예산서_2023_2483.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/통일부_예산서_2023_2483_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2023_2483_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "주소",
+                "occurrence": 0,
+                "value": "주소-값-2482-0"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 1,
+                "value": "연락처-값-2482-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002483-s1",
+      "episodeId": "ep-002483",
+      "sourceTag": "통일부/예산서/2023/2483#insert-text/s1/5/verify-io",
+      "stepIndex": 1,
+      "stepKind": "insert-text",
+      "source": "samples/gov/통일부_예산서_2023_2483.hwp",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/통일부_예산서_2023_2483.hwp",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/통일부_예산서_2023_2483_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/통일부_예산서_2023_2483_s1.hwp",
+            "--expect-pages",
+            "17",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/통일부_예산서_2023_2483_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2023_2483_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/통일부_예산서_2023_2483_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2023_2483_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 366363,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false,
+            "paraCount": 82,
+            "title": "공사계약 일반조건",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/통일부_예산서_2023_2483.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/통일부_예산서_2023_2483_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2023_2483_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "연락처",
+                "occurrence": 0,
+                "value": "연락처-값-2499-0"
+              },
+              {
+                "name": "전자우편",
+                "occurrence": 1,
+                "value": "전자우편-값-2499-1"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 2,
+                "value": "사업자등록번호-값-2499-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002484-s0",
+      "episodeId": "ep-002484",
+      "sourceTag": "국가보훈부/예산서/2023/2484#insert-text/s0/3/pagecount-mismatch",
+      "stepIndex": 0,
+      "stepKind": "insert-text",
+      "source": "samples/gov/국가보훈부_예산서_2023_2484.hwp",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/국가보훈부_예산서_2023_2484.hwp",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/국가보훈부_예산서_2023_2484_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국가보훈부_예산서_2023_2484_s0.hwp",
+            "--expect-pages",
+            "19",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2023_2484_s0.hwp",
+            "pageCount": 19,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 19,
+                "actual": 19,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 163,
+                "actual": 163,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "연락처",
+                "actual": "연락처",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 19
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국가보훈부_예산서_2023_2484_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2023_2484_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국가보훈부_예산서_2023_2484_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2023_2484_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 364171,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 22,
+            "expectedPageCount": 19,
+            "pageCountMismatch": true,
+            "paraCount": 66,
+            "title": "누름틀 일괄 채움 점검",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 22,
+            "expectedPageCount": 19,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국가보훈부_예산서_2023_2484.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국가보훈부_예산서_2023_2484_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2023_2484_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "연락처",
+                "occurrence": 0,
+                "value": "연락처-값-2483-0"
+              },
+              {
+                "name": "전자우편",
+                "occurrence": 1,
+                "value": "전자우편-값-2483-1"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 2,
+                "value": "사업자등록번호-값-2483-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002484-s1",
+      "episodeId": "ep-002484",
+      "sourceTag": "국가보훈부/예산서/2023/2484#redact/s1/6/layout-usage",
+      "stepIndex": 1,
+      "stepKind": "redact",
+      "source": "samples/gov/국가보훈부_예산서_2023_2484.hwp",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/국가보훈부_예산서_2023_2484.hwp",
+        "-o",
+        "output/gov/국가보훈부_예산서_2023_2484_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국가보훈부_예산서_2023_2484_s1.hwp",
+            "--expect-pages",
+            "18",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2023_2484_s1.hwp",
+            "pageCount": 18,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 18,
+                "actual": 18,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 180,
+                "actual": 180,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "전자우편",
+                "actual": "전자우편",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 18
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국가보훈부_예산서_2023_2484_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국가보훈부_예산서_2023_2484_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2023_2484_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 366500,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false,
+            "paraCount": 83,
+            "title": "정보공개 청구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국가보훈부_예산서_2023_2484.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국가보훈부_예산서_2023_2484_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2023_2484_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "전자우편",
+                "occurrence": 0,
+                "value": "전자우편-값-2500-0"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 1,
+                "value": "사업자등록번호-값-2500-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    }
+  ]
+}

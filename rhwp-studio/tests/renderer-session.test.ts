@@ -189,18 +189,14 @@ test('surface preflight transforms stay lazy and document resources prepare befo
   assert.equal(fallback.diagnostics.selectionError, 'font decode failed');
 });
 
-test('auto re-evaluation permits text marks but keeps structural control markers on Canvas2D', async () => {
-  let showControlCodes = false;
+test('auto re-evaluation permits text marks and structural control markers', async () => {
   let createCalls = 0;
   const rendererSession = session('auto', async () => {
     createCalls += 1;
     return fakeRenderer();
   }, {
     transformCanvasKitPreflight(report) {
-      return withCanvasKitSurfaceBlockers(
-        report,
-        showControlCodes ? ['viewOption:showControlCodes'] : [],
-      );
+      return withCanvasKitSurfaceBlockers(report, []);
     },
   });
   const wasm = { getCanvasKitDocumentPreflight: () => preflight('eligible') };
@@ -209,20 +205,14 @@ test('auto re-evaluation permits text marks but keeps structural control markers
   assert.equal((await rendererSession.resolve(wasm)).backend, 'canvaskit');
 
   rendererSession.invalidateDocument({ resetResources: false });
-  assert.equal((await rendererSession.resolve(wasm)).backend, 'canvaskit');
-
-  showControlCodes = true;
-  rendererSession.invalidateDocument({ resetResources: false });
   const controlCodes = await rendererSession.resolve(wasm);
-  assert.equal(controlCodes.backend, 'canvas2d');
+  assert.equal(controlCodes.backend, 'canvaskit');
   assert.equal(
-    controlCodes.diagnostics.preflight?.blockers.at(-1)?.detail,
-    'viewOption:showControlCodes',
+    controlCodes.diagnostics.preflight?.blockers.some(
+      (blocker) => blocker.detail === 'viewOption:showControlCodes',
+    ),
+    false,
   );
-
-  showControlCodes = false;
-  rendererSession.invalidateDocument({ resetResources: false });
-  assert.equal((await rendererSession.resolve(wasm)).backend, 'canvaskit');
   assert.equal(createCalls, 1);
 });
 

@@ -1,0 +1,15 @@
+case_id	has_hangul_pdf	versions	page_count_match	render_self_pass	cheap_ok	expected_verdict_class
+g-self-ok	0	none	1	1	1	NO_ORACLE_SELF_CONSISTENT
+g-self-render	0	none	1	0	1	NO_ORACLE_SELF_RENDER_FAIL
+g-self-cheap	0	none	0	1	0	NO_ORACLE_SELF_CHEAP_FAIL
+g-self-year	0	2022	1	1	1	NO_ORACLE_VERSION_TOKEN_WITHOUT_PDF
+g-unversioned	1	unknown	1	1	1	ORACLE_UNVERSIONED
+g-none-year	1	none	1	1	1	ORACLE_UNVERSIONED
+g-invalid	1	2025	1	1	1	ORACLE_YEAR_OUT_OF_CONTRACT
+g-multiver	1	2010!2020!2024	0	1	1	ORACLE_MULTIVER_DISAGREE
+g-page-mis	1	2020	0	1	1	ORACLE_PAGECOUNT_MISMATCH
+g-cheap	1	2022	1	1	0	ORACLE_CHEAP_FAIL
+g-blocked	1	2018+2022	1	0	1	ORACLE_BLOCKED_BY_SELF
+g-trusted	1	2024	1	1	1	ORACLE_TRUSTED
+g-trusted-multi	1	2018+2020+2022+2024	1	1	1	ORACLE_TRUSTED
+g-2010-ok	1	2010	1	1	1	ORACLE_TRUSTED

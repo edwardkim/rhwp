@@ -1,0 +1,33 @@
+{
+  "id": "ex-ht-no-file",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "파일 인자 없음은 사용법 오류"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text"
+    ],
+    "exitCode": 2,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "사용법: rhwp inspect hidden-text"
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "파일 인자 없음은 사용법 오류",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}

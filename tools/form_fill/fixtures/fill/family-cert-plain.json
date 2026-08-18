@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "family-cert-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "family-cert",
+  "title": "가족관계증명 청구 고유 이름 채움",
+  "family": "민원",
+  "genre": "증명",
+  "sample": "fixtures/forms/가족관계증명청구.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "증명종류",
+  "fieldCount": 10,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/가족관계증명청구.hwp",
+    "--data",
+    "{\"증명종류\": \"가족관계증명서\", \"주민등록번호\": \"000101-3******\", \"관계\": \"본인\"}",
+    "-o",
+    "out/family-cert-plain.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "증명종류": "가족관계증명서",
+    "주민등록번호": "000101-3******",
+    "관계": "본인"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/가족관계증명청구.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "증명종류",
+        "occurrence": 0,
+        "value": "가족관계증명서"
+      },
+      {
+        "name": "주민등록번호",
+        "occurrence": 0,
+        "value": "000101-3******"
+      },
+      {
+        "name": "관계",
+        "occurrence": 0,
+        "value": "본인"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/family-cert-plain.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "gate": true
+}

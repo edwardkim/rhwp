@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptAuditLayout",
+  "ident": "plan-vs-text",
+  "title": "plan 변조",
+  "why": "output 경로만 바꾼 parsed plan. 산출이 같아도 plan≠planText.",
+  "notes": "output-neutral tamper",
+  "members": [
+    "tamper_plan"
+  ],
+  "ignored": [],
+  "recursive": false,
+  "exit": 3,
+  "required": [
+    "schemaVersion",
+    "root",
+    "total",
+    "reproduced",
+    "failed",
+    "reproducedRate"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "root": "fixtures/audit-layouts/plan-vs-text",
+    "total": 1,
+    "reproduced": 0,
+    "failed": [
+      {
+        "capsule": "tamper_plan.capsule.json",
+        "error": "plan 과 planText 불일치"
+      }
+    ],
+    "reproducedRate": 0.0
+  },
+  "command": [
+    "audit",
+    "fixtures/audit-layouts/plan-vs-text",
+    "--json"
+  ],
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

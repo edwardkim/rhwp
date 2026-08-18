@@ -1,0 +1,6 @@
+# transcript txov-same-line-dx10
+# family=text-overlap
+# hypothesis=한 줄 안 두 런이 10px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+쪽 수: 3  overflow: 0  off-canvas: 0  overlap: 0  text-overlap: 1  empty_page(가능성): 0
+  [TEXT-OVERLAP] page   0  10.00x12.00px  Page/Body/TextLine0/TextRun0 (TextRun) x Page/Body/TextLine0/TextRun1 (TextRun)
+status: ANOMALY

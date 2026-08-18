@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptLineageTopology",
+  "ident": "lineage-break",
+  "title": "연대기 불변 깨짐",
+  "why": "부모 산출 해시 ≠ 자식 입력 해시. lineageOk=false.",
+  "notes": "다른 파일을 입력으로 씀",
+  "depth": 2,
+  "valid": false,
+  "brokenAxis": "lineageOk",
+  "deep": false,
+  "exit": 3,
+  "required": [
+    "schemaVersion",
+    "head",
+    "depth",
+    "valid",
+    "brokenAt",
+    "links"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "head": "b.capsule.json",
+    "depth": 2,
+    "valid": false,
+    "brokenAt": "b.capsule.json",
+    "links": [
+      {
+        "capsule": "b.capsule.json",
+        "parentOk": true,
+        "lineageOk": false,
+        "reproduced": null,
+        "error": null
+      },
+      {
+        "capsule": "a.capsule.json",
+        "parentOk": null,
+        "lineageOk": null,
+        "reproduced": null,
+        "error": null
+      }
+    ]
+  },
+  "command": [
+    "lineage",
+    "b.capsule.json",
+    "--json"
+  ],
+  "axes": {
+    "parentOk": "부모 파일 바이트 == 자식이 기록한 parent.sha256",
+    "lineageOk": "부모 receipt.outputSha256 == 자식 receipt.inputSha256",
+    "reproduced": "--deep 일 때만 임시 재실행 해시 대조"
+  },
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

@@ -1,0 +1,6 @@
+# transcript vis-table-visfalse-edfalse
+# family=visibility
+# hypothesis=visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.
+쪽 수: 3  overflow: 0  off-canvas: 0  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+이상 신호 없음: vis-table-visfalse-edfalse.synth
+status: CLEAN

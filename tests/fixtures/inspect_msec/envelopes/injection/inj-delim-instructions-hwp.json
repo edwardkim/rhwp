@@ -1,0 +1,67 @@
+{
+  "id": "inj-delim-instructions-hwp",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "delimiter_break",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "delimiter_break",
+    "note": "프롬프트 경계를 흉내 내는 구분자입니다 — 단독으로는 약하지만 다른 신호와 함께라면 주입 시도의 골격입니다"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/delimiter_break/instructions.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == false",
+    "matchedIs": "DATA",
+    "doNotExecuteMatched": true,
+    "detectionIsNotFailure": true
+  },
+  "pair": null,
+  "why": "프롬프트 경계를 흉내 내는 구분자입니다 — 단독으로는 약하지만 다른 신호와 함께라면 주입 시도의 골격입니다",
+  "note": "기존 토큰만. 새 패턴을 넣지 않는다.",
+  "human": "주입 신호 1건 (low): synth:injection/delimiter_break/instructions.hwp\n  [delimiter_break] <instructions>\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/delimiter_break/instructions.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [
+      {
+        "kind": "delimiter_break",
+        "confidence": "low",
+        "scope": "body",
+        "section": 0,
+        "paragraph": 0,
+        "charOffset": 0,
+        "matched": "<instructions>",
+        "excerpt": "<instructions>",
+        "why": "프롬프트 경계를 흉내 내는 구분자입니다 — 단독으로는 약하지만 다른 신호와 함께라면 주입 시도의 골격입니다"
+      }
+    ],
+    "signalCount": 1,
+    "highestConfidence": "low",
+    "clean": false
+  }
+}

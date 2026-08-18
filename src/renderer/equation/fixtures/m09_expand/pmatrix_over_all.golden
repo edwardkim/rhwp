@@ -1,0 +1,88 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: PMATRIX
+script: PMATRIX{{1} OVER {2} & {3} OVER {4} # {5} OVER {6} & {7} OVER {8}}
+honesty: implemented-variant
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Fraction {
+                numer: Number(
+                    "1",
+                ),
+                denom: Number(
+                    "2",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "3",
+                ),
+                denom: Number(
+                    "4",
+                ),
+            },
+        ],
+        [
+            Fraction {
+                numer: Number(
+                    "5",
+                ),
+                denom: Number(
+                    "6",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "7",
+                ),
+                denom: Number(
+                    "8",
+                ),
+            },
+        ],
+    ],
+    style: Paren,
+}
+
+=== layout ===
+Matrix(Paren) x=0.0000 y=0.0000 w=74.0000 h=103.6000 bl=51.8000
+  row0:
+    Fraction x=10.0000 y=0.0000 w=19.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("1") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("2") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+    Fraction x=45.0000 y=0.0000 w=19.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("3") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("4") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+  row1:
+    Fraction x=10.0000 y=54.8000 w=19.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("5") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("6") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+    Fraction x=45.0000 y=54.8000 w=19.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("7") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("8") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M5.40,0.00 C0.30,18.65 0.30,84.95 5.40,103.60" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<path d="M68.60,0.00 C73.70,18.65 73.70,84.95 68.60,103.60" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<text x="14.00" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<line x1="11.00" y1="24.40" x2="28.00" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="14.00" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<text x="49.00" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>
+<line x1="46.00" y1="24.40" x2="63.00" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="49.00" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">4</text>
+<text x="14.00" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">5</text>
+<line x1="11.00" y1="79.20" x2="28.00" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="14.00" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">6</text>
+<text x="49.00" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">7</text>
+<line x1="46.00" y1="79.20" x2="63.00" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="49.00" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">8</text>

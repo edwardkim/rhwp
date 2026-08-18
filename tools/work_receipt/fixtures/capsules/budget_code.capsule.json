@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/calendar_year.hwp",
+    "output": "out/budget-code.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "101-01",
+        "replace": "101-02"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/calendar_year.hwp\",\"output\":\"out/budget-code.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"101-01\",\"replace\":\"101-02\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/calendar_year.hwp",
+    "inputSha256": "1401935d9371528dbbd38d69aa9ba3eb97fb4f957572218abe58864953f72238",
+    "planSha256": "1aaa37f70a491b26ef4cf22e52cffe590ad20842623e3900d97ec3e9f9d90f71",
+    "outputSha256": "5bb09f6809b251d4f8ab25a68ad99ac9eb73bce31a5c238e43282177cfc0cb35",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

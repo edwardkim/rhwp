@@ -615,7 +615,7 @@ pub(crate) fn write_shape_component_block<W: Write>(
     Ok(())
 }
 
-fn write_offset<W: Write>(
+pub(super) fn write_offset<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
@@ -633,8 +633,20 @@ fn write_org_sz<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
-    let width = sa.original_width.to_string();
-    let height = sa.original_height.to_string();
+    // [#4669] HWP5 저장을 위해 유효 extent로 materialize했더라도 HWPX 원문의
+    // `orgSz=0` sentinel은 그대로 되돌린다.
+    let width = if sa.original_width_was_zero {
+        0
+    } else {
+        sa.original_width
+    }
+    .to_string();
+    let height = if sa.original_height_was_zero {
+        0
+    } else {
+        sa.original_height
+    }
+    .to_string();
     empty_tag(w, "hp:orgSz", &[("width", &width), ("height", &height)])
 }
 

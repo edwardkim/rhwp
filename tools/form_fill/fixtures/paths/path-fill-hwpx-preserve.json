@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-fill-hwpx-preserve",
+  "axis": "format",
+  "title": "HWPX 입력 형식 보존",
+  "why": "#3383. outputFormat=hwpx.",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "tools/forms/일반기안문_서식.hwpx",
+    "--data",
+    "@tools/forms/일반기안문_예시값.json",
+    "-o",
+    "out/gian.hwpx",
+    "--json"
+  ],
+  "exit": 0,
+  "writesFile": true,
+  "outputFormat": "hwpx"
+}

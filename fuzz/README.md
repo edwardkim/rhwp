@@ -2,7 +2,8 @@
 
 RFC #3141의 1~2단계 구현입니다(1단계 #3158: 포맷 파서 4개 / 2단계 #3273: 임베드
 WMF·OOXML 차트 2개). `cargo-fuzz`(libFuzzer) 기반으로 rhwp의 포맷 최상위
-파서 진입점 6개(포맷 4 + 임베드 WMF·OOXML 차트)를 퍼징합니다. 목적은 **비정상·적대적 입력**에 대한
+파서 진입점 6개(포맷 4 + 임베드 WMF·OOXML 차트)와 2순위 타깃 2개
+(`parse_equation`·`export_svg`, M03-13)를 퍼징합니다. 목적은 **비정상·적대적 입력**에 대한
 크래시(패닉/abort) · 자원 고갈(OOM) · 무한루프(타임아웃) 검출입니다.
 정상 입력의 왕복 정합성(#2740 영역)은 이 인프라의 대상이 아닙니다.
 
@@ -16,6 +17,8 @@ WMF·OOXML 차트 2개). `cargo-fuzz`(libFuzzer) 기반으로 rhwp의 포맷 최
 | `parse_hml` | `rhwp::parser::hml::parse_hml(&[u8])` — HML (XML) | `src/parser/hml/mod.rs` |
 | `parse_wmf` | `WMFConverter::new(data, SVGPlayer::new()).run()` — WMF (임베드 이미지) | `src/renderer/svg.rs:3308` |
 | `parse_ooxml_chart` | `rhwp::ooxml_chart::parser::parse_chart_xml(&[u8])` — OOXML 차트 | `src/ooxml_chart/parser.rs` |
+| `parse_equation` | `renderer::equation::parser::parse` + `doclang::eqedit::convert` — 수식 스크립트 | `src/renderer/equation/parser.rs`, `src/doclang/eqedit/mod.rs` |
+| `export_svg` | `DocumentCore::from_bytes` → `render_page_svg_native(0)` — 문서 SVG 내보내기 | `src/document_core/` |
 
 각 하네스는 `let _ = parse_xxx(data);` 형태로 반환값을 무시합니다 —
 파서가 `Err`를 돌려주는 것은 정상 동작이며, 퍼저가 잡는 것은
@@ -45,6 +48,8 @@ cargo +nightly fuzz run parse_hwpx -- -rss_limit_mb=2048 -timeout=30
 cargo +nightly fuzz run parse_hml  -- -rss_limit_mb=2048 -timeout=30
 cargo +nightly fuzz run parse_wmf  -- -rss_limit_mb=2048 -timeout=30
 cargo +nightly fuzz run parse_ooxml_chart -- -rss_limit_mb=2048 -timeout=30
+cargo +nightly fuzz run parse_equation -- -rss_limit_mb=2048 -timeout=30
+cargo +nightly fuzz run export_svg -- -rss_limit_mb=2048 -timeout=30
 ```
 
 ### 권장 플래그
@@ -62,6 +67,9 @@ cargo +nightly fuzz run parse_ooxml_chart -- -rss_limit_mb=2048 -timeout=30
 (`-rss_limit_mb=2048 -timeout=30` + `-max_total_time=60`).
 크래시·타임아웃·OOM 이 나면 job 이 실패하고 `fuzz/artifacts/<타깃>/` 을
 아티팩트로 올립니다.
+
+`parse_equation`·`export_svg`는 같은 플래그로 로컬 또는 수동 실행한다. 이 둘을
+nightly 매트릭스에 넣을 때는 기존 6개와 구분해 6+2로 문서화한다.
 
 이 잡은 PR required check 가 아닙니다 (`pull_request` 트리거 없음).
 왕복 정합성(#2740, M04)과 OSS-Fuzz 등재(M10)는 이 잡의 범위가 아닙니다.
@@ -89,8 +97,10 @@ HWP3 128KiB, 추출 WMF 16KiB, 차트 XML 32KiB)을 넘기지 않는다.
 | `corpus/parse_hwp3/` | 58 | 매직 `HWP Document File V3.00` 실파일 ≤128KiB + 대형본 2/16/32/64KiB prefix |
 | `corpus/parse_hwpx/` | 80 | `samples/` HWPX(ZIP) 소형 파일, 디렉터리 라운드로빈 |
 | `corpus/parse_hml/` | 53 | `samples/hml/`·`tests/fixtures/hml/` 원본 3 + 파서 경로용 최소 HWPML |
-| `corpus/parse_wmf/` | 67 | HWP/HWPX 임베드 추출 + placeable/표준 레코드 최소 시드 |
+| `corpus/parse_wmf/` | 71 | HWP/HWPX 임베드 추출 + placeable/표준 레코드와 M09x 소형 도형 4종 |
 | `corpus/parse_ooxml_chart/` | 79 | HWPX `Chart/*.xml`·`c:chartSpace` 추출 + 차트 타입 최소 XML |
+| `corpus/parse_equation/` | 5 | 빈 입력, `left`/`right`, `over`, `power`, `sqrt` 최소 EqEdit 시드 |
+| `corpus/export_svg/` | 2 | 수식 포함 최소 HML과 소형 HWPX SVG 내보내기 시드 |
 
 HWP3 실파일은 저장소에 23개뿐이라 50+ 를 prefix 로 채웠다. 대형 원본(수백
 KiB~수 MiB)은 커밋하지 않는다. HML 원본도 3개뿐이라 파서가 실제로 읽는
@@ -126,13 +136,13 @@ Windows 호스트에서 `cmin --sanitizer none` 은 rust-lld 가 `__sanitizer_co
 
 후속 단계(#3141 로드맵의 나머지):
 
-- 2순위 하네스: `parse_body_text_section` / `parse_doc_info` / `parse_control` /
-  EMF 등 나머지 임베드 포맷·컨테이너를 우회하는 내부 파서 직접 하네스
+- 2순위 하네스: `parse_equation` / `export_svg`는 M03-13에서 추가됨.
+  `parse_body_text_section` / `parse_doc_info` / `parse_control` / EMF 등 나머지
+  임베드 포맷·컨테이너를 우회하는 내부 파서 직접 하네스
 - nightly 스모크는 위 CI 절. PR 게이트·왕복 정합성(M04)은 여기 넣지 않습니다
-- OSS-Fuzz 등재 (M10, 메인테이너 판단)
-- CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생
+- OSS-Fuzz 등재 — 계획 문서 [`oss-fuzz-onboarding.md`](oss-fuzz-onboarding.md) (M10-1).
+  `google/oss-fuzz` PR은 메인테이너 승인 후 M10-2에서 연다.
 - CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생 (왕복 정합성은 아래 M04)
-- OSS-Fuzz 등재 (메인테이너 판단)
 
 ## 왕복 정합성은 여기가 아니다 (M04)
 
@@ -164,10 +174,11 @@ Windows 호스트에서 `cmin --sanitizer none` 은 rust-lld 가 `__sanitizer_co
 
 - **CI** (`.github/workflows/proptest-roundtrip.yml`,
   `scripts/run-prop-roundtrip.mjs`): debug 프로필, 기본 8 cases. 10분 퍼지가
-  아니다. `tests/cases/prop_hwpx_roundtrip.rs`(M04-2, #5381) 와
-  `tests/cases/prop_hwp5_roundtrip.rs`(M04-3, #5387) 가 있으면 돌리고, 없으면
-  skip 한다. 배선 확인용 `tests/cases/prop_roundtrip_ci.rs` 는 항상 돈다.
-  nextest archive 정규 shard 도 같은 `tests/cases/` 원본을 자동 실행한다.
+  아니다. `prop_edit_plan`(M04-1) · `prop_hwpx_roundtrip`(M04-2, #5381) ·
+  `prop_hwp5_roundtrip`(M04-3, #5387) · `prop_m04f_*`(M04-f, #5465) 가
+  있으면 돌리고, 없으면 skip 한다. 배선 확인용 `prop_roundtrip_ci` 는 항상
+  돈다. nextest archive 정규 shard 도 같은 `tests/cases/` 원본을 자동 실행한다.
+  변형·스킵 정직 표는 `tests/fixtures/proptest_m04f/`.
 - **본체**: 작은 픽스처에 기존 `rhwp run` step 만 적용한 뒤
   parse→serialize→reparse 가
   [`diff_documents`](../src/serializer/hwpx/roundtrip.rs) IrDiff 0.

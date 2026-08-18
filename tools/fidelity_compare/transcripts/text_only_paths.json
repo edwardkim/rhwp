@@ -1,0 +1,296 @@
+{
+  "schema": "rhwp.fidelity_compare.text_only_transcript.v1",
+  "claim": "M-fid",
+  "generatedAt": "2026-08-18T11:01:01Z",
+  "pathCount": 32,
+  "paths": [
+    {
+      "id": "path-reg-bunjang-text-only",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "등록 키 bunjang / text-only"
+    },
+    {
+      "id": "path-reg-bunjang-text-only-export-all-svg",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": false,
+      "artifactCount": 11,
+      "title": "등록 키 bunjang / text-only+export-all-svg"
+    },
+    {
+      "id": "path-reg-bunjang-text-only-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": true,
+      "artifactCount": 18,
+      "title": "등록 키 bunjang / text-only+layout-ledger"
+    },
+    {
+      "id": "path-reg-bunjang-text-only-export-all-svg-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": true,
+      "artifactCount": 19,
+      "title": "등록 키 bunjang / text-only+export-all-svg+layout-ledger"
+    },
+    {
+      "id": "path-reg-eng-text-only",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "등록 키 eng / text-only"
+    },
+    {
+      "id": "path-reg-eng-text-only-export-all-svg",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": false,
+      "artifactCount": 11,
+      "title": "등록 키 eng / text-only+export-all-svg"
+    },
+    {
+      "id": "path-reg-eng-text-only-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": true,
+      "artifactCount": 18,
+      "title": "등록 키 eng / text-only+layout-ledger"
+    },
+    {
+      "id": "path-reg-eng-text-only-export-all-svg-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": true,
+      "artifactCount": 19,
+      "title": "등록 키 eng / text-only+export-all-svg+layout-ledger"
+    },
+    {
+      "id": "path-reg-korexam-text-only",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "등록 키 korexam / text-only"
+    },
+    {
+      "id": "path-reg-korexam-text-only-export-all-svg",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": false,
+      "artifactCount": 11,
+      "title": "등록 키 korexam / text-only+export-all-svg"
+    },
+    {
+      "id": "path-reg-korexam-text-only-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": true,
+      "artifactCount": 18,
+      "title": "등록 키 korexam / text-only+layout-ledger"
+    },
+    {
+      "id": "path-reg-korexam-text-only-export-all-svg-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": true,
+      "artifactCount": 19,
+      "title": "등록 키 korexam / text-only+export-all-svg+layout-ledger"
+    },
+    {
+      "id": "path-reg-manual-text-only",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "등록 키 manual / text-only"
+    },
+    {
+      "id": "path-reg-manual-text-only-export-all-svg",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": false,
+      "artifactCount": 11,
+      "title": "등록 키 manual / text-only+export-all-svg"
+    },
+    {
+      "id": "path-reg-manual-text-only-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": true,
+      "artifactCount": 18,
+      "title": "등록 키 manual / text-only+layout-ledger"
+    },
+    {
+      "id": "path-reg-manual-text-only-export-all-svg-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": true,
+      "artifactCount": 19,
+      "title": "등록 키 manual / text-only+export-all-svg+layout-ledger"
+    },
+    {
+      "id": "path-reg-math-text-only",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "등록 키 math / text-only"
+    },
+    {
+      "id": "path-reg-math-text-only-export-all-svg",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": false,
+      "artifactCount": 11,
+      "title": "등록 키 math / text-only+export-all-svg"
+    },
+    {
+      "id": "path-reg-math-text-only-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": true,
+      "artifactCount": 18,
+      "title": "등록 키 math / text-only+layout-ledger"
+    },
+    {
+      "id": "path-reg-math-text-only-export-all-svg-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": true,
+      "artifactCount": 19,
+      "title": "등록 키 math / text-only+export-all-svg+layout-ledger"
+    },
+    {
+      "id": "path-reg-plan-text-only",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "등록 키 plan / text-only"
+    },
+    {
+      "id": "path-reg-plan-text-only-export-all-svg",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": false,
+      "artifactCount": 11,
+      "title": "등록 키 plan / text-only+export-all-svg"
+    },
+    {
+      "id": "path-reg-plan-text-only-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": true,
+      "artifactCount": 18,
+      "title": "등록 키 plan / text-only+layout-ledger"
+    },
+    {
+      "id": "path-reg-plan-text-only-export-all-svg-layout-ledger",
+      "mode": "registered",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": true,
+      "artifactCount": 19,
+      "title": "등록 키 plan / text-only+export-all-svg+layout-ledger"
+    },
+    {
+      "id": "path-direct-text-only",
+      "mode": "direct",
+      "expectsError": false,
+      "exportAllSvg": true,
+      "layoutLedger": true,
+      "artifactCount": 19,
+      "title": "direct pair 215쪽 전수 텍스트"
+    },
+    {
+      "id": "path-direct-text-only-min",
+      "mode": "direct",
+      "expectsError": false,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "direct pair 최소 --text-only"
+    },
+    {
+      "id": "path-error-unknown-key",
+      "mode": "error",
+      "expectsError": true,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "미등록 키"
+    },
+    {
+      "id": "path-error-direct-incomplete",
+      "mode": "error",
+      "expectsError": true,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "direct pair 불완전"
+    },
+    {
+      "id": "path-error-grade-on-registered",
+      "mode": "error",
+      "expectsError": true,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "등록 키에 grade"
+    },
+    {
+      "id": "path-error-end-before-start",
+      "mode": "error",
+      "expectsError": true,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "쪽 범위 역전"
+    },
+    {
+      "id": "path-error-direct-three-positionals",
+      "mode": "error",
+      "expectsError": true,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "direct pair 에 키까지"
+    },
+    {
+      "id": "path-error-non-integer-page",
+      "mode": "error",
+      "expectsError": true,
+      "exportAllSvg": false,
+      "layoutLedger": false,
+      "artifactCount": 10,
+      "title": "쪽 번호 비정수"
+    }
+  ]
+}

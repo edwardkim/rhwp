@@ -1,0 +1,5678 @@
+{
+  "schemaVersion": "v-step.1.0",
+  "shardId": "134",
+  "records": [
+    {
+      "recordId": "vstep-001609-s0",
+      "episodeId": "ep-001609",
+      "sourceTag": "병무청/예산서/2021/1609#delete-row/s0/8/pagecount-and-fill-fail",
+      "stepIndex": 0,
+      "stepKind": "delete-row",
+      "source": "samples/gov/병무청_예산서_2021_1609.hwpx",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/병무청_예산서_2021_1609.hwpx",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/병무청_예산서_2021_1609_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/병무청_예산서_2021_1609_s0.hwpx",
+            "--expect-pages",
+            "8",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2021_1609_s0.hwpx",
+            "pageCount": 8,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 8,
+                "actual": 8,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 88,
+                "actual": 88,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당부서",
+                "actual": "담당부서",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 8
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/병무청_예산서_2021_1609_s0.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2021_1609_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/병무청_예산서_2021_1609_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2021_1609_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 244296,
+            "version": "owpml-1.0",
+            "sections": 1,
+            "pageCount": 10,
+            "expectedPageCount": 8,
+            "pageCountMismatch": true,
+            "paraCount": 71,
+            "title": "규제 심사(안) 개요",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 10,
+            "expectedPageCount": 8,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/병무청_예산서_2021_1609.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/병무청_예산서_2021_1609_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2021_1609_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "담당부서",
+                "occurrence": 0,
+                "value": "담당부서-값-1608-0"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 1,
+                "value": "담당자-값-1608-1"
+              }
+            ],
+            "notFound": [
+              "없는필드6"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 1,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001609-s1",
+      "episodeId": "ep-001609",
+      "sourceTag": "병무청/예산서/2021/1609#apply-char-format/s1/1/verify-fail",
+      "stepIndex": 1,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/병무청_예산서_2021_1609.hwpx",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/병무청_예산서_2021_1609.hwpx",
+        "--bold",
+        "-o",
+        "output/gov/병무청_예산서_2021_1609_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/병무청_예산서_2021_1609_s1.hwpx",
+            "--expect-pages",
+            "7",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2021_1609_s1.hwpx",
+            "pageCount": 7,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 7,
+                "actual": 7,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 105,
+                "actual": 90,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당자",
+                "actual": "담당자",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 7
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/병무청_예산서_2021_1609_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2021_1609_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/병무청_예산서_2021_1609_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2021_1609_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 246625,
+            "version": "owpml-1.0",
+            "sections": 2,
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false,
+            "paraCount": 88,
+            "title": "출장여비 정산서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/병무청_예산서_2021_1609.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/병무청_예산서_2021_1609_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_예산서_2021_1609_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "담당자",
+                "occurrence": 0,
+                "value": "담당자-값-1625-0"
+              },
+              {
+                "name": "문서번호",
+                "occurrence": 1,
+                "value": "문서번호-값-1625-1"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 2,
+                "value": "시행일자-값-1625-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001610-s0",
+      "episodeId": "ep-001610",
+      "sourceTag": "산림청/예산서/2021/1610#apply-char-format/s0/9/all-pass-empty-page",
+      "stepIndex": 0,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/산림청_예산서_2021_1610.hwp",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/산림청_예산서_2021_1610.hwp",
+        "--bold",
+        "-o",
+        "output/gov/산림청_예산서_2021_1610_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산림청_예산서_2021_1610_s0.hwp",
+            "--expect-pages",
+            "9",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2021_1610_s0.hwp",
+            "pageCount": 9,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 9,
+                "actual": 9,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 89,
+                "actual": 89,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당자",
+                "actual": "담당자",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 9
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산림청_예산서_2021_1610_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2021_1610_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산림청_예산서_2021_1610_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2021_1610_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 244433,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 9,
+            "expectedPageCount": 9,
+            "pageCountMismatch": false,
+            "paraCount": 72,
+            "title": "개인정보 처리방침 개정 고시",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 9,
+            "expectedPageCount": 9,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산림청_예산서_2021_1610.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산림청_예산서_2021_1610_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2021_1610_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "담당자",
+                "occurrence": 0,
+                "value": "담당자-값-1609-0"
+              },
+              {
+                "name": "문서번호",
+                "occurrence": 1,
+                "value": "문서번호-값-1609-1"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 2,
+                "value": "시행일자-값-1609-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001610-s1",
+      "episodeId": "ep-001610",
+      "sourceTag": "산림청/예산서/2021/1610#fill-fields/s1/2/layout-strict-overflow",
+      "stepIndex": 1,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/산림청_예산서_2021_1610.hwp",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/산림청_예산서_2021_1610.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/산림청_예산서_2021_1610_s1.hwp",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산림청_예산서_2021_1610_s1.hwp",
+            "--expect-pages",
+            "8",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2021_1610_s1.hwp",
+            "pageCount": 8,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 8,
+                "actual": 8,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 106,
+                "actual": 106,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "문서번호",
+                "actual": "문서번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 8
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산림청_예산서_2021_1610_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2021_1610_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 4,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 10.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 4,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산림청_예산서_2021_1610_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2021_1610_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 246762,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false,
+            "paraCount": 89,
+            "title": "예산 전용 요구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산림청_예산서_2021_1610.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산림청_예산서_2021_1610_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_예산서_2021_1610_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "문서번호",
+                "occurrence": 0,
+                "value": "문서번호-값-1626-0"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 1,
+                "value": "시행일자-값-1626-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001611-s0",
+      "episodeId": "ep-001611",
+      "sourceTag": "농촌진흥청/예산서/2021/1611#fill-fields/s0/0/all-pass",
+      "stepIndex": 0,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/농촌진흥청_예산서_2021_1611.hwp",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/농촌진흥청_예산서_2021_1611.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/농촌진흥청_예산서_2021_1611_s0.hwp",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/농촌진흥청_예산서_2021_1611_s0.hwp",
+            "--expect-pages",
+            "10",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2021_1611_s0.hwp",
+            "pageCount": 10,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 10,
+                "actual": 10,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 90,
+                "actual": 90,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "문서번호",
+                "actual": "문서번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 10
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/농촌진흥청_예산서_2021_1611_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2021_1611_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/농촌진흥청_예산서_2021_1611_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2021_1611_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 244570,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 10,
+            "expectedPageCount": 10,
+            "pageCountMismatch": false,
+            "paraCount": 73,
+            "title": "지방세 감면 신청서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 10,
+            "expectedPageCount": 10,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/농촌진흥청_예산서_2021_1611.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/농촌진흥청_예산서_2021_1611_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2021_1611_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "문서번호",
+                "occurrence": 0,
+                "value": "문서번호-값-1610-0"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 1,
+                "value": "시행일자-값-1610-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001611-s1",
+      "episodeId": "ep-001611",
+      "sourceTag": "농촌진흥청/예산서/2021/1611#replace-text/s1/3/pagecount-mismatch",
+      "stepIndex": 1,
+      "stepKind": "replace-text",
+      "source": "samples/gov/농촌진흥청_예산서_2021_1611.hwp",
+      "argv": [
+        "edit",
+        "replace-text",
+        "samples/gov/농촌진흥청_예산서_2021_1611.hwp",
+        "--find",
+        "임시",
+        "--replace",
+        "확정",
+        "-o",
+        "output/gov/농촌진흥청_예산서_2021_1611_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/농촌진흥청_예산서_2021_1611_s1.hwp",
+            "--expect-pages",
+            "9",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2021_1611_s1.hwp",
+            "pageCount": 9,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 9,
+                "actual": 9,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 107,
+                "actual": 107,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "시행일자",
+                "actual": "시행일자",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 9
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/농촌진흥청_예산서_2021_1611_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2021_1611_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/농촌진흥청_예산서_2021_1611_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2021_1611_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 246899,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 11,
+            "expectedPageCount": 9,
+            "pageCountMismatch": true,
+            "paraCount": 90,
+            "title": "민원 처리 결과 통지",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 9,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/농촌진흥청_예산서_2021_1611.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/농촌진흥청_예산서_2021_1611_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_예산서_2021_1611_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "시행일자",
+                "occurrence": 0,
+                "value": "시행일자-값-1627-0"
+              },
+              {
+                "name": "수신",
+                "occurrence": 1,
+                "value": "수신-값-1627-1"
+              },
+              {
+                "name": "제목",
+                "occurrence": 2,
+                "value": "제목-값-1627-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001612-s0",
+      "episodeId": "ep-001612",
+      "sourceTag": "중소벤처기업부/예산서/2021/1612#replace-text/s0/1/verify-fail",
+      "stepIndex": 0,
+      "stepKind": "replace-text",
+      "source": "samples/gov/중소벤처기업부_예산서_2021_1612.hwpx",
+      "argv": [
+        "edit",
+        "replace-text",
+        "samples/gov/중소벤처기업부_예산서_2021_1612.hwpx",
+        "--find",
+        "임시",
+        "--replace",
+        "확정",
+        "-o",
+        "output/gov/중소벤처기업부_예산서_2021_1612_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/중소벤처기업부_예산서_2021_1612_s0.hwpx",
+            "--expect-pages",
+            "11",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2021_1612_s0.hwpx",
+            "pageCount": 11,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 11,
+                "actual": 11,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 91,
+                "actual": 76,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "시행일자",
+                "actual": "시행일자",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": false
+              }
+            ],
+            "passCount": 2,
+            "failCount": 3,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 3,
+            "passCount": 2,
+            "pageCount": 11
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/중소벤처기업부_예산서_2021_1612_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2021_1612_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/중소벤처기업부_예산서_2021_1612_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2021_1612_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 244707,
+            "version": "owpml-1.0",
+            "sections": 4,
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false,
+            "paraCount": 74,
+            "title": "공사계약 일반조건",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/중소벤처기업부_예산서_2021_1612.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/중소벤처기업부_예산서_2021_1612_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2021_1612_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "시행일자",
+                "occurrence": 0,
+                "value": "시행일자-값-1611-0"
+              },
+              {
+                "name": "수신",
+                "occurrence": 1,
+                "value": "수신-값-1611-1"
+              },
+              {
+                "name": "제목",
+                "occurrence": 2,
+                "value": "제목-값-1611-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001612-s1",
+      "episodeId": "ep-001612",
+      "sourceTag": "중소벤처기업부/예산서/2021/1612#delete-text/s1/4/fill-verify-ir-diff",
+      "stepIndex": 1,
+      "stepKind": "delete-text",
+      "source": "samples/gov/중소벤처기업부_예산서_2021_1612.hwpx",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/중소벤처기업부_예산서_2021_1612.hwpx",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/중소벤처기업부_예산서_2021_1612_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/중소벤처기업부_예산서_2021_1612_s1.hwpx",
+            "--expect-pages",
+            "10",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2021_1612_s1.hwpx",
+            "pageCount": 10,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 10,
+                "actual": 10,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 108,
+                "actual": 108,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "수신",
+                "actual": "수신",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 10
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/중소벤처기업부_예산서_2021_1612_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2021_1612_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/중소벤처기업부_예산서_2021_1612_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2021_1612_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 247036,
+            "version": "owpml-1.0",
+            "sections": 1,
+            "pageCount": 10,
+            "expectedPageCount": 10,
+            "pageCountMismatch": false,
+            "paraCount": 91,
+            "title": "감사 지적사항 조치 결과",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 10,
+            "expectedPageCount": 10,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/중소벤처기업부_예산서_2021_1612.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/중소벤처기업부_예산서_2021_1612_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_예산서_2021_1612_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "수신",
+                "occurrence": 0,
+                "value": "수신-값-1628-0"
+              },
+              {
+                "name": "제목",
+                "occurrence": 1,
+                "value": "제목-값-1628-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 3
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 3,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "fill-verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001613-s0",
+      "episodeId": "ep-001613",
+      "sourceTag": "과학기술정보통신부/예산서/2021/1613#delete-text/s0/2/layout-strict-overflow",
+      "stepIndex": 0,
+      "stepKind": "delete-text",
+      "source": "samples/gov/과학기술정보통신부_예산서_2021_1613.hwp",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/과학기술정보통신부_예산서_2021_1613.hwp",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/과학기술정보통신부_예산서_2021_1613_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/과학기술정보통신부_예산서_2021_1613_s0.hwp",
+            "--expect-pages",
+            "12",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2021_1613_s0.hwp",
+            "pageCount": 12,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 12,
+                "actual": 12,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 92,
+                "actual": 92,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "수신",
+                "actual": "수신",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 12
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/과학기술정보통신부_예산서_2021_1613_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2021_1613_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 5.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/과학기술정보통신부_예산서_2021_1613_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2021_1613_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 244844,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false,
+            "paraCount": 75,
+            "title": "정보공개 청구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/과학기술정보통신부_예산서_2021_1613.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/과학기술정보통신부_예산서_2021_1613_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2021_1613_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "수신",
+                "occurrence": 0,
+                "value": "수신-값-1612-0"
+              },
+              {
+                "name": "제목",
+                "occurrence": 1,
+                "value": "제목-값-1612-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001613-s1",
+      "episodeId": "ep-001613",
+      "sourceTag": "과학기술정보통신부/예산서/2021/1613#insert-text/s1/5/verify-io",
+      "stepIndex": 1,
+      "stepKind": "insert-text",
+      "source": "samples/gov/과학기술정보통신부_예산서_2021_1613.hwp",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/과학기술정보통신부_예산서_2021_1613.hwp",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/과학기술정보통신부_예산서_2021_1613_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/과학기술정보통신부_예산서_2021_1613_s1.hwp",
+            "--expect-pages",
+            "11",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/과학기술정보통신부_예산서_2021_1613_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2021_1613_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/과학기술정보통신부_예산서_2021_1613_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2021_1613_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 247173,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false,
+            "paraCount": 92,
+            "title": "회의 결과 보고",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/과학기술정보통신부_예산서_2021_1613.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/과학기술정보통신부_예산서_2021_1613_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_예산서_2021_1613_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "제목",
+                "occurrence": 0,
+                "value": "제목-값-1629-0"
+              },
+              {
+                "name": "금액",
+                "occurrence": 1,
+                "value": "금액-값-1629-1"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 2,
+                "value": "계좌번호-값-1629-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001614-s0",
+      "episodeId": "ep-001614",
+      "sourceTag": "문화체육관광부/예산서/2021/1614#insert-text/s0/3/pagecount-mismatch",
+      "stepIndex": 0,
+      "stepKind": "insert-text",
+      "source": "samples/gov/문화체육관광부_예산서_2021_1614.hwp",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/문화체육관광부_예산서_2021_1614.hwp",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/문화체육관광부_예산서_2021_1614_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/문화체육관광부_예산서_2021_1614_s0.hwp",
+            "--expect-pages",
+            "13",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2021_1614_s0.hwp",
+            "pageCount": 13,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 13,
+                "actual": 13,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 93,
+                "actual": 93,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "제목",
+                "actual": "제목",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 13
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/문화체육관광부_예산서_2021_1614_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2021_1614_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/문화체육관광부_예산서_2021_1614_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2021_1614_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 244981,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 16,
+            "expectedPageCount": 13,
+            "pageCountMismatch": true,
+            "paraCount": 76,
+            "title": "출장여비 정산서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 13,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/문화체육관광부_예산서_2021_1614.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/문화체육관광부_예산서_2021_1614_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2021_1614_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "제목",
+                "occurrence": 0,
+                "value": "제목-값-1613-0"
+              },
+              {
+                "name": "금액",
+                "occurrence": 1,
+                "value": "금액-값-1613-1"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 2,
+                "value": "계좌번호-값-1613-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001614-s1",
+      "episodeId": "ep-001614",
+      "sourceTag": "문화체육관광부/예산서/2021/1614#redact/s1/6/layout-usage",
+      "stepIndex": 1,
+      "stepKind": "redact",
+      "source": "samples/gov/문화체육관광부_예산서_2021_1614.hwp",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/문화체육관광부_예산서_2021_1614.hwp",
+        "-o",
+        "output/gov/문화체육관광부_예산서_2021_1614_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/문화체육관광부_예산서_2021_1614_s1.hwp",
+            "--expect-pages",
+            "12",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2021_1614_s1.hwp",
+            "pageCount": 12,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 12,
+                "actual": 12,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 110,
+                "actual": 110,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "금액",
+                "actual": "금액",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 12
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/문화체육관광부_예산서_2021_1614_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/문화체육관광부_예산서_2021_1614_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2021_1614_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 247310,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false,
+            "paraCount": 93,
+            "title": "보안 점검 체크리스트",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/문화체육관광부_예산서_2021_1614.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/문화체육관광부_예산서_2021_1614_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_예산서_2021_1614_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "금액",
+                "occurrence": 0,
+                "value": "금액-값-1630-0"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 1,
+                "value": "계좌번호-값-1630-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001615-s0",
+      "episodeId": "ep-001615",
+      "sourceTag": "환경부/예산서/2021/1615#redact/s0/4/fill-verify-ir-diff",
+      "stepIndex": 0,
+      "stepKind": "redact",
+      "source": "samples/gov/환경부_예산서_2021_1615.hwpx",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/환경부_예산서_2021_1615.hwpx",
+        "-o",
+        "output/gov/환경부_예산서_2021_1615_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/환경부_예산서_2021_1615_s0.hwpx",
+            "--expect-pages",
+            "14",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2021_1615_s0.hwpx",
+            "pageCount": 14,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 14,
+                "actual": 14,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 94,
+                "actual": 94,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "금액",
+                "actual": "금액",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 14
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/환경부_예산서_2021_1615_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2021_1615_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/환경부_예산서_2021_1615_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2021_1615_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 245118,
+            "version": "owpml-1.0",
+            "sections": 3,
+            "pageCount": 14,
+            "expectedPageCount": 14,
+            "pageCountMismatch": false,
+            "paraCount": 77,
+            "title": "예산 전용 요구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 14,
+            "expectedPageCount": 14,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/환경부_예산서_2021_1615.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/환경부_예산서_2021_1615_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2021_1615_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "금액",
+                "occurrence": 0,
+                "value": "금액-값-1614-0"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 1,
+                "value": "계좌번호-값-1614-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 1,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "fill-verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001615-s1",
+      "episodeId": "ep-001615",
+      "sourceTag": "환경부/예산서/2021/1615#sanitize/s1/7/verify-and-layout-fail",
+      "stepIndex": 1,
+      "stepKind": "sanitize",
+      "source": "samples/gov/환경부_예산서_2021_1615.hwpx",
+      "argv": [
+        "edit",
+        "sanitize",
+        "samples/gov/환경부_예산서_2021_1615.hwpx",
+        "-o",
+        "output/gov/환경부_예산서_2021_1615_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/환경부_예산서_2021_1615_s1.hwpx",
+            "--expect-pages",
+            "13",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2021_1615_s1.hwpx",
+            "pageCount": 13,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 13,
+                "actual": 13,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 111,
+                "actual": 96,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "계좌번호",
+                "actual": "계좌번호",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 13
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/환경부_예산서_2021_1615_s1.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2021_1615_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 5,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": true,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": [
+                  {
+                    "kind": "text-text",
+                    "a": {
+                      "section": 0,
+                      "paragraph": 4
+                    },
+                    "b": {
+                      "section": 0,
+                      "paragraph": 5
+                    },
+                    "overlapPx": 4.0
+                  }
+                ]
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 5,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/환경부_예산서_2021_1615_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2021_1615_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 247447,
+            "version": "owpml-1.0",
+            "sections": 4,
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false,
+            "paraCount": 94,
+            "title": "누름틀 일괄 채움 점검",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/환경부_예산서_2021_1615.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/환경부_예산서_2021_1615_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_예산서_2021_1615_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "계좌번호",
+                "occurrence": 0,
+                "value": "계좌번호-값-1631-0"
+              },
+              {
+                "name": "신청인",
+                "occurrence": 1,
+                "value": "신청인-값-1631-1"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 2,
+                "value": "생년월일-값-1631-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "verify",
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001616-s0",
+      "episodeId": "ep-001616",
+      "sourceTag": "해양수산부/예산서/2021/1616#sanitize/s0/5/verify-io",
+      "stepIndex": 0,
+      "stepKind": "sanitize",
+      "source": "samples/gov/해양수산부_예산서_2021_1616.hwp",
+      "argv": [
+        "edit",
+        "sanitize",
+        "samples/gov/해양수산부_예산서_2021_1616.hwp",
+        "-o",
+        "output/gov/해양수산부_예산서_2021_1616_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/해양수산부_예산서_2021_1616_s0.hwp",
+            "--expect-pages",
+            "15",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/해양수산부_예산서_2021_1616_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2021_1616_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/해양수산부_예산서_2021_1616_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2021_1616_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 245255,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 15,
+            "expectedPageCount": 15,
+            "pageCountMismatch": false,
+            "paraCount": 78,
+            "title": "민원 처리 결과 통지",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 15,
+            "expectedPageCount": 15,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/해양수산부_예산서_2021_1616.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/해양수산부_예산서_2021_1616_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2021_1616_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "계좌번호",
+                "occurrence": 0,
+                "value": "계좌번호-값-1615-0"
+              },
+              {
+                "name": "신청인",
+                "occurrence": 1,
+                "value": "신청인-값-1615-1"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 2,
+                "value": "생년월일-값-1615-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001616-s1",
+      "episodeId": "ep-001616",
+      "sourceTag": "해양수산부/예산서/2021/1616#csv-to-table/s1/8/pagecount-and-fill-fail",
+      "stepIndex": 1,
+      "stepKind": "csv-to-table",
+      "source": "samples/gov/해양수산부_예산서_2021_1616.hwp",
+      "argv": [
+        "edit",
+        "csv-to-table",
+        "samples/gov/해양수산부_예산서_2021_1616.hwp",
+        "--csv",
+        "@table.csv",
+        "-o",
+        "output/gov/해양수산부_예산서_2021_1616_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/해양수산부_예산서_2021_1616_s1.hwp",
+            "--expect-pages",
+            "14",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2021_1616_s1.hwp",
+            "pageCount": 14,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 14,
+                "actual": 14,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 112,
+                "actual": 112,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "신청인",
+                "actual": "신청인",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 14
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/해양수산부_예산서_2021_1616_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2021_1616_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/해양수산부_예산서_2021_1616_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2021_1616_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 247584,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 16,
+            "expectedPageCount": 14,
+            "pageCountMismatch": true,
+            "paraCount": 95,
+            "title": "규제 심사(안) 개요",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 14,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/해양수산부_예산서_2021_1616.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/해양수산부_예산서_2021_1616_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_예산서_2021_1616_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "신청인",
+                "occurrence": 0,
+                "value": "신청인-값-1632-0"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 1,
+                "value": "생년월일-값-1632-1"
+              }
+            ],
+            "notFound": [
+              "없는필드3"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 1,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001617-s0",
+      "episodeId": "ep-001617",
+      "sourceTag": "산업통상자원부/예산서/2021/1617#csv-to-table/s0/6/layout-usage",
+      "stepIndex": 0,
+      "stepKind": "csv-to-table",
+      "source": "samples/gov/산업통상자원부_예산서_2021_1617.hwp",
+      "argv": [
+        "edit",
+        "csv-to-table",
+        "samples/gov/산업통상자원부_예산서_2021_1617.hwp",
+        "--csv",
+        "@table.csv",
+        "-o",
+        "output/gov/산업통상자원부_예산서_2021_1617_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산업통상자원부_예산서_2021_1617_s0.hwp",
+            "--expect-pages",
+            "16",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2021_1617_s0.hwp",
+            "pageCount": 16,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 16,
+                "actual": 16,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 96,
+                "actual": 96,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "신청인",
+                "actual": "신청인",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 16
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산업통상자원부_예산서_2021_1617_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산업통상자원부_예산서_2021_1617_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2021_1617_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 245392,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false,
+            "paraCount": 79,
+            "title": "감사 지적사항 조치 결과",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산업통상자원부_예산서_2021_1617.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산업통상자원부_예산서_2021_1617_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2021_1617_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "신청인",
+                "occurrence": 0,
+                "value": "신청인-값-1616-0"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 1,
+                "value": "생년월일-값-1616-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001617-s1",
+      "episodeId": "ep-001617",
+      "sourceTag": "산업통상자원부/예산서/2021/1617#insert-table/s1/9/all-pass-empty-page",
+      "stepIndex": 1,
+      "stepKind": "insert-table",
+      "source": "samples/gov/산업통상자원부_예산서_2021_1617.hwp",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/산업통상자원부_예산서_2021_1617.hwp",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/산업통상자원부_예산서_2021_1617_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산업통상자원부_예산서_2021_1617_s1.hwp",
+            "--expect-pages",
+            "15",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2021_1617_s1.hwp",
+            "pageCount": 15,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 15,
+                "actual": 15,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 113,
+                "actual": 113,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "생년월일",
+                "actual": "생년월일",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 15
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산업통상자원부_예산서_2021_1617_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2021_1617_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산업통상자원부_예산서_2021_1617_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2021_1617_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 247721,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 15,
+            "expectedPageCount": 15,
+            "pageCountMismatch": false,
+            "paraCount": 96,
+            "title": "개인정보 처리방침 개정 고시",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 15,
+            "expectedPageCount": 15,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산업통상자원부_예산서_2021_1617.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산업통상자원부_예산서_2021_1617_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_예산서_2021_1617_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "생년월일",
+                "occurrence": 0,
+                "value": "생년월일-값-1633-0"
+              },
+              {
+                "name": "주소",
+                "occurrence": 1,
+                "value": "주소-값-1633-1"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 2,
+                "value": "연락처-값-1633-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001618-s0",
+      "episodeId": "ep-001618",
+      "sourceTag": "여성가족부/예산서/2021/1618#insert-table/s0/7/verify-and-layout-fail",
+      "stepIndex": 0,
+      "stepKind": "insert-table",
+      "source": "samples/gov/여성가족부_예산서_2021_1618.hwpx",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/여성가족부_예산서_2021_1618.hwpx",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/여성가족부_예산서_2021_1618_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/여성가족부_예산서_2021_1618_s0.hwpx",
+            "--expect-pages",
+            "17",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2021_1618_s0.hwpx",
+            "pageCount": 17,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 17,
+                "actual": 17,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 97,
+                "actual": 82,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "생년월일",
+                "actual": "생년월일",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": false
+              }
+            ],
+            "passCount": 2,
+            "failCount": 3,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 3,
+            "passCount": 2,
+            "pageCount": 17
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/여성가족부_예산서_2021_1618_s0.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2021_1618_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 3,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": true,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": [
+                  {
+                    "kind": "text-text",
+                    "a": {
+                      "section": 0,
+                      "paragraph": 4
+                    },
+                    "b": {
+                      "section": 0,
+                      "paragraph": 5
+                    },
+                    "overlapPx": 5.0
+                  }
+                ]
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 3,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/여성가족부_예산서_2021_1618_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2021_1618_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 245529,
+            "version": "owpml-1.0",
+            "sections": 2,
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false,
+            "paraCount": 80,
+            "title": "회의 결과 보고",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/여성가족부_예산서_2021_1618.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/여성가족부_예산서_2021_1618_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2021_1618_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "생년월일",
+                "occurrence": 0,
+                "value": "생년월일-값-1617-0"
+              },
+              {
+                "name": "주소",
+                "occurrence": 1,
+                "value": "주소-값-1617-1"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 2,
+                "value": "연락처-값-1617-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "verify",
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001618-s1",
+      "episodeId": "ep-001618",
+      "sourceTag": "여성가족부/예산서/2021/1618#delete-row/s1/0/all-pass",
+      "stepIndex": 1,
+      "stepKind": "delete-row",
+      "source": "samples/gov/여성가족부_예산서_2021_1618.hwpx",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/여성가족부_예산서_2021_1618.hwpx",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/여성가족부_예산서_2021_1618_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/여성가족부_예산서_2021_1618_s1.hwpx",
+            "--expect-pages",
+            "16",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2021_1618_s1.hwpx",
+            "pageCount": 16,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 16,
+                "actual": 16,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 114,
+                "actual": 114,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "주소",
+                "actual": "주소",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 16
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/여성가족부_예산서_2021_1618_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2021_1618_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/여성가족부_예산서_2021_1618_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2021_1618_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 247858,
+            "version": "owpml-1.0",
+            "sections": 3,
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false,
+            "paraCount": 97,
+            "title": "지방세 감면 신청서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/여성가족부_예산서_2021_1618.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/여성가족부_예산서_2021_1618_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_예산서_2021_1618_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "주소",
+                "occurrence": 0,
+                "value": "주소-값-1634-0"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 1,
+                "value": "연락처-값-1634-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001619-s0",
+      "episodeId": "ep-001619",
+      "sourceTag": "통일부/예산서/2021/1619#delete-row/s0/8/pagecount-and-fill-fail",
+      "stepIndex": 0,
+      "stepKind": "delete-row",
+      "source": "samples/gov/통일부_예산서_2021_1619.hwp",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/통일부_예산서_2021_1619.hwp",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/통일부_예산서_2021_1619_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/통일부_예산서_2021_1619_s0.hwp",
+            "--expect-pages",
+            "18",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2021_1619_s0.hwp",
+            "pageCount": 18,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 18,
+                "actual": 18,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 98,
+                "actual": 98,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "주소",
+                "actual": "주소",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 18
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/통일부_예산서_2021_1619_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2021_1619_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/통일부_예산서_2021_1619_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2021_1619_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 245666,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 20,
+            "expectedPageCount": 18,
+            "pageCountMismatch": true,
+            "paraCount": 81,
+            "title": "보안 점검 체크리스트",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 20,
+            "expectedPageCount": 18,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/통일부_예산서_2021_1619.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/통일부_예산서_2021_1619_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2021_1619_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "주소",
+                "occurrence": 0,
+                "value": "주소-값-1618-0"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 1,
+                "value": "연락처-값-1618-1"
+              }
+            ],
+            "notFound": [
+              "없는필드7"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 5
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 5,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001619-s1",
+      "episodeId": "ep-001619",
+      "sourceTag": "통일부/예산서/2021/1619#apply-char-format/s1/1/verify-fail",
+      "stepIndex": 1,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/통일부_예산서_2021_1619.hwp",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/통일부_예산서_2021_1619.hwp",
+        "--bold",
+        "-o",
+        "output/gov/통일부_예산서_2021_1619_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/통일부_예산서_2021_1619_s1.hwp",
+            "--expect-pages",
+            "17",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2021_1619_s1.hwp",
+            "pageCount": 17,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 17,
+                "actual": 17,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 115,
+                "actual": 100,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "연락처",
+                "actual": "연락처",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": false
+              }
+            ],
+            "passCount": 2,
+            "failCount": 3,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 3,
+            "passCount": 2,
+            "pageCount": 17
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/통일부_예산서_2021_1619_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2021_1619_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/통일부_예산서_2021_1619_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2021_1619_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 247995,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false,
+            "paraCount": 98,
+            "title": "공사계약 일반조건",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/통일부_예산서_2021_1619.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/통일부_예산서_2021_1619_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_예산서_2021_1619_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "연락처",
+                "occurrence": 0,
+                "value": "연락처-값-1635-0"
+              },
+              {
+                "name": "전자우편",
+                "occurrence": 1,
+                "value": "전자우편-값-1635-1"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 2,
+                "value": "사업자등록번호-값-1635-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001620-s0",
+      "episodeId": "ep-001620",
+      "sourceTag": "국가보훈부/예산서/2021/1620#apply-char-format/s0/9/all-pass-empty-page",
+      "stepIndex": 0,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/국가보훈부_예산서_2021_1620.hwp",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/국가보훈부_예산서_2021_1620.hwp",
+        "--bold",
+        "-o",
+        "output/gov/국가보훈부_예산서_2021_1620_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국가보훈부_예산서_2021_1620_s0.hwp",
+            "--expect-pages",
+            "19",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2021_1620_s0.hwp",
+            "pageCount": 19,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 19,
+                "actual": 19,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 99,
+                "actual": 99,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "연락처",
+                "actual": "연락처",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 19
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국가보훈부_예산서_2021_1620_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2021_1620_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국가보훈부_예산서_2021_1620_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2021_1620_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 245803,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 19,
+            "expectedPageCount": 19,
+            "pageCountMismatch": false,
+            "paraCount": 82,
+            "title": "누름틀 일괄 채움 점검",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 19,
+            "expectedPageCount": 19,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국가보훈부_예산서_2021_1620.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국가보훈부_예산서_2021_1620_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2021_1620_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "연락처",
+                "occurrence": 0,
+                "value": "연락처-값-1619-0"
+              },
+              {
+                "name": "전자우편",
+                "occurrence": 1,
+                "value": "전자우편-값-1619-1"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 2,
+                "value": "사업자등록번호-값-1619-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-001620-s1",
+      "episodeId": "ep-001620",
+      "sourceTag": "국가보훈부/예산서/2021/1620#fill-fields/s1/2/layout-strict-overflow",
+      "stepIndex": 1,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/국가보훈부_예산서_2021_1620.hwp",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/국가보훈부_예산서_2021_1620.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/국가보훈부_예산서_2021_1620_s1.hwp",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국가보훈부_예산서_2021_1620_s1.hwp",
+            "--expect-pages",
+            "18",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2021_1620_s1.hwp",
+            "pageCount": 18,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 18,
+                "actual": 18,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 116,
+                "actual": 116,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "전자우편",
+                "actual": "전자우편",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 18
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국가보훈부_예산서_2021_1620_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2021_1620_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 11.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국가보훈부_예산서_2021_1620_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2021_1620_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 248132,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false,
+            "paraCount": 99,
+            "title": "정보공개 청구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국가보훈부_예산서_2021_1620.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국가보훈부_예산서_2021_1620_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_예산서_2021_1620_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "전자우편",
+                "occurrence": 0,
+                "value": "전자우편-값-1636-0"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 1,
+                "value": "사업자등록번호-값-1636-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    }
+  ]
+}

@@ -71,6 +71,15 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
         self.assertIn("contents: read", self.wf)
         self.assertIn("pull-requests: read", self.wf)
 
+    def test_m04f_catalog_and_generator_exist(self) -> None:
+        root = REPO_ROOT
+        self.assertTrue((root / "tools" / "proptest_roundtrip" / "gen_m04f_catalogs.py").is_file())
+        self.assertTrue((root / "tests" / "fixtures" / "proptest_m04f" / "catalogs" / "skip_catalog.jsonl").is_file())
+        self.assertTrue((root / "tests" / "cases" / "prop_m04f_catalog.rs").is_file())
+        runner = RUNNER.read_text(encoding="utf-8")
+        self.assertIn("prop_m04f_catalog", runner)
+        self.assertIn("prop_m04f_skip", runner)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/schema/v-proto/verifier_input.schema.json",
+  "title": "LLM-as-verifier input",
+  "description": "검증기 입력은 기존 rhwp 종료코드와 JSON 봉투뿐이다. 새 CLI 필드를 발명하지 않는다.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exitClass", "command"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "v-proto.1.0"
+    },
+    "command": {
+      "type": "string",
+      "enum": [
+        "info",
+        "verify",
+        "ir-diff",
+        "layout-anomaly",
+        "replay",
+        "fill-fields",
+        "render-diff"
+      ]
+    },
+    "exitClass": {
+      "type": "integer",
+      "enum": [0, 1, 2, 3, 4],
+      "description": "0 ok / 1 io / 2 usage / 3 judgment / 4 page-verify"
+    },
+    "argv": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "stdoutPresent": { "type": "boolean" },
+    "stderrKind": {
+      "type": ["string", "null"],
+      "enum": ["io", "usage", "empty", null]
+    },
+    "envelope": {
+      "description": "기존 rhwp --json 봉투. exit 1/2 는 null 일 수 있다.",
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "https://rhwp.local/schema/v-proto/rhwp_envelope.json" }
+      ]
+    }
+  }
+}

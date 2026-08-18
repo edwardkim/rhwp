@@ -1,0 +1,5575 @@
+{
+  "schemaVersion": "v-step.1.0",
+  "shardId": "056",
+  "records": [
+    {
+      "recordId": "vstep-000673-s0",
+      "episodeId": "ep-000673",
+      "sourceTag": "병무청/질의회신/2019/0673#delete-text/s0/2/layout-strict-overflow",
+      "stepIndex": 0,
+      "stepKind": "delete-text",
+      "source": "samples/gov/병무청_질의회신_2019_0673.hwpx",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/병무청_질의회신_2019_0673.hwpx",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/병무청_질의회신_2019_0673_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/병무청_질의회신_2019_0673_s0.hwpx",
+            "--expect-pages",
+            "8",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_질의회신_2019_0673_s0.hwpx",
+            "pageCount": 8,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 8,
+                "actual": 8,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 352,
+                "actual": 352,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "신청인",
+                "actual": "신청인",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 8
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/병무청_질의회신_2019_0673_s0.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_질의회신_2019_0673_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 10.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/병무청_질의회신_2019_0673_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_질의회신_2019_0673_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 116064,
+            "version": "owpml-1.0",
+            "sections": 1,
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false,
+            "paraCount": 15,
+            "title": "규제 심사(안) 개요",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/병무청_질의회신_2019_0673.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/병무청_질의회신_2019_0673_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_질의회신_2019_0673_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "신청인",
+                "occurrence": 0,
+                "value": "신청인-값-0672-0"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 1,
+                "value": "생년월일-값-0672-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000673-s1",
+      "episodeId": "ep-000673",
+      "sourceTag": "병무청/질의회신/2019/0673#insert-text/s1/5/verify-io",
+      "stepIndex": 1,
+      "stepKind": "insert-text",
+      "source": "samples/gov/병무청_질의회신_2019_0673.hwpx",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/병무청_질의회신_2019_0673.hwpx",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/병무청_질의회신_2019_0673_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/병무청_질의회신_2019_0673_s1.hwpx",
+            "--expect-pages",
+            "7",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/병무청_질의회신_2019_0673_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_질의회신_2019_0673_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/병무청_질의회신_2019_0673_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_질의회신_2019_0673_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 118393,
+            "version": "owpml-1.0",
+            "sections": 2,
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false,
+            "paraCount": 32,
+            "title": "출장여비 정산서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/병무청_질의회신_2019_0673.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/병무청_질의회신_2019_0673_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/병무청_질의회신_2019_0673_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "생년월일",
+                "occurrence": 0,
+                "value": "생년월일-값-0689-0"
+              },
+              {
+                "name": "주소",
+                "occurrence": 1,
+                "value": "주소-값-0689-1"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 2,
+                "value": "연락처-값-0689-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000674-s0",
+      "episodeId": "ep-000674",
+      "sourceTag": "산림청/질의회신/2019/0674#insert-text/s0/3/pagecount-mismatch",
+      "stepIndex": 0,
+      "stepKind": "insert-text",
+      "source": "samples/gov/산림청_질의회신_2019_0674.hwp",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/산림청_질의회신_2019_0674.hwp",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/산림청_질의회신_2019_0674_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산림청_질의회신_2019_0674_s0.hwp",
+            "--expect-pages",
+            "9",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_질의회신_2019_0674_s0.hwp",
+            "pageCount": 9,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 9,
+                "actual": 9,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 353,
+                "actual": 353,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "생년월일",
+                "actual": "생년월일",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 9
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산림청_질의회신_2019_0674_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_질의회신_2019_0674_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산림청_질의회신_2019_0674_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_질의회신_2019_0674_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 116201,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 11,
+            "expectedPageCount": 9,
+            "pageCountMismatch": true,
+            "paraCount": 16,
+            "title": "개인정보 처리방침 개정 고시",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 9,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산림청_질의회신_2019_0674.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산림청_질의회신_2019_0674_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_질의회신_2019_0674_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "생년월일",
+                "occurrence": 0,
+                "value": "생년월일-값-0673-0"
+              },
+              {
+                "name": "주소",
+                "occurrence": 1,
+                "value": "주소-값-0673-1"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 2,
+                "value": "연락처-값-0673-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000674-s1",
+      "episodeId": "ep-000674",
+      "sourceTag": "산림청/질의회신/2019/0674#redact/s1/6/layout-usage",
+      "stepIndex": 1,
+      "stepKind": "redact",
+      "source": "samples/gov/산림청_질의회신_2019_0674.hwp",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/산림청_질의회신_2019_0674.hwp",
+        "-o",
+        "output/gov/산림청_질의회신_2019_0674_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산림청_질의회신_2019_0674_s1.hwp",
+            "--expect-pages",
+            "8",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_질의회신_2019_0674_s1.hwp",
+            "pageCount": 8,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 8,
+                "actual": 8,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 370,
+                "actual": 370,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "주소",
+                "actual": "주소",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 8
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산림청_질의회신_2019_0674_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산림청_질의회신_2019_0674_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_질의회신_2019_0674_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 118530,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false,
+            "paraCount": 33,
+            "title": "예산 전용 요구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산림청_질의회신_2019_0674.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산림청_질의회신_2019_0674_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산림청_질의회신_2019_0674_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "주소",
+                "occurrence": 0,
+                "value": "주소-값-0690-0"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 1,
+                "value": "연락처-값-0690-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000675-s0",
+      "episodeId": "ep-000675",
+      "sourceTag": "농촌진흥청/질의회신/2019/0675#redact/s0/4/fill-verify-ir-diff",
+      "stepIndex": 0,
+      "stepKind": "redact",
+      "source": "samples/gov/농촌진흥청_질의회신_2019_0675.hwp",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/농촌진흥청_질의회신_2019_0675.hwp",
+        "-o",
+        "output/gov/농촌진흥청_질의회신_2019_0675_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/농촌진흥청_질의회신_2019_0675_s0.hwp",
+            "--expect-pages",
+            "10",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_질의회신_2019_0675_s0.hwp",
+            "pageCount": 10,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 10,
+                "actual": 10,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 354,
+                "actual": 354,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "주소",
+                "actual": "주소",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 10
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/농촌진흥청_질의회신_2019_0675_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_질의회신_2019_0675_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/농촌진흥청_질의회신_2019_0675_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_질의회신_2019_0675_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 116338,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 10,
+            "expectedPageCount": 10,
+            "pageCountMismatch": false,
+            "paraCount": 17,
+            "title": "지방세 감면 신청서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 10,
+            "expectedPageCount": 10,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/농촌진흥청_질의회신_2019_0675.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/농촌진흥청_질의회신_2019_0675_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_질의회신_2019_0675_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "주소",
+                "occurrence": 0,
+                "value": "주소-값-0674-0"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 1,
+                "value": "연락처-값-0674-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 3
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 3,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "fill-verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000675-s1",
+      "episodeId": "ep-000675",
+      "sourceTag": "농촌진흥청/질의회신/2019/0675#sanitize/s1/7/verify-and-layout-fail",
+      "stepIndex": 1,
+      "stepKind": "sanitize",
+      "source": "samples/gov/농촌진흥청_질의회신_2019_0675.hwp",
+      "argv": [
+        "edit",
+        "sanitize",
+        "samples/gov/농촌진흥청_질의회신_2019_0675.hwp",
+        "-o",
+        "output/gov/농촌진흥청_질의회신_2019_0675_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/농촌진흥청_질의회신_2019_0675_s1.hwp",
+            "--expect-pages",
+            "9",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_질의회신_2019_0675_s1.hwp",
+            "pageCount": 9,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 9,
+                "actual": 9,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 371,
+                "actual": 356,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "연락처",
+                "actual": "연락처",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 9
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/농촌진흥청_질의회신_2019_0675_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_질의회신_2019_0675_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 4,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": true,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": [
+                  {
+                    "kind": "text-text",
+                    "a": {
+                      "section": 0,
+                      "paragraph": 4
+                    },
+                    "b": {
+                      "section": 0,
+                      "paragraph": 5
+                    },
+                    "overlapPx": 4.0
+                  }
+                ]
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 4,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/농촌진흥청_질의회신_2019_0675_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_질의회신_2019_0675_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 118667,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 9,
+            "expectedPageCount": 9,
+            "pageCountMismatch": false,
+            "paraCount": 34,
+            "title": "민원 처리 결과 통지",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 9,
+            "expectedPageCount": 9,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/농촌진흥청_질의회신_2019_0675.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/농촌진흥청_질의회신_2019_0675_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/농촌진흥청_질의회신_2019_0675_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "연락처",
+                "occurrence": 0,
+                "value": "연락처-값-0691-0"
+              },
+              {
+                "name": "전자우편",
+                "occurrence": 1,
+                "value": "전자우편-값-0691-1"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 2,
+                "value": "사업자등록번호-값-0691-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "verify",
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000676-s0",
+      "episodeId": "ep-000676",
+      "sourceTag": "중소벤처기업부/질의회신/2019/0676#sanitize/s0/5/verify-io",
+      "stepIndex": 0,
+      "stepKind": "sanitize",
+      "source": "samples/gov/중소벤처기업부_질의회신_2019_0676.hwpx",
+      "argv": [
+        "edit",
+        "sanitize",
+        "samples/gov/중소벤처기업부_질의회신_2019_0676.hwpx",
+        "-o",
+        "output/gov/중소벤처기업부_질의회신_2019_0676_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/중소벤처기업부_질의회신_2019_0676_s0.hwpx",
+            "--expect-pages",
+            "11",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/중소벤처기업부_질의회신_2019_0676_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_질의회신_2019_0676_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/중소벤처기업부_질의회신_2019_0676_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_질의회신_2019_0676_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 116475,
+            "version": "owpml-1.0",
+            "sections": 4,
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false,
+            "paraCount": 18,
+            "title": "공사계약 일반조건",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/중소벤처기업부_질의회신_2019_0676.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/중소벤처기업부_질의회신_2019_0676_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_질의회신_2019_0676_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "연락처",
+                "occurrence": 0,
+                "value": "연락처-값-0675-0"
+              },
+              {
+                "name": "전자우편",
+                "occurrence": 1,
+                "value": "전자우편-값-0675-1"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 2,
+                "value": "사업자등록번호-값-0675-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000676-s1",
+      "episodeId": "ep-000676",
+      "sourceTag": "중소벤처기업부/질의회신/2019/0676#csv-to-table/s1/8/pagecount-and-fill-fail",
+      "stepIndex": 1,
+      "stepKind": "csv-to-table",
+      "source": "samples/gov/중소벤처기업부_질의회신_2019_0676.hwpx",
+      "argv": [
+        "edit",
+        "csv-to-table",
+        "samples/gov/중소벤처기업부_질의회신_2019_0676.hwpx",
+        "--csv",
+        "@table.csv",
+        "-o",
+        "output/gov/중소벤처기업부_질의회신_2019_0676_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/중소벤처기업부_질의회신_2019_0676_s1.hwpx",
+            "--expect-pages",
+            "10",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_질의회신_2019_0676_s1.hwpx",
+            "pageCount": 10,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 10,
+                "actual": 10,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 372,
+                "actual": 372,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "전자우편",
+                "actual": "전자우편",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 10
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/중소벤처기업부_질의회신_2019_0676_s1.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_질의회신_2019_0676_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/중소벤처기업부_질의회신_2019_0676_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_질의회신_2019_0676_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 118804,
+            "version": "owpml-1.0",
+            "sections": 1,
+            "pageCount": 12,
+            "expectedPageCount": 10,
+            "pageCountMismatch": true,
+            "paraCount": 35,
+            "title": "감사 지적사항 조치 결과",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 12,
+            "expectedPageCount": 10,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/중소벤처기업부_질의회신_2019_0676.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/중소벤처기업부_질의회신_2019_0676_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/중소벤처기업부_질의회신_2019_0676_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "전자우편",
+                "occurrence": 0,
+                "value": "전자우편-값-0692-0"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 1,
+                "value": "사업자등록번호-값-0692-1"
+              }
+            ],
+            "notFound": [
+              "없는필드8"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 3
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 3,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000677-s0",
+      "episodeId": "ep-000677",
+      "sourceTag": "과학기술정보통신부/질의회신/2019/0677#csv-to-table/s0/6/layout-usage",
+      "stepIndex": 0,
+      "stepKind": "csv-to-table",
+      "source": "samples/gov/과학기술정보통신부_질의회신_2019_0677.hwp",
+      "argv": [
+        "edit",
+        "csv-to-table",
+        "samples/gov/과학기술정보통신부_질의회신_2019_0677.hwp",
+        "--csv",
+        "@table.csv",
+        "-o",
+        "output/gov/과학기술정보통신부_질의회신_2019_0677_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/과학기술정보통신부_질의회신_2019_0677_s0.hwp",
+            "--expect-pages",
+            "12",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_질의회신_2019_0677_s0.hwp",
+            "pageCount": 12,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 12,
+                "actual": 12,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 356,
+                "actual": 356,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "전자우편",
+                "actual": "전자우편",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 12
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/과학기술정보통신부_질의회신_2019_0677_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/과학기술정보통신부_질의회신_2019_0677_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_질의회신_2019_0677_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 116612,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false,
+            "paraCount": 19,
+            "title": "정보공개 청구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/과학기술정보통신부_질의회신_2019_0677.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/과학기술정보통신부_질의회신_2019_0677_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_질의회신_2019_0677_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "전자우편",
+                "occurrence": 0,
+                "value": "전자우편-값-0676-0"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 1,
+                "value": "사업자등록번호-값-0676-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000677-s1",
+      "episodeId": "ep-000677",
+      "sourceTag": "과학기술정보통신부/질의회신/2019/0677#insert-table/s1/9/all-pass-empty-page",
+      "stepIndex": 1,
+      "stepKind": "insert-table",
+      "source": "samples/gov/과학기술정보통신부_질의회신_2019_0677.hwp",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/과학기술정보통신부_질의회신_2019_0677.hwp",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/과학기술정보통신부_질의회신_2019_0677_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/과학기술정보통신부_질의회신_2019_0677_s1.hwp",
+            "--expect-pages",
+            "11",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_질의회신_2019_0677_s1.hwp",
+            "pageCount": 11,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 11,
+                "actual": 11,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 373,
+                "actual": 373,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "사업자등록번호",
+                "actual": "사업자등록번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 11
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/과학기술정보통신부_질의회신_2019_0677_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_질의회신_2019_0677_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/과학기술정보통신부_질의회신_2019_0677_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_질의회신_2019_0677_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 118941,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false,
+            "paraCount": 36,
+            "title": "회의 결과 보고",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/과학기술정보통신부_질의회신_2019_0677.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/과학기술정보통신부_질의회신_2019_0677_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/과학기술정보통신부_질의회신_2019_0677_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "사업자등록번호",
+                "occurrence": 0,
+                "value": "사업자등록번호-값-0693-0"
+              },
+              {
+                "name": "법인명",
+                "occurrence": 1,
+                "value": "법인명-값-0693-1"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 2,
+                "value": "대표자-값-0693-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000678-s0",
+      "episodeId": "ep-000678",
+      "sourceTag": "문화체육관광부/질의회신/2019/0678#insert-table/s0/7/verify-and-layout-fail",
+      "stepIndex": 0,
+      "stepKind": "insert-table",
+      "source": "samples/gov/문화체육관광부_질의회신_2019_0678.hwp",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/문화체육관광부_질의회신_2019_0678.hwp",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/문화체육관광부_질의회신_2019_0678_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/문화체육관광부_질의회신_2019_0678_s0.hwp",
+            "--expect-pages",
+            "13",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_질의회신_2019_0678_s0.hwp",
+            "pageCount": 13,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 13,
+                "actual": 13,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 357,
+                "actual": 342,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "사업자등록번호",
+                "actual": "사업자등록번호",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 13
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/문화체육관광부_질의회신_2019_0678_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_질의회신_2019_0678_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 5,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": true,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": [
+                  {
+                    "kind": "text-text",
+                    "a": {
+                      "section": 0,
+                      "paragraph": 4
+                    },
+                    "b": {
+                      "section": 0,
+                      "paragraph": 5
+                    },
+                    "overlapPx": 5.0
+                  }
+                ]
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 5,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/문화체육관광부_질의회신_2019_0678_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_질의회신_2019_0678_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 116749,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false,
+            "paraCount": 20,
+            "title": "출장여비 정산서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/문화체육관광부_질의회신_2019_0678.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/문화체육관광부_질의회신_2019_0678_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_질의회신_2019_0678_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "사업자등록번호",
+                "occurrence": 0,
+                "value": "사업자등록번호-값-0677-0"
+              },
+              {
+                "name": "법인명",
+                "occurrence": 1,
+                "value": "법인명-값-0677-1"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 2,
+                "value": "대표자-값-0677-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "verify",
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000678-s1",
+      "episodeId": "ep-000678",
+      "sourceTag": "문화체육관광부/질의회신/2019/0678#delete-row/s1/0/all-pass",
+      "stepIndex": 1,
+      "stepKind": "delete-row",
+      "source": "samples/gov/문화체육관광부_질의회신_2019_0678.hwp",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/문화체육관광부_질의회신_2019_0678.hwp",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/문화체육관광부_질의회신_2019_0678_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/문화체육관광부_질의회신_2019_0678_s1.hwp",
+            "--expect-pages",
+            "12",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_질의회신_2019_0678_s1.hwp",
+            "pageCount": 12,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 12,
+                "actual": 12,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 374,
+                "actual": 374,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "법인명",
+                "actual": "법인명",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 12
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/문화체육관광부_질의회신_2019_0678_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_질의회신_2019_0678_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/문화체육관광부_질의회신_2019_0678_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_질의회신_2019_0678_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 119078,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false,
+            "paraCount": 37,
+            "title": "보안 점검 체크리스트",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/문화체육관광부_질의회신_2019_0678.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/문화체육관광부_질의회신_2019_0678_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/문화체육관광부_질의회신_2019_0678_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "법인명",
+                "occurrence": 0,
+                "value": "법인명-값-0694-0"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 1,
+                "value": "대표자-값-0694-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000679-s0",
+      "episodeId": "ep-000679",
+      "sourceTag": "환경부/질의회신/2019/0679#delete-row/s0/8/pagecount-and-fill-fail",
+      "stepIndex": 0,
+      "stepKind": "delete-row",
+      "source": "samples/gov/환경부_질의회신_2019_0679.hwpx",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/환경부_질의회신_2019_0679.hwpx",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/환경부_질의회신_2019_0679_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/환경부_질의회신_2019_0679_s0.hwpx",
+            "--expect-pages",
+            "14",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_질의회신_2019_0679_s0.hwpx",
+            "pageCount": 14,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 14,
+                "actual": 14,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 358,
+                "actual": 358,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "법인명",
+                "actual": "법인명",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 14
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/환경부_질의회신_2019_0679_s0.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_질의회신_2019_0679_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/환경부_질의회신_2019_0679_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_질의회신_2019_0679_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 116886,
+            "version": "owpml-1.0",
+            "sections": 3,
+            "pageCount": 16,
+            "expectedPageCount": 14,
+            "pageCountMismatch": true,
+            "paraCount": 21,
+            "title": "예산 전용 요구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 14,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/환경부_질의회신_2019_0679.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/환경부_질의회신_2019_0679_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_질의회신_2019_0679_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "법인명",
+                "occurrence": 0,
+                "value": "법인명-값-0678-0"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 1,
+                "value": "대표자-값-0678-1"
+              }
+            ],
+            "notFound": [
+              "없는필드3"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 1,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000679-s1",
+      "episodeId": "ep-000679",
+      "sourceTag": "환경부/질의회신/2019/0679#apply-char-format/s1/1/verify-fail",
+      "stepIndex": 1,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/환경부_질의회신_2019_0679.hwpx",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/환경부_질의회신_2019_0679.hwpx",
+        "--bold",
+        "-o",
+        "output/gov/환경부_질의회신_2019_0679_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/환경부_질의회신_2019_0679_s1.hwpx",
+            "--expect-pages",
+            "13",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_질의회신_2019_0679_s1.hwpx",
+            "pageCount": 13,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 13,
+                "actual": 13,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 375,
+                "actual": 360,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "대표자",
+                "actual": "대표자",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 13
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/환경부_질의회신_2019_0679_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_질의회신_2019_0679_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/환경부_질의회신_2019_0679_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_질의회신_2019_0679_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 119215,
+            "version": "owpml-1.0",
+            "sections": 4,
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false,
+            "paraCount": 38,
+            "title": "누름틀 일괄 채움 점검",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/환경부_질의회신_2019_0679.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/환경부_질의회신_2019_0679_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/환경부_질의회신_2019_0679_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "대표자",
+                "occurrence": 0,
+                "value": "대표자-값-0695-0"
+              },
+              {
+                "name": "담당부서",
+                "occurrence": 1,
+                "value": "담당부서-값-0695-1"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 2,
+                "value": "담당자-값-0695-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000680-s0",
+      "episodeId": "ep-000680",
+      "sourceTag": "해양수산부/질의회신/2019/0680#apply-char-format/s0/9/all-pass-empty-page",
+      "stepIndex": 0,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/해양수산부_질의회신_2019_0680.hwp",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/해양수산부_질의회신_2019_0680.hwp",
+        "--bold",
+        "-o",
+        "output/gov/해양수산부_질의회신_2019_0680_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/해양수산부_질의회신_2019_0680_s0.hwp",
+            "--expect-pages",
+            "15",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_질의회신_2019_0680_s0.hwp",
+            "pageCount": 15,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 15,
+                "actual": 15,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 359,
+                "actual": 359,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "대표자",
+                "actual": "대표자",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 15
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/해양수산부_질의회신_2019_0680_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_질의회신_2019_0680_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/해양수산부_질의회신_2019_0680_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_질의회신_2019_0680_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 117023,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 15,
+            "expectedPageCount": 15,
+            "pageCountMismatch": false,
+            "paraCount": 22,
+            "title": "민원 처리 결과 통지",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 15,
+            "expectedPageCount": 15,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/해양수산부_질의회신_2019_0680.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/해양수산부_질의회신_2019_0680_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_질의회신_2019_0680_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "대표자",
+                "occurrence": 0,
+                "value": "대표자-값-0679-0"
+              },
+              {
+                "name": "담당부서",
+                "occurrence": 1,
+                "value": "담당부서-값-0679-1"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 2,
+                "value": "담당자-값-0679-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000680-s1",
+      "episodeId": "ep-000680",
+      "sourceTag": "해양수산부/질의회신/2019/0680#fill-fields/s1/2/layout-strict-overflow",
+      "stepIndex": 1,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/해양수산부_질의회신_2019_0680.hwp",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/해양수산부_질의회신_2019_0680.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/해양수산부_질의회신_2019_0680_s1.hwp",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/해양수산부_질의회신_2019_0680_s1.hwp",
+            "--expect-pages",
+            "14",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_질의회신_2019_0680_s1.hwp",
+            "pageCount": 14,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 14,
+                "actual": 14,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 376,
+                "actual": 376,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당부서",
+                "actual": "담당부서",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 14
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/해양수산부_질의회신_2019_0680_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_질의회신_2019_0680_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 7.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/해양수산부_질의회신_2019_0680_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_질의회신_2019_0680_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 119352,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 14,
+            "expectedPageCount": 14,
+            "pageCountMismatch": false,
+            "paraCount": 39,
+            "title": "규제 심사(안) 개요",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 14,
+            "expectedPageCount": 14,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/해양수산부_질의회신_2019_0680.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/해양수산부_질의회신_2019_0680_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양수산부_질의회신_2019_0680_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "담당부서",
+                "occurrence": 0,
+                "value": "담당부서-값-0696-0"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 1,
+                "value": "담당자-값-0696-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000681-s0",
+      "episodeId": "ep-000681",
+      "sourceTag": "산업통상자원부/질의회신/2019/0681#fill-fields/s0/0/all-pass",
+      "stepIndex": 0,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/산업통상자원부_질의회신_2019_0681.hwp",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/산업통상자원부_질의회신_2019_0681.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/산업통상자원부_질의회신_2019_0681_s0.hwp",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산업통상자원부_질의회신_2019_0681_s0.hwp",
+            "--expect-pages",
+            "16",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_질의회신_2019_0681_s0.hwp",
+            "pageCount": 16,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 16,
+                "actual": 16,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 360,
+                "actual": 360,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당부서",
+                "actual": "담당부서",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 16
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산업통상자원부_질의회신_2019_0681_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_질의회신_2019_0681_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산업통상자원부_질의회신_2019_0681_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_질의회신_2019_0681_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 117160,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false,
+            "paraCount": 23,
+            "title": "감사 지적사항 조치 결과",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산업통상자원부_질의회신_2019_0681.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산업통상자원부_질의회신_2019_0681_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_질의회신_2019_0681_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "담당부서",
+                "occurrence": 0,
+                "value": "담당부서-값-0680-0"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 1,
+                "value": "담당자-값-0680-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000681-s1",
+      "episodeId": "ep-000681",
+      "sourceTag": "산업통상자원부/질의회신/2019/0681#replace-text/s1/3/pagecount-mismatch",
+      "stepIndex": 1,
+      "stepKind": "replace-text",
+      "source": "samples/gov/산업통상자원부_질의회신_2019_0681.hwp",
+      "argv": [
+        "edit",
+        "replace-text",
+        "samples/gov/산업통상자원부_질의회신_2019_0681.hwp",
+        "--find",
+        "임시",
+        "--replace",
+        "확정",
+        "-o",
+        "output/gov/산업통상자원부_질의회신_2019_0681_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/산업통상자원부_질의회신_2019_0681_s1.hwp",
+            "--expect-pages",
+            "15",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_질의회신_2019_0681_s1.hwp",
+            "pageCount": 15,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 15,
+                "actual": 15,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 377,
+                "actual": 377,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당자",
+                "actual": "담당자",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 15
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/산업통상자원부_질의회신_2019_0681_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_질의회신_2019_0681_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/산업통상자원부_질의회신_2019_0681_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_질의회신_2019_0681_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 119489,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 17,
+            "expectedPageCount": 15,
+            "pageCountMismatch": true,
+            "paraCount": 40,
+            "title": "개인정보 처리방침 개정 고시",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 17,
+            "expectedPageCount": 15,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/산업통상자원부_질의회신_2019_0681.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/산업통상자원부_질의회신_2019_0681_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/산업통상자원부_질의회신_2019_0681_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "담당자",
+                "occurrence": 0,
+                "value": "담당자-값-0697-0"
+              },
+              {
+                "name": "문서번호",
+                "occurrence": 1,
+                "value": "문서번호-값-0697-1"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 2,
+                "value": "시행일자-값-0697-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000682-s0",
+      "episodeId": "ep-000682",
+      "sourceTag": "여성가족부/질의회신/2019/0682#replace-text/s0/1/verify-fail",
+      "stepIndex": 0,
+      "stepKind": "replace-text",
+      "source": "samples/gov/여성가족부_질의회신_2019_0682.hwpx",
+      "argv": [
+        "edit",
+        "replace-text",
+        "samples/gov/여성가족부_질의회신_2019_0682.hwpx",
+        "--find",
+        "임시",
+        "--replace",
+        "확정",
+        "-o",
+        "output/gov/여성가족부_질의회신_2019_0682_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/여성가족부_질의회신_2019_0682_s0.hwpx",
+            "--expect-pages",
+            "17",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_질의회신_2019_0682_s0.hwpx",
+            "pageCount": 17,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 17,
+                "actual": 17,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 361,
+                "actual": 346,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당자",
+                "actual": "담당자",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": false
+              }
+            ],
+            "passCount": 2,
+            "failCount": 3,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 3,
+            "passCount": 2,
+            "pageCount": 17
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/여성가족부_질의회신_2019_0682_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_질의회신_2019_0682_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/여성가족부_질의회신_2019_0682_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_질의회신_2019_0682_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 117297,
+            "version": "owpml-1.0",
+            "sections": 2,
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false,
+            "paraCount": 24,
+            "title": "회의 결과 보고",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/여성가족부_질의회신_2019_0682.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/여성가족부_질의회신_2019_0682_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_질의회신_2019_0682_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "담당자",
+                "occurrence": 0,
+                "value": "담당자-값-0681-0"
+              },
+              {
+                "name": "문서번호",
+                "occurrence": 1,
+                "value": "문서번호-값-0681-1"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 2,
+                "value": "시행일자-값-0681-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000682-s1",
+      "episodeId": "ep-000682",
+      "sourceTag": "여성가족부/질의회신/2019/0682#delete-text/s1/4/fill-verify-ir-diff",
+      "stepIndex": 1,
+      "stepKind": "delete-text",
+      "source": "samples/gov/여성가족부_질의회신_2019_0682.hwpx",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/여성가족부_질의회신_2019_0682.hwpx",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/여성가족부_질의회신_2019_0682_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/여성가족부_질의회신_2019_0682_s1.hwpx",
+            "--expect-pages",
+            "16",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_질의회신_2019_0682_s1.hwpx",
+            "pageCount": 16,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 16,
+                "actual": 16,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 378,
+                "actual": 378,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "문서번호",
+                "actual": "문서번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 16
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/여성가족부_질의회신_2019_0682_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_질의회신_2019_0682_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/여성가족부_질의회신_2019_0682_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_질의회신_2019_0682_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 119626,
+            "version": "owpml-1.0",
+            "sections": 3,
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false,
+            "paraCount": 41,
+            "title": "지방세 감면 신청서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/여성가족부_질의회신_2019_0682.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/여성가족부_질의회신_2019_0682_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/여성가족부_질의회신_2019_0682_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "문서번호",
+                "occurrence": 0,
+                "value": "문서번호-값-0698-0"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 1,
+                "value": "시행일자-값-0698-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 3
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 3,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "fill-verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000683-s0",
+      "episodeId": "ep-000683",
+      "sourceTag": "통일부/질의회신/2019/0683#delete-text/s0/2/layout-strict-overflow",
+      "stepIndex": 0,
+      "stepKind": "delete-text",
+      "source": "samples/gov/통일부_질의회신_2019_0683.hwp",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/통일부_질의회신_2019_0683.hwp",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/통일부_질의회신_2019_0683_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/통일부_질의회신_2019_0683_s0.hwp",
+            "--expect-pages",
+            "18",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_질의회신_2019_0683_s0.hwp",
+            "pageCount": 18,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 18,
+                "actual": 18,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 362,
+                "actual": 362,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "문서번호",
+                "actual": "문서번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 18
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/통일부_질의회신_2019_0683_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_질의회신_2019_0683_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 4,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 11.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 4,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/통일부_질의회신_2019_0683_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_질의회신_2019_0683_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 117434,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false,
+            "paraCount": 25,
+            "title": "보안 점검 체크리스트",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/통일부_질의회신_2019_0683.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/통일부_질의회신_2019_0683_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_질의회신_2019_0683_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "문서번호",
+                "occurrence": 0,
+                "value": "문서번호-값-0682-0"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 1,
+                "value": "시행일자-값-0682-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000683-s1",
+      "episodeId": "ep-000683",
+      "sourceTag": "통일부/질의회신/2019/0683#insert-text/s1/5/verify-io",
+      "stepIndex": 1,
+      "stepKind": "insert-text",
+      "source": "samples/gov/통일부_질의회신_2019_0683.hwp",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/통일부_질의회신_2019_0683.hwp",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/통일부_질의회신_2019_0683_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/통일부_질의회신_2019_0683_s1.hwp",
+            "--expect-pages",
+            "17",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/통일부_질의회신_2019_0683_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_질의회신_2019_0683_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/통일부_질의회신_2019_0683_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_질의회신_2019_0683_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 119763,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false,
+            "paraCount": 42,
+            "title": "공사계약 일반조건",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/통일부_질의회신_2019_0683.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/통일부_질의회신_2019_0683_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통일부_질의회신_2019_0683_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "시행일자",
+                "occurrence": 0,
+                "value": "시행일자-값-0699-0"
+              },
+              {
+                "name": "수신",
+                "occurrence": 1,
+                "value": "수신-값-0699-1"
+              },
+              {
+                "name": "제목",
+                "occurrence": 2,
+                "value": "제목-값-0699-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000684-s0",
+      "episodeId": "ep-000684",
+      "sourceTag": "국가보훈부/질의회신/2019/0684#insert-text/s0/3/pagecount-mismatch",
+      "stepIndex": 0,
+      "stepKind": "insert-text",
+      "source": "samples/gov/국가보훈부_질의회신_2019_0684.hwp",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/국가보훈부_질의회신_2019_0684.hwp",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/국가보훈부_질의회신_2019_0684_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국가보훈부_질의회신_2019_0684_s0.hwp",
+            "--expect-pages",
+            "19",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_질의회신_2019_0684_s0.hwp",
+            "pageCount": 19,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 19,
+                "actual": 19,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 363,
+                "actual": 363,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "시행일자",
+                "actual": "시행일자",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 19
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국가보훈부_질의회신_2019_0684_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_질의회신_2019_0684_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국가보훈부_질의회신_2019_0684_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_질의회신_2019_0684_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 117571,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 22,
+            "expectedPageCount": 19,
+            "pageCountMismatch": true,
+            "paraCount": 26,
+            "title": "누름틀 일괄 채움 점검",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 22,
+            "expectedPageCount": 19,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국가보훈부_질의회신_2019_0684.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국가보훈부_질의회신_2019_0684_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_질의회신_2019_0684_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "시행일자",
+                "occurrence": 0,
+                "value": "시행일자-값-0683-0"
+              },
+              {
+                "name": "수신",
+                "occurrence": 1,
+                "value": "수신-값-0683-1"
+              },
+              {
+                "name": "제목",
+                "occurrence": 2,
+                "value": "제목-값-0683-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000684-s1",
+      "episodeId": "ep-000684",
+      "sourceTag": "국가보훈부/질의회신/2019/0684#redact/s1/6/layout-usage",
+      "stepIndex": 1,
+      "stepKind": "redact",
+      "source": "samples/gov/국가보훈부_질의회신_2019_0684.hwp",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/국가보훈부_질의회신_2019_0684.hwp",
+        "-o",
+        "output/gov/국가보훈부_질의회신_2019_0684_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국가보훈부_질의회신_2019_0684_s1.hwp",
+            "--expect-pages",
+            "18",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_질의회신_2019_0684_s1.hwp",
+            "pageCount": 18,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 18,
+                "actual": 18,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 380,
+                "actual": 380,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "수신",
+                "actual": "수신",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 18
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국가보훈부_질의회신_2019_0684_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국가보훈부_질의회신_2019_0684_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_질의회신_2019_0684_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 119900,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false,
+            "paraCount": 43,
+            "title": "정보공개 청구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국가보훈부_질의회신_2019_0684.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국가보훈부_질의회신_2019_0684_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가보훈부_질의회신_2019_0684_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "수신",
+                "occurrence": 0,
+                "value": "수신-값-0700-0"
+              },
+              {
+                "name": "제목",
+                "occurrence": 1,
+                "value": "제목-값-0700-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    }
+  ]
+}

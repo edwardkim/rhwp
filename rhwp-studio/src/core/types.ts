@@ -1093,6 +1093,7 @@ export interface LayerPageBackgroundOp {
   backgroundColor?: string;
   borderColor?: string;
   borderWidth?: number;
+  gradient?: LayerGradientFill;
 }
 
 export interface LayerTextStyle {
@@ -1187,6 +1188,20 @@ export interface LayerFootnoteMarkerOp {
 
 export type LayerStrokeDash = 'solid' | 'dash' | 'dot' | 'dashDot' | 'dashDotDot';
 
+export interface LayerShadowStyle {
+  shadowType?: number;
+  color?: string;
+  offsetX?: number;
+  offsetY?: number;
+  alpha?: number;
+}
+
+export interface LayerPatternFill {
+  patternType?: number;
+  patternColor?: string;
+  backgroundColor?: string;
+}
+
 export interface LayerLineStyle {
   color?: string;
   width?: number;
@@ -1194,6 +1209,9 @@ export interface LayerLineStyle {
   lineType?: string;
   startArrow?: string;
   endArrow?: string;
+  startArrowSize?: number;
+  endArrowSize?: number;
+  shadow?: LayerShadowStyle;
 }
 
 export interface LayerShapeStyle {
@@ -1202,7 +1220,20 @@ export interface LayerShapeStyle {
   strokeWidth?: number;
   strokeDash?: LayerStrokeDash;
   opacity?: number;
+  pattern?: LayerPatternFill;
+  shadow?: LayerShadowStyle;
 }
+
+/** HWP 도형/페이지 배경 그라데이션. paint JSON `gradient` 필드와 동일. */
+export interface LayerGradientFill {
+  gradientType?: number;
+  angle?: number;
+  centerX?: number;
+  centerY?: number;
+  colors?: string[];
+  positions?: number[];
+}
+
 
 export interface LayerLineOp {
   type: 'line';
@@ -1219,12 +1250,14 @@ export interface LayerRectangleOp {
   bbox: LayerBounds;
   cornerRadius?: number;
   style?: LayerShapeStyle;
+  gradient?: LayerGradientFill;
 }
 
 export interface LayerEllipseOp {
   type: 'ellipse';
   bbox: LayerBounds;
   style?: LayerShapeStyle;
+  gradient?: LayerGradientFill;
 }
 
 export type LayerPathCommand =
@@ -1256,6 +1289,7 @@ export interface LayerPathOp {
   style?: LayerShapeStyle;
   lineStyle?: LayerLineStyle;
   transform?: LayerPathTransform;
+  gradient?: LayerGradientFill;
 }
 
 export interface LayerImageOp {

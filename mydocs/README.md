@@ -73,6 +73,7 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 | [한글 문서 파일 형식 5.0 개정 1.3](tech/한글문서파일형식_5.0_revision1.3.md) | reference | active | `tech/hwp_spec_errata.md` | 2026-07-16 |
 | [Document IR LineSeg 표준](tech/document_ir_lineseg_standard.md) | canonical | active | `tech/document_ir_lineseg_standard.md` | 2026-07-16 |
 | [렌더링 엔진 설계](tech/rendering_engine_design.md) | canonical | active | `tech/rendering_engine_design.md` | 2026-07-23 |
+| [수식 모듈 매뉴얼](manual/equation_module.md) | guide | active | `manual/equation_module.md` | 2026-08-18 |
 | [표 레이아웃 규칙](tech/table_layout_rules.md) | canonical | active | `tech/table_layout_rules.md` | 2026-07-16 |
 | [폰트 fallback 전략](tech/font_fallback_strategy.md) | canonical | active | `tech/font_fallback_strategy.md` | 2026-07-16 |
 | [편집 action undo/redo 아키텍처](tech/edit_action_undo_redo_architecture.md) | canonical | active | `tech/edit_action_undo_redo_architecture.md` | 2026-07-16 |

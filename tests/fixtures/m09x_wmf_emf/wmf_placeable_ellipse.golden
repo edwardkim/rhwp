@@ -1,0 +1,9 @@
+# M09x wmf golden — current-engine lock
+kind: wmf
+bytes: 60
+
+=== header ===
+placeable bounds=(0,0,100,100) inch=1440 type=MEMORYMETAFILE version=METAVERSION300 objects=0
+
+=== svg ===
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="45" fill="none" fill-rule="evenodd" id="elem1" rx="40" ry="35" stroke="#000000" stroke-dasharray="none" stroke-linecap="butt" stroke-linejoin="miter" stroke-opacity="1.00" stroke-width="1"></ellipse></svg>

@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "id": "s502-decorations",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "장식·탭·제어 표식",
+  "ops": [
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 20.0,
+      "w": 100.0,
+      "h": 16.0,
+      "text": "본문",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textDecoration",
+      "x": 10.0,
+      "y": 34.0,
+      "w": 100.0,
+      "h": 2.0,
+      "text": "밑줄",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "tabLeader",
+      "x": 120.0,
+      "y": 28.0,
+      "w": 80.0,
+      "h": 2.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textControlMark",
+      "x": 210.0,
+      "y": 20.0,
+      "w": 12.0,
+      "h": 16.0,
+      "text": "¶",
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "textRun",
+    "textDecoration",
+    "tabLeader",
+    "textControlMark"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  textRun bbox=10.00,20.00,100.00,16.00",
+    "  textDecoration bbox=10.00,34.00,100.00,2.00",
+    "  tabLeader bbox=120.00,28.00,80.00,2.00",
+    "  textControlMark bbox=210.00,20.00,12.00,16.00",
+    "end_page ops=4"
+  ]
+}

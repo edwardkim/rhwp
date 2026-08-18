@@ -1,0 +1,120 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "export-text",
+  "mapIndex": 8,
+  "family": "query",
+  "familyTitle": "조회",
+  "opensDocument": true,
+  "cli": "rhwp export-text <파일> --json [-p N]",
+  "risk": "critical",
+  "whyRisk": "본문 전달이 목적. 문서의 모든 문장이 컨텍스트로 직행한다.",
+  "note": "본문 전달이 목적인 명령이라 봉투의 무게중심 자체가 문서 파생이다.",
+  "consumerRule": "pages[].text/text 는 반드시 nonce 격벽. 도구 인자에 넣지 않는다.",
+  "trap": "보안 필드가 없다고 깨끗하다고 읽지 않는다. 이 봉투는 본문 그 자체다.",
+  "untrusted": [
+    "pages[].text",
+    "text"
+  ],
+  "origins": {
+    "pages[].text": "HwpDocument::extract_page_text_native — 쪽 텍스트 원문",
+    "text": "batch 레코드의 전 쪽 결합 텍스트 (batch_export_text_record_inner)"
+  },
+  "engineFields": [
+    [
+      "pageCount",
+      "쪽 수"
+    ],
+    [
+      "pages[].page",
+      "쪽 번호"
+    ]
+  ],
+  "callerFields": [
+    [
+      "source",
+      "입력 경로"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "pages",
+      "flags": [
+        "--json"
+      ],
+      "present": [
+        "pages[].text"
+      ],
+      "why": "단건 명령은 쪽 배열",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "batch-record",
+      "flags": [
+        "batch",
+        "export-text",
+        "--json"
+      ],
+      "present": [
+        "text"
+      ],
+      "why": "NDJSON 레코드는 전 쪽 결합 text",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    }
+  ],
+  "fields": [
+    {
+      "path": "pages[].text",
+      "origin": "HwpDocument::extract_page_text_native — 쪽 텍스트 원문",
+      "hint": "쪽 원문. 주 주입 표면.",
+      "presentInModes": [
+        "pages"
+      ]
+    },
+    {
+      "path": "text",
+      "origin": "batch 레코드의 전 쪽 결합 텍스트 (batch_export_text_record_inner)",
+      "hint": "표시 문자열 또는 본문. 격벽 또는 화면.",
+      "presentInModes": [
+        "batch-record"
+      ]
+    }
+  ],
+  "forbiddenSlots": [
+    "system_prompt",
+    "tool_name",
+    "tool_arg_path",
+    "tool_arg_output",
+    "shell_command",
+    "url_destination",
+    "http_request_body",
+    "run_plan_json",
+    "permission_judgment",
+    "source_label",
+    "log_filename",
+    "email_recipient",
+    "email_subject",
+    "mcp_resource_uri",
+    "next_cli_subcommand",
+    "verify_expected",
+    "filename_from_title",
+    "env_variable",
+    "scheduler_payload",
+    "multimodal_caption"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

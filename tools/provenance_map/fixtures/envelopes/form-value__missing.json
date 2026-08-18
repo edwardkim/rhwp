@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "form-value__missing",
+  "command": "form-value",
+  "family": "query",
+  "mode": "missing",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp form-value <파일> --section N --paragraph N --control N --json ",
+  "whyThisMode": "좌표에 양식이 없으면 문자열 필드가 비어 표지 false",
+  "sampleKind": "typical",
+  "risk": "high",
+  "note": "ok·formType·enabled 와 좌표는 엔진이 판정한다. 양식의 이름·값·표기는 문서가 정한다.",
+  "declaredUntrusted": [
+    "name",
+    "value",
+    "text",
+    "caption"
+  ],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "source": "C",
+    "section": "C",
+    "paragraph": "C",
+    "control": "C",
+    "ok": "R",
+    "formType": "R",
+    "enabled": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "값은 데이터. 다음 fill 의 키는 호출자가 정한 이름 목록에서만.",
+  "trap": "caption 을 도구 선택 힌트로 쓰지 않는다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [
+    "system_prompt",
+    "tool_name",
+    "tool_arg_path",
+    "tool_arg_output",
+    "shell_command",
+    "url_destination",
+    "http_request_body",
+    "run_plan_json",
+    "email_recipient",
+    "next_cli_subcommand",
+    "filename_from_title",
+    "scheduler_payload"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "<repo>/samples/fixture-form-value.hwp",
+    "section": "caller:form-value:section",
+    "paragraph": "caller:form-value:paragraph",
+    "control": "caller:form-value:control",
+    "ok": true,
+    "formType": "engine:form-value:formType",
+    "enabled": true,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

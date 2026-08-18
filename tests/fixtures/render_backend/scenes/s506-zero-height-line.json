@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s506-zero-height-line",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "높이 0 선분은 유효하다",
+  "ops": [
+    {
+      "kind": "line",
+      "x": 10.0,
+      "y": 50.0,
+      "w": 200.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "line"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  line bbox=10.00,50.00,200.00,0.00",
+    "end_page ops=1"
+  ]
+}

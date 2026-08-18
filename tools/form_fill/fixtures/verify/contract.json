@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "contract-verify",
+  "axis": "verify",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "contract",
+  "title": "물품구매 계약서 --verify",
+  "family": "계약",
+  "genre": "계약",
+  "sample": "fixtures/forms/물품구매계약서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "저장 직후 재파싱. identical:false 면 exit 3. 산출물은 남는다.",
+  "firstFieldName": "계약명",
+  "fieldCount": 12,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/물품구매계약서.hwp",
+    "--data",
+    "{\"계약명\": \"서식 인쇄 구매\"}",
+    "-o",
+    "out/contract-verify.hwp",
+    "--verify",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "계약명": "서식 인쇄 구매"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/물품구매계약서.hwp",
+    "dryRun": false,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "계약명",
+        "occurrence": 0,
+        "value": "서식 인쇄 구매"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": {
+      "identical": true,
+      "diffCount": 0
+    },
+    "output": "out/contract-verify.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "leavesOutput": true
+}

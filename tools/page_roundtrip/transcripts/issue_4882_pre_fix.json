@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "kind": "pageRoundtripTranscript",
+  "issue": 4882,
+  "doc": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+  "route": "hwpx",
+  "created": "2026-08-18T10:12:07Z",
+  "summary": {
+    "events": 14,
+    "pages": {
+      "before": 215,
+      "after": 223
+    },
+    "verdict": "EXPECTED_FAIL",
+    "irDiffs": 5
+  },
+  "events": [
+    {
+      "seq": 0,
+      "kind": "meta",
+      "tool": "tools/page_roundtrip/transcript.py",
+      "issue": 4882
+    },
+    {
+      "seq": 1,
+      "kind": "command",
+      "argv": [
+        "rhwp",
+        "export-hwpx",
+        "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "/tmp/tmp.OnkvEoBfAZ/rt.hwpx",
+        "--verify-pages",
+        "--verify"
+      ]
+    },
+    {
+      "seq": 2,
+      "kind": "stdout",
+      "text": "저장 완료: /tmp/tmp.OnkvEoBfAZ/rt.hwpx (5246KB)\n",
+      "bytes": 52
+    },
+    {
+      "seq": 3,
+      "kind": "stderr",
+      "text": "검증 실패(--verify-pages): 변환 전 215쪽, 재파싱 후 223쪽\n검증 실패(--verify): /tmp/tmp.OnkvEoBfAZ/rt.hwpx 재파싱 후 IR 차이 5건\n  [차이] section[0] paragraph[421]/ctrl[0]fn.p[0] linesegs: [1].vertpos: expected=0 actual=1172\n  [차이] section[0] paragraph[728]/ctrl[0]tbl.cell[3].p[0]/ctrl[0]fn.p[0] linesegs: [2].vertpos: expected=0 actual=2344\n  [차이] section[0] paragraph[1372]/ctrl[0]fn.p[0] linesegs: [2].vertpos: expected=0 actual=2344\n  [차이] section[0] paragraph[1832]/ctrl[0]tbl.cell[0].p[3]/ctrl[0]fn.p[0] linesegs: [1].vertpos: expected=0 actual=1172\n  [차이] section[0] paragraph[1865]/ctrl[0]fn.p[0] linesegs: [1].vertpos: expected=0 actual=1172\n",
+      "bytes": 694
+    },
+    {
+      "seq": 4,
+      "kind": "exit",
+      "rc": 4
+    },
+    {
+      "seq": 5,
+      "kind": "pages",
+      "before": 215,
+      "after": 223,
+      "identical": false
+    },
+    {
+      "seq": 6,
+      "kind": "note",
+      "irDiffCount": 5
+    },
+    {
+      "seq": 7,
+      "kind": "ir_diff",
+      "path": "section[0] paragraph[421]/ctrl[0]fn.p[0] linesegs: [1].vertpos: expected=0 actual=1172"
+    },
+    {
+      "seq": 8,
+      "kind": "ir_diff",
+      "path": "section[0] paragraph[728]/ctrl[0]tbl.cell[3].p[0]/ctrl[0]fn.p[0] linesegs: [2].vertpos: expected=0 actual=2344"
+    },
+    {
+      "seq": 9,
+      "kind": "ir_diff",
+      "path": "section[0] paragraph[1372]/ctrl[0]fn.p[0] linesegs: [2].vertpos: expected=0 actual=2344"
+    },
+    {
+      "seq": 10,
+      "kind": "ir_diff",
+      "path": "section[0] paragraph[1832]/ctrl[0]tbl.cell[0].p[3]/ctrl[0]fn.p[0] linesegs: [1].vertpos: expected=0 actual=1172"
+    },
+    {
+      "seq": 11,
+      "kind": "ir_diff",
+      "path": "section[0] paragraph[1865]/ctrl[0]fn.p[0] linesegs: [1].vertpos: expected=0 actual=1172"
+    },
+    {
+      "seq": 12,
+      "kind": "verdict",
+      "verdict": "EXPECTED_FAIL",
+      "cataloged": true,
+      "issue": 4882
+    },
+    {
+      "seq": 13,
+      "kind": "note",
+      "text": "M05-6 수정 전 기계 판정. 쪽수 215→223, 각주 vertpos 5건."
+    }
+  ]
+}

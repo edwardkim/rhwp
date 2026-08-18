@@ -2,45 +2,34 @@
   "schemaVersion": 1,
   "kind": "pageRoundtripCatalog",
   "notes": [
-    "M05-1 판정 도구의 expected-fail 목록이다. 침묵 스킵 금지 — 항목은 항상 리포트에 남는다.",
-    "이슈 수정(#3518 #3521 #3737 #4056 #4882 #5128)은 M05-2~ 의 몫이다. 고치면 이 목록에서 뺀다."
+    "expected-fail 목록. 침묵 스킵 금지 — 항목은 항상 리포트에 남는다.",
+    "M05-6 #4882와 M05-7 #5128은 해결되어 카탈로그에서 제거했다.",
+    "#4056은 다중 secd 좌석으로 계속 추적한다."
   ],
   "entries": [
     {
       "doc": "samples/hwp3-sample16.hwp",
       "route": "hwpx",
       "issue": 3518,
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (64→65)"
+      "reason": "HWPX 내보내기 전후 쪽수 불일치 (64→65) — M05-2"
     },
     {
       "doc": "samples/synam-001.hwp",
       "route": "hwpx",
       "issue": 3521,
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (35→36)"
+      "reason": "HWPX 내보내기 전후 쪽수 불일치 (35→36) — M05-3"
     },
     {
       "doc": "samples/hwp3-sample11.hwp",
       "route": "hwpx",
       "issue": 3737,
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (151→152)"
+      "reason": "HWPX 내보내기 전후 쪽수 불일치 (151→152) — M05-4"
     },
     {
       "doc": "samples/issue-505-equations.hwp",
       "route": "hwpx",
       "issue": 4056,
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (4→1)"
-    },
-    {
-      "doc": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
-      "route": "hwpx",
-      "issue": 4882,
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (215→223)"
-    },
-    {
-      "doc": "samples/한글문서파일형식_5.0_revision1.3.hwp",
-      "route": "hwpx",
-      "issue": 5128,
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (69→68)"
+      "reason": "HWPX 내보내기 전후 쪽수 불일치 (4→1) — 다중 secd, 이 PR 범위 밖"
     }
   ]
 }

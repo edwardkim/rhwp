@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/README.md
-last_verified: 2026-08-15
+last_verified: 2026-08-18
 ---
 
 # manual 문서 지도
@@ -29,16 +29,19 @@ last_verified: 2026-08-15
 | 실사례 여정 기반 버그 헌팅 | [버그 헌팅 playbook](bug_hunting_playbook.md) | [Claude bug-hunter 에이전트](../../.claude/agents/bug-hunter.md), [Codex bug-hunter Skill](../../.agents/skills/bug-hunter/SKILL.md), [정답지 비교 하네스](../../tools/fidelity_compare/README.md) |
 | 로컬 OWPML XML 스키마 자산 | [OWPML XML 스키마 reference](owpml_schema_reference.md) | [한컴 공식 OWPML 모델 참조 가이드](../tech/hwpx_hancom_reference.md) |
 | PDF/SVG 기준 비교의 정책 | [시각 검증 문서 지도](verification/README.md) | [시각 검증 거버넌스](verification/visual_verification_governance.md), [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md) |
+| RenderBackend 계약·픽스처 | [RenderBackend 계약 카탈로그](render_backend_contract_catalog.md) | [픽스처 목록](../tech/render_backend_fixture_catalog.md), [설계 배경](../tech/render_backend.md) |
 | 한컴 기준 PDF 산출을 위한 MCP 사용 | [HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md) | [PR review 시각·fixture 증적](pr_review/visual_fixture_evidence.md) |
 | AI 에이전트 호스트에 rhwp 를 MCP 도구로 연결 | [MCP 통합 가이드](mcp_integration_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md), [CLI JSON 파이프라인 가이드](cli_json_pipeline_guide.md) |
 | 브라우저 확장 개발·배포 | [브라우저 확장 개발 가이드](browser_extension_dev_guide.md) | [Chrome/Edge 확장 빌드·배포](chrome_edge_extension_build_deploy.md) |
 | Studio E2E·CDP 검증 | [E2E 조판 자동 검증](e2e_verification_guide.md) | [CDP E2E 가이드](e2e-cdp.md) |
 | 로컬 폰트 감지·이름·backend·정답지 불일치 대응 | [폰트 감지·대체 사고 대응 절차](font_incident_response.md) | [폰트 fallback 전략](../tech/font_fallback_strategy.md), [시각 검증 거버넌스](verification/visual_verification_governance.md) |
+| RenderBackend 네 번째 어댑터를 붙일 때 | [RenderBackend 어댑터 작성 가이드](render_backend_adapter_guide.md) | [출력 백엔드 공통 계약](../tech/render_backend.md) |
 | HWP/HWPX 저장 회귀 기준 | [HWP5 roundtrip baseline](hwp5_roundtrip_baseline.md), [HWPX roundtrip baseline](hwpx_roundtrip_baseline.md) | [문서 진단 도구](document_diagnostics_tool_manual.md), [HWPX2HWP probe 온보딩](hwpx2hwp_probe_onboarding.md) |
 | `@rhwp/core` 편집 API | [소비자용 편집 API](consumer_edit_api_guide.md) | [WASM options object 규약](wasm_api_options_convention.md) |
 | 웹한글컨트롤 호환 층 개발·Oracle 대조 | [웹한글컨트롤 호환 개발 가이드](webhwpctrl_compat_development.md) | [`@rhwp/hwpctrl` 패키지 안내](../../npm/hwpctrl-ocx/README.md), [호환 하니스](../../tools/hwpctrl_compat/README.md) |
 | CLI 로 실물 서식 채우기(누름틀·표 좌표·치환) | [서식 자동화 심화 가이드](form_filling_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md), [에이전트 실무 대체 예제집](agent_task_playbook.md) |
 | 편집 command와 단축키 | [Command/Undo 검토 체크리스트](edit_command_review_checklist.md) | [키보드 단축키 추가](keyboard_shortcut_guide.md) |
+| 수식 스크립트 파서·명령 디스패치 | [수식 모듈 매뉴얼](equation_module.md) | 모듈 지도 [`src/renderer/equation/README.md`](../../src/renderer/equation/README.md), 분류 정본 [`dispatch.rs`](../../src/renderer/equation/dispatch.rs) |
 | 품질 지표와 리팩터링 검토 | [코드 품질 대시보드](dashboard.md) | [SOLID 채점 기준](solid_scoring_guide.md) |
 | release 준비와 배포 | [배포 가이드](publish_guide.md) | [개발 환경 가이드](dev_environment_guide.md) |
 | rhwp-studio UI 명칭·CSS 접두어 | [rhwp-studio UI 명칭과 CSS 접두어](rhwp_studio_ui_conventions.md) | [개발 환경 가이드](dev_environment_guide.md) |

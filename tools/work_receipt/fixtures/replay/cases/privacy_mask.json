@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "privacy_mask",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "보안",
+  "genre": "전화마스킹",
+  "title": "02-2100-2114→02-****-2114",
+  "why": "배포 전 중간 네 자리 마스킹. 영수증은 마스킹된 산출 해시만 가진다.",
+  "notes": "inspect 석과 무관 — replace_text 만",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/privacy-phone.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/privacy-phone.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "02-2100-2114",
+        "replace": "02-****-2114"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/privacy-phone.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"02-2100-2114\",\"replace\":\"02-****-2114\"}]}",
+  "planSha256": "a7acca73103f6d4856f9e6670b73e2f7b907f328e8c5d95c1cd27a28a1a7b08d",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "fd4180d1b50bdef2b11c1a3cb9d20a431aff7d9d005545f5bf80ed7e500f3e58",
+    "planSha256": "a7acca73103f6d4856f9e6670b73e2f7b907f328e8c5d95c1cd27a28a1a7b08d",
+    "outputSha256": "200bffd24fa54ed2897c67ea4b19e4e24f0aedc917a09cd5e41d3a7cffbdc892",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "200bffd24fa54ed2897c67ea4b19e4e24f0aedc917a09cd5e41d3a7cffbdc892"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

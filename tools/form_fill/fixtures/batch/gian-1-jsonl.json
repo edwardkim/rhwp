@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.batch_row.v1",
+  "id": "gian-1-batch-jsonl",
+  "axis": "batch-fill",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "gian-1",
+  "title": "일반기안문 별지 제1호서식 JSONL 메일머지",
+  "why": "행마다 단건 봉투 + row. 실패 행도 스트림에 남긴다.",
+  "sample": "tools/forms/일반기안문_서식.hwpx",
+  "relatedIssue": "#3719",
+  "argv": [
+    "batch",
+    "fill",
+    "--form",
+    "tools/forms/일반기안문_서식.hwpx",
+    "--data",
+    "data/gian-1.jsonl",
+    "--out-dir",
+    "out/gian-1",
+    "--json"
+  ],
+  "dataFormat": "jsonl",
+  "dataText": "{\"행정기관명\": \"행정안전부\", \"수신자\": \"각 중앙행정기관의 장-홍길동\"}\n{\"행정기관명\": \"행정안전부\", \"수신자\": \"각 중앙행정기관의 장-김가온\"}\n{\"행정기관명\": \"행정안전부\", \"수신자\": \"각 중앙행정기관의 장-이도윤\"}\n",
+  "records": [
+    {
+      "schemaVersion": "1.0",
+      "source": "tools/forms/일반기안문_서식.hwpx",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "행정기관명",
+          "occurrence": 0,
+          "value": "행정안전부"
+        },
+        {
+          "name": "수신자",
+          "occurrence": 0,
+          "value": "각 중앙행정기관의 장-홍길동"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/gian-1/0001.hwpx",
+      "outputFormat": "hwpx",
+      "row": 0
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "tools/forms/일반기안문_서식.hwpx",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "행정기관명",
+          "occurrence": 0,
+          "value": "행정안전부"
+        },
+        {
+          "name": "수신자",
+          "occurrence": 0,
+          "value": "각 중앙행정기관의 장-김가온"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/gian-1/0002.hwpx",
+      "outputFormat": "hwpx",
+      "row": 1
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "tools/forms/일반기안문_서식.hwpx",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "행정기관명",
+          "occurrence": 0,
+          "value": "행정안전부"
+        },
+        {
+          "name": "수신자",
+          "occurrence": 0,
+          "value": "각 중앙행정기관의 장-이도윤"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/gian-1/0003.hwpx",
+      "outputFormat": "hwpx",
+      "row": 2
+    }
+  ],
+  "exit": 0,
+  "gate": true,
+  "writesFiles": true
+}

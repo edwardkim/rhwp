@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/calendar_year.hwp",
+    "output": "out/cell-amount.hwp",
+    "steps": [
+      {
+        "action": "set_cell",
+        "table": 0,
+        "row": 2,
+        "col": 3,
+        "text": "12,500,000"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/calendar_year.hwp\",\"output\":\"out/cell-amount.hwp\",\"steps\":[{\"action\":\"set_cell\",\"table\":0,\"row\":2,\"col\":3,\"text\":\"12,500,000\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/calendar_year.hwp",
+    "inputSha256": "b0fc351fd8afef455a07e7aad3bcf6b163089ec84807106d93ec7e815636bf14",
+    "planSha256": "b8e8097f7c6e121eef50b5e3d1cf531a55eb5d987139086223f79feeeb667f4d",
+    "outputSha256": "b1d5f6e4b5e1b4e5de21a42d47ed6e4137579f2ace2260b54fae8833ae1dca60",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

@@ -5964,7 +5964,7 @@ impl LayoutEngine {
                     }
                     _ => None,
                 });
-            if self.profile.get().native_hwp5_layout()
+            if self.profile.get().hwp5_stored_pagination_layout()
                 && item_is_paragraph
                 && next_square_sibling_top.is_some()
                 && paragraphs.get(item_para).is_some_and(para_has_visible_text)
@@ -7092,7 +7092,7 @@ impl LayoutEngine {
         // lineseg 부재·전부 0 문서는 파서가 line_segs 를 비워 아래 len==1
         // 게이트가 자연 배제한다.
         let profile = self.profile.get();
-        if !(profile.native_hwp5_layout() || profile.hwpx_stored_layout()) {
+        if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout()) {
             return;
         }
         let lines: Vec<(usize, usize, i32, f64, f64)> = col_node
@@ -7492,7 +7492,7 @@ impl LayoutEngine {
                         // 레이아웃과 일치하는 문서(HWP3 변환본 등)에서는 구성상
                         // 무동작이라, 상한 캡이 issue_1892 를 깨던 함정이 없다.
                         // 개입은 재래핑 서명(조판 2줄 이상)일 때만.
-                        if self.profile.get().native_hwp5_layout() {
+                        if self.profile.get().hwp5_stored_pagination_layout() {
                             if let [seg] = para.line_segs.as_slice() {
                                 let target = (seg.line_height > 0)
                                     .then(|| paragraphs.get(*para_index + 1))
@@ -7945,7 +7945,7 @@ impl LayoutEngine {
                 declared_height,
             ) && is_current_empty_para_float
                 && native_empty_host_physical_outer_box_paint_inset(
-                    self.profile.get().native_hwp5_layout(),
+                    self.profile.get().hwp5_stored_pagination_layout(),
                     para,
                     t,
                     paragraphs.get(para_index + 1),
@@ -7974,7 +7974,7 @@ impl LayoutEngine {
             // 그리고 +201 전진해 시각·흐름 모두 반대였고, typeset 은 밴드
             // 비예약이라 조판·렌더 desync). 판별자는 ④-a 직전-갭 계보.
             let square_reserved_above_gap: Option<f64> = (|| {
-                if !self.profile.get().native_hwp5_layout()
+                if !self.profile.get().hwp5_stored_pagination_layout()
                     || !tbl_is_square
                     || t.common.treat_as_char
                     || para_has_non_whitespace_text(para)
@@ -8352,7 +8352,7 @@ impl LayoutEngine {
                             if is_para_topbottom_float(&previous.common))
                     });
                 let profile = self.profile.get();
-                let issue2439_visible_host_stack = profile.native_hwp5_layout()
+                let issue2439_visible_host_stack = profile.hwp5_stored_pagination_layout()
                     && page_content.column_contents.len() == 1
                     && is_current_visible_para_float
                     && signed_hwpunit(t.common.vertical_offset) > 0
@@ -8377,7 +8377,7 @@ impl LayoutEngine {
                     iy
                 } else if let Some(stored_host_bottom_top) =
                     native_multiline_visible_float_table_top(
-                        self.profile.get().native_hwp5_layout(),
+                        self.profile.get().hwp5_stored_pagination_layout(),
                         para,
                         t,
                         para_y_for_table,
@@ -8515,19 +8515,21 @@ impl LayoutEngine {
                 // HWP5와 original HWPX 모두 outer host의 저장 vpos가 있어야만 정확히
                 // page-local top으로 정규화할 수 있다. nested/header/footer 호출은 아래
                 // 인자 경로에서 계속 None으로 제한된다 (#3738).
-                let outer_host_stored_vpos_hu = if self.profile.get().native_hwp5_layout()
-                    || self.profile.get().hwpx_stored_layout()
-                {
-                    para.line_segs
-                        .iter()
-                        .find(|seg| {
-                            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                                == 0
-                        })
-                        .map(|seg| seg.vertical_pos)
-                } else {
-                    None
-                };
+                let outer_host_stored_vpos_hu =
+                    if self.profile.get().hwp5_stored_pagination_layout()
+                        || self.profile.get().hwpx_stored_layout()
+                    {
+                        para.line_segs
+                            .iter()
+                            .find(|seg| {
+                                seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            })
+                            .map(|seg| seg.vertical_pos)
+                    } else {
+                        None
+                    };
                 let table_visual_end = if tac_already_rendered_inline {
                     table_y_start + table_visual_height
                 } else {
@@ -8769,7 +8771,7 @@ impl LayoutEngine {
                 // 줄 seg 를 찾는다. 해석 불가 시 기존 값 유지.
                 // HWPX 계산-lineseg 는 저장 사다리가 아니라 이 사영이 성립하지 않는다
                 // — hwp5 네이티브 프로파일에서만 교정한다(56734607.hwpx 신규 회귀 실측).
-                let seg_idx = if self.profile.get().native_hwp5_layout() {
+                let seg_idx = if self.profile.get().hwp5_stored_pagination_layout() {
                     control_line_seg_index(para, control_index).unwrap_or(control_index)
                 } else {
                     control_index
@@ -8848,35 +8850,36 @@ impl LayoutEngine {
                             // (ls·om_bottom)만 빼서 목표를 구성한다. 구성상 다음 줄
                             // top == 호스트 줄 top + 사다리 델타가 되어 관습과 무관하게
                             // 정확하다. 되돌아감·값 부재는 th 기반 기본식으로 폴백.
-                            let ladder_target = if !self.profile.get().native_hwp5_layout() {
-                                None
-                            } else {
-                                paragraphs
-                                    .get(para_index + 1)
-                                    .and_then(|np| np.line_segs.first().map(|ns| (np, ns)))
-                                    .filter(|(_, ns)| {
-                                        ns.vertical_pos > seg.vertical_pos
-                                            && ns.vertical_pos - seg.vertical_pos
-                                                < seg.line_height.saturating_mul(4).max(160_000)
-                                    })
-                                    .map(|(np, ns)| {
-                                        let next_sb = styles
-                                            .para_styles
-                                            .get(np.para_shape_id as usize)
-                                            .map(|ps| ps.spacing_before.max(0.0))
-                                            .unwrap_or(0.0);
-                                        let om_top_px =
-                                            hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
-                                        tac_table_y_before - om_top_px.max(0.0)
-                                            + hwpunit_to_px(
-                                                ns.vertical_pos - seg.vertical_pos,
-                                                self.dpi,
-                                            )
-                                            - next_sb
-                                            - ls_px
-                                            - om_px.max(0.0)
-                                    })
-                            };
+                            let ladder_target =
+                                if !self.profile.get().hwp5_stored_pagination_layout() {
+                                    None
+                                } else {
+                                    paragraphs
+                                        .get(para_index + 1)
+                                        .and_then(|np| np.line_segs.first().map(|ns| (np, ns)))
+                                        .filter(|(_, ns)| {
+                                            ns.vertical_pos > seg.vertical_pos
+                                                && ns.vertical_pos - seg.vertical_pos
+                                                    < seg.line_height.saturating_mul(4).max(160_000)
+                                        })
+                                        .map(|(np, ns)| {
+                                            let next_sb = styles
+                                                .para_styles
+                                                .get(np.para_shape_id as usize)
+                                                .map(|ps| ps.spacing_before.max(0.0))
+                                                .unwrap_or(0.0);
+                                            let om_top_px =
+                                                hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                                            tac_table_y_before - om_top_px.max(0.0)
+                                                + hwpunit_to_px(
+                                                    ns.vertical_pos - seg.vertical_pos,
+                                                    self.dpi,
+                                                )
+                                                - next_sb
+                                                - ls_px
+                                                - om_px.max(0.0)
+                                        })
+                                };
                             if let Some(target) = ladder_target {
                                 // 사다리 신뢰 시 방향 무관 직접 설정 — 표 시각 전진이
                                 // 사다리보다 컸던 것이 바로 결함이므로 상향 가드를 두면
@@ -9142,7 +9145,7 @@ impl LayoutEngine {
                     .and_then(|control| match control {
                         Control::Table(table) => {
                             stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
-                                self.profile.get().native_hwp5_layout()
+                                self.profile.get().hwp5_stored_pagination_layout()
                                     || self.profile.get().hwpx_stored_layout(),
                                 para,
                                 table,
@@ -9341,7 +9344,7 @@ impl LayoutEngine {
                         let Some(Control::Table(tb)) = para.controls.get(control_index) else {
                             return false;
                         };
-                        if !self.profile.get().native_hwp5_layout()
+                        if !self.profile.get().hwp5_stored_pagination_layout()
                             || tb.common.treat_as_char
                             || !matches!(tb.common.text_wrap, crate::model::shape::TextWrap::Square)
                             || para_has_non_whitespace_text(para)
@@ -9427,12 +9430,13 @@ impl LayoutEngine {
                     // 다시 세로로 누적되지 않는다.
                     lanes.max_bottom()
                 } else if is_current_empty_para_float {
-                    let is_native_picture_caption_float = self.profile.get().native_hwp5_layout()
-                        && para.controls.get(control_index).is_some_and(|control| {
-                            matches!(control, Control::Table(table)
+                    let is_native_picture_caption_float =
+                        self.profile.get().hwp5_stored_pagination_layout()
+                            && para.controls.get(control_index).is_some_and(|control| {
+                                matches!(control, Control::Table(table)
                                     if is_two_row_picture_caption_rowbreak_table(table)
                                         && signed_hwpunit(table.common.vertical_offset) > 0)
-                        });
+                            });
                     // Empty-anchor TopAndBottom tables can encode a visual
                     // vertical offset separately from the flow height measured
                     // by pagination. Keep the table painted at lane_top, but
@@ -9810,7 +9814,7 @@ impl LayoutEngine {
             .iter()
             .find(|mt| mt.para_index == para_index && mt.control_index == control_index);
         let repeat_fragment_outer_margin = repeats_native_empty_host_rowbreak_fragment_margin(
-            self.profile.get().native_hwp5_layout(),
+            self.profile.get().hwp5_stored_pagination_layout(),
             paragraphs,
             para_index,
             control_index,
@@ -9824,7 +9828,7 @@ impl LayoutEngine {
                 if !is_continuation {
                     if let Some(stored_top) =
                         native_hwp5_internal_reset_rowbreak_first_fragment_saved_top(
-                            self.profile.get().native_hwp5_layout(),
+                            self.profile.get().hwp5_stored_pagination_layout(),
                             para,
                             paragraphs.get(para_index + 1),
                             t,

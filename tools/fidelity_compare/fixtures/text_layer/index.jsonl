@@ -1,0 +1,244 @@
+{"id":"match-plan-cover","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"표지 연도·기관명 — 동일 텍스트"}
+{"id":"match-ws-plan-cover","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"표지 연도·기관명 — 공백만 다름"}
+{"id":"match-nfd-plan-cover","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"표지 연도·기관명 — NFD 한글"}
+{"id":"match-reorder-plan-cover","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"표지 연도·기관명 — 어절 순서만 변경"}
+{"id":"loss-plan-cover-00","kind":"loss","family":"plan","registeredKey":"plan","referenceOnly":5,"svgOnly":0,"title":"표지 연도·기관명 — 기관명 소실"}
+{"id":"excess-plan-cover-00","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"표지 연도·기관명 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-plan-cover-01","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"표지 연도·기관명 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-plan-cover","kind":"substitution","family":"plan","registeredKey":"plan","referenceOnly":4,"svgOnly":4,"title":"표지 연도·기관명 — 전각 숫자"}
+{"id":"match-plan-goal","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"추진 목표 문단 — 동일 텍스트"}
+{"id":"match-reorder-plan-goal","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"추진 목표 문단 — 어절 순서만 변경"}
+{"id":"loss-plan-goal-01","kind":"loss","family":"plan","registeredKey":"plan","referenceOnly":4,"svgOnly":0,"title":"추진 목표 문단 — 제목 소실"}
+{"id":"excess-plan-goal-00","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"추진 목표 문단 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-plan-goal-01","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"추진 목표 문단 — 한컴 불릿 과잉"}
+{"id":"match-plan-table-head","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"실적 표 헤더 — 동일 텍스트"}
+{"id":"match-reorder-plan-table-head","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"실적 표 헤더 — 어절 순서만 변경"}
+{"id":"loss-plan-table-head-02","kind":"loss","family":"plan","registeredKey":"plan","referenceOnly":2,"svgOnly":0,"title":"실적 표 헤더 — 열 헤더 소실"}
+{"id":"excess-plan-table-head-00","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"실적 표 헤더 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-plan-table-head-01","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"실적 표 헤더 — 한컴 불릿 과잉"}
+{"id":"match-plan-budget","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"예산 숫자 행 — 동일 텍스트"}
+{"id":"match-reorder-plan-budget","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"예산 숫자 행 — 어절 순서만 변경"}
+{"id":"loss-plan-budget-02","kind":"loss","family":"plan","registeredKey":"plan","referenceOnly":2,"svgOnly":0,"title":"예산 숫자 행 — 열 헤더 소실"}
+{"id":"excess-plan-budget-00","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"예산 숫자 행 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-plan-budget-01","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"예산 숫자 행 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-plan-budget","kind":"substitution","family":"plan","registeredKey":"plan","referenceOnly":19,"svgOnly":19,"title":"예산 숫자 행 — 전각 숫자"}
+{"id":"match-plan-footnote","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"각주 표지 — 동일 텍스트"}
+{"id":"match-reorder-plan-footnote","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"각주 표지 — 어절 순서만 변경"}
+{"id":"loss-plan-footnote-03","kind":"loss","family":"plan","registeredKey":"plan","referenceOnly":32,"svgOnly":0,"title":"각주 표지 — URL 소실"}
+{"id":"excess-plan-footnote-00","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"각주 표지 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-plan-footnote-01","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"각주 표지 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-plan-footnote","kind":"substitution","family":"plan","registeredKey":"plan","referenceOnly":10,"svgOnly":10,"title":"각주 표지 — 전각 숫자"}
+{"id":"match-plan-caption","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"그림 캡션 — 동일 텍스트"}
+{"id":"match-reorder-plan-caption","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"그림 캡션 — 어절 순서만 변경"}
+{"id":"loss-plan-caption-00","kind":"loss","family":"plan","registeredKey":"plan","referenceOnly":5,"svgOnly":0,"title":"그림 캡션 — 기관명 소실"}
+{"id":"excess-plan-caption-00","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"그림 캡션 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-plan-caption-01","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"그림 캡션 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-plan-caption","kind":"substitution","family":"plan","registeredKey":"plan","referenceOnly":6,"svgOnly":6,"title":"그림 캡션 — 전각 숫자"}
+{"id":"sub-dash-plan-caption","kind":"substitution","family":"plan","registeredKey":"plan","referenceOnly":1,"svgOnly":1,"title":"그림 캡션 — 대시 치환"}
+{"id":"match-plan-pua-circled","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"원문자 과제 번호 — 동일 텍스트"}
+{"id":"match-reorder-plan-pua-circled","kind":"match","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"원문자 과제 번호 — 어절 순서만 변경"}
+{"id":"excess-plan-pua-circled-00","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"원문자 과제 번호 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-plan-pua-circled-01","kind":"excess","family":"plan","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"원문자 과제 번호 — 한컴 불릿 과잉"}
+{"id":"sub-pua-fffd-plan-pua-circled","kind":"substitution","family":"plan","registeredKey":"plan","referenceOnly":4,"svgOnly":4,"title":"원문자 과제 번호 — PUA→U+FFFD"}
+{"id":"match-manual-toc","kind":"match","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"편람 목차 — 동일 텍스트"}
+{"id":"match-reorder-manual-toc","kind":"match","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"편람 목차 — 어절 순서만 변경"}
+{"id":"excess-manual-toc-00","kind":"excess","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":3,"title":"편람 목차 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-manual-toc-01","kind":"excess","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":1,"title":"편람 목차 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-manual-toc","kind":"substitution","family":"manual","registeredKey":"manual","referenceOnly":5,"svgOnly":5,"title":"편람 목차 — 전각 숫자"}
+{"id":"match-manual-article","kind":"match","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"조문 본문 — 동일 텍스트"}
+{"id":"match-ws-manual-article","kind":"match","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"조문 본문 — 공백만 다름"}
+{"id":"match-nfd-manual-article","kind":"match","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"조문 본문 — NFD 한글"}
+{"id":"match-reorder-manual-article","kind":"match","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"조문 본문 — 어절 순서만 변경"}
+{"id":"loss-manual-article-04","kind":"loss","family":"manual","registeredKey":"manual","referenceOnly":11,"svgOnly":0,"title":"조문 본문 — 조문 번호 소실"}
+{"id":"excess-manual-article-00","kind":"excess","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":3,"title":"조문 본문 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-manual-article-01","kind":"excess","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":1,"title":"조문 본문 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-manual-article","kind":"substitution","family":"manual","registeredKey":"manual","referenceOnly":2,"svgOnly":2,"title":"조문 본문 — 전각 숫자"}
+{"id":"match-manual-note","kind":"match","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"해설 각주 — 동일 텍스트"}
+{"id":"match-reorder-manual-note","kind":"match","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"해설 각주 — 어절 순서만 변경"}
+{"id":"excess-manual-note-00","kind":"excess","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":3,"title":"해설 각주 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-manual-note-01","kind":"excess","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":1,"title":"해설 각주 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-manual-note","kind":"substitution","family":"manual","registeredKey":"manual","referenceOnly":4,"svgOnly":4,"title":"해설 각주 — 전각 숫자"}
+{"id":"match-manual-long","kind":"match","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"장문 해설 — 동일 텍스트"}
+{"id":"match-reorder-manual-long","kind":"match","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"장문 해설 — 어절 순서만 변경"}
+{"id":"excess-manual-long-00","kind":"excess","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":3,"title":"장문 해설 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-manual-long-01","kind":"excess","family":"manual","registeredKey":"manual","referenceOnly":0,"svgOnly":1,"title":"장문 해설 — 한컴 불릿 과잉"}
+{"id":"match-bunjang-header","kind":"match","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":0,"title":"거래 명세 헤더 — 동일 텍스트"}
+{"id":"match-reorder-bunjang-header","kind":"match","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":0,"title":"거래 명세 헤더 — 어절 순서만 변경"}
+{"id":"excess-bunjang-header-00","kind":"excess","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":3,"title":"거래 명세 헤더 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-bunjang-header-01","kind":"excess","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":1,"title":"거래 명세 헤더 — 한컴 불릿 과잉"}
+{"id":"match-bunjang-row","kind":"match","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":0,"title":"거래 한 행 — 동일 텍스트"}
+{"id":"match-reorder-bunjang-row","kind":"match","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":0,"title":"거래 한 행 — 어절 순서만 변경"}
+{"id":"excess-bunjang-row-00","kind":"excess","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":3,"title":"거래 한 행 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-bunjang-row-01","kind":"excess","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":1,"title":"거래 한 행 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-bunjang-row","kind":"substitution","family":"bunjang","registeredKey":"bunjang","referenceOnly":22,"svgOnly":22,"title":"거래 한 행 — 전각 숫자"}
+{"id":"sub-dash-bunjang-row","kind":"substitution","family":"bunjang","registeredKey":"bunjang","referenceOnly":2,"svgOnly":2,"title":"거래 한 행 — 대시 치환"}
+{"id":"match-bunjang-footer","kind":"match","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":0,"title":"표 하단 합계 — 동일 텍스트"}
+{"id":"match-reorder-bunjang-footer","kind":"match","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":0,"title":"표 하단 합계 — 어절 순서만 변경"}
+{"id":"excess-bunjang-footer-00","kind":"excess","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":3,"title":"표 하단 합계 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-bunjang-footer-01","kind":"excess","family":"bunjang","registeredKey":"bunjang","referenceOnly":0,"svgOnly":1,"title":"표 하단 합계 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-bunjang-footer","kind":"substitution","family":"bunjang","registeredKey":"bunjang","referenceOnly":9,"svgOnly":9,"title":"표 하단 합계 — 전각 숫자"}
+{"id":"match-korexam-stem","kind":"match","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":0,"title":"지문 도입 — 동일 텍스트"}
+{"id":"match-reorder-korexam-stem","kind":"match","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":0,"title":"지문 도입 — 어절 순서만 변경"}
+{"id":"excess-korexam-stem-00","kind":"excess","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":3,"title":"지문 도입 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-korexam-stem-01","kind":"excess","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":1,"title":"지문 도입 — 한컴 불릿 과잉"}
+{"id":"match-korexam-choice","kind":"match","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":0,"title":"선지 ①~⑤ — 동일 텍스트"}
+{"id":"match-reorder-korexam-choice","kind":"match","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":0,"title":"선지 ①~⑤ — 어절 순서만 변경"}
+{"id":"loss-korexam-choice-07","kind":"loss","family":"korexam","registeredKey":"korexam","referenceOnly":1,"svgOnly":0,"title":"선지 ①~⑤ — 선지 원문자 소실"}
+{"id":"excess-korexam-choice-00","kind":"excess","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":3,"title":"선지 ①~⑤ — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-korexam-choice-01","kind":"excess","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":1,"title":"선지 ①~⑤ — 한컴 불릿 과잉"}
+{"id":"sub-circled-korexam-choice","kind":"substitution","family":"korexam","registeredKey":"korexam","referenceOnly":5,"svgOnly":15,"title":"선지 ①~⑤ — 원문자→ASCII"}
+{"id":"match-korexam-header","kind":"match","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":0,"title":"시험 머리글 — 동일 텍스트"}
+{"id":"match-reorder-korexam-header","kind":"match","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":0,"title":"시험 머리글 — 어절 순서만 변경"}
+{"id":"excess-korexam-header-00","kind":"excess","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":3,"title":"시험 머리글 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-korexam-header-01","kind":"excess","family":"korexam","registeredKey":"korexam","referenceOnly":0,"svgOnly":1,"title":"시험 머리글 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-korexam-header","kind":"substitution","family":"korexam","registeredKey":"korexam","referenceOnly":8,"svgOnly":8,"title":"시험 머리글 — 전각 숫자"}
+{"id":"match-math-item","kind":"match","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":0,"title":"문항 본문 — 동일 텍스트"}
+{"id":"match-reorder-math-item","kind":"match","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":0,"title":"문항 본문 — 어절 순서만 변경"}
+{"id":"loss-math-item-06","kind":"loss","family":"math","registeredKey":"math","referenceOnly":3,"svgOnly":0,"title":"문항 본문 — 수식 지시 소실"}
+{"id":"excess-math-item-00","kind":"excess","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":3,"title":"문항 본문 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-math-item-01","kind":"excess","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":1,"title":"문항 본문 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-math-item","kind":"substitution","family":"math","registeredKey":"math","referenceOnly":4,"svgOnly":4,"title":"문항 본문 — 전각 숫자"}
+{"id":"match-math-choice","kind":"match","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":0,"title":"수식 선지 — 동일 텍스트"}
+{"id":"match-reorder-math-choice","kind":"match","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":0,"title":"수식 선지 — 어절 순서만 변경"}
+{"id":"loss-math-choice-07","kind":"loss","family":"math","registeredKey":"math","referenceOnly":1,"svgOnly":0,"title":"수식 선지 — 선지 원문자 소실"}
+{"id":"excess-math-choice-00","kind":"excess","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":3,"title":"수식 선지 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-math-choice-01","kind":"excess","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":1,"title":"수식 선지 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-math-choice","kind":"substitution","family":"math","registeredKey":"math","referenceOnly":5,"svgOnly":5,"title":"수식 선지 — 전각 숫자"}
+{"id":"sub-circled-math-choice","kind":"substitution","family":"math","registeredKey":"math","referenceOnly":5,"svgOnly":15,"title":"수식 선지 — 원문자→ASCII"}
+{"id":"match-math-caption","kind":"match","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":0,"title":"그래프 캡션 — 동일 텍스트"}
+{"id":"match-reorder-math-caption","kind":"match","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":0,"title":"그래프 캡션 — 어절 순서만 변경"}
+{"id":"loss-math-caption-06","kind":"loss","family":"math","registeredKey":"math","referenceOnly":3,"svgOnly":0,"title":"그래프 캡션 — 수식 지시 소실"}
+{"id":"excess-math-caption-00","kind":"excess","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":3,"title":"그래프 캡션 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-math-caption-01","kind":"excess","family":"math","registeredKey":"math","referenceOnly":0,"svgOnly":1,"title":"그래프 캡션 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-math-caption","kind":"substitution","family":"math","registeredKey":"math","referenceOnly":3,"svgOnly":3,"title":"그래프 캡션 — 전각 숫자"}
+{"id":"match-eng-passage","kind":"match","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":0,"title":"영어 지문 — 동일 텍스트"}
+{"id":"match-ws-eng-passage","kind":"match","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":0,"title":"영어 지문 — 공백만 다름"}
+{"id":"match-nfd-eng-passage","kind":"match","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":0,"title":"영어 지문 — NFD 한글"}
+{"id":"match-reorder-eng-passage","kind":"match","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":0,"title":"영어 지문 — 어절 순서만 변경"}
+{"id":"excess-eng-passage-00","kind":"excess","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":3,"title":"영어 지문 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-eng-passage-01","kind":"excess","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":1,"title":"영어 지문 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-eng-passage","kind":"substitution","family":"eng","registeredKey":"eng","referenceOnly":6,"svgOnly":6,"title":"영어 지문 — 전각 숫자"}
+{"id":"match-eng-question","kind":"match","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":0,"title":"영어 문항 — 동일 텍스트"}
+{"id":"match-reorder-eng-question","kind":"match","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":0,"title":"영어 문항 — 어절 순서만 변경"}
+{"id":"loss-eng-question-05","kind":"loss","family":"eng","registeredKey":"eng","referenceOnly":47,"svgOnly":0,"title":"영어 문항 — 영어 문항 소실"}
+{"id":"excess-eng-question-00","kind":"excess","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":3,"title":"영어 문항 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-eng-question-01","kind":"excess","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":1,"title":"영어 문항 — 한컴 불릿 과잉"}
+{"id":"match-eng-url","kind":"match","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":0,"title":"출처 URL — 동일 텍스트"}
+{"id":"excess-eng-url-00","kind":"excess","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":3,"title":"출처 URL — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-eng-url-01","kind":"excess","family":"eng","registeredKey":"eng","referenceOnly":0,"svgOnly":1,"title":"출처 URL — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-eng-url","kind":"substitution","family":"eng","registeredKey":"eng","referenceOnly":6,"svgOnly":6,"title":"출처 URL — 전각 숫자"}
+{"id":"sub-dash-eng-url","kind":"substitution","family":"eng","registeredKey":"eng","referenceOnly":2,"svgOnly":2,"title":"출처 URL — 대시 치환"}
+{"id":"match-fn-early","kind":"match","family":"footnote","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"각주 본문 이르게 — 동일 텍스트"}
+{"id":"match-reorder-fn-early","kind":"match","family":"footnote","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"각주 본문 이르게 — 어절 순서만 변경"}
+{"id":"excess-fn-early-00","kind":"excess","family":"footnote","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"각주 본문 이르게 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-fn-early-01","kind":"excess","family":"footnote","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"각주 본문 이르게 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-fn-early","kind":"substitution","family":"footnote","registeredKey":"plan","referenceOnly":4,"svgOnly":4,"title":"각주 본문 이르게 — 전각 숫자"}
+{"id":"match-fn-late","kind":"match","family":"footnote","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"각주 본문 늦게 — 동일 텍스트"}
+{"id":"match-reorder-fn-late","kind":"match","family":"footnote","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"각주 본문 늦게 — 어절 순서만 변경"}
+{"id":"loss-fn-late-00","kind":"loss","family":"footnote","registeredKey":"manual","referenceOnly":5,"svgOnly":0,"title":"각주 본문 늦게 — 기관명 소실"}
+{"id":"excess-fn-late-00","kind":"excess","family":"footnote","registeredKey":"manual","referenceOnly":0,"svgOnly":3,"title":"각주 본문 늦게 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-fn-late-01","kind":"excess","family":"footnote","registeredKey":"manual","referenceOnly":0,"svgOnly":1,"title":"각주 본문 늦게 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-fn-late","kind":"substitution","family":"footnote","registeredKey":"manual","referenceOnly":2,"svgOnly":2,"title":"각주 본문 늦게 — 전각 숫자"}
+{"id":"match-table-first-row","kind":"match","family":"table","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"표 첫 줄 중복 — 동일 텍스트"}
+{"id":"match-reorder-table-first-row","kind":"match","family":"table","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"표 첫 줄 중복 — 어절 순서만 변경"}
+{"id":"loss-table-first-row-02","kind":"loss","family":"table","registeredKey":"plan","referenceOnly":2,"svgOnly":0,"title":"표 첫 줄 중복 — 열 헤더 소실"}
+{"id":"excess-table-first-row-00","kind":"excess","family":"table","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"표 첫 줄 중복 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-table-first-row-01","kind":"excess","family":"table","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"표 첫 줄 중복 — 한컴 불릿 과잉"}
+{"id":"match-table-cell","kind":"match","family":"table","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"셀 본문 — 동일 텍스트"}
+{"id":"match-reorder-table-cell","kind":"match","family":"table","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"셀 본문 — 어절 순서만 변경"}
+{"id":"loss-table-cell-00","kind":"loss","family":"table","registeredKey":"plan","referenceOnly":5,"svgOnly":0,"title":"셀 본문 — 기관명 소실"}
+{"id":"excess-table-cell-00","kind":"excess","family":"table","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"셀 본문 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-table-cell-01","kind":"excess","family":"table","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"셀 본문 — 한컴 불릿 과잉"}
+{"id":"match-citation-law","kind":"match","family":"citation","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"법령명+조문 — 동일 텍스트"}
+{"id":"match-reorder-citation-law","kind":"match","family":"citation","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"법령명+조문 — 어절 순서만 변경"}
+{"id":"excess-citation-law-00","kind":"excess","family":"citation","registeredKey":"manual","referenceOnly":0,"svgOnly":3,"title":"법령명+조문 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-citation-law-01","kind":"excess","family":"citation","registeredKey":"manual","referenceOnly":0,"svgOnly":1,"title":"법령명+조문 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-citation-law","kind":"substitution","family":"citation","registeredKey":"manual","referenceOnly":5,"svgOnly":5,"title":"법령명+조문 — 전각 숫자"}
+{"id":"match-citation-url","kind":"match","family":"citation","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"고시 URL — 동일 텍스트"}
+{"id":"excess-citation-url-00","kind":"excess","family":"citation","registeredKey":"manual","referenceOnly":0,"svgOnly":3,"title":"고시 URL — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-citation-url-01","kind":"excess","family":"citation","registeredKey":"manual","referenceOnly":0,"svgOnly":1,"title":"고시 URL — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-citation-url","kind":"substitution","family":"citation","registeredKey":"manual","referenceOnly":6,"svgOnly":6,"title":"고시 URL — 전각 숫자"}
+{"id":"match-pua-bullet","kind":"match","family":"pua","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"한컴 전용 불릿 — 동일 텍스트"}
+{"id":"match-reorder-pua-bullet","kind":"match","family":"pua","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"한컴 전용 불릿 — 어절 순서만 변경"}
+{"id":"excess-pua-bullet-00","kind":"excess","family":"pua","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"한컴 전용 불릿 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-pua-bullet-01","kind":"excess","family":"pua","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"한컴 전용 불릿 — 한컴 불릿 과잉"}
+{"id":"sub-pua-fffd-pua-bullet","kind":"substitution","family":"pua","registeredKey":"plan","referenceOnly":1,"svgOnly":1,"title":"한컴 전용 불릿 — PUA→U+FFFD"}
+{"id":"match-pua-range","kind":"match","family":"pua","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"원문자 전 구간 — 동일 텍스트"}
+{"id":"match-ws-pua-range","kind":"match","family":"pua","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"원문자 전 구간 — 공백만 다름"}
+{"id":"match-nfd-pua-range","kind":"match","family":"pua","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"원문자 전 구간 — NFD 한글"}
+{"id":"excess-pua-range-00","kind":"excess","family":"pua","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"원문자 전 구간 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-pua-range-01","kind":"excess","family":"pua","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"원문자 전 구간 — 한컴 불릿 과잉"}
+{"id":"sub-pua-fffd-pua-range","kind":"substitution","family":"pua","registeredKey":"plan","referenceOnly":14,"svgOnly":14,"title":"원문자 전 구간 — PUA→U+FFFD"}
+{"id":"match-header-repeat","kind":"match","family":"header","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"반복 머리글 — 동일 텍스트"}
+{"id":"match-reorder-header-repeat","kind":"match","family":"header","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"반복 머리글 — 어절 순서만 변경"}
+{"id":"loss-header-repeat-00","kind":"loss","family":"header","registeredKey":"plan","referenceOnly":5,"svgOnly":0,"title":"반복 머리글 — 기관명 소실"}
+{"id":"excess-header-repeat-00","kind":"excess","family":"header","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"반복 머리글 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-header-repeat-01","kind":"excess","family":"header","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"반복 머리글 — 한컴 불릿 과잉"}
+{"id":"match-page-no","kind":"match","family":"header","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"쪽번호 — 동일 텍스트"}
+{"id":"excess-page-no-00","kind":"excess","family":"header","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"쪽번호 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-page-no-01","kind":"excess","family":"header","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"쪽번호 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-page-no","kind":"substitution","family":"header","registeredKey":"plan","referenceOnly":2,"svgOnly":2,"title":"쪽번호 — 전각 숫자"}
+{"id":"sub-dash-page-no","kind":"substitution","family":"header","registeredKey":"plan","referenceOnly":2,"svgOnly":2,"title":"쪽번호 — 대시 치환"}
+{"id":"match-compat-jamo","kind":"match","family":"norm","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"호환 자모 — 동일 텍스트"}
+{"id":"match-ws-compat-jamo","kind":"match","family":"norm","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"호환 자모 — 공백만 다름"}
+{"id":"match-nfd-compat-jamo","kind":"match","family":"norm","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"호환 자모 — NFD 한글"}
+{"id":"match-reorder-compat-jamo","kind":"match","family":"norm","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"호환 자모 — 어절 순서만 변경"}
+{"id":"excess-compat-jamo-00","kind":"excess","family":"norm","registeredKey":"manual","referenceOnly":0,"svgOnly":3,"title":"호환 자모 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-compat-jamo-01","kind":"excess","family":"norm","registeredKey":"manual","referenceOnly":0,"svgOnly":1,"title":"호환 자모 — 한컴 불릿 과잉"}
+{"id":"match-nbsp-title","kind":"match","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"공백 변형 — 동일 텍스트"}
+{"id":"match-ws-nbsp-title","kind":"match","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"공백 변형 — 공백만 다름"}
+{"id":"match-nfd-nbsp-title","kind":"match","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"공백 변형 — NFD 한글"}
+{"id":"match-reorder-nbsp-title","kind":"match","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"공백 변형 — 어절 순서만 변경"}
+{"id":"excess-nbsp-title-00","kind":"excess","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"공백 변형 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-nbsp-title-01","kind":"excess","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"공백 변형 — 한컴 불릿 과잉"}
+{"id":"match-fullwidth-year","kind":"match","family":"norm","registeredKey":"korexam","referenceOnly":0,"svgOnly":0,"title":"전각 연도 — 동일 텍스트"}
+{"id":"match-reorder-fullwidth-year","kind":"match","family":"norm","registeredKey":"korexam","referenceOnly":0,"svgOnly":0,"title":"전각 연도 — 어절 순서만 변경"}
+{"id":"excess-fullwidth-year-00","kind":"excess","family":"norm","registeredKey":"korexam","referenceOnly":0,"svgOnly":3,"title":"전각 연도 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-fullwidth-year-01","kind":"excess","family":"norm","registeredKey":"korexam","referenceOnly":0,"svgOnly":1,"title":"전각 연도 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-fullwidth-year","kind":"substitution","family":"norm","registeredKey":"korexam","referenceOnly":8,"svgOnly":8,"title":"전각 연도 — 전각 숫자"}
+{"id":"match-hyphen-range","kind":"match","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"구간 하이픈 — 동일 텍스트"}
+{"id":"match-ws-hyphen-range","kind":"match","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"구간 하이픈 — 공백만 다름"}
+{"id":"match-nfd-hyphen-range","kind":"match","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"구간 하이픈 — NFD 한글"}
+{"id":"match-reorder-hyphen-range","kind":"match","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"구간 하이픈 — 어절 순서만 변경"}
+{"id":"excess-hyphen-range-00","kind":"excess","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"구간 하이픈 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-hyphen-range-01","kind":"excess","family":"norm","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"구간 하이픈 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-hyphen-range","kind":"substitution","family":"norm","registeredKey":"plan","referenceOnly":16,"svgOnly":16,"title":"구간 하이픈 — 전각 숫자"}
+{"id":"sub-dash-hyphen-range","kind":"substitution","family":"norm","registeredKey":"plan","referenceOnly":5,"svgOnly":5,"title":"구간 하이픈 — 대시 치환"}
+{"id":"match-issue-3738-head","kind":"match","family":"direct","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"이슈 3738 머리 — 동일 텍스트"}
+{"id":"match-reorder-issue-3738-head","kind":"match","family":"direct","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"이슈 3738 머리 — 어절 순서만 변경"}
+{"id":"excess-issue-3738-head-00","kind":"excess","family":"direct","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"이슈 3738 머리 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-issue-3738-head-01","kind":"excess","family":"direct","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"이슈 3738 머리 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-issue-3738-head","kind":"substitution","family":"direct","registeredKey":"plan","referenceOnly":3,"svgOnly":3,"title":"이슈 3738 머리 — 전각 숫자"}
+{"id":"sub-dash-issue-3738-head","kind":"substitution","family":"direct","registeredKey":"plan","referenceOnly":1,"svgOnly":1,"title":"이슈 3738 머리 — 대시 치환"}
+{"id":"match-issue-3738-tail","kind":"match","family":"direct","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"이슈 3738 꼬리 — 동일 텍스트"}
+{"id":"match-reorder-issue-3738-tail","kind":"match","family":"direct","registeredKey":"plan","referenceOnly":0,"svgOnly":0,"title":"이슈 3738 꼬리 — 어절 순서만 변경"}
+{"id":"excess-issue-3738-tail-00","kind":"excess","family":"direct","registeredKey":"plan","referenceOnly":0,"svgOnly":3,"title":"이슈 3738 꼬리 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-issue-3738-tail-01","kind":"excess","family":"direct","registeredKey":"plan","referenceOnly":0,"svgOnly":1,"title":"이슈 3738 꼬리 — 한컴 불릿 과잉"}
+{"id":"match-overflow-body","kind":"match","family":"overflow","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"본문+다음쪽 선점 — 동일 텍스트"}
+{"id":"match-reorder-overflow-body","kind":"match","family":"overflow","registeredKey":"manual","referenceOnly":0,"svgOnly":0,"title":"본문+다음쪽 선점 — 어절 순서만 변경"}
+{"id":"excess-overflow-body-00","kind":"excess","family":"overflow","registeredKey":"manual","referenceOnly":0,"svgOnly":3,"title":"본문+다음쪽 선점 — 반복 머리글이 SVG 에만 붙음"}
+{"id":"excess-overflow-body-01","kind":"excess","family":"overflow","registeredKey":"manual","referenceOnly":0,"svgOnly":1,"title":"본문+다음쪽 선점 — 한컴 불릿 과잉"}
+{"id":"sub-fullwidth-overflow-body","kind":"substitution","family":"overflow","registeredKey":"manual","referenceOnly":2,"svgOnly":2,"title":"본문+다음쪽 선점 — 전각 숫자"}
+{"id":"owner-early-00-fn-early","kind":"excess","family":"owner_shift","registeredKey":"plan","referenceOnly":0,"svgOnly":31,"title":"각주가 한 쪽 이르게 SVG 에 나타남"}
+{"id":"owner-early-01-plan-footnote","kind":"excess","family":"owner_shift","registeredKey":"plan","referenceOnly":0,"svgOnly":58,"title":"각주+URL 이 pN SVG / pN+1 PDF"}
+{"id":"owner-early-02-plan-caption","kind":"excess","family":"owner_shift","registeredKey":"plan","referenceOnly":0,"svgOnly":32,"title":"그림 캡션 조기 배치"}
+{"id":"owner-early-03-math-caption","kind":"excess","family":"owner_shift","registeredKey":"math","referenceOnly":0,"svgOnly":28,"title":"수식 그림 캡션 조기 배치"}
+{"id":"owner-early-04-eng-url","kind":"excess","family":"owner_shift","registeredKey":"eng","referenceOnly":0,"svgOnly":59,"title":"영어 출처 URL 조기 배치"}
+{"id":"owner-early-05-citation-url","kind":"excess","family":"owner_shift","registeredKey":"manual","referenceOnly":0,"svgOnly":50,"title":"법령 URL 조기 배치"}
+{"id":"owner-early-06-citation-law","kind":"excess","family":"owner_shift","registeredKey":"manual","referenceOnly":0,"svgOnly":30,"title":"법령명 조기 배치"}
+{"id":"owner-early-07-table-first-row","kind":"excess","family":"owner_shift","registeredKey":"plan","referenceOnly":0,"svgOnly":15,"title":"표 첫 줄이 다음 쪽에 남고 현재 쪽에 과잉"}
+{"id":"owner-early-08-manual-note","kind":"excess","family":"owner_shift","registeredKey":"manual","referenceOnly":0,"svgOnly":28,"title":"편람 각주 조기"}
+{"id":"owner-early-09-korexam-header","kind":"excess","family":"owner_shift","registeredKey":"korexam","referenceOnly":0,"svgOnly":29,"title":"시험 머리글 조기 반복"}
+{"id":"owner-late-00-fn-late","kind":"loss","family":"owner_shift","registeredKey":"manual","referenceOnly":25,"svgOnly":0,"title":"각주가 한 쪽 늦게 SVG 에 나타남"}
+{"id":"owner-late-01-plan-footnote","kind":"loss","family":"owner_shift","registeredKey":"plan","referenceOnly":58,"svgOnly":0,"title":"각주+URL 이 pN PDF / pN+1 SVG"}
+{"id":"owner-late-02-eng-url","kind":"loss","family":"owner_shift","registeredKey":"eng","referenceOnly":59,"svgOnly":0,"title":"영어 출처 URL 지연"}
+{"id":"owner-late-03-citation-url","kind":"loss","family":"owner_shift","registeredKey":"manual","referenceOnly":50,"svgOnly":0,"title":"법령 URL 지연"}
+{"id":"owner-late-04-citation-law","kind":"loss","family":"owner_shift","registeredKey":"manual","referenceOnly":30,"svgOnly":0,"title":"법령명 지연"}
+{"id":"owner-late-05-manual-note","kind":"loss","family":"owner_shift","registeredKey":"manual","referenceOnly":28,"svgOnly":0,"title":"편람 각주 지연"}
+{"id":"owner-late-06-issue-3738-tail","kind":"loss","family":"owner_shift","registeredKey":"plan","referenceOnly":29,"svgOnly":0,"title":"끝쪽 색인 지연"}
+{"id":"owner-late-07-manual-article","kind":"loss","family":"owner_shift","registeredKey":"manual","referenceOnly":34,"svgOnly":0,"title":"조문 본문 지연"}
+{"id":"owner-late-08-korexam-stem","kind":"loss","family":"owner_shift","registeredKey":"korexam","referenceOnly":38,"svgOnly":0,"title":"지문 도입 지연"}
+{"id":"owner-late-09-plan-goal","kind":"loss","family":"owner_shift","registeredKey":"plan","referenceOnly":38,"svgOnly":0,"title":"추진목표 문단 지연"}
+{"id":"visible-excess-overflow-body","kind":"excess","family":"overflow","registeredKey":"manual","referenceOnly":0,"svgOnly":56,"title":"본문+다음쪽 선점"}
+{"id":"visible-excess-with-clip","kind":"excess","family":"overflow","registeredKey":"manual","referenceOnly":0,"svgOnly":56,"title":"가시 과잉 + clip 제외 문자"}
+{"id":"sub-mixed-plan-goal","kind":"substitution","family":"plan","registeredKey":"plan","referenceOnly":8,"svgOnly":4,"title":"목표 문단 소실+전각 혼합"}

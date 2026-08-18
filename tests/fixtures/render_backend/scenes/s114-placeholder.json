@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s114-placeholder",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "placeholder 단독 장면",
+  "ops": [
+    {
+      "kind": "placeholder",
+      "x": 26.0,
+      "y": 24.0,
+      "w": 40.0,
+      "h": 18.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "placeholder"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  placeholder bbox=26.00,24.00,40.00,18.00",
+    "end_page ops=1"
+  ]
+}

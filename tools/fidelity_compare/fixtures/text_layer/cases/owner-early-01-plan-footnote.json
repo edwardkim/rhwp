@@ -1,0 +1,70 @@
+{
+  "id": "owner-early-01-plan-footnote",
+  "schema": "rhwp.fidelity_compare.text_layer_case.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "kind": "excess",
+  "classification": "excess",
+  "family": "owner_shift",
+  "genre": "업무계획",
+  "registeredKey": "plan",
+  "title": "각주+URL 이 pN SVG / pN+1 PDF",
+  "why": "각주+URL. 쪽 owner 이동과 sequence 후보. 방향=rhwp_earlier_than_reference.",
+  "page": 11,
+  "page1based": 12,
+  "referenceText": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgText": "본문고정영역ABCDEFGH이번쪽공통1) 본 계획은 2022.1. 국회 보고안을 기준으로 한다. https://www.mois.go.kr/plan/2022",
+  "referenceNfc": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgNfc": "본문고정영역ABCDEFGH이번쪽공통1) 본 계획은 2022.1. 국회 보고안을 기준으로 한다. https://www.mois.go.kr/plan/2022",
+  "referenceSequence": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgSequence": "본문고정영역ABCDEFGH이번쪽공통1)본계획은2022.1.국회보고안을기준으로한다.https://www.mois.go.kr/plan/2022",
+  "referenceOnly": 0,
+  "svgOnly": 58,
+  "referenceOnlyChars": "",
+  "svgOnlyChars": "U+0029:)×1,U+002E:.×6,U+002F:/×4,U+0030:0×2,U+0031:1×2,U+0032:2×6,U+003A::×1,U+0061:a×1,U+0067:g×1,U+0068:h×1,U+0069:i×1,U+006B:k×1,U+006C:l×1,U+006D:m×1,U+006E:n×1,U+006F:o×2,U+0070:p×2,U+0072:r×1,U+0073:s×2,U+0074:t×2,U+0077:w×3,U+ACC4:\\uacc4×1,U+ACE0:\\uace0×1,U+AD6D:\\uad6d×1,U+AE30:\\uae30×1,U+B2E4:\\ub2e4×1,U+B85C:\\ub85c×1,U+BCF4:\\ubcf4×1,U+BCF8:\\ubcf8×1,U+C548:\\uc548×1,U+C73C:\\uc73c×1,U+C740:\\uc740×1,U+C744:\\uc744×1,U+C900:\\uc900×1,U+D55C:\\ud55c×1,U+D68C:\\ud68c×1,U+D68D:\\ud68d×1",
+  "glyphRiskCount": 0,
+  "glyphRisks": "",
+  "referenceGlyphRiskCount": 0,
+  "referenceGlyphRisks": "",
+  "ownerShift": [
+    {
+      "page": 11,
+      "next_page": 12,
+      "direction": "rhwp_earlier_than_reference",
+      "shared_count": 58,
+      "source_coverage": 1.0,
+      "target_coverage": 1.0,
+      "shared": "U+0029:)×1,U+002E:.×6,U+002F:/×4,U+0030:0×2,U+0031:1×2,U+0032:2×6,U+003A::×1,U+0061:a×1,U+0067:g×1,U+0068:h×1,U+0069:i×1,U+006B:k×1,U+006C:l×1,U+006D:m×1,U+006E:n×1,U+006F:o×2,U+0070:p×2,U+0072:r×1,U+0073:s×2,U+0074:t×2,U+0077:w×3,U+ACC4:\\uacc4×1,U+ACE0:\\uace0×1,U+AD6D:\\uad6d×1,U+AE30:\\uae30×1,U+B2E4:\\ub2e4×1,U+B85C:\\ub85c×1,U+BCF4:\\ubcf4×1,U+BCF8:\\ubcf8×1,U+C548:\\uc548×1,U+C73C:\\uc73c×1,U+C740:\\uc740×1,U+C744:\\uc744×1,U+C900:\\uc900×1,U+D55C:\\ud55c×1,U+D68C:\\ud68c×1,U+D68D:\\ud68d×1"
+    }
+  ],
+  "sequence": [
+    {
+      "page": 11,
+      "next_page": 12,
+      "direction": "rhwp_earlier_than_reference",
+      "chars": 58,
+      "sequence": "1)본계획은2022.1.국회보고안을기준으로한다.https://www.mois.go.kr/plan/2022"
+    }
+  ],
+  "visibleExcess": [
+    {
+      "page": 11,
+      "reference_only": 0,
+      "visible_svg_only": 58,
+      "clip_excluded_chars": 0
+    }
+  ],
+  "clipExcludedChars": 0,
+  "nextReferenceText": "본문고정영역ABCDEFGH이번쪽공통1) 본 계획은 2022.1. 국회 보고안을 기준으로 한다. https://www.mois.go.kr/plan/2022",
+  "nextSvgText": "본문고정영역ABCDEFGH이번쪽공통",
+  "textOnly": true,
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "candidateNotVerdict": true,
+  "reviewHint": "text-owner-shift-candidates 와 sequence 를 함께 본다.",
+  "relatedIssue": "#3389",
+  "notes": "rhwp_earlier_than_reference",
+  "digest": "c17c46a512ab"
+}

@@ -1734,7 +1734,7 @@ impl LayoutEngine {
                                         )
                                     });
                                 let fragment_owned_square_flow =
-                                    self.profile.get().native_hwp5_layout()
+                                    self.profile.get().hwp5_stored_pagination_layout()
                                         && cut_units.is_some()
                                         && visible_non_inline_control
                                         && pic.common.flow_with_text
@@ -2666,7 +2666,7 @@ impl LayoutEngine {
             _ => return y_start,
         };
         let repeat_fragment_outer_margin = repeats_native_empty_host_rowbreak_fragment_margin(
-            self.profile.get().native_hwp5_layout(),
+            self.profile.get().hwp5_stored_pagination_layout(),
             paragraphs,
             para_index,
             control_index,
@@ -2797,7 +2797,7 @@ impl LayoutEngine {
             if enclosing_cell_ctx.is_none() && std::ptr::eq(table, outer_table) {
                 paragraphs.get(para_index).and_then(|host_para| {
                     native_hwp5_stored_reset_fragment_paint_geometry(
-                        self.profile.get().native_hwp5_layout(),
+                        self.profile.get().hwp5_stored_pagination_layout(),
                         host_para,
                         table,
                         is_continuation,
@@ -2853,7 +2853,7 @@ impl LayoutEngine {
         let reclaim_previous_host_margin = if !is_continuation && start_cut.is_empty() {
             paragraphs.get(para_index).and_then(|host| {
                 native_multirow_internal_reset_rowbreak_anchor_advance_hu(
-                    self.profile.get().native_hwp5_layout(),
+                    self.profile.get().hwp5_stored_pagination_layout(),
                     host,
                     table,
                     paragraphs.get(para_index + 1),
@@ -3427,7 +3427,8 @@ impl LayoutEngine {
         extend_completed_nested_table_border_clips(
             tree,
             &mut table_node,
-            self.profile.get().native_hwp5_layout() || self.profile.get().hwp5_origin_hwpx(),
+            self.profile.get().hwp5_stored_pagination_layout()
+                || self.profile.get().hwp5_origin_hwpx(),
             self.profile.get().hwpx_container(),
         );
 

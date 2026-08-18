@@ -1,0 +1,284 @@
+{
+  "schema": "hwp5InventoryCliContract.v1",
+  "align_modes": [
+    "index",
+    "lcs"
+  ],
+  "report_modes": [
+    "diff",
+    "hints",
+    "bundles",
+    "table-fields",
+    "table-probe-plan"
+  ],
+  "focus_modes": [
+    "all",
+    "table",
+    "shape",
+    "ctrl",
+    "missing",
+    "docinfo"
+  ],
+  "diff_kinds": [
+    "missing",
+    "extra",
+    "changed",
+    "tag_changed",
+    "size_changed",
+    "payload_changed",
+    "scope_changed",
+    "control_changed"
+  ],
+  "inventory_columns": [
+    "sample",
+    "source_path",
+    "stream_path",
+    "section",
+    "record_index",
+    "record_uid",
+    "level",
+    "tag_id",
+    "tag_name",
+    "size",
+    "owner",
+    "parent_uid",
+    "parent_scope",
+    "scope_path",
+    "body_order",
+    "control_id",
+    "control_name",
+    "tuple_role",
+    "tuple_index",
+    "payload_head_hex",
+    "key_payload",
+    "payload_hash",
+    "note"
+  ],
+  "diff_columns": [
+    "align_mode",
+    "alignment_status",
+    "diff_kind",
+    "key",
+    "stream_path",
+    "section",
+    "record_index",
+    "oracle_record_index",
+    "generated_record_index",
+    "oracle_record_uid",
+    "generated_record_uid",
+    "signature",
+    "changed_fields",
+    "note"
+  ],
+  "hancom_judgments": [
+    "파일 읽기 오류",
+    "파일 손상",
+    "열림 + 조판 실패",
+    "성공",
+    "rhwp-studio 정상 + 한컴 실패"
+  ],
+  "probe_axes": [
+    {
+      "name": "ctrl_outer_margin",
+      "record_kind": "CTRL_HEADER(Table)",
+      "fields": "out_margin_left,out_margin_right,out_margin_top,out_margin_bottom",
+      "description": "TABLE control wrapper의 바깥 여백 4필드"
+    },
+    {
+      "name": "ctrl_common_attr",
+      "record_kind": "CTRL_HEADER(Table)",
+      "fields": "common_attr",
+      "description": "TABLE control wrapper 공통 속성 비트"
+    },
+    {
+      "name": "table_attr",
+      "record_kind": "TABLE",
+      "fields": "table_attr",
+      "description": "TABLE record 첫 4바이트 속성 비트"
+    },
+    {
+      "name": "table_tail",
+      "record_kind": "TABLE",
+      "fields": "table_tail_full",
+      "description": "TABLE record 0x16 이후 tail payload"
+    }
+  ],
+  "probe_variants": [
+    {
+      "name": "01_ctrl_outer_margin_only",
+      "axes": [
+        "ctrl_outer_margin"
+      ],
+      "purpose": "TABLE CTRL_HEADER outer margin 단독 효과 확인"
+    },
+    {
+      "name": "02_table_attr_only",
+      "axes": [
+        "table_attr"
+      ],
+      "purpose": "TABLE attr 단독 효과 확인"
+    },
+    {
+      "name": "03_table_tail_only",
+      "axes": [
+        "table_tail"
+      ],
+      "purpose": "TABLE payload tail 단독 효과 확인"
+    },
+    {
+      "name": "04_ctrl_common_attr_only",
+      "axes": [
+        "ctrl_common_attr"
+      ],
+      "purpose": "TABLE CTRL_HEADER common attr 차이의 영향 확인"
+    },
+    {
+      "name": "05_outer_margin_table_attr",
+      "axes": [
+        "ctrl_outer_margin",
+        "table_attr"
+      ],
+      "purpose": "위치/속성 축 결합 확인"
+    },
+    {
+      "name": "06_outer_margin_table_tail",
+      "axes": [
+        "ctrl_outer_margin",
+        "table_tail"
+      ],
+      "purpose": "위치/tail 축 결합 확인"
+    },
+    {
+      "name": "07_table_attr_tail",
+      "axes": [
+        "table_attr",
+        "table_tail"
+      ],
+      "purpose": "TABLE record 내부 축 결합 확인"
+    },
+    {
+      "name": "08_all_table_axes",
+      "axes": [
+        "ctrl_outer_margin",
+        "ctrl_common_attr",
+        "table_attr",
+        "table_tail"
+      ],
+      "purpose": "TABLE 관련 관찰 축 전체 positive guard"
+    }
+  ],
+  "shape_inner_ids": [
+    {
+      "fourcc": "$pic",
+      "kind": "picture"
+    },
+    {
+      "fourcc": "$ole",
+      "kind": "ole"
+    },
+    {
+      "fourcc": "$rec",
+      "kind": "rectangle"
+    },
+    {
+      "fourcc": "$lin",
+      "kind": "line"
+    },
+    {
+      "fourcc": "$ell",
+      "kind": "ellipse"
+    },
+    {
+      "fourcc": "$pol",
+      "kind": "polygon"
+    },
+    {
+      "fourcc": "$arc",
+      "kind": "arc"
+    },
+    {
+      "fourcc": "$cur",
+      "kind": "curve"
+    },
+    {
+      "fourcc": "$col",
+      "kind": "connector"
+    },
+    {
+      "fourcc": "$con",
+      "kind": "container"
+    }
+  ],
+  "exit_codes": [
+    {
+      "command": "hwp5-inventory",
+      "args": [],
+      "exit": 2,
+      "stdout": "empty",
+      "stderr": "usage",
+      "note": "인자 없음은 사용법 오류. help 로 취급하면 스크립트가 성공으로 읽는다."
+    },
+    {
+      "command": "hwp5-inventory",
+      "args": [
+        "--help"
+      ],
+      "exit": 0,
+      "stdout": "empty",
+      "stderr": "usage",
+      "note": "명시적 --help 만 성공."
+    },
+    {
+      "command": "hwp5-inventory",
+      "args": [
+        "does-not-exist.hwp"
+      ],
+      "exit": 1,
+      "stdout": "empty",
+      "stderr": "runtime",
+      "note": "없는 파일은 런타임 실패."
+    },
+    {
+      "command": "hwp5-inventory-diff",
+      "args": [],
+      "exit": 2,
+      "stdout": "empty",
+      "stderr": "usage",
+      "note": "oracle/generated 두 경로가 필요하다."
+    },
+    {
+      "command": "hwp5-inventory-diff",
+      "args": [
+        "--help"
+      ],
+      "exit": 0,
+      "stdout": "empty",
+      "stderr": "usage",
+      "note": "명시적 --help 만 성공."
+    },
+    {
+      "command": "hwp5-table-probe",
+      "args": [],
+      "exit": 2,
+      "stdout": "empty",
+      "stderr": "usage",
+      "note": "oracle/generated/--out-dir 가 필요하다."
+    },
+    {
+      "command": "hwp5-table-probe",
+      "args": [
+        "--help"
+      ],
+      "exit": 0,
+      "stdout": "empty",
+      "stderr": "usage",
+      "note": "명시적 --help 만 성공."
+    }
+  ],
+  "page_count_owned_by": 4882,
+  "notes": [
+    "stdout 는 데이터 전용, 사용법은 stderr.",
+    "인자 없음은 exit 2. --help 만 exit 0.",
+    "페이지 수 로직은 이 도구가 바꾸지 않는다."
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "id": "ex-inj-minconf-missing",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "등급 인자 누락"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "samples/hwp3-sample.hwp",
+      "--min-confidence"
+    ],
+    "exitCode": 2,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "오류: --min-confidence 뒤에 등급이 필요합니다 (low|medium|high)."
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "등급 인자 누락",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}

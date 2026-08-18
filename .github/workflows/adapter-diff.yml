@@ -1,0 +1,57 @@
+name: Adapter inter-diff
+
+# M06-4 / #5392 — 전어댑터 상호 diff 골든 하네스.
+# SvgBackend 는 devel 에 있다. Png/Skia 는 PR 에만 있을 수 있다.
+# 없는 어댑터는 skip 으로 남기고 있는 어댑터끼리만 맞댄다.
+# 싼 CI 픽스처. 실문서 전수·native-skia 피처·gym 이 아니다.
+
+on:
+  pull_request:
+    branches: [main, devel]
+  push:
+    branches: [main, devel]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: adapter-diff-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  adapter-diff:
+    name: adapter inter-diff
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+        with:
+          toolchain: 1.93.1
+
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@258712b0b7b1ddf8bddc9fc3b0faca682b2736c3 # v2.9.1
+        with:
+          shared-key: adapter-diff
+          save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
+
+      - name: Check adapter-diff runner contract
+        run: node --test scripts/tests/run-adapter-diff.test.mjs
+
+      - name: Check adapter-diff harness
+        run: python3 -m unittest tools.adapter_diff.test_harness
+
+      - name: Discover adapters (honest skip)
+        run: python3 tools/adapter_diff/harness.py --ci --strict
+
+      - name: Prepare derived Rust test suites
+        run: node scripts/rust-test-suite-manifest.mjs --prepare
+
+      - name: Run adapter inter-diff case
+        run: node scripts/run-adapter-diff.mjs --cargo-test

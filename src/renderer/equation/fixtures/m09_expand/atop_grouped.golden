@@ -1,0 +1,55 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: {a+b} ATOP {c-d}
+honesty: atop-vs-over
+
+=== ast ===
+Atop {
+    top: Row(
+        [
+            Text(
+                "a",
+            ),
+            Symbol(
+                "+",
+            ),
+            Text(
+                "b",
+            ),
+        ],
+    ),
+    bottom: Row(
+        [
+            Text(
+                "c",
+            ),
+            Symbol(
+                "-",
+            ),
+            Text(
+                "d",
+            ),
+        ],
+    ),
+}
+
+=== layout ===
+Atop x=0.0000 y=0.0000 w=47.1000 h=48.0000 bl=29.0000
+  top:
+    Row x=4.0000 y=4.0000 w=39.1000 h=20.0000 bl=16.0000
+      Text("a") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      Symbol("+") x=11.5500 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Text("b") x=27.5500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+  bottom:
+    Row x=4.0000 y=24.0000 w=39.1000 h=20.0000 bl=16.0000
+      Text("c") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      Symbol("-") x=11.5500 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Text("d") x=27.5500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="4.00" y="20.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<text x="23.55" y="20.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">+</text>
+<text x="31.55" y="20.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">b</text>
+<text x="4.00" y="40.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">c</text>
+<text x="23.55" y="40.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">-</text>
+<text x="31.55" y="40.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">d</text>

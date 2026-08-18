@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "kind": "pageRoundtripDrift",
+  "doc": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+  "pagesBefore": 215,
+  "pagesAfter": 223,
+  "delta": 8,
+  "primary": "ir:hwp5_note_zero_vpos",
+  "axes": [
+    {
+      "name": "pages_mismatch",
+      "issue": 4882,
+      "inScope": true,
+      "weight": 8,
+      "evidence": [
+        "before=215 after=223 delta=+8"
+      ]
+    },
+    {
+      "name": "hwp5_note_zero_vpos",
+      "issue": 4882,
+      "inScope": true,
+      "weight": 4,
+      "evidence": [
+        "footNote[instId=1937553231 number=30] p[0] vpos=[0, 0]",
+        "tbl.footNote[instId=1937553430 number=234] p[0] vpos=[0, 0]"
+      ]
+    },
+    {
+      "name": "hangul_hwpx_note_artifact",
+      "issue": 1692,
+      "inScope": false,
+      "weight": 0,
+      "evidence": []
+    },
+    {
+      "name": "ir:hwp5_note_zero_vpos",
+      "issue": 4882,
+      "inScope": true,
+      "weight": 15,
+      "evidence": [
+        "section[0] paragraph[421]/ctrl[0]fn.p[0] linesegs: [1].vertpos: expected=0 actual=1172",
+        "section[0] paragraph[728]/ctrl[0]tbl.cell[3].p[0]/ctrl[0]fn.p[0] linesegs: [2].vertpos: expected=0 actual=2344",
+        "section[0] paragraph[1372]/ctrl[0]fn.p[0] linesegs: [2].vertpos: expected=0 actual=2344",
+        "section[0] paragraph[1832]/ctrl[0]tbl.cell[0].p[3]/ctrl[0]fn.p[0] linesegs: [1].vertpos: expected=0 actual=1172",
+        "section[0] paragraph[1865]/ctrl[0]fn.p[0] linesegs: [1].vertpos: expected=0 actual=1172"
+      ]
+    }
+  ],
+  "notes": [
+    "기계 판정 #4882 원본 봉투: 215→223"
+  ]
+}

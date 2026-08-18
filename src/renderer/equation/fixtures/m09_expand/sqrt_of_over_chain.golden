@@ -1,0 +1,43 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: SQRT
+script: SQRT {1 OVER 2 OVER 3}
+honesty: implemented-variant
+
+=== ast ===
+Sqrt {
+    index: None,
+    body: Fraction {
+        numer: Fraction {
+            numer: Number(
+                "1",
+            ),
+            denom: Number(
+                "2",
+            ),
+        },
+        denom: Number(
+            "3",
+        ),
+    },
+}
+
+=== layout ===
+Sqrt x=0.0000 y=0.0000 w=41.0000 h=81.6000 bl=60.2000
+  body:
+    Fraction x=13.0000 y=2.0000 w=27.0000 h=77.6000 bl=58.2000
+      numer:
+        Fraction x=4.0000 y=4.0000 w=19.0000 h=48.8000 bl=29.4000
+          numer:
+            Number("1") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+          denom:
+            Number("2") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("3") x=8.0000 y=53.6000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M0.00,47.96 L2.00,48.96 L8.00,81.60 L11.00,0.00 L41.00,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="21.00" y="26.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<line x1="18.00" y1="30.40" x2="35.00" y2="30.40" stroke="#000000" stroke-width="0.80"/>
+<text x="21.00" y="46.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<line x1="14.00" y1="55.20" x2="39.00" y2="55.20" stroke="#000000" stroke-width="0.80"/>
+<text x="21.00" y="71.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>

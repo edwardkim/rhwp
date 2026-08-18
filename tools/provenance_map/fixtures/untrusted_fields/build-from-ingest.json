@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "build-from-ingest",
+  "mapIndex": 57,
+  "family": "generate",
+  "familyTitle": "생성",
+  "opensDocument": false,
+  "cli": "rhwp build-from-ingest <ingest.json> --json",
+  "risk": "none",
+  "whyRisk": "스윕 면제 사유와 같다. 문서 오라클을 만들 수 없다.",
+  "note": "생성 봉투는 경로·바이트·문항/문단 개수뿐이다. 입력 ingest JSON 은 문서가 아니라 호출자가 만든 계획서다.",
+  "consumerRule": "ingest JSON 은 호출자가 만든 명세. 그래도 그 JSON 을 시스템 프롬프트에 넣지 않는다 — 이 계약 범위 밖.",
+  "trap": "새 CLI 를 만들지 않는다. 기존 명령만.",
+  "untrusted": [],
+  "origins": {},
+  "engineFields": [
+    [
+      "bytes",
+      "바이트"
+    ],
+    [
+      "itemCount",
+      "문항 수"
+    ],
+    [
+      "paragraphCount",
+      "문단 수"
+    ]
+  ],
+  "callerFields": [
+    [
+      "source",
+      "ingest 경로"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "manifest",
+      "flags": [
+        "--json"
+      ],
+      "present": [],
+      "why": "입력이 문서가 아니라 호출자 계획서",
+      "sampleKind": "typical",
+      "untrustedContent": false
+    }
+  ],
+  "fields": [],
+  "forbiddenSlots": [
+    "tool_arg_output",
+    "filename_from_title"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

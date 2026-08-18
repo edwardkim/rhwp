@@ -1,0 +1,52 @@
+{
+  "id": "uni-zw-excluded-u+061c",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "zero_width",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/text_security.rs",
+    "symbol": "is_zero_width",
+    "note": "inspect unicode 제로폭 축이 아니라 짧은 이름 축"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "synth:unicode/zero_width/excluded-U+061C.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true",
+    "reason": "excluded-codepoint"
+  },
+  "pair": null,
+  "why": "ARABIC LETTER MARK 는 inspect unicode 제로폭 축이 잡지 않는다.",
+  "note": "inspect unicode 제로폭 축이 아니라 짧은 이름 축",
+  "human": "유니코드 기만 검사 — 탐지 0건, 깨끗합니다\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:unicode/zero_width/excluded-U+061C.hwp",
+    "kindFilter": "all",
+    "scannedChars": 8,
+    "findings": [],
+    "findingCount": 0,
+    "clean": true,
+    "severityCounts": {
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "kindCounts": {
+      "zero_width": 0,
+      "bidi_override": 0,
+      "tag_char": 0,
+      "confusable": 0
+    }
+  }
+}

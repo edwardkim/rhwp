@@ -332,16 +332,28 @@ impl Document {
     /// `hwpx_stored_layout` = (HWPX 컨테이너 && rhwp HWP5→HWPX 산출물 마커
     /// 없음) || rhwp HWPX→HWP 변환본. HWP5→HWPX 마커는 세션 중 부착될 수
     /// 있어 저장 값이 아닌 현재 문서 상태에서 파생한다. `native_hwp5_layout`은
-    /// HWP5 컨테이너이면서 HWP3/HWPX 변환 계보가 없는 경우에만 true다.
+    /// 변환 계보가 없는 원본 HWP5 컨테이너에만 true다. HWP5-origin HWPX는
+    /// `hwp5_stored_pagination_layout`으로 별도 호환 계약을 적용한다.
     pub fn layout_profile(&self) -> crate::model::provenance::LayoutCompatibilityProfile {
         use crate::model::provenance::SourceFormat;
         let hwp5_origin_hwpx = self.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some();
+        // 원본 HWP3→HWPX 는 hwp3-origin 마커만 있다. lineage 만으로 hwp3_layout
+        // 을 켜면 HWP3→HWP5 변환본 전용 계약(spacing_before *2 등)이 직파싱
+        // HWP3(hwp3_layout=false, native=true)와 어긋나 sample16은 64→65,
+        // sample11은 151→152로 갈라진다 (#3518, #3737). 그 산출물은 native HWP3와
+        // 같은 레이아웃 계약을 쓰며, HWP3→HWP5 변환본의 HWPX는 hwp5-origin
+        // 마커가 함께 있어 제외한다.
+        let native_hwp3_hwpx = self.provenance.format == SourceFormat::Hwpx
+            && self.hwpx_aux_entry(HWP3_ORIGIN_HWPX_MARKER_PATH).is_some()
+            && !hwp5_origin_hwpx;
         crate::model::provenance::LayoutCompatibilityProfile::new(
-            self.provenance.hwp3_lineage,
-            self.provenance.format == SourceFormat::Hwp3,
-            (self.provenance.format == SourceFormat::Hwpx && !hwp5_origin_hwpx)
+            self.provenance.hwp3_lineage && !native_hwp3_hwpx,
+            self.provenance.format == SourceFormat::Hwp3 || native_hwp3_hwpx,
+            (self.provenance.format == SourceFormat::Hwpx
+                && !hwp5_origin_hwpx
+                && !native_hwp3_hwpx)
                 || self.provenance.hwpx_lineage,
-            self.provenance.format == SourceFormat::Hwpx,
+            self.provenance.format == SourceFormat::Hwpx && !native_hwp3_hwpx,
             hwp5_origin_hwpx,
             self.provenance.format == SourceFormat::Hwp5
                 && !self.provenance.hwp3_lineage

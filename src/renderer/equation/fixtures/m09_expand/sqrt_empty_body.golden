@@ -1,0 +1,18 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: SQRT
+script: SQRT { }
+honesty: missing-operand
+
+=== ast ===
+Sqrt {
+    index: None,
+    body: Empty,
+}
+
+=== layout ===
+Sqrt x=0.0000 y=0.0000 w=14.0000 h=4.0000 bl=2.0000
+  body:
+    Empty x=13.0000 y=2.0000 w=0.0000 h=0.0000 bl=0.0000
+
+=== svg ===
+<path d="M0.00,1.40 L2.00,2.40 L8.00,4.00 L11.00,0.00 L14.00,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>

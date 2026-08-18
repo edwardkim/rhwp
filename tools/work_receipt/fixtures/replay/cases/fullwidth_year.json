@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "fullwidth_year",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "전각",
+  "title": "전각 연도 ２０２５→2026",
+  "why": "전각 숫자는 반각과 다른 바이트. NFC 와도 다른 축.",
+  "notes": "전각 숫자",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/fullwidth-year.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/fullwidth-year.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "２０２５",
+        "replace": "2026"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/fullwidth-year.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"２０２５\",\"replace\":\"2026\"}]}",
+  "planSha256": "395ecb3e3bfec902df859666c8ff75598c2f4cc52197e31249122a938e18ee37",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "b34e450d8eae1cae6cb697372b94b1a123658318fd991aea7c2c51f2591dd907",
+    "planSha256": "395ecb3e3bfec902df859666c8ff75598c2f4cc52197e31249122a938e18ee37",
+    "outputSha256": "404119283a3364f04efff1748c2437ade4edec6f3e42f211d84795a6553f6121",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "404119283a3364f04efff1748c2437ade4edec6f3e42f211d84795a6553f6121"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

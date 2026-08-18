@@ -95,9 +95,11 @@ node scripts/rust-test-suite-manifest.mjs --prepare
 node scripts/run-prop-roundtrip.mjs --cargo-test
 ~~~
 
-`prop_roundtrip_ci` 는 항상 돈다. `prop_hwpx_roundtrip` / `prop_hwp5_roundtrip` 원본이
-`tests/cases/` 에 없으면 skip 하고, 있으면 집는다. 기본 8 cases. 전체 화력은
-`PROPTEST_CASES`. 정규 nextest archive 도 같은 원본을 자동 실행한다.
+`prop_roundtrip_ci` 는 항상 돈다. `prop_edit_plan` / `prop_hwpx_roundtrip` /
+`prop_hwp5_roundtrip` / `prop_m04f_*` 원본이 `tests/cases/` 에 없으면 skip 하고,
+있으면 집는다. 기본 8 cases. 전체 화력은 `PROPTEST_CASES`. 정규 nextest archive
+도 같은 원본을 자동 실행한다. M04-f 변형·스킵 정직 표는
+`tests/fixtures/proptest_m04f/` (`python tools/proptest_roundtrip/gen_m04f_catalogs.py`).
 
 ### 시각 대조용 최신 바이너리 준비는 별도다
 

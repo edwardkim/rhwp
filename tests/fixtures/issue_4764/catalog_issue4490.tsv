@@ -1,0 +1,7 @@
+corpus	source_kind	page_index	human_page	locked_count	residual	isolation	ink_budget_ppm	hist_l1	bbox_hu	font_env	wrap_risk	glyph_risk	table_risk	stage	note
+issue4490	hwp	0	1	0	none	independent	1200	80	32	0	0	0	0	s4490	4490 p2 font width/weight p1
+issue4490	hwp	1	2	0	font_width	independent	1250	90	40	0	0	0	0	s4490	font width/weight
+issue4490	hwp	2	3	0	none	independent	1300	100	48	0	0	0	0	s4490	4490 p2 font width/weight p3
+issue4490	hwp	3	4	0	none	independent	1350	110	32	0	0	0	0	s4490	4490 p2 font width/weight p4
+issue4490	hwp	4	5	0	none	independent	1400	120	40	0	0	0	0	s4490	4490 p2 font width/weight p5
+issue4490	hwp	5	6	0	none	independent	1450	80	48	0	0	0	0	s4490	4490 p2 font width/weight p6

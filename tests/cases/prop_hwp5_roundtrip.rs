@@ -294,6 +294,55 @@ fn handwritten_set_cell_roundtrips() {
 }
 
 #[test]
+fn handwritten_replace_variants_roundtrip() {
+    for (find, replace, occurrence) in [
+        ("오호라", "한국", None),
+        ("乾坤", "X", Some(0)),
+        ("구궁산", "", None),
+    ] {
+        let steps = [ExistingRunStep::ReplaceText {
+            find: find.into(),
+            replace: replace.into(),
+            occurrence,
+        }];
+        assert_edit_serialize_reparse(FIXTURE_TEXT, &steps)
+            .unwrap_or_else(|e| panic!("{find}->{replace:?}: {e}"));
+    }
+}
+
+#[test]
+fn handwritten_set_cell_grid_roundtrips() {
+    for (row, col, text) in [
+        (0u16, 0u16, "서울"),
+        (0, 1, ""),
+        (2, 1, "완료"),
+        (2, 2, "1"),
+    ] {
+        let steps = [ExistingRunStep::SetCell {
+            table: 0,
+            row,
+            col,
+            text: text.into(),
+        }];
+        assert_edit_serialize_reparse(FIXTURE_TABLE, &steps)
+            .unwrap_or_else(|e| panic!("cell({row},{col}): {e}"));
+    }
+}
+
+#[test]
+fn table_needles_roundtrip_via_replace_text() {
+    for find in ["품질", "5월", "평가"] {
+        let steps = [ExistingRunStep::ReplaceText {
+            find: find.into(),
+            replace: "한국".into(),
+            occurrence: None,
+        }];
+        assert_edit_serialize_reparse(FIXTURE_TABLE, &steps)
+            .unwrap_or_else(|e| panic!("{find}: {e}"));
+    }
+}
+
+#[test]
 fn inexpressible_steps_are_skipped_not_invented() {
     let mut core = DocumentCore::from_bytes(FIXTURE_TEXT).expect("parse");
     assert!(

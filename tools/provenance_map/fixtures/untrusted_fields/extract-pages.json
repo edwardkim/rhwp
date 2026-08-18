@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "extract-pages",
+  "mapIndex": 55,
+  "family": "export",
+  "familyTitle": "변환 매니페스트",
+  "opensDocument": true,
+  "cli": "rhwp extract-pages <파일> --pages N-M --json",
+  "risk": "none",
+  "whyRisk": "본문은 산출 문서 쪽.",
+  "note": "발췌 봉투는 쪽 범위와 문단 개수뿐이다.",
+  "consumerRule": "개수만.",
+  "trap": "추출된 문서를 다시 export-text 하면 그 표지를 따른다.",
+  "untrusted": [],
+  "origins": {},
+  "engineFields": [
+    [
+      "pageRange",
+      "범위"
+    ],
+    [
+      "paragraphCount",
+      "문단 수"
+    ]
+  ],
+  "callerFields": [
+    [
+      "source",
+      "입력"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "manifest",
+      "flags": [
+        "--json"
+      ],
+      "present": [],
+      "why": "쪽 범위와 문단 개수",
+      "sampleKind": "typical",
+      "untrustedContent": false
+    }
+  ],
+  "fields": [],
+  "forbiddenSlots": [
+    "tool_arg_path",
+    "tool_arg_output",
+    "filename_from_title",
+    "env_variable"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

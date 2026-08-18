@@ -1,0 +1,23 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: FRAC{1}
+honesty: missing-operand
+
+=== ast ===
+Fraction {
+    numer: Number(
+        "1",
+    ),
+    denom: Empty,
+}
+
+=== layout ===
+Fraction x=0.0000 y=0.0000 w=19.0000 h=28.8000 bl=29.4000
+  numer:
+    Number("1") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+  denom:
+    Empty x=9.5000 y=24.8000 w=0.0000 h=0.0000 bl=0.0000
+
+=== svg ===
+<text x="4.00" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<line x1="1.00" y1="24.40" x2="18.00" y2="24.40" stroke="#000000" stroke-width="0.80"/>
