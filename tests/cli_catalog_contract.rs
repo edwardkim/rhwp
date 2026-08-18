@@ -326,3 +326,23 @@ fn document_diagnostic_is_owned_by_the_query_module() {
         "diag dispatch가 diagnostics 모듈 API를 사용해야 한다"
     );
 }
+
+#[test]
+fn raw_record_diagnostic_is_owned_by_the_query_module() {
+    let compact_main: String = MAIN_SOURCE
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    assert!(
+        DIAGNOSTICS_SOURCE.contains("pub(crate) fn dump_raw_records("),
+        "dump_raw_records 구현이 diagnostics 모듈에 있어야 한다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn dump_raw_records("),
+        "dump_raw_records 구현이 main.rs로 되돌아가면 안 된다"
+    );
+    assert!(
+        compact_main.contains("cli::queries::diagnostics::dump_raw_records("),
+        "dump-records dispatch가 diagnostics 모듈 API를 사용해야 한다"
+    );
+}
