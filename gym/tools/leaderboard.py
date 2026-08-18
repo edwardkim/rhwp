@@ -343,19 +343,10 @@ def board_fingerprint():
     }
 
 
-def cmd_invite(a, bin_path):
-    """친구 초대장 발급 — 외부 에이전트를 이름으로 점수판에 부른다.
-
-    리더보드는 처음부터 문이 열려 있다(attest 는 --agent 하나만 받는다). 이
-    명령은 그 열린 문에 **초대장**을 붙일 뿐이다: 지금 판의 지문과, 신참이
-    자기 신원으로 합류하는 3줄 절차를 한 봉투로 묶는다. 초대는 권한이 아니라
-    안내다 — 아무나 스스로 등재할 수 있고, 초대장은 '어디로 오면 되는지'를
-    가리킨다.
-    """
-    ensure_board()
-    guest = a.agent or "친구-에이전트"
+def construct_invite(guest):
+    """초대장 봉투 — 판 지문과 합류 3줄. 쓰기는 호출자가 한다."""
     fp = board_fingerprint()
-    invite = {
+    return {
         "schemaVersion": "1.0", "kind": "gymLeaderboardInvite",
         "guest": guest,
         "board": {"repo": "edwardkim/rhwp", "path": "gym/leaderboard"},
@@ -373,6 +364,21 @@ def cmd_invite(a, bin_path):
             "누구의 이름이든 받는다. 초대장은 네가 합류하는 판이 위조본이 "
             "아님을 fingerprint 로 확인하라는 뜻이다."),
     }
+
+
+def cmd_invite(a, bin_path):
+    """친구 초대장 발급 — 외부 에이전트를 이름으로 점수판에 부른다.
+
+    리더보드는 처음부터 문이 열려 있다(attest 는 --agent 하나만 받는다). 이
+    명령은 그 열린 문에 **초대장**을 붙일 뿐이다: 지금 판의 지문과, 신참이
+    자기 신원으로 합류하는 3줄 절차를 한 봉투로 묶는다. 초대는 권한이 아니라
+    안내다 — 아무나 스스로 등재할 수 있고, 초대장은 '어디로 오면 되는지'를
+    가리킨다.
+    """
+    ensure_board()
+    guest = a.agent or "친구-에이전트"
+    invite = construct_invite(guest)
+    fp = invite["fingerprint"]
     out = os.path.join(BOARD, "invite.json")
     write_json(out, invite)
     print(f"초대장 발급 → {os.path.relpath(out, ROOT)}")
@@ -385,32 +391,56 @@ def cmd_invite(a, bin_path):
     return 0
 
 
-def cmd_render(a, bin_path):
-    entries, err = chain_walk(LEDGER, "settlementLedger")
-    results = [verify_entry(bin_path, e, entries) for e in entries]
+def rank_results(results):
+    """검증된 항목만 (-score, seq) 로 순위. ok=False 는 unverified 로 분리."""
+    ranked = sorted((r for r in results if r.get("ok")),
+                    key=lambda r: (-r["score"], r["seq"]))
+    unverified = [r for r in results if not r.get("ok")]
+    return ranked, unverified
+
+
+def best_pack(packs):
+    """만점 비율이 가장 높은 pack. 동률이면 max 가 큰 쪽. 없으면 None.
+
+    cmd_render 가 쓰던 키와 같다: (score/max 또는 max=0 이면 0, max).
+    반환은 (pack_id, score, max).
+    """
+    if not packs:
+        return None
+    pid, pk = max(
+        packs.items(),
+        key=lambda kv: (kv[1]["score"] / kv[1]["max"] if kv[1]["max"] else 0,
+                        kv[1]["max"]),
+    )
+    return (pid, pk["score"], pk["max"])
+
+
+def render_markdown(results, err, ranked=None):
+    """순위표 마크다운 문자열. 쓰기는 호출자가 한다.
+
+    헤더·검증 행·**unverified** 행·정직 조항을 항상 포함한다. ranked 를
+    넘기지 않으면 rank_results 로 계산한다.
+    """
+    if ranked is None:
+        ranked, unverified = rank_results(results)
+    else:
+        unverified = [r for r in results if not r.get("ok")]
     lines = ["# 운동장 리더보드 — 위조 불가능한 점수판", "",
              "모든 순위는 검증 사슬(3해시 고정·Ed25519 서명·append-only 원장·머클 앵커)을",
              "**렌더 시점에 재검증**한 항목만 오른다. 재현 방법:",
              "`python gym/tools/leaderboard.py verify`", "",
              "| 순위 | 에이전트 | 총점 | 최강 능력 | commit | seq | 사슬 |",
              "|---|---|---|---|---|---|---|"]
-    ranked = sorted((r for r in results if r["ok"]),
-                    key=lambda r: (-r["score"], r["seq"]))
     for i, r in enumerate(ranked, 1):
         run = r["runner"]
-        # 각 선수의 최강 능력 — 만점 비율이 가장 높은 pack.
-        best = max(r.get("packs", {}).items(),
-                   key=lambda kv: (kv[1]["score"] / kv[1]["max"] if kv[1]["max"] else 0, kv[1]["max"]),
-                   default=(None, None))
-        best_txt = f"{best[0]} {best[1]['score']}/{best[1]['max']}" if best[0] else "—"
+        best = best_pack(r.get("packs") or {})
+        best_txt = f"{best[0]} {best[1]}/{best[2]}" if best else "—"
         lines.append(f"| {i} | {r['agent']} | **{r['score']} / {r['max']}** "
                      f"| {best_txt} | `{run['rhwpCommit'][:10]}` "
                      f"| {r['seq']} | 검증됨 |")
-    unverified = [r for r in results if not r["ok"]]
     for r in unverified:
         lines.append(f"| — | seq {r['seq']} | — | — | — | {r['seq']} | **unverified** |")
 
-    # pack 별 능력 격자 — 총점이 숨기는 강약을 드러낸다.
     pack_ids = sorted({pid for r in ranked for pid in r.get("packs", {})})
     if pack_ids and len(ranked) > 1:
         lines += ["", "## 능력 격자 (pack 별 점수)", "",
@@ -423,7 +453,7 @@ def cmd_render(a, bin_path):
                 if pk is None:
                     cells.append("—")
                 elif pk["score"] == pk["max"]:
-                    cells.append(f"**{pk['score']}**")   # 만점 강조
+                    cells.append(f"**{pk['score']}**")
                 else:
                     cells.append(f"{pk['score']}/{pk['max']}")
             lines.append(f"| {r['agent']} | " + " | ".join(cells) + " |")
@@ -435,9 +465,17 @@ def cmd_render(a, bin_path):
               "정직 조항: 이 사슬이 봉인하는 것은 \"이 스코어카드가 이 시점에 이 신원으로",
               "등재되었고 이후 변조되지 않았다\" 까지다. 채점 자체의 재현은 스코어카드의",
               "runner 신원(version·commit·capabilities digest)과 커밋된 제출물로 제3자가 수행한다."]
+    return "\n".join(lines) + "\n"
+
+
+def cmd_render(a, bin_path):
+    entries, err = chain_walk(LEDGER, "settlementLedger")
+    results = [verify_entry(bin_path, e, entries) for e in entries]
+    ranked, unverified = rank_results(results)
+    text = render_markdown(results, err, ranked=ranked)
     out = os.path.join(BOARD, "leaderboard.md")
     with io.open(out, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write("\n".join(lines) + "\n")
+        fh.write(text)
     print(f"리더보드 렌더 → {os.path.relpath(out, ROOT)} (검증 {len(ranked)}·unverified {len(unverified)})")
     return 0
 
