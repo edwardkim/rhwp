@@ -35,6 +35,8 @@ python3 tools/fde/triage.py <고객문서> --bin <rhwp> --symptom "<증상 문�
 ## 사다리 (읽기 전용, 엔진이 실행)
 
 `triage.py` 가 결정적으로 내린다. 즉흥 진단 금지. 명령 목록을 하드코딩하지 않는다.
+첫 자기서술 관측은 기존 `rhwp capabilities --json`이며, 이 스킬은 그 광고 결과 밖의
+명령을 추측하지 않는다.
 
 ```
 매직 바이트 (hwpx ZIP / hwp5 CFB / hwp3)
