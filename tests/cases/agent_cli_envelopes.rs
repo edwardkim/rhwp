@@ -124,11 +124,7 @@ fn envelope_exit_meta_is_allowed_set() {
         }
         let env: Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
         let exit = env["_skillMeta"]["exit"].as_i64().unwrap_or(-1);
-        assert!(
-            matches!(exit, 0 | 1 | 2 | 3 | 4),
-            "{} exit {exit}",
-            path.display()
-        );
+        assert!(matches!(exit, 0..=4), "{} exit {exit}", path.display());
         seen += 1;
     }
     assert!(seen >= 16, "봉투가 너무 적다: {seen}");

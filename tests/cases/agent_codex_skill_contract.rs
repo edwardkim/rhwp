@@ -148,9 +148,8 @@ fn catalog_declares_not_gym_and_no_new_cli() {
     assert_eq!(cat["noNewEditLogic"], true);
     assert_eq!(cat["doNotHandEditGenerated"], true);
     assert_eq!(cat["chapter85DeveloperOnly"], true);
-    let reuse = read_json("fixtures/skill_index.json")["coreReuse"]
-        .as_array()
-        .expect("coreReuse");
+    let skill_index = read_json("fixtures/skill_index.json");
+    let reuse = skill_index["coreReuse"].as_array().expect("coreReuse");
     let joined = reuse
         .iter()
         .filter_map(|v| v.as_str())
