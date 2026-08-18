@@ -3389,7 +3389,7 @@
       "id": "src/serializer/body_text.rs::tests#1",
       "file": "src/serializer/body_text.rs",
       "sourcePath": "src/serializer/body_text.rs",
-      "line": 1273,
+      "line": 1283,
       "module": "tests",
       "testAttributes": 34,
       "tier": "white_box",
