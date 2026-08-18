@@ -1,0 +1,6 @@
+{
+ "doc": "gongmun.hwpx",
+ "symptom": "공문을 PDF로 (야간)",
+ "params": {},
+ "goal": "export-pdf"
+}

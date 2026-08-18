@@ -1,0 +1,11 @@
+{
+ "schemaVersion": "1",
+ "generatedBy": "tools/chief/service_loop.py",
+ "goal": "convert-hwp",
+ "route": "resolve-now",
+ "status": "done",
+ "artifacts": [
+  "modern.hwp"
+ ],
+ "summary": "HWPX를 HWP로 (야간) 완료"
+}

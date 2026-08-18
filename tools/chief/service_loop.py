@@ -55,10 +55,87 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TRIAGE = REPO_ROOT / "tools" / "fde" / "triage.py"
 
-KNOWN_GOALS = (
-    "diagnose", "export-text", "export-pdf", "export-hwpx",
-    "convert-hwp", "extract-tables", "fill",
+# playbook §4 와 같은 표. 표와 코드가 어긋나면 표가 버그다.
+# 커버리지는 여기(코드)에 행을 더할 때만 늘어난다 — LLM 즉흥 라우팅 금지.
+ROUTING_TABLE = (
+    {
+        "goal": "diagnose",
+        "commands": ("info",),
+        "gate": "ticket",
+        "defaultWhenMissing": True,
+    },
+    {
+        "goal": "export-text",
+        "commands": ("export-text",),
+        "gate": "json-envelope",
+    },
+    {
+        "goal": "export-pdf",
+        "commands": ("export-pdf",),
+        "gate": "pdf-magic",
+    },
+    {
+        "goal": "export-hwpx",
+        "commands": ("export-hwpx",),
+        "gate": "self-verify",
+    },
+    {
+        "goal": "convert-hwp",
+        "commands": ("convert",),
+        "gate": "self-verify",
+    },
+    {
+        "goal": "extract-tables",
+        "commands": ("export-tables", "table-to-csv"),
+        "gate": "csv-count",
+    },
+    {
+        "goal": "fill",
+        "commands": ("fields",),
+        "gate": "fill-envelope",
+    },
 )
+
+KNOWN_GOALS = tuple(row["goal"] for row in ROUTING_TABLE)
+
+# 트리아지 라우트 중 goal 실행을 건너뛰는 것 (playbook §3.1).
+TRIAGE_SKIP_GOAL = ("escalate-bug", "invalid-input")
+
+RESULT_STATUSES = (
+    "done",
+    "failed",
+    "needs-agent",
+    "escalated",
+    "invalid-input",
+)
+
+
+def normalize_goal(request: dict) -> str:
+    """goal 이 비어 있으면 diagnose. 요청 문장·문서 내용은 보지 않는다."""
+    goal = request.get("goal")
+    if goal is None or goal == "":
+        return "diagnose"
+    return str(goal)
+
+
+def is_known_goal(goal: str) -> bool:
+    return goal in KNOWN_GOALS
+
+
+def route_skips_goal(route: object) -> bool:
+    return route in TRIAGE_SKIP_GOAL
+
+
+def is_already_processed(req_dir: Path) -> bool:
+    """result.json 이 있으면 같은 요청을 다시 열지 않는다."""
+    return (req_dir / "result.json").is_file()
+
+
+def routing_row(goal: str) -> dict | None:
+    for row in ROUTING_TABLE:
+        if row["goal"] == goal:
+            return row
+    return None
 
 
 def log(msg: str) -> None:
@@ -272,14 +349,15 @@ def process_request(chief: Chief, req_dir: Path) -> dict:
         else:
             ticket = chief.triage(doc, request.get("symptom", ""), req_dir / "ticket.json")
             route = ticket.get("route")
-            if route in ("escalate-bug", "invalid-input"):
-                outcome = {"status": "escalated" if route == "escalate-bug" else "invalid-input"}
+            goal = normalize_goal(request)
+            if route_skips_goal(route):
+                outcome = {
+                    "status": "escalated" if route == "escalate-bug" else "invalid-input",
+                }
+            elif not is_known_goal(goal):
+                outcome = {"status": "needs-agent", "reason": f"모르는 goal: {goal}"}
             else:
-                goal = request.get("goal") or "diagnose"
-                if goal not in KNOWN_GOALS:
-                    outcome = {"status": "needs-agent", "reason": f"모르는 goal: {goal}"}
-                else:
-                    outcome = chief.handle(goal, doc, params, req_dir / "out", req_dir)
+                outcome = chief.handle(goal, doc, params, req_dir / "out", req_dir)
     except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
         ticket = {"route": "invalid-input", "routeReason": f"요청 형식 오류: {exc}", "steps": []}
         outcome = {"status": "failed", "reason": f"요청 형식 오류: {exc}"}
@@ -287,7 +365,7 @@ def process_request(chief: Chief, req_dir: Path) -> dict:
     result = {
         "schemaVersion": "1",
         "generatedBy": "tools/chief/service_loop.py",
-        "goal": request.get("goal") or "diagnose",
+        "goal": normalize_goal(request),
         "route": ticket.get("route"),
         **outcome,
     }
@@ -298,7 +376,7 @@ def process_request(chief: Chief, req_dir: Path) -> dict:
 
 def pending_requests(queue: Path):
     for d in sorted(queue.iterdir()):
-        if d.is_dir() and (d / "request.json").is_file() and not (d / "result.json").is_file():
+        if d.is_dir() and (d / "request.json").is_file() and not is_already_processed(d):
             yield d
 
 

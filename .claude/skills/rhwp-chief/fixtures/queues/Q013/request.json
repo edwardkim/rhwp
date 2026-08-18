@@ -1,0 +1,6 @@
+{
+ "doc": "legacy.hwp",
+ "symptom": "HWP5를 HWPX로 (1차)",
+ "params": {},
+ "goal": "export-hwpx"
+}

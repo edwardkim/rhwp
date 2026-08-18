@@ -1,0 +1,28 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "count": 13,
+ "ids": [
+  "TR01",
+  "TR02",
+  "TR03",
+  "TR04",
+  "TR05",
+  "TR06",
+  "TR07",
+  "TR08",
+  "TR09",
+  "TR10",
+  "TR11",
+  "TR12",
+  "TR13"
+ ]
+}

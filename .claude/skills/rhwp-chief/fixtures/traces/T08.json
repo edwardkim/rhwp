@@ -1,0 +1,23 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "id": "T08",
+ "kind": "T_fill_miss",
+ "region": "서울",
+ "goal": "fill",
+ "goalFieldPresent": true,
+ "triage": "resolve-now",
+ "status": "needs-agent",
+ "stop": "C08",
+ "steps": [
+  "no-data"
+ ]
+}
