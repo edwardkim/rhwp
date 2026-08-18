@@ -294,13 +294,49 @@ impl SerializeContext {
 
         // [#3893/#4049] HWP5 본문 개체의 BIN_DATA 순번 축. `storage_id`와
         // 우연히 같은 숫자가 있어도 별개 의미이므로, 실제 데이터를 가진 모든
-        // 레코드의 사상을 등록한다. Link(storage_id=0)는 기존 직접 조회 경로를
-        // 유지한다.
+        // 레코드의 사상을 등록한다.
         for (i, bd) in doc.doc_info.bin_data_list.iter().enumerate() {
             let seq = (i + 1) as u16;
             if bd.storage_id != 0 && ctx.bin_data_map.contains_key(&bd.storage_id) {
                 ctx.bin_seq_to_storage.insert(seq, bd.storage_id);
             }
+        }
+
+        // [#5168] 외부 연결(Link) BinData 는 `storage_id` 가 없어(0) 위 등록 루프들에서
+        // 모두 빠진다. 그러면 Link 를 참조하는 그림(`bin_data_id` = BIN_DATA 레코드 순번)이
+        // `resolve_bin_id` 의 직접 조회 폴백으로 떨어져, 순번이 내장 이미지의 `storage_id`
+        // 범위 안이면 **엉뚱한 내장 이미지로 바뀌고**(image{순번}=image{storage_id} 충돌),
+        // 범위를 넘으면 미등록으로 **드롭**됐다(07605: LINK 7·EMBED 5 → gso 12 → pic 10,
+        // image1~5 가 각 2회 참조). Link 마다 기존 키와 겹치지 않는 새 id 를 배정해 외부
+        // 참조 엔트리(`is_embedded=false`, href=연결 경로)로 등록하고 그 순번을 사상한다.
+        // 외부 참조라 ZIP 엔트리·3-way 단언에서는 제외된다(#1891 경로와 동일).
+        let mut next_link_id = ctx.bin_data_map.keys().copied().max().unwrap_or(0) + 1;
+        for (i, bd) in doc.doc_info.bin_data_list.iter().enumerate() {
+            let seq = (i + 1) as u16;
+            if bd.data_type != crate::model::bin_data::BinDataType::Link
+                || ctx.bin_seq_to_storage.contains_key(&seq)
+            {
+                continue;
+            }
+            let link_id = next_link_id;
+            next_link_id += 1;
+            let href = bd
+                .abs_path
+                .clone()
+                .or_else(|| bd.rel_path.clone())
+                .unwrap_or_default();
+            let ext = bd.extension.as_deref().unwrap_or("");
+            ctx.bin_data_map.insert(
+                link_id,
+                BinDataEntry {
+                    manifest_id: format!("image{}", link_id),
+                    href,
+                    media_type: mime_from_ext(ext).to_string(),
+                    bin_data_id: link_id,
+                    is_embedded: false,
+                },
+            );
+            ctx.bin_seq_to_storage.insert(seq, link_id);
         }
 
         ctx

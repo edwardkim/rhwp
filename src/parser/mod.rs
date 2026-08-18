@@ -743,6 +743,37 @@ fn apply_hwp3_origin_fixup(doc: &mut Document) {
     }
 }
 
+/// [#5169] 비배포 문서의 `ViewText/Section{N}` 을 렌더 본문으로 채택할지 판정한다.
+///
+/// 배포용(0x04) 문서만 `ViewText` 를 읽던 종전 규칙은, **변경 추적**(0x4000) 등으로
+/// `BodyText` 와 `ViewText` 가 갈라진 일반 문서에서 rhwp 가 한글이 **렌더하지 않는**
+/// `BodyText` 를 읽게 만들었다(예: 연구계획서 — `BodyText` 표 4·3,540자 vs `ViewText`
+/// 표 10·10,210자). 한글은 `ViewText` 가 있으면 그것을 렌더하므로, 정상 복호되는
+/// `ViewText` 를 우선한다.
+///
+/// 단 일부 문서는 압축 비트가 서 있어도 `ViewText` 가 deflate 로 풀리지 않는 스텁이라
+/// (예: `20250130-hongbo.hwp`), 무조건 우선하면 본문을 잃는다. 그래서 **복호에 성공하고
+/// 첫 레코드가 `PARA_HEADER`(구역 시작 문단) 인 경우에만** 채택하고, 아니면 `None` 을
+/// 돌려 호출부가 `BodyText` 로 폴백하게 한다. 배포용 문서는 이 경로로 오지 않는다
+/// (암호화된 `ViewText` 라 별도 복호 경로가 처리한다).
+fn decode_rendered_viewtext(
+    raw: Vec<u8>,
+    compressed: bool,
+    output_limit: usize,
+) -> Option<Vec<u8>> {
+    let decoded = cfb_reader::decode_stream_limited(raw, compressed, output_limit).ok()?;
+    if decoded.len() < 4 {
+        return None;
+    }
+    let header = u32::from_le_bytes([decoded[0], decoded[1], decoded[2], decoded[3]]);
+    let tag = (header & 0x3ff) as u16;
+    if tag == tags::HWPTAG_PARA_HEADER {
+        Some(decoded)
+    } else {
+        None
+    }
+}
+
 /// CfbReader로 섹션들 파싱
 #[allow(clippy::too_many_arguments)]
 fn parse_sections_strict(
@@ -782,11 +813,22 @@ fn parse_sections_strict(
             )
             .map_err(ParseError::CryptoError)?
         } else {
-            let raw = cfb
-                .read_body_text_section_raw_limited(i, section_raw_limit)
-                .map_err(ParseError::CfbError)?;
-            cfb_reader::decode_stream_limited(raw, compressed, section_output_limit)
-                .map_err(ParseError::CfbError)?
+            // [#5169] 비배포 문서라도 정상 복호되는 ViewText 가 있으면 한글이 렌더하는
+            // 본문이므로 우선한다. 복호 실패·스텁이면 BodyText 로 폴백한다.
+            let rendered = cfb
+                .read_viewtext_section_raw_limited(i, section_raw_limit)
+                .ok()
+                .and_then(|raw| decode_rendered_viewtext(raw, compressed, section_output_limit));
+            match rendered {
+                Some(decoded) => decoded,
+                None => {
+                    let raw = cfb
+                        .read_body_text_section_raw_limited(i, section_raw_limit)
+                        .map_err(ParseError::CfbError)?;
+                    cfb_reader::decode_stream_limited(raw, compressed, section_output_limit)
+                        .map_err(ParseError::CfbError)?
+                }
+            }
         };
         decompression_budget
             .consume(section_data.len())
@@ -883,11 +925,22 @@ fn parse_hwp_with_lenient(
             )
             .map_err(ParseError::CryptoError)?
         } else {
-            let raw = lenient
-                .read_stream_raw_limited(&format!("Section{}", i), section_raw_limit)
-                .map_err(ParseError::CfbError)?;
-            cfb_reader::decode_stream_limited(raw, compressed, section_output_limit)
-                .map_err(ParseError::CfbError)?
+            // [#5169] 비배포 문서라도 정상 복호되는 ViewText 가 있으면 우선한다(위 strict
+            // 경로와 동일 규칙). 복호 실패·스텁이면 BodyText 로 폴백.
+            let rendered = lenient
+                .read_viewtext_section_raw_limited(i, section_raw_limit)
+                .ok()
+                .and_then(|raw| decode_rendered_viewtext(raw, compressed, section_output_limit));
+            match rendered {
+                Some(decoded) => decoded,
+                None => {
+                    let raw = lenient
+                        .read_stream_raw_limited(&format!("Section{}", i), section_raw_limit)
+                        .map_err(ParseError::CfbError)?;
+                    cfb_reader::decode_stream_limited(raw, compressed, section_output_limit)
+                        .map_err(ParseError::CfbError)?
+                }
+            }
         };
         decompression_budget
             .consume(section_data.len())
