@@ -15,6 +15,7 @@ use catalog::{commands, Visibility};
 
 const MAIN_SOURCE: &str = include_str!("../src/main.rs");
 const DOCUMENT_INVENTORY_SOURCE: &str = include_str!("../src/cli/queries/document_inventory.rs");
+const STRUCTURED_OBJECTS_SOURCE: &str = include_str!("../src/cli/queries/structured_objects.rs");
 
 fn rhwp_bin() -> String {
     std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
@@ -214,6 +215,32 @@ fn document_inventory_queries_are_owned_by_the_query_module() {
             MAIN_SOURCE.contains(&format!(
                 "Some(\"{command}\") => exit_with(cli::queries::document_inventory::{handler}(&args[2..]))"
             )),
+            "{command} dispatch가 query 모듈 API를 사용해야 한다"
+        );
+    }
+}
+
+#[test]
+fn structured_object_queries_are_owned_by_the_query_module() {
+    let compact_main: String = MAIN_SOURCE
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    for (command, handler) in [
+        ("form-value", "form_value"),
+        ("header-footer", "header_footer"),
+        ("headers-footers", "headers_footers"),
+    ] {
+        assert!(
+            STRUCTURED_OBJECTS_SOURCE.contains(&format!("pub(crate) fn {handler}(")),
+            "{handler} 구현이 structured_objects 모듈에 있어야 한다"
+        );
+        assert!(
+            !MAIN_SOURCE.contains(&format!("fn {handler}(")),
+            "{handler} 구현이 main.rs로 되돌아가면 안 된다"
+        );
+        assert!(
+            compact_main.contains(&format!("cli::queries::structured_objects::{handler}(")),
             "{command} dispatch가 query 모듈 API를 사용해야 한다"
         );
     }
