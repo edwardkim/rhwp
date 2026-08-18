@@ -1454,7 +1454,7 @@ impl SvgRenderer {
                     None => (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime),
                 }
             } else if detected_mime == "application/postscript" {
-                match crate::renderer::image_resolver::dos_eps_preview_bytes(&img.data) {
+                match crate::renderer::image_resolver::eps_renderable_bytes(&img.data) {
                     Some((mime, bytes)) => (std::borrow::Cow::Owned(bytes), mime),
                     None => (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime),
                 }
@@ -1659,7 +1659,7 @@ impl SvgRenderer {
                     None => (std::borrow::Cow::Borrowed(data), mime_type, false),
                 }
             } else if mime_type == "application/postscript" {
-                match crate::renderer::image_resolver::dos_eps_preview_bytes(data) {
+                match crate::renderer::image_resolver::eps_renderable_bytes(data) {
                     Some((mime, bytes)) => (std::borrow::Cow::Owned(bytes), mime, false),
                     None => (std::borrow::Cow::Borrowed(data), mime_type, false),
                 }
@@ -3422,7 +3422,7 @@ impl Renderer for SvgRenderer {
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }
             } else if mime_type == "application/postscript" {
-                match crate::renderer::image_resolver::dos_eps_preview_bytes(data) {
+                match crate::renderer::image_resolver::eps_renderable_bytes(data) {
                     Some((mime, bytes)) => (std::borrow::Cow::Owned(bytes), mime),
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }

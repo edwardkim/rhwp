@@ -12,6 +12,7 @@ pub mod docdiff;
 pub mod doclang;
 pub mod document_core;
 pub mod emf;
+pub mod eps;
 pub mod error;
 pub use rhwp_contracts::ir_schema;
 pub mod model;

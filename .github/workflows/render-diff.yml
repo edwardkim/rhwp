@@ -661,21 +661,50 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install PDF raster tools
+        id: pdf-raster-runtime
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          timed_out=false
+          install_apt() {
+            set +e
+            sudo env DEBIAN_FRONTEND=noninteractive \
+              timeout 180 apt-get "$@"
+            local status=$?
+            set -e
+            if [[ "${status}" -eq 124 ]]; then
+              timed_out=true
+              return 0
+            fi
+            return "${status}"
+          }
+
+          install_apt update
+          if [[ "${timed_out}" == "true" ]]; then
+            echo "available=false" >> "${GITHUB_OUTPUT}"
+            echo "::warning::PDF raster runtime installation timed out; skipping Canvas visual diff."
+            exit 0
+          fi
+
+          install_apt install -y --no-install-recommends \
             fonts-dejavu-core \
             libfontconfig1-dev \
             libfreetype6-dev \
             poppler-utils
+          if [[ "${timed_out}" == "true" ]]; then
+            echo "available=false" >> "${GITHUB_OUTPUT}"
+            echo "::warning::PDF raster runtime installation timed out; skipping Canvas visual diff."
+            exit 0
+          fi
+          echo "available=true" >> "${GITHUB_OUTPUT}"
 
       - name: Install wasm-pack
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         uses: ./.github/actions/install-wasm-pack
 
       # [Task #1667] Render Diff is PR-heavy; pull_request caches are scoped to
       # refs/pull/* and are not reused by other PRs. Keep PR runs restore-only,
       # and allow only trusted manual devel/main seed runs to save a cache.
       - name: Restore cargo registry & build cache
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         id: render_diff_cargo_cache_restore
         uses: actions/cache/restore@v6
         with:
@@ -688,13 +717,15 @@ jobs:
             ${{ runner.os }}-render-diff-cargo-
 
       - name: Build WASM package
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         run: wasm-pack build --target web --dev
 
       - name: Build native CLI for PDF report
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         run: cargo build --features native-skia --bin rhwp
 
       - name: Save cargo registry & build cache
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.render_diff_cargo_cache_restore.outputs.cache-hit != 'true' }}
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' && github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.render_diff_cargo_cache_restore.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v6
         with:
           path: |
@@ -704,15 +735,18 @@ jobs:
           key: ${{ runner.os }}-render-diff-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup Node.js
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
 
       - name: Install Studio dependencies
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
         run: npm ci
 
       - name: Install Chromium
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
         run: |
           browser_path=$(npx @puppeteer/browsers install chromium@"${RHWP_CHROMIUM_BUILD_ID}" --path .cache/puppeteer --format '{{path}}' | tail -n 1)
@@ -720,6 +754,7 @@ jobs:
           echo "CHROME_PATH=$browser_path" >> "$GITHUB_ENV"
 
       - name: Check render diff script syntax
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
         run: |
           node --check e2e/renderer-contract.test.mjs
@@ -736,6 +771,7 @@ jobs:
           npm run e2e:canvaskit-font-coverage
 
       - name: Run canvas visual diff and PDF report
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
         env:
           VITE_PORT: 7700
@@ -753,6 +789,7 @@ jobs:
         run: npm run e2e:render-diff:ci
 
       - name: Run selected CanvasKit readiness gate
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         run: >-
           python3 scripts/renderer_baseline.py
           --profiles screen
@@ -761,7 +798,7 @@ jobs:
           --output output/renderer-baseline/canvaskit-readiness
 
       - name: Add render diff summary
-        if: always()
+        if: ${{ always() && steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
         run: |
           for summary in \
@@ -776,7 +813,7 @@ jobs:
           done
 
       - name: Upload render diff artifacts
-        if: always()
+        if: ${{ always() && steps.pdf-raster-runtime.outputs.available == 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: render-diff-artifacts

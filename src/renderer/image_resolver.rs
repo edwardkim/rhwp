@@ -174,7 +174,7 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
             })
         }
         "application/postscript" => {
-            dos_eps_preview_bytes(data).map(|(mime, data)| ResolvedImagePayload {
+            eps_renderable_bytes(data).map(|(mime, data)| ResolvedImagePayload {
                 data,
                 mime,
                 kind: ResolvedImageKind::FormatConverted,
@@ -229,7 +229,7 @@ pub(crate) fn emitted_image_bytes(
         "image/x-emf" => {
             crate::emf::convert_to_standalone_svg(data).map(|svg| ("image/svg+xml", svg))
         }
-        "application/postscript" => dos_eps_preview_bytes(data),
+        "application/postscript" => eps_renderable_bytes(data),
         "image/jpeg" if bakes_watermark => watermark_jpeg_bytes_to_hancom_baked_png_bytes(data)
             .or_else(|| grayscale_jpeg_bytes_to_png_bytes(data))
             .map(|png| ("image/png", png)),
@@ -361,6 +361,21 @@ fn oversized_bmp_to_downscaled_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
 /// WMF/TIFF 프리뷰의 오프셋·길이를 담는다 (Adobe EPSF 3.0 §5.2). 프리뷰가
 /// 있으면 기존 변환기(WMF→SVG, TIFF→PNG)로 잇는다. 프리뷰가 없거나 손상이면
 /// None — 호출부가 원본으로 되돌아간다.
+/// EPS 를 화면에 그릴 수 있는 바이트로 바꾼다 — 두 갈래의 **단일 진입점**.
+///
+/// 1. DOS EPS 바이너리 프리뷰(WMF/TIFF, #4062) — 원본 그림 그대로의 축소판이라 우선한다.
+/// 2. Adobe Illustrator 아트워크 → SVG (`crate::eps`, #5513) — 프리뷰가 없는 텍스트 EPS 는
+///    이쪽으로만 살아난다.
+///
+/// 변환 사슬은 `resolve_image_payload`·`emitted_image_bytes`·`svg.rs`·`html.rs`·`web_canvas.rs`
+/// 다섯 곳에서 쓴다. 갈래 선택을 여기 한 곳에 두지 않으면 백엔드마다 다른 그림이 나온다.
+pub fn eps_renderable_bytes(data: &[u8]) -> Option<(&'static str, Vec<u8>)> {
+    if let Some(preview) = dos_eps_preview_bytes(data) {
+        return Some(preview);
+    }
+    crate::eps::convert_ai_artwork_to_svg(data).map(|svg| ("image/svg+xml", svg))
+}
+
 pub(crate) fn dos_eps_preview_bytes(data: &[u8]) -> Option<(&'static str, Vec<u8>)> {
     if data.len() < 30 || !data.starts_with(&[0xC5, 0xD0, 0xD3, 0xC6]) {
         return None;
@@ -951,13 +966,13 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
 /// 실패하는 개별 파손 바이트까지 잡으려면 여기서 변환을 한 번 더 돌려야 하는데, 그 비용은
 /// 매 페이지 조판마다 붙는다. 지금 동작(변환 실패 시 원본 그대로 → 빈 공간)은 그대로 두고
 /// 판정만 넓히지 않는다.
-pub(crate) fn is_displayable_image_data(data: &[u8]) -> bool {
+pub fn is_displayable_image_data(data: &[u8]) -> bool {
     match detect_image_mime_type(data) {
         "image/png" | "image/jpeg" | "image/gif" | "image/webp" | "image/bmp" | "image/svg+xml"
         | "image/tiff" | "image/x-pcx" | "image/x-wmf" | "image/x-emf" => true,
         // EPS/AI 는 DOS EPS 바이너리 프리뷰(WMF/TIFF)를 품고 있을 때만 그릴 수 있다 (#4062).
         // 순수 텍스트 PostScript 는 해석기가 없다.
-        "application/postscript" => dos_eps_preview_bytes(data).is_some(),
+        "application/postscript" => eps_renderable_bytes(data).is_some(),
         _ => false,
     }
 }

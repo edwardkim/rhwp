@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "head": "no_sha.capsule.json",
+  "depth": 1,
+  "valid": false,
+  "brokenAt": "no_sha.capsule.json",
+  "links": [
+    {
+      "capsule": "no_sha.capsule.json",
+      "error": "parent.sha256 가 없거나 64자리 16진이 아님"
+    }
+  ],
+  "untrustedContent": false,
+  "untrustedFields": []
+}
