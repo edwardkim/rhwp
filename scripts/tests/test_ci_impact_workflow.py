@@ -669,6 +669,23 @@ class CiImpactWorkflowTests(unittest.TestCase):
             native_skia.count("node scripts/rust-test-suite-manifest.mjs --prepare"),
         )
 
+    def test_native_skia_apt_install_fails_with_bounded_network_and_lock_waits(self) -> None:
+        native_skia = self._job("native-skia-tests")
+        install = self._step("Install native Skia runtime packages", native_skia)
+
+        self.assertIn("DEBIAN_FRONTEND=noninteractive", install)
+        self.assertEqual(2, install.count("timeout 180 apt-get"))
+        for option in [
+            "Acquire::Retries=3",
+            "Acquire::http::Timeout=30",
+            "Acquire::https::Timeout=30",
+            "DPkg::Lock::Timeout=60",
+        ]:
+            with self.subTest(option=option):
+                self.assertIn(option, install)
+        self.assertIn('apt-get "${apt_options[@]}" update', install)
+        self.assertIn('apt-get "${apt_options[@]}" install -y --no-install-recommends', install)
+
     def test_native_skia_starts_after_preflight_without_lane_serialization(self) -> None:
         native = self._job("native-skia-tests")
         self.assertIn("needs: [preflight]", native)

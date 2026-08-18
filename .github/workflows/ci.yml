@@ -1070,8 +1070,19 @@ jobs:
 
       - name: Install native Skia runtime packages
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          # hosted runner의 APT mirror 지연·dpkg lock이 Native Skia lane 전체를
+          # 장시간 pending으로 남기지 않게 한다. 재시도 후에도 회복하지 못하면
+          # 3분 안에 APT 단계 실패로 원인을 드러낸다.
+          apt_options=(
+            -o Acquire::Retries=3
+            -o Acquire::http::Timeout=30
+            -o Acquire::https::Timeout=30
+            -o DPkg::Lock::Timeout=60
+          )
+          sudo env DEBIAN_FRONTEND=noninteractive \
+            timeout 180 apt-get "${apt_options[@]}" update
+          sudo env DEBIAN_FRONTEND=noninteractive \
+            timeout 180 apt-get "${apt_options[@]}" install -y --no-install-recommends \
             fonts-dejavu-core \
             libfontconfig1-dev \
             libfreetype6-dev
