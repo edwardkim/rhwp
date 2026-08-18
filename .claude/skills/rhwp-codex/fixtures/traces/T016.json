@@ -1,0 +1,27 @@
+{
+  "id": "T016",
+  "command": "extract-data",
+  "chapter": "20_표와_데이터.md",
+  "cmd": "rhwp extract-data samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp --json",
+  "exit": 0,
+  "keys": [
+    "counts",
+    "itemCount",
+    "items",
+    "kind",
+    "schemaVersion",
+    "source",
+    "totalItemCount",
+    "truncated",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "items[].raw",
+    "items[].unit"
+  ],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/20_표와_데이터.md",
+  "notInvented": true
+}

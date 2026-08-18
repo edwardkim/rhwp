@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "inspect hidden-text",
+  "sourceChapter": "60_보안.md",
+  "cmd": "rhwp inspect hidden-text samples/143E433F503322BD33.hwp --json",
+  "exit": 0,
+  "envelope": {
+    "clean": true,
+    "hiddenCharCount": 0,
+    "hiddenText": [],
+    "includeOffPage": false,
+    "schemaVersion": "1.0",
+    "source": "samples/143E433F503322BD33.hwp",
+    "thresholdPt": 1.0,
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

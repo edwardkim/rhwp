@@ -1,0 +1,27 @@
+{
+  "id": "T021",
+  "command": "edit redact",
+  "chapter": "30_편집과_계획.md",
+  "cmd": "rhwp edit redact samples/field-01.hwp --dry-run --json",
+  "exit": 0,
+  "keys": [
+    "changedPages",
+    "dryRun",
+    "findingCount",
+    "findings",
+    "inPlace",
+    "kinds",
+    "mask",
+    "noRaw",
+    "redactedCount",
+    "schemaVersion",
+    "source",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/30_편집과_계획.md",
+  "notInvented": true
+}

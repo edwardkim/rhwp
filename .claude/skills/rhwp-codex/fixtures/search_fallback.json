@@ -1,0 +1,618 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "queries": [
+    {
+      "id": "S001",
+      "query": "누름틀",
+      "argv": [
+        "capabilities",
+        "--search",
+        "누름틀"
+      ],
+      "expectCommandContains": "fields",
+      "chapterNo": 10,
+      "developerOnly": false
+    },
+    {
+      "id": "S002",
+      "query": "필드",
+      "argv": [
+        "capabilities",
+        "--search",
+        "필드"
+      ],
+      "expectCommandContains": "fields",
+      "chapterNo": 10,
+      "developerOnly": false
+    },
+    {
+      "id": "S003",
+      "query": "서식",
+      "argv": [
+        "capabilities",
+        "--search",
+        "서식"
+      ],
+      "expectCommandContains": "fields",
+      "chapterNo": 10,
+      "developerOnly": false
+    },
+    {
+      "id": "S004",
+      "query": "요약",
+      "argv": [
+        "capabilities",
+        "--search",
+        "요약"
+      ],
+      "expectCommandContains": "explain",
+      "chapterNo": 10,
+      "developerOnly": false
+    },
+    {
+      "id": "S005",
+      "query": "발췌",
+      "argv": [
+        "capabilities",
+        "--search",
+        "발췌"
+      ],
+      "expectCommandContains": "digest",
+      "chapterNo": 10,
+      "developerOnly": false
+    },
+    {
+      "id": "S006",
+      "query": "검색",
+      "argv": [
+        "capabilities",
+        "--search",
+        "검색"
+      ],
+      "expectCommandContains": "search",
+      "chapterNo": 10,
+      "developerOnly": false
+    },
+    {
+      "id": "S007",
+      "query": "본문",
+      "argv": [
+        "capabilities",
+        "--search",
+        "본문"
+      ],
+      "expectCommandContains": "export-text",
+      "chapterNo": 10,
+      "developerOnly": false
+    },
+    {
+      "id": "S008",
+      "query": "목차",
+      "argv": [
+        "capabilities",
+        "--search",
+        "목차"
+      ],
+      "expectCommandContains": "export-structure",
+      "chapterNo": 10,
+      "developerOnly": false
+    },
+    {
+      "id": "S009",
+      "query": "쪽수",
+      "argv": [
+        "capabilities",
+        "--search",
+        "쪽수"
+      ],
+      "expectCommandContains": "info",
+      "chapterNo": 10,
+      "developerOnly": false
+    },
+    {
+      "id": "S010",
+      "query": "표",
+      "argv": [
+        "capabilities",
+        "--search",
+        "표"
+      ],
+      "expectCommandContains": "export-tables",
+      "chapterNo": 20,
+      "developerOnly": false
+    },
+    {
+      "id": "S011",
+      "query": "csv",
+      "argv": [
+        "capabilities",
+        "--search",
+        "csv"
+      ],
+      "expectCommandContains": "table-to-csv",
+      "chapterNo": 20,
+      "developerOnly": false
+    },
+    {
+      "id": "S012",
+      "query": "엑셀",
+      "argv": [
+        "capabilities",
+        "--search",
+        "엑셀"
+      ],
+      "expectCommandContains": "table-to-csv",
+      "chapterNo": 20,
+      "developerOnly": false
+    },
+    {
+      "id": "S013",
+      "query": "날짜",
+      "argv": [
+        "capabilities",
+        "--search",
+        "날짜"
+      ],
+      "expectCommandContains": "extract-data",
+      "chapterNo": 20,
+      "developerOnly": false
+    },
+    {
+      "id": "S014",
+      "query": "금액",
+      "argv": [
+        "capabilities",
+        "--search",
+        "금액"
+      ],
+      "expectCommandContains": "extract-data",
+      "chapterNo": 20,
+      "developerOnly": false
+    },
+    {
+      "id": "S015",
+      "query": "차트",
+      "argv": [
+        "capabilities",
+        "--search",
+        "차트"
+      ],
+      "expectCommandContains": "chart-to-csv",
+      "chapterNo": 20,
+      "developerOnly": false
+    },
+    {
+      "id": "S016",
+      "query": "스캔",
+      "argv": [
+        "capabilities",
+        "--search",
+        "스캔"
+      ],
+      "expectCommandContains": "scan",
+      "chapterNo": 20,
+      "developerOnly": false
+    },
+    {
+      "id": "S017",
+      "query": "치환",
+      "argv": [
+        "capabilities",
+        "--search",
+        "치환"
+      ],
+      "expectCommandContains": "edit replace-text",
+      "chapterNo": 30,
+      "developerOnly": false
+    },
+    {
+      "id": "S018",
+      "query": "셀",
+      "argv": [
+        "capabilities",
+        "--search",
+        "셀"
+      ],
+      "expectCommandContains": "edit set-cell",
+      "chapterNo": 30,
+      "developerOnly": false
+    },
+    {
+      "id": "S019",
+      "query": "채우",
+      "argv": [
+        "capabilities",
+        "--search",
+        "채우"
+      ],
+      "expectCommandContains": "edit fill-fields",
+      "chapterNo": 30,
+      "developerOnly": false
+    },
+    {
+      "id": "S020",
+      "query": "도장",
+      "argv": [
+        "capabilities",
+        "--search",
+        "도장"
+      ],
+      "expectCommandContains": "edit insert-image",
+      "chapterNo": 30,
+      "developerOnly": false
+    },
+    {
+      "id": "S021",
+      "query": "마스킹",
+      "argv": [
+        "capabilities",
+        "--search",
+        "마스킹"
+      ],
+      "expectCommandContains": "edit redact",
+      "chapterNo": 30,
+      "developerOnly": false
+    },
+    {
+      "id": "S022",
+      "query": "메타",
+      "argv": [
+        "capabilities",
+        "--search",
+        "메타"
+      ],
+      "expectCommandContains": "edit sanitize",
+      "chapterNo": 30,
+      "developerOnly": false
+    },
+    {
+      "id": "S023",
+      "query": "계획",
+      "argv": [
+        "capabilities",
+        "--search",
+        "계획"
+      ],
+      "expectCommandContains": "run",
+      "chapterNo": 30,
+      "developerOnly": false
+    },
+    {
+      "id": "S024",
+      "query": "변환",
+      "argv": [
+        "capabilities",
+        "--search",
+        "변환"
+      ],
+      "expectCommandContains": "convert",
+      "chapterNo": 40,
+      "developerOnly": false
+    },
+    {
+      "id": "S025",
+      "query": "pdf",
+      "argv": [
+        "capabilities",
+        "--search",
+        "pdf"
+      ],
+      "expectCommandContains": "export-pdf",
+      "chapterNo": 40,
+      "developerOnly": false
+    },
+    {
+      "id": "S026",
+      "query": "svg",
+      "argv": [
+        "capabilities",
+        "--search",
+        "svg"
+      ],
+      "expectCommandContains": "export-svg",
+      "chapterNo": 40,
+      "developerOnly": false
+    },
+    {
+      "id": "S027",
+      "query": "마크다운",
+      "argv": [
+        "capabilities",
+        "--search",
+        "마크다운"
+      ],
+      "expectCommandContains": "export-markdown",
+      "chapterNo": 40,
+      "developerOnly": false
+    },
+    {
+      "id": "S028",
+      "query": "회귀",
+      "argv": [
+        "capabilities",
+        "--search",
+        "회귀"
+      ],
+      "expectCommandContains": "render-diff",
+      "chapterNo": 40,
+      "developerOnly": false
+    },
+    {
+      "id": "S029",
+      "query": "썸네일",
+      "argv": [
+        "capabilities",
+        "--search",
+        "썸네일"
+      ],
+      "expectCommandContains": "thumbnail",
+      "chapterNo": 40,
+      "developerOnly": false
+    },
+    {
+      "id": "S030",
+      "query": "검증",
+      "argv": [
+        "capabilities",
+        "--search",
+        "검증"
+      ],
+      "expectCommandContains": "verify",
+      "chapterNo": 50,
+      "developerOnly": false
+    },
+    {
+      "id": "S031",
+      "query": "차이",
+      "argv": [
+        "capabilities",
+        "--search",
+        "차이"
+      ],
+      "expectCommandContains": "ir-diff",
+      "chapterNo": 50,
+      "developerOnly": false
+    },
+    {
+      "id": "S032",
+      "query": "영수증",
+      "argv": [
+        "capabilities",
+        "--search",
+        "영수증"
+      ],
+      "expectCommandContains": "replay",
+      "chapterNo": 50,
+      "developerOnly": false
+    },
+    {
+      "id": "S033",
+      "query": "감사",
+      "argv": [
+        "capabilities",
+        "--search",
+        "감사"
+      ],
+      "expectCommandContains": "audit",
+      "chapterNo": 50,
+      "developerOnly": false
+    },
+    {
+      "id": "S034",
+      "query": "계보",
+      "argv": [
+        "capabilities",
+        "--search",
+        "계보"
+      ],
+      "expectCommandContains": "lineage",
+      "chapterNo": 50,
+      "developerOnly": false
+    },
+    {
+      "id": "S035",
+      "query": "주입",
+      "argv": [
+        "capabilities",
+        "--search",
+        "주입"
+      ],
+      "expectCommandContains": "inspect injection",
+      "chapterNo": 60,
+      "developerOnly": false
+    },
+    {
+      "id": "S036",
+      "query": "은닉",
+      "argv": [
+        "capabilities",
+        "--search",
+        "은닉"
+      ],
+      "expectCommandContains": "inspect hidden-text",
+      "chapterNo": 60,
+      "developerOnly": false
+    },
+    {
+      "id": "S037",
+      "query": "유니코드",
+      "argv": [
+        "capabilities",
+        "--search",
+        "유니코드"
+      ],
+      "expectCommandContains": "inspect unicode",
+      "chapterNo": 60,
+      "developerOnly": false
+    },
+    {
+      "id": "S038",
+      "query": "armor",
+      "argv": [
+        "capabilities",
+        "--search",
+        "armor"
+      ],
+      "expectCommandContains": "armor",
+      "chapterNo": 60,
+      "developerOnly": false
+    },
+    {
+      "id": "S039",
+      "query": "위협",
+      "argv": [
+        "capabilities",
+        "--search",
+        "위협"
+      ],
+      "expectCommandContains": "threat-scan",
+      "chapterNo": 60,
+      "developerOnly": false
+    },
+    {
+      "id": "S040",
+      "query": "capabilities",
+      "argv": [
+        "capabilities",
+        "--search",
+        "capabilities"
+      ],
+      "expectCommandContains": "capabilities",
+      "chapterNo": 70,
+      "developerOnly": false
+    },
+    {
+      "id": "S041",
+      "query": "출처",
+      "argv": [
+        "capabilities",
+        "--search",
+        "출처"
+      ],
+      "expectCommandContains": "export-provenance-map",
+      "chapterNo": 70,
+      "developerOnly": false
+    },
+    {
+      "id": "S042",
+      "query": "스키마",
+      "argv": [
+        "capabilities",
+        "--search",
+        "스키마"
+      ],
+      "expectCommandContains": "export-plan-schema",
+      "chapterNo": 70,
+      "developerOnly": false
+    },
+    {
+      "id": "S043",
+      "query": "매니페스트",
+      "argv": [
+        "capabilities",
+        "--search",
+        "매니페스트"
+      ],
+      "expectCommandContains": "export-agent-manifest",
+      "chapterNo": 70,
+      "developerOnly": false
+    },
+    {
+      "id": "S044",
+      "query": "배치",
+      "argv": [
+        "capabilities",
+        "--search",
+        "배치"
+      ],
+      "expectCommandContains": "batch",
+      "chapterNo": 80,
+      "developerOnly": false
+    },
+    {
+      "id": "S045",
+      "query": "대량",
+      "argv": [
+        "capabilities",
+        "--search",
+        "대량"
+      ],
+      "expectCommandContains": "batch",
+      "chapterNo": 80,
+      "developerOnly": false
+    },
+    {
+      "id": "S046",
+      "query": "mcp",
+      "argv": [
+        "capabilities",
+        "--search",
+        "mcp"
+      ],
+      "expectCommandContains": "mcp-serve",
+      "chapterNo": 80,
+      "developerOnly": false
+    },
+    {
+      "id": "S047",
+      "query": "세션",
+      "argv": [
+        "capabilities",
+        "--search",
+        "세션"
+      ],
+      "expectCommandContains": "mcp-serve",
+      "chapterNo": 80,
+      "developerOnly": false
+    },
+    {
+      "id": "S048",
+      "query": "inventory",
+      "argv": [
+        "capabilities",
+        "--search",
+        "inventory"
+      ],
+      "expectCommandContains": "hwp5-inventory",
+      "chapterNo": 85,
+      "developerOnly": true
+    },
+    {
+      "id": "S049",
+      "query": "dump",
+      "argv": [
+        "capabilities",
+        "--search",
+        "dump"
+      ],
+      "expectCommandContains": "dump",
+      "chapterNo": 85,
+      "developerOnly": true
+    },
+    {
+      "id": "S050",
+      "query": "probe",
+      "argv": [
+        "capabilities",
+        "--search",
+        "probe"
+      ],
+      "expectCommandContains": "hwp5-contract-probe",
+      "chapterNo": 85,
+      "developerOnly": true
+    },
+    {
+      "id": "S051",
+      "query": "bench",
+      "argv": [
+        "capabilities",
+        "--search",
+        "bench"
+      ],
+      "expectCommandContains": "bench",
+      "chapterNo": 85,
+      "developerOnly": true
+    }
+  ]
+}
