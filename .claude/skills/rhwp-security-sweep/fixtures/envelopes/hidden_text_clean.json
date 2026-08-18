@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/field-01.hwp",
+  "thresholdPt": 1.0,
+  "includeOffPage": false,
+  "hiddenText": [],
+  "hiddenCharCount": 0,
+  "clean": true,
+  "exitCode": 0,
+  "note": "탐지 0건이어도 exit 0. samples/ 는 이 축의 정상(음성) 코퍼스."
+}

@@ -1,0 +1,7 @@
+{
+  "exitCode": 2,
+  "stdoutBytes": 0,
+  "stderrContains": "산출 경로를 -o <출력> 으로 지정하거나",
+  "source": "output/pii-demo.hwp",
+  "note": "기본 산출 이름 _redacted.hwp 를 만들지 않는다."
+}

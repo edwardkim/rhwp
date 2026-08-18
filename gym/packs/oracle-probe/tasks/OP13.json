@@ -1,0 +1,27 @@
+{
+  "id": "OP13",
+  "tier": 2,
+  "title": "form-02 누름틀 수 라이브 재계산",
+  "input": "samples/form-02.hwp",
+  "axis": "검증",
+  "instructions": "form-02 서식의 누름틀 개수를 answer.json 에 {\"fields\": N} 으로 제출하라. form-01 과 숫자를 바꿔 넣으면 라이브 오라클이 거부한다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "form-02 필드 수",
+      "op": "answer_eq",
+      "answer": "fields",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ],
+      "path": "fieldCount"
+    }
+  ]
+}

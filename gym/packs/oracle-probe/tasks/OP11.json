@@ -1,0 +1,27 @@
+{
+  "id": "OP11",
+  "tier": 2,
+  "title": "메모 서식 누름틀 수",
+  "input": "samples/field-01-memo.hwp",
+  "axis": "검증",
+  "instructions": "field-01-memo 서식의 누름틀 개수를 answer.json 에 {\"fields\": N} 으로 제출하라. field-01 과 같은 축이지만 다른 표본 — 골든을 베끼면 틀린다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "메모 서식 필드 수",
+      "op": "answer_eq",
+      "answer": "fields",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ],
+      "path": "fieldCount"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "OP17",
+  "tier": 1,
+  "title": "형식 표지 라이브 대조 (hwp)",
+  "input": "samples/table-001.hwp",
+  "axis": "검증",
+  "instructions": "입력의 형식 표지를 answer.json 에 {\"format\": \"...\"} 으로 제출하라. 채점기가 info --json 의 format 을 다시 읽는다. 힌트: 보통 hwp.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "형식 표지",
+      "op": "answer_eq",
+      "answer": "format",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "format"
+    }
+  ]
+}

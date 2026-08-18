@@ -762,6 +762,9 @@ jobs:
   # [#5164] archive는 preflight 직후 한 번만 compile/link하고 Lint와 병렬 실행한다.
   # 네 worker는 동일 archive를 slow filter와 regular test-case partition으로 나눠 소비한다.
   # required check 는 집계 job "Build & Test" 로 불변이다.
+  # [#5388] M04-4: tests/cases/prop_*_roundtrip.rs 는 정규 shard 가 archive 에서
+  # 자동 실행한다. 전용 싼 job 은 .github/workflows/proptest-roundtrip.yml
+  # (원본 부재 skip). 5번째 shard 를 넣지 않는다 — 집계는 4 worker 합이다.
   build-test-archive:
     uses: ./.github/workflows/build-nextest-archives.yml
     needs: [preflight]
@@ -939,6 +942,7 @@ jobs:
           python3 -m unittest scripts/tests/test_release_channel_policy_workflow.py
           python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
           python3 -m unittest scripts/tests/test_gym_release_gate_workflow.py
+          python3 -m unittest scripts/tests/test_proptest_roundtrip_workflow.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
 
       - name: Validate gym scorer contracts
@@ -953,6 +957,8 @@ jobs:
           python3 -m unittest scripts/tests/test_gym_fuzz_corpus.py
           python3 -m unittest scripts/tests/test_gym_release_diff.py
           python3 -m unittest scripts/tests/test_gym_discriminate.py
+          python3 -m unittest scripts/tests/test_gym_oracle_probe.py
+          python3 -m unittest scripts/tests/test_gym_differential.py
 
       # [#4855] 경쟁 벤치 하네스 순수 로직 가드 — 집계·능력 매트릭스·리포트 렌더·정직한
       # 저하(못 돌린 도구는 'n/a: 이유', 숫자 날조 금지)를 바이너리·외부도구 없이 검증한다.

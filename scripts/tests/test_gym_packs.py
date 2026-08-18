@@ -176,6 +176,56 @@ class BaselineResolveTests(unittest.TestCase):
 
         self.assertEqual(failure, "pack-b/T02: 제출 폴더 없음")
 
+    def test_three_sub_placeholders_all_resolve(self):
+        """다세대 계획서는 세 개 이상의 {sub:} 를 한 문자열에 넣는다(#5273)."""
+        import tempfile
+
+        build_baseline = load_module(
+            "gym_build_baseline_triple", REPO_ROOT / "gym" / "tools" / "build_baseline.py")
+        with tempfile.TemporaryDirectory() as sub_dir:
+            token = '{"a": "{sub:a.hwp}", "b": "{sub:b.hwp}", "c": "{sub:c.hwp}"}'
+            out = build_baseline.resolve(token, {"input": "in.hwp"}, sub_dir)
+            self.assertNotIn("{sub:", out)
+            self.assertIn("a.hwp", out)
+            self.assertIn("b.hwp", out)
+            self.assertIn("c.hwp", out)
+
+    def test_missing_artifact_is_reported_before_score(self):
+        """submit.files 가 선언한 산출이 없으면 채점 전에 부재를 보고한다."""
+        import tempfile
+        from unittest import mock
+
+        build_baseline = load_module(
+            "gym_build_baseline_missing", REPO_ROOT / "gym" / "tools" / "build_baseline.py")
+        task = {"id": "T02", "submit": {"kind": "artifact", "files": ["edited.hwp"]}}
+        with tempfile.TemporaryDirectory() as root:
+            os.makedirs(os.path.join(root, "pack-b", "T02"))
+            with mock.patch.object(build_baseline.runner, "score_task") as score:
+                inspected = build_baseline.inspect_built_task(
+                    "/tmp/rhwp", "pack-b", task, root)
+            score.assert_not_called()
+        self.assertEqual(inspected["kind"], "missing-artifact")
+        self.assertEqual(inspected["missing"], ["edited.hwp"])
+        self.assertEqual(inspected["message"], "pack-b/T02: 부재 산출: edited.hwp")
+
+    def test_failed_score_lists_check_names(self):
+        """채점 실패는 과제 ID 와 검사 이름을 남긴다. 침묵하지 않는다."""
+        from unittest import mock
+
+        build_baseline = load_module(
+            "gym_build_baseline_checks", REPO_ROOT / "gym" / "tools" / "build_baseline.py")
+        task = {"id": "T09"}
+        result = {
+            "pass": False,
+            "checks": [
+                {"name": "1단계 반영", "ok": False, "error": "없음"},
+                {"name": "2단계 반영", "ok": True},
+            ],
+        }
+        with mock.patch.object(build_baseline.runner, "score_task", return_value=result):
+            failure = build_baseline.verify_built_task("/tmp/rhwp", "core-cli", task, "/tmp/sub")
+        self.assertEqual(failure, "core-cli/T09: 1단계 반영: 없음")
+
 
 class ProfileTests(unittest.TestCase):
     def test_profiles_reference_existing_packs(self):
