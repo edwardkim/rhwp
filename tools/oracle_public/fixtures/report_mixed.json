@@ -1,0 +1,65 @@
+{
+  "schema": "oracle_public.failure_report/v1",
+  "generated_at": "2026-08-18T00:00:00Z",
+  "source": "visual_sweep",
+  "rhwp_bin": "target/debug/rhwp",
+  "dpi": 96,
+  "pixel_diff_threshold": 12,
+  "threshold": {
+    "metric": "worst_pixel_match_percent",
+    "op": "<",
+    "value": 99.0
+  },
+  "documents": [
+    {
+      "id": "exam_math",
+      "hwp": "samples/exam_math.hwp",
+      "pdf": "pdf/exam_math-2022.pdf",
+      "pages": 12,
+      "metrics": {
+        "worst_pixel_match_percent": 87.5,
+        "average_pixel_match_percent": 94.12,
+        "worst_ink_match_percent": 91.2,
+        "diff_pixels": 12345,
+        "total_pixels": 1000000,
+        "worst_pages": [3, 7]
+      },
+      "repro": {
+        "command": "python scripts/visual_sweep.py --hwp samples/exam_math.hwp --pdf pdf/exam_math-2022.pdf --key exam_math --dpi 96 --pixel-diff-threshold 12",
+        "cwd": "."
+      },
+      "notes": "3·7쪽 수식 줄간격이 한컴 PDF 와 어긋난다."
+    },
+    {
+      "id": "exam_eng",
+      "hwp": "samples/exam_eng.hwp",
+      "pdf": "pdf/exam_eng-2022.pdf",
+      "pages": 8,
+      "metrics": {
+        "worst_pixel_match_percent": 99.41,
+        "average_pixel_match_percent": 99.72,
+        "worst_ink_match_percent": 99.55,
+        "diff_pixels": 210,
+        "total_pixels": 800000,
+        "worst_pages": [2]
+      }
+    },
+    {
+      "id": "plan_2022",
+      "hwp": "samples/2022 plan.hwp",
+      "pdf": "pdf/2022 plan-2022.pdf",
+      "pages": 4,
+      "metrics": {
+        "worst_pixel_match_percent": 72.05,
+        "average_pixel_match_percent": 81.3,
+        "worst_ink_match_percent": 68.4,
+        "diff_pixels": 88001,
+        "total_pixels": 400000,
+        "worst_pages": [1, 2, 4]
+      },
+      "repro": {
+        "command": "python scripts/visual_sweep.py --file-target plan_2022 \"samples/2022 plan.hwp\" \"pdf/2022 plan-2022.pdf\" --dpi 96 --pixel-diff-threshold 12"
+      }
+    }
+  ]
+}
