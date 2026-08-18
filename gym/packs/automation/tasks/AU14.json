@@ -1,0 +1,35 @@
+{
+  "id": "AU14",
+  "tier": 2,
+  "title": "계획서 옆칸 원자 실행",
+  "input": "samples/table-001.hwp",
+  "instructions": "AU14 — 계획서 옆칸 원자 실행.\n\n입력 표본은 `samples/table-001.hwp` 이다. 저장소 samples/ 에 이미 있는 실문서이며 새 픽스처를 만들지 않는다. automation pack 은 기존 CLI 표면(anchor · audit · audit-report · bundle · conformance · disclose · export-tables · gate · lineage · recall-scope · settle · verify-signature) 만으로 검증 사다리 여정을 늘린다. 새 명령·새 연산자·새 pack 은 없다.\n\nAU01 은 첫 표 (0,0) 을 '계획실행' 으로 바꾼다. 이 과제는 **같은 표의 옆칸 (0,1)** 만 지목한다. 좌표를 바꾸지 않고 첫 칸만 고치면 채점이 거절한다. run 계획서를 원자 실행해 산출물 out.hwp 를 제출하라.\n\n수행 힌트: rhwp run --plan-json 으로 set_cell table=0 row=0 col=1 text=옆칸확장. 채점은 제출 폴더에서 같은 판정 명령을 다시 돌린다. 정답 해시·건수를 과제 파일에 박제하지 마라. 표본이 바뀌면 라이브 재계산이 따라간다.\n\n금지: XC01 L5 완주, XC02 오염 무영향 0, XC03 정산 4관문, XC04 3세대 --deep, XC05 L3 서명+앵커 완주, WR 일일 3해시, T07 서식 채움을 복제하지 마라. 원본 픽스처를 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. T07 서식 채움(fill-fields, 첫 필드 홍길동)을 복제하지 마라. XC01–XC05 사다리 완주(L5 · 3세대 --deep · 정산 4관문 · 오염 무영향 0 · L3 서명+앵커 완주)를 베끼지 마라. WR01+ 일일 영수증 3해시 answer.json 여정도 이 pack 의 일이 아니다.\n\n판별력: 무편집 복사본은 differs_from_input 이 거절한다. 옆칸이 아니면 cell_text_eq 가 실패한다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "(0,1) == 옆칸확장",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 1,
+      "value": "옆칸확장",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:out.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "out.hwp"
+    }
+  ],
+  "axis": "자동화"
+}
