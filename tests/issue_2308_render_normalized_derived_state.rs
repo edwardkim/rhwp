@@ -4,6 +4,8 @@
 //! drifts only the split height. The two continuation fragments are pinned after
 //! direct comparison with the HWP 2024/Hancom PDF fixture: the second fragment
 //! begins at the page's content top while retaining the stored table width.
+//! #3128 additionally pins its PDF-owned 10-line continuation height and table
+//! content-box padding semantics.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -154,9 +156,10 @@ fn issue_2308_saved_nested_width_keeps_fragment_geometry() {
 
     // p33's first fragment begins at the row-6 boundary in the HWP 2024 PDF;
     // its old 351.1px pin predated the empty RowBreak host flow correction and
-    // incorrectly described a point inside the preceding row. p34's 1×1
-    // rationale fragment retains the stored 426.9px continuation geometry.
-    let expected = [(32, 400.4, 649.3), (33, 77.1, 426.9)];
+    // incorrectly described a point inside the preceding row. On p34 Hancom
+    // lays the long paragraph out in ten lines, so the nested continuation clip
+    // is 370.9px rather than the old 426.9px fallback result (#3128).
+    let expected = [(32, 400.4, 649.3), (33, 77.1, 370.9)];
     for (page, expected_y, expected_height) in expected {
         let tree = core
             .build_page_render_tree(page)
@@ -206,11 +209,11 @@ fn issue_2308_nested_fragment_cut_does_not_half_paint_boundary_line() {
     );
 }
 
-/// HWP 2024 PDF p34의 1×1 중첩 표는 `inMargin=(0,0,141,141)`이더라도
-/// 저장된 셀 좌우 여백(510HU)을 유지한다. 이 예외를 놓치면 문단의 paint
-/// viewport가 우측 테두리까지 확장되어 한컴 출력과 달리 글자가 선을 침범한다.
+/// HWP 2024 PDF p34의 1×1 중첩 표는 `applyInnerMargin=false`이고
+/// `inMargin.left/right=0`이므로, 저장 cell margin 510HU를 덧적용하지 않고
+/// table content box 전체를 쓴다. PDF의 우측 마지막 글자도 테두리에 거의 맞닿는다.
 #[test]
-fn issue_2308_nested_non_tac_table_keeps_saved_horizontal_cell_margin() {
+fn issue_2308_nested_non_tac_table_uses_table_content_box() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/76076_regulatory_analysis.hwp");
     let bytes = fs::read(path).expect("read #2195 authority fixture");
     let core = DocumentCore::from_bytes(&bytes).expect("parse #2195 authority fixture");
@@ -230,9 +233,9 @@ fn issue_2308_nested_non_tac_table_keeps_saved_horizontal_cell_margin() {
     let rightmost = rights.into_iter().fold(f64::NEG_INFINITY, f64::max);
     let border_right = nested.bbox.x + nested.bbox.width;
     assert!(
-        rightmost <= border_right - 6.0,
-        "p34 nested-table text paint reaches the right border: text_right={rightmost:.1}, \
-         border_right={border_right:.1}; HWP PDF retains the saved 510HU cell margin"
+        (rightmost - border_right).abs() <= 0.2,
+        "p34 nested-table text viewport must reach the table content-box edge: \
+         text_right={rightmost:.1}, border_right={border_right:.1}"
     );
 }
 
@@ -257,10 +260,10 @@ fn issue_2308_empty_host_paragraph_keeps_block_nested_table_content() {
     );
 }
 
-/// Native HWP5의 마지막 short RowBreak child는 p34처럼 일반 저장 cell margin을
-/// 보존하는 구조가 아니다. 한컴 2024 PDF는 parent owner content box에서 첫 줄을
+/// Native HWP5의 마지막 short RowBreak child는 별도 owner projection을 쓴다.
+/// 한컴 2024 PDF는 parent owner content box에서 첫 줄을
 /// `… 등의 사고`까지 그리고, p82는 동일 문장을 재paint하지 않고 `를 예방…`으로
-/// 이어 간다. p34의 우측 border 보호와 이 p81/p82 owner 계약을 함께 고정한다.
+/// 이어 간다. p34의 장문 tracking 복원과 이 p81/p82 owner 계약을 함께 고정한다.
 #[test]
 fn issue_2308_short_rowbreak_child_uses_owner_content_box_only() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/76076_regulatory_analysis.hwp");
