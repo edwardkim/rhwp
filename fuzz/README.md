@@ -131,13 +131,13 @@ Windows 호스트에서 `cmin --sanitizer none` 은 rust-lld 가 `__sanitizer_co
 - nightly 스모크는 위 CI 절. PR 게이트·왕복 정합성(M04)은 여기 넣지 않습니다
 - OSS-Fuzz 등재 (M10, 메인테이너 판단)
 - CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생
+- CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생 (왕복 정합성은 아래 M04)
 - OSS-Fuzz 등재 (메인테이너 판단)
 
 ## 왕복 정합성은 여기가 아니다 (M04)
 
 위 서두가 비워 둔 **정상 입력의 왕복 정합성(#2740, IrDiff-0)** 은 cargo-fuzz
 범위 밖이다. 그 공백을 메우는 계층이 M04 다 — 퍼저 타깃을 늘리지 않는다.
-
 - **M04-1** (`tests/cases/prop_edit_plan.rs`, #5363): `proptest` 의존 +
   기존 `rhwp run` step(`fill_fields` · `replace_text` · `set_cell` ·
   `set_checkbox`)만 조합하는 편집 시퀀스 생성기. 생성 계획은 JSON
@@ -160,3 +160,16 @@ Windows 호스트에서 `cmin --sanitizer none` 은 rust-lld 가 `__sanitizer_co
   (예: `PROPTEST_CASES=256 cargo test --test regression_suite_* prop_hwp5_roundtrip::`).
   픽스처가 표현하지 못하는 step(누름틀/표/□ 없음)은 skip. DocumentCore
   편집 API 발명 금지. HWPX 는 M04-2.
+왕복은 property 계층이지 퍼지가 아니다.
+
+- **CI** (`.github/workflows/proptest-roundtrip.yml`,
+  `scripts/run-prop-roundtrip.mjs`): debug 프로필, 기본 8 cases. 10분 퍼지가
+  아니다. `tests/cases/prop_hwpx_roundtrip.rs`(M04-2, #5381) 와
+  `tests/cases/prop_hwp5_roundtrip.rs`(M04-3, #5387) 가 있으면 돌리고, 없으면
+  skip 한다. 배선 확인용 `tests/cases/prop_roundtrip_ci.rs` 는 항상 돈다.
+  nextest archive 정규 shard 도 같은 `tests/cases/` 원본을 자동 실행한다.
+- **본체**: 작은 픽스처에 기존 `rhwp run` step 만 적용한 뒤
+  parse→serialize→reparse 가
+  [`diff_documents`](../src/serializer/hwpx/roundtrip.rs) IrDiff 0.
+  전체 화력은 `PROPTEST_CASES` (예:
+  `PROPTEST_CASES=256 cargo test --test regression_suite_* prop_hwpx_roundtrip::`).
