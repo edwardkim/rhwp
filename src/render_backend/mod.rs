@@ -21,6 +21,7 @@
 //!
 //! 이 모듈은 그 공통 계약을 **기존 백엔드를 고치지 않고** 신설한다.
 //! 어댑터는 기존 코드를 호출만 하며, `src/renderer/**` 는 이 PR 에서 바뀌지 않는다.
+//! 구체 어댑터는 `SvgBackend` 와 `PngBackend` 둘이다. native-skia 어댑터는 여기 없다.
 //!
 //! # 기존 trait 들과의 관계
 //!
@@ -67,12 +68,14 @@
 
 pub mod backends;
 pub mod caps;
+pub mod png_adapter;
 pub mod svg_adapter;
 pub mod traits;
 pub mod util;
 
 pub use backends::{DrawStats, NullBackend, TraceBackend};
 pub use caps::{BackendCapabilities, BackendFeature};
+pub use png_adapter::PngBackend;
 pub use svg_adapter::SvgBackend;
 pub use traits::{PageSize, RenderBackend, RenderBackendError};
 pub use util::{paint_op_kind, replay_page, PageState};
@@ -172,6 +175,11 @@ mod tests {
         let mut svg = SvgBackend::new();
         assert_eq!(
             svg.draw(&rect_op(0.0, 0.0)).unwrap_err(),
+            RenderBackendError::NoOpenPage { call: "draw" }
+        );
+        let mut png = PngBackend::new();
+        assert_eq!(
+            png.draw(&rect_op(0.0, 0.0)).unwrap_err(),
             RenderBackendError::NoOpenPage { call: "draw" }
         );
     }
@@ -275,10 +283,30 @@ mod tests {
         assert!(!null.supports(BackendFeature::VectorText));
         assert!(null.supports(BackendFeature::Deterministic));
 
+        // PNG 어댑터는 실제로 지원하는 능력만 선언한다 (210b3ee37 정직성 보정과 같은 결).
+        // 얇은 어댑터는 클립·다중 페이지를 보존하지 못하고, native-skia 가 없으면
+        // 이미지·그라디언트도 산출물에 남지 않는다. M06-3 이 전 백엔드 정직성 스윕이다.
+        let png = PngBackend::new().capabilities();
+        assert_eq!(png.name, "png");
+        assert!(png.raster_only);
+        assert!(!png.supports(BackendFeature::VectorText));
+        assert!(!png.supports(BackendFeature::EmbeddedFonts));
+        assert!(!png.supports(BackendFeature::Clipping));
+        assert!(!png.supports(BackendFeature::MultiPage));
+        assert!(!png.supports(BackendFeature::Deterministic));
+        let live = PngBackend::raster_available();
+        assert_eq!(png.supports(BackendFeature::Images), live);
+        assert_eq!(png.supports(BackendFeature::Gradients), live);
+        assert_eq!(
+            live,
+            cfg!(all(not(target_arch = "wasm32"), feature = "native-skia"))
+        );
+
         // 자기모순 선언(래스터 전용인데 벡터 텍스트)은 불변식 위반이다.
         for caps in [
             svg,
             null,
+            png,
             TraceBackend::new().capabilities(),
             BackendCapabilities::raster("skia"),
         ] {
@@ -324,6 +352,21 @@ mod tests {
         assert!(svg.starts_with("<svg"), "{svg}");
         assert!(svg.contains("viewBox=\"0 0 400 300\""), "{svg}");
         assert!(svg.trim_end().ends_with("</svg>"), "{svg}");
+
+        // PNG 어댑터: native-skia 가 있으면 진짜 시그니처, 없으면 래스터를 건너뛴다.
+        let mut png_backend = PngBackend::new();
+        replay_page(&mut png_backend, &sample_tree()).unwrap();
+        assert_eq!(png_backend.pages().len(), 1);
+        let png = png_backend.finish().unwrap();
+        if PngBackend::raster_available() {
+            assert!(
+                png.starts_with(&[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]),
+                "expected PNG signature, got {} bytes",
+                png.len()
+            );
+        } else {
+            assert!(png.is_empty());
+        }
     }
 
     // 10. 페이지별 SVG 문서를 이어 붙여 유효하지 않은 단일 SVG를 만들지 않는다.
@@ -336,6 +379,14 @@ mod tests {
         assert_eq!(
             backend.begin_page(PageSize::new(400.0, 300.0)).unwrap_err(),
             RenderBackendError::MultiplePagesUnsupported { backend: "svg" }
+        );
+
+        let mut png = PngBackend::new();
+        png.begin_page(PageSize::new(400.0, 300.0)).unwrap();
+        png.end_page().unwrap();
+        assert_eq!(
+            png.begin_page(PageSize::new(400.0, 300.0)).unwrap_err(),
+            RenderBackendError::MultiplePagesUnsupported { backend: "png" }
         );
     }
 
