@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1",
+  "generatedBy": "tools/strategist/engagement.py",
+  "mode": "validate",
+  "claimCount": 1,
+  "ledgerEntryCount": 12,
+  "violationCount": 1,
+  "violations": [
+    {
+      "claim": "CLAIM-1",
+      "kind": "unlinked",
+      "detail": "실존 EV id 에 연결된 근거가 하나도 없다"
+    }
+  ],
+  "verdict": "fail",
+  "_skillMeta": {
+    "exit": 3,
+    "kind": "unlinked"
+  }
+}

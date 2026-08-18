@@ -1,0 +1,213 @@
+# concatenated search envelopes (do not invent page)
+
+{
+  "file": "doc0.hwpx",
+  "keyword": "표준 API 연계",
+  "matches": [
+    {
+      "text": "발주기관은 표준 API 연계를 필수기능으로 명시한다.",
+      "context": "…발주기관은 표준 API 연계를 필수기능으로 명시한다.…",
+      "section": 0,
+      "paragraph": 12,
+      "charOffset": 40,
+      "length": 8
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}
+
+{
+  "file": "doc1.hwpx",
+  "keyword": "데이터 플랫폼",
+  "matches": [
+    {
+      "text": "본 사업의 핵심은 도시 데이터 플랫폼 구축이다.",
+      "context": "…본 사업의 핵심은 도시 데이터 플랫폼 구축이다.…",
+      "section": 0,
+      "paragraph": 4,
+      "charOffset": 8,
+      "length": 7,
+      "page": 1
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}
+
+{
+  "file": "doc2.hwpx",
+  "keyword": "총사업비",
+  "matches": [
+    {
+      "text": "총사업비는 3,180백만원(부가세 별도)으로 한다.",
+      "context": "…총사업비는 3,180백만원(부가세 별도)으로 한다.…",
+      "section": 0,
+      "paragraph": 7,
+      "charOffset": 55,
+      "length": 11,
+      "page": 0
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}
+
+{
+  "file": "doc3.hwpx",
+  "keyword": "수행기간",
+  "matches": [
+    {
+      "text": "수행기간은 계약일로부터 14개월이다.",
+      "context": "…수행기간은 계약일로부터 14개월이다.…",
+      "section": 1,
+      "paragraph": 2,
+      "charOffset": 0,
+      "length": 5
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}
+
+{
+  "file": "doc4.hwpx",
+  "keyword": "기술평가",
+  "matches": [
+    {
+      "text": "기술평가 80점, 가격평가 20점으로 합산한다.",
+      "context": "…기술평가 80점, 가격평가 20점으로 합산한다.…",
+      "section": 0,
+      "paragraph": 21,
+      "charOffset": 0,
+      "length": 4,
+      "page": 5
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}
+
+{
+  "file": "doc0.hwpx",
+  "keyword": "배점",
+  "matches": [
+    {
+      "text": "정성 평가 배점표는 별첨 2와 같다.",
+      "context": "…정성 평가 배점표는 별첨 2와 같다.…",
+      "section": 0,
+      "paragraph": 22,
+      "charOffset": 18,
+      "length": 2,
+      "page": 5
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}
+
+{
+  "file": "doc1.hwpx",
+  "keyword": "수주액",
+  "matches": [
+    {
+      "text": "2분기 공공 클라우드 수주액은 42억원이다.",
+      "context": "…2분기 공공 클라우드 수주액은 42억원이다.…",
+      "section": 0,
+      "paragraph": 3,
+      "charOffset": 14,
+      "length": 3
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}
+
+{
+  "file": "doc2.hwpx",
+  "keyword": "잔여파이프",
+  "matches": [
+    {
+      "text": "잔여파이프 61억원 중 28억원이 3분기 확정 예정이다.",
+      "context": "…잔여파이프 61억원 중 28억원이 3분기 확정 예정이다.…",
+      "section": 0,
+      "paragraph": 5,
+      "charOffset": 0,
+      "length": 5,
+      "page": 1
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}
+
+{
+  "file": "doc3.hwpx",
+  "keyword": "MM",
+  "matches": [
+    {
+      "text": "3분기 가용 공수는 36MM 이다.",
+      "context": "…3분기 가용 공수는 36MM 이다.…",
+      "section": 0,
+      "paragraph": 8,
+      "charOffset": 10,
+      "length": 2,
+      "page": 2
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}
+
+{
+  "file": "doc4.hwpx",
+  "keyword": "투입인력",
+  "matches": [
+    {
+      "text": "투입인력은 아키텍트 2, 개발 6, 운영 2 명이다.",
+      "context": "…투입인력은 아키텍트 2, 개발 6, 운영 2 명이다.…",
+      "section": 0,
+      "paragraph": 9,
+      "charOffset": 0,
+      "length": 4
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}
+
+{
+  "file": "doc0.hwpx",
+  "keyword": "리스크",
+  "matches": [
+    {
+      "text": "일정지연 리스크는 고(High)로 등록되어 있다.",
+      "context": "…일정지연 리스크는 고(High)로 등록되어 있다.…",
+      "section": 0,
+      "paragraph": 14,
+      "charOffset": 0,
+      "length": 3,
+      "page": 4
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}
+
+{
+  "file": "doc1.hwpx",
+  "keyword": "대응방안",
+  "matches": [
+    {
+      "text": "대응방안은 선투입 2MM 와 외주 슬롯 1건이다.",
+      "context": "…대응방안은 선투입 2MM 와 외주 슬롯 1건이다.…",
+      "section": 0,
+      "paragraph": 15,
+      "charOffset": 12,
+      "length": 4,
+      "page": 4
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}

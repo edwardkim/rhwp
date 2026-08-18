@@ -1,0 +1,22 @@
+{
+  "matches": [
+    {
+      "text": "기술평가 80",
+      "section": 0,
+      "paragraph": 0,
+      "page": 5,
+      "charOffset": 0,
+      "length": 6,
+      "cell": {
+        "row": 2,
+        "col": 1
+      }
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1,
+  "_skillMeta": {
+    "command": "search",
+    "exit": 0
+  }
+}
