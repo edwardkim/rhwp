@@ -1,0 +1,56 @@
+{
+  "id": "ht-excerpt-limit-200",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "same_as_background",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/queries/hidden_text.rs",
+    "symbol": "DEFAULT_EXCERPT_LIMIT",
+    "note": "발췌 200자+말줄임. charCount 는 자르기 전 실제 길이."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "synth:hidden-text/excerpt/5000.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "hiddenText[0].charCount == 5000",
+    "excerptMaxChars": 201,
+    "ellipsis": true
+  },
+  "pair": null,
+  "why": "거대 은닉 문자열은 그 자체가 컨텍스트 범람이다. 보고 쪽에서 먼저 자른다.",
+  "note": "원문 길이 5000. 봉투 excerpt 는 201자(200+…).",
+  "human": "은닉 텍스트 1건 (문자 5000개) — 발췌는 잘리고 charCount 는 5000.\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:hidden-text/excerpt/5000.hwp",
+    "thresholdPt": 1.0,
+    "includeOffPage": false,
+    "hiddenText": [
+      {
+        "kind": "same_as_background",
+        "section": 0,
+        "paragraph": 0,
+        "page": 0,
+        "excerpt": "가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가…",
+        "charCount": 5000,
+        "detail": {
+          "textColor": "#FFFFFF",
+          "backgroundColor": "#FFFFFF",
+          "backgroundSource": "page"
+        }
+      }
+    ],
+    "hiddenCharCount": 5000,
+    "clean": false
+  }
+}

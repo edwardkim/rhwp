@@ -1,0 +1,36 @@
+{
+  "id": "ex-ht-threshold-abc",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "임계값 형식 오류"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "samples/hwp3-sample.hwp",
+      "--threshold-pt",
+      "abc"
+    ],
+    "exitCode": 2,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "오류: --threshold-pt 뒤에 0 이상 4096 이하의 실수가 필요합니다."
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "임계값 형식 오류",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}

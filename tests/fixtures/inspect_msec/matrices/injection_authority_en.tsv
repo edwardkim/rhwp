@@ -1,0 +1,16 @@
+literal	kind	confidence	const
+already approved	authority_claim	medium	AUTHORITY_LITERALS_EN
+already authorized	authority_claim	medium	AUTHORITY_LITERALS_EN
+already granted	authority_claim	medium	AUTHORITY_LITERALS_EN
+pre-approved	authority_claim	medium	AUTHORITY_LITERALS_EN
+preapproved	authority_claim	medium	AUTHORITY_LITERALS_EN
+you are authorized	authority_claim	medium	AUTHORITY_LITERALS_EN
+you have permission	authority_claim	medium	AUTHORITY_LITERALS_EN
+admin override	authority_claim	medium	AUTHORITY_LITERALS_EN
+administrator privileges	authority_claim	medium	AUTHORITY_LITERALS_EN
+no confirmation needed	authority_claim	medium	AUTHORITY_LITERALS_EN
+no confirmation is required	authority_claim	medium	AUTHORITY_LITERALS_EN
+without asking the user	authority_claim	medium	AUTHORITY_LITERALS_EN
+without user confirmation	authority_claim	medium	AUTHORITY_LITERALS_EN
+authorized by anthropic	authority_claim	medium	AUTHORITY_LITERALS_EN
+approved by the user	authority_claim	medium	AUTHORITY_LITERALS_EN

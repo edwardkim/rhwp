@@ -1,0 +1,82 @@
+{
+  "issue": 5476,
+  "title": "M-sec inspect 3축 계약 픽스처",
+  "schemaVersion": "1.0",
+  "inventedRule": false,
+  "axes": [
+    "hidden-text",
+    "injection",
+    "unicode"
+  ],
+  "sourceFiles": [
+    "src/document_core/queries/hidden_text.rs",
+    "src/document_core/queries/injection_scan.rs",
+    "src/document_core/text_security.rs",
+    "src/main.rs"
+  ],
+  "counts": {
+    "cases": 194,
+    "exceptions": 22,
+    "total": 216,
+    "hiddenText": 48,
+    "injection": 102,
+    "unicode": 44
+  },
+  "requiredEnvelopeKeys": {
+    "hidden-text": [
+      "schemaVersion",
+      "source",
+      "thresholdPt",
+      "includeOffPage",
+      "hiddenText",
+      "hiddenCharCount",
+      "clean"
+    ],
+    "injection": [
+      "schemaVersion",
+      "source",
+      "minConfidence",
+      "includeFields",
+      "scanScopes",
+      "injectionSignals",
+      "signalCount",
+      "highestConfidence",
+      "clean"
+    ],
+    "unicode": [
+      "schemaVersion",
+      "source",
+      "kindFilter",
+      "scannedChars",
+      "findings",
+      "findingCount",
+      "clean",
+      "severityCounts",
+      "kindCounts"
+    ]
+  },
+  "kinds": {
+    "hidden-text": [
+      "same_as_background",
+      "near_invisible",
+      "zero_size",
+      "off_page"
+    ],
+    "injection": [
+      "role_impersonation",
+      "instruction_override",
+      "tool_directive",
+      "authority_claim",
+      "exfiltration_hint",
+      "delimiter_break"
+    ],
+    "unicode": [
+      "zero_width",
+      "bidi_override",
+      "tag_char",
+      "confusable"
+    ]
+  },
+  "forbiddenNewKinds": true,
+  "index": "matrices/catalog.tsv"
+}

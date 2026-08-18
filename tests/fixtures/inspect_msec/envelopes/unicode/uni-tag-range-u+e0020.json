@@ -1,0 +1,69 @@
+{
+  "id": "uni-tag-range-u+e0020",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "tag_char",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/text_security.rs",
+    "symbol": "is_tag_char",
+    "note": "U+E0020 범위 표본. 8코드포인트 간격."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "synth:unicode/tag/U+E0020.hwp",
+      "--json",
+      "--kind",
+      "tag"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == false"
+  },
+  "pair": null,
+  "why": "범위 안 U+E0020. 복원 ASCII=' '.",
+  "note": "범위를 넓히지 않는다. 기존 is_tag_char 만.",
+  "human": "태그 문자 U+E0020\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:unicode/tag/U+E0020.hwp",
+    "kindFilter": "tag",
+    "scannedChars": 3,
+    "findings": [
+      {
+        "kind": "tag_char",
+        "codepoint": "U+E0020",
+        "severity": "high",
+        "section": 0,
+        "paragraph": 0,
+        "location": "body",
+        "charOffset": 0,
+        "runLength": 1,
+        "excerpt": "x<U+E0020>y",
+        "rendered": "xy",
+        "raw": "x<U+E0020>y",
+        "why": "렌더링되지 않는 태그 문자입니다 — 화면에 흔적 없이 지시를 실어 나르는 채널입니다",
+        "hidden": " "
+      }
+    ],
+    "findingCount": 1,
+    "clean": false,
+    "severityCounts": {
+      "high": 1,
+      "medium": 0,
+      "low": 0
+    },
+    "kindCounts": {
+      "zero_width": 0,
+      "bidi_override": 0,
+      "tag_char": 1,
+      "confusable": 0
+    }
+  }
+}

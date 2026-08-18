@@ -1,0 +1,36 @@
+{
+  "id": "ex-uni-kind-bad",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "알 수 없는 --kind. zero-width|bidi|tag|confusable|all 만."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "samples/hwp3-sample.hwp",
+      "--kind",
+      "emoji"
+    ],
+    "exitCode": 2,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "오류:"
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "알 수 없는 --kind. zero-width|bidi|tag|confusable|all 만.",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}

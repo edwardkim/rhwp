@@ -1,0 +1,42 @@
+{
+  "id": "ht-same_as_background-tableCell-hwp-neg",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "same_as_background",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/queries/hidden_text.rs",
+    "symbol": "HiddenKind::SameAsBackground",
+    "note": "모르면 잡지 않는다. 음성 짝이 없는 양성은 자명한 오답을 통과시킨다."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "synth:hidden-text/same_as_background/tableCell.hwp",
+      "synth:hidden-text/same_as_background/tableCell-near-miss.hwp"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true",
+    "field": "hiddenText",
+    "emptyArrayNotMissing": true
+  },
+  "pair": "ht-same_as_background-tableCell-hwp-pos",
+  "why": "배경색과 같은 글자색 음성 짝. 검정 글자(#000000) + 흰 종이. 색이 달라 음성.",
+  "note": "양성만 있으면 '전부 은닉' 구현도 통과한다.",
+  "human": "은닉 텍스트 없음: synth:hidden-text/same_as_background/tableCell-near-miss.hwp (탐지 0건)\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:hidden-text/same_as_background/tableCell-near-miss.hwp",
+    "thresholdPt": 1.0,
+    "includeOffPage": false,
+    "hiddenText": [],
+    "hiddenCharCount": 0,
+    "clean": true
+  }
+}

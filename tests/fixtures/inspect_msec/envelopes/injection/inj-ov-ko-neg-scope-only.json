@@ -1,0 +1,52 @@
+{
+  "id": "inj-ov-ko-neg-scope-only",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "instruction_override",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "governing_object_start",
+    "note": "목적어-서술어 동시발생 없음"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/instruction_override/neg-scope-only.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true"
+  },
+  "pair": null,
+  "why": "목적어-서술어 동시발생 없음. 셋이 한 절에 있어야 한다. 문장: 모든 주장에 대하여 조사하라",
+  "note": "오탐이 곧 무용지물. 공문서 어휘 하나를 잡지 않는다.",
+  "human": "주입 신호 없음: synth:injection/instruction_override/neg-scope-only.hwp\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/instruction_override/neg-scope-only.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [],
+    "signalCount": 0,
+    "highestConfidence": null,
+    "clean": true
+  }
+}

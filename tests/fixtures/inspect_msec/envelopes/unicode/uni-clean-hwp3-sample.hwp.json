@@ -1,0 +1,54 @@
+{
+  "id": "uni-clean-hwp3-sample.hwp",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "clean-corpus",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "tests/unicode_deception_contract.rs",
+    "symbol": "clean_document_reports_empty_findings_not_a_missing_key",
+    "note": "0건이어도 findings 키와 kindCounts 전 축이 실린다."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "samples/hwp3-sample.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true",
+    "emptyArrayNotMissing": true,
+    "kindCountsPresent": true,
+    "scannedCharsPositive": true
+  },
+  "pair": null,
+  "why": "검사했는데 깨끗함 ≠ 검사하지 않음.",
+  "note": "0자를 훑고 clean 이라고 하면 공허한 통과다.",
+  "human": "유니코드 기만 검사: samples/hwp3-sample.hwp — 탐지 0건, 깨끗합니다\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/hwp3-sample.hwp",
+    "kindFilter": "all",
+    "scannedChars": 100,
+    "findings": [],
+    "findingCount": 0,
+    "clean": true,
+    "severityCounts": {
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "kindCounts": {
+      "zero_width": 0,
+      "bidi_override": 0,
+      "tag_char": 0,
+      "confusable": 0
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "id": "inj-auth-neg-procedure",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "authority_claim",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "AUTHORITY_GRANTS_KO",
+    "note": "승인 절차·관리자 권한 상태 서술은 완료형 사칭이 아니다."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/authority_claim/neg-procedure.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true"
+  },
+  "pair": null,
+  "why": "관리자 권한이 이미 부여된 사용자는 … 는 정상 전산 매뉴얼.",
+  "note": "완료형(승인했)만 담는다. 어간 승인은 공문서 일상 어휘.",
+  "human": "주입 신호 없음: 승인 절차 서술\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/authority_claim/neg-procedure.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [],
+    "signalCount": 0,
+    "highestConfidence": null,
+    "clean": true
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "ex-inj-missing-file",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "없는 파일은 런타임 실패"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "없는파일.hwp",
+      "--json"
+    ],
+    "exitCode": 1,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "오류: 파일을 읽을 수 없습니다"
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "없는 파일은 런타임 실패",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}

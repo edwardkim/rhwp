@@ -1,0 +1,217 @@
+id	axis	family	polarity	path	exitCode	pair
+ht-same_as_background-body-hwp-pos	hidden-text	same_as_background	positive	envelopes/hidden-text/ht-same_as_background-body-hwp-pos.json	0	ht-same_as_background-body-hwp-neg
+ht-same_as_background-body-hwp-neg	hidden-text	same_as_background	negative	envelopes/hidden-text/ht-same_as_background-body-hwp-neg.json	0	ht-same_as_background-body-hwp-pos
+ht-same_as_background-tableCell-hwp-pos	hidden-text	same_as_background	positive	envelopes/hidden-text/ht-same_as_background-tableCell-hwp-pos.json	0	ht-same_as_background-tableCell-hwp-neg
+ht-same_as_background-tableCell-hwp-neg	hidden-text	same_as_background	negative	envelopes/hidden-text/ht-same_as_background-tableCell-hwp-neg.json	0	ht-same_as_background-tableCell-hwp-pos
+ht-same_as_background-textBox-hwp-pos	hidden-text	same_as_background	positive	envelopes/hidden-text/ht-same_as_background-textBox-hwp-pos.json	0	ht-same_as_background-textBox-hwp-neg
+ht-same_as_background-textBox-hwp-neg	hidden-text	same_as_background	negative	envelopes/hidden-text/ht-same_as_background-textBox-hwp-neg.json	0	ht-same_as_background-textBox-hwp-pos
+ht-near_invisible-body-hwp-pos	hidden-text	near_invisible	positive	envelopes/hidden-text/ht-near_invisible-body-hwp-pos.json	0	ht-near_invisible-body-hwp-neg
+ht-near_invisible-body-hwp-neg	hidden-text	near_invisible	negative	envelopes/hidden-text/ht-near_invisible-body-hwp-neg.json	0	ht-near_invisible-body-hwp-pos
+ht-near_invisible-tableCell-hwp-pos	hidden-text	near_invisible	positive	envelopes/hidden-text/ht-near_invisible-tableCell-hwp-pos.json	0	ht-near_invisible-tableCell-hwp-neg
+ht-near_invisible-tableCell-hwp-neg	hidden-text	near_invisible	negative	envelopes/hidden-text/ht-near_invisible-tableCell-hwp-neg.json	0	ht-near_invisible-tableCell-hwp-pos
+ht-near_invisible-textBox-hwp-pos	hidden-text	near_invisible	positive	envelopes/hidden-text/ht-near_invisible-textBox-hwp-pos.json	0	ht-near_invisible-textBox-hwp-neg
+ht-near_invisible-textBox-hwp-neg	hidden-text	near_invisible	negative	envelopes/hidden-text/ht-near_invisible-textBox-hwp-neg.json	0	ht-near_invisible-textBox-hwp-pos
+ht-zero_size-body-hwp-pos	hidden-text	zero_size	positive	envelopes/hidden-text/ht-zero_size-body-hwp-pos.json	0	ht-zero_size-body-hwp-neg
+ht-zero_size-body-hwp-neg	hidden-text	zero_size	negative	envelopes/hidden-text/ht-zero_size-body-hwp-neg.json	0	ht-zero_size-body-hwp-pos
+ht-zero_size-tableCell-hwp-pos	hidden-text	zero_size	positive	envelopes/hidden-text/ht-zero_size-tableCell-hwp-pos.json	0	ht-zero_size-tableCell-hwp-neg
+ht-zero_size-tableCell-hwp-neg	hidden-text	zero_size	negative	envelopes/hidden-text/ht-zero_size-tableCell-hwp-neg.json	0	ht-zero_size-tableCell-hwp-pos
+ht-zero_size-textBox-hwp-pos	hidden-text	zero_size	positive	envelopes/hidden-text/ht-zero_size-textBox-hwp-pos.json	0	ht-zero_size-textBox-hwp-neg
+ht-zero_size-textBox-hwp-neg	hidden-text	zero_size	negative	envelopes/hidden-text/ht-zero_size-textBox-hwp-neg.json	0	ht-zero_size-textBox-hwp-pos
+ht-off_page-body-hwp-pos	hidden-text	off_page	positive	envelopes/hidden-text/ht-off_page-body-hwp-pos.json	0	ht-off_page-body-hwp-neg
+ht-off_page-body-hwp-neg	hidden-text	off_page	negative	envelopes/hidden-text/ht-off_page-body-hwp-neg.json	0	ht-off_page-body-hwp-pos
+ht-same_as_background-body-hwpx-pos	hidden-text	same_as_background	positive	envelopes/hidden-text/ht-same_as_background-body-hwpx-pos.json	0	ht-same_as_background-body-hwpx-neg
+ht-same_as_background-body-hwpx-neg	hidden-text	same_as_background	negative	envelopes/hidden-text/ht-same_as_background-body-hwpx-neg.json	0	ht-same_as_background-body-hwpx-pos
+ht-same_as_background-body-hml-pos	hidden-text	same_as_background	positive	envelopes/hidden-text/ht-same_as_background-body-hml-pos.json	0	ht-same_as_background-body-hml-neg
+ht-same_as_background-body-hml-neg	hidden-text	same_as_background	negative	envelopes/hidden-text/ht-same_as_background-body-hml-neg.json	0	ht-same_as_background-body-hml-pos
+ht-same-as-bg-src-charShade-pos	hidden-text	same_as_background	positive	envelopes/hidden-text/ht-same-as-bg-src-charShade-pos.json	0	
+ht-same-as-bg-src-paragraph-pos	hidden-text	same_as_background	positive	envelopes/hidden-text/ht-same-as-bg-src-paragraph-pos.json	0	
+ht-same-as-bg-src-tableCell-pos	hidden-text	same_as_background	positive	envelopes/hidden-text/ht-same-as-bg-src-tableCell-pos.json	0	
+ht-same-as-bg-src-textBox-pos	hidden-text	same_as_background	positive	envelopes/hidden-text/ht-same-as-bg-src-textBox-pos.json	0	
+ht-same-as-bg-src-page-pos	hidden-text	same_as_background	positive	envelopes/hidden-text/ht-same-as-bg-src-page-pos.json	0	
+ht-near-thr-1p0-eff-0p9-pos	hidden-text	near_invisible	positive	envelopes/hidden-text/ht-near-thr-1p0-eff-0p9-pos.json	0	
+ht-near-thr-1p0-eff-1p0-neg	hidden-text	near_invisible	negative	envelopes/hidden-text/ht-near-thr-1p0-eff-1p0-neg.json	0	
+ht-near-thr-2p5-eff-2p4-pos	hidden-text	near_invisible	positive	envelopes/hidden-text/ht-near-thr-2p5-eff-2p4-pos.json	0	
+ht-near-thr-2p5-eff-2p5-neg	hidden-text	near_invisible	negative	envelopes/hidden-text/ht-near-thr-2p5-eff-2p5-neg.json	0	
+ht-offpage-flag-excluded	hidden-text	off_page	negative	envelopes/hidden-text/ht-offpage-flag-excluded.json	0	ht-offpage-flag-included
+ht-offpage-flag-included	hidden-text	off_page	positive	envelopes/hidden-text/ht-offpage-flag-included.json	0	ht-offpage-flag-excluded
+ht-unknown-bg-auto-color	hidden-text	same_as_background	negative	envelopes/hidden-text/ht-unknown-bg-auto-color.json	0	
+ht-unknown-bg-gradient-fill	hidden-text	same_as_background	negative	envelopes/hidden-text/ht-unknown-bg-gradient-fill.json	0	
+ht-unknown-bg-image-fill	hidden-text	same_as_background	negative	envelopes/hidden-text/ht-unknown-bg-image-fill.json	0	
+ht-unknown-bg-master-page	hidden-text	same_as_background	negative	envelopes/hidden-text/ht-unknown-bg-master-page.json	0	
+ht-graphic-covers-page-suppresses-page-bg	hidden-text	same_as_background	negative	envelopes/hidden-text/ht-graphic-covers-page-suppresses-page-bg.json	0	
+ht-excerpt-limit-200	hidden-text	same_as_background	positive	envelopes/hidden-text/ht-excerpt-limit-200.json	0	
+ht-clean-sample-hwp3-sample.hwp	hidden-text	clean-corpus	negative	envelopes/hidden-text/ht-clean-sample-hwp3-sample.hwp.json	0	
+ht-clean-sample-so-sueop.hwp	hidden-text	clean-corpus	negative	envelopes/hidden-text/ht-clean-sample-so-sueop.hwp.json	0	
+ht-clean-sample-hwp3-sample4.hwp	hidden-text	clean-corpus	negative	envelopes/hidden-text/ht-clean-sample-hwp3-sample4.hwp.json	0	
+ht-clean-sample-hwp3-sample10.hwp	hidden-text	clean-corpus	negative	envelopes/hidden-text/ht-clean-sample-hwp3-sample10.hwp.json	0	
+ht-clean-sample-issue1950_hwp3_tab_charoffset.hwp	hidden-text	clean-corpus	negative	envelopes/hidden-text/ht-clean-sample-issue1950_hwp3_tab_charoffset.hwp.json	0	
+ht-clean-sample-2022년_국립국어원_업무계획.hwp	hidden-text	clean-corpus	negative	envelopes/hidden-text/ht-clean-sample-2022년_국립국어원_업무계획.hwp.json	0	
+ht-clean-sample-2025_행정업무운영_편람_최종_.hwpx	hidden-text	clean-corpus	negative	envelopes/hidden-text/ht-clean-sample-2025_행정업무운영_편람_최종_.hwpx.json	0	
+inj-role-token-im_start-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-im_start-hwp.json	0	
+inj-role-token-im_end-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-im_end-hwp.json	0	
+inj-role-token-system-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-system-hwp.json	0	
+inj-role-token-user-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-user-hwp.json	0	
+inj-role-token-assistant-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-assistant-hwp.json	0	
+inj-role-token-endoftext-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-endoftext-hwp.json	0	
+inj-role-token-start_header_id-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-start_header_id-hwp.json	0	
+inj-role-token-end_header_id-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-end_header_id-hwp.json	0	
+inj-role-token-eot_id-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-eot_id-hwp.json	0	
+inj-role-token-inst-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-inst-hwp.json	0	
+inj-role-token-inst-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-inst-hwp.json	0	
+inj-role-token-sys-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-sys-hwp.json	0	
+inj-role-token-sys-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-sys-hwp.json	0	
+inj-role-token-시스템_프롬프트-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-시스템_프롬프트-hwp.json	0	
+inj-role-token-시스템_메시지-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-시스템_메시지-hwp.json	0	
+inj-role-label-system-hwp-pos	injection	role_impersonation	positive	envelopes/injection/inj-role-label-system-hwp-pos.json	0	
+inj-role-label-system-hwp-neg-sql	injection	role_impersonation	negative	envelopes/injection/inj-role-label-system-hwp-neg-sql.json	0	inj-role-label-system-hwp-pos
+inj-role-label-assistant-hwp-pos	injection	role_impersonation	positive	envelopes/injection/inj-role-label-assistant-hwp-pos.json	0	
+inj-role-label-assistant-hwp-neg-sql	injection	role_impersonation	negative	envelopes/injection/inj-role-label-assistant-hwp-neg-sql.json	0	inj-role-label-assistant-hwp-pos
+inj-role-label-human-hwp-pos	injection	role_impersonation	positive	envelopes/injection/inj-role-label-human-hwp-pos.json	0	
+inj-role-label-human-hwp-neg-sql	injection	role_impersonation	negative	envelopes/injection/inj-role-label-human-hwp-neg-sql.json	0	inj-role-label-human-hwp-pos
+inj-role-label-developer-hwp-pos	injection	role_impersonation	positive	envelopes/injection/inj-role-label-developer-hwp-pos.json	0	
+inj-role-label-developer-hwp-neg-sql	injection	role_impersonation	negative	envelopes/injection/inj-role-label-developer-hwp-neg-sql.json	0	inj-role-label-developer-hwp-pos
+inj-role-label-system-hwp-pos	injection	role_impersonation	positive	envelopes/injection/inj-role-label-system-hwp-pos.json	0	
+inj-role-label-system-hwp-neg-sql	injection	role_impersonation	negative	envelopes/injection/inj-role-label-system-hwp-neg-sql.json	0	inj-role-label-system-hwp-pos
+inj-role-label-assistant-hwp-pos	injection	role_impersonation	positive	envelopes/injection/inj-role-label-assistant-hwp-pos.json	0	
+inj-role-label-assistant-hwp-neg-sql	injection	role_impersonation	negative	envelopes/injection/inj-role-label-assistant-hwp-neg-sql.json	0	inj-role-label-assistant-hwp-pos
+inj-role-label-instruction-hwp-pos	injection	role_impersonation	positive	envelopes/injection/inj-role-label-instruction-hwp-pos.json	0	
+inj-role-label-instruction-hwp-neg-sql	injection	role_impersonation	negative	envelopes/injection/inj-role-label-instruction-hwp-neg-sql.json	0	inj-role-label-instruction-hwp-pos
+inj-role-addr-너는-ai-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-addr-너는-ai-hwp.json	0	
+inj-role-addr-너희는-ai-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-addr-너희는-ai-hwp.json	0	
+inj-role-addr-당신은-ai-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-addr-당신은-ai-hwp.json	0	
+inj-role-addr-당신이-ai-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-addr-당신이-ai-hwp.json	0	
+inj-role-addr-네가-ai-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-addr-네가-ai-hwp.json	0	
+inj-role-addr-귀하는-ai-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-addr-귀하는-ai-hwp.json	0	
+inj-ov-en-ignore-previous-instruction-hwp	injection	instruction_override	positive	envelopes/injection/inj-ov-en-ignore-previous-instruction-hwp.json	0	
+inj-ov-ko-이전-지시-무시하-hwp	injection	instruction_override	positive	envelopes/injection/inj-ov-ko-이전-지시-무시하-hwp.json	0	
+inj-ov-ko-neg-verb-only	injection	instruction_override	negative	envelopes/injection/inj-ov-ko-neg-verb-only.json	0	
+inj-ov-ko-neg-object-only	injection	instruction_override	negative	envelopes/injection/inj-ov-ko-neg-object-only.json	0	
+inj-ov-ko-neg-scope-only	injection	instruction_override	negative	envelopes/injection/inj-ov-ko-neg-scope-only.json	0	
+inj-tool-hwp_doc_save-하시기_바랍니다-hwp	injection	tool_directive	positive	envelopes/injection/inj-tool-hwp_doc_save-하시기_바랍니다-hwp.json	0	
+inj-tool-hwp_doc_save-invoke-hwp	injection	tool_directive	positive	envelopes/injection/inj-tool-hwp_doc_save-invoke-hwp.json	0	
+inj-tool-hwp_doc_text-하시기_바랍니다-hwp	injection	tool_directive	positive	envelopes/injection/inj-tool-hwp_doc_text-하시기_바랍니다-hwp.json	0	
+inj-tool-hwp_doc_text-invoke-hwp	injection	tool_directive	positive	envelopes/injection/inj-tool-hwp_doc_text-invoke-hwp.json	0	
+inj-tool-hwp_inspect_hidden_text-하시기_바랍니다-hwp	injection	tool_directive	positive	envelopes/injection/inj-tool-hwp_inspect_hidden_text-하시기_바랍니다-hwp.json	0	
+inj-tool-hwp_inspect_hidden_text-invoke-hwp	injection	tool_directive	positive	envelopes/injection/inj-tool-hwp_inspect_hidden_text-invoke-hwp.json	0	
+inj-tool-hwp_inspect_injection-하시기_바랍니다-hwp	injection	tool_directive	positive	envelopes/injection/inj-tool-hwp_inspect_injection-하시기_바랍니다-hwp.json	0	
+inj-tool-hwp_inspect_injection-invoke-hwp	injection	tool_directive	positive	envelopes/injection/inj-tool-hwp_inspect_injection-invoke-hwp.json	0	
+inj-tool-hwp_inspect_unicode-하시기_바랍니다-hwp	injection	tool_directive	positive	envelopes/injection/inj-tool-hwp_inspect_unicode-하시기_바랍니다-hwp.json	0	
+inj-tool-hwp_inspect_unicode-invoke-hwp	injection	tool_directive	positive	envelopes/injection/inj-tool-hwp_inspect_unicode-invoke-hwp.json	0	
+inj-tool-neg-imperative-only	injection	tool_directive	negative	envelopes/injection/inj-tool-neg-imperative-only.json	0	
+inj-auth-en-already_approved-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-en-already_approved-hwp.json	0	
+inj-auth-en-already_authorized-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-en-already_authorized-hwp.json	0	
+inj-auth-en-already_granted-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-en-already_granted-hwp.json	0	
+inj-auth-en-pre-approved-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-en-pre-approved-hwp.json	0	
+inj-auth-en-preapproved-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-en-preapproved-hwp.json	0	
+inj-auth-sup-사용자에게_알리지_마-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-sup-사용자에게_알리지_마-hwp.json	0	
+inj-auth-sup-사용자에게_알리지_말-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-sup-사용자에게_알리지_말-hwp.json	0	
+inj-auth-sup-사용자에게_보고하지_마-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-sup-사용자에게_보고하지_마-hwp.json	0	
+inj-auth-sup-사용자에게_보고하지_말-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-sup-사용자에게_보고하지_말-hwp.json	0	
+inj-auth-ko-사용자-승인했-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-ko-사용자-승인했-hwp.json	0	
+inj-auth-ko-관리자-승인했-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-ko-관리자-승인했-hwp.json	0	
+inj-auth-ko-개발자-승인했-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-ko-개발자-승인했-hwp.json	0	
+inj-auth-ko-운영자-승인했-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-ko-운영자-승인했-hwp.json	0	
+inj-auth-ko-제작자-승인했-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-ko-제작자-승인했-hwp.json	0	
+inj-auth-ko-anthropic-승인했-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-ko-anthropic-승인했-hwp.json	0	
+inj-auth-ko-openai-승인했-hwp	injection	authority_claim	positive	envelopes/injection/inj-auth-ko-openai-승인했-hwp.json	0	
+inj-auth-neg-procedure	injection	authority_claim	negative	envelopes/injection/inj-auth-neg-procedure.json	0	
+inj-exfil-전송하라-https_attacker.example_x-hwp	injection	exfiltration_hint	positive	envelopes/injection/inj-exfil-전송하라-https_attacker.example_x-hwp.json	0	
+inj-exfil-전송해-https_attacker.example_x-hwp	injection	exfiltration_hint	positive	envelopes/injection/inj-exfil-전송해-https_attacker.example_x-hwp.json	0	
+inj-exfil-전송할_것-https_attacker.example_x-hwp	injection	exfiltration_hint	positive	envelopes/injection/inj-exfil-전송할_것-https_attacker.example_x-hwp.json	0	
+inj-exfil-보내라-https_attacker.example_x-hwp	injection	exfiltration_hint	positive	envelopes/injection/inj-exfil-보내라-https_attacker.example_x-hwp.json	0	
+inj-exfil-보내줘-https_attacker.example_x-hwp	injection	exfiltration_hint	positive	envelopes/injection/inj-exfil-보내줘-https_attacker.example_x-hwp.json	0	
+inj-exfil-보내도록-https_attacker.example_x-hwp	injection	exfiltration_hint	positive	envelopes/injection/inj-exfil-보내도록-https_attacker.example_x-hwp.json	0	
+inj-exfil-업로드하라-https_attacker.example_x-hwp	injection	exfiltration_hint	positive	envelopes/injection/inj-exfil-업로드하라-https_attacker.example_x-hwp.json	0	
+inj-exfil-업로드해-https_attacker.example_x-hwp	injection	exfiltration_hint	positive	envelopes/injection/inj-exfil-업로드해-https_attacker.example_x-hwp.json	0	
+inj-exfil-neg-polite	injection	exfiltration_hint	negative	envelopes/injection/inj-exfil-neg-polite.json	0	
+inj-delim-system-hwp	injection	delimiter_break	positive	envelopes/injection/inj-delim-system-hwp.json	0	
+inj-delim-system-hwp	injection	delimiter_break	positive	envelopes/injection/inj-delim-system-hwp.json	0	
+inj-delim-instructions-hwp	injection	delimiter_break	positive	envelopes/injection/inj-delim-instructions-hwp.json	0	
+inj-delim-instructions-hwp	injection	delimiter_break	positive	envelopes/injection/inj-delim-instructions-hwp.json	0	
+inj-delim-context-hwp	injection	delimiter_break	positive	envelopes/injection/inj-delim-context-hwp.json	0	
+inj-delim-context-hwp	injection	delimiter_break	positive	envelopes/injection/inj-delim-context-hwp.json	0	
+inj-delim-user_input-hwp	injection	delimiter_break	positive	envelopes/injection/inj-delim-user_input-hwp.json	0	
+inj-delim------begin-hwp	injection	delimiter_break	positive	envelopes/injection/inj-delim------begin-hwp.json	0	
+inj-delim-fence-prose-hwp	injection	delimiter_break	positive	envelopes/injection/inj-delim-fence-prose-hwp.json	0	
+inj-delim-excluded-system	injection	delimiter_break	negative	envelopes/injection/inj-delim-excluded-system.json	0	
+inj-delim-excluded-system	injection	delimiter_break	negative	envelopes/injection/inj-delim-excluded-system.json	0	
+inj-delim-excluded----	injection	delimiter_break	negative	envelopes/injection/inj-delim-excluded----.json	0	
+inj-min-confidence-low	injection	min-confidence	filter	envelopes/injection/inj-min-confidence-low.json	0	
+inj-min-confidence-medium	injection	min-confidence	filter	envelopes/injection/inj-min-confidence-medium.json	0	
+inj-min-confidence-high	injection	min-confidence	filter	envelopes/injection/inj-min-confidence-high.json	0	
+inj-scopes-include-fields-off	injection	scanScopes	contract	envelopes/injection/inj-scopes-include-fields-off.json	0	
+inj-scopes-include-fields-on	injection	scanScopes	contract	envelopes/injection/inj-scopes-include-fields-on.json	0	
+inj-scope-body-role-token	injection	scanScopes	positive	envelopes/injection/inj-scope-body-role-token.json	0	
+inj-scope-tableCell-role-token	injection	scanScopes	positive	envelopes/injection/inj-scope-tableCell-role-token.json	0	
+inj-scope-fieldGuide-role-token	injection	scanScopes	positive	envelopes/injection/inj-scope-fieldGuide-role-token.json	0	
+inj-textkind-equation-backticks	injection	delimiter_break	negative	envelopes/injection/inj-textkind-equation-backticks.json	0	inj-delim-fence-prose-hwp
+inj-clean-hwp3-sample.hwp	injection	clean-corpus	negative	envelopes/injection/inj-clean-hwp3-sample.hwp.json	0	
+inj-clean-hwp3-sample10.hwp	injection	clean-corpus	negative	envelopes/injection/inj-clean-hwp3-sample10.hwp.json	0	
+inj-clean-2022년_국립국어원_업무계획.hwp	injection	clean-corpus	negative	envelopes/injection/inj-clean-2022년_국립국어원_업무계획.hwp.json	0	
+inj-ov-neg-clause-boundary-4088	injection	instruction_override	negative	envelopes/injection/inj-ov-neg-clause-boundary-4088.json	0	
+uni-zw-u+200b-run1-hwp	unicode	zero_width	positive	envelopes/unicode/uni-zw-u+200b-run1-hwp.json	0	
+uni-zw-u+200b-run3-hwp	unicode	zero_width	positive	envelopes/unicode/uni-zw-u+200b-run3-hwp.json	0	
+uni-zw-u+200c-run1-hwp	unicode	zero_width	positive	envelopes/unicode/uni-zw-u+200c-run1-hwp.json	0	
+uni-zw-u+200c-run3-hwp	unicode	zero_width	positive	envelopes/unicode/uni-zw-u+200c-run3-hwp.json	0	
+uni-zw-u+200d-run1-hwp	unicode	zero_width	positive	envelopes/unicode/uni-zw-u+200d-run1-hwp.json	0	
+uni-zw-u+200d-run3-hwp	unicode	zero_width	positive	envelopes/unicode/uni-zw-u+200d-run3-hwp.json	0	
+uni-zw-u+2060-run1-hwp	unicode	zero_width	positive	envelopes/unicode/uni-zw-u+2060-run1-hwp.json	0	
+uni-zw-u+2060-run3-hwp	unicode	zero_width	positive	envelopes/unicode/uni-zw-u+2060-run3-hwp.json	0	
+uni-zw-u+feff-run1-hwp	unicode	zero_width	positive	envelopes/unicode/uni-zw-u+feff-run1-hwp.json	0	
+uni-zw-u+feff-run3-hwp	unicode	zero_width	positive	envelopes/unicode/uni-zw-u+feff-run3-hwp.json	0	
+uni-zw-excluded-u+00ad	unicode	zero_width	negative	envelopes/unicode/uni-zw-excluded-u+00ad.json	0	
+uni-zw-excluded-u+180e	unicode	zero_width	negative	envelopes/unicode/uni-zw-excluded-u+180e.json	0	
+uni-zw-excluded-u+061c	unicode	zero_width	negative	envelopes/unicode/uni-zw-excluded-u+061c.json	0	
+uni-bidi-lre-hwp	unicode	bidi_override	positive	envelopes/unicode/uni-bidi-lre-hwp.json	0	
+uni-bidi-rle-hwp	unicode	bidi_override	positive	envelopes/unicode/uni-bidi-rle-hwp.json	0	
+uni-bidi-pdf-hwp	unicode	bidi_override	positive	envelopes/unicode/uni-bidi-pdf-hwp.json	0	
+uni-bidi-lro-hwp	unicode	bidi_override	positive	envelopes/unicode/uni-bidi-lro-hwp.json	0	
+uni-bidi-rlo-hwp	unicode	bidi_override	positive	envelopes/unicode/uni-bidi-rlo-hwp.json	0	
+uni-bidi-lri-hwp	unicode	bidi_override	positive	envelopes/unicode/uni-bidi-lri-hwp.json	0	
+uni-bidi-rli-hwp	unicode	bidi_override	positive	envelopes/unicode/uni-bidi-rli-hwp.json	0	
+uni-bidi-fsi-hwp	unicode	bidi_override	positive	envelopes/unicode/uni-bidi-fsi-hwp.json	0	
+uni-bidi-pdi-hwp	unicode	bidi_override	positive	envelopes/unicode/uni-bidi-pdi-hwp.json	0	
+uni-tag-ignore-payload	unicode	tag_char	positive	envelopes/unicode/uni-tag-ignore-payload.json	0	
+uni-tag-range-u+e0000	unicode	tag_char	positive	envelopes/unicode/uni-tag-range-u+e0000.json	0	
+uni-tag-range-u+e0020	unicode	tag_char	positive	envelopes/unicode/uni-tag-range-u+e0020.json	0	
+uni-tag-range-u+e0049	unicode	tag_char	positive	envelopes/unicode/uni-tag-range-u+e0049.json	0	
+uni-tag-range-u+e007f	unicode	tag_char	positive	envelopes/unicode/uni-tag-range-u+e007f.json	0	
+uni-cf-cyr-lower-0430	unicode	confusable	positive	envelopes/unicode/uni-cf-cyr-lower-0430.json	0	
+uni-cf-cyr-upper-0422	unicode	confusable	positive	envelopes/unicode/uni-cf-cyr-upper-0422.json	0	
+uni-cf-gr-lower-03b1	unicode	confusable	positive	envelopes/unicode/uni-cf-gr-lower-03b1.json	0	
+uni-cf-gr-upper-0391	unicode	confusable	positive	envelopes/unicode/uni-cf-gr-upper-0391.json	0	
+uni-cf-neg-pure-cyrillic	unicode	confusable	negative	envelopes/unicode/uni-cf-neg-pure-cyrillic.json	0	
+uni-filter-all-mixed	unicode	kind-filter	positive	envelopes/unicode/uni-filter-all-mixed.json	0	
+uni-filter-zero-width	unicode	kind-filter	filter	envelopes/unicode/uni-filter-zero-width.json	0	uni-filter-all-mixed
+uni-filter-bidi	unicode	kind-filter	filter	envelopes/unicode/uni-filter-bidi.json	0	uni-filter-all-mixed
+uni-filter-tag	unicode	kind-filter	filter	envelopes/unicode/uni-filter-tag.json	0	uni-filter-all-mixed
+uni-filter-confusable	unicode	kind-filter	filter	envelopes/unicode/uni-filter-confusable.json	0	uni-filter-all-mixed
+uni-zw-hangul-pua-typesetting	unicode	zero_width	negative	envelopes/unicode/uni-zw-hangul-pua-typesetting.json	0	
+uni-clean-2026_oss_rst.hwp	unicode	clean-corpus	negative	envelopes/unicode/uni-clean-2026_oss_rst.hwp.json	0	
+uni-clean-hwp3-sample.hwp	unicode	clean-corpus	negative	envelopes/unicode/uni-clean-hwp3-sample.hwp.json	0	
+uni-clean-2022년_국립국어원_업무계획.hwp	unicode	clean-corpus	negative	envelopes/unicode/uni-clean-2022년_국립국어원_업무계획.hwp.json	0	
+uni-bidi-rendered-vs-raw-exe-doc	unicode	bidi_override	positive	envelopes/unicode/uni-bidi-rendered-vs-raw-exe-doc.json	0	
+uni-loc-body	unicode	zero_width	positive	envelopes/unicode/uni-loc-body.json	0	
+uni-loc-cell_0_0_.para_0	unicode	zero_width	positive	envelopes/unicode/uni-loc-cell_0_0_.para_0.json	0	
+ex-ht-missing-file	hidden-text	exception	exception	envelopes/exceptions/ex-ht-missing-file.json	1	
+ex-ht-no-file	hidden-text	exception	exception	envelopes/exceptions/ex-ht-no-file.json	2	
+ex-ht-unknown-option	hidden-text	exception	exception	envelopes/exceptions/ex-ht-unknown-option.json	2	
+ex-ht-threshold-abc	hidden-text	exception	exception	envelopes/exceptions/ex-ht-threshold-abc.json	2	
+ex-ht-threshold-neg	hidden-text	exception	exception	envelopes/exceptions/ex-ht-threshold-neg.json	2	
+ex-ht-threshold-over	hidden-text	exception	exception	envelopes/exceptions/ex-ht-threshold-over.json	2	
+ex-ht-two-files	hidden-text	exception	exception	envelopes/exceptions/ex-ht-two-files.json	2	
+ex-inj-missing-file	injection	exception	exception	envelopes/exceptions/ex-inj-missing-file.json	1	
+ex-inj-no-file	injection	exception	exception	envelopes/exceptions/ex-inj-no-file.json	2	
+ex-inj-minconf-bad	injection	exception	exception	envelopes/exceptions/ex-inj-minconf-bad.json	2	
+ex-inj-minconf-missing	injection	exception	exception	envelopes/exceptions/ex-inj-minconf-missing.json	2	
+ex-inj-unknown-option	injection	exception	exception	envelopes/exceptions/ex-inj-unknown-option.json	2	
+ex-inj-two-files	injection	exception	exception	envelopes/exceptions/ex-inj-two-files.json	2	
+ex-uni-missing-file	unicode	exception	exception	envelopes/exceptions/ex-uni-missing-file.json	1	
+ex-uni-no-file	unicode	exception	exception	envelopes/exceptions/ex-uni-no-file.json	2	
+ex-uni-kind-bad	unicode	exception	exception	envelopes/exceptions/ex-uni-kind-bad.json	2	
+ex-uni-unknown-option	unicode	exception	exception	envelopes/exceptions/ex-uni-unknown-option.json	2	
+ex-uni-two-files	unicode	exception	exception	envelopes/exceptions/ex-uni-two-files.json	2	
+ex-inspect-no-axis	inspect	exception	exception	envelopes/exceptions/ex-inspect-no-axis.json	2	
+ex-inspect-unknown-axis-hidden_text	hidden-text	exception	exception	envelopes/exceptions/ex-inspect-unknown-axis-hidden_text.json	2	
+ex-inspect-unknown-axis-inject	injection	exception	exception	envelopes/exceptions/ex-inspect-unknown-axis-inject.json	2	
+ex-inspect-unknown-axis-utf8	inspect	exception	exception	envelopes/exceptions/ex-inspect-unknown-axis-utf8.json	2	

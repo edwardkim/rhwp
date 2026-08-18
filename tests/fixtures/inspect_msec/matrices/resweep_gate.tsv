@@ -1,0 +1,5 @@
+axis	gateField	passValue	failValue	exitOnDetection
+hidden-text	clean	True	False	0
+injection	clean	True	False	0
+unicode	clean	True	False	0
+redact-dry-run	findingCount	0	>=1	0

@@ -1,0 +1,6 @@
+id	symbol	meaning
+charShade	CharShade	글자 음영색(CharShape.shade_color)
+paragraph	Paragraph	문단 배경(ParaShape.border_fill_id)
+tableCell	TableCell	표 셀 배경(Cell.border_fill_id)
+textBox	TextBox	글상자 채우기
+page	Page	쪽 바탕(쪽 테두리/배경 또는 흰 종이)

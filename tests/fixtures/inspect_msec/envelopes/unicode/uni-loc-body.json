@@ -1,0 +1,67 @@
+{
+  "id": "uni-loc-body",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "zero_width",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_unicode_scan_unit",
+    "note": "body"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "synth:unicode/loc/body.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "findings[0].location",
+    "location": "body"
+  },
+  "pair": null,
+  "why": "본문만이 아니라 body 도 훑는다.",
+  "note": "표 셀·글상자·수식 스크립트 주소를 밝힌다.",
+  "human": "위치 body 에서 제로폭 3연속\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:unicode/loc/body.hwp",
+    "kindFilter": "zero-width",
+    "scannedChars": 4,
+    "findings": [
+      {
+        "kind": "zero_width",
+        "codepoint": "U+200B",
+        "severity": "high",
+        "section": 0,
+        "paragraph": 0,
+        "location": "body",
+        "charOffset": 0,
+        "runLength": 3,
+        "excerpt": "a<U+200B><U+200B><U+200B>b",
+        "rendered": "ab",
+        "raw": "a<U+200B><U+200B><U+200B>b",
+        "why": "사람 눈에 보이지 않는 문자입니다 — 화면에 없는 내용이 LLM 이 읽는 텍스트에는 남습니다"
+      }
+    ],
+    "findingCount": 1,
+    "clean": false,
+    "severityCounts": {
+      "high": 1,
+      "medium": 0,
+      "low": 0
+    },
+    "kindCounts": {
+      "zero_width": 1,
+      "bidi_override": 0,
+      "tag_char": 0,
+      "confusable": 0
+    }
+  }
+}

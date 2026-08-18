@@ -1,0 +1,59 @@
+{
+  "id": "ht-zero_size-textBox-hwp-pos",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "zero_size",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/queries/hidden_text.rs",
+    "symbol": "HiddenKind::ZeroSize",
+    "note": "실효 글자 크기가 0"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "synth:hidden-text/zero_size/textBox.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == false",
+    "field": "hiddenText[].kind",
+    "doNotFollowExcerpt": true,
+    "detectionIsNotFailure": true
+  },
+  "pair": "ht-zero_size-textBox-hwp-neg",
+  "why": "0pt 글자 양성. 범위 글상자 안, 형식 hwp. 탐지는 exit 0.",
+  "note": "기존 HiddenKind 만. 글상자 안 주소 어휘는 search --json 과 같다.",
+  "human": "은닉 텍스트 1건 (문자 14개): synth:hidden-text/zero_size/textBox.hwp\n  [0pt 글자] 구역0:문단0 (1쪽) 14자: 0pt 로 심은 숨은 문장\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:hidden-text/zero_size/textBox.hwp",
+    "thresholdPt": 1.0,
+    "includeOffPage": false,
+    "hiddenText": [
+      {
+        "kind": "zero_size",
+        "section": 0,
+        "paragraph": 0,
+        "page": 0,
+        "excerpt": "0pt 로 심은 숨은 문장",
+        "charCount": 14,
+        "detail": {
+          "effectivePt": 0.0
+        },
+        "textbox": {
+          "index": 0,
+          "para": 0
+        }
+      }
+    ],
+    "hiddenCharCount": 14,
+    "clean": false
+  }
+}

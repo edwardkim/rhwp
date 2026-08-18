@@ -1,0 +1,35 @@
+{
+  "id": "ex-uni-unknown-option",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "알 수 없는 옵션"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "samples/hwp3-sample.hwp",
+      "--nope"
+    ],
+    "exitCode": 2,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "알 수 없는 옵션"
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "알 수 없는 옵션",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}
