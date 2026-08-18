@@ -474,9 +474,31 @@ impl Hwp3DrawingExtendedPolygon {
     }
 }
 
+/// 공통 헤더의 선언 길이(header_length)와 플래그 유도 소비량이 어긋날 때 전진을
+/// 허용하는 상한. 정상 헤더는 커야 400여 바이트이므로 이를 훨씬 넘는 선언은
+/// 손상된 값으로 보고 종전대로 플래그 유도 위치를 유지한다.
+const MAX_HEADER_SKIP: u64 = 64 * 1024;
+
 impl Hwp3DrawingObject {
     pub fn read<R: Read + Seek>(mut reader: R) -> Result<Self, io::Error> {
+        let header_start = reader.stream_position()?;
         let header = Hwp3DrawingObjectCommonHeader::read(&mut reader)?;
+
+        // [#5141] 빈티지 파일의 공통 헤더에는 이 파서가 모르는 확장 필드가 붙을 수
+        // 있고, 전체 길이는 header_length(자기 4바이트 제외)로 선언된다. 플래그
+        // 유도로 읽은 소비량이 선언에 못 미치면 선언 끝까지 전진해야 뒤따르는
+        // 세부 정보·형제·자식 스트림이 어긋나지 않는다. 선언이 스트림 밖이거나
+        // 상한을 넘으면 손상 값으로 보고 종전 위치를 유지한다.
+        let consumed_end = reader.stream_position()?;
+        let declared_end = header_start + 4 + header.header_length as u64;
+        if declared_end > consumed_end && declared_end - consumed_end <= MAX_HEADER_SKIP {
+            let stream_len = reader.seek(SeekFrom::End(0))?;
+            if declared_end <= stream_len {
+                reader.seek(SeekFrom::Start(declared_end))?;
+            } else {
+                reader.seek(SeekFrom::Start(consumed_end))?;
+            }
+        }
 
         // 글상자(6)인 경우, 공통 헤더 바로 뒤에 글상자 정보가 위치함.
         // 테이블 78 "글상자 세부 정보"에 따라 info1_len, info2_len, 문단 리스트가 존재함.
@@ -484,7 +506,12 @@ impl Hwp3DrawingObject {
 
         match header.object_type {
             0 => {
-                // 컨테이너: 추가 세부 길이 정보 없음
+                // [#5141] 컨테이너도 사각형/타원처럼 세부 정보 길이 8바이트
+                // (info1_len=0, info2_len=0)를 가진다. 이를 읽지 않으면 자식 파싱이
+                // 8바이트 어긋나 첫 자식이 hdr_len=0·conn=0 인 가짜 컨테이너로 읽히고
+                // 묶음 자식 전체가 소실된다.
+                let _info1_len = reader.read_u32::<LittleEndian>()?;
+                let _info2_len = reader.read_u32::<LittleEndian>()?;
                 Ok(Hwp3DrawingObject::Container(header))
             }
             1 => {
@@ -1192,10 +1219,11 @@ mod drawing_object_recursion_depth_tests {
     use std::io::Cursor;
 
     /// object_type=0(Container)에 connection_info=0x0002(has_child, no
-    /// sibling)만 실은 최소 92바이트 공통 헤더를 만든다.
+    /// sibling)만 실은 최소 공통 헤더(92바이트, header_length=88) + 세부 정보
+    /// 길이 8바이트(#5141 계약)를 만든다.
     fn container_block() -> Vec<u8> {
         let mut buf = Vec::new();
-        buf.extend_from_slice(&0u32.to_le_bytes()); // header_length
+        buf.extend_from_slice(&88u32.to_le_bytes()); // header_length (자기 4바이트 제외)
         buf.extend_from_slice(&0u16.to_le_bytes()); // object_type = 0 (Container)
         buf.extend_from_slice(&0x0002u16.to_le_bytes()); // connection_info: has_child, !has_sibling
         buf.extend_from_slice(&[0u8; 8]); // relative_pos
@@ -1205,6 +1233,7 @@ mod drawing_object_recursion_depth_tests {
         buf.extend_from_slice(&[0u8; 32]); // basic_attr: line_style..pattern_color
         buf.extend_from_slice(&[0u8; 8]); // basic_attr: textbox_margin
         buf.extend_from_slice(&0u32.to_le_bytes()); // basic_attr: options
+        buf.extend_from_slice(&[0u8; 8]); // 세부 정보 길이 (info1_len=0, info2_len=0)
         buf
     }
 
@@ -1246,3 +1275,4 @@ mod drawing_object_recursion_depth_tests {
         );
     }
 }
+
