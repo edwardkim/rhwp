@@ -12,11 +12,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-<<<<<<< HEAD
 from typing import Any, Iterable
-=======
-from typing import Any
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
 
 TRANSCRIPT_KIND = "pageRoundtripTranscript"
 TRANSCRIPT_SCHEMA = 1
@@ -31,10 +27,7 @@ EVENT_KINDS = (
     "note",
     "verdict",
     "catalog",
-<<<<<<< HEAD
-=======
     "pageMap",
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
 )
 
 VERIFY_FAIL_RE = re.compile(
@@ -87,7 +80,6 @@ class Transcript:
                 return str(event.payload.get("verdict") or "")
         return ""
 
-<<<<<<< HEAD
     def ir_diffs(self) -> list[str]:
         return [
             str(e.payload.get("path") or e.payload.get("text") or "")
@@ -95,8 +87,6 @@ class Transcript:
             if e.kind == "ir_diff"
         ]
 
-=======
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
     def to_json(self) -> dict[str, Any]:
         return {
             "schemaVersion": self.schema_version,
@@ -105,7 +95,6 @@ class Transcript:
             "doc": self.doc,
             "route": self.route,
             "created": self.created,
-<<<<<<< HEAD
             "summary": {
                 "events": len(self.events),
                 "pages": (
@@ -140,21 +129,11 @@ def now_utc() -> str:
 
 def new_transcript(*, doc: str, route: str = "hwpx", issue: int | None = None) -> Transcript:
     t = Transcript(issue=issue, doc=doc, route=route, created=now_utc())
-=======
-            "events": [e.to_json() for e in self.events],
-        }
-
-
-def new_transcript(*, issue: int | None, doc: str, route: str = "hwpx") -> Transcript:
-    created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    t = Transcript(issue=issue, doc=doc, route=route, created=created)
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
     t.add("meta", tool="tools/page_roundtrip/transcript.py", issue=issue)
     return t
 
 
 def ingest_cli_text(transcript: Transcript, stdout: str, stderr: str, rc: int) -> Transcript:
-<<<<<<< HEAD
     """export-hwpx --verify --verify-pages 텍스트를 사건으로 분해한다."""
     if stdout:
         transcript.add("stdout", text=stdout[-8000:], bytes=len(stdout.encode("utf-8", "replace")))
@@ -219,44 +198,10 @@ def load_jsonl(path: Path) -> Transcript:
 def write_jsonl(path: Path, transcript: Transcript) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(transcript.to_jsonl(), encoding="utf-8")
-=======
-    if stdout:
-        transcript.add("stdout", text=stdout[:4000], bytes=len(stdout.encode("utf-8")))
-    if stderr:
-        transcript.add("stderr", text=stderr[:4000], bytes=len(stderr.encode("utf-8")))
-    transcript.add("exit", rc=rc)
-    fail = VERIFY_FAIL_RE.search("\n".join((stdout or "", stderr or "")))
-    passed = VERIFY_PASS_RE.search("\n".join((stdout or "", stderr or "")))
-    if fail:
-        before, after = int(fail.group(1)), int(fail.group(2))
-        transcript.add("pages", before=before, after=after, identical=False)
-    elif passed:
-        n = int(passed.group(1))
-        transcript.add("pages", before=n, after=n, identical=True)
-    for m in IR_DIFF_RE.finditer(stdout or ""):
-        transcript.add("ir_diff", text=m.group(1))
-    return transcript
-
-
-def write_jsonl(path: Path, transcript: Transcript) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    header = {
-        "schemaVersion": transcript.schema_version,
-        "kind": transcript.kind,
-        "issue": transcript.issue,
-        "doc": transcript.doc,
-        "route": transcript.route,
-        "created": transcript.created,
-    }
-    lines = [json.dumps(header, ensure_ascii=False)]
-    lines.extend(json.dumps(e.to_json(), ensure_ascii=False) for e in transcript.events)
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
 
 
 def write_json(path: Path, transcript: Transcript) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-<<<<<<< HEAD
     path.write_text(
         json.dumps(transcript.to_json(), ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -269,6 +214,3 @@ def iter_transcripts(root: Path) -> Iterable[Path]:
         return
     for path in sorted(root.rglob("*.jsonl")):
         yield path
-=======
-    path.write_text(json.dumps(transcript.to_json(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))

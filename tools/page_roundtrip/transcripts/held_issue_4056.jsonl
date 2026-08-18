@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {"schemaVersion": 1, "kind": "pageRoundtripTranscript", "issue": 4056, "doc": "samples/issue-505-equations.hwp", "route": "hwpx", "created": "2026-08-18T10:12:07Z"}
 {"seq": 0, "kind": "meta", "tool": "tools/page_roundtrip/transcript.py", "issue": 4056}
 {"seq": 1, "kind": "command", "argv": ["rhwp", "export-hwpx", "samples/issue-505-equations.hwp", "/tmp/rt.hwpx", "--verify-pages"]}
@@ -7,9 +6,3 @@
 {"seq": 4, "kind": "pages", "before": 4, "after": 1, "identical": false}
 {"seq": 5, "kind": "verdict", "verdict": "EXPECTED_FAIL", "cataloged": true, "issue": 4056}
 {"seq": 6, "kind": "note", "text": "HWPX 내보내기 전후 쪽수 불일치 (4→1) — 다중 secd, 이 PR 범위 밖"}
-=======
-{"schemaVersion": 1, "kind": "pageRoundtripTranscript", "issue": 4056, "doc": "samples/issue-505-equations.hwp", "route": "hwpx", "created": "2026-08-18T11:40:05Z"}
-{"seq": 0, "kind": "meta", "tool": "tools/page_roundtrip/transcript.py", "issue": 4056}
-{"seq": 1, "kind": "note", "text": "planet #5253 좌석 — M05-7 가 고치지 않는다"}
-{"seq": 2, "kind": "verdict", "verdict": "EXPECTED_FAIL", "cataloged": true, "issue": 4056}
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))

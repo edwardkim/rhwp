@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """expected-fail 카탈로그 연산. 침묵 스킵 금지, 고친 이슈는 목록에서 뺀다.
 
-M05-6 는 #4882, M05-7 는 #5128 을 닫는다. #4056만 다른 좌석으로 남긴다.
+M05-6 #4882와 M05-7 #5128은 해결됐다. #4056만 남긴다.
 """
 
 from __future__ import annotations
@@ -104,7 +104,6 @@ def assert_m05_6_scope(entries: Iterable[CatalogEntry]) -> list[str]:
 def assert_m05_7_scope(entries: Iterable[CatalogEntry]) -> list[str]:
     return assert_resolved_scope(entries)
 
-
 def diff_catalog(old: Iterable[CatalogEntry], new: Iterable[CatalogEntry]) -> CatalogDiff:
     old_keys = {entry_key(e) for e in old}
     new_keys = {entry_key(e) for e in new}
@@ -124,7 +123,6 @@ def sample_inventory_entry(path: Path, repo: Path) -> dict[str, Any]:
         "bytes": stat.st_size if stat else None,
         "exists": path.is_file(),
     }
-
 
 def load_catalog_file(path: Path) -> list[CatalogEntry]:
     raw = json.loads(path.read_text(encoding="utf-8"))

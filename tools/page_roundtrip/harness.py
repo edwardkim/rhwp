@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
 """페이지 수 왕복 공통 하네스 — pages(원본)==pages(export→reimport).
 
-<<<<<<< HEAD
-MEGA QUEUE M05-6 (#5449 / #4882). 판정 도구 + 정책연구 문서 쪽수 등식.
-#4056 #5128 은 고치지 않는다. gym · ole/shape-component · char_shapes 는
-다른 좌석.
-=======
-MEGA QUEUE M05-7 (#5128). 한글 스펙문서 쪽수 왕복. #4056 은 planet #5253,
-#4882 는 PR #5470 — 그 샘플을 다시 하지 않는다. gym 은 건드리지 않는다.
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
+MEGA QUEUE M05-6/#4882 + M05-7/#5128. 두 페이지 수 회귀는 해결됐고 #4056만 다른 좌석이다. gym · ole/shape-component · char_shapes 는 다른 좌석.
 
 기존 CLI 가 쪽수를 잰다:
 
@@ -215,8 +208,6 @@ def find_rhwp(explicit: str | None = None, repo: Path | None = None) -> Path | N
     for rel in (
         Path("target") / "release" / "rhwp.exe",
         Path("target") / "release" / "rhwp",
-        Path("target") / "release-test" / "rhwp.exe",
-        Path("target") / "release-test" / "rhwp",
         Path("target") / "debug" / "rhwp.exe",
         Path("target") / "debug" / "rhwp",
     ):

@@ -2,8 +2,8 @@
 """쪽수 드리프트 귀속. pages(before) != pages(after) 를 원인 축으로 나눈다.
 
 #4882 축: 각주 subList 전 줄 vertpos=0 이 재파싱에서 쌓임 (215→223).
-#5128 축: HWP5-origin 저장 pagination 게이트 누락으로 스펙 문서가 69→68 이 된다.
-#4056 은 다른 좌석으로 유지한다.
+#5128 축: HWP5-origin 저장 pagination이 69쪽을 68쪽으로 줄이지 않아야 한다.
+#4056은 이 모듈이 고치지 않는다 — 카탈로그 축으로만 표시한다.
 """
 
 from __future__ import annotations
@@ -17,9 +17,9 @@ ISSUE_4882 = 4882
 ISSUE_4056 = 4056
 ISSUE_5128 = 5128
 
-# 다른 좌석. 이 모듈은 판정만 하고 수정하지 않는다.
+# 다른 좌석. 이 모듈은 #4056을 판정만 하고 수정하지 않는다.
 FOREIGN_SEATS = {
-    ISSUE_4056: "다중 secd / planet #5253 — 범위 밖",
+    ISSUE_4056: "다중 secd / planet #5253 — M05-6/M05-7 범위 밖",
 }
 
 PINNED_4882_PATHS = (
@@ -188,6 +188,7 @@ def attach_ir_diffs(report: DriftReport, diffs: Iterable[str]) -> None:
 
 
 def analyze(
+    *,
     doc: str,
     before: int | None,
     after: int | None,
