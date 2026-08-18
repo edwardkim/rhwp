@@ -45,6 +45,7 @@ last_verified: 2026-07-26
 | `CAP-5312` | `rhwp-visual-regression` | 실 에이전트가 편집/변환 전후 레이아웃 회귀를 `render-diff`(자기 라운드트립·두 파일·`--batch` geom_inventory.tsv)·`ir-diff --json`(차이=exit 3)·thumbnail/export-png 로 숫자 판정한다. STRUCT_MISMATCH 는 노드 경로로 읽고 반사 실패하지 않는다. gym·새 CLI·이웃 스킬 재작성은 책임 밖 | [레시피 06](recipes/06_visual_regression_before_after.md) · [CLI render-diff](cli_commands.md) | [Skill](../../.claude/skills/rhwp-visual-regression/SKILL.md) | — | active · rhwp maintainers |
 | `CAP-5313` | `rhwp-explore` | 실 에이전트가 처음 보는 HWP/HWPX 에서 `rhwp explore --json` 메뉴로 다음 명령·스킬을 고른다. gym·새 CLI·편집 로직·이웃 스킬 재작성은 책임 밖 | [CLI explore](cli_commands.md) | [Skill](../../.claude/skills/rhwp-explore/SKILL.md) | — | active · rhwp maintainers |
 | `CAP-5331` | `rhwp-recipes` | 실 에이전트가 요청을 mydocs/manual/recipes/ 여덟 장(01·02·03·04·05·06·09·10) 중 한 장으로 고른다. 07·08 결번 정직 표지. gym·새 CLI·이웃 스킬(form-fill/table-exchange/security-sweep/bulk-pipeline/visual-regression) 재작성은 책임 밖 | [레시피 01](recipes/01_fill_form_and_submit.md) · [레시피 09](recipes/09_bulk_extract_convert.md) | [Skill](../../.claude/skills/rhwp-recipes/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5293` | `rhwp-mcp-session` | 실 에이전트 호스트에 rhwp mcp-serve 를 붙이고 세션(hwp_open→hwp_doc_*→hwp_close)과 무상태 도구를 고른다. 도구 정의의 단일 출처는 capabilities --mcp 와 tools/list. gym 트레이스·온보딩 닥터·안전 편집·출처 표지·문서 트리아지·새 CLI/도구 발명은 책임 밖 | [MCP 통합 가이드](mcp_integration_guide.md) | [Skill](../../.claude/skills/rhwp-mcp-session/SKILL.md) | — | active · rhwp maintainers |
 
 `—`는 해당 런타임용 어댑터가 아직 없다는 뜻이며, capability 자체가 없다는 뜻은 아니다.
 

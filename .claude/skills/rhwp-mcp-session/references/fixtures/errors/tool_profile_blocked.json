@@ -1,0 +1,12 @@
+{
+  "id": "tool_profile_blocked",
+  "layer": "isError",
+  "code": null,
+  "symptom": "현재 프로필에서는 세션 도구를 제공하지 않습니다",
+  "retry": false,
+  "fix": "프로필을 바꾸거나 무상태 짝으로 전환한다. 우회 호출은 서버가 막는다.",
+  "tools": [
+    "hwp_open"
+  ],
+  "policy": "종료 코드 2/필수 인자 = 재시도 금지. 닫힌 핸들만 nextCall 로 재발급."
+}

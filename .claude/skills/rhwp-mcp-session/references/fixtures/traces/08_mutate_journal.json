@@ -1,0 +1,68 @@
+{
+  "id": "08_mutate_journal",
+  "title": "변이 뒤 저널로 전/후 digest 를 확인한다.",
+  "kind": "session",
+  "lifecycle": "hwp_open → doc_* → hwp_close",
+  "absolute_paths": true,
+  "single_write_point": "hwp_doc_save",
+  "steps": [
+    {
+      "seq": 1,
+      "tool": "hwp_ws_list",
+      "arguments": {},
+      "expect_layer": "ok",
+      "read_fields": [
+        "entries"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 2,
+      "tool": "hwp_ws_open",
+      "arguments": {
+        "id": "w1"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "docId"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 3,
+      "tool": "hwp_doc_replace_text",
+      "arguments": {
+        "docId": "doc-1",
+        "find": "A",
+        "replace": "B"
+      },
+      "expect_layer": "envelope",
+      "read_fields": [
+        "replacedCount"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 4,
+      "tool": "hwp_ws_journal",
+      "arguments": {},
+      "expect_layer": "ok",
+      "read_fields": [
+        "entries"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 5,
+      "tool": "hwp_close",
+      "arguments": {
+        "docId": "doc-1"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "closed"
+      ],
+      "notes": ""
+    }
+  ]
+}

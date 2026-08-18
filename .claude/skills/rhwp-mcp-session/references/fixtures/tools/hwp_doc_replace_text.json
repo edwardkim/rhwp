@@ -1,0 +1,46 @@
+{
+  "name": "hwp_doc_replace_text",
+  "kind": "session",
+  "in_capabilities_mcp": false,
+  "in_tools_list": true,
+  "family": "mutate",
+  "required": [
+    "docId",
+    "find",
+    "replace"
+  ],
+  "optional": [
+    "caseSensitive"
+  ],
+  "envelope_fields": [
+    "replacedCount",
+    "changedPages"
+  ],
+  "writes_ir": true,
+  "writes_disk": false,
+  "idempotentHint": false,
+  "destructiveHint": false,
+  "stateless_twin": "hwp_replace_text",
+  "when": "연 문서에서 문구를 누적 치환하고 나중에 한 번 저장할 때.",
+  "when_not": "치환 1회 후 파일만 필요하면 hwp_replace_text.",
+  "recovery": "replacedCount 0 은 오류가 아니다. 핸들 만료만 hwp_open.",
+  "sample_call": {
+    "method": "tools/call",
+    "params": {
+      "name": "hwp_doc_replace_text",
+      "arguments": {
+        "docId": "<docId>",
+        "find": "<find>",
+        "replace": "<replace>"
+      }
+    }
+  },
+  "closed_handle_signal": {
+    "isError": true,
+    "needle": "열려 있지 않은 핸들",
+    "nextCall": {
+      "name": "hwp_open"
+    }
+  },
+  "source_const": "ALL_SESSION_TOOLS"
+}
