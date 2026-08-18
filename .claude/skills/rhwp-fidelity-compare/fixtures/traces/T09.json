@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T09",
+  "title": "page count 35 vs 37",
+  "stop": "F11",
+  "steps": [
+    "ledger"
+  ],
+  "tool": "tools/fidelity_compare/fidelity_compare.py"
+}

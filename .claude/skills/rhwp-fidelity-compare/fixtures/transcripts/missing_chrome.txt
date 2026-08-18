@@ -1,0 +1,5 @@
+$ venv/bin/python tools/fidelity_compare/fidelity_compare.py plan 0 2 --out-dir /tmp/rhwp-fidelity-nochrome
+Chrome/Chromium을 찾을 수 없습니다. CHROME_BIN을 지정하세요.
+$ echo $?
+2
+# F10 — --text-only 로 내리거나 Chrome 을 설치한다. 새 CLI 를 만들지 않는다.

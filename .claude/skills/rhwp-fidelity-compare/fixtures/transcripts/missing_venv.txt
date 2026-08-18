@@ -1,0 +1,6 @@
+$ python3 tools/fidelity_compare/fidelity_compare.py plan 0 2 --text-only
+pypdf가 필요합니다: python -m pip install pypdf
+$ echo $?
+2
+# F09 — 저장소 venv 를 만들고 venv/bin/python 또는 venv\Scripts\python.exe 를 쓴다.
+# --break-system-packages 금지 (F15).

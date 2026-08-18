@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T23",
+  "title": "cp949 argv",
+  "stop": "F03",
+  "steps": [
+    "ASCII key"
+  ],
+  "tool": "tools/fidelity_compare/fidelity_compare.py"
+}
