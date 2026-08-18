@@ -938,6 +938,30 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
     "application/octet-stream"
 }
 
+/// 이 바이트를 백엔드가 실제로 **그릴 수 있는가**.
+///
+/// 변환 사슬(`resolve_image_payload`)을 태워도 남는 형식 — 프리뷰 없는 텍스트 EPS/AI,
+/// 정체불명 바이트 — 은 브라우저도 resvg 도 skia 도 디코드하지 못해 그 자리가 그냥
+/// **빈 공간**이 된다. 한글은 그럴 때 "그림 미지정" 과 똑같이 편집 화면에서 점선 테두리 +
+/// 그림-없음 아이콘을 그린다(인쇄 등가 출력에서는 미출력). 레이아웃이 그 판정을 내리려면
+/// 술어가 mime 판정 옆 한 곳에 있어야 한다 — 사본을 두면 "그리는 쪽"과 "없다고 보는 쪽"이
+/// 조용히 갈라진다.
+///
+/// WMF·EMF·TIFF·PCX 는 변환기가 있으므로 **형식만 보고** 그릴 수 있다고 본다. 변환이
+/// 실패하는 개별 파손 바이트까지 잡으려면 여기서 변환을 한 번 더 돌려야 하는데, 그 비용은
+/// 매 페이지 조판마다 붙는다. 지금 동작(변환 실패 시 원본 그대로 → 빈 공간)은 그대로 두고
+/// 판정만 넓히지 않는다.
+pub(crate) fn is_displayable_image_data(data: &[u8]) -> bool {
+    match detect_image_mime_type(data) {
+        "image/png" | "image/jpeg" | "image/gif" | "image/webp" | "image/bmp" | "image/svg+xml"
+        | "image/tiff" | "image/x-pcx" | "image/x-wmf" | "image/x-emf" => true,
+        // EPS/AI 는 DOS EPS 바이너리 프리뷰(WMF/TIFF)를 품고 있을 때만 그릴 수 있다 (#4062).
+        // 순수 텍스트 PostScript 는 해석기가 없다.
+        "application/postscript" => dos_eps_preview_bytes(data).is_some(),
+        _ => false,
+    }
+}
+
 fn decode_image_with_format_limited(
     data: &[u8],
     format: image::ImageFormat,
