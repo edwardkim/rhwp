@@ -29,4 +29,4 @@ gym 과제가 아니고, 새 edit 로직도 없다.
 
 픽스처는 `fixtures/`. 생성기는 `_gen_pack.py`.
 테스트는 `scripts/tests/test_agent_form_fill.py` 와
-`tests/agent_form_fill_skill_contract.rs`.
+`tests/cases/agent_form_fill_skill_contract.rs`.

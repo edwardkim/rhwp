@@ -4,7 +4,7 @@
 이슈: https://github.com/edwardkim/rhwp/issues/5300
 브랜치: `feat/agent-form-fill` (`upstream/devel` 기준 격리 worktree)
 범위: `.claude/skills/rhwp-form-fill/` ·
-`tests/agent_form_fill_skill_contract.rs` · `scripts/tests/test_agent_form_fill.py` ·
+`tests/cases/agent_form_fill_skill_contract.rs` · `scripts/tests/test_agent_form_fill.py` ·
 capability 등록부 `CAP-5300` · 본 문서
 비범위: `gym/` · `rhwp-onboarding` · `rhwp-mcp-session` · `rhwp-safe-edit` ·
 `rhwp-provenance` · `rhwp-doc-triage` · 새 edit 로직 · 새 CLI 플래그
@@ -54,7 +54,7 @@ DoD: additions 5000–10000 (최소 5000). PR 전 `cargo fmt --all -- --check`.
    여정 100+, 발화 120+, 메일머지 80행, 순번 사례, 트레이스 40.
 5. `scripts/tests/test_agent_form_fill.py` 가 발명 명령·gym·이웃 스킬
    재작성·픽스처 스키마를 바이너리 없이 검사.
-6. `tests/agent_form_fill_skill_contract.rs` 가 같은 가드 + 표본이 있으면
+6. `tests/cases/agent_form_fill_skill_contract.rs` 가 같은 가드 + 표본이 있으면
    기존 `fields` / `fill-fields --dry-run` / 빈 CSV exit 2 만 재현.
    채움 구현을 바꾸지 않음.
 7. capability 등록부 `CAP-5300` / `rhwp-form-fill` 행 추가.
