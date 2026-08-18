@@ -631,9 +631,6 @@ export class CanvasKitLayerRenderer {
       this.glyphRunFonts.registerResources(tree.fontResources, tree.resources);
       this.currentShowParagraphMarks = tree.outputOptions?.showParagraphMarks === true;
       this.currentShowControlCodes = tree.outputOptions?.showControlCodes === true;
-      if (this.currentShowControlCodes) {
-        this.unsupportedOps.add('viewOption:showControlCodes');
-      }
       this.selectedTextVariantOps = new WeakSet<LayerPaintOp>();
       this.selectTextVariants(tree.root);
       let hasPageBackground = false;
