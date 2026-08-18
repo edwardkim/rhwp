@@ -54,7 +54,7 @@ render_geom_diff  (두 렌더 사이 비교)         layout_anomaly  (렌더 한
 쪽이 텅 비었는가)을 판정한다. 페이지네이션 내부 상태에 접근하지 않고, 보안 판정도 아니다 —
 순수하게 "이 결과물이 사람이 보기에 정상적인 문서 레이아웃인가"만 본다.
 
-## 판정 4종
+## 판정 5종
 
 입력은 `DocumentCore::build_page_render_tree` 가 페이지마다 만들어 내는 `RenderNode` 트리
 하나뿐이다(`render_geom_diff::diff_render_geometry` 와 같은 배선). 렌더러·레이아웃 엔진 코드는
