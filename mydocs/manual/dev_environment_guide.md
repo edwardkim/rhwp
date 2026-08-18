@@ -79,7 +79,7 @@ git switch -c <work-branch> upstream/devel
 cargo build
 cargo test
 cargo build --release
-cargo fmt --check
+cargo fmt --all -- --check
 ```
 
 PR 전 전체 회귀 범위는 변경 위험도와 [PR 리뷰·통합 워크플로우](pr_review_workflow.md)에 따라 결정한다.
