@@ -2258,7 +2258,14 @@ fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     // table.attr bit0 for some inline-table decisions. Only mirror the minimum
     // renderer compatibility bit here; the HWP5 storage attr is packed later by
     // the HWP adapter.
-    table.attr = if table.common.treat_as_char && table.common.flow_with_text {
+    //
+    // 순수 HWPX 의 TAC 판정은 `treatAsChar && flowWithText` (#3930) 다. 원본
+    // HWP3 는 treatAsChar 만으로 인라인 표다. HWP3-origin HWPX 가 후자 계약을
+    // 잃으면 sample11 문단 3701..3704 같은 1×1 TAC 표가 블록 표로 빠져
+    // 151→152 가 된다 (#3737).
+    table.attr = if table.common.treat_as_char
+        && (table.common.flow_with_text || HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.get()))
+    {
         0x01
     } else {
         0
@@ -5350,6 +5357,8 @@ thread_local! {
     /// [#4916/#4660/#3531/#4882 계열] 지금 파싱 중인 HWPX 가 rhwp 자기 산출
     /// (HWP5-origin 마커 보유)인가 — `parse_hwpx` 가 구역 파싱 동안 세운다.
     static HWPX_HWP5_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    /// 원본 HWP3→HWPX (hwp3-origin 마커, hwp5-origin 없음).
+    static HWPX_HWP3_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
 /// [#4916 계열] HWP5-origin 마커 문서 파싱 구간 표식 — RAII 로 해제된다.
@@ -5365,6 +5374,22 @@ impl Hwp5OriginSourceGuard {
 impl Drop for Hwp5OriginSourceGuard {
     fn drop(&mut self) {
         HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.set(false));
+    }
+}
+
+/// [#3737] 원본 HWP3→HWPX 파싱 구간 표식.
+pub(crate) struct Hwp3OriginSourceGuard;
+
+impl Hwp3OriginSourceGuard {
+    pub(crate) fn set(active: bool) -> Self {
+        HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.set(active));
+        Hwp3OriginSourceGuard
+    }
+}
+
+impl Drop for Hwp3OriginSourceGuard {
+    fn drop(&mut self) {
+        HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.set(false));
     }
 }
 

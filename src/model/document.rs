@@ -336,12 +336,23 @@ impl Document {
     pub fn layout_profile(&self) -> crate::model::provenance::LayoutCompatibilityProfile {
         use crate::model::provenance::SourceFormat;
         let hwp5_origin_hwpx = self.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some();
+        // 원본 HWP3→HWPX 는 hwp3-origin 마커만 있다. lineage 만으로 hwp3_layout
+        // 을 켜면 HWP3→HWP5 변환본 전용 계약(spacing_before *2 등)이 직파싱
+        // HWP3(hwp3_layout=false, native=true)와 어긋나 쪽이 +1 된다
+        // (#3737 hwp3-sample11: 151→152). 그 산출물은 native HWP3 와 같은
+        // 레이아웃 계약을 쓴다. HWP3→HWP5 변환본의 HWPX 는 hwp5-origin 마커가
+        // 함께 있어 제외한다.
+        let native_hwp3_hwpx = self.provenance.format == SourceFormat::Hwpx
+            && self.hwpx_aux_entry(HWP3_ORIGIN_HWPX_MARKER_PATH).is_some()
+            && !hwp5_origin_hwpx;
         crate::model::provenance::LayoutCompatibilityProfile::new(
-            self.provenance.hwp3_lineage,
-            self.provenance.format == SourceFormat::Hwp3,
-            (self.provenance.format == SourceFormat::Hwpx && !hwp5_origin_hwpx)
+            self.provenance.hwp3_lineage && !native_hwp3_hwpx,
+            self.provenance.format == SourceFormat::Hwp3 || native_hwp3_hwpx,
+            (self.provenance.format == SourceFormat::Hwpx
+                && !hwp5_origin_hwpx
+                && !native_hwp3_hwpx)
                 || self.provenance.hwpx_lineage,
-            self.provenance.format == SourceFormat::Hwpx,
+            self.provenance.format == SourceFormat::Hwpx && !native_hwp3_hwpx,
             hwp5_origin_hwpx,
             self.provenance.format == SourceFormat::Hwp5
                 && !self.provenance.hwp3_lineage
