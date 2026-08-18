@@ -9,6 +9,8 @@
 //! - Stage 5: 도형·필드 + 대형 실문서 스모크
 
 pub mod canonical_defaults;
+pub mod char_shape_tables;
+pub mod char_shapes;
 pub mod content;
 pub mod context;
 pub mod field;
