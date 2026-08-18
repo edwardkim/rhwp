@@ -171,6 +171,10 @@ name = "cli_exit_codes_native"
 path = "tests/cli_exit_codes_native.rs"
 
 [[test]]
+name = "cli_json_contract"
+path = "tests/cli_json_contract.rs"
+
+[[test]]
 name = "issue_1144"
 path = "tests/issue_1144.rs"
 

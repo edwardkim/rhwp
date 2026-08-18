@@ -571,11 +571,14 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
         args_template: serde_json::Value,
         output_fields: &[&str],
     ) -> serde_json::Value {
+        let spec = cli::catalog::find(command)
+            .unwrap_or_else(|| panic!("MCP CLI 배선이 catalog에 없습니다: {command}"));
+        assert!(spec.mcp, "MCP 비참여 명령을 도구에 배선했습니다: {command}");
         serde_json::json!({
             "name": name,
             "description": description,
             "inputSchema": input_schema,
-            "cli": { "command": command, "args": args_template },
+            "cli": { "command": spec.name, "args": args_template },
             "outputFields": output_fields,
         })
     }
@@ -4709,6 +4712,17 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
     // tests/mcp_tool_annotations_contract.rs 가 실물 출력으로 대조한다.
     for definition in &mut tools {
         definition["annotations"] = derive_mcp_tool_annotations(definition);
+    }
+    let wired_commands: std::collections::BTreeSet<&str> = tools
+        .iter()
+        .filter_map(|definition| definition["cli"]["command"].as_str())
+        .collect();
+    for spec in cli::catalog::commands().iter().filter(|spec| spec.mcp) {
+        assert!(
+            wired_commands.contains(spec.name),
+            "catalog MCP 참여 명령에 도구가 없습니다: {}",
+            spec.name
+        );
     }
     tools
 }
