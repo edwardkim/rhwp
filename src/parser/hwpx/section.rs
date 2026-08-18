@@ -2258,7 +2258,14 @@ fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     // table.attr bit0 for some inline-table decisions. Only mirror the minimum
     // renderer compatibility bit here; the HWP5 storage attr is packed later by
     // the HWP adapter.
-    table.attr = if table.common.treat_as_char && table.common.flow_with_text {
+    //
+    // 순수 HWPX 의 TAC 판정은 `treatAsChar && flowWithText` (#3930) 다. HWP5 원본은
+    // CTRL_HEADER bit0 = treatAsChar 만으로 TAC 이다. HWP5-origin HWPX 가 후자
+    // 계약을 잃으면 synam-001 문단 237 같은 flowWithText=0 TAC 표가 블록
+    // RowBreak 로 쪼개져 35→36 이 된다 (#3521).
+    table.attr = if table.common.treat_as_char
+        && (table.common.flow_with_text || HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get()))
+    {
         0x01
     } else {
         0

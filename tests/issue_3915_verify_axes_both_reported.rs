@@ -13,11 +13,12 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-/// 쪽수 축만 실패하는 표본 — 35→36쪽.
+/// 쪽수 축만 실패하는 표본 — 151→152쪽.
 ///
-/// [#4677] `synam-001.hwp`의 이전 IR 차이는 책갈피 위치 보정으로 해소되었지만, 저장 HWPX의
-/// 쪽수 차이는 여전히 남아 있다.
-const PAGE_FAIL_SAMPLE: &str = "samples/synam-001.hwp";
+/// [#3521] `synam-001.hwp` 쪽수 왕복이 정상화되면 이 축의 실패 표본으로 쓰지 않는다
+/// (#3820·#4916 때 교체와 같은 관례). `hwp3-sample11.hwp`(#3737) 는 IR 차이 0,
+/// 쪽수만 어긋난다.
+const PAGE_FAIL_SAMPLE: &str = "samples/hwp3-sample11.hwp";
 /// IR 축만 실패하고 쪽수는 안정적인 표본 — 16쪽 유지, IR 차이 1건(선두
 /// char_shapes 경계 시프트 — 본 PR 의 말미 경계 수정(#3532)으로도 남는 별개 클래스).
 ///
