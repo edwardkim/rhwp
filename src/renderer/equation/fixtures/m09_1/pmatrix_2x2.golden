@@ -1,0 +1,43 @@
+# M09-1 equation golden — current-engine lock
+command: PMATRIX
+script: PMATRIX{a & b # c & d}
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Text(
+                "a",
+            ),
+            Text(
+                "b",
+            ),
+        ],
+        [
+            Text(
+                "c",
+            ),
+            Text(
+                "d",
+            ),
+        ],
+    ],
+    style: Paren,
+}
+
+=== layout ===
+Matrix(Paren) x=0.0000 y=0.0000 w=59.1000 h=46.0000 bl=23.0000
+  row0:
+    Text("a") x=10.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+    Text("b") x=37.5500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+  row1:
+    Text("c") x=10.0000 y=26.0000 w=11.5500 h=20.0000 bl=16.0000
+    Text("d") x=37.5500 y=26.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M5.40,0.00 C0.30,8.28 0.30,37.72 5.40,46.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<path d="M53.70,0.00 C58.80,8.28 58.80,37.72 53.70,46.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<text x="10.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<text x="37.55" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">b</text>
+<text x="10.00" y="42.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">c</text>
+<text x="37.55" y="42.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">d</text>
