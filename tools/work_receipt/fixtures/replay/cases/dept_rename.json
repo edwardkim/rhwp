@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "dept_rename",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "부서개칭",
+  "title": "총무과→운영지원과",
+  "why": "과 단위 직제 개편은 발신 명의만 바꾼다. 기관 전체 개칭과 구분하려고 별 케이스로 둔다.",
+  "notes": "같은 문서 가족, 다른 find 축",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/dept-rename.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/dept-rename.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "총무과",
+        "replace": "운영지원과"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/dept-rename.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"총무과\",\"replace\":\"운영지원과\"}]}",
+  "planSha256": "925bf5163eda4671d4e6ae9d7aeb02e0cb837b88c672800ec4391423b795c95c",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "e87de03266be210ec6cdb348fae10654e1372766cc8bb2a061fb72bafb64c8f4",
+    "planSha256": "925bf5163eda4671d4e6ae9d7aeb02e0cb837b88c672800ec4391423b795c95c",
+    "outputSha256": "82d8fe391805c77d583dd59bbe0bb4780e35f1326a857a3c7648fb8640ad5fa5",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "82d8fe391805c77d583dd59bbe0bb4780e35f1326a857a3c7648fb8640ad5fa5"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

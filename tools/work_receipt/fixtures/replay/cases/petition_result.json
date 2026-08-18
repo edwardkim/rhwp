@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "petition_result",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "민원",
+  "genre": "처리결과",
+  "title": "처리결과 검토중→수용",
+  "why": "종결 표기. 접수번호와 다른 칸.",
+  "notes": "처리결과 축",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/petition-result.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/petition-result.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "처리결과 검토중",
+        "replace": "처리결과 수용"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/petition-result.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"처리결과 검토중\",\"replace\":\"처리결과 수용\"}]}",
+  "planSha256": "7b2bebd11b5d961f21b7c66ddecfaa49ab04d192f67bc2e691f7d1f9f2f2aaf4",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "d79745421cf7ece6f1dacc7ea6500a2e053070b33c2a8353b3d32ff002d3e7f8",
+    "planSha256": "7b2bebd11b5d961f21b7c66ddecfaa49ab04d192f67bc2e691f7d1f9f2f2aaf4",
+    "outputSha256": "d728a5cac036fb7168c330f726a9cc0210e2e98fac90bd531985dab87d115966",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "d728a5cac036fb7168c330f726a9cc0210e2e98fac90bd531985dab87d115966"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

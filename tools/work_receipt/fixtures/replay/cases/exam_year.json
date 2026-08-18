@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "exam_year",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "시험",
+  "genre": "학년도",
+  "title": "2025학년도→2026학년도",
+  "why": "시험지 표지 학년도. HWPX 시험 샘플을 쓴다.",
+  "notes": "ext=hwpx",
+  "input": "samples/exam_kor.hwpx",
+  "output": "out/exam-year.hwpx",
+  "ext": "hwpx",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/exam_kor.hwpx",
+    "output": "out/exam-year.hwpx",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "2025학년도",
+        "replace": "2026학년도"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/exam_kor.hwpx\",\"output\":\"out/exam-year.hwpx\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"2025학년도\",\"replace\":\"2026학년도\"}]}",
+  "planSha256": "3adf4063d44a904fb8088bb671978fb817796df82cdd2325a74a0ee7120c9148",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/exam_kor.hwpx",
+    "inputSha256": "2adc69409a1657aea63fe14bfbf0e5daef483495b810dd4ac013e94b4a54d026",
+    "planSha256": "3adf4063d44a904fb8088bb671978fb817796df82cdd2325a74a0ee7120c9148",
+    "outputSha256": "4cd7adf0f6a673a70f7a1f2aee3f8be25a27b66bf2796d406066116fd1023639",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "4cd7adf0f6a673a70f7a1f2aee3f8be25a27b66bf2796d406066116fd1023639"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

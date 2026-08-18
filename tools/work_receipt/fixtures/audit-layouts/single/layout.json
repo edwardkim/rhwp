@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptAuditLayout",
+  "ident": "single",
+  "title": "단건",
+  "why": "캡슐 1개 전건 재현. rate=1.0.",
+  "notes": "최소 성공 폴더",
+  "members": [
+    "notice_year"
+  ],
+  "ignored": [],
+  "recursive": false,
+  "exit": 0,
+  "required": [
+    "schemaVersion",
+    "root",
+    "total",
+    "reproduced",
+    "failed",
+    "reproducedRate"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "root": "fixtures/audit-layouts/single",
+    "total": 1,
+    "reproduced": 1,
+    "failed": [],
+    "reproducedRate": 1.0
+  },
+  "command": [
+    "audit",
+    "fixtures/audit-layouts/single",
+    "--json"
+  ],
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

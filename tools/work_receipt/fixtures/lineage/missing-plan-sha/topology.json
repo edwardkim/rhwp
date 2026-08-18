@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptLineageTopology",
+  "ident": "missing-plan-sha",
+  "title": "planSha256 누락",
+  "why": "shallow 도 계획 해시를 검사한다.",
+  "notes": "shallow fail-closed",
+  "depth": 1,
+  "valid": false,
+  "brokenAxis": "planSha256",
+  "deep": false,
+  "exit": 3,
+  "required": [
+    "schemaVersion",
+    "head",
+    "depth",
+    "valid",
+    "brokenAt",
+    "links"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "head": "b.capsule.json",
+    "depth": 1,
+    "valid": false,
+    "brokenAt": "b.capsule.json",
+    "links": [
+      {
+        "capsule": "b.capsule.json",
+        "parentOk": null,
+        "lineageOk": null,
+        "reproduced": null,
+        "error": "receipt.planSha256 가 없거나 64자리 16진이 아님"
+      }
+    ]
+  },
+  "command": [
+    "lineage",
+    "b.capsule.json",
+    "--json"
+  ],
+  "axes": {
+    "parentOk": "부모 파일 바이트 == 자식이 기록한 parent.sha256",
+    "lineageOk": "부모 receipt.outputSha256 == 자식 receipt.inputSha256",
+    "reproduced": "--deep 일 때만 임시 재실행 해시 대조"
+  },
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

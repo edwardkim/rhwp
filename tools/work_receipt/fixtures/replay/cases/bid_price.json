@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "bid_price",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "입찰",
+  "genre": "예정가격",
+  "title": "예정가격 표기 정정",
+  "why": "예정가격 9억→8억. 금액 콤마 케이스와 다른 문서 가족.",
+  "notes": "입찰 금액 축",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/bid-price.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/bid-price.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "예정가격 900,000,000원",
+        "replace": "예정가격 800,000,000원"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/bid-price.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"예정가격 900,000,000원\",\"replace\":\"예정가격 800,000,000원\"}]}",
+  "planSha256": "8d4246b06263ecfb592f57ce0a0891cd219134e11f9e714fb52dd1a175784f17",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "9677d014ee178da9f55a69d8fc6d8a79b6f18ec3f40fefeee81a6ddf1ee3d4fe",
+    "planSha256": "8d4246b06263ecfb592f57ce0a0891cd219134e11f9e714fb52dd1a175784f17",
+    "outputSha256": "a3b4626dbb42f15e1239780d1ebe5977cb7434f1e487a4bde034da6198530022",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "a3b4626dbb42f15e1239780d1ebe5977cb7434f1e487a4bde034da6198530022"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

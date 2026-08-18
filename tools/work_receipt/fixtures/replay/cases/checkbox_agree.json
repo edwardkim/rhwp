@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "checkbox_agree",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "신청서",
+  "genre": "동의체크",
+  "title": "개인정보 수집 동의 체크",
+  "why": "set_checkbox 는 plan_schema 허용 action. 체크 한 칸이 1 step.",
+  "notes": "boolean checked",
+  "input": "samples/basic/blank2010.hwp",
+  "output": "out/checkbox-agree.hwp",
+  "ext": "hwp",
+  "actions": [
+    "set_checkbox"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/blank2010.hwp",
+    "output": "out/checkbox-agree.hwp",
+    "steps": [
+      {
+        "action": "set_checkbox",
+        "name": "개인정보수집동의",
+        "checked": true
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/blank2010.hwp\",\"output\":\"out/checkbox-agree.hwp\",\"steps\":[{\"action\":\"set_checkbox\",\"name\":\"개인정보수집동의\",\"checked\":true}]}",
+  "planSha256": "83926cfd5aa02094142785d37b43d82758074d3a3bb5378fd65731f4ccc6b9ed",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/blank2010.hwp",
+    "inputSha256": "411e57c3409ba984973f4a177e2a162eed54a3b28b7d11d401b87508c2f7e313",
+    "planSha256": "83926cfd5aa02094142785d37b43d82758074d3a3bb5378fd65731f4ccc6b9ed",
+    "outputSha256": "ee02a755c162753f97e544cb8241686dc2b805f69bca1d50dcfea404094a2c67",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "ee02a755c162753f97e544cb8241686dc2b805f69bca1d50dcfea404094a2c67"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

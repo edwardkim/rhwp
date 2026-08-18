@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/tilde-range.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "1~3쪽",
+        "replace": "1-3쪽"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/tilde-range.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"1~3쪽\",\"replace\":\"1-3쪽\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "3131b6f3e3ddfa5d26d50670deee639f51f8a5c143cc75ad4276b4aded80b68a",
+    "planSha256": "51b36dcaad69f47dd43c48ed13cf55888193f53228737d9e12baee1ba014a73c",
+    "outputSha256": "a07b8a4620ee721aa0e0cea4b9ec9c2fa89b4d43565dc3cc1b573407523948f3",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

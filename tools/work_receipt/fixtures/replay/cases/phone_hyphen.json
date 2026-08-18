@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "phone_hyphen",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "전화형식",
+  "title": "0210002114→02-2100-2114",
+  "why": "민원 안내 전화번호 하이픈 정규화. 숫자만 바뀌지 않고 구분자가 생기므로 바이트가 길어진다.",
+  "notes": "출력 바이트 길이 변화는 해시 계약에 영향 없음",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/phone-hyphen.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/phone-hyphen.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "0210002114",
+        "replace": "02-2100-2114"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/phone-hyphen.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"0210002114\",\"replace\":\"02-2100-2114\"}]}",
+  "planSha256": "11323bcdca02dbbaee8a42d92ff5bb75607a83ba5ad1b281833ab9741a5c3808",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "0f855307e54a9849dac490a02051fc267d342696955372fcaa4880cc2f199aa7",
+    "planSha256": "11323bcdca02dbbaee8a42d92ff5bb75607a83ba5ad1b281833ab9741a5c3808",
+    "outputSha256": "eaaac7a0721909670c07f7e08ab8febf2b0c5ea015fa6383a0fcf4c7d3418699",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "eaaac7a0721909670c07f7e08ab8febf2b0c5ea015fa6383a0fcf4c7d3418699"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

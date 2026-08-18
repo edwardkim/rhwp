@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptLineageTopology",
+  "ident": "head-missing",
+  "title": "머리 파일 없음",
+  "why": "exit 1, stdout 0. 봉투 없음.",
+  "notes": "IO vs 판단",
+  "depth": 0,
+  "valid": false,
+  "brokenAxis": "head_io",
+  "deep": false,
+  "exit": 1,
+  "required": [
+    "schemaVersion",
+    "head",
+    "depth",
+    "valid",
+    "brokenAt",
+    "links"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "head": null,
+    "depth": 0,
+    "valid": false,
+    "brokenAt": null,
+    "links": []
+  },
+  "command": [
+    "lineage",
+    "HEAD",
+    "--json"
+  ],
+  "axes": {
+    "parentOk": "부모 파일 바이트 == 자식이 기록한 parent.sha256",
+    "lineageOk": "부모 receipt.outputSha256 == 자식 receipt.inputSha256",
+    "reproduced": "--deep 일 때만 임시 재실행 해시 대조"
+  },
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

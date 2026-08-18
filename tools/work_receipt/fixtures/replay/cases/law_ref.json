@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "law_ref",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "법령",
+  "genre": "조문인용",
+  "title": "국가공무원법 제69조→제68조",
+  "why": "잘못된 조문 인용을 고친다. 한 글자 차이가 산출 해시를 바꾼다.",
+  "notes": "조문 번호는 데이터이지 서명이 아니다",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/law-ref.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/law-ref.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "국가공무원법 제69조",
+        "replace": "국가공무원법 제68조"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/law-ref.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"국가공무원법 제69조\",\"replace\":\"국가공무원법 제68조\"}]}",
+  "planSha256": "dcbda5c1c43b5172129ec2222c4323e3e69c54976839a51a0a315c4580f8188c",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "b28a37b72998999fa839ef984ecbaab3445c808b29808bf1c21940b954bd21e4",
+    "planSha256": "dcbda5c1c43b5172129ec2222c4323e3e69c54976839a51a0a315c4580f8188c",
+    "outputSha256": "4da02c73cc14a0a481691a5af5154467d7a588d6acd1d7c02a93f12ac0f88421",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "4da02c73cc14a0a481691a5af5154467d7a588d6acd1d7c02a93f12ac0f88421"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

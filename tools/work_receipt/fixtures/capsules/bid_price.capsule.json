@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/bid-price.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "예정가격 900,000,000원",
+        "replace": "예정가격 800,000,000원"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/bid-price.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"예정가격 900,000,000원\",\"replace\":\"예정가격 800,000,000원\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "9677d014ee178da9f55a69d8fc6d8a79b6f18ec3f40fefeee81a6ddf1ee3d4fe",
+    "planSha256": "8d4246b06263ecfb592f57ce0a0891cd219134e11f9e714fb52dd1a175784f17",
+    "outputSha256": "a3b4626dbb42f15e1239780d1ebe5977cb7434f1e487a4bde034da6198530022",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

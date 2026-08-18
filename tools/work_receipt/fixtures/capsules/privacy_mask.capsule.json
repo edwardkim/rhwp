@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/privacy-phone.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "02-2100-2114",
+        "replace": "02-****-2114"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/privacy-phone.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"02-2100-2114\",\"replace\":\"02-****-2114\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "fd4180d1b50bdef2b11c1a3cb9d20a431aff7d9d005545f5bf80ed7e500f3e58",
+    "planSha256": "a7acca73103f6d4856f9e6670b73e2f7b907f328e8c5d95c1cd27a28a1a7b08d",
+    "outputSha256": "200bffd24fa54ed2897c67ea4b19e4e24f0aedc917a09cd5e41d3a7cffbdc892",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

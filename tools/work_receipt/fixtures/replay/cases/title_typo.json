@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "title_typo",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "오탈",
+  "title": "제목 시정→시장",
+  "why": "한글 오탈 한 글자. 제3자 verify 가 이 한 글자를 재현한다.",
+  "notes": "짧은 find — 빈 문자열 금지 계약과 반대편",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/title-typo.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/title-typo.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "시정님",
+        "replace": "시장님"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/title-typo.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"시정님\",\"replace\":\"시장님\"}]}",
+  "planSha256": "c00704fd03149faa3dd2b250200e4884a0ff1aec294e86ae686e54bd3cc35124",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "6af7a3b19800eeebe31fbcf05124bc597f3b3b5b0693f4d9a2194418b9b8bf81",
+    "planSha256": "c00704fd03149faa3dd2b250200e4884a0ff1aec294e86ae686e54bd3cc35124",
+    "outputSha256": "9983f74cbd52bba5d67693356ed5e2d809bfa7d52fce34f725a5b4f96da8ee7a",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "9983f74cbd52bba5d67693356ed5e2d809bfa7d52fce34f725a5b4f96da8ee7a"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

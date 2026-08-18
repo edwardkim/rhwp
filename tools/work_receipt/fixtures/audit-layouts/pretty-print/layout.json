@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptAuditLayout",
+  "ident": "pretty-print",
+  "title": "포맷터 변조",
+  "why": "에디터가 공백을 넣으면 부모 해시가 깨진다. audit 는 재실행이라 계획만 같으면 통과할 수 있다 — lineage parentOk 와 다른 축.",
+  "notes": "audit 는 파일 바이트가 아니라 재실행",
+  "members": [
+    "pretty_print"
+  ],
+  "ignored": [],
+  "recursive": false,
+  "exit": 0,
+  "required": [
+    "schemaVersion",
+    "root",
+    "total",
+    "reproduced",
+    "failed",
+    "reproducedRate"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "root": "fixtures/audit-layouts/pretty-print",
+    "total": 1,
+    "reproduced": 1,
+    "failed": [],
+    "reproducedRate": 1.0
+  },
+  "command": [
+    "audit",
+    "fixtures/audit-layouts/pretty-print",
+    "--json"
+  ],
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}
