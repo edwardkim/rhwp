@@ -1,0 +1,26 @@
+{
+  "source": "samples/field-01.hwp",
+  "dryRun": false,
+  "filledCount": 1,
+  "filled": [
+    {
+      "name": "회사명",
+      "occurrence": 0,
+      "value": "페타플로"
+    }
+  ],
+  "notFound": [
+    "없는필드"
+  ],
+  "ambiguous": [],
+  "output": "out/field-filled.hwp",
+  "outputFormat": "hwp5",
+  "verify": null,
+  "schemaVersion": "1.0",
+  "_skillMeta": {
+    "exit": 0,
+    "branch": "incomplete-notFound",
+    "layer": "edit-fill-fields",
+    "complete": false
+  }
+}
