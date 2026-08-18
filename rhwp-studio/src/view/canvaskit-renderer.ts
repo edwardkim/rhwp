@@ -2968,7 +2968,17 @@ export class CanvasKitLayerRenderer {
       return;
     }
     if (rotation !== 0) {
-      this.unsupportedOps.add(`${opType}:rotatedText`);
+      if (opType !== 'charOverlap') {
+        this.unsupportedOps.add(`${opType}:rotatedText`);
+        return;
+      }
+      canvas.save();
+      try {
+        canvas.rotate(rotation, bbox.x + bbox.width / 2, bbox.y + bbox.height / 2);
+        draw(bbox.x, bbox.y);
+      } finally {
+        canvas.restore();
+      }
       return;
     }
     draw(bbox.x, bbox.y);

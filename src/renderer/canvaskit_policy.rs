@@ -1461,8 +1461,6 @@ impl CanvasKitReplayPlanBuilder {
                     Some("invalidGeometry")
                 } else if run.is_vertical {
                     Some("verticalText")
-                } else if run.rotation.abs() > f64::EPSILON {
-                    Some("rotatedText")
                 } else if run
                     .char_overlap
                     .as_ref()
@@ -2955,6 +2953,23 @@ mod tests {
         assert!(vertical_plan
             .items
             .iter()
+            .all(|item| item.status == CanvasKitReplayStatus::Direct && item.detail.is_none()));
+
+        // 회전 char-overlap 마커는 이미 위치 기반 벡터이므로 rotatedText 로 폴백하지 않는다.
+        let mut rotated = text_run("AB");
+        rotated.rotation = 15.0;
+        rotated.char_overlap = Some(CharOverlapInfo {
+            border_type: 1,
+            inner_char_size: 100,
+        });
+        let rotated_tree = tree_with_ops(vec![PaintOp::char_overlap(bbox(), rotated)]);
+        let rotated_plan =
+            analyze_canvaskit_replay_plan(&rotated_tree, CanvasKitReplayMode::Default);
+        assert_eq!(rotated_plan.summary.direct_items, 1);
+        assert_eq!(rotated_plan.summary.direct_required_items, 0);
+        assert!(rotated_plan
+            .items
+            .iter()
             .all(|item| { item.status == CanvasKitReplayStatus::Direct && item.detail.is_none() }));
     }
 
@@ -2978,10 +2993,6 @@ mod tests {
         vertical_mark.is_vertical = true;
         let mut rotated = text_run("A");
         rotated.rotation = 15.0;
-        rotated.char_overlap = Some(CharOverlapInfo {
-            border_type: 1,
-            inner_char_size: 100,
-        });
         rotated
             .style
             .tab_leaders
@@ -2994,14 +3005,13 @@ mod tests {
             PaintOp::char_overlap(bbox(), invalid_overlap),
             PaintOp::tab_leader(bbox(), invalid_leader),
             PaintOp::text_control_mark(bbox(), vertical_mark),
-            PaintOp::char_overlap(bbox(), rotated.clone()),
             PaintOp::text_control_mark(bbox(), rotated.clone()),
             PaintOp::tab_leader(bbox(), rotated.clone()),
             PaintOp::text_decoration(bbox(), rotated, TextDecorationKind::Underline),
         ]);
 
         let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
-        assert_eq!(plan.summary.direct_required_items, 7);
+        assert_eq!(plan.summary.direct_required_items, 6);
         assert_eq!(plan.items[0].detail.as_deref(), Some("invalidCharOverlap"));
         assert_eq!(plan.items[1].detail.as_deref(), Some("invalidTabLeader"));
         assert_eq!(plan.items[2].detail.as_deref(), Some("verticalText"));
