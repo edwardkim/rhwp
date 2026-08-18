@@ -280,5 +280,11 @@ border의 stroke interval이 ancestor `body-clip-*` 또는 `cell-clip-*`과 만�
   **순위 + 사람 감사**로 쓴다.
 - `text-report.tsv`는 공백과 문자 순서를 무시하고 NFC 정규화한 문자 멀티셋을 비교한다.
   `reference_only`은 소실 후보, `svg_only`는 과잉 후보이며 둘이 함께 나타나면 치환 후보로 본다.
+  분류 함수는 `classify_text_layer_delta` 이고, 픽스처·표는
+  `python tools/fidelity_compare/fatten_text_layer.py` 가
+  `tables/{loss,excess,substitution,match}.tsv` 와
+  `fixtures/text_layer/cases/` 로 다시 쓴다. `--text-only` 경로와
+  산출 계약은 `fixtures/text_only_paths/` · `transcripts/text_only_paths.md` 에
+  고정한다. 작업 기록은 [WORKING.md](WORKING.md).
 - 배경 셸에서 한글 argv/경로는 cp949 로 깨질 수 있어 키·글롭만 쓴다.
 - Chrome 캡처는 실패 시 한 번 재시도하고 각 실패의 exit code와 stderr를 표면화한다.

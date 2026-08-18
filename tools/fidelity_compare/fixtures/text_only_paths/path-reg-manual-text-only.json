@@ -1,0 +1,49 @@
+{
+  "id": "path-reg-manual-text-only",
+  "schema": "rhwp.fidelity_compare.text_only_path.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "title": "등록 키 manual / text-only",
+  "why": "기준 PDF: pdf/ 보존 한컴 2024 출력 를 --text-only 로 연다.",
+  "argv": [
+    "manual",
+    "0",
+    "2",
+    "--text-only",
+    "--out-dir",
+    "/tmp/rhwp-fidelity-manual"
+  ],
+  "mode": "registered",
+  "exportAllSvg": false,
+  "layoutLedger": false,
+  "expectsError": false,
+  "errorNeedle": "",
+  "error": "",
+  "parsed": {
+    "key": "manual",
+    "startPage": 0,
+    "endPage": 2,
+    "textOnly": true,
+    "exportAllSvg": false,
+    "layoutLedger": false,
+    "label": null,
+    "referenceGrade": "사용자 지정 기준 PDF (provenance는 출력 파일 참조)"
+  },
+  "artifacts": [
+    "provenance.tsv",
+    "report.tsv",
+    "text-report.tsv",
+    "svg-glyph-risk-report.tsv",
+    "text-owner-shift-candidates.tsv",
+    "text-owner-sequence-candidates.tsv",
+    "page-boundary-fidelity-candidates.tsv",
+    "visible-text-excess-candidates.tsv",
+    "page-count-ledger.tsv",
+    "run-state.tsv"
+  ],
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "pixelSheets": false,
+  "candidateNotVerdict": true
+}

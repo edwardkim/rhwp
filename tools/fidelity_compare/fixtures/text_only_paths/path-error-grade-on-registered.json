@@ -1,0 +1,40 @@
+{
+  "id": "path-error-grade-on-registered",
+  "schema": "rhwp.fidelity_compare.text_only_path.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "title": "등록 키에 grade",
+  "why": "등록 fixture 는 grade 를 REG 가 가진다.",
+  "argv": [
+    "plan",
+    "0",
+    "1",
+    "--reference-grade",
+    "x",
+    "--text-only"
+  ],
+  "mode": "error",
+  "exportAllSvg": false,
+  "layoutLedger": false,
+  "expectsError": true,
+  "errorNeedle": "--reference-grade는 direct pair에서만",
+  "error": "--reference-grade는 direct pair에서만",
+  "parsed": null,
+  "artifacts": [
+    "provenance.tsv",
+    "report.tsv",
+    "text-report.tsv",
+    "svg-glyph-risk-report.tsv",
+    "text-owner-shift-candidates.tsv",
+    "text-owner-sequence-candidates.tsv",
+    "page-boundary-fidelity-candidates.tsv",
+    "visible-text-excess-candidates.tsv",
+    "page-count-ledger.tsv",
+    "run-state.tsv"
+  ],
+  "chromeRequired": false,
+  "pypdfRequired": false,
+  "pypdfium2Required": false,
+  "pixelSheets": false,
+  "candidateNotVerdict": true
+}

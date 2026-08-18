@@ -1,0 +1,54 @@
+id	kind	family	registered_key	genre	page	reference_only	svg_only	reference_only_chars	svg_only_chars	glyph_risk_count	owner_shift	sequence	visible_excess	related_issue	title
+excess-plan-cover-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	표지 연도·기관명 — 한컴 불릿 과잉
+excess-plan-goal-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	추진 목표 문단 — 한컴 불릿 과잉
+excess-plan-table-head-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	실적 표 헤더 — 한컴 불릿 과잉
+excess-plan-budget-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	예산 숫자 행 — 한컴 불릿 과잉
+excess-plan-footnote-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	각주 표지 — 한컴 불릿 과잉
+excess-plan-caption-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	그림 캡션 — 한컴 불릿 과잉
+match-plan-pua-circled	match	plan	plan	업무계획	1	0	0	-	-	4	-	-	-	#3385	원문자 과제 번호 — 동일 텍스트
+match-reorder-plan-pua-circled	match	plan	plan	업무계획	1	0	0	-	-	4	-	-	-	#3385	원문자 과제 번호 — 어절 순서만 변경
+excess-plan-pua-circled-00	excess	plan	plan	업무계획	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	4	-	-	-	#3385	원문자 과제 번호 — 반복 머리글이 SVG 에만 붙음
+excess-plan-pua-circled-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	5	-	-	-	#3385	원문자 과제 번호 — 한컴 불릿 과잉
+sub-pua-fffd-plan-pua-circled	substitution	plan	plan	업무계획	1	4	4	U+F02B1:\U000f02b1×1,U+F02B2:\U000f02b2×1,U+F02B3:\U000f02b3×1,U+F02B4:\U000f02b4×1	U+FFFD:\ufffd×4	4	-	-	-	#3385	원문자 과제 번호 — PUA→U+FFFD
+excess-manual-toc-01	excess	manual	manual	장문 편람	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	편람 목차 — 한컴 불릿 과잉
+excess-manual-article-01	excess	manual	manual	장문 편람	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	조문 본문 — 한컴 불릿 과잉
+excess-manual-note-01	excess	manual	manual	장문 편람	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	해설 각주 — 한컴 불릿 과잉
+excess-manual-long-01	excess	manual	manual	장문 편람	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	장문 해설 — 한컴 불릿 과잉
+excess-bunjang-header-01	excess	bunjang	bunjang	표 중심	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	거래 명세 헤더 — 한컴 불릿 과잉
+excess-bunjang-row-01	excess	bunjang	bunjang	표 중심	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	거래 한 행 — 한컴 불릿 과잉
+excess-bunjang-footer-01	excess	bunjang	bunjang	표 중심	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	표 하단 합계 — 한컴 불릿 과잉
+excess-korexam-stem-01	excess	korexam	korexam	법학적성 언어이해	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	지문 도입 — 한컴 불릿 과잉
+excess-korexam-choice-01	excess	korexam	korexam	법학적성 언어이해	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	선지 ①~⑤ — 한컴 불릿 과잉
+excess-korexam-header-01	excess	korexam	korexam	법학적성 언어이해	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	시험 머리글 — 한컴 불릿 과잉
+excess-math-item-01	excess	math	math	수학 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	문항 본문 — 한컴 불릿 과잉
+excess-math-choice-01	excess	math	math	수학 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	수식 선지 — 한컴 불릿 과잉
+excess-math-caption-01	excess	math	math	수학 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	그래프 캡션 — 한컴 불릿 과잉
+excess-eng-passage-01	excess	eng	eng	영어 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	영어 지문 — 한컴 불릿 과잉
+excess-eng-question-01	excess	eng	eng	영어 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	영어 문항 — 한컴 불릿 과잉
+excess-eng-url-01	excess	eng	eng	영어 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	출처 URL — 한컴 불릿 과잉
+excess-fn-early-01	excess	footnote	plan	각주	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	각주 본문 이르게 — 한컴 불릿 과잉
+excess-fn-late-01	excess	footnote	manual	각주	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	각주 본문 늦게 — 한컴 불릿 과잉
+excess-table-first-row-01	excess	table	plan	표 조각	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	표 첫 줄 중복 — 한컴 불릿 과잉
+excess-table-cell-01	excess	table	plan	표 조각	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	셀 본문 — 한컴 불릿 과잉
+excess-citation-law-01	excess	citation	manual	법령 인용	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	법령명+조문 — 한컴 불릿 과잉
+excess-citation-url-01	excess	citation	manual	법령 인용	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	고시 URL — 한컴 불릿 과잉
+match-pua-bullet	match	pua	plan	원문자	1	0	0	-	-	1	-	-	-	#2007	한컴 전용 불릿 — 동일 텍스트
+match-reorder-pua-bullet	match	pua	plan	원문자	1	0	0	-	-	1	-	-	-	#2007	한컴 전용 불릿 — 어절 순서만 변경
+excess-pua-bullet-00	excess	pua	plan	원문자	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	1	-	-	-	#2007	한컴 전용 불릿 — 반복 머리글이 SVG 에만 붙음
+excess-pua-bullet-01	excess	pua	plan	원문자	1	0	1	-	U+F02FB:\U000f02fb×1	2	-	-	-	#2007	한컴 전용 불릿 — 한컴 불릿 과잉
+sub-pua-fffd-pua-bullet	substitution	pua	plan	원문자	1	1	1	U+F02FB:\U000f02fb×1	U+FFFD:\ufffd×1	1	-	-	-	#2007	한컴 전용 불릿 — PUA→U+FFFD
+match-pua-range	match	pua	plan	원문자	1	0	0	-	-	14	-	-	-	#3385	원문자 전 구간 — 동일 텍스트
+match-ws-pua-range	match	pua	plan	원문자	1	0	0	-	-	14	-	-	-	#3385	원문자 전 구간 — 공백만 다름
+match-nfd-pua-range	match	pua	plan	원문자	1	0	0	-	-	14	-	-	-	#3385	원문자 전 구간 — NFD 한글
+excess-pua-range-00	excess	pua	plan	원문자	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	14	-	-	-	#3385	원문자 전 구간 — 반복 머리글이 SVG 에만 붙음
+excess-pua-range-01	excess	pua	plan	원문자	1	0	1	-	U+F02FB:\U000f02fb×1	15	-	-	-	#3385	원문자 전 구간 — 한컴 불릿 과잉
+sub-pua-fffd-pua-range	substitution	pua	plan	원문자	1	14	14	U+F02B1:\U000f02b1×1,U+F02B2:\U000f02b2×1,U+F02B3:\U000f02b3×1,U+F02B4:\U000f02b4×1,U+F02B5:\U000f02b5×1,U+F02B6:\U000f02b6×1,U+F02B7:\U000f02b7×1,U+F02B8:\U000f02b8×1,U+F02B9:\U000f02b9×1,U+F02BA:\U000f02ba×1,U+F02BB:\U000f02bb×1,U+F02BC:\U000f02bc×1,U+F02BD:\U000f02bd×1,U+F02BE:\U000f02be×1	U+FFFD:\ufffd×14	14	-	-	-	#3385	원문자 전 구간 — PUA→U+FFFD
+excess-header-repeat-01	excess	header	plan	머리글	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	반복 머리글 — 한컴 불릿 과잉
+excess-page-no-01	excess	header	plan	머리글	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	쪽번호 — 한컴 불릿 과잉
+excess-compat-jamo-01	excess	norm	manual	정규화	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	호환 자모 — 한컴 불릿 과잉
+excess-nbsp-title-01	excess	norm	plan	정규화	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	공백 변형 — 한컴 불릿 과잉
+excess-fullwidth-year-01	excess	norm	korexam	정규화	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	전각 연도 — 한컴 불릿 과잉
+excess-hyphen-range-01	excess	norm	plan	정규화	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	구간 하이픈 — 한컴 불릿 과잉
+excess-issue-3738-head-01	excess	direct	plan	direct pair	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3738	이슈 3738 머리 — 한컴 불릿 과잉
+excess-issue-3738-tail-01	excess	direct	plan	direct pair	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3738	이슈 3738 꼬리 — 한컴 불릿 과잉
+excess-overflow-body-01	excess	overflow	manual	visible excess	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	본문+다음쪽 선점 — 한컴 불릿 과잉

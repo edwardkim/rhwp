@@ -1,0 +1,91 @@
+id	kind	family	registered_key	genre	page	reference_only	svg_only	reference_only_chars	svg_only_chars	glyph_risk_count	owner_shift	sequence	visible_excess	related_issue	title
+match-plan-cover	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	표지 연도·기관명 — 동일 텍스트
+match-ws-plan-cover	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	표지 연도·기관명 — 공백만 다름
+match-nfd-plan-cover	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	표지 연도·기관명 — NFD 한글
+match-reorder-plan-cover	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	표지 연도·기관명 — 어절 순서만 변경
+match-plan-goal	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	추진 목표 문단 — 동일 텍스트
+match-reorder-plan-goal	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	추진 목표 문단 — 어절 순서만 변경
+match-plan-table-head	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	실적 표 헤더 — 동일 텍스트
+match-reorder-plan-table-head	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	실적 표 헤더 — 어절 순서만 변경
+match-plan-budget	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	예산 숫자 행 — 동일 텍스트
+match-reorder-plan-budget	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	예산 숫자 행 — 어절 순서만 변경
+match-plan-footnote	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	각주 표지 — 동일 텍스트
+match-reorder-plan-footnote	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	각주 표지 — 어절 순서만 변경
+match-plan-caption	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	그림 캡션 — 동일 텍스트
+match-reorder-plan-caption	match	plan	plan	업무계획	1	0	0	-	-	0	-	-	-	#3389	그림 캡션 — 어절 순서만 변경
+match-plan-pua-circled	match	plan	plan	업무계획	1	0	0	-	-	4	-	-	-	#3385	원문자 과제 번호 — 동일 텍스트
+match-reorder-plan-pua-circled	match	plan	plan	업무계획	1	0	0	-	-	4	-	-	-	#3385	원문자 과제 번호 — 어절 순서만 변경
+match-manual-toc	match	manual	manual	장문 편람	1	0	0	-	-	0	-	-	-	#3389	편람 목차 — 동일 텍스트
+match-reorder-manual-toc	match	manual	manual	장문 편람	1	0	0	-	-	0	-	-	-	#3389	편람 목차 — 어절 순서만 변경
+match-manual-article	match	manual	manual	장문 편람	1	0	0	-	-	0	-	-	-	#3389	조문 본문 — 동일 텍스트
+match-ws-manual-article	match	manual	manual	장문 편람	1	0	0	-	-	0	-	-	-	#3389	조문 본문 — 공백만 다름
+match-nfd-manual-article	match	manual	manual	장문 편람	1	0	0	-	-	0	-	-	-	#3389	조문 본문 — NFD 한글
+match-reorder-manual-article	match	manual	manual	장문 편람	1	0	0	-	-	0	-	-	-	#3389	조문 본문 — 어절 순서만 변경
+match-manual-note	match	manual	manual	장문 편람	1	0	0	-	-	0	-	-	-	#3389	해설 각주 — 동일 텍스트
+match-reorder-manual-note	match	manual	manual	장문 편람	1	0	0	-	-	0	-	-	-	#3389	해설 각주 — 어절 순서만 변경
+match-manual-long	match	manual	manual	장문 편람	1	0	0	-	-	0	-	-	-	#3389	장문 해설 — 동일 텍스트
+match-reorder-manual-long	match	manual	manual	장문 편람	1	0	0	-	-	0	-	-	-	#3389	장문 해설 — 어절 순서만 변경
+match-bunjang-header	match	bunjang	bunjang	표 중심	1	0	0	-	-	0	-	-	-	#3389	거래 명세 헤더 — 동일 텍스트
+match-reorder-bunjang-header	match	bunjang	bunjang	표 중심	1	0	0	-	-	0	-	-	-	#3389	거래 명세 헤더 — 어절 순서만 변경
+match-bunjang-row	match	bunjang	bunjang	표 중심	1	0	0	-	-	0	-	-	-	#3389	거래 한 행 — 동일 텍스트
+match-reorder-bunjang-row	match	bunjang	bunjang	표 중심	1	0	0	-	-	0	-	-	-	#3389	거래 한 행 — 어절 순서만 변경
+match-bunjang-footer	match	bunjang	bunjang	표 중심	1	0	0	-	-	0	-	-	-	#3389	표 하단 합계 — 동일 텍스트
+match-reorder-bunjang-footer	match	bunjang	bunjang	표 중심	1	0	0	-	-	0	-	-	-	#3389	표 하단 합계 — 어절 순서만 변경
+match-korexam-stem	match	korexam	korexam	법학적성 언어이해	1	0	0	-	-	0	-	-	-	#3389	지문 도입 — 동일 텍스트
+match-reorder-korexam-stem	match	korexam	korexam	법학적성 언어이해	1	0	0	-	-	0	-	-	-	#3389	지문 도입 — 어절 순서만 변경
+match-korexam-choice	match	korexam	korexam	법학적성 언어이해	1	0	0	-	-	0	-	-	-	#3389	선지 ①~⑤ — 동일 텍스트
+match-reorder-korexam-choice	match	korexam	korexam	법학적성 언어이해	1	0	0	-	-	0	-	-	-	#3389	선지 ①~⑤ — 어절 순서만 변경
+match-korexam-header	match	korexam	korexam	법학적성 언어이해	1	0	0	-	-	0	-	-	-	#3389	시험 머리글 — 동일 텍스트
+match-reorder-korexam-header	match	korexam	korexam	법학적성 언어이해	1	0	0	-	-	0	-	-	-	#3389	시험 머리글 — 어절 순서만 변경
+match-math-item	match	math	math	수학 시험	1	0	0	-	-	0	-	-	-	#3389	문항 본문 — 동일 텍스트
+match-reorder-math-item	match	math	math	수학 시험	1	0	0	-	-	0	-	-	-	#3389	문항 본문 — 어절 순서만 변경
+match-math-choice	match	math	math	수학 시험	1	0	0	-	-	0	-	-	-	#3389	수식 선지 — 동일 텍스트
+match-reorder-math-choice	match	math	math	수학 시험	1	0	0	-	-	0	-	-	-	#3389	수식 선지 — 어절 순서만 변경
+match-math-caption	match	math	math	수학 시험	1	0	0	-	-	0	-	-	-	#3389	그래프 캡션 — 동일 텍스트
+match-reorder-math-caption	match	math	math	수학 시험	1	0	0	-	-	0	-	-	-	#3389	그래프 캡션 — 어절 순서만 변경
+match-eng-passage	match	eng	eng	영어 시험	1	0	0	-	-	0	-	-	-	#3389	영어 지문 — 동일 텍스트
+match-ws-eng-passage	match	eng	eng	영어 시험	1	0	0	-	-	0	-	-	-	#3389	영어 지문 — 공백만 다름
+match-nfd-eng-passage	match	eng	eng	영어 시험	1	0	0	-	-	0	-	-	-	#3389	영어 지문 — NFD 한글
+match-reorder-eng-passage	match	eng	eng	영어 시험	1	0	0	-	-	0	-	-	-	#3389	영어 지문 — 어절 순서만 변경
+match-eng-question	match	eng	eng	영어 시험	1	0	0	-	-	0	-	-	-	#3389	영어 문항 — 동일 텍스트
+match-reorder-eng-question	match	eng	eng	영어 시험	1	0	0	-	-	0	-	-	-	#3389	영어 문항 — 어절 순서만 변경
+match-eng-url	match	eng	eng	영어 시험	1	0	0	-	-	0	-	-	-	#3389	출처 URL — 동일 텍스트
+match-fn-early	match	footnote	plan	각주	1	0	0	-	-	0	-	-	-	#3389	각주 본문 이르게 — 동일 텍스트
+match-reorder-fn-early	match	footnote	plan	각주	1	0	0	-	-	0	-	-	-	#3389	각주 본문 이르게 — 어절 순서만 변경
+match-fn-late	match	footnote	manual	각주	1	0	0	-	-	0	-	-	-	#3389	각주 본문 늦게 — 동일 텍스트
+match-reorder-fn-late	match	footnote	manual	각주	1	0	0	-	-	0	-	-	-	#3389	각주 본문 늦게 — 어절 순서만 변경
+match-table-first-row	match	table	plan	표 조각	1	0	0	-	-	0	-	-	-	#3389	표 첫 줄 중복 — 동일 텍스트
+match-reorder-table-first-row	match	table	plan	표 조각	1	0	0	-	-	0	-	-	-	#3389	표 첫 줄 중복 — 어절 순서만 변경
+match-table-cell	match	table	plan	표 조각	1	0	0	-	-	0	-	-	-	#3389	셀 본문 — 동일 텍스트
+match-reorder-table-cell	match	table	plan	표 조각	1	0	0	-	-	0	-	-	-	#3389	셀 본문 — 어절 순서만 변경
+match-citation-law	match	citation	manual	법령 인용	1	0	0	-	-	0	-	-	-	#3389	법령명+조문 — 동일 텍스트
+match-reorder-citation-law	match	citation	manual	법령 인용	1	0	0	-	-	0	-	-	-	#3389	법령명+조문 — 어절 순서만 변경
+match-citation-url	match	citation	manual	법령 인용	1	0	0	-	-	0	-	-	-	#3389	고시 URL — 동일 텍스트
+match-pua-bullet	match	pua	plan	원문자	1	0	0	-	-	1	-	-	-	#2007	한컴 전용 불릿 — 동일 텍스트
+match-reorder-pua-bullet	match	pua	plan	원문자	1	0	0	-	-	1	-	-	-	#2007	한컴 전용 불릿 — 어절 순서만 변경
+match-pua-range	match	pua	plan	원문자	1	0	0	-	-	14	-	-	-	#3385	원문자 전 구간 — 동일 텍스트
+match-ws-pua-range	match	pua	plan	원문자	1	0	0	-	-	14	-	-	-	#3385	원문자 전 구간 — 공백만 다름
+match-nfd-pua-range	match	pua	plan	원문자	1	0	0	-	-	14	-	-	-	#3385	원문자 전 구간 — NFD 한글
+match-header-repeat	match	header	plan	머리글	1	0	0	-	-	0	-	-	-	#3389	반복 머리글 — 동일 텍스트
+match-reorder-header-repeat	match	header	plan	머리글	1	0	0	-	-	0	-	-	-	#3389	반복 머리글 — 어절 순서만 변경
+match-page-no	match	header	plan	머리글	1	0	0	-	-	0	-	-	-	#3389	쪽번호 — 동일 텍스트
+match-compat-jamo	match	norm	manual	정규화	1	0	0	-	-	0	-	-	-	#3389	호환 자모 — 동일 텍스트
+match-ws-compat-jamo	match	norm	manual	정규화	1	0	0	-	-	0	-	-	-	#3389	호환 자모 — 공백만 다름
+match-nfd-compat-jamo	match	norm	manual	정규화	1	0	0	-	-	0	-	-	-	#3389	호환 자모 — NFD 한글
+match-reorder-compat-jamo	match	norm	manual	정규화	1	0	0	-	-	0	-	-	-	#3389	호환 자모 — 어절 순서만 변경
+match-nbsp-title	match	norm	plan	정규화	1	0	0	-	-	0	-	-	-	#3389	공백 변형 — 동일 텍스트
+match-ws-nbsp-title	match	norm	plan	정규화	1	0	0	-	-	0	-	-	-	#3389	공백 변형 — 공백만 다름
+match-nfd-nbsp-title	match	norm	plan	정규화	1	0	0	-	-	0	-	-	-	#3389	공백 변형 — NFD 한글
+match-reorder-nbsp-title	match	norm	plan	정규화	1	0	0	-	-	0	-	-	-	#3389	공백 변형 — 어절 순서만 변경
+match-fullwidth-year	match	norm	korexam	정규화	1	0	0	-	-	0	-	-	-	#3389	전각 연도 — 동일 텍스트
+match-reorder-fullwidth-year	match	norm	korexam	정규화	1	0	0	-	-	0	-	-	-	#3389	전각 연도 — 어절 순서만 변경
+match-hyphen-range	match	norm	plan	정규화	1	0	0	-	-	0	-	-	-	#3389	구간 하이픈 — 동일 텍스트
+match-ws-hyphen-range	match	norm	plan	정규화	1	0	0	-	-	0	-	-	-	#3389	구간 하이픈 — 공백만 다름
+match-nfd-hyphen-range	match	norm	plan	정규화	1	0	0	-	-	0	-	-	-	#3389	구간 하이픈 — NFD 한글
+match-reorder-hyphen-range	match	norm	plan	정규화	1	0	0	-	-	0	-	-	-	#3389	구간 하이픈 — 어절 순서만 변경
+match-issue-3738-head	match	direct	plan	direct pair	1	0	0	-	-	0	-	-	-	#3738	이슈 3738 머리 — 동일 텍스트
+match-reorder-issue-3738-head	match	direct	plan	direct pair	1	0	0	-	-	0	-	-	-	#3738	이슈 3738 머리 — 어절 순서만 변경
+match-issue-3738-tail	match	direct	plan	direct pair	1	0	0	-	-	0	-	-	-	#3738	이슈 3738 꼬리 — 동일 텍스트
+match-reorder-issue-3738-tail	match	direct	plan	direct pair	1	0	0	-	-	0	-	-	-	#3738	이슈 3738 꼬리 — 어절 순서만 변경
+match-overflow-body	match	overflow	manual	visible excess	1	0	0	-	-	0	-	-	-	#3389	본문+다음쪽 선점 — 동일 텍스트
+match-reorder-overflow-body	match	overflow	manual	visible excess	1	0	0	-	-	0	-	-	-	#3389	본문+다음쪽 선점 — 어절 순서만 변경
