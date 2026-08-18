@@ -1,0 +1,15 @@
+{
+  "producer": "tools/oracle_public/multiver_index.py",
+  "consumed_as": "data",
+  "rewritten": false,
+  "schemaVersion": "1.0",
+  "claim": "M01-5",
+  "metric": "pypdf_page_count",
+  "pixelDiff": "out_of_scope",
+  "hangulYears": ["2010", "2018", "2020", "2022", "2024"],
+  "disagreeKind": "page_count_disagree",
+  "signals": {
+    "versions_disagree": "disagreements[].kind == page_count_disagree → year tokens joined with '!'",
+    "do_not_pin_year": true
+  }
+}
