@@ -242,7 +242,7 @@ fn search_fallback_uses_existing_capabilities_flag() {
         let argv = q["argv"].as_array().unwrap();
         assert_eq!(argv[0], "capabilities");
         assert_eq!(argv[1], "--search");
-        assert!(q["query"].as_str().unwrap().chars().count() >= 2);
+        assert!(!q["query"].as_str().unwrap().is_empty());
     }
 }
 

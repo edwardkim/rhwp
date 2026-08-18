@@ -40,7 +40,7 @@ description: 한컴이 내보낸 공식 PDF와 rhwp export-svg를 쪽별로 대�
 
 ## 바이너리·venv
 
-새 `rhwp fidelity-*` 하위명령은 없다. 비교는 저장소 로컬 venv 의 Python 이
+새 `fidelity-*` 하위명령은 없다. 비교는 저장소 로컬 venv 의 Python 이
 기존 하네스를 호출한다.
 
 ```bash

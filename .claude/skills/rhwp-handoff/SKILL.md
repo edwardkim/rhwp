@@ -124,7 +124,7 @@ result.json.outcome == accepted 이고 nextAction.action == consume?
 | DocumentCore 편집 로직 발명 | 세션이 바뀌었다고 코어를 고치지 않는다. 기존 `rhwp edit`/`run` 만 | [`references/no-documentcore.md`](references/no-documentcore.md) |
 | `git add -A` | 인계 산출·샌드박스·임시 저널이 스테이징된다 | [`references/staging-named-files.md`](references/staging-named-files.md) |
 | 이름 붙은 워킹트리 checkout/훔치기 | `C:\Users\swsz9\rhwp`, `rhwp-desk*`, `rhwp-handoff`, `rhwp-scaffold-final`, `rhwp-doc-repro` 포함 | [`references/isolation-worktree.md`](references/isolation-worktree.md) |
-| 새 CLI / `rhwp handoff` 를 만들지 않는다 | 오케스트레이터는 Python 도구다. 바이너리 명령을 추가하지 않는다 | 이 문서 · [`fixtures/catalog.json`](fixtures/catalog.json) |
+| 새 CLI / `handoff` 명령을 만들지 않는다 | 오케스트레이터는 Python 도구다. 바이너리 명령을 추가하지 않는다 | 이 문서 · [`fixtures/catalog.json`](fixtures/catalog.json) |
 | work-receipt 스킬 재작성 | 단건 증명의 정본은 그 스킬이다 | [`references/work-receipt-boundary.md`](references/work-receipt-boundary.md) |
 | `gym/` 경로 | 이 스킬은 실사용 인수인계. 체육관 과제가 아니다 | 이 문서 |
 

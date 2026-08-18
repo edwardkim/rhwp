@@ -101,7 +101,7 @@ check_deps.sh [--json]
 
 살아 있는 동사는 `pdf_to_pngs.sh` → `extract_docx.py` → `crop_image.sh` →
 `rhwp build-from-ingest` → `rhwp dump` / `rhwp export-text` 뿐이다.
-`rhwp exam-from-pdf`, `rhwp ingest-exam`, `hwp_doc_exam` 같은 명령은 **없다**.
+`exam-from-pdf`, `ingest-exam`, `hwp_doc_exam` 같은 명령은 **없다**.
 
 ## 정지 규칙
 

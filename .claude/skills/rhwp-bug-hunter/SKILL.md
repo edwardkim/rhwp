@@ -12,6 +12,9 @@ description: 실사례 사용자 여정을 처음부터 끝까지 실행하고 �
 두 번째 루브릭을 여기서 만들지 않는다. gym 이 아니고, 새 CLI 를 발명하지 않으며,
 DocumentCore 를 고치지 않는다.
 
+실문서 여정의 첫 관측은 `rhwp info --json <문서>`로 남긴다. 그 다음 단계와 정답지
+대조 기준은 아래 정본 playbook을 따른다.
+
 에이전트 정의: [`.claude/agents/bug-hunter.md`](../../agents/bug-hunter.md).
 
 바로 열 장:

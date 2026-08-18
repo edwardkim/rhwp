@@ -24,7 +24,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
 | 표면 규모 | CLI 명령 **98개**(그중 `--json` 계약 **65개**, batch 축 **9개**) · MCP 도구 **181개**(무상태 163 + 세션 전용 18) |
-| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **322개** · §2 전수 사전 **330개**(자기서술 밖 실측·참조 필드 포함) |
+| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **324개** · §2 전수 사전 **331개**(자기서술 밖 실측·참조 필드 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
 **재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.
@@ -301,10 +301,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 330개 필드
+### 2-2. 전수 사전 — 331개 필드
 
-`capabilities` 의 `recordFields` 고유 **322개**와 그 밖의 실측·참조 필드를 합친
-330개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **324개**와 그 밖의 실측·참조 필드를 합친
+331개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -699,6 +699,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `overflowTolerancePx` | number | 본문 여백 밖 이탈을 overflow로 볼 최소 거리(px) | `layout-anomaly` |
 | `overlapTolerancePx` | number | 두 요소 겹침을 overlap으로 볼 최소 폭·높이(px) | `layout-anomaly` |
 | `overflowCount` | number | 전 쪽에서 확정한 overflow 신호 수 | `layout-anomaly` |
+| `offCanvasCount` | number | 전 쪽에서 캔버스 완전히 밖으로 벗어난 노드 수 | `layout-anomaly` |
 | `overlapCount` | number | 전 쪽에서 확정한 overlap 신호 수 | `layout-anomaly` |
 | `textOverlapCount` | number | 전 쪽에서 확정한 text-overlap(텍스트 런 bbox 교차) 신호 수 | `layout-anomaly` |
 | `emptyPageCount` | number | 내용이 없는 중간 쪽 가능성 신호 수 | `layout-anomaly` |

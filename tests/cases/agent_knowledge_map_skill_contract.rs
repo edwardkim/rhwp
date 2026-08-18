@@ -205,7 +205,7 @@ fn forbidden_peer_skills_named() {
     assert!(repo_root()
         .join(".claude/skills/rhwp-codex/SKILL.md")
         .is_file());
-    assert!(!repo_root()
+    assert!(repo_root()
         .join(".claude/skills/rhwp-agent-surface/SKILL.md")
         .is_file());
 }

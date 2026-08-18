@@ -108,7 +108,7 @@ ROADMAP·대전·표면 플레이북을 첫 문서로 열지 않는다.
 
 **금지 기본값**
 
-- `rhwp knowledge-map` / `rhwp map` / `rhwp field-dict` / `rhwp first-read`
+- `knowledge-map` / `map` / `field-dict` / `first-read` 전용 명령
 - gym pack / gym 과제
 - `rhwp-codex` / `rhwp-agent-surface` 본문을 이 PR 에서 재작성
 - DocumentCore 편집 로직
