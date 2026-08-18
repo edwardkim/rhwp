@@ -40,6 +40,7 @@ last_verified: 2026-07-26
 | `CAP-4893` | `rhwp-fde` | 고객 문서 증상의 실시간 접수·트리아지·응급처치·에스컬레이션·회신. 코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖 | [FDE playbook](fde_playbook.md) | [에이전트](../../.claude/agents/rhwp-fde.md) | — | active · rhwp maintainers |
 | `CAP-4900` | `rhwp-chief` | 고객 요청 큐의 상시 자율 처리(트리아지 게이트→goal 라우팅→실행→검증→회신)와 needs-agent 요청의 커버리지 재축적. 코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖 | [Chief playbook](chief_playbook.md) | [에이전트](../../.claude/agents/rhwp-chief.md) | — | active · rhwp maintainers |
 | `CAP-4903` | `rhwp-strategist` | 고객 목표+문서 코퍼스에서 코퍼스 전수 지도→좌표 박힌 근거 대장→산출물 골격→주장-근거 연결 게이트까지의 전략 산출물 파이프라인. 전략 판단은 에이전트 몫이되 근거 대장 밖 주장은 게이트가 거부. 근거 없는 전망·예측 생성·코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖 | [Strategist playbook](strategist_playbook.md) | [에이전트](../../.claude/agents/rhwp-strategist.md) | — | active · rhwp maintainers |
+| `CAP-5293` | `rhwp-mcp-session` | 실 에이전트 호스트에 rhwp mcp-serve 를 붙이고 세션(hwp_open→hwp_doc_*→hwp_close)과 무상태 도구를 고른다. 도구 정의의 단일 출처는 capabilities --mcp 와 tools/list. gym 트레이스·온보딩 닥터·안전 편집·출처 표지·문서 트리아지·새 CLI/도구 발명은 책임 밖 | [MCP 통합 가이드](mcp_integration_guide.md) | [Skill](../../.claude/skills/rhwp-mcp-session/SKILL.md) | — | active · rhwp maintainers |
 
 `—`는 해당 런타임용 어댑터가 아직 없다는 뜻이며, capability 자체가 없다는 뜻은 아니다.
 

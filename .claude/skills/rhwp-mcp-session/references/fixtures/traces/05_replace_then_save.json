@@ -1,0 +1,62 @@
+{
+  "id": "05_replace_then_save",
+  "title": "치환은 IR 누적. replacedCount 0 은 오류가 아니다.",
+  "kind": "session",
+  "lifecycle": "hwp_open → doc_* → hwp_close",
+  "absolute_paths": true,
+  "single_write_point": "hwp_doc_save",
+  "steps": [
+    {
+      "seq": 1,
+      "tool": "hwp_open",
+      "arguments": {
+        "path": "C:/abs/공문.hwp"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "docId"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 2,
+      "tool": "hwp_doc_replace_text",
+      "arguments": {
+        "docId": "doc-1",
+        "find": "구명칭",
+        "replace": "신명칭"
+      },
+      "expect_layer": "envelope",
+      "read_fields": [
+        "replacedCount",
+        "changedPages"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 3,
+      "tool": "hwp_doc_save",
+      "arguments": {
+        "docId": "doc-1",
+        "output": "C:/abs/out/공문-치환.hwp"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "output"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 4,
+      "tool": "hwp_close",
+      "arguments": {
+        "docId": "doc-1"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "closed"
+      ],
+      "notes": ""
+    }
+  ]
+}

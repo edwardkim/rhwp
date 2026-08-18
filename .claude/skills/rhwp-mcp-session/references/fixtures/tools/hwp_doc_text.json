@@ -1,0 +1,46 @@
+{
+  "name": "hwp_doc_text",
+  "kind": "session",
+  "in_capabilities_mcp": false,
+  "in_tools_list": true,
+  "family": "query",
+  "required": [
+    "docId"
+  ],
+  "optional": [
+    "page",
+    "maxChars",
+    "charOffset"
+  ],
+  "envelope_fields": [
+    "pages",
+    "truncated",
+    "omittedCount",
+    "nextOffset"
+  ],
+  "writes_ir": false,
+  "writes_disk": false,
+  "idempotentHint": true,
+  "destructiveHint": false,
+  "stateless_twin": "hwp_export_text",
+  "when": "연 핸들에서 쪽 본문을 이어 읽을 때. nextOffset 으로 창을 잇는다.",
+  "when_not": "전문을 한 번만 뽑으면 hwp_export_text.",
+  "recovery": "핸들 만료면 hwp_open. 쪽 범위 밖이면 page 를 고친다.",
+  "sample_call": {
+    "method": "tools/call",
+    "params": {
+      "name": "hwp_doc_text",
+      "arguments": {
+        "docId": "<docId>"
+      }
+    }
+  },
+  "closed_handle_signal": {
+    "isError": true,
+    "needle": "열려 있지 않은 핸들",
+    "nextCall": {
+      "name": "hwp_open"
+    }
+  },
+  "source_const": "ALL_SESSION_TOOLS"
+}

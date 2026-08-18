@@ -1,0 +1,46 @@
+{
+  "id": "19_relative_path_trap",
+  "title": "상대 경로는 서버 cwd 기준. MCP 로는 절대 경로만.",
+  "kind": "recovery",
+  "lifecycle": "recovery",
+  "absolute_paths": true,
+  "single_write_point": null,
+  "steps": [
+    {
+      "seq": 1,
+      "tool": "hwp_open",
+      "arguments": {
+        "path": "편람.hwp"
+      },
+      "expect_layer": "isError",
+      "read_fields": [
+        "error"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 2,
+      "tool": "hwp_open",
+      "arguments": {
+        "path": "C:/abs/편람.hwp"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "docId"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 3,
+      "tool": "hwp_close",
+      "arguments": {
+        "docId": "doc-1"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "closed"
+      ],
+      "notes": ""
+    }
+  ]
+}

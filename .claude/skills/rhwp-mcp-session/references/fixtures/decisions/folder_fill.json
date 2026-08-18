@@ -1,0 +1,10 @@
+{
+  "id": "folder_fill",
+  "task": "서식1 + 데이터N",
+  "choice": "stateless",
+  "first_tool": "hwp_batch_fill",
+  "why": "메일머지.",
+  "forbidden": [
+    "hwp_open"
+  ]
+}
