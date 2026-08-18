@@ -52,6 +52,23 @@ class RenderDiffTriggerPolicyTests(unittest.TestCase):
         self.assertIn("'fail-closed:impact-unavailable'", self.workflow)
         self.assertIn("forceFullReason: 'collection-error'", self.workflow)
 
+    def test_pdf_raster_timeout_skips_only_the_unavailable_runtime_lane(self) -> None:
+        canvas_job = self.workflow.split("  canvas-visual-diff:\n", maxsplit=1)[1]
+        install = canvas_job.split("      - name: Install PDF raster tools\n", maxsplit=1)[1].split(
+            "      - name: Install wasm-pack\n", maxsplit=1
+        )[0]
+
+        self.assertIn("id: pdf-raster-runtime", install)
+        self.assertEqual(1, install.count("timeout 180 apt-get"))
+        self.assertIn('if [[ "${status}" -eq 124 ]]', install)
+        self.assertIn('echo "available=false" >> "${GITHUB_OUTPUT}"', install)
+        self.assertIn('echo "available=true" >> "${GITHUB_OUTPUT}"', install)
+        self.assertIn("skipping Canvas visual diff", install)
+        self.assertIn(
+            "steps.pdf-raster-runtime.outputs.available == 'true'",
+            canvas_job,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
