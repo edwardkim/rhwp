@@ -1,0 +1,17 @@
+{
+  "id": "FJ51",
+  "steps": [
+    {
+      "answer": {
+        "editable": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fields[3].editableInForm"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "FJ42",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "sanitize",
+        "{input}",
+        "-o",
+        "{sub:clean2.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

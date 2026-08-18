@@ -1,0 +1,25 @@
+{
+  "id": "FJ47",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "부서명": "메모여정팀"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:memo-dept.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

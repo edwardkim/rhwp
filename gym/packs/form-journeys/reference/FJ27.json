@@ -1,0 +1,17 @@
+{
+  "id": "FJ27",
+  "steps": [
+    {
+      "answer": {
+        "count": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fieldCount"
+        }
+      }
+    }
+  ]
+}

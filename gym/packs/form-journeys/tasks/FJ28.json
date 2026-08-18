@@ -1,0 +1,27 @@
+{
+  "id": "FJ28",
+  "tier": 1,
+  "title": "field-01-memo fieldCount 오라클",
+  "input": "samples/field-01-memo.hwp",
+  "axis": "조회",
+  "instructions": "samples/field-01-memo.hwp 의 누름틀 개수 fieldCount 를 answer.json 의 count 로 제출하라. 메모가 채워진 쌍둥이 표본이다. 칸 수는 라이브다. 채움 과제가 아니다. T07 처럼 값을 넣지 마라. 힌트: rhwp fields <문서> --json 의 fieldCount. 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "fieldCount",
+      "op": "answer_eq",
+      "answer": "count",
+      "path": "fieldCount",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ]
+}

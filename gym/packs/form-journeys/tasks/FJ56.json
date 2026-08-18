@@ -1,0 +1,31 @@
+{
+  "id": "FJ56",
+  "tier": 3,
+  "title": "dry-run 목차1[2] occurrence 오라클",
+  "input": "samples/field-01.hwp",
+  "axis": "조회",
+  "instructions": "목차1[2] 에 '순번오라클' 을 넣는 dry-run 에서 filled[0].occurrence 를 answer.json 의 occ 로 제출하라. FJ03 은 실제 파일에 세번째목차여정 을 남긴다. 이번은 미리보기 순번(0 기준 2)만 읽는다. 힌트: --data '{\"목차1[2]\": \"순번오라클\"}' --dry-run --json → filled[0].occurrence 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "occurrence",
+      "op": "answer_eq",
+      "answer": "occ",
+      "path": "filled[0].occurrence",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"목차1[2]\": \"순번오라클\"}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

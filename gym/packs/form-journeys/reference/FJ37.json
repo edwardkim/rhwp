@@ -1,0 +1,39 @@
+{
+  "id": "FJ37",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "이메일": "combo@journey.go.kr"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:mid-combo.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{sub:mid-combo.hwp}",
+        "--find",
+        "마케팅",
+        "--replace",
+        "여정연구",
+        "-o",
+        "{sub:combo.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}
