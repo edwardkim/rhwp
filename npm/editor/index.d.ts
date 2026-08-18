@@ -11,7 +11,7 @@ export interface EditorOptions {
   width?: string;
   /** iframe 높이 (기본: '100%') */
   height?: string;
-  /** 모든 method 요청 제한 시간 override(ms, 기본: 일반 10000, load/export 60000) */
+  /** 모든 method 요청 제한 시간 override(ms, 기본: 일반 10000, load/trace/export 60000) */
   requestTimeoutMs?: number;
   /** v1 협상 제한 시간(ms, 기본: 1000) */
   handshakeTimeoutMs?: number;
@@ -139,6 +139,55 @@ export interface RendererDiagnosticsV1 {
   page: { index: number; canvaskit: CanvasKitRendererDiagnostics | null };
 }
 
+export interface FontDecisionTraceBackendV1 {
+  status: string;
+  certainty: 'observed' | 'resolved' | 'planned' | 'notObserved' | 'unsupported';
+  requested: string | null;
+  candidates: string[];
+  resolved: string | null;
+  source: string | null;
+  capabilities: string[];
+  failures: string[];
+}
+
+export interface FontDecisionTraceV1 {
+  schemaVersion: 1;
+  status: 'complete' | 'truncated' | 'unsupported' | 'failed';
+  scope: {
+    pageIndex: number;
+    requestedLimits: { maxCharacters: number };
+    appliedLimits: { maxCharacters: number };
+  };
+  counts: {
+    runsSeen: number;
+    charactersSeen: number;
+    recordsEmitted: number;
+    recordsOmitted: number | null;
+  };
+  records: Array<{
+    recordId: string;
+    source: { character: string; codePoint: number; [key: string]: unknown };
+    document: { face: string | null; altType: number | null; languageSlot: number | null; [key: string]: unknown };
+    layoutName: { normalizedFace: string | null; cssFamilyChain: string[]; [key: string]: unknown };
+    layoutMetric: Record<string, unknown>;
+    paint: {
+      native: FontDecisionTraceBackendV1;
+      canvas2d: FontDecisionTraceBackendV1;
+      canvaskit: FontDecisionTraceBackendV1;
+    };
+    provenance: Array<Record<string, unknown>>;
+    oracle: Record<string, unknown>;
+  }>;
+  backendSummary: Record<string, { status: string; reasons: string[] }>;
+  reasons: Array<{ code: string; detail: string | null }>;
+  layoutHash: { algorithm: 'sha256'; value: string | null };
+  normalizedHash: { algorithm: 'sha256'; value: string | null };
+}
+
+export interface FontDecisionTraceOptions {
+  maxCharacters?: number;
+}
+
 export interface LoadFileOptions {
   /** 미저장 변경 확인 없이 문서 교체 */
   skipUnsavedGuard?: boolean;
@@ -161,6 +210,8 @@ export declare class RhwpEditor {
   getPageSvg(page?: number): Promise<string>;
   /** 선택된 renderer와 페이지별 readiness 진단을 반환합니다 */
   getRendererDiagnostics(page?: number): Promise<RendererDiagnosticsV1>;
+  /** 현재 snapshot만 읽는 bounded font 결정 계보를 반환합니다 */
+  getFontDecisionTrace(page?: number, options?: FontDecisionTraceOptions): Promise<FontDecisionTraceV1>;
   /** 현재 문서를 HWP 바이너리로 내보냅니다 */
   exportHwp(): Promise<Uint8Array>;
   /** 현재 문서를 HWPX(ZIP+XML) 바이너리로 내보냅니다 */

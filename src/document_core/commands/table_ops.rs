@@ -1332,7 +1332,7 @@ impl DocumentCore {
     }
 
     /// 셀 속성을 수정한다 (네이티브).
-    pub(crate) fn set_cell_properties_native(
+    pub fn set_cell_properties_native(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -2329,7 +2329,7 @@ impl DocumentCore {
     ///
     /// treat_as_char(본문배치) 표의 경우, v_offset이 현재 줄 높이를 넘으면
     /// 다음/이전 문단으로 표를 이동시킨다 (문단 간 이동).
-    pub(crate) fn move_table_offset_native(
+    pub fn move_table_offset_native(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -2598,7 +2598,7 @@ impl DocumentCore {
     }
 
     /// 표 속성을 수정한다 (네이티브).
-    pub(crate) fn set_table_properties_native(
+    pub fn set_table_properties_native(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,

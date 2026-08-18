@@ -23,8 +23,8 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **110개**(그중 `--json` 계약 **79개**, batch 축 **9개**) · MCP 도구 **120개**(무상태 104 + 세션 전용 16) |
-| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **261개** · §2 전수 사전 **264개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
+| 표면 규모 | CLI 명령 **98개**(그중 `--json` 계약 **65개**, batch 축 **9개**) · MCP 도구 **181개**(무상태 163 + 세션 전용 18) |
+| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **321개** · §2 전수 사전 **329개**(자기서술 밖 실측·참조 필드 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
 **재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.
@@ -107,6 +107,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | k 번째만 치환 | `edit replace-text --occurrence k` | `occurrence`·`replacedCount:1` | 같은 절 |
 | 체크박스 켜기 | `edit replace-text --find □ --replace ☑ --occurrence k` (`hwp_set_checkbox`) | `replacedCount` | 같은 절 |
 | 도장·서명 붙이기 | `edit insert-image` (`hwp_insert_image`) | `binDataId`·`overflow` | [CLI 매뉴얼](cli_commands.md) §edit insert-image |
+| 도형 묶기 | `edit group-shapes` (`hwp_group_shapes`) | `count`·`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit group-shapes |
+| 본문 문단 좌표에 그림 넣기 | `edit insert-picture` (`hwp_insert_picture`) | `binDataId`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-picture |
+| 본문 그림 지우기 | `edit delete-picture` (`hwp_delete_picture`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit delete-picture |
+| 본문 그림 속성 바꾸기 | `edit set-picture` (`hwp_set_picture`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit set-picture |
 | 없는 자리에 글자 넣기 | `edit insert-text` (`hwp_insert_text`) | `insertedChars`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-text |
 | 개인정보 마스킹 | `edit redact` (`hwp_redact`) | `findingCount`·`redactedCount` | [보안 소비자 가이드](../tech/agent_security/consumer_guide.md) |
 | 메타데이터 제거 | `edit sanitize` (`hwp_sanitize`) | `removedCount`·`removed[]` | 같은 문서 |
@@ -297,10 +301,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 305개 필드
+### 2-2. 전수 사전 — 329개 필드
 
-`capabilities` 의 `recordFields` 고유 **300개**와 그 밖의 실측-only 필드
-`applyTo`·`assertions`·`docId`·`isHeader`·`preview` **5개**를 합친 305개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **321개**와 그 밖의 실측·참조 필드를 합친
+329개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -319,24 +323,42 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-footnote` |
 | `below` | bool | 지정 행 아래에 끼울지 | `edit insert-row` |
 | `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
+| `rows` | number | 셀을 나눌 행 수 (1 이상) | `edit split-cell-into` |
+| `cols` | number | 셀을 나눌 열 수 (1 이상) | `edit split-cell-into` |
+| `vertical` | bool | 참이면 행 높이, 거짓이면 열 폭 | `edit resize-table-cell` |
+| `forward` | bool | 참이면 늘리고, 거짓이면 줄인다 | `edit resize-table-cell` |
+| `dx` | number | 가로 이동량 (HWPUNIT, 음수 허용) | `edit move-table` |
+| `dy` | number | 세로 이동량 (HWPUNIT, 음수 허용) | `edit move-table` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
-| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`merge-paragraph` |
+| `rows` | number | 생성할 표의 행 수 (1 이상) | `edit insert-table` |
+| `cols` | number | 생성할 표의 열 수 (1 이상, 256 이하) | `edit insert-table` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`insert-number`·`merge-paragraph` |
 | `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
-| `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark` |
-| `isHeader` | bool | 머리말이면 true, 꼬리말이면 false | `edit insert-header-footer` |
-| `applyTo` | number | 머리말/꼬리말 적용 대상 (0 양쪽, 1 짝수, 2 홀수) | `edit insert-header-footer` |
-| `exists` | bool | 선택한 구역·적용 대상에 머리말/꼬리말이 실제로 있는지 | `header-footer` |
-| `headersFooters` | array | 머리말/꼬리말 목록의 종류·구역·적용 대상 좌표 | `headers-footers` |
-| `name` | string | 책갈피 이름 | `edit add-bookmark` |
-| `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell` |
-| `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text` |
+| `cellPara` | number | 셀 안 문단 번호 (0부터) | `edit insert-text-in-cell`·`edit delete-text-in-cell` |
+| `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark`·`rename-bookmark`·`delete-control` |
+| `isHeader` | bool | 머리말이면 true, 꼬리말이면 false | `edit insert-header-footer`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf` |
+| `applyTo` | number | 머리말/꼬리말 적용 대상 (0 양쪽, 1 짝수, 2 홀수) | `edit insert-header-footer`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf` |
+| `name` | string | 책갈피 이름 | `edit add-bookmark`·`rename-bookmark` |
+| `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell`·`insert-header-footer-text`·`set-header-footer-text` |
+| `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text`·`insert-header-footer-text` |
 | `below` | bool | 지정 행 아래에 끼울지 | `edit insert-row` |
 | `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
-| `count` | number | 지울 글자 수 (1 이상) | `edit delete-text` |
+| `count` | number | 지울 글자 수 (1 이상) | `edit delete-text`·`delete-hf-text`·`delete-text-in-footnote` |
+| `fnPara` | number | 각주/미주 안 문단 인덱스 (0부터) | `edit delete-text-in-footnote` |
+| `columnCount` | number | 구역의 단 수 (1 이상) | `edit set-column-def` |
+| `columnType` | number | 단 배치 유형 (0 일반 / 1 배분 / 2 평행) | `edit set-column-def` |
+| `sameWidth` | bool | 모든 단을 같은 폭으로 맞출지 | `edit set-column-def` |
+| `spacing` | number | 단 사이 간격 (HWPUNIT) | `edit set-column-def` |
+| `widths` | number[] | 혼합 폭 단의 폭 목록 (HWPUNIT) | `edit set-column-widths` |
+| `innerPara` | number | 셀·각주 안 문단 (0부터) | `edit apply-char-format-in-cell` |
+| `props` | string | 글자/문단 서식 JSON | `edit apply-char-format-in-cell` |
+| `bold` | bool | `--bold` 를 줬는지 | `edit apply-char-format-in-cell` |
+| `fontSize` | number\|null | `--font-size` (HWP 단위) | `edit apply-char-format-in-cell` |
+| `color` | string\|null | `--color` 원문 | `edit apply-char-format-in-cell` |
 | `docId` | string | 세션 핸들. 서버 프로세스 수명과 같고 영속되지 않는다 | 세션 도구 12종 |
 
 #### 문서 메타
@@ -353,6 +375,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `charCount` | number | IR 본문 글자 수 | `word-count` |
 | `wordCount` | number | 공백 분리 어절 수 | `word-count` |
 | `bookmarks` | array | 책갈피 목록 `{name,sec,para,ctrlIdx,charPos}` | `bookmarks` |
+| `exists` | bool | 해당 머리말/꼬리말이 있는지 | `header-footer` |
+| `headersFooters` | array | 머리말/꼬리말 목록 `{sectionIdx,isHeader,applyTo,label}` | `headers-footers` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
 | `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |
@@ -412,12 +436,12 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `tableCount` | number | 본문 최상위 표 개수(중첩 표는 세지 않는다) | `export-tables`·`table-to-csv` |
 | `tables` | array | 표 목록(§2-3) — 문서 파생 | `export-tables`·`table-to-csv` |
 | `bom` | bool | CSV 파일에 UTF-8 BOM 을 붙였나 | `table-to-csv` |
-| `table` | number | 대상 표 index | `csv-to-table`·`edit set-cell` |
+| `table` | number | 대상 표 index | `csv-to-table`·`edit set-cell`·`set-cell-props`·`set-table-props` |
 | `rowCount` / `colCount` | number | 표의 행·열 수(CSV 대조 기준) | `csv-to-table` |
 | `changed` | array | 실제로 바뀔/바뀐 칸 `{row,col,oldText,newText}` | `csv-to-table` |
 | `changedCount` | number | 바뀐 칸 수 | `csv-to-table` |
 | `invalid` | array | **한 칸도 쓰지 않게 만든 이유들.** 비어 있지 않으면 exit 2 | `csv-to-table`·`run` |
-| `row` / `col` | number | 격자 좌표(0 기준). batch fill 에서는 `row` 가 **데이터 행 번호** | `edit set-cell`·`batch fill` |
+| `row` / `col` | number | 격자 좌표(0 기준). batch fill 에서는 `row` 가 **데이터 행 번호** | `edit set-cell`·`set-cell-props`·`batch fill` |
 | `oldText` / `newText` | string | 칸의 이전/새 값. `oldText` 는 **문서 파생** | `edit set-cell` |
 | `keepStyle` | bool | 칸 안내문 스타일을 상속했나 | `edit set-cell` |
 
@@ -426,7 +450,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
 | `chartCount` | number | 문서의 차트 개수(글상자·표 셀 안 포함) | `chart-to-csv` |
-| `charts` | array | 차트 목록 `{chart,rowCount,colCount,csv,output?}` — `csv` 는 **문서 파생** | `chart-to-csv` |
+| `charts` | array | 차트 목록. `charts` 명령은 `{index,section,paragraph,control}`(`--chart N`=`index+1`). `chart-to-csv` 는 `{chart,rowCount,colCount,csv,output?}` — `csv` 는 **문서 파생** | `charts`·`chart-to-csv` |
 | `chart` | number | 대상 차트 번호. **문서 순서 1부터**(표의 `table` 은 0부터 — 다른 규약이다) | `chart-to-csv`·`csv-to-chart` |
 | `wrote` | array | **어느 표현에 실제로 썼나** — `["zipPart","nestedCopy"]`(HWPX) / `["nestedCopy"]`(HWP5) / `[]`(거부·dry-run·무변경). 값이 OOXML 두 곳에 중복 저장돼 있어 한쪽만 쓰면 HWP 변환에서 편집이 사라진다 | `csv-to-chart` |
 
@@ -442,12 +466,18 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `filledCount` | number | 실제로 채운 필드 수 | `edit fill-fields`·`batch fill` |
 | `filled` | array | 채운 내역 `{name,occurrence,value}` | `edit fill-fields` |
 | `notFound` | string[] | 문서에 없는 이름(오타·범위 밖 순번). **조용히 무시되지 않는다.** 비어 있지 않아도 exit 0 이다 | `edit fill-fields`·`batch fill` |
+| `ok` | bool | 지정 좌표의 양식 값을 읽었는지. 대상이 양식 컨트롤이 아니면 `false` | `form-value` |
+| `formType` | string\|null | 양식 종류. 대상이 양식 컨트롤이 아니면 `null` | `form-value` |
+| `value` | string\|null | 양식에 저장된 값. 문서 파생 | `form-value` |
+| `caption` | string\|null | 단추 등 양식의 표시 캡션. 문서 파생 | `form-value` |
+| `enabled` | bool\|null | 양식이 현재 입력을 받을 수 있는지. 대상이 양식 컨트롤이 아니면 `null` | `form-value` |
 
 #### 편집 공통
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
 | `dryRun` | bool | 파일을 쓰지 않는 사전 확인 모드 | `edit` 6종·`csv-to-table`·`batch fill` |
+| `script` | string | 수식 컨트롤에 넣거나 바꿀 수식 스크립트 | `edit insert-equation` |
 | `output` | string | **실제로 저장된 경로. 저장했을 때만 실린다** — dry-run·치환 0건이면 키 자체가 없다 | 산출 계열 13종 |
 | `outputFormat` | string | 산출 형식(`hwp5`·`hwpx`·`csv`) — 입력 형식 보존 규약의 결과 | `run`·`table-to-csv`·`csv-to-table`·`edit` |
 | `bytes` | number | 산출물 크기 | `export-pdf`·`export-hwpx`·`export-hml`·`export-doclang`·`convert`·`build-from-ingest`·`thumbnail` |
@@ -470,7 +500,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 |---|---|---|---|
 | `page` | number | 붙일 쪽(0 기준) | `edit insert-image` |
 | `x` / `y` | number | 용지 왼쪽 위 기준 위치 — 단위는 **HWPUNIT(1/7200 inch)**, 픽셀이 아니다 | `edit insert-image` |
-| `width` / `height` | number | 그림 크기(HWPUNIT). `thumbnail` 에서는 **픽셀** — 같은 이름, 다른 단위 | `edit insert-image`·`thumbnail` |
+| `width` / `height` | number | 그림·도형 크기(HWPUNIT). `thumbnail` 에서는 **픽셀** — 같은 이름, 다른 단위 | `edit insert-image`·`insert-shape`·`thumbnail` |
 | `binDataId` | number\|null | 문서에 새로 등록된 이진 자원 ID. **dry-run 이면 `null`** (아직 등록하지 않았다) | `edit insert-image` |
 
 #### 계획 실행 (`run`)
@@ -982,7 +1012,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `row` / `col` | 표 격자 좌표 | 0 | `export-tables`·`edit set-cell` |
 | `이름[N]` | 반복 누름틀 순번 | 0 | `edit fill-fields`·`hwp_doc_fill_fields` |
 | `control` / `cell` | 표 컨트롤·칸 일련번호 | 0 | `fields[].location.nested`·`matches[].cell` |
-| HWPUNIT | 길이 | 1/7200 inch | `edit insert-image` 의 `x`·`y`·`width`·`height` |
+| HWPUNIT | 길이 | 1/7200 inch | `edit insert-image`·`insert-shape` 의 `x`·`y`·`width`·`height` |
 
 ### 3-2. 명령별로 어느 주소를 받고 어느 주소를 주나
 
@@ -1080,21 +1110,24 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 49개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
-`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`delete-table`·`insert-header-footer`·`insert-image`·`redact`·`sanitize`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`set-hf-picture`·`apply-hf-template`·`delete-hf-text`·`insert-field-in-hf`·`split-paragraph-in-hf`·`toggle-hide-hf`·`merge-paragraph-in-hf`·`apply-char-format`·`split-paragraph`·`apply-para-format`·`apply-style`·`set-numbering-restart`·`apply-para-format-in-hf`·`apply-endnote-shape`·`insert-footnote-text`·`delete-text-in-footnote`·`split-paragraph-in-footnote`·`merge-paragraph-in-footnote`·`apply-para-format-in-footnote`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 64개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`delete-text-in-cell`·`insert-text`·`delete-text`·
+`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`split-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`split-cell-into`·`split-table`·`fit-table`·`resize-table`·`merge-table`·`set-column-widths`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`delete-equation`·`add-bookmark`·`delete-bookmark`·`delete-table`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf`·`split-paragraph-in-cell`·`merge-paragraph-in-cell`·`apply-char-format`·`apply-para-format`·`apply-style`·`apply-cell-style`·`delete-control`·`insert-header-footer`·`insert-field-in-hf`·`set-column-def`·`set-numbering-restart`·`set-page-hide`·`transpose-table`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 95개
+## 6. MCP 도구 전수 지도 — 113개
 
-### 6-1. 무상태 79개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 163개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
 | `hwp_info` | `info --json` | `path` |
 | `hwp_word_count` | `word-count --json` | `path` |
 | `hwp_bookmarks` | `bookmarks --json` | `path` |
+| `hwp_header_footer` | `header-footer --json` | `path` |
+| `hwp_headers_footers` | `headers-footers --json` | `path` |
+| `hwp_charts` | `charts --json` | `path` |
 | `hwp_digest` | `digest --json` | `path` |
 | `hwp_export_text` | `export-text --json` | `path` |
 | `hwp_export_structure` | `export-structure --json` | `path` |
@@ -1130,45 +1163,56 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_replace_text` | `edit replace-text --json` | `path`,`find`,`replace` |
 | `hwp_set_checkbox` | `edit replace-text --find □ --replace ☑ --occurrence` | `path`,`occurrence`,`output` |
 | `hwp_set_cell` | `edit set-cell --json` | `path`,`table`,`row`,`col`,`text` |
+| `hwp_set_cell_props` | `edit set-cell-props --json` | `path`,`table`,`row`,`col`,`props` |
+| `hwp_set_table_props` | `edit set-table-props --json` | `path`,`table`,`props` |
 | `hwp_insert_row` | `edit insert-row --json` | `path`,`table`,`row` |
 | `hwp_insert_col` | `edit insert-col --json` | `path`,`table`,`col` |
 | `hwp_delete_row` | `edit delete-row --json` | `path`,`table`,`row` |
 | `hwp_delete_col` | `edit delete-col --json` | `path`,`table`,`col` |
 | `hwp_merge_cells` | `edit merge-cells --json` | `path`,`table`,`row`,`col`,`endRow`,`endCol` |
 | `hwp_split_cell` | `edit split-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_split_cell_into` | `edit split-cell-into --json` | `path`,`table`,`row`,`col`,`rows`,`cols` |
+| `hwp_resize_table_cell` | `edit resize-table-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_move_table` | `edit move-table --json` | `path`,`table`,`dx`,`dy` |
 | `hwp_insert_footnote` | `edit insert-footnote --json` | `path` |
 | `hwp_insert_endnote` | `edit insert-endnote --json` | `path` |
 | `hwp_delete_footnote` | `edit delete-footnote --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_delete_text_in_footnote` | `edit delete-text-in-footnote --json` | `path`,`count` |
+| `hwp_delete_equation` | `edit delete-equation --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_set_numbering_restart` | `edit set-numbering-restart --json` | `path`,`mode` |
 | `hwp_add_bookmark` | `edit add-bookmark --json` | `path`,`name` |
 | `hwp_delete_bookmark` | `edit delete-bookmark --json` | `path`,`section`,`paragraph`,`ctrl` |
-| `hwp_delete_table` | `edit delete-table --json` | `path`,`table` |
-| `hwp_insert_header_footer` | `edit insert-header-footer --json` | `path` |
 | `hwp_rename_bookmark` | `edit rename-bookmark --json` | `path`,`section`,`paragraph`,`ctrl`,`name` |
 | `hwp_delete_header_footer` | `edit delete-header-footer --json` | `path` |
 | `hwp_insert_header_footer_text` | `edit insert-header-footer-text --json` | `path`,`text` |
-| `hwp_headers_footers` | `headers-footers --json` | `path` |
 | `hwp_set_header_footer_text` | `edit set-header-footer-text --json` | `path`,`text` |
-| `hwp_set_hf_picture` | `edit set-hf-picture --json` | `path`,`props` |
-| `hwp_header_footer` | `header-footer --json` | `path` |
-| `hwp_apply_hf_template` | `edit apply-hf-template --json` | `path`,`template` |
 | `hwp_delete_hf_text` | `edit delete-hf-text --json` | `path`,`count` |
-| `hwp_insert_field_in_hf` | `edit insert-field-in-hf --json` | `path`,`fieldType` |
 | `hwp_split_paragraph_in_hf` | `edit split-paragraph-in-hf --json` | `path` |
-| `hwp_toggle_hide_hf` | `edit toggle-hide-hf --json` | `path` |
 | `hwp_merge_paragraph_in_hf` | `edit merge-paragraph-in-hf --json` | `path` |
-| `hwp_apply_char_format` | `edit apply-char-format --json` | `path`,`props` |
+| `hwp_split_paragraph_in_cell` | `edit split-paragraph-in-cell --json` | `path`,`table`,`row`,`col` |
 | `hwp_split_paragraph` | `edit split-paragraph --json` | `path` |
+| `hwp_set_page_hide` | `edit set-page-hide --json` | `path` |
+| `hwp_transpose_table` | `edit transpose-table --json` | `path`,`table` |
+| `hwp_merge_paragraph_in_cell` | `edit merge-paragraph-in-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_apply_char_format` | `edit apply-char-format --json` | `path`,`props` |
 | `hwp_apply_para_format` | `edit apply-para-format --json` | `path`,`props` |
 | `hwp_apply_style` | `edit apply-style --json` | `path`,`style` |
-| `hwp_set_numbering_restart` | `edit set-numbering-restart --json` | `path`,`mode` |
-| `hwp_apply_para_format_in_hf` | `edit apply-para-format-in-hf --json` | `path`,`props` |
-| `hwp_apply_endnote_shape` | `edit apply-endnote-shape --json` | `path`,`props` |
-| `hwp_insert_footnote_text` | `edit insert-footnote-text --json` | `path`,`ctrl`,`text` |
-| `hwp_delete_text_in_footnote` | `edit delete-text-in-footnote --json` | `path`,`count` |
-| `hwp_split_paragraph_in_footnote` | `edit split-paragraph-in-footnote --json` | `path` |
-| `hwp_merge_paragraph_in_footnote` | `edit merge-paragraph-in-footnote --json` | `path` |
-| `hwp_apply_para_format_in_footnote` | `edit apply-para-format-in-footnote --json` | `path`,`props` |
+| `hwp_apply_cell_style` | `edit apply-cell-style --json` | `path`,`table`,`row`,`col`,`style` |
+| `hwp_apply_para_format_in_cell` | `edit apply-para-format-in-cell --json` | `path`,`table`,`row`,`col`,`props` |
+| `hwp_delete_control` | `edit delete-control --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_insert_table` | `edit insert-table --json` | `path`,`rows`,`cols` |
+| `hwp_insert_text_in_cell` | `edit insert-text-in-cell --json` | `path`,`table`,`row`,`col`,`text` |
+| `hwp_delete_table` | `edit delete-table --json` | `path`,`table` |
+| `hwp_insert_header_footer` | `edit insert-header-footer --json` | `path` |
+| `hwp_insert_field_in_hf` | `edit insert-field-in-hf --json` | `path`,`fieldType` |
+| `hwp_set_column_def` | `edit set-column-def --json` | `path`,`count` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
+| `hwp_group_shapes` | `edit group-shapes --json` | `path`,`targets` |
+| `hwp_set_page_def` | `edit set-page-def --json` | `path`,`props` |
+| `hwp_set_section_def` | `edit set-section-def --json` | `path`,`props` |
+| `hwp_insert_picture` | `edit insert-picture --json` | `path`,`image` |
+| `hwp_delete_picture` | `edit delete-picture --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_set_picture` | `edit set-picture --json` | `path`,`section`,`paragraph`,`ctrl`,`props` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
@@ -1214,7 +1258,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `hwp_batch`·`hwp_batch_search`·`hwp_batch_extract_data` 는 `invocation.stdinTools` 로
 표시된 stdin 도구다 — CLI 로 직접 조립할 때 경로 목록을 stdin 으로 흘려야 한다.
 
-### 6-2. 세션 전용 16개 (`mcp-serve` 전용, `capabilities --mcp` 에는 없다)
+### 6-2. 세션 전용 18개 (`mcp-serve` 전용, `capabilities --mcp` 에는 없다)
 
 `hwp_open` · `hwp_ws_list` · `hwp_ws_open` · `hwp_doc_info` · `hwp_doc_text` ·
 `hwp_doc_tree` · `hwp_doc_fields` · `hwp_doc_tables` · `hwp_doc_search` ·

@@ -983,6 +983,17 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 페이지의 bounded layout font decision trace를 JSON으로 반환한다 (#4961).
+    #[wasm_bindgen(js_name = getFontDecisionTrace)]
+    pub fn get_font_decision_trace(
+        &self,
+        page_num: u32,
+        options_json: &str,
+    ) -> Result<String, JsValue> {
+        self.get_font_decision_trace_native(page_num, options_json)
+            .map_err(Into::into)
+    }
+
     #[wasm_bindgen(js_name = getCanvasKitReplayPlanWithProfile)]
     pub fn get_canvaskit_replay_plan_with_profile(
         &self,

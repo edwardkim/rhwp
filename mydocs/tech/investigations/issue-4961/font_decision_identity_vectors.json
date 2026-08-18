@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "vectors": [
+    {
+      "id": "metric-alias-surrogate",
+      "sourceOwner": "rust-metric",
+      "identity": {
+        "sourceBoundaryId": "rust-metric.metric-alias",
+        "candidateKind": "finite-mapping",
+        "sourceFace": "HY각헤드라인M",
+        "targetOrPolicy": "HYHeadLine-Medium",
+        "conditions": {},
+        "order": null
+      },
+      "candidateId": "candidate.0b74264b87ed459ef5db",
+      "ruleId": "rule.rust-metric.0b74264b87ed459ef5db"
+    },
+    {
+      "id": "metric-entry-zero",
+      "sourceOwner": "rust-metric",
+      "identity": {
+        "sourceBoundaryId": "rust-metric.metric-table",
+        "candidateKind": "metric-entry",
+        "sourceFace": "HCR Batang",
+        "targetOrPolicy": "metric-entry:0",
+        "conditions": {
+          "bold": false,
+          "italic": false,
+          "emSize": 1000,
+          "latinRangeSymbol": "FONT_0_LATIN_RANGES",
+          "hangulSymbol": "FONT_0_HANGUL"
+        },
+        "order": null
+      },
+      "candidateId": "candidate.b461c7b55f3d0a77a68d",
+      "ruleId": "rule.rust-metric.b461c7b55f3d0a77a68d"
+    },
+    {
+      "id": "measurement-predicate",
+      "sourceOwner": "rust-measurement",
+      "identity": {
+        "sourceBoundaryId": "rust-measurement.estimate-width",
+        "candidateKind": "predicate",
+        "sourceFace": null,
+        "targetOrPolicy": "estimate cluster and character advances using embedded metrics and guarded heuristics",
+        "conditions": {},
+        "order": null
+      },
+      "candidateId": "candidate.28970f1984ed0e4ce06d",
+      "ruleId": "rule.rust-measurement.28970f1984ed0e4ce06d"
+    },
+    {
+      "id": "studio-substitution-finite-mapping",
+      "sourceOwner": "studio-substitution",
+      "identity": {
+        "sourceBoundaryId": "studio-substitution.substitution-tables",
+        "candidateKind": "finite-mapping",
+        "sourceFace": "명조",
+        "targetOrPolicy": "HY견명조",
+        "conditions": {
+          "languageSlot": "0",
+          "sourceAltType": 2,
+          "targetAltType": 1
+        },
+        "order": null
+      },
+      "candidateId": "candidate.674bc70d924bf5707bcf",
+      "ruleId": "rule.studio-substitution.674bc70d924bf5707bcf"
+    }
+  ]
+}
