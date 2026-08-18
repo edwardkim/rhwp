@@ -1291,14 +1291,47 @@ fn css_single_quoted_font_family(font_family: &str) -> String {
     format!("'{escaped}'")
 }
 
+/// Task #1224 ExtraLight family. regular 본문 획 두께용이며 bold 체인에서는 뺀다 (#3772).
+pub(crate) const NOTO_SANS_KR_EXTRALIGHT: &str = "Noto Sans KR ExtraLight";
+
+/// 폴백 체인에서 `Noto Sans KR ExtraLight` 항목만 제거한다.
+///
+/// ExtraLight 는 별도 family 이름이라 `font-weight="bold"` 가 Bold/Regular 로
+/// 넘어가지 않는다. svg2pdf 는 faux-bold 를 합성하지 않으므로 bold run 이
+/// ExtraLight(200) 에 떨어지면 PDF 굵기가 사라진다 (#3772).
+pub(crate) fn drop_noto_sans_kr_extralight(chain: &str) -> String {
+    let quoted = [
+        format!("'{NOTO_SANS_KR_EXTRALIGHT}',"),
+        format!("&apos;{NOTO_SANS_KR_EXTRALIGHT}&apos;,"),
+        format!("\"{NOTO_SANS_KR_EXTRALIGHT}\","),
+        format!("'{NOTO_SANS_KR_EXTRALIGHT}'"),
+        format!("&apos;{NOTO_SANS_KR_EXTRALIGHT}&apos;"),
+        format!("\"{NOTO_SANS_KR_EXTRALIGHT}\""),
+    ];
+    let mut out = chain.to_string();
+    for token in &quoted {
+        out = out.replace(token, "");
+    }
+    if out.trim().is_empty() {
+        "'Noto Sans KR'".to_string()
+    } else {
+        out
+    }
+}
+
 /// 렌더용 폴백 체인 문자열:
 /// `요청 face → 설치 successor/alias → base family → 문서 substFont → generic 체인`.
 pub fn render_font_family_chain(font_family: &str) -> String {
+    render_font_family_chain_for_weight(font_family, false)
+}
+
+/// `bold` 이면 ExtraLight 를 빼서 Noto Sans KR Regular/Bold 가 매칭되게 한다 (#3772).
+pub fn render_font_family_chain_for_weight(font_family: &str, bold: bool) -> String {
     let requested = internal_font_family_members(font_family);
     let Some(primary) = requested.first().copied() else {
-        return generic_fallback("").to_string();
+        return generic_fallback_for_weight("", bold);
     };
-    let fb = generic_fallback(primary);
+    let fb = generic_fallback_for_weight(primary, bold);
     let mut family_names = Vec::new();
     push_unique_family(&mut family_names, primary);
     for alias in installed_render_font_aliases(primary) {
@@ -1314,7 +1347,7 @@ pub fn render_font_family_chain(font_family: &str) -> String {
         .iter()
         .map(|family| css_single_quoted_font_family(family))
         .collect();
-    families.push(fb.to_string());
+    families.push(fb);
     families.join(",")
 }
 
@@ -1433,6 +1466,16 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     // 'Noto Sans KR ExtraLight' (Task #1224): 무거운 Noto CJK Regular 폴백 직전에 삽입해
     // 한컴 돋움 획 두께에 근접시킴. 시스템 고딕 우선 → 부재 시에만 ExtraLight 매칭.
     "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif"
+}
+
+/// `generic_fallback` 에 굵기 힌트를 얹는다. bold 는 ExtraLight 를 제거한다 (#3772).
+pub fn generic_fallback_for_weight(font_family: &str, bold: bool) -> String {
+    let chain = generic_fallback(font_family);
+    if bold {
+        drop_noto_sans_kr_extralight(chain)
+    } else {
+        chain.to_string()
+    }
 }
 
 pub(crate) fn contains_old_hangul_jamo(text: &str) -> bool {
