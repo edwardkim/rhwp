@@ -1,0 +1,18 @@
+{
+  "comment": "지도 자신은 문서 파생이 아니다. 세션 시작 직후 캐시한다.",
+  "schemaVersion": "1.0",
+  "tool": "rhwp",
+  "version": "0.8.4",
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "pathSyntax": "'.' 은 객체 하위, '[]' 는 배열 원소 전개. 예: matches[].context",
+  "commands": {
+    "search": {
+      "untrusted": ["matches[].text", "matches[].context"]
+    }
+  },
+  "consume": {
+    "treatAs": "policy-map",
+    "doNotPasteIntoSystemPrompt": true
+  }
+}
