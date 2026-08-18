@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  issue: 4669
+  fixture: 055_offset_x_only
+  family: offset
+  contract: x 만 이동
+  source: synthetic / #3544 unsigned wraparound
+  save-must: hp:ole id + instid 분리, offset/orgSz/curSz/flip/rotationInfo/renderingInfo/lineShape 원문
+  save-must-not: id="0" 재부여(원문이 0 이 아닐 때), curSz=0 을 orgSz 로 재유도
+-->
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="2141242094" zOrder="1" numberingType="PICTURE" textWrap="SQUARE"
+              textFlow="BOTH_SIDES" lock="0" instid="1067500271" objectType="EMBEDDED"
+              binaryItemIDRef="ole1" drawAspect="CONTENT">
+        <hp:offset x="7777" y="0"/>
+        <hp:orgSz width="42001" height="13501"/>
+        <hp:curSz width="29999" height="4051"/>
+        <hp:flip horizontal="0" vertical="0"/>
+        <hp:rotationInfo angle="0" centerX="14999" centerY="2025" rotateimage="1"/>
+        <hp:renderingInfo>
+          <hc:transMatrix e1="1" e2="0" e3="7777" e4="0" e5="1" e6="0"/>
+          <hc:scaMatrix e1="0.714245" e2="0" e3="0" e4="0" e5="0.300052" e6="0"/>
+          <hc:rotMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+        </hp:renderingInfo>
+        <hc:extent x="29999" y="4051"/>
+        <hp:lineShape color="#000000" width="0" style="NONE" endCap="ROUND"/>
+        <hp:sz width="29999" widthRelTo="ABSOLUTE" height="4051" heightRelTo="ABSOLUTE" protect="0"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="COLUMN" vertOffset="0" horzOffset="0"/>
+        <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>
