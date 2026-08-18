@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/hwp_table_test.hwp",
+  "tableCount": 1,
+  "tables": [
+    {
+      "index": 0,
+      "rowCount": 4,
+      "colCount": 3,
+      "csv": "\"가,나\"\"다\",담당자,세부 내용\r\n,,\r\n,,\r\n,,\r\n",
+      "output": "quoted.csv"
+    }
+  ],
+  "bom": false,
+  "untrustedContent": true,
+  "untrustedFields": [
+    "tables[].csv"
+  ],
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "command": "table-to-csv",
+    "exit": 0,
+    "envelopeCsvStartsWithBom": false
+  }
+}

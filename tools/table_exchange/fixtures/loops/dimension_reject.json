@@ -1,0 +1,44 @@
+{
+  "id": "dimension_reject",
+  "sample": "samples/table-001.hwp",
+  "steps": [
+    {
+      "id": "scan",
+      "command": [
+        "rhwp",
+        "export-tables",
+        "samples/table-001.hwp",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expect": {
+        "rows": 19,
+        "cols": 9
+      }
+    },
+    {
+      "id": "dry-run-bad",
+      "command": [
+        "rhwp",
+        "csv-to-table",
+        "samples/table-001.hwp",
+        "--csv",
+        "D-table_001-both-2x2.csv",
+        "--table",
+        "0",
+        "--dry-run",
+        "--json",
+        "-o",
+        "out/D-table_001-both-2x2.hwp"
+      ],
+      "expectExit": 2,
+      "expect": {
+        "changedCount": 0
+      },
+      "expectReasons": [
+        "rowCountMismatch",
+        "colCountMismatch"
+      ]
+    }
+  ]
+}

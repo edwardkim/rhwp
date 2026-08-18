@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/hwp_table_test.hwp",
+  "table": 0,
+  "rowCount": 4,
+  "colCount": 3,
+  "csv": "R-hwp_table_test_t0-ctrl-lf.csv",
+  "dryRun": true,
+  "changed": [],
+  "changedCount": 0,
+  "changedPages": null,
+  "invalid": [
+    {
+      "reason": "controlCharacter",
+      "message": "셀 값에 줄바꿈·탭은 v1 에서 허용하지 않습니다.",
+      "row": 1,
+      "col": 0
+    }
+  ],
+  "output": null,
+  "verify": null,
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "command": "csv-to-table",
+    "exit": 2,
+    "outputKept": false,
+    "mode": "dry-run",
+    "writes": false
+  }
+}
