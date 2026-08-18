@@ -74,7 +74,9 @@ fn hwpx_save_keeps_element_origin_as_element() {
     let before = nbsp_char_count(&core);
     assert!(before > 0, "표본에 묶음 빈칸이 있어야 시험이 성립한다");
 
-    let (el, lit) = representations(&section_xml(&core.export_hwpx_native().expect("export hwpx")));
+    let (el, lit) = representations(&section_xml(
+        &core.export_hwpx_native().expect("export hwpx"),
+    ));
 
     assert!(
         el > 0,
@@ -90,7 +92,9 @@ fn hwpx_save_keeps_literal_origin_as_literal() {
     let before = nbsp_char_count(&core);
     assert!(before > 0, "표본에 묶음 빈칸이 있어야 시험이 성립한다");
 
-    let (el, lit) = representations(&section_xml(&core.export_hwpx_native().expect("export hwpx")));
+    let (el, lit) = representations(&section_xml(
+        &core.export_hwpx_native().expect("export hwpx"),
+    ));
 
     assert_eq!(
         el, 0,
