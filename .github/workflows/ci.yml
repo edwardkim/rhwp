@@ -936,6 +936,7 @@ jobs:
           python3 -m unittest discover -s tools/llm_verifier/shadow_agree/tests -p 'test_*.py'
           python3 -m unittest discover -s tools/llm_verifier/untrusted_sandbox/tests -p 'test_*.py'
           python3 -m unittest discover -s tools/llm_verifier/lineage_chain/tests -p 'test_*.py'
+          python3 -m unittest discover -s tools/llm_verifier/abstain/tests -p 'test_*.py'
           cargo test --manifest-path tools/llm_verifier/repeat_eval/Cargo.toml
 
       - name: Validate Render Diff trigger policy

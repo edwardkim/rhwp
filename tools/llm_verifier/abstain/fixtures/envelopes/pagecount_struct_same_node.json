@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "command": "render-diff",
+  "exit": 1,
+  "pageCountA": 6,
+  "pageCountB": 6,
+  "pageCountMismatch": false,
+  "status": "STRUCT_MISMATCH",
+  "hardStructPages": 1,
+  "structNode": "page/2/table/0",
+  "pageCountNode": "page/2/table/0",
+  "struct_delta": "Table:-1;Line:2"
+}

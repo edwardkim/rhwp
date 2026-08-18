@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "command": "ir-diff",
+  "exit": 0,
+  "identical": true,
+  "diffCount": 0,
+  "verify": { "identical": true, "diffCount": 0 },
+  "pageCountA": 3,
+  "pageCountB": 3,
+  "pageCountMismatch": false,
+  "status": "PASS"
+}
