@@ -7,7 +7,7 @@ last_verified: 2026-08-18
 
 # kevin9327 누적 체리픽 통합 기록 — PR #5212–#5314
 
-초기 적용 기준은 `upstream/devel@0bc05ef81107ac61ec38d622f71b44a44d1b4821`이고, 최종 검증 기준은 #5444 병합 뒤 `upstream/devel@e79f113080ead96c391391d211a0a64fa8398378`다. 검토 브랜치는 `review/kevin9327-5212-5314-20260818`이며, 27개 열린 원 PR의 기능 commit만 순서대로 적용했고 원 branch에는 push하지 않았다.
+초기 적용 기준은 `upstream/devel@0bc05ef81107ac61ec38d622f71b44a44d1b4821`이고, 최종 검증 기준은 #5444 병합 뒤 #5455·#5460을 포함한 `upstream/devel@3344e391536f1e9978040c75083bd160677b5d4c`다. 검토 브랜치는 `review/kevin9327-5212-5314-20260818`이며, 27개 열린 원 PR의 기능 commit만 순서대로 적용했고 원 branch에는 push하지 않았다.
 
 ## 원 source와 누적 적용 SHA
 
@@ -75,8 +75,9 @@ last_verified: 2026-08-18
 5. 선택 regression suite 004·006·010·014·018·021·024·026: 723 passed, 6 skipped.
 6. `cargo test --doc --target-dir target/pr-review`: 8 passed, 2 ignored.
 7. #5444 병합·rebase 뒤 공식 전체 명령 `cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast`을 종료코드 0으로 완료했다: 7,274/7,274 passed, 15 slow, 38 skipped, test 실행 1,030.178초(새 release-test 재컴파일 26분 16초 별도).
-8. push 직전 `cargo fmt --all`, `cargo fmt --all -- --check`, `node scripts/rust-test-suite-manifest.mjs --prepare --check`, `node scripts/rust-unit-test-tiers.mjs --check`, `git diff --check`를 다시 통과한다. `tests/generated/regression_suite_*`와 `tests/suites/manifest.json`은 생성·무시 대상이며 stage하지 않는다.
+8. #5455·#5460 최신 rebase와 CI Lint 보정 뒤 같은 전체 명령을 종료코드 0으로 다시 완료했다: 7,274/7,274 passed, 10 slow, 38 skipped, 667.420초. CI와 동일한 `python -m unittest scripts.tests.test_gym_packs`도 55/55 통과했다.
+9. push 직전 `cargo fmt --all`, `cargo fmt --all -- --check`, `node scripts/rust-test-suite-manifest.mjs --prepare --check`, `node scripts/rust-unit-test-tiers.mjs --check`, `git diff --check`를 다시 통과한다. `tests/generated/regression_suite_*`와 `tests/suites/manifest.json`은 생성·무시 대상이며 stage하지 않는다.
 
 ## 원격 후속 경계
 
-현재 원 PR들은 OPEN / MERGEABLE / BLOCKED 상태다. 통합 PR [#5429](https://github.com/edwardkim/rhwp/pull/5429)는 draft이며, #5444 병합 기준으로 rebase한 전체 회귀 결과·보정·이 기록을 force-with-lease push한 뒤 최신 CI·CodeQL을 감시한다. 통과 후 별도 merge 승인에 따라 merge·원 PR 처리·오늘할일 archive를 진행한다.
+현재 원 PR들은 OPEN / MERGEABLE / BLOCKED 상태다. 통합 PR [#5429](https://github.com/edwardkim/rhwp/pull/5429)는 open 상태이며, 최신 rebase한 전체 회귀 결과·보정·이 기록을 force-with-lease push한 뒤 최신 CI·CodeQL을 감시한다. 통과 후 별도 merge 승인에 따라 merge·원 PR 처리·오늘할일 archive를 진행한다.
