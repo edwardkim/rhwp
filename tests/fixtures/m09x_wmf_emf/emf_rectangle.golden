@@ -1,0 +1,13 @@
+# M09x emf golden — current-engine lock
+kind: emf
+bytes: 132
+
+=== parse ===
+ok count=3 kinds=[Header, Rectangle, Eof]
+bounds=(0,0,100,100) frame=(0,0,2540,2540) signature=0x464D4520 records_field=3
+
+=== svg_fragment ===
+<g transform="matrix(1.000000 0.000000 0.000000 1.000000 0.000000 0.000000)"><rect x="10" y="10" width="80" height="70" fill="none" stroke="black" stroke-width="1.00"/></g>
+
+=== standalone ===
+<svg xmlns="http://www.w3.org/2000/svg" width="72.00" height="72.00" viewBox="0 0 72.00 72.00"><g transform="matrix(0.720000 0.000000 0.000000 0.720000 0.000000 0.000000)"><rect x="10" y="10" width="80" height="70" fill="none" stroke="black" stroke-width="1.00"/></g></svg>

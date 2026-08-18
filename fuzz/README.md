@@ -75,7 +75,7 @@ CFB/ZIP처럼 구조 제약이 강한 컨테이너 포맷은 시드 없이는 �
 | `corpus/parse_hwp3/` | `samples/` (hwp3-pagedef-1915, hwp3-sample) |
 | `corpus/parse_hwpx/` | `samples/task2136`, `samples/task2093`, `samples/` (tac-host-spacing) |
 | `corpus/parse_hml/` | `tests/fixtures/hml/`, `samples/hml/` |
-| `corpus/parse_wmf/` | 최소 유효 시드 합성(META_PLACEABLE + 최소 헤더 + EOF, 46B) |
+| `corpus/parse_wmf/` | 최소 placeable(46B) + M09x 소형 도형 시드(rect/ellipse/line/표준 헤더) |
 | `corpus/parse_ooxml_chart/` | 최소 유효 시드 합성(`c:chartSpace` 막대 차트) |
 
 퍼징 중 커버리지를 넓힌 입력은 같은 디렉터리에 자동 축적됩니다.

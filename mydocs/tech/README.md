@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/tech/README.md
-last_verified: 2026-08-10
+last_verified: 2026-08-18
 ---
 
 # tech 문서 지도
@@ -30,6 +30,7 @@ last_verified: 2026-08-10
 | 기술 채택·비채택 | [ThorVG 결정 기록](thorvg_decision.md) | [Issue #112-115 ThorVG PoC 조사](investigations/issue-112/README.md) |
 | 초소형 모델용 매크로 도구 축 | [초소형 모델용 매크로 도구 축 설계 결정](tiny_model_macro_tools.md) | 계약 테스트 `tests/digest_macro_contract.rs`, CLI 명령은 [CLI 명령 레퍼런스](../manual/cli_commands.md) 재확인 |
 | OLE chart renderer | [OLE chart renderer 선택 결정](hwp_ole_chart_renderer_architecture_decision_1251.md) | [Issue #1251 시각 차이 조사](investigations/issue-1251/README.md) |
+| 차트 OLE v1 경계 | [차트 OLE v1 경계](chart_ole_v1_boundary.md) | WMF/EMF 골든 `tests/cases/wmf_emf_goldens.rs`, 퍼즈 `parse_wmf` |
 | CI cache 정책 이력 | [Issue #1664 cache 정책 결정](ci_cache_policy_1664.md) | 현재 동작은 `.github/workflows/ci.yml` 재확인 |
 | WASM toolchain 버전 | [wasm-pack 버전 고정 정책](wasm_pack_version_policy.md) | 현재 설치 동작은 `.github/actions/install-wasm-pack/action.yml`과 `Dockerfile` 재확인 |
 | 에이전트 표면 내성 설계 | [경량 에이전트 내성 — CLI·MCP 계약 확장 4건](weak_agent_proofing.md) | [에이전트 실패 사전](../manual/agent_troubleshooting_guide.md), [에이전트 표면 플레이북](../manual/agent_surface_playbook.md) |
