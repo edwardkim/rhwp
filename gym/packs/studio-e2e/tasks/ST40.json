@@ -1,0 +1,27 @@
+{
+  "id": "ST40",
+  "tier": 1,
+  "title": "묶은세로막대 차트 배열 길이 하한",
+  "input": "samples/chart/세로막대형/묶은세로막대형.hwp",
+  "instructions": "입력 문서에 차트가 있음을 보여라. answer.json 에 {\"ok\": true} 를 내지 말고, chart-to-csv --json 봉투의 charts 가 1 이상임을 라이브로 확인하라. chartCount 숫자와 charts 배열 길이는 같은 사실을 다른 자리로 읽는다. 힌트: rhwp chart-to-csv <문서> --json 의 charts.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "charts >= 1",
+      "op": "len_ge",
+      "path": "charts",
+      "value": 1,
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}
