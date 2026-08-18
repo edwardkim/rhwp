@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: proptest-roundtrip-${{ github.workflow }}-${{ github.ref }}
@@ -26,10 +27,72 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  preflight:
+    name: Proptest preflight
+    runs-on: ubuntu-latest
+    outputs:
+      fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
+      reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
+    steps:
+      # 문서 전용 devel PR도 `prop roundtrip` check 이름은 남겨야 한다. workflow-level
+      # paths-ignore를 쓰면 required check가 사라질 수 있으므로 job 조건으로 skip한다.
+      - name: Detect mydocs-only devel PR
+        id: detect
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            function setResult(fastPass, reason) {
+              core.setOutput('fast_pass', fastPass ? 'true' : 'false');
+              core.setOutput('reason', reason);
+              core.info(`fast_pass=${fastPass} reason=${reason}`);
+            }
+
+            if (context.eventName !== 'pull_request') {
+              setResult(false, `non-pull-request:${context.eventName}`);
+              return;
+            }
+            const pr = context.payload.pull_request;
+            if (!pr || pr.base.ref !== 'devel') {
+              setResult(false, `non-devel-base:${pr?.base?.ref || 'unknown'}`);
+              return;
+            }
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+            const mydocsOnly = files.length > 0 && files.every((file) => (
+              file.filename.startsWith('mydocs/')
+              && (!file.previous_filename || file.previous_filename.startsWith('mydocs/'))
+            ));
+            setResult(mydocsOnly, mydocsOnly ? 'mydocs-only-devel-pr' : 'code-or-non-mydocs-change');
+
+      - name: Finalize fast pass
+        id: finalize
+        if: ${{ always() }}
+        env:
+          DETECTED_FAST_PASS: ${{ steps.detect.outputs.fast_pass || 'false' }}
+          DETECTED_REASON: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
+        run: |
+          set -euo pipefail
+          fast_pass='false'
+          reason='preflight-unavailable'
+          if [[ "${DETECTED_FAST_PASS}" == 'true' ]]; then
+            fast_pass='true'
+            reason="${DETECTED_REASON}"
+          elif [[ "${DETECTED_REASON}" != 'preflight-unavailable' ]]; then
+            reason="${DETECTED_REASON}"
+          fi
+          printf 'fast_pass=%s\nreason=%s\n' "${fast_pass}" "${reason}" >> "$GITHUB_OUTPUT"
+
   proptest-roundtrip:
     name: prop roundtrip
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    needs: preflight
+    if: ${{ always() && needs.preflight.result == 'success' && needs.preflight.outputs.fast_pass != 'true' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
