@@ -1,0 +1,38 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: EQALIGN
+script: EQALIGN{x && 1}
+honesty: implemented-variant
+
+=== ast ===
+EqAlign {
+    rows: [
+        (
+            Text(
+                "x",
+            ),
+            Row(
+                [
+                    Space(
+                        Tab,
+                    ),
+                    Number(
+                        "1",
+                    ),
+                ],
+            ),
+        ),
+    ],
+}
+
+=== layout ===
+EqAlign x=0.0000 y=0.0000 w=45.5500 h=20.0000 bl=10.0000
+  row0.left:
+    Text("x") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+  row0.right:
+    Row x=14.5500 y=0.0000 w=31.0000 h=20.0000 bl=16.0000
+      Space(20.0000) x=0.0000 y=0.0000 w=20.0000 h=20.0000 bl=16.0000
+      Number("1") x=20.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>
+<text x="34.55" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>

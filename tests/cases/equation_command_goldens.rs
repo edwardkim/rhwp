@@ -1,9 +1,10 @@
-//! M09-1: 수식 명령 골든 30종.
+//! M09-1 + M09-g: 수식 명령 골든 (변형·예외·미구현 정직 표).
 //!
-//! OVER/SQRT/ROOT/MATRIX/PMATRIX/BMATRIX/DMATRIX/EQALIGN/PILE 의
-//! 현재 파서·레이아웃·SVG 출력을 잠근다. 엔진을 고치거나 디스패치를
-//! 리팩터하지 않는다(M09-2). 미구현·축약 동작도 현행 그대로 고정한다.
+//! OVER/SQRT/ROOT/MATRIX/PMATRIX/BMATRIX/DMATRIX/EQALIGN/PILE 의 현재
+//! 파서·레이아웃·SVG 출력을 잠근다. 엔진을 고치거나 디스패치를 리팩터하지
+//! 않는다(M09-2). 미구현·축약 동작도 현행 그대로 고정한다.
 //!
+//! 카탈로그: `src/renderer/equation/fixtures/catalog.tsv`
 //! 골든 갱신: `UPDATE_EQ_GOLDENS=1 cargo test --test <suite> equation_command_goldens`
 
 use std::fmt::Write as _;
@@ -16,210 +17,137 @@ use rhwp::renderer::equation::svg_render::render_equation_svg;
 
 const FONT_SIZE: f64 = 20.0;
 const COLOR: &str = "#000000";
-const FIXTURE_DIR: &str = "src/renderer/equation/fixtures/m09_1";
+const FIXTURE_ROOT: &str = "src/renderer/equation/fixtures";
+const CATALOG_FILE: &str = "catalog.tsv";
 
-struct GoldenCase {
-    id: &'static str,
-    command: &'static str,
-    script: &'static str,
-}
-
-/// 명령별 대표 스크립트. 현행 엔진 동작을 잠그는 입력이지 정답 오라클이 아니다.
-const CASES: &[GoldenCase] = &[
-    // OVER
-    GoldenCase {
-        id: "over_simple",
-        command: "OVER",
-        script: "1 OVER 2",
-    },
-    GoldenCase {
-        id: "over_grouped",
-        command: "OVER",
-        script: "{a+b} OVER {c-d}",
-    },
-    GoldenCase {
-        id: "over_nested",
-        command: "OVER",
-        script: "{1 OVER 2} OVER 3",
-    },
-    GoldenCase {
-        id: "over_glued_denom",
-        command: "OVER",
-        script: "7 OVER10",
-    },
-    GoldenCase {
-        id: "over_in_paren",
-        command: "OVER",
-        script: "LEFT ( x OVER y RIGHT )",
-    },
-    // SQRT
-    GoldenCase {
-        id: "sqrt_ident",
-        command: "SQRT",
-        script: "SQRT x",
-    },
-    GoldenCase {
-        id: "sqrt_group",
-        command: "SQRT",
-        script: "SQRT {a+b}",
-    },
-    GoldenCase {
-        id: "sqrt_index_paren",
-        command: "SQRT",
-        script: "SQRT(3) of x",
-    },
-    GoldenCase {
-        id: "sqrt_index_brace",
-        command: "SQRT",
-        script: "SQRT {3} of {x}",
-    },
-    // ROOT — 현행 파서는 SQRT 와 동일 분기로 처리한다.
-    GoldenCase {
-        id: "root_ident",
-        command: "ROOT",
-        script: "ROOT x",
-    },
-    GoldenCase {
-        id: "root_group",
-        command: "ROOT",
-        script: "ROOT {a+b}",
-    },
-    GoldenCase {
-        id: "root_index",
-        command: "ROOT",
-        script: "ROOT(3) of x",
-    },
-    // MATRIX
-    GoldenCase {
-        id: "matrix_2x2",
-        command: "MATRIX",
-        script: "MATRIX{a & b # c & d}",
-    },
-    GoldenCase {
-        id: "matrix_col",
-        command: "MATRIX",
-        script: "MATRIX{1 # 2 # 3}",
-    },
-    GoldenCase {
-        id: "matrix_row",
-        command: "MATRIX",
-        script: "MATRIX{a & b & c}",
-    },
-    GoldenCase {
-        id: "matrix_no_brace",
-        command: "MATRIX",
-        script: "MATRIX",
-    },
-    // PMATRIX
-    GoldenCase {
-        id: "pmatrix_2x2",
-        command: "PMATRIX",
-        script: "PMATRIX{a & b # c & d}",
-    },
-    GoldenCase {
-        id: "pmatrix_1x1",
-        command: "PMATRIX",
-        script: "PMATRIX{x}",
-    },
-    GoldenCase {
-        id: "pmatrix_frac",
-        command: "PMATRIX",
-        script: "PMATRIX{{1} OVER {2} & 0 # 0 & 1}",
-    },
-    // BMATRIX
-    GoldenCase {
-        id: "bmatrix_2x2",
-        command: "BMATRIX",
-        script: "BMATRIX{a & b # c & d}",
-    },
-    GoldenCase {
-        id: "bmatrix_identity",
-        command: "BMATRIX",
-        script: "BMATRIX{1 & 0 # 0 & 1}",
-    },
-    GoldenCase {
-        id: "bmatrix_1x2",
-        command: "BMATRIX",
-        script: "BMATRIX{x & y}",
-    },
-    // DMATRIX
-    GoldenCase {
-        id: "dmatrix_2x2",
-        command: "DMATRIX",
-        script: "DMATRIX{a & b # c & d}",
-    },
-    GoldenCase {
-        id: "dmatrix_col",
-        command: "DMATRIX",
-        script: "DMATRIX{x # y}",
-    },
-    GoldenCase {
-        id: "dmatrix_1x1",
-        command: "DMATRIX",
-        script: "DMATRIX{1}",
-    },
-    // EQALIGN
-    GoldenCase {
-        id: "eqalign_two",
-        command: "EQALIGN",
-        script: "EQALIGN{x &= 1 # y &= 2}",
-    },
-    GoldenCase {
-        id: "eqalign_one",
-        command: "EQALIGN",
-        script: "EQALIGN{a + b &= c}",
-    },
-    GoldenCase {
-        id: "eqalign_no_amp",
-        command: "EQALIGN",
-        script: "EQALIGN{x = 1 # y = 2}",
-    },
-    // PILE / LPILE / RPILE — 레이아웃은 전용 kind 없이 Row 로 쌓는다.
-    GoldenCase {
-        id: "pile_center",
-        command: "PILE",
-        script: "PILE{a # b # c}",
-    },
-    GoldenCase {
-        id: "lpile_left",
-        command: "PILE",
-        script: "LPILE{a # b}",
-    },
-    GoldenCase {
-        id: "rpile_right",
-        command: "PILE",
-        script: "RPILE{a # b}",
-    },
+/// M09-1 원본 31종 id. 확장 카탈로그가 이 집합을 반드시 포함한다.
+const M09_1_IDS: &[&str] = &[
+    "over_simple",
+    "over_grouped",
+    "over_nested",
+    "over_glued_denom",
+    "over_in_paren",
+    "sqrt_ident",
+    "sqrt_group",
+    "sqrt_index_paren",
+    "sqrt_index_brace",
+    "root_ident",
+    "root_group",
+    "root_index",
+    "matrix_2x2",
+    "matrix_col",
+    "matrix_row",
+    "matrix_no_brace",
+    "pmatrix_2x2",
+    "pmatrix_1x1",
+    "pmatrix_frac",
+    "bmatrix_2x2",
+    "bmatrix_identity",
+    "bmatrix_1x2",
+    "dmatrix_2x2",
+    "dmatrix_col",
+    "dmatrix_1x1",
+    "eqalign_two",
+    "eqalign_one",
+    "eqalign_no_amp",
+    "pile_center",
+    "lpile_left",
+    "rpile_right",
 ];
 
-fn fixture_dir() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE_DIR)
+const REQUIRED_COMMANDS: &[&str] = &[
+    "OVER", "SQRT", "ROOT", "MATRIX", "PMATRIX", "BMATRIX", "DMATRIX", "EQALIGN", "PILE",
+];
+
+struct GoldenCase {
+    id: String,
+    dir: String,
+    command: String,
+    honesty: String,
+    script: String,
 }
 
-fn golden_path(id: &str) -> PathBuf {
-    fixture_dir().join(format!("{id}.golden"))
+fn fixture_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE_ROOT)
+}
+
+fn catalog_path() -> PathBuf {
+    fixture_root().join(CATALOG_FILE)
+}
+
+fn golden_path(case: &GoldenCase) -> PathBuf {
+    fixture_root()
+        .join(&case.dir)
+        .join(format!("{}.golden", case.id))
+}
+
+fn load_catalog() -> Vec<GoldenCase> {
+    let raw = std::fs::read_to_string(catalog_path())
+        .unwrap_or_else(|e| panic!("read catalog {}: {e}", catalog_path().display()));
+    let mut cases = Vec::new();
+    for (lineno, line) in raw.lines().enumerate() {
+        let line = line.trim_end();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+        let cols: Vec<&str> = line.split('\t').collect();
+        assert_eq!(
+            cols.len(),
+            5,
+            "catalog.tsv:{}: expected 5 TAB columns, got {}",
+            lineno + 1,
+            cols.len()
+        );
+        cases.push(GoldenCase {
+            id: cols[0].to_string(),
+            dir: cols[1].to_string(),
+            command: cols[2].to_string(),
+            honesty: cols[3].to_string(),
+            script: cols[4].to_string(),
+        });
+    }
+    cases
 }
 
 fn snapshot_of(case: &GoldenCase) -> String {
-    let ast = parse(case.script);
+    let ast = parse(&case.script);
     let layout = EqLayout::new(FONT_SIZE).layout(&ast);
     let svg = render_equation_svg(&layout, COLOR, FONT_SIZE);
     let mut layout_ir = String::new();
     dump_layout(&mut layout_ir, &layout, 0);
-    format!(
-        "# M09-1 equation golden — current-engine lock\n\
-         command: {}\n\
-         script: {}\n\
-         \n\
-         === ast ===\n\
-         {:#?}\n\
-         \n\
-         === layout ===\n\
-         {}\n\
-         === svg ===\n\
-         {}",
-        case.command, case.script, ast, layout_ir, svg
-    )
+    if case.dir == "m09_1" {
+        format!(
+            "# M09-1 equation golden — current-engine lock\n\
+             command: {}\n\
+             script: {}\n\
+             \n\
+             === ast ===\n\
+             {:#?}\n\
+             \n\
+             === layout ===\n\
+             {}\n\
+             === svg ===\n\
+             {}",
+            case.command, case.script, ast, layout_ir, svg
+        )
+    } else {
+        format!(
+            "# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)\n\
+             command: {}\n\
+             script: {}\n\
+             honesty: {}\n\
+             \n\
+             === ast ===\n\
+             {:#?}\n\
+             \n\
+             === layout ===\n\
+             {}\n\
+             === svg ===\n\
+             {}",
+            case.command, case.script, case.honesty, ast, layout_ir, svg
+        )
+    }
+    .replace("\r\n", "\n")
 }
 
 fn dump_layout(out: &mut String, lb: &LayoutBox, indent: usize) {
@@ -380,32 +308,47 @@ fn update_requested() -> bool {
     )
 }
 
+fn normalize_lf(s: &str) -> String {
+    s.replace("\r\n", "\n")
+}
+
 #[test]
 fn equation_command_goldens_lock_parse_layout_svg() {
-    // 이슈 본문은 "약 30종". OVER 5 + SQRT 4 + ROOT 3 + MATRIX 4 + PMATRIX 3
-    // + BMATRIX 3 + DMATRIX 3 + EQALIGN 3 + PILE 3 = 31.
-    assert_eq!(CASES.len(), 31, "M09-1 골든 개수가 카탈로그와 어긋난다");
-    let required = [
-        "OVER", "SQRT", "ROOT", "MATRIX", "PMATRIX", "BMATRIX", "DMATRIX", "EQALIGN", "PILE",
-    ];
-    for command in required {
+    let cases = load_catalog();
+    assert!(
+        cases.len() >= 200,
+        "M09-g 카탈로그가 너무 작다 ({}건)",
+        cases.len()
+    );
+
+    let m09_1: Vec<_> = cases.iter().filter(|c| c.dir == "m09_1").collect();
+    assert_eq!(m09_1.len(), 31, "M09-1 원본 31종이 카탈로그에 없다");
+    for id in M09_1_IDS {
         assert!(
-            CASES.iter().any(|c| c.command == command),
+            cases.iter().any(|c| c.id == *id && c.dir == "m09_1"),
+            "M09-1 id {id} 가 카탈로그에 없다"
+        );
+    }
+    for command in REQUIRED_COMMANDS {
+        assert!(
+            cases.iter().any(|c| c.command == *command),
             "명령 {command} 골든이 없다"
         );
     }
-    let mut ids = CASES.iter().map(|c| c.id).collect::<Vec<_>>();
+    let mut ids = cases.iter().map(|c| c.id.as_str()).collect::<Vec<_>>();
     ids.sort_unstable();
     ids.dedup();
-    assert_eq!(ids.len(), CASES.len(), "골든 id 가 중복된다");
+    assert_eq!(ids.len(), cases.len(), "골든 id 가 중복된다");
 
-    std::fs::create_dir_all(fixture_dir()).expect("create fixture dir");
+    for dir in ["m09_1", "m09_expand"] {
+        std::fs::create_dir_all(fixture_root().join(dir)).expect("create fixture dir");
+    }
     let update = update_requested();
     let mut mismatches = Vec::new();
 
-    for case in CASES {
+    for case in &cases {
         let actual = snapshot_of(case);
-        let path = golden_path(case.id);
+        let path = golden_path(case);
         if update || !path.exists() {
             if !update && !path.exists() {
                 mismatches.push(format!(
@@ -419,8 +362,10 @@ fn equation_command_goldens_lock_parse_layout_svg() {
                 .unwrap_or_else(|e| panic!("write {}: {e}", path.display()));
             continue;
         }
-        let expected = std::fs::read_to_string(&path)
-            .unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+        let expected = normalize_lf(
+            &std::fs::read_to_string(&path)
+                .unwrap_or_else(|e| panic!("read {}: {e}", path.display())),
+        );
         if expected != actual {
             mismatches.push(format!(
                 "{} ({})\n--- expected ---\n{expected}\n--- actual ---\n{actual}",
@@ -436,4 +381,48 @@ fn equation_command_goldens_lock_parse_layout_svg() {
         mismatches.len(),
         mismatches.join("\n\n")
     );
+}
+
+#[test]
+fn equation_command_goldens_honesty_tags_are_known() {
+    const KNOWN: &[&str] = &[
+        "implemented",
+        "implemented-variant",
+        "root-aliases-sqrt",
+        "pile-layout-as-row",
+        "matrix-no-brace-empty",
+        "missing-operand",
+        "case-insensitive",
+        "atop-vs-over",
+        "latex-frac",
+        "vmatrix-unimpl-text",
+        "smallmatrix-unimpl-text",
+        "ladder-fallback-matrix",
+        "benzene-placeholder",
+        "bigg-size-ignored",
+        "choose-empty-top",
+        "longdiv-simplified-row",
+        "color-passthrough",
+        "unknown-command-text",
+        "cases-related",
+        "rel-buildrel",
+        "phantom-space",
+        "latex-env-partial",
+        "latex-space",
+        "latex-text",
+        "latex-stack",
+        "limit-cmd",
+        "left-script",
+    ];
+    let cases = load_catalog();
+    for case in &cases {
+        assert!(
+            KNOWN.contains(&case.honesty.as_str()),
+            "{}: unknown honesty tag {}",
+            case.id,
+            case.honesty
+        );
+    }
+    let expand = cases.iter().filter(|c| c.dir == "m09_expand").count();
+    assert!(expand >= 160, "확장 골든이 부족하다 ({expand})");
 }

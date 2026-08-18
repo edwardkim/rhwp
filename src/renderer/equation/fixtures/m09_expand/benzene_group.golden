@@ -1,0 +1,25 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: BENZENE{C6H6}
+honesty: benzene-placeholder
+
+=== ast ===
+Row(
+    [
+        MathSymbol(
+            "⌬",
+        ),
+        Text(
+            "C6H6",
+        ),
+    ],
+)
+
+=== layout ===
+Row x=0.0000 y=0.0000 w=62.4000 h=20.0000 bl=16.0000
+  MathSymbol("⌬") x=0.0000 y=0.0000 w=12.0000 h=20.0000 bl=16.0000
+  Text("C6H6") x=12.0000 y=0.0000 w=50.4000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">⌬</text>
+<text x="12.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">C6H6</text>

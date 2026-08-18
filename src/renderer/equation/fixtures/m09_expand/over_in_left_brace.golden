@@ -1,0 +1,33 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: LEFT { a OVER b RIGHT }
+honesty: implemented-variant
+
+=== ast ===
+Paren {
+    left: "{",
+    right: "}",
+    body: Fraction {
+        numer: Text(
+            "a",
+        ),
+        denom: Text(
+            "b",
+        ),
+    },
+}
+
+=== layout ===
+Paren("{","}") x=0.0000 y=0.0000 w=36.0700 h=48.8000 bl=29.4000
+  Fraction x=8.2600 y=0.0000 w=19.5500 h=48.8000 bl=29.4000
+    numer:
+      Text("a") x=4.0000 y=4.0000 w=11.5500 h=20.0000 bl=16.0000
+    denom:
+      Text("b") x=4.0000 y=24.8000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M3.78,0.00 Q2.16,0.00 2.16,12.20 Q2.16,24.40 1.08,24.40 Q2.16,24.40 2.16,36.60 Q2.16,48.80 3.78,48.80" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="12.26" y="20.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<line x1="9.26" y1="24.40" x2="26.81" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="12.26" y="40.80" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">b</text>
+<path d="M32.29,0.00 Q33.91,0.00 33.91,12.20 Q33.91,24.40 34.99,24.40 Q33.91,24.40 33.91,36.60 Q33.91,48.80 32.29,48.80" fill="none" stroke="#000000" stroke-width="0.80"/>

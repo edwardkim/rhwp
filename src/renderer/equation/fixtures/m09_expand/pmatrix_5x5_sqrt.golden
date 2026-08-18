@@ -1,0 +1,483 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: PMATRIX
+script: PMATRIX{SQRT(2) of {5} & SQRT(3) of {6} & SQRT(4) of {7} & SQRT(5) of {8} & SQRT(6) of {9} # SQRT(7) of {10} & SQRT(8) of {11} & SQRT(9) of {12} & SQRT(10) of {13} & SQRT(11) of {14} # SQRT(12) of {15} & SQRT(13) of {16} & SQRT(14) of {17} & SQRT(15) of {18} & SQRT(16) of {19} # SQRT(17) of {20} & SQRT(18) of {21} & SQRT(19) of {22} & SQRT(20) of {23} & SQRT(21) of {24} # SQRT(22) of {25} & SQRT(23) of {26} & SQRT(24) of {27} & SQRT(25) of {28} & SQRT(26) of {29}}
+honesty: implemented-variant
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Sqrt {
+                index: Some(
+                    Number(
+                        "2",
+                    ),
+                ),
+                body: Number(
+                    "5",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "3",
+                    ),
+                ),
+                body: Number(
+                    "6",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "4",
+                    ),
+                ),
+                body: Number(
+                    "7",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "5",
+                    ),
+                ),
+                body: Number(
+                    "8",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "6",
+                    ),
+                ),
+                body: Number(
+                    "9",
+                ),
+            },
+        ],
+        [
+            Sqrt {
+                index: Some(
+                    Number(
+                        "7",
+                    ),
+                ),
+                body: Number(
+                    "10",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "8",
+                    ),
+                ),
+                body: Number(
+                    "11",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "9",
+                    ),
+                ),
+                body: Number(
+                    "12",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "10",
+                    ),
+                ),
+                body: Number(
+                    "13",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "11",
+                    ),
+                ),
+                body: Number(
+                    "14",
+                ),
+            },
+        ],
+        [
+            Sqrt {
+                index: Some(
+                    Number(
+                        "12",
+                    ),
+                ),
+                body: Number(
+                    "15",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "13",
+                    ),
+                ),
+                body: Number(
+                    "16",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "14",
+                    ),
+                ),
+                body: Number(
+                    "17",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "15",
+                    ),
+                ),
+                body: Number(
+                    "18",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "16",
+                    ),
+                ),
+                body: Number(
+                    "19",
+                ),
+            },
+        ],
+        [
+            Sqrt {
+                index: Some(
+                    Number(
+                        "17",
+                    ),
+                ),
+                body: Number(
+                    "20",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "18",
+                    ),
+                ),
+                body: Number(
+                    "21",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "19",
+                    ),
+                ),
+                body: Number(
+                    "22",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "20",
+                    ),
+                ),
+                body: Number(
+                    "23",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "21",
+                    ),
+                ),
+                body: Number(
+                    "24",
+                ),
+            },
+        ],
+        [
+            Sqrt {
+                index: Some(
+                    Number(
+                        "22",
+                    ),
+                ),
+                body: Number(
+                    "25",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "23",
+                    ),
+                ),
+                body: Number(
+                    "26",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "24",
+                    ),
+                ),
+                body: Number(
+                    "27",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "25",
+                    ),
+                ),
+                body: Number(
+                    "28",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "26",
+                    ),
+                ),
+                body: Number(
+                    "29",
+                ),
+            },
+        ],
+    ],
+    style: Paren,
+}
+
+=== layout ===
+Matrix(Paren) x=0.0000 y=0.0000 w=311.0000 h=144.0000 bl=72.0000
+  row0:
+    Sqrt x=19.3500 y=0.0000 w=26.7000 h=24.0000 bl=18.0000
+      index:
+        Number("2") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("5") x=14.7000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+    Sqrt x=80.7500 y=0.0000 w=26.7000 h=24.0000 bl=18.0000
+      index:
+        Number("3") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("6") x=14.7000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+    Sqrt x=142.1500 y=0.0000 w=26.7000 h=24.0000 bl=18.0000
+      index:
+        Number("4") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("7") x=14.7000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+    Sqrt x=203.5500 y=0.0000 w=26.7000 h=24.0000 bl=18.0000
+      index:
+        Number("5") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("8") x=14.7000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+    Sqrt x=264.9500 y=0.0000 w=26.7000 h=24.0000 bl=18.0000
+      index:
+        Number("6") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("9") x=14.7000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+  row1:
+    Sqrt x=13.8500 y=30.0000 w=37.7000 h=24.0000 bl=18.0000
+      index:
+        Number("7") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("10") x=14.7000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=75.2500 y=30.0000 w=37.7000 h=24.0000 bl=18.0000
+      index:
+        Number("8") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("11") x=14.7000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=136.6500 y=30.0000 w=37.7000 h=24.0000 bl=18.0000
+      index:
+        Number("9") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("12") x=14.7000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=194.2000 y=30.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("10") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("13") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=255.6000 y=30.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("11") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("14") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+  row2:
+    Sqrt x=10.0000 y=60.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("12") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("15") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=71.4000 y=60.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("13") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("16") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=132.8000 y=60.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("14") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("17") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=194.2000 y=60.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("15") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("18") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=255.6000 y=60.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("16") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("19") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+  row3:
+    Sqrt x=10.0000 y=90.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("17") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("20") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=71.4000 y=90.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("18") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("21") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=132.8000 y=90.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("19") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("22") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=194.2000 y=90.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("20") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("23") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=255.6000 y=90.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("21") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("24") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+  row4:
+    Sqrt x=10.0000 y=120.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("22") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("25") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=71.4000 y=120.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("23") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("26") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=132.8000 y=120.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("24") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("27") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=194.2000 y=120.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("25") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("28") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+    Sqrt x=255.6000 y=120.0000 w=45.4000 h=24.0000 bl=18.0000
+      index:
+        Number("26") x=0.0000 y=0.0000 w=15.4000 h=14.0000 bl=11.2000
+      body:
+        Number("29") x=22.4000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M5.40,0.00 C0.30,25.92 0.30,118.08 5.40,144.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<path d="M305.60,0.00 C310.70,25.92 310.70,118.08 305.60,144.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<path d="M21.05,13.40 L23.05,14.40 L29.05,24.00 L32.05,0.00 L46.05,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="19.35" y="11.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<text x="34.05" y="18.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">5</text>
+<path d="M82.45,13.40 L84.45,14.40 L90.45,24.00 L93.45,0.00 L107.45,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="80.75" y="11.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>
+<text x="95.45" y="18.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">6</text>
+<path d="M143.85,13.40 L145.85,14.40 L151.85,24.00 L154.85,0.00 L168.85,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="142.15" y="11.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">4</text>
+<text x="156.85" y="18.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">7</text>
+<path d="M205.25,13.40 L207.25,14.40 L213.25,24.00 L216.25,0.00 L230.25,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="203.55" y="11.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">5</text>
+<text x="218.25" y="18.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">8</text>
+<path d="M266.65,13.40 L268.65,14.40 L274.65,24.00 L277.65,0.00 L291.65,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="264.95" y="11.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">6</text>
+<text x="279.65" y="18.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">9</text>
+<path d="M15.55,43.40 L17.55,44.40 L23.55,54.00 L26.55,30.00 L51.55,30.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="13.85" y="41.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">7</text>
+<text x="28.55" y="48.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">10</text>
+<path d="M76.95,43.40 L78.95,44.40 L84.95,54.00 L87.95,30.00 L112.95,30.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="75.25" y="41.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">8</text>
+<text x="89.95" y="48.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">11</text>
+<path d="M138.35,43.40 L140.35,44.40 L146.35,54.00 L149.35,30.00 L174.35,30.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="136.65" y="41.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">9</text>
+<text x="151.35" y="48.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">12</text>
+<path d="M203.60,43.40 L205.60,44.40 L211.60,54.00 L214.60,30.00 L239.60,30.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="194.20" y="41.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">10</text>
+<text x="216.60" y="48.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">13</text>
+<path d="M265.00,43.40 L267.00,44.40 L273.00,54.00 L276.00,30.00 L301.00,30.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="255.60" y="41.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">11</text>
+<text x="278.00" y="48.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">14</text>
+<path d="M19.40,73.40 L21.40,74.40 L27.40,84.00 L30.40,60.00 L55.40,60.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="10.00" y="71.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">12</text>
+<text x="32.40" y="78.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">15</text>
+<path d="M80.80,73.40 L82.80,74.40 L88.80,84.00 L91.80,60.00 L116.80,60.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="71.40" y="71.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">13</text>
+<text x="93.80" y="78.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">16</text>
+<path d="M142.20,73.40 L144.20,74.40 L150.20,84.00 L153.20,60.00 L178.20,60.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="132.80" y="71.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">14</text>
+<text x="155.20" y="78.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">17</text>
+<path d="M203.60,73.40 L205.60,74.40 L211.60,84.00 L214.60,60.00 L239.60,60.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="194.20" y="71.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">15</text>
+<text x="216.60" y="78.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">18</text>
+<path d="M265.00,73.40 L267.00,74.40 L273.00,84.00 L276.00,60.00 L301.00,60.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="255.60" y="71.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">16</text>
+<text x="278.00" y="78.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">19</text>
+<path d="M19.40,103.40 L21.40,104.40 L27.40,114.00 L30.40,90.00 L55.40,90.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="10.00" y="101.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">17</text>
+<text x="32.40" y="108.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">20</text>
+<path d="M80.80,103.40 L82.80,104.40 L88.80,114.00 L91.80,90.00 L116.80,90.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="71.40" y="101.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">18</text>
+<text x="93.80" y="108.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">21</text>
+<path d="M142.20,103.40 L144.20,104.40 L150.20,114.00 L153.20,90.00 L178.20,90.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="132.80" y="101.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">19</text>
+<text x="155.20" y="108.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">22</text>
+<path d="M203.60,103.40 L205.60,104.40 L211.60,114.00 L214.60,90.00 L239.60,90.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="194.20" y="101.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">20</text>
+<text x="216.60" y="108.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">23</text>
+<path d="M265.00,103.40 L267.00,104.40 L273.00,114.00 L276.00,90.00 L301.00,90.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="255.60" y="101.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">21</text>
+<text x="278.00" y="108.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">24</text>
+<path d="M19.40,133.40 L21.40,134.40 L27.40,144.00 L30.40,120.00 L55.40,120.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="10.00" y="131.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">22</text>
+<text x="32.40" y="138.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">25</text>
+<path d="M80.80,133.40 L82.80,134.40 L88.80,144.00 L91.80,120.00 L116.80,120.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="71.40" y="131.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">23</text>
+<text x="93.80" y="138.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">26</text>
+<path d="M142.20,133.40 L144.20,134.40 L150.20,144.00 L153.20,120.00 L178.20,120.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="132.80" y="131.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">24</text>
+<text x="155.20" y="138.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">27</text>
+<path d="M203.60,133.40 L205.60,134.40 L211.60,144.00 L214.60,120.00 L239.60,120.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="194.20" y="131.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">25</text>
+<text x="216.60" y="138.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">28</text>
+<path d="M265.00,133.40 L267.00,134.40 L273.00,144.00 L276.00,120.00 L301.00,120.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="255.60" y="131.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">26</text>
+<text x="278.00" y="138.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">29</text>

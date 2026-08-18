@@ -1,0 +1,31 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: SQRT
+script: SQRT x^2
+honesty: implemented-variant
+
+=== ast ===
+Sqrt {
+    index: None,
+    body: Superscript {
+        base: Text(
+            "x",
+        ),
+        sup: Number(
+            "2",
+        ),
+    },
+}
+
+=== layout ===
+Sqrt x=0.0000 y=0.0000 w=33.2500 h=24.0000 bl=18.0000
+  body:
+    Superscript x=13.0000 y=2.0000 w=19.2500 h=20.0000 bl=16.0000
+      base:
+        Text("x") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      sup:
+        Number("2") x=11.5500 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+
+=== svg ===
+<path d="M0.00,13.40 L2.00,14.40 L8.00,24.00 L11.00,0.00 L33.25,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="13.00" y="18.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>
+<text x="24.55" y="13.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>

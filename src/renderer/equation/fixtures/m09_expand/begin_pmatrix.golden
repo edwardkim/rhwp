@@ -1,0 +1,44 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: PMATRIX
+script: BEGIN{pmatrix} 1 & 0 # 0 & 1 END{pmatrix}
+honesty: latex-env-partial
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Number(
+                "1",
+            ),
+            Number(
+                "0",
+            ),
+        ],
+        [
+            Number(
+                "0",
+            ),
+            Number(
+                "1",
+            ),
+        ],
+    ],
+    style: Paren,
+}
+
+=== layout ===
+Matrix(Paren) x=0.0000 y=0.0000 w=58.0000 h=46.0000 bl=23.0000
+  row0:
+    Number("1") x=10.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+    Number("0") x=37.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+  row1:
+    Number("0") x=10.0000 y=26.0000 w=11.0000 h=20.0000 bl=16.0000
+    Number("1") x=37.0000 y=26.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M5.40,0.00 C0.30,8.28 0.30,37.72 5.40,46.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<path d="M52.60,0.00 C57.70,8.28 57.70,37.72 52.60,46.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<text x="10.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<text x="37.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>
+<text x="10.00" y="42.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>
+<text x="37.00" y="42.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>

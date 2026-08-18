@@ -1,0 +1,66 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: DMATRIX
+script: DMATRIX{{{1} OVER {2}} OVER 3 & 0 # 0 & 1}
+honesty: implemented-variant
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Fraction {
+                numer: Fraction {
+                    numer: Number(
+                        "1",
+                    ),
+                    denom: Number(
+                        "2",
+                    ),
+                },
+                denom: Number(
+                    "3",
+                ),
+            },
+            Number(
+                "0",
+            ),
+        ],
+        [
+            Number(
+                "0",
+            ),
+            Number(
+                "1",
+            ),
+        ],
+    ],
+    style: Vert,
+}
+
+=== layout ===
+Matrix(Vert) x=0.0000 y=0.0000 w=74.0000 h=103.6000 bl=51.8000
+  row0:
+    Fraction x=10.0000 y=0.0000 w=27.0000 h=77.6000 bl=58.2000
+      numer:
+        Fraction x=4.0000 y=4.0000 w=19.0000 h=48.8000 bl=29.4000
+          numer:
+            Number("1") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+          denom:
+            Number("2") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("3") x=8.0000 y=53.6000 w=11.0000 h=20.0000 bl=16.0000
+    Number("0") x=53.0000 y=28.8000 w=11.0000 h=20.0000 bl=16.0000
+  row1:
+    Number("0") x=18.0000 y=83.6000 w=11.0000 h=20.0000 bl=16.0000
+    Number("1") x=53.0000 y=83.6000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<line x1="3.00" y1="0.00" x2="3.00" y2="103.60" stroke="#000000" stroke-width="0.80"/>
+<line x1="71.00" y1="0.00" x2="71.00" y2="103.60" stroke="#000000" stroke-width="0.80"/>
+<text x="18.00" y="24.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<line x1="15.00" y1="28.40" x2="32.00" y2="28.40" stroke="#000000" stroke-width="0.80"/>
+<text x="18.00" y="44.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<line x1="11.00" y1="53.20" x2="36.00" y2="53.20" stroke="#000000" stroke-width="0.80"/>
+<text x="18.00" y="69.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>
+<text x="53.00" y="44.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>
+<text x="18.00" y="99.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>
+<text x="53.00" y="99.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>

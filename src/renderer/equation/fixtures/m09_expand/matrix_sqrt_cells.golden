@@ -1,0 +1,66 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: MATRIX{SQRT 1 & SQRT 2 # SQRT 3 & SQRT 4}
+honesty: implemented-variant
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Sqrt {
+                index: None,
+                body: Number(
+                    "1",
+                ),
+            },
+            Sqrt {
+                index: None,
+                body: Number(
+                    "2",
+                ),
+            },
+        ],
+        [
+            Sqrt {
+                index: None,
+                body: Number(
+                    "3",
+                ),
+            },
+            Sqrt {
+                index: None,
+                body: Number(
+                    "4",
+                ),
+            },
+        ],
+    ],
+    style: Plain,
+}
+
+=== layout ===
+Matrix(Plain) x=0.0000 y=0.0000 w=74.0000 h=54.0000 bl=27.0000
+  row0:
+    Sqrt x=4.0000 y=0.0000 w=25.0000 h=24.0000 bl=18.0000
+      body:
+        Number("1") x=13.0000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+    Sqrt x=45.0000 y=0.0000 w=25.0000 h=24.0000 bl=18.0000
+      body:
+        Number("2") x=13.0000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+  row1:
+    Sqrt x=4.0000 y=30.0000 w=25.0000 h=24.0000 bl=18.0000
+      body:
+        Number("3") x=13.0000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+    Sqrt x=45.0000 y=30.0000 w=25.0000 h=24.0000 bl=18.0000
+      body:
+        Number("4") x=13.0000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M4.00,13.40 L6.00,14.40 L12.00,24.00 L15.00,0.00 L29.00,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="17.00" y="18.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<path d="M45.00,13.40 L47.00,14.40 L53.00,24.00 L56.00,0.00 L70.00,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="58.00" y="18.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<path d="M4.00,43.40 L6.00,44.40 L12.00,54.00 L15.00,30.00 L29.00,30.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="17.00" y="48.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>
+<path d="M45.00,43.40 L47.00,44.40 L53.00,54.00 L56.00,30.00 L70.00,30.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="58.00" y="48.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">4</text>

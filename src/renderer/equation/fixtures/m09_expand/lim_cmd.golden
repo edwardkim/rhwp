@@ -1,0 +1,63 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: lim_x->0 f(x)
+honesty: limit-cmd
+
+=== ast ===
+Row(
+    [
+        Limit {
+            is_upper: false,
+            sub: Some(
+                Row(
+                    [
+                        Text(
+                            "x",
+                        ),
+                        MathSymbol(
+                            "→",
+                        ),
+                        Number(
+                            "0",
+                        ),
+                    ],
+                ),
+            ),
+        },
+        Text(
+            "f",
+        ),
+        Symbol(
+            "(",
+        ),
+        Text(
+            "x",
+        ),
+        Symbol(
+            ")",
+        ),
+    ],
+)
+
+=== layout ===
+Row x=0.0000 y=0.0000 w=80.1000 h=35.0000 bl=16.0000
+  Limit(is_upper=false) x=0.0000 y=0.0000 w=33.0000 h=35.0000 bl=16.0000
+    sub:
+      Row x=3.0075 y=20.0000 w=26.9850 h=14.0000 bl=11.2000
+        Text("x") x=0.0000 y=0.0000 w=8.0850 h=14.0000 bl=11.2000
+        MathSymbol("→") x=8.0850 y=0.0000 w=11.2000 h=14.0000 bl=11.2000
+        Number("0") x=19.2850 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+  Text("f") x=33.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+  Symbol("(") x=44.5500 y=0.0000 w=12.0000 h=20.0000 bl=16.0000
+  Text("x") x=56.5500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+  Symbol(")") x=68.1000 y=0.0000 w=12.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">lim</text>
+<text x="3.01" y="31.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>
+<text x="11.09" y="31.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">→</text>
+<text x="22.29" y="31.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>
+<text x="33.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">f</text>
+<text x="50.55" y="16.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">(</text>
+<text x="56.55" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>
+<text x="74.10" y="16.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">)</text>
