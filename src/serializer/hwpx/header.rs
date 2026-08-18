@@ -1166,8 +1166,16 @@ fn write_para_pr<W: Write>(
     } else {
         "BREAK_WORD"
     };
-    // [#1986] breakLatinWord 는 IR 원문 보존값(없으면 KEEP_WORD 기본).
-    let break_latin = ps.break_latin_word.as_deref().unwrap_or("KEEP_WORD");
+    // [#1986] breakLatinWord 는 HWPX 원문 보존값(HWPX 소스). HWP5 소스는 파서가 이 렉시컬
+    // 필드를 attr1 비트로만 두고 채우지 않아(doc_info.rs) 종전엔 무조건 "KEEP_WORD" 로
+    // 강등했다 — 라틴 줄나눔 설정(하이픈·글자 단위)이 h2x 저장에서 통째로 사라졌다
+    // (10k 코퍼스 실측: 500 문서 중 222 문서가 비-KEEP 설정, para_shape 2,810개).
+    // breakNonLatinWord(bit7)와 같은 축으로 HWP5 attr1 bits5-6 에서 역매핑한다. 렉시컬
+    // 값이 있으면(HWPX 소스) 그것을 우선하므로 x2x 는 종전과 동일하다.
+    let break_latin = ps
+        .break_latin_word
+        .as_deref()
+        .unwrap_or_else(|| latin_break_from_attr1((ps.attr1 >> 5) & 0x03));
     let widow_orphan = ((ps.attr1 >> 16) & 1).to_string();
     let keep_with_next = ((ps.attr1 >> 17) & 1).to_string();
     let keep_lines = ((ps.attr1 >> 18) & 1).to_string();
@@ -1349,6 +1357,18 @@ fn vertical_alignment_str(bits: u32) -> &'static str {
         2 => "CENTER",
         3 => "BOTTOM",
         _ => "BASELINE",
+    }
+}
+
+/// HWP5 para_shape attr1 bits5-6 → HWPX `breakLatinWord` 토큰(라틴 문자의 줄나눔 단위).
+/// `breakNonLatinWord`(bit7) 역매핑과 같은 축이다. HWPX 소스는 렉시컬 값을 우선하므로
+/// 이 함수는 HWP5 소스(렉시컬 None)에서만 쓰인다. 0(=KEEP_WORD)은 코퍼스 지배값이자
+/// 종전 기본과 같아, 값이 다른 문서만 실제로 바뀐다.
+fn latin_break_from_attr1(bits: u32) -> &'static str {
+    match bits {
+        1 => "HYPHENATION",
+        2 => "BREAK_WORD",
+        _ => "KEEP_WORD",
     }
 }
 
