@@ -109,3 +109,17 @@ CFB/ZIP처럼 구조 제약이 강한 컨테이너 포맷은 시드 없이는 �
   EMF 등 나머지 임베드 포맷·컨테이너를 우회하는 내부 파서 직접 하네스
 - CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생
 - OSS-Fuzz 등재 (메인테이너 판단)
+
+## 왕복 정합성은 여기가 아니다 (M04)
+
+위 서두가 비워 둔 **정상 입력의 왕복 정합성(#2740, IrDiff-0)** 은 cargo-fuzz
+범위 밖이다. 그 공백을 메우는 계층이 M04 다 — 퍼저 타깃을 늘리지 않는다.
+
+- **M04-1** (`tests/cases/prop_edit_plan.rs`, #5363): `proptest` 의존 +
+  기존 `rhwp run` step(`fill_fields` · `replace_text` · `set_cell` ·
+  `set_checkbox`)만 조합하는 편집 시퀀스 생성기. 생성 계획은 JSON
+  직렬화/역직렬화와 `export-plan-schema` 정적 검증을 통과하고, 처음부터
+  잘못된 계획은 거부된다. DocumentCore 변이를 직접 실행하지 않는다.
+- **M04-2/3**: 실제 HWPX/HWP5 IrDiff-0 왕복 property. 이 생성기를 쓰되
+  본 단계는 여기 구현하지 않는다.
+- **M04-4**: 그 property 의 CI 배선.
