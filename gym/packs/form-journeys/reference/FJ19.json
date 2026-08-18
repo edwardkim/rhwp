@@ -1,0 +1,25 @@
+{
+  "id": "FJ19",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "myMsg01": "제출검토값"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:review.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

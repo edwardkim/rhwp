@@ -1,0 +1,53 @@
+{
+  "id": "FJ46",
+  "tier": 2,
+  "title": "메모 표본 작성자 채움",
+  "input": "samples/field-01-memo.hwp",
+  "instructions": "field-01-memo 에서 작성자에만 '메모서식작성자' 를 넣은 memo-author.hwp 를 제출하라. 칸 배치는 field-01 과 같으나 메모가 있다. 회사명은 비운다. T07 표본이 아니다. 힌트: rhwp edit fill-fields samples/field-01-memo.hwp --data '{\"작성자\": \"메모서식작성자\"}' -o memo-author.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "memo-author.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "작성자 값",
+      "op": "value_eq",
+      "value": "메모서식작성자",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:memo-author.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:memo-author.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "부서명 공란 값",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[2].value",
+      "cmd": [
+        "fields",
+        "{file:memo-author.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "memo-author.hwp"
+    }
+  ]
+}

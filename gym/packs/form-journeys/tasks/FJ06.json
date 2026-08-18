@@ -1,0 +1,64 @@
+{
+  "id": "FJ06",
+  "tier": 2,
+  "title": "이름 지목 채움 (작성자)",
+  "input": "samples/field-01.hwp",
+  "instructions": "입력 서식의 누름틀을 fields 로 조사한 뒤, 이름이 '작성자' 인 칸에만 '박서연기획' 을 넣어 author.hwp 로 제출하라. 첫 필드(회사명)와 부서명은 비워 두어야 한다. 첫 칸에 홍길동을 넣는 T07 과는 다른 좌표(fields[1])·다른 값이다. 힌트: rhwp edit fill-fields <문서> --data '{\"작성자\": \"박서연기획\"}' -o author.hwp --json 후 rhwp fields author.hwp --json 으로 재독.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "author.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "작성자 칸 이름",
+      "op": "value_eq",
+      "value": "작성자",
+      "path": "fields[1].name",
+      "cmd": [
+        "fields",
+        "{file:author.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "작성자 값",
+      "op": "value_eq",
+      "value": "박서연기획",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:author.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:author.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "부서명 공란 값",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[2].value",
+      "cmd": [
+        "fields",
+        "{file:author.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "author.hwp"
+    }
+  ]
+}

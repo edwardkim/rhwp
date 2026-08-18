@@ -1,0 +1,21 @@
+{
+  "id": "FJ34",
+  "steps": [
+    {
+      "answer": {
+        "n": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "{\"상호명\": \"x\", \"담당자명\": \"y\"}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "notFound"
+        }
+      }
+    }
+  ]
+}

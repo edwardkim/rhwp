@@ -1,0 +1,39 @@
+{
+  "id": "FJ38",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "myMsg01": "치환전값"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:pre-swap.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{sub:pre-swap.hwp}",
+        "--find",
+        "치환전값",
+        "--replace",
+        "치환후값",
+        "-o",
+        "{sub:swapped.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}
