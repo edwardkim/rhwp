@@ -1,0 +1,190 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.honggildong_4781.v1",
+  "id": "hongbo-hong-clone",
+  "axis": "honggildong-4781",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "hongbo",
+  "title": "보도자료 서식 홍길동 전칸 복제 금지",
+  "why": "첫 필드 값을 모든 고유 이름에 복사하면 T07 과제 문구를 깨뜨린다.",
+  "sample": "samples/20250130-hongbo.hwp",
+  "relatedIssue": "#4781",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/20250130-hongbo.hwp",
+    "--data",
+    "{\"기관명\": \"홍길동\", \"배포일시\": \"홍길동\", \"담당부서\": \"홍길동\", \"담당자\": \"홍길동\", \"연락처\": \"홍길동\", \"제목\": \"홍길동\", \"부제\": \"홍길동\", \"본문\": \"홍길동\", \"문의처\": \"홍길동\", \"첨부\": \"홍길동\", \"사진설명\": \"홍길동\", \"홈페이지\": \"홍길동\"}",
+    "-o",
+    "out/hongbo-hong-clone.hwp",
+    "--json"
+  ],
+  "data": {
+    "기관명": "홍길동",
+    "배포일시": "홍길동",
+    "담당부서": "홍길동",
+    "담당자": "홍길동",
+    "연락처": "홍길동",
+    "제목": "홍길동",
+    "부제": "홍길동",
+    "본문": "홍길동",
+    "문의처": "홍길동",
+    "첨부": "홍길동",
+    "사진설명": "홍길동",
+    "홈페이지": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/20250130-hongbo.hwp",
+    "dryRun": false,
+    "filledCount": 12,
+    "filled": [
+      {
+        "name": "기관명",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "배포일시",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "담당부서",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "담당자",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "연락처",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "제목",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "부제",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "본문",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "문의처",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "첨부",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "사진설명",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "홈페이지",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/hongbo-hong-clone.hwp",
+    "outputFormat": "hwp5"
+  },
+  "detect": {
+    "firstFieldName": "기관명",
+    "firstFieldValue": "홍길동",
+    "firstFieldOk": true,
+    "cloned": [
+      {
+        "index": 1,
+        "name": "배포일시",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 2,
+        "name": "담당부서",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 3,
+        "name": "담당자",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 4,
+        "name": "연락처",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 5,
+        "name": "제목",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 6,
+        "name": "부제",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 7,
+        "name": "본문",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 8,
+        "name": "문의처",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 9,
+        "name": "첨부",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 10,
+        "name": "사진설명",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 11,
+        "name": "홈페이지",
+        "before": "",
+        "after": "홍길동"
+      }
+    ],
+    "cloneCount": 11,
+    "verdict": "clone_forbidden"
+  },
+  "afterFirst": "홍길동",
+  "otherHongCount": 11,
+  "allowedClone": false,
+  "verdict": "clone_forbidden"
+}

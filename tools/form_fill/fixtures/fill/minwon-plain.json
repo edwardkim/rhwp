@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "minwon-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "minwon",
+  "title": "민원신청서 고유 이름 채움",
+  "family": "민원",
+  "genre": "신청",
+  "sample": "fixtures/forms/민원신청서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "민원제목",
+  "fieldCount": 14,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/민원신청서.hwp",
+    "--data",
+    "{\"민원제목\": \"도로 파손 보수 요청\", \"민원내용\": \"과속 방지턱 설치\", \"전자우편\": \"planner@mois.go.kr\"}",
+    "-o",
+    "out/minwon-plain.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "민원제목": "도로 파손 보수 요청",
+    "민원내용": "과속 방지턱 설치",
+    "전자우편": "planner@mois.go.kr"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/민원신청서.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "민원제목",
+        "occurrence": 0,
+        "value": "도로 파손 보수 요청"
+      },
+      {
+        "name": "민원내용",
+        "occurrence": 0,
+        "value": "과속 방지턱 설치"
+      },
+      {
+        "name": "전자우편",
+        "occurrence": 0,
+        "value": "planner@mois.go.kr"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/minwon-plain.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "gate": true
+}

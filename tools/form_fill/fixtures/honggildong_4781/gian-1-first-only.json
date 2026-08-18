@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.honggildong_4781.v1",
+  "id": "gian-1-hong-first-only",
+  "axis": "honggildong-4781",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "gian-1",
+  "title": "일반기안문 별지 제1호서식 첫 필드만 홍길동",
+  "why": "T07/#4781. fields[0] 만 홍길동. 다른 칸에 복제하면 clone_forbidden.",
+  "sample": "tools/forms/일반기안문_서식.hwpx",
+  "relatedIssue": "#4781",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "tools/forms/일반기안문_서식.hwpx",
+    "--data",
+    "{\"행정기관명\": \"홍길동\"}",
+    "-o",
+    "out/gian-1-hong.hwp",
+    "--json"
+  ],
+  "data": {
+    "행정기관명": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "tools/forms/일반기안문_서식.hwpx",
+    "dryRun": false,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "행정기관명",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/gian-1-hong.hwp",
+    "outputFormat": "hwp5"
+  },
+  "detect": {
+    "firstFieldName": "행정기관명",
+    "firstFieldValue": "홍길동",
+    "firstFieldOk": true,
+    "cloned": [],
+    "cloneCount": 0,
+    "verdict": "pass"
+  },
+  "afterFirst": "홍길동",
+  "otherHongCount": 0,
+  "allowedClone": false,
+  "verdict": "pass"
+}
