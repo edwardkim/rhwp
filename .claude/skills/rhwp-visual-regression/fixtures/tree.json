@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5312,
+  "notGym": true,
+  "noNewCli": true,
+  "noNewEditLogic": true,
+  "coreReuse": [
+    "diagnostics::render_geom_diff::run",
+    "ir-diff --json",
+    "thumbnail PrvImage",
+    "export-png native-skia"
+  ],
+  "ladder": [
+    "render-diff self",
+    "render-diff pair",
+    "render-diff --batch",
+    "ir-diff --json",
+    "export-png"
+  ],
+  "defaultMaxDispPx": 1.0,
+  "structIgnoresThreshold": true,
+  "aaMustPass": true,
+  "thumbnailIsStoredPreview": true
+}
