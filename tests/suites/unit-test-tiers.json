@@ -3103,7 +3103,7 @@
       "id": "src/renderer/mod.rs::tests#1",
       "file": "src/renderer/mod.rs",
       "sourcePath": "src/renderer/mod.rs",
-      "line": 1786,
+      "line": 1788,
       "module": "tests",
       "testAttributes": 32,
       "tier": "white_box",
