@@ -1,0 +1,1661 @@
+[
+  {
+    "id": "txov-same-line-dx0",
+    "family": "text-overlap",
+    "hypothesis": "한 줄 안 두 런이 0px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "왼"
+          },
+          {
+            "t": "TextRun",
+            "x": 50.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "오"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "txov-same-line-dx2",
+    "family": "text-overlap",
+    "hypothesis": "한 줄 안 두 런이 2px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "왼"
+          },
+          {
+            "t": "TextRun",
+            "x": 48.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "오"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "txov-same-line-dx4",
+    "family": "text-overlap",
+    "hypothesis": "한 줄 안 두 런이 4px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "왼"
+          },
+          {
+            "t": "TextRun",
+            "x": 46.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "오"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [
+        [
+          "Page/Body/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/TextLine0/TextRun1",
+          "TextRun",
+          4.0,
+          12.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [TEXT-OVERLAP] page   0  4.00x12.00px  Page/Body/TextLine0/TextRun0 (TextRun) x Page/Body/TextLine0/TextRun1 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "txov-same-line-dx10",
+    "family": "text-overlap",
+    "hypothesis": "한 줄 안 두 런이 10px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "왼"
+          },
+          {
+            "t": "TextRun",
+            "x": 40.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "오"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [
+        [
+          "Page/Body/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/TextLine0/TextRun1",
+          "TextRun",
+          10.0,
+          12.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [TEXT-OVERLAP] page   0  10.00x12.00px  Page/Body/TextLine0/TextRun0 (TextRun) x Page/Body/TextLine0/TextRun1 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "txov-same-line-dx20",
+    "family": "text-overlap",
+    "hypothesis": "한 줄 안 두 런이 20px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "왼"
+          },
+          {
+            "t": "TextRun",
+            "x": 30.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "오"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [
+        [
+          "Page/Body/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/TextLine0/TextRun1",
+          "TextRun",
+          20.0,
+          12.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [TEXT-OVERLAP] page   0  20.00x12.00px  Page/Body/TextLine0/TextRun0 (TextRun) x Page/Body/TextLine0/TextRun1 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "txov-same-line-dx30",
+    "family": "text-overlap",
+    "hypothesis": "한 줄 안 두 런이 30px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "왼"
+          },
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 30.0,
+            "h": 12.0,
+            "text": "오"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [
+        [
+          "Page/Body/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/TextLine0/TextRun1",
+          "TextRun",
+          30.0,
+          12.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [TEXT-OVERLAP] page   0  30.00x12.00px  Page/Body/TextLine0/TextRun0 (TextRun) x Page/Body/TextLine0/TextRun1 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "txov-in-table-dy0",
+    "family": "text-overlap",
+    "hypothesis": "표 하나 안의 두 런이 세로 어긋남 0px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 20.0,
+                "y": 40.0,
+                "w": 40.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 20.0,
+                    "y": 40.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "갑"
+                  }
+                ]
+              },
+              {
+                "t": "TextLine",
+                "x": 30.0,
+                "y": 42.0,
+                "w": 40.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 30.0,
+                    "y": 42.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "을"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [
+        [
+          "Page/Body/Table0/Cell0/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/Table0/Cell0/TextLine1/TextRun0",
+          "TextRun",
+          30.0,
+          10.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [TEXT-OVERLAP] page   0  30.00x10.00px  Page/Body/Table0/Cell0/TextLine0/TextRun0 (TextRun) x Page/Body/Table0/Cell0/TextLine1/TextRun0 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "txov-in-table-dy2",
+    "family": "text-overlap",
+    "hypothesis": "표 하나 안의 두 런이 세로 어긋남 2px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 20.0,
+                "y": 40.0,
+                "w": 40.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 20.0,
+                    "y": 40.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "갑"
+                  }
+                ]
+              },
+              {
+                "t": "TextLine",
+                "x": 30.0,
+                "y": 44.0,
+                "w": 40.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 30.0,
+                    "y": 44.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "을"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [
+        [
+          "Page/Body/Table0/Cell0/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/Table0/Cell0/TextLine1/TextRun0",
+          "TextRun",
+          30.0,
+          8.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [TEXT-OVERLAP] page   0  30.00x8.00px  Page/Body/Table0/Cell0/TextLine0/TextRun0 (TextRun) x Page/Body/Table0/Cell0/TextLine1/TextRun0 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "txov-in-table-dy4",
+    "family": "text-overlap",
+    "hypothesis": "표 하나 안의 두 런이 세로 어긋남 4px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 20.0,
+                "y": 40.0,
+                "w": 40.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 20.0,
+                    "y": 40.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "갑"
+                  }
+                ]
+              },
+              {
+                "t": "TextLine",
+                "x": 30.0,
+                "y": 46.0,
+                "w": 40.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 30.0,
+                    "y": 46.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "을"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [
+        [
+          "Page/Body/Table0/Cell0/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/Table0/Cell0/TextLine1/TextRun0",
+          "TextRun",
+          30.0,
+          6.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [TEXT-OVERLAP] page   0  30.00x6.00px  Page/Body/Table0/Cell0/TextLine0/TextRun0 (TextRun) x Page/Body/Table0/Cell0/TextLine1/TextRun0 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "txov-in-table-dy8",
+    "family": "text-overlap",
+    "hypothesis": "표 하나 안의 두 런이 세로 어긋남 8px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 20.0,
+                "y": 40.0,
+                "w": 40.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 20.0,
+                    "y": 40.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "갑"
+                  }
+                ]
+              },
+              {
+                "t": "TextLine",
+                "x": 30.0,
+                "y": 50.0,
+                "w": 40.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 30.0,
+                    "y": 50.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "을"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "txov-char-overlap-true",
+    "family": "text-overlap",
+    "hypothesis": "한컴 글자겹침 컨트롤 런은 의도된 겹침이라 후보에서 뺀다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "가",
+            "charOverlap": true
+          },
+          {
+            "t": "TextRun",
+            "x": 22.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "나"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "txov-char-overlap-false",
+    "family": "text-overlap",
+    "hypothesis": "글자겹침 플래그가 없으면 같은 자리 두 런은 text-overlap 이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "가"
+          },
+          {
+            "t": "TextRun",
+            "x": 22.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "나"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [
+        [
+          "Page/Body/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/TextLine0/TextRun1",
+          "TextRun",
+          18.0,
+          12.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [TEXT-OVERLAP] page   0  18.00x12.00px  Page/Body/TextLine0/TextRun0 (TextRun) x Page/Body/TextLine0/TextRun1 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "txov-zero-w",
+    "family": "text-overlap",
+    "hypothesis": "면적이 없는 런 bbox 는 text-overlap 후보가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 0.0,
+            "h": 12.0,
+            "text": "가"
+          },
+          {
+            "t": "TextRun",
+            "x": 22.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "나"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "txov-zero-h",
+    "family": "text-overlap",
+    "hypothesis": "면적이 없는 런 bbox 는 text-overlap 후보가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 0.0,
+            "text": "가"
+          },
+          {
+            "t": "TextRun",
+            "x": 22.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "나"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "txov-area",
+    "family": "text-overlap",
+    "hypothesis": "면적이 없는 런 bbox 는 text-overlap 후보가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "가"
+          },
+          {
+            "t": "TextRun",
+            "x": 22.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "나"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [
+        [
+          "Page/Body/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/TextLine0/TextRun1",
+          "TextRun",
+          18.0,
+          12.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [TEXT-OVERLAP] page   0  18.00x12.00px  Page/Body/TextLine0/TextRun0 (TextRun) x Page/Body/TextLine0/TextRun1 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "txov-text-ws-empty",
+    "family": "text-overlap",
+    "hypothesis": "런 텍스트 '' 의 가시 글자 여부가 후보를 가른다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": ""
+          },
+          {
+            "t": "TextRun",
+            "x": 22.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "나"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "txov-text-ws- ",
+    "family": "text-overlap",
+    "hypothesis": "런 텍스트 ' ' 의 가시 글자 여부가 후보를 가른다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": " "
+          },
+          {
+            "t": "TextRun",
+            "x": 22.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "나"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "txov-text-ws-\\n",
+    "family": "text-overlap",
+    "hypothesis": "런 텍스트 '\\n' 의 가시 글자 여부가 후보를 가른다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "\n"
+          },
+          {
+            "t": "TextRun",
+            "x": 22.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "나"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "txov-text-ws-\\t\\t",
+    "family": "text-overlap",
+    "hypothesis": "런 텍스트 '\\t\\t' 의 가시 글자 여부가 후보를 가른다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "\t\t"
+          },
+          {
+            "t": "TextRun",
+            "x": 22.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "나"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "txov-text-glyph-\\uac00",
+    "family": "text-overlap",
+    "hypothesis": "런 텍스트 '가' 의 가시 글자 여부가 후보를 가른다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "가"
+          },
+          {
+            "t": "TextRun",
+            "x": 22.0,
+            "y": 40.0,
+            "w": 20.0,
+            "h": 12.0,
+            "text": "나"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [
+        [
+          "Page/Body/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/TextLine0/TextRun1",
+          "TextRun",
+          18.0,
+          12.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [TEXT-OVERLAP] page   0  18.00x12.00px  Page/Body/TextLine0/TextRun0 (TextRun) x Page/Body/TextLine0/TextRun1 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  }
+]

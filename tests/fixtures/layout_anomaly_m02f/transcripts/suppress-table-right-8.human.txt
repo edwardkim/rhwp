@@ -1,0 +1,6 @@
+# transcript suppress-table-right-8
+# family=suppress
+# hypothesis=표가 본문 오른쪽을 8px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+쪽 수: 3  overflow: 1  off-canvas: 0  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+  [OVERFLOW] page   0     8.00px  Page/Body/Table0 (Table)
+status: ANOMALY

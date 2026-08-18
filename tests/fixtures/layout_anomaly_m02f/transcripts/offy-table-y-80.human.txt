@@ -1,0 +1,7 @@
+# transcript offy-table-y-80
+# family=off-canvas
+# hypothesis=표 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+쪽 수: 3  overflow: 1  off-canvas: 1  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+  [OVERFLOW] page   0   100.00px  Page/Body/Table0 (Table)
+  [OFF-CANVAS] page   0    80.00px  Page/Body/Table0 (Table)
+status: ANOMALY

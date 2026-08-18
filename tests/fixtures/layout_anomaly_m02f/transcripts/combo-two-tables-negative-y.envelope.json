@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "combo-two-tables-negative-y.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": null,
+  "strict": false,
+  "overflowCount": 2,
+  "offCanvasCount": 2,
+  "overlapCount": 1,
+  "textOverlapCount": 0,
+  "emptyPageCount": 0,
+  "hasSignal": true,
+  "pages": [
+    {
+      "page": 0,
+      "overflow": [
+        {
+          "path": "Page/Body/Table0",
+          "nodeType": "Table"
+        },
+        {
+          "path": "Page/Body/Table1",
+          "nodeType": "Table"
+        }
+      ],
+      "offCanvas": [
+        {
+          "path": "Page/Body/Table0",
+          "nodeType": "Table"
+        },
+        {
+          "path": "Page/Body/Table1",
+          "nodeType": "Table"
+        }
+      ],
+      "overlap": [
+        {
+          "pathA": "Page/Body/Table0",
+          "typeA": "Table",
+          "pathB": "Page/Body/Table1",
+          "typeB": "Table",
+          "overlapW": 60.0,
+          "overlapH": 60.0
+        }
+      ],
+      "textOverlap": [],
+      "emptyPage": false
+    }
+  ],
+  "hypothesis": "음수 y 로 겹친 두 표는 off-canvas 2 + overlap 1.",
+  "fixtureId": "combo-two-tables-negative-y"
+}

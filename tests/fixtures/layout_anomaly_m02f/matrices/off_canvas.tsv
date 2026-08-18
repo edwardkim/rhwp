@@ -1,0 +1,43 @@
+id	family	overflowTol	overlapTol	types	pageIndex	pageCount	overflow	offCanvas	overlap	textOverlap	empty	signal	status	overflowTypes	offCanvasTypes	maxOver	hypothesis
+offy-table-y-0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		20.5000	표 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-table-y-1	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		21.0000	표 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-table-y-8	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	28.0000	표 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-table-y-80	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	100.0000	표 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offw-table-right0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		10.5000	표 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-table-bottom0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		20.5000	표 가 페이지 높이를 0.5px 넘긴다.
+offw-table-right1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	11.2500	표 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-table-bottom1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	21.2500	표 가 페이지 높이를 1.25px 넘긴다.
+offw-table-right50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	60.0000	표 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-table-bottom50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	70.0000	표 가 페이지 높이를 50px 넘긴다.
+offy-image-y-0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Image		20.5000	그림 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-image-y-1	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Image		21.0000	그림 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-image-y-8	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	28.0000	그림 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-image-y-80	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	100.0000	그림 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offw-image-right0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Image		10.5000	그림 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-image-bottom0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Image		20.5000	그림 가 페이지 높이를 0.5px 넘긴다.
+offw-image-right1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	11.2500	그림 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-image-bottom1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	21.2500	그림 가 페이지 높이를 1.25px 넘긴다.
+offw-image-right50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	60.0000	그림 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-image-bottom50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	70.0000	그림 가 페이지 높이를 50px 넘긴다.
+offy-textbox-y-0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		20.5000	글상자 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-textbox-y-1	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		21.0000	글상자 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-textbox-y-8	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	28.0000	글상자 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-textbox-y-80	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	100.0000	글상자 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offw-textbox-right0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		10.5000	글상자 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-textbox-bottom0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		20.5000	글상자 가 페이지 높이를 0.5px 넘긴다.
+offw-textbox-right1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	11.2500	글상자 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-textbox-bottom1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	21.2500	글상자 가 페이지 높이를 1.25px 넘긴다.
+offw-textbox-right50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	60.0000	글상자 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-textbox-bottom50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	70.0000	글상자 가 페이지 높이를 50px 넘긴다.
+offy-rect-y-0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Rect		20.5000	사각형 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-rect-y-1	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Rect		21.0000	사각형 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-rect-y-8	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	28.0000	사각형 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-rect-y-80	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	100.0000	사각형 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offw-rect-right0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Rect		10.5000	사각형 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-rect-bottom0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Rect		20.5000	사각형 가 페이지 높이를 0.5px 넘긴다.
+offw-rect-right1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	11.2500	사각형 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-rect-bottom1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	21.2500	사각형 가 페이지 높이를 1.25px 넘긴다.
+offw-rect-right50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	60.0000	사각형 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-rect-bottom50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	70.0000	사각형 가 페이지 높이를 50px 넘긴다.
+off-body-only-not-page	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		5.0000	표가 본문 오른쪽만 넘치고 페이지 상자 안에 남으면 overflow 만 있고 off-canvas 는 없다.
+off-nested-table-once	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	100.0000	음수 y 표 안의 줄은 off-canvas suppress 로 표 한 번만 보고한다.

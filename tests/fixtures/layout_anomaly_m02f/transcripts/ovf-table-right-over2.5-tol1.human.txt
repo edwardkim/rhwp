@@ -1,0 +1,6 @@
+# transcript ovf-table-right-over2.5-tol1
+# family=overflow
+# hypothesis=표가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+쪽 수: 3  overflow: 0  off-canvas: 0  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+이상 신호 없음: ovf-table-right-over2.5-tol1.synth
+status: CLEAN

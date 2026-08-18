@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "combo-table-overflow-and-text-overlap.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": null,
+  "strict": false,
+  "overflowCount": 1,
+  "offCanvasCount": 1,
+  "overlapCount": 0,
+  "textOverlapCount": 1,
+  "emptyPageCount": 0,
+  "hasSignal": true,
+  "pages": [
+    {
+      "page": 0,
+      "overflow": [
+        {
+          "path": "Page/Body/Table0",
+          "nodeType": "Table"
+        }
+      ],
+      "offCanvas": [
+        {
+          "path": "Page/Body/Table0",
+          "nodeType": "Table"
+        }
+      ],
+      "overlap": [],
+      "textOverlap": [
+        {
+          "pathA": "Page/Body/Table0/Cell0/TextLine0/TextRun0",
+          "typeA": "TextRun",
+          "pathB": "Page/Body/Table0/Cell0/TextLine1/TextRun0",
+          "typeB": "TextRun",
+          "overlapW": 30.0,
+          "overlapH": 10.0
+        }
+      ],
+      "emptyPage": false
+    }
+  ],
+  "hypothesis": "표가 본문·페이지를 넘치고 내부 런이 겹치면 overflow+off-canvas+text-overlap 이 같이 열린다. 표 하나라 일반 overlap 은 없다.",
+  "fixtureId": "combo-table-overflow-and-text-overlap"
+}

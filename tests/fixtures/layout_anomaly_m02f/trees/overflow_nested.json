@@ -1,0 +1,1157 @@
+[
+  {
+    "id": "suppress-table-right-2.5",
+    "family": "suppress",
+    "hypothesis": "표가 본문 오른쪽을 2.5px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 182.5,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 182.5,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 12.0,
+                "y": 22.0,
+                "w": 182.5,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 12.0,
+                    "y": 22.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "내부줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 2.5,
+      "overBottom": 0.0,
+      "maxOver": 2.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0     2.50px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "suppress-textbox-right-2.5",
+    "family": "suppress",
+    "hypothesis": "글상자가 본문 오른쪽을 2.5px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 182.5,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 182.5,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 12.0,
+                "y": 22.0,
+                "w": 182.5,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 12.0,
+                    "y": 22.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "내부줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 2.5,
+      "overBottom": 0.0,
+      "maxOver": 2.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0     2.50px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "suppress-group-right-2.5",
+    "family": "suppress",
+    "hypothesis": "묶음가 본문 오른쪽을 2.5px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Group",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 182.5,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 182.5,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 12.0,
+                "y": 22.0,
+                "w": 182.5,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 12.0,
+                    "y": 22.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "내부줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Group"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Group0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 2.5,
+      "overBottom": 0.0,
+      "maxOver": 2.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0     2.50px  Page/Body/Group0 (Group)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "suppress-table-right-8",
+    "family": "suppress",
+    "hypothesis": "표가 본문 오른쪽을 8px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 188.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 188.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 12.0,
+                "y": 22.0,
+                "w": 188.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 12.0,
+                    "y": 22.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "내부줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 8.0,
+      "overBottom": 0.0,
+      "maxOver": 8.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     8.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "suppress-textbox-right-8",
+    "family": "suppress",
+    "hypothesis": "글상자가 본문 오른쪽을 8px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 188.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 188.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 12.0,
+                "y": 22.0,
+                "w": 188.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 12.0,
+                    "y": 22.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "내부줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 8.0,
+      "overBottom": 0.0,
+      "maxOver": 8.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     8.00px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "suppress-group-right-8",
+    "family": "suppress",
+    "hypothesis": "묶음가 본문 오른쪽을 8px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Group",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 188.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 188.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 12.0,
+                "y": 22.0,
+                "w": 188.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 12.0,
+                    "y": 22.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "내부줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Group"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Group0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 8.0,
+      "overBottom": 0.0,
+      "maxOver": 8.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     8.00px  Page/Body/Group0 (Group)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "suppress-table-right-40",
+    "family": "suppress",
+    "hypothesis": "표가 본문 오른쪽을 40px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 220.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 220.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 12.0,
+                "y": 22.0,
+                "w": 220.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 12.0,
+                    "y": 22.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "내부줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [
+        "Table"
+      ],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Table0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 40.0,
+      "overBottom": 0.0,
+      "maxOver": 40.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    40.00px  Page/Body/Table0 (Table)",
+        "  [OFF-CANVAS] page   0    30.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "suppress-textbox-right-40",
+    "family": "suppress",
+    "hypothesis": "글상자가 본문 오른쪽을 40px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 220.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 220.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 12.0,
+                "y": 22.0,
+                "w": 220.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 12.0,
+                    "y": 22.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "내부줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [
+        "TextBox"
+      ],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 40.0,
+      "overBottom": 0.0,
+      "maxOver": 40.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    40.00px  Page/Body/TextBox0 (TextBox)",
+        "  [OFF-CANVAS] page   0    30.00px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "suppress-group-right-40",
+    "family": "suppress",
+    "hypothesis": "묶음가 본문 오른쪽을 40px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Group",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 220.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 220.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 12.0,
+                "y": 22.0,
+                "w": 220.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 12.0,
+                    "y": 22.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "내부줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Group"
+      ],
+      "offCanvasTypes": [
+        "Group"
+      ],
+      "overflowPaths": [
+        "Page/Body/Group0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Group0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 40.0,
+      "overBottom": 0.0,
+      "maxOver": 40.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    40.00px  Page/Body/Group0 (Group)",
+        "  [OFF-CANVAS] page   0    30.00px  Page/Body/Group0 (Group)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "types-textline-inside-table-2.5",
+    "family": "types",
+    "hypothesis": "--types TextLine 은 표 컨테이너를 건너뛰고 내부 줄의 2.5px 오른쪽 넘침만 overflow 로 센다. off-canvas 는 타입 필터와 무관하게 표에서 먼저 닫힌다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": [
+        "TextLine"
+      ]
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 182.5,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 182.5,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 10.0,
+                "y": 20.0,
+                "w": 182.5,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 10.0,
+                    "y": 20.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "필터줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextLine"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0/Cell0/TextLine0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 2.5,
+      "overBottom": 0.0,
+      "maxOver": 2.5,
+      "reportLines": [
+        "  [OVERFLOW] page   0     2.50px  Page/Body/Table0/Cell0/TextLine0 (TextLine)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "types-image-hides-table-2.5",
+    "family": "types",
+    "hypothesis": "--types Image 는 표 overflow 2.5px 를 버린다. 확정 신호는 off-canvas 가 있을 때만 남는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": [
+        "Image"
+      ]
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 182.5,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 182.5,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 10.0,
+                "y": 20.0,
+                "w": 182.5,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 10.0,
+                    "y": 20.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "필터줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "types-textline-inside-table-8",
+    "family": "types",
+    "hypothesis": "--types TextLine 은 표 컨테이너를 건너뛰고 내부 줄의 8px 오른쪽 넘침만 overflow 로 센다. off-canvas 는 타입 필터와 무관하게 표에서 먼저 닫힌다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": [
+        "TextLine"
+      ]
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 188.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 188.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 10.0,
+                "y": 20.0,
+                "w": 188.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 10.0,
+                    "y": 20.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "필터줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextLine"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0/Cell0/TextLine0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 8.0,
+      "overBottom": 0.0,
+      "maxOver": 8.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     8.00px  Page/Body/Table0/Cell0/TextLine0 (TextLine)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "types-image-hides-table-8",
+    "family": "types",
+    "hypothesis": "--types Image 는 표 overflow 8px 를 버린다. 확정 신호는 off-canvas 가 있을 때만 남는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": [
+        "Image"
+      ]
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 188.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 20.0,
+            "w": 188.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 10.0,
+                "y": 20.0,
+                "w": 188.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 10.0,
+                    "y": 20.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "필터줄"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "issue": 5459,
+  "title": "M02-f layout-anomaly 판정 픽스처",
+  "caseCount": 265,
+  "families": {
+    "overflow_simple": 80,
+    "overflow_nested": 13,
+    "overlap": 48,
+    "text_overlap": 20,
+    "off_canvas": 42,
+    "empty_page": 31,
+    "visibility": 4,
+    "combined": 3,
+    "tolerance": 24
+  }
+}
