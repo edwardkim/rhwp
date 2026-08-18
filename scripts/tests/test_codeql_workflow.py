@@ -13,6 +13,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CODEQL_WORKFLOW = REPO_ROOT / ".github/workflows/codeql.yml"
+RUST_PR_CODEQL_CONFIG = REPO_ROOT / ".github/codeql/rust-pr.yml"
 
 
 def job_body(workflow: str, job_name: str) -> str:
@@ -178,7 +179,15 @@ class CodeQLWorkflowTests(unittest.TestCase):
             analyze,
         )
         self.assertIn(
-            "if: ${{ matrix.language == 'rust' && " + selected + " }}",
+            "if: ${{ matrix.language == 'rust' && "
+            + selected
+            + " && github.event_name == 'pull_request' }}",
+            analyze,
+        )
+        self.assertIn(
+            "if: ${{ matrix.language == 'rust' && "
+            + selected
+            + " && github.event_name != 'pull_request' }}",
             analyze,
         )
         job_if = next(
@@ -252,10 +261,23 @@ class CodeQLWorkflowTests(unittest.TestCase):
         )[0]
         self.assertIn("languages: rust", rust_init)
         self.assertIn("build-mode: none", rust_init)
+        self.assertIn("config-file: .github/codeql/rust-pr.yml", rust_init)
+        rust_full_init = analyze.split(
+            "      - name: Initialize CodeQL (Rust full scan)\n", 1
+        )[1].split("\n      - name:", 1)[0]
+        self.assertIn("languages: rust", rust_full_init)
+        self.assertIn("build-mode: none", rust_full_init)
+        self.assertNotIn("config-file:", rust_full_init)
         self.assertNotIn("actions/cache/", analyze)
         self.assertNotIn("cargo build", analyze)
         self.assertNotIn("rust-blocking-results", analyze)
         self.assertNotIn("actions/upload-artifact", analyze)
+
+    def test_pr_rust_config_limits_scanning_to_production_paths(self) -> None:
+        config = RUST_PR_CODEQL_CONFIG.read_text(encoding="utf-8")
+        self.assertIn("paths:\n", config)
+        for path in ("src/**", "crates/**", "rhwp-desk/src/**", "build.rs"):
+            self.assertIn(f"  - {path}\n", config)
 
     def test_temporary_measurement_jobs_and_artifacts_are_absent(self) -> None:
         workflow = self.workflow
