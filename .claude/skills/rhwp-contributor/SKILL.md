@@ -66,7 +66,8 @@ description: rhwp 저장소에 기여(이슈·코드 변경·문서·PR)할 때�
    봉투(JSON) 원문을 PR 본문에 붙이면 리뷰어가 재계산으로 검증할 수 있다.
 7. **처리 결과 문서** — 규모 있는 변경은 `mydocs/working/` 에 무엇을·왜·어떻게·
    검증 실측을 남긴다(스테이지 문서 관례).
-8. **PR** — [템플릿](../../../.github/pull_request_template.md) 체크리스트를 전부 채운다.
+8. **PR** — `cargo fmt --all -- --check` 가 통과한 뒤에만 연다.
+   [템플릿](../../../.github/pull_request_template.md) 체크리스트를 전부 채운다.
    제목·본문은 한국어. 관련 이슈를 `closes #` 로 연결한다.
 
 ## 하지 않는 것
