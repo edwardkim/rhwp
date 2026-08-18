@@ -1,0 +1,5 @@
+id	family	overflowTol	overlapTol	types	pageIndex	pageCount	overflow	offCanvas	overlap	textOverlap	empty	signal	status	overflowTypes	offCanvasTypes	maxOver	hypothesis
+vis-table-vistrue-edfalse	visibility	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	60.0000	visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.
+vis-table-vistrue-edtrue	visibility	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.
+vis-table-visfalse-edfalse	visibility	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.
+vis-table-visfalse-edtrue	visibility	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.

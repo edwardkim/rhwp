@@ -1,0 +1,4 @@
+id	family	overflowTol	overlapTol	types	pageIndex	pageCount	overflow	offCanvas	overlap	textOverlap	empty	signal	status	overflowTypes	offCanvasTypes	maxOver	hypothesis
+combo-table-overflow-and-text-overlap	combined	1.0	2.0		0	3	1	1	0	1	0	1	ANOMALY	Table	Table	20.0000	표가 본문·페이지를 넘치고 내부 런이 겹치면 overflow+off-canvas+text-overlap 이 같이 열린다. 표 하나라 일반 overlap 은 없다.
+combo-two-tables-negative-y	combined	1.0	2.0		0	3	2	2	1	0	0	1	ANOMALY	Table|Table	Table|Table	60.0000	음수 y 로 겹친 두 표는 off-canvas 2 + overlap 1.
+combo-square-over-textline	combined	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	Square wrap 도형이 보이는 문단 줄과 겹치면 일반 overlap. 런-도형은 text-overlap 이 아니다.

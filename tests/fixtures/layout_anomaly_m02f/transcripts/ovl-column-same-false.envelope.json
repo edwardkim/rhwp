@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "ovl-column-same-false.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": null,
+  "strict": false,
+  "overflowCount": 0,
+  "offCanvasCount": 0,
+  "overlapCount": 0,
+  "textOverlapCount": 0,
+  "emptyPageCount": 0,
+  "hasSignal": false,
+  "pages": [],
+  "hypothesis": "같은 단 안의 표만 짝짓는다. 다른 단은 x 가 나뉘어 있어도 후보에서 뺀다.",
+  "fixtureId": "ovl-column-same-false"
+}

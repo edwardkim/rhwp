@@ -1,0 +1,6 @@
+# transcript txov-in-table-dy0
+# family=text-overlap
+# hypothesis=표 하나 안의 두 런이 세로 어긋남 0px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.
+쪽 수: 3  overflow: 0  off-canvas: 0  overlap: 0  text-overlap: 1  empty_page(가능성): 0
+  [TEXT-OVERLAP] page   0  30.00x10.00px  Page/Body/Table0/Cell0/TextLine0/TextRun0 (TextRun) x Page/Body/Table0/Cell0/TextLine1/TextRun0 (TextRun)
+status: ANOMALY

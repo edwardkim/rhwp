@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "ovl-carrier-empty-empty.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": null,
+  "strict": false,
+  "overflowCount": 0,
+  "offCanvasCount": 0,
+  "overlapCount": 0,
+  "textOverlapCount": 0,
+  "emptyPageCount": 0,
+  "hasSignal": false,
+  "pages": [],
+  "hypothesis": "표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text=''.",
+  "fixtureId": "ovl-carrier-empty-empty"
+}

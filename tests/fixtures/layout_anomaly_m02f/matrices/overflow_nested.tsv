@@ -1,0 +1,14 @@
+id	family	overflowTol	overlapTol	types	pageIndex	pageCount	overflow	offCanvas	overlap	textOverlap	empty	signal	status	overflowTypes	offCanvasTypes	maxOver	hypothesis
+suppress-table-right-2.5	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		2.5000	표가 본문 오른쪽을 2.5px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-textbox-right-2.5	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		2.5000	글상자가 본문 오른쪽을 2.5px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-group-right-2.5	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Group		2.5000	묶음가 본문 오른쪽을 2.5px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-table-right-8	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		8.0000	표가 본문 오른쪽을 8px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-textbox-right-8	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		8.0000	글상자가 본문 오른쪽을 8px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-group-right-8	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Group		8.0000	묶음가 본문 오른쪽을 8px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-table-right-40	suppress	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	40.0000	표가 본문 오른쪽을 40px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-textbox-right-40	suppress	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	40.0000	글상자가 본문 오른쪽을 40px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-group-right-40	suppress	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Group	Group	40.0000	묶음가 본문 오른쪽을 40px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+types-textline-inside-table-2.5	types	1.0	2.0	TextLine	0	3	1	0	0	0	0	1	ANOMALY	TextLine		2.5000	--types TextLine 은 표 컨테이너를 건너뛰고 내부 줄의 2.5px 오른쪽 넘침만 overflow 로 센다. off-canvas 는 타입 필터와 무관하게 표에서 먼저 닫힌다.
+types-image-hides-table-2.5	types	1.0	2.0	Image	0	3	0	0	0	0	0	0	CLEAN			0.0000	--types Image 는 표 overflow 2.5px 를 버린다. 확정 신호는 off-canvas 가 있을 때만 남는다.
+types-textline-inside-table-8	types	1.0	2.0	TextLine	0	3	1	0	0	0	0	1	ANOMALY	TextLine		8.0000	--types TextLine 은 표 컨테이너를 건너뛰고 내부 줄의 8px 오른쪽 넘침만 overflow 로 센다. off-canvas 는 타입 필터와 무관하게 표에서 먼저 닫힌다.
+types-image-hides-table-8	types	1.0	2.0	Image	0	3	0	0	0	0	0	0	CLEAN			0.0000	--types Image 는 표 overflow 8px 를 버린다. 확정 신호는 off-canvas 가 있을 때만 남는다.

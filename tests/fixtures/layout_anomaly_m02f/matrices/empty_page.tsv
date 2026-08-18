@@ -1,0 +1,32 @@
+id	family	overflowTol	overlapTol	types	pageIndex	pageCount	overflow	offCanvas	overlap	textOverlap	empty	signal	status	overflowTypes	offCanvasTypes	maxOver	hypothesis
+empty-p0-of1-blank	empty-page	1.0	2.0		0	1	0	0	0	0	0	0	CLEAN			0.0000	page=0/1, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p0-of1-text	empty-page	1.0	2.0		0	1	0	0	0	0	0	0	CLEAN			0.0000	page=0/1 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p0-of2-blank	empty-page	1.0	2.0		0	2	0	0	0	0	0	0	CLEAN			0.0000	page=0/2, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p0-of2-text	empty-page	1.0	2.0		0	2	0	0	0	0	0	0	CLEAN			0.0000	page=0/2 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p1-of2-blank	empty-page	1.0	2.0		1	2	0	0	0	0	0	0	CLEAN			0.0000	page=1/2, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p1-of2-text	empty-page	1.0	2.0		1	2	0	0	0	0	0	0	CLEAN			0.0000	page=1/2 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p0-of3-blank	empty-page	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	page=0/3, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p0-of3-text	empty-page	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	page=0/3 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p1-of3-blank	empty-page	1.0	2.0		1	3	0	0	0	0	1	0	CLEAN			0.0000	page=1/3, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p1-of3-text	empty-page	1.0	2.0		1	3	0	0	0	0	0	0	CLEAN			0.0000	page=1/3 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p2-of3-blank	empty-page	1.0	2.0		2	3	0	0	0	0	0	0	CLEAN			0.0000	page=2/3, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p2-of3-text	empty-page	1.0	2.0		2	3	0	0	0	0	0	0	CLEAN			0.0000	page=2/3 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p0-of4-blank	empty-page	1.0	2.0		0	4	0	0	0	0	0	0	CLEAN			0.0000	page=0/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p0-of4-text	empty-page	1.0	2.0		0	4	0	0	0	0	0	0	CLEAN			0.0000	page=0/4 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p1-of4-blank	empty-page	1.0	2.0		1	4	0	0	0	0	1	0	CLEAN			0.0000	page=1/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p1-of4-text	empty-page	1.0	2.0		1	4	0	0	0	0	0	0	CLEAN			0.0000	page=1/4 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p2-of4-blank	empty-page	1.0	2.0		2	4	0	0	0	0	1	0	CLEAN			0.0000	page=2/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p2-of4-text	empty-page	1.0	2.0		2	4	0	0	0	0	0	0	CLEAN			0.0000	page=2/4 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p3-of4-blank	empty-page	1.0	2.0		3	4	0	0	0	0	0	0	CLEAN			0.0000	page=3/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p3-of4-text	empty-page	1.0	2.0		3	4	0	0	0	0	0	0	CLEAN			0.0000	page=3/4 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p0-of5-blank	empty-page	1.0	2.0		0	5	0	0	0	0	0	0	CLEAN			0.0000	page=0/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p0-of5-text	empty-page	1.0	2.0		0	5	0	0	0	0	0	0	CLEAN			0.0000	page=0/5 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p1-of5-blank	empty-page	1.0	2.0		1	5	0	0	0	0	1	0	CLEAN			0.0000	page=1/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p1-of5-text	empty-page	1.0	2.0		1	5	0	0	0	0	0	0	CLEAN			0.0000	page=1/5 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p2-of5-blank	empty-page	1.0	2.0		2	5	0	0	0	0	1	0	CLEAN			0.0000	page=2/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p2-of5-text	empty-page	1.0	2.0		2	5	0	0	0	0	0	0	CLEAN			0.0000	page=2/5 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p3-of5-blank	empty-page	1.0	2.0		3	5	0	0	0	0	1	0	CLEAN			0.0000	page=3/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p3-of5-text	empty-page	1.0	2.0		3	5	0	0	0	0	0	0	CLEAN			0.0000	page=3/5 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p4-of5-blank	empty-page	1.0	2.0		4	5	0	0	0	0	0	0	CLEAN			0.0000	page=4/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p4-of5-text	empty-page	1.0	2.0		4	5	0	0	0	0	0	0	CLEAN			0.0000	page=4/5 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-middle-image-is-content	empty-page	1.0	2.0		1	4	0	0	0	0	0	0	CLEAN			0.0000	중간 쪽에 그림만 있어도 has_content 이라 empty_page 가 아니다.
