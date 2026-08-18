@@ -88,7 +88,7 @@ fn journeys_do_not_start_with_unlimited_export_text_except_tiny() {
         let pages = j["pages"].as_str().unwrap();
         if pages != "tiny" {
             assert!(
-                !steps.iter().any(|s| *s == "export-text"),
+                !steps.contains(&"export-text"),
                 "tiny 가 아닌 여정이 전문으로 시작: {j}"
             );
         }
