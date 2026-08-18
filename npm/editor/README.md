@@ -11,6 +11,8 @@
 SDK는 지원되는 Studio와 `MessageChannel` v1을 협상해 binary를 transferable로 전송합니다.
 구버전 Studio에는 기존 `postMessage` protocol로 자동 전환되며 기존 공개 API는 유지됩니다.
 `getRendererDiagnostics()`는 `renderer-diagnostics-v1` capability를 협상한 Studio에서만 사용할 수 있습니다.
+`getFontDecisionTrace()`는 `font-decision-trace-v1` capability를 협상한 Studio에서만 사용할 수 있으며,
+현재 snapshot을 읽을 뿐 font load, 권한 요청, repaint 또는 backend 변경을 시작하지 않습니다.
 호스트와 `studioUrl`은 HTTP(S) origin만 지원합니다. `file:`, `data:`, 브라우저 확장처럼
 origin이 `null`이거나 불투명한 환경의 연결은 SDK와 Studio 양쪽에서 거부합니다.
 
@@ -194,6 +196,32 @@ resource generation을 `selection`에서 확인할 수 있습니다. 현재 Stud
 const diagnostics = await editor.getRendererDiagnostics(0);
 console.log(diagnostics.schemaVersion, diagnostics.effectiveBackend);
 ```
+
+### editor.getFontDecisionTrace(page?, options?)
+
+문자가 document face에서 layout metric과 backend paint 후보까지 도달한 계보를 반환합니다.
+`page`는 0부터 시작하고 `maxCharacters`는 1..4096만 허용합니다. 기본값은 1024이며, 상한에 도달하면
+조용히 자르지 않고 `status: 'truncated'`, `recordsOmitted`와 reason을 반환합니다. Studio가
+`font-decision-trace-v1` capability를 제공하지 않거나 입력이 범위를 벗어나면 명시적으로 실패합니다.
+
+```javascript
+const trace = await editor.getFontDecisionTrace(0, { maxCharacters: 256 });
+console.log(trace.schemaVersion, trace.status, trace.layoutHash.value);
+for (const record of trace.records) {
+  console.log(
+    record.source.character,
+    record.document.face,
+    record.layoutMetric.widthSource,
+    record.paint.canvas2d.certainty,
+    record.paint.canvaskit.certainty,
+  );
+}
+```
+
+`layoutHash`는 backend 환경과 무관한 portable layout 계보를, `normalizedHash`는 현재 backend capability
+snapshot까지 포함한 결과를 고정합니다. Canvas2D가 실제 glyph face를 공개하지 않으면 CSS chain만
+기록하고 `certainty: 'notObserved'`로 남깁니다. trace는 font 선택 authority나 fallback 교정 API가
+아닙니다.
 
 ### editor.exportHwp()
 

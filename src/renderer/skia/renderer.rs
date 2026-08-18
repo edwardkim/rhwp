@@ -325,6 +325,27 @@ impl SkiaLayerRenderer {
         })
     }
 
+    /// 이미 준비된 native renderer의 font inventory로 decision trace를 보강한다.
+    ///
+    /// 이 호출은 새 font path를 읽거나 typeface를 적재하지 않는다. 호출자가
+    /// `with_font_paths`로 구성한 현재 snapshot을 그대로 관측한다.
+    pub fn get_font_decision_trace(
+        &self,
+        core: &crate::document_core::DocumentCore,
+        page_num: u32,
+        options_json: &str,
+    ) -> Result<String, crate::error::HwpError> {
+        let observe = |requested: &str, character: char, bold: bool, italic: bool| {
+            self.font_decision(requested, character, bold, italic)
+        };
+        core.get_font_decision_trace_with_native_observer(
+            page_num,
+            options_json,
+            Some(&observe),
+            "nativeRendererSnapshotRequired",
+        )
+    }
+
     fn load_typefaces_from_dirs(
         font_mgr: &FontMgr,
         dirs: &[std::path::PathBuf],
@@ -367,6 +388,53 @@ impl SkiaLayerRenderer {
         let bundled_dirs = crate::renderer::font_paths::bundled_font_dirs();
         Self::load_typefaces_from_dirs(&self.font_mgr, &bundled_dirs, &mut self.bundled_typefaces);
         self
+    }
+
+    /// 기본 native Skia paint와 동일한 후보 사다리에서 문자별 typeface 결정을 읽는다.
+    /// 렌더링, surface 생성, font 파일 적재를 시작하지 않는다.
+    pub(crate) fn font_decision(
+        &self,
+        requested: &str,
+        character: char,
+        bold: bool,
+        italic: bool,
+    ) -> crate::renderer::font_decision::BackendDecision {
+        use super::font_lookup::{select_typeface_for_character, text_typeface_candidates};
+
+        let style = match (bold, italic) {
+            (true, true) => FontStyle::bold_italic(),
+            (true, false) => FontStyle::bold(),
+            (false, true) => FontStyle::italic(),
+            (false, false) => FontStyle::normal(),
+        };
+        let (candidates, typefaces) = text_typeface_candidates(
+            &self.font_mgr,
+            &self.system_families,
+            &self.custom_typefaces,
+            &self.bundled_typefaces,
+            requested,
+            style,
+        );
+        let selected = select_typeface_for_character(&typefaces, character);
+        let mut failures = Vec::new();
+        if typefaces.is_empty() {
+            failures.push("nativeTypefaceUnavailable".into());
+        } else if selected.is_none() {
+            failures.push("nativeGlyphMissingAllCandidates".into());
+        }
+        crate::renderer::font_decision::BackendDecision {
+            status: "complete".into(),
+            certainty: "observed".into(),
+            requested: Some(requested.into()),
+            candidates,
+            resolved: selected.map(|candidate| candidate.typeface.family_name()),
+            source: selected.map(|candidate| candidate.source.into()),
+            capabilities: vec![
+                "nativeTypefaceChainEnumerated".into(),
+                "nativeGlyphCoverageObserved".into(),
+            ],
+            failures,
+        }
     }
 
     pub fn render_raster_with_options(

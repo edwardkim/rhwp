@@ -47,6 +47,7 @@ test('embed protocol은 capability를 포함한 v1 connect와 session-bound requ
     'transferable-array-buffer',
     'hml-export',
     'renderer-diagnostics-v1',
+    'font-decision-trace-v1',
     'notify-saved-v1',
     // 브리지 확장(P4). 프로토콜 세대는 1 을 유지하고 capability 로만 넓힌다 —
     // 구버전 studio 에 붙은 신버전 SDK 는 기능만 비활성되고 기존 임베드는 그대로 돈다.
@@ -76,6 +77,7 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
     },
     pageCount: async () => 2,
     getRendererDiagnostics: async (page) => rendererDiagnostics(page),
+    getFontDecisionTrace: async (page, maxCharacters) => ({ page, maxCharacters } as never),
     getPageSvg: async () => '<svg/>',
     exportHwp: async () => new Uint8Array([1]),
     exportHwpx: async () => new Uint8Array([2]),
@@ -94,6 +96,27 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
     await routeEmbedRequest('getRendererDiagnostics', { page: 3 }, handlers),
     rendererDiagnostics(3),
   );
+  assert.deepEqual(
+    await routeEmbedRequest('getFontDecisionTrace', {
+      page: 2,
+      limits: { maxCharacters: 17 },
+    }, handlers),
+    { page: 2, maxCharacters: 17 },
+  );
+  for (const params of [
+    { page: -1 },
+    { page: 0, limits: { maxCharacters: 0 } },
+    { page: 0, limits: { maxCharacters: 4097 } },
+    { page: 0, limits: { maxCharacters: 1.5 } },
+    { page: 0, limits: null },
+    { page: 0, limits: { unknown: 1 } },
+    { page: 0, backend: 'canvas2d' },
+  ]) {
+    await assert.rejects(
+      () => routeEmbedRequest('getFontDecisionTrace', params, handlers),
+      /page must|maxCharacters must|limits must|unknown field/,
+    );
+  }
   await assert.rejects(
     () => routeEmbedRequest('getRendererDiagnostics', { page: -1 }, handlers),
     /page must be a non-negative safe integer/,
