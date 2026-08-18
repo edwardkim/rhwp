@@ -581,6 +581,16 @@ impl SvgRenderer {
                 {
                     return;
                 }
+                // 그림 미지정은 라벨 없는 전용 표시다 — 한글 편집 화면과 같은 점선 테두리 +
+                // 중앙의 그림-없음 아이콘. 차트/OLE 의 "라벨 박스"를 쓰면 빈 라벨만 남아
+                // 한글과 달라진다.
+                if matches!(
+                    ph.kind,
+                    crate::renderer::render_tree::PlaceholderKind::MissingPicture
+                ) {
+                    self.draw_missing_picture_placeholder(&node.bbox);
+                    return;
+                }
                 // Task #195: 차트/OLE placeholder (점선 테두리 + 중앙 라벨)
                 let cx = node.bbox.x + node.bbox.width / 2.0;
                 let cy = node.bbox.y + node.bbox.height / 2.0;
@@ -1523,6 +1533,61 @@ impl SvgRenderer {
     }
 
     /// 이미지 노드를 fill_mode에 따라 렌더링한다.
+    /// 한글 편집 화면의 "그림 없음" 표시 — 개체 영역 점선 테두리 + 중앙의 작은
+    /// 그림-없음 아이콘(사선 그은 그림 픽토그램).
+    ///
+    /// 기하·색은 `web_canvas.rs::render_placeholder` 와 같은 값을 쓴다 — 같은 표시를
+    /// 두 백엔드가 다른 모양으로 그리면 studio 화면과 SVG 내보내기가 갈라진다.
+    /// 인쇄 등가 profile 에서는 호출부(`show_missing_picture_placeholder`)가 막는다.
+    fn draw_missing_picture_placeholder(&mut self, bbox: &super::render_tree::BoundingBox) {
+        self.output.push_str(&format!(
+            "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"none\" stroke=\"#999999\" stroke-width=\"1\" stroke-dasharray=\"2 2\"/>
+",
+            bbox.x, bbox.y, bbox.width, bbox.height,
+        ));
+        let icon = (bbox.width.min(bbox.height) * 0.4).clamp(14.0, 36.0);
+        let ix = bbox.x + (bbox.width - icon) / 2.0;
+        let iy = bbox.y + (bbox.height - icon) / 2.0;
+        // 아이콘 판 + 산 두 개 + 해 + 사선(그림 없음)
+        self.output.push_str(&format!(
+            "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#888888\" stroke-width=\"1\"/>
+",
+            ix,
+            iy,
+            icon,
+            icon * 0.75,
+        ));
+        self.output.push_str(&format!(
+            "<polyline points=\"{:.2},{:.2} {:.2},{:.2} {:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"none\" stroke=\"#888888\" stroke-width=\"1\"/>
+",
+            ix + icon * 0.08,
+            iy + icon * 0.62,
+            ix + icon * 0.32,
+            iy + icon * 0.30,
+            ix + icon * 0.52,
+            iy + icon * 0.62,
+            ix + icon * 0.68,
+            iy + icon * 0.42,
+            ix + icon * 0.92,
+            iy + icon * 0.62,
+        ));
+        self.output.push_str(&format!(
+            "<circle cx=\"{:.2}\" cy=\"{:.2}\" r=\"{:.2}\" fill=\"none\" stroke=\"#888888\" stroke-width=\"1\"/>
+",
+            ix + icon * 0.72,
+            iy + icon * 0.20,
+            icon * 0.07,
+        ));
+        self.output.push_str(&format!(
+            "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#cc4444\" stroke-width=\"1.5\"/>
+",
+            ix,
+            iy + icon * 0.75,
+            ix + icon,
+            iy,
+        ));
+    }
+
     fn render_image_node(&mut self, img: &ImageNode, bbox: &super::render_tree::BoundingBox) {
         // [Task #741] 빈 binary 데이터 (외부 file path 그림 등) 도 placeholder 처리.
         // 한컴 한글 2024 viewer 정합 — 외부 file 못 찾는 경우 점선 사각형 + 깨진 image 아이콘.

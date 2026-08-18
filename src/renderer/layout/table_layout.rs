@@ -2805,21 +2805,18 @@ impl LayoutEngine {
             split_terminal,
             clamp_header_negative_para_offset,
             inline_table_flow_y_shift,
-            // HWP5에서는 표 안의 비글자 1×1 표가 `inMargin=(0,0,141,141)`를
+            // HWP5에서 표 안의 비글자 1×1 표가 `inMargin=(0,0,141,141)`를
             // 갖더라도 셀의 작은 좌우 저장 margin을 계속 적용하는 형상이 있다.
             // 일반 최상위 표의 #2195 pad 사다리는 유지하고, 실제 셀 내부 중첩에만
-            // 문맥을 제한한다 (#2308 HWP 2024 PDF p34). MasterPage/footer의
-            // 중첩 표는 #2195의 일반 aim=false 표 여백을 써야 하므로 제외한다
-            // (exam_social p2 footer 번호 회귀).
+            // 문맥을 제한한다. 단, `applyInnerMargin=false`이면서 literal-space
+            // 들여쓰기/구간별 tracking을 복원하는 장문 1×1 child는 table
+            // content box 전체가 PDF 오라클이다(#3128 p34).
             depth > 0
                 && !table.common.treat_as_char
-                // p34의 일반 non-TAC nested table은 saved 510HU margin을 유지해
-                // 우측 테두리 침범을 막는다. 반면 RenderNormalizationOverlay가
-                // 표시한 native short RowBreak child는 parent owner content box를
-                // 그대로 써야 한컴 PDF의 p81 `… 등의 사고` wrap이 재현된다.
                 && !self
                     .render_normalization_overlay()
                     .uses_owner_content_box(table)
+                && !self.long_indented_tracking_uses_table_content_box(table, styles)
                 && !matches!(
                     col_node.node_type,
                     RenderNodeType::Header | RenderNodeType::Footer | RenderNodeType::MasterPage
@@ -3805,6 +3802,37 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
     ) -> (f64, f64, f64, f64) {
         self.resolve_cell_padding_for_context(cell, table, false)
+    }
+
+    /// Native HWP5의 긴 1×1 child 중 `applyInnerMargin=false`이고 table 좌우
+    /// inMargin이 0인 경우, 저장 cell margin은 편집 원장일 뿐 PDF paint
+    /// viewport에 덧적용하지 않는다. 같은 문단의 literal-space 들여쓰기와
+    /// 단일 metric/구간별 tracking 신호를 함께 요구해 기존 중첩 표 호환
+    /// margin 경로와 분리한다(#3128 p34).
+    pub(crate) fn long_indented_tracking_uses_table_content_box(
+        &self,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        if table.common.treat_as_char
+            || table.row_count != 1
+            || table.col_count != 1
+            || table.cells.len() != 1
+            || table.padding.left != 0
+            || table.padding.right != 0
+        {
+            return false;
+        }
+        let cell = &table.cells[0];
+        !cell.apply_inner_margin
+            && cell.padding.left.max(cell.padding.right) > 0
+            && cell.padding.left.max(cell.padding.right) < 2500
+            && cell.paragraphs.iter().any(|paragraph| {
+                crate::renderer::composer::missing_lineseg_indented_cell_has_uniform_metrics_with_tracking(
+                    paragraph,
+                    styles,
+                )
+            })
     }
 
     fn resolve_cell_padding_for_context(
@@ -6078,9 +6106,9 @@ impl LayoutEngine {
             // 1443 셀 안여백 샘플처럼 큰 명시 좌우 여백은 한컴과 같이 보존하되,
             // 기존 문서의 1~4mm급 일반 셀 여백은 종전 오버플로우 방어를 유지한다.
             let preserve_explicit_horizontal_padding = (cell.apply_inner_margin && cell.padding.left.max(cell.padding.right) >= 1700)
-                    // #2308 p34: 중첩 비글자표의 510HU 저장 margin은 일반 overflow
-                    // 추정보다 한컴 PDF가 우선한다. 이 여백을 다시 1px까지 깎으면
-                    // 문단이 우측 테두리와 맞닿는다.
+                    // 호환 경로가 선택한 작은 saved margin은 일반 overflow
+                    // 추정으로 1px까지 다시 줄이지 않는다. #3128의 장문
+                    // content-box child는 compat=false이므로 이 보존 대상이 아니다.
                     || (nested_non_tac_cell_margin_compat
                         && cell.padding.left.max(cell.padding.right)
                             > table.padding.left.max(table.padding.right)
@@ -6105,14 +6133,25 @@ impl LayoutEngine {
             // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
             // 한컴이 PARA_LINE_SEG 를 인코딩하지 않은 케이스 (samples/계획서.hwp) 의
             // 줄겹침 시각 결함 정정. 정상 line_segs 인코딩된 paragraph 는 무영향.
+            let restore_indented_tracking =
+                self.long_indented_tracking_uses_table_content_box(table, styles);
             for (cpi, para) in cell.paragraphs.iter().enumerate() {
                 if let Some(comp) = composed_paras.get_mut(cpi) {
-                    crate::renderer::composer::recompose_for_cell_width(
-                        comp,
-                        para,
-                        inner_width,
-                        styles,
-                    );
+                    if restore_indented_tracking {
+                        crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
+                            comp,
+                            para,
+                            inner_width,
+                            styles,
+                        );
+                    } else {
+                        crate::renderer::composer::recompose_for_cell_width(
+                            comp,
+                            para,
+                            inner_width,
+                            styles,
+                        );
+                    }
                 }
             }
 
@@ -7274,16 +7313,11 @@ impl LayoutEngine {
 
         let mut row_units: Vec<(f64, bool, f64, bool, Option<usize>)> = Vec::new();
         for cell in table.cells.iter().filter(|cell| cell.row == 0) {
-            // 이 helper는 부모 셀의 Control::Table, 즉 중첩 표의 조각 유닛을
-            // 산출한다. 비글자 중첩 표는 실제 배치에서 보존된 작은 cellMargin을
-            // 사용하므로, 여기에서도 같은 폭으로 조판해야 한다. 기본 padding
-            // 규칙(aim=false → table inMargin)으로 재조판하면 더 넓은 폭에서 줄이
-            // 하나 덜 생겨, 유닛 컷은 마지막 줄을 포함했다고 판단해도 실제 SVG
-            // glyph가 다음 페이지 clip에 걸린다 (76076 p33→34).
             let preserve_saved_small_margin = !table.common.treat_as_char
                 && !self
                     .render_normalization_overlay()
-                    .uses_owner_content_box(table);
+                    .uses_owner_content_box(table)
+                && !self.long_indented_tracking_uses_table_content_box(table, styles);
             let (pad_left, pad_right, pad_top, pad_bottom) =
                 self.resolve_cell_padding_for_context(cell, table, preserve_saved_small_margin);
             let cell_w = if cell.width < 0x8000_0000 {
@@ -7294,17 +7328,28 @@ impl LayoutEngine {
             let inner_width = (cell_w - pad_left - pad_right).max(0.0);
             let mut cell_units = Vec::new();
             let mut after_completed_multiline_table = false;
+            let restore_indented_tracking =
+                self.long_indented_tracking_uses_table_content_box(table, styles);
             for (pi, para) in cell.paragraphs.iter().enumerate() {
                 let para_is_empty_spacer = para.text.trim().is_empty() && para.controls.is_empty();
                 let starts_after_completed_multiline_table =
                     after_completed_multiline_table && !para_is_empty_spacer;
                 let mut comp = compose_paragraph(para);
-                crate::renderer::composer::recompose_for_cell_width(
-                    &mut comp,
-                    para,
-                    inner_width,
-                    styles,
-                );
+                if restore_indented_tracking {
+                    crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
+                        &mut comp,
+                        para,
+                        inner_width,
+                        styles,
+                    );
+                } else {
+                    crate::renderer::composer::recompose_for_cell_width(
+                        &mut comp,
+                        para,
+                        inner_width,
+                        styles,
+                    );
+                }
                 // [#2279 axis A] 종전에는 comp.lines 빈 문단을 통째 skip 해 (a) 2단계
                 // 중첩 표(빈 문단 소속)와 (b) 빈 문단 줄박스가 유닛에서 누락됐다 —
                 // 86712 pi=172 r27 근거설명(25문단 + 3×12 + 5×4 내부표) 프래그먼트 합
@@ -7455,12 +7500,21 @@ impl LayoutEngine {
                     );
                     for (pi, para) in cell.paragraphs.iter().enumerate() {
                         let mut comp = compose_paragraph(para);
-                        crate::renderer::composer::recompose_for_cell_width(
-                            &mut comp,
-                            para,
-                            inner_width,
-                            styles,
-                        );
+                        if restore_indented_tracking {
+                            crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
+                                &mut comp,
+                                para,
+                                inner_width,
+                                styles,
+                            );
+                        } else {
+                            crate::renderer::composer::recompose_for_cell_width(
+                                &mut comp,
+                                para,
+                                inner_width,
+                                styles,
+                            );
+                        }
                         let nctl = para.controls.len();
                         eprintln!(
                             "  p[{pi}] lines={} text_len={} ctrls={} ls_stored={} text={:?}",
@@ -8164,7 +8218,21 @@ impl LayoutEngine {
                 self.paragraph_cell_other_non_inline_control_heights(&p.controls);
             let para_non_inline_h = para_top_and_bottom_h + para_other_non_inline_h;
             let mut comp = compose_paragraph(p);
-            crate::renderer::composer::recompose_for_cell_width(&mut comp, p, inner_width, styles);
+            if self.long_indented_tracking_uses_table_content_box(table, styles) {
+                crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
+                    &mut comp,
+                    p,
+                    inner_width,
+                    styles,
+                );
+            } else {
+                crate::renderer::composer::recompose_for_cell_width(
+                    &mut comp,
+                    p,
+                    inner_width,
+                    styles,
+                );
+            }
             // [#2291] 부실 저장(ls==1 인데 실폭 초과) 문단 재분할 — 가로쓰기 셀 한정.
             if cell.text_direction == 0 {
                 crate::renderer::composer::recompose_stored_single_line_if_overflowing(
@@ -12524,6 +12592,18 @@ impl LayoutEngine {
                             .sum(),
                     )
                 });
+            let native_terminal_rowbreak_child = cell
+                .paragraphs
+                .get(para_idx)
+                .and_then(|paragraph| {
+                    paragraph.controls.iter().find_map(|control| match control {
+                        Control::Table(child) => Some(child.as_ref()),
+                        _ => None,
+                    })
+                })
+                .is_some_and(|child| {
+                    self.native_terminal_rowbreak_child_source_cursor_eligible(table, cell, child)
+                });
             // 재귀 투영 run은 `mixed_nested_split_from_cut`의 child RowCut이
             // source cursor와 viewport를 이미 함께 소유한다. 여기에 scalar
             // continuation 보정을 다시 더하면 부모 행만 첫 가시 유닛만큼 커져
@@ -12538,6 +12618,12 @@ impl LayoutEngine {
                     // an empty row tail (76076 p82); retain only the mixed-flow
                     // clip guard.
                     extra += 4.0;
+                } else if terminal && native_terminal_rowbreak_child {
+                    // The long native-HWP5 terminal child already carries the
+                    // exact source cursor selected by the parent RowCut.  Its
+                    // saved empty host Enter is not a visible successor, so the
+                    // generic first-unit reservation would enlarge the final
+                    // frame and push following flow down (#3128 p34).
                 } else if terminal && single_cell_nested_continuation {
                     // Keep the parent RowBreak cell in lockstep with the
                     // terminal nested-cell viewport.  Reserving only one

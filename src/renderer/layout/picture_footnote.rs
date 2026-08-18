@@ -11,7 +11,9 @@ use super::super::{
 };
 use super::border_rendering::border_width_to_px;
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
-use super::utils::{extract_shape_transform, find_bin_data_bytes, picture_display_size_hu};
+use super::utils::{
+    extract_shape_transform, find_bin_data_bytes, picture_data_is_unusable, picture_display_size_hu,
+};
 use super::{footnote_separator_length_px, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
@@ -198,7 +200,7 @@ impl LayoutEngine {
         // [Task #2225] 그림 미지정(bin 참조 실패 + 외부 경로 없음): 한컴은 편집기
         // 에서만 점선 테두리+그림-없음 아이콘으로 표시하고 인쇄 등가 출력은
         // 미출력 — 의미 노드(MissingPicture)로 방출해 백엔드별 분기를 일원화.
-        if image_data.as_ref().is_none_or(|d| d.is_empty())
+        if picture_data_is_unusable(image_data.as_deref())
             && picture.image_attr.external_path.is_none()
         {
             let ph_id = tree.next_id();
@@ -515,25 +517,12 @@ impl LayoutEngine {
         let bin_data_id = picture.image_attr.bin_data_id;
         let image_data = find_bin_data_bytes(bin_data_content, bin_data_id);
         // [Task #2225] 그림 미지정 — layout_picture_full 과 동일 분기.
-        if image_data.as_ref().is_none_or(|d| d.is_empty())
-            && picture.image_attr.external_path.is_none()
-        {
-            let ph_id = tree.next_id();
-            parent_node.children.push(RenderNode::new(
-                ph_id,
-                RenderNodeType::Placeholder(
-                    // [Task #2230] 본문 picture — 셀 경로 없음(None).
-                    crate::renderer::render_tree::PlaceholderNode::missing_picture(
-                        Some(section_index),
-                        Some(para_index),
-                        Some(control_index),
-                        None,
-                    ),
-                ),
-                BoundingBox::new(adjusted_pic_x, pic_y, pic_width, pic_height),
-            ));
-            return total_height;
-        }
+        //
+        // 여기서 곧장 되돌아가면(early return) 캡션 배치와 흐름 계산을 통째로 건너뛴다 —
+        // 캡션 글자가 사라지고, 반환값도 "후속 y" 가 아니라 "높이" 가 되어 뒤 문단이 그림
+        // 위로 올라탄다. 그래서 **노드만 바꿔 끼우고** 나머지 경로는 그대로 태운다.
+        let picture_missing = picture_data_is_unusable(image_data.as_deref())
+            && picture.image_attr.external_path.is_none();
 
         // 그림 자르기
         let crop = {
@@ -547,10 +536,19 @@ impl LayoutEngine {
 
         let original_size_hu = picture.crop_reference_size();
 
-        // 이미지 노드 생성
+        // 이미지 노드 생성 (그림 미지정이면 같은 자리·같은 bbox 의 placeholder 노드)
         let img_id = tree.next_id();
-        let img_node = RenderNode::new(
-            img_id,
+        let node_type = if picture_missing {
+            RenderNodeType::Placeholder(
+                // [Task #2230] 본문 picture — 셀 경로 없음(None).
+                crate::renderer::render_tree::PlaceholderNode::missing_picture(
+                    Some(section_index),
+                    Some(para_index),
+                    Some(control_index),
+                    None,
+                ),
+            )
+        } else {
             RenderNodeType::Image(ImageNode {
                 section_index: Some(section_index),
                 para_index: Some(para_index),
@@ -565,7 +563,11 @@ impl LayoutEngine {
                 transform: extract_shape_transform(&picture.shape_attr),
                 external_path: picture.image_attr.external_path.clone(),
                 ..ImageNode::new(bin_data_id, image_data)
-            }),
+            })
+        };
+        let img_node = RenderNode::new(
+            img_id,
+            node_type,
             BoundingBox::new(adjusted_pic_x, pic_y, pic_width, pic_height),
         );
 

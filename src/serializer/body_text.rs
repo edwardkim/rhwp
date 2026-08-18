@@ -759,18 +759,47 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         // 컨트롤이 자동번호인데 공백이 마지막이면 그 공백이 곧 placeholder 다 — 진짜
         // 공백이었다면 그 뒤에 placeholder 가 하나 더 붙어 마지막이 아니게 된다.
         let is_last_text_char = i + 1 == text_chars.len();
-        let is_autonum_placeholder = *ch == ' '
-            && offset == prev_end
-            && ctrl_idx < para.controls.len()
-            // [#3495] 0x0012(자동번호)만 placeholder 공백을 만든다. 두 파서 모두
-            // 그렇다 — parser/body_text.rs 는 ch == 0x0012 일 때만, HWPX section.rs 는
-            // 0x0012 파트일 때만 text 에 공백을 push 한다. 각주·미주(0x0011)는
-            // placeholder 를 만들지 않으므로, 여기 포함하면 미주 앞의 진짜 공백을
-            // placeholder 로 오인해 컨트롤로 덮어쓴다 (SO-SUEOP.hwp 문단 238:
-            // 공백 12개 -> 11개, 뒤 텍스트가 한 칸 당겨짐).
-            && matches!(control_char_code_and_id(&para.controls[ctrl_idx]).0, 0x0012)
-            && next_offset.map_or(is_last_text_char, |n| n >= offset + 8);
-        if is_autonum_placeholder {
+        // 자리표시자 판정 — 종류별 근거는 아래 `match` 팔에 적는다.
+        //
+        // 판정이 `prev_end`·`ctrl_idx` 에 걸려 있어 **갭을 채우기 전과 후에 각각** 묻는다.
+        // 문단 선두에 예약된 갭(구역·단 정의 자리)이 있으면 첫 물음에서는 `prev_end` 가
+        // 아직 0 이라 판정이 실패한다 — 그 자리를 채운 뒤 다시 물어야 자리표시자를 알아본다
+        // (#4957: `secd`·`cold` 를 앞세운 HWP3 첫 문단).
+        //
+        // 두 번째 물음은 `object_only` 로 **U+FFFC 만** 받는다. 공백 자리표시자는 판별자가
+        // 글자가 아니라 `controls[ctrl_idx]` 의 코드(0x0012)뿐인데, 갭을 채우고 나면
+        // `ctrl_idx` 가 다른 컨트롤을 가리킨다 — 그때 다시 물으면 미주 앞의 **진짜 공백**이
+        // 자동번호로 오인돼 먹힌다(#3495 SO-SUEOP 문단 238). `U+FFFC` 는 글자 자체가
+        // 판별자라 이 위험이 없다.
+        let is_placeholder = |prev_end: u32, ctrl_idx: usize, object_only: bool| -> bool {
+            if offset != prev_end
+                || ctrl_idx >= para.controls.len()
+                || !next_offset.map_or(is_last_text_char, |n| n >= offset + 8)
+            {
+                return false;
+            }
+            match *ch {
+                // [#4957] HWP3 가시 개체의 자리표시자는 `U+FFFC` 다. 파서가 그 자리에
+                // **글자 하나 + 8유닛 슬롯**을 두므로(암호 HWP3 경로가 쓰던 계약을 전
+                // 경로로 넓힘) 자동번호 공백과 같은 모양이다 — 여기서 리터럴 대신 컨트롤을
+                // 써야 저장본에 원본에 없던 개체 문자가 남지 않는다(10k 전수 HWP3 28문서
+                // 56경로). 공백과 달리 컨트롤 종류를 가리지 않는다. `U+FFFC` 는 한컴
+                // 원본이 본문에 한 번도 쓰지 않는 글자라(hwp 0/6,579 · hwpx 0/3,418)
+                // 진짜 본문과 헷갈릴 여지가 없다.
+                '\u{FFFC}' => true,
+                // [#3495] 0x0012(자동번호)만 placeholder 공백을 만든다. 두 파서 모두
+                // 그렇다 — parser/body_text.rs 는 ch == 0x0012 일 때만, HWPX section.rs 는
+                // 0x0012 파트일 때만 text 에 공백을 push 한다. 각주·미주(0x0011)는
+                // placeholder 를 만들지 않으므로, 여기 포함하면 미주 앞의 진짜 공백을
+                // placeholder 로 오인해 컨트롤로 덮어쓴다 (SO-SUEOP.hwp 문단 238:
+                // 공백 12개 -> 11개, 뒤 텍스트가 한 칸 당겨짐).
+                ' ' if !object_only => {
+                    matches!(control_char_code_and_id(&para.controls[ctrl_idx]).0, 0x0012)
+                }
+                _ => false,
+            }
+        };
+        if is_placeholder(prev_end, ctrl_idx, false) {
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             ctrl_idx += 1;
@@ -826,6 +855,17 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 prev_end += 8;
             }
             ctrl_idx += 1;
+        }
+
+        // ③-b 갭을 채우고 나서 자리표시자를 다시 묻는다 — 위 첫 물음은 선두 예약 갭
+        //     때문에 실패했을 수 있다. 여기서 걸리면 `ctrl_idx` 가 갭을 채운 만큼 앞으로
+        //     가 있어, 자리표시자가 **자기 컨트롤**과 짝지어진다(#4957).
+        if is_placeholder(prev_end, ctrl_idx, true) {
+            let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
+            push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+            ctrl_idx += 1;
+            prev_end = offset + 8;
+            continue;
         }
 
         // ④ 빈 필드(시작==끝)의 FIELD_END — 자기 BEGIN 직후.

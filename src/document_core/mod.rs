@@ -159,6 +159,10 @@ pub struct DocumentCore {
     pub(crate) debug_overlay: bool,
     /// LINE_SEG vpos-reset 강제 분리 적용 여부 (페이지네이션 옵션)
     pub(crate) respect_vpos_reset: bool,
+    /// 한글 2024 계열 조판 에뮬레이션 opt-in (세션 설정, CLI `--compat 2024`).
+    /// 문서 출처가 아니므로 provenance 가 아닌 여기서 들고,
+    /// [`Self::effective_layout_profile`] 이 profile 에 합성한다.
+    pub(crate) hangul2024_compat: bool,
     /// 구역별 표 측정 데이터 (페이지네이션 결과 보존)
     pub(crate) measured_tables: Vec<Vec<MeasuredTable>>,
     /// 구역별 dirty 플래그 (true = 재페이지네이션 필요)
@@ -329,6 +333,32 @@ impl DocumentCore {
         crate::model::event::serialize_event_log(&self.event_log)
     }
 
+    /// 세션 설정(호환 모드)을 합성한 유효 레이아웃 프로필.
+    ///
+    /// 조판·레이아웃에 profile 을 공급하는 지점은 `document.layout_profile()`
+    /// 직접 호출 대신 이것을 쓴다. 출처 유도는 여전히
+    /// `Document::layout_profile` 이 단일 소유한다.
+    pub(crate) fn effective_layout_profile(
+        &self,
+    ) -> crate::model::provenance::LayoutCompatibilityProfile {
+        self.document
+            .layout_profile()
+            .with_hangul2024_layout(self.hangul2024_compat)
+    }
+
+    /// 한글 2024 계열 조판 에뮬레이션을 켜거나 끈다.
+    /// 변경 시 페이지네이션 결과가 달라지므로 모든 섹션을 재페이지네이션한다.
+    pub fn set_hangul2024_compat(&mut self, enabled: bool) {
+        if self.hangul2024_compat != enabled {
+            self.hangul2024_compat = enabled;
+            for d in self.dirty_sections.iter_mut() {
+                *d = true;
+            }
+            self.invalidate_page_tree_cache();
+            self.paginate();
+        }
+    }
+
     /// DPI를 설정하고 스타일을 재해소한 후 재페이지네이션한다.
     pub fn set_dpi(&mut self, dpi: f64) {
         use crate::renderer::style_resolver::resolve_styles_with_variant;
@@ -362,6 +392,7 @@ impl DocumentCore {
             clip_enabled: true,
             debug_overlay: false,
             respect_vpos_reset: false,
+            hangul2024_compat: false,
             measured_tables: Vec::new(),
             dirty_sections: Vec::new(),
             measured_sections: Vec::new(),

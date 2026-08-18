@@ -102,6 +102,17 @@ fn endnote_marks_keep_their_recorded_offset() {
             else {
                 continue;
             };
+            // [#4957] 선두 갭이 있는 문단은 제외한다. 아래 `gap` 은 **문자 사이** 갭만
+            // 찾으므로(`windows(2)`), 첫 문자 앞에 놓인 8유닛 슬롯을 보지 못한다. 그런
+            // 문단에서는 "첫 내부 갭 = 미주 자리" 라는 가정이 성립하지 않는다 — 미주가
+            // 선두 슬롯이고 내부 갭은 다른 개체 것일 수 있다(SO-SUEOP 의 미주+양식
+            // 문단이 그렇다: controls=[Endnote, Form], 축은 미주 0..8 · Form 19..27).
+            //
+            // 이 시험이 지키는 것은 #3492 의 계약 — 앵커 없는 마커가 앞자리를 가로채
+            // 미주를 밀어내지 않는가 — 이고, 그 판정에는 선두 갭 없는 문단으로 충분하다.
+            if paragraph.char_offsets.first().copied().unwrap_or(0) > 0 {
+                continue;
+            }
             // 오프셋에 공백이 있는 문단만 — 미주가 본문 중간에 앵커된 경우다.
             let gap = paragraph
                 .char_offsets
