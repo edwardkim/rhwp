@@ -1,0 +1,26 @@
+{
+  "id": "T04-J02",
+  "recipe": "04",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"fonts\":[\"함초롬돋움\",\"함초롬바탕\"],\"format\":\"hwp5\",\"pageCount\":1,\"paraCount\":19,\"schemaVersion\":\"1.0\",\"sections\":1,\"sizeBytes\":15360,\"source\":\"output/pua-test.hwp\",\"title\":\"[PUA 회귀 검증 — Task #509]\",\"version\":\"5.1.0.1\"}",
+  "parsed": {
+    "fonts": [
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "format": "hwp5",
+    "pageCount": 1,
+    "paraCount": 19,
+    "schemaVersion": "1.0",
+    "sections": 1,
+    "sizeBytes": 15360,
+    "source": "output/pua-test.hwp",
+    "title": "[PUA 회귀 검증 — Task #509]",
+    "version": "5.1.0.1"
+  },
+  "parseable": true,
+  "notGym": true
+}

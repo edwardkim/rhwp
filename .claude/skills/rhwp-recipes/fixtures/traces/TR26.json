@@ -1,0 +1,11 @@
+{
+  "id": "TR26",
+  "recipe": "04",
+  "transcript": "T04-B02",
+  "argvLine": "rhwp info output/pua-test.hwp --json",
+  "usesExistingCommand": true,
+  "notGym": true,
+  "noNewCli": true,
+  "sourceFile": "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+  "fabricatedLive": false
+}

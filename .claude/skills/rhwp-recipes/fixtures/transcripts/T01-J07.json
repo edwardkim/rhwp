@@ -1,0 +1,12 @@
+{
+  "id": "T01-J07",
+  "recipe": "01",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/01_fill_form_and_submit.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"keepPreview\":false,\"output\":\"…/form-01_final.hwp\",\"outputFormat\":\"hwp5\",\"removed\":[{\"before\":\"edward\",\"field\":\"author\"},{\"before\":\"2026년 3월 16일 월요일 오전 6:56:40\",\"field\":\"dateString\"},{\"before\":\"edward\",\"field\":\"lastSavedBy\"},{\"before\":\"8, 0, 0, 466 WIN32LEWindows_7\",\"field\":\"revisionNumber\"},{\"before\":\"2026-03-15T21:56:40Z\",\"field\":\"createdAt\"},{\"before\":\"2026-03-16T08:41:55Z\",\"field\":\"lastSavedAt\"},{\"before\":\"\\r\\n\\r\\n\\r\\n\\r\\n\\r\\n\\r\\n\\r\\n\\r\\n\\r\\n\\r\\n여기에 입력\\r\\n\\r\\n\",\"field\":\"preview.text\"},{\"before\":\"Gif 1415 bytes\",\"field\":\"preview.image\"}],\"removedCount\":8,\"schemaVersion\":\"1.0\",\"source\":\"…/form-01_sealed.hwp\"}",
+  "parsed": null,
+  "parseable": false,
+  "notGym": true
+}

@@ -1,0 +1,11 @@
+{
+  "id": "T09-B07",
+  "recipe": "09",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/09_bulk_extract_convert.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "jq -r 'select(.error) | .source' 결과.ndjson > 재시도.txt\ncat 재시도.txt | rhwp batch export-text --json",
+  "firstLine": "jq -r 'select(.error) | .source' 결과.ndjson > 재시도.txt",
+  "notGym": true
+}

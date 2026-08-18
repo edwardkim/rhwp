@@ -1,0 +1,11 @@
+{
+  "id": "T09-B06",
+  "recipe": "09",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/09_bulk_extract_convert.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "printf '%s\\n' \"samples/2025 행정업무운영 편람(최종).hwpx\" | rhwp batch convert --out-dir out/bulk --json",
+  "firstLine": "printf '%s\\n' \"samples/2025 행정업무운영 편람(최종).hwpx\" | rhwp batch convert --out-dir out/bulk --json",
+  "notGym": true
+}

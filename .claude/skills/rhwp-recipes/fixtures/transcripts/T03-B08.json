@@ -1,0 +1,11 @@
+{
+  "id": "T03-B08",
+  "recipe": "03",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/03_redact_before_sharing.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp edit sanitize output/pii-demo_공개.hwp -o output/pii-demo_배포.hwp --json",
+  "firstLine": "rhwp edit sanitize output/pii-demo_공개.hwp -o output/pii-demo_배포.hwp --json",
+  "notGym": true
+}

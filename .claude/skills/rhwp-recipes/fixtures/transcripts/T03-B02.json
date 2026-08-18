@@ -1,0 +1,11 @@
+{
+  "id": "T03-B02",
+  "recipe": "03",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/03_redact_before_sharing.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp edit redact output/pii-demo.hwp --dry-run",
+  "firstLine": "rhwp edit redact output/pii-demo.hwp --dry-run",
+  "notGym": true
+}

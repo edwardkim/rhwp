@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5331,
+  "missing": [
+    {
+      "id": "07",
+      "titleReserved": "인계",
+      "file": "07_handoff.md",
+      "exists": false,
+      "invent": false,
+      "reason": "다중 에이전트 협업 계약(#3905, 로드맵 트랙 C) 설계 승인 선행. 예약 결번."
+    },
+    {
+      "id": "08",
+      "titleReserved": "협업",
+      "file": "08_collaboration.md",
+      "exists": false,
+      "invent": false,
+      "reason": "07 과 같은 #3905 예약. 빈 번호는 의도된 결번이다."
+    }
+  ],
+  "source": "mydocs/manual/recipes/09_bulk_extract_convert.md 머리말",
+  "doNotInvent": true,
+  "notGym": true
+}
