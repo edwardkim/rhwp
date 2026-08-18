@@ -505,10 +505,10 @@ assert.doesNotMatch(
   /viewOption:showParagraphMarks/,
   'Automatic selection should permit directly replayable text marks',
 );
-assert.match(
+assert.doesNotMatch(
   mainSource,
   /viewOption:showControlCodes/,
-  'Automatic selection should reject structural control markers until they have explicit ops',
+  'Automatic selection should permit directly replayable structural control markers',
 );
 requireSnippet(
   embedRpcRouterSource,
@@ -644,6 +644,7 @@ for (const directTextVisualToken of [
   'textRun:engraveTextEffect',
   'textRun:shadeTextEffect',
   'textRun:ratioTextEffect',
+  'viewOption:showControlCodes',
 ]) {
   assert.equal(
     expectedUnsupportedSetBody.includes(`'${directTextVisualToken}'`),
@@ -2365,6 +2366,37 @@ assert.equal(
   true,
   'Hancom boxed-number PUA should preserve the encoded number',
 );
+
+for (const markerText of ['[표]', '[그림]']) {
+  const controlCodeMarkerReplay = runExecutableTextReplay({
+    type: 'textRun',
+    bbox: { x: 0, y: 20, width: 36, height: 20 },
+    text: markerText,
+    baseline: 15,
+    positions: Array.from({ length: Array.from(markerText).length + 1 }, (_, index) => index * 10),
+    style: { fontFamily: 'Prepared', fontSize: 11, color: '#0000FF' },
+  }, { usePreparedTypeface: true });
+  assert.equal(
+    controlCodeMarkerReplay.unsupportedOps.has('viewOption:showControlCodes'),
+    false,
+    `${markerText} must not pin the document to a showControlCodes fallback`,
+  );
+  assert.equal(
+    controlCodeMarkerReplay.unsupportedOps.has('textRun:scriptTextRequiresShaping'),
+    false,
+    `${markerText} must replay as ordinary horizontal text`,
+  );
+  assert.equal(
+    controlCodeMarkerReplay.events.some(event => event.type === 'font.getGlyphIDs' && event.text === markerText),
+    true,
+    `${markerText} should map its producer text to glyphs`,
+  );
+  assert.equal(
+    controlCodeMarkerReplay.events.some(event => event.type === 'canvas.drawGlyphs'),
+    true,
+    `${markerText} should replay through positioned glyph draws`,
+  );
+}
 
 const textSpecialReplay = runExecutableTextSpecialReplay();
 assert.equal(textSpecialReplay.events.some(event => event.type === 'canvas.drawOval'), true);

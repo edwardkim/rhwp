@@ -182,10 +182,10 @@ test('CanvasKit text replay uses positioned fallback glyphs and external text vi
   assert.doesNotMatch(source, /case 'charOverlap':[\s\S]{0,200}unsupportedOps\.add\(op\.type\)/);
 });
 
-test('CanvasKit auto preflight permits text marks but blocks missing structural control markers', () => {
+test('CanvasKit auto preflight permits text marks and structural control markers', () => {
   const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /viewOption:showParagraphMarks/);
-  assert.match(source, /viewOption:showControlCodes/);
+  assert.doesNotMatch(source, /viewOption:showControlCodes/);
 });
 
 test('CanvasKit contains malformed images and bounds both decode caches', () => {
