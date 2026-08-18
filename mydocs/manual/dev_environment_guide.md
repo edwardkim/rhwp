@@ -103,7 +103,7 @@ node scripts/rust-test-suite-manifest.mjs --prepare
 node scripts/run-rust-test.mjs <확장자를_뺀_test_source_이름>
 ```
 
-`tests/suites/suite-policy.json`은 추적 정책이고, `tests/generated/`, `tests/suites/manifest.json`, Cargo generated test target 블록은 파생 산출물이며
+`tests/suites/suite-policy.json`과 `tests/suites/unit-test-tier-policy.json`은 추적 정책이고, `tests/generated/`, `tests/suites/manifest.json`, Cargo generated test target 블록은 파생 산출물이며
 직접 수정하거나 PR에 포함하지 않는다. 일반 기여자는 `--prepare`를 실행해 파생 결과를 자신의 PR에
 등록하지 않으며, PR 전에는 `node --test scripts/tests/rust-test-suite-manifest.test.mjs`로 배정 규칙만
 확인한다. review worktree의 `--prepare`가 이름 변경·삭제와 신규 source를 한 번에 반영하고, 검증 뒤
@@ -120,7 +120,8 @@ node --test scripts/tests/rust-unit-test-tiers.test.mjs
 node scripts/rust-unit-test-tiers.mjs --check
 ```
 
-PR CI에서는 같은 검사에 `--base-ref`를 전달해 base 브랜치 기준선을 별도로 대조한다.
+`--check`는 source와 정책을 메모리에서 비교할 뿐 파일을 생성·수정하지 않는다. 진단용 inventory가 필요할 때만 `--generate`를 실행하며 결과는 `tests/generated/unit-test-tiers.json`에 남고 PR에 포함하지 않는다.
+PR CI에서는 같은 검사에 `--base-ref`를 전달해 base 브랜치 source와 정책을 별도로 대조한다.
 따라서 새 최상위 `tests/*.rs`나 `--accept-baseline`을 이용한 source-side 테스트 증가는
 생성물을 함께 커밋해도 실패한다. Git rename으로 확인되고 테스트 수가 늘지 않는 내부 crate
 이동은 허용한다.
