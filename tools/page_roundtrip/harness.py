@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """페이지 수 왕복 공통 하네스 — pages(원본)==pages(export→reimport).
 
-MEGA QUEUE M05-1 (#5367). 판정 도구만. #3518 #3521 #3737 #4056 #4882 #5128
-은 고치지 않는다. `scripts/visual_sweep.py` · gym · DocumentCore/serializer
-구현을 건드리지 않는다.
+MEGA QUEUE M05-6 (#5449 / #4882). 판정 도구 + 정책연구 문서 쪽수 등식.
+#4056 #5128 은 고치지 않는다. gym · ole/shape-component · char_shapes 는
+다른 좌석.
 
 기존 CLI 가 쪽수를 잰다:
 
@@ -738,6 +738,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--write-manifest", type=Path, default=None, help="선택한 문서 목록을 JSON 으로 저장")
     p.add_argument("--strict", action="store_true", help="신규 위반/ERROR/UNEXPECTED_PASS/CATALOG_MISSING 이면 종료 1")
     p.add_argument("--json", action="store_true", dest="as_json", help="stdout 에 JSON 봉투")
+    p.add_argument(
+        "--transcript-dir",
+        type=Path,
+        default=None,
+        help="행마다 JSONL 전사를 남긴다 (tools/page_roundtrip/transcript.py)",
+    )
     return p
 
 
@@ -813,6 +819,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         out_dir=args.out_dir,
         notes=notes,
     )
+
+    if args.transcript_dir:
+        if str(HERE) not in sys.path:
+            sys.path.insert(0, str(HERE))
+        from transcript import new_transcript, write_jsonl
+
+        args.transcript_dir.mkdir(parents=True, exist_ok=True)
+        for i, row in enumerate(report.rows):
+            t = new_transcript(doc=row.doc, route=row.route, issue=row.issue)
+            t.add("command", argv=row.repro.split())
+            if row.pages_before is not None and row.pages_after is not None:
+                t.add(
+                    "pages",
+                    before=row.pages_before,
+                    after=row.pages_after,
+                    identical=bool(row.equal),
+                )
+            t.add("verdict", verdict=row.verdict, note=row.note, rhwpRc=row.rhwp_rc)
+            safe = f"{i:03d}_{row.route}_{Path(row.doc).name}"
+            write_jsonl(args.transcript_dir / f"{safe}.jsonl", t)
+        notes.append(f"transcripts={relpath(args.transcript_dir, repo)}")
+        report.notes.append(notes[-1])
 
     if args.as_json:
         print(json.dumps(report.to_json(), ensure_ascii=False, indent=2))

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "pageRoundtripDrift",
+  "doc": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+  "pagesBefore": 215,
+  "pagesAfter": 215,
+  "delta": 0,
+  "primary": "hwp5_note_zero_vpos",
+  "axes": [
+    {
+      "name": "pages_match",
+      "issue": null,
+      "inScope": true,
+      "weight": 0,
+      "evidence": [
+        "before=215 after=215 delta=+0"
+      ]
+    },
+    {
+      "name": "hwp5_note_zero_vpos",
+      "issue": 4882,
+      "inScope": true,
+      "weight": 4,
+      "evidence": [
+        "footNote[instId=1937553231 number=30] p[0] vpos=[0, 0]",
+        "tbl.footNote[instId=1937553430 number=234] p[0] vpos=[0, 0]"
+      ]
+    },
+    {
+      "name": "hangul_hwpx_note_artifact",
+      "issue": 1692,
+      "inScope": false,
+      "weight": 0,
+      "evidence": []
+    }
+  ],
+  "notes": [
+    "쪽수 등식 성립"
+  ]
+}

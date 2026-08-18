@@ -2356,7 +2356,7 @@ fn native_hwp5_body_footnote_tail_reset(
     para: &Paragraph,
     ctrl_idx: usize,
 ) -> Option<(usize, usize)> {
-    if !st.profile.native_hwp5_layout()
+    if !st.profile.hwp5_stored_pagination_layout()
         || st.col_count != 1
         || para.controls.len() != 1
         || !matches!(para.controls.get(ctrl_idx), Some(Control::Footnote(_)))
@@ -2414,7 +2414,7 @@ fn native_hwp5_first_footnote_overlap_break_line(
     dpi: f64,
 ) -> Option<NativeHwp5FootnoteBreak> {
     let line_count = fmt.line_heights.len();
-    if !st.profile.native_hwp5_layout()
+    if !st.profile.hwp5_stored_pagination_layout()
         || !st.is_first_footnote_on_page
         || st.current_footnote_height > 0.0
         || line_count < 2
@@ -2542,7 +2542,7 @@ fn native_hwp5_final_marker_footnote_uses_next_reset_page(
     footnote: &Footnote,
     footnote_height: f64,
 ) -> bool {
-    if !st.profile.native_hwp5_layout()
+    if !st.profile.hwp5_stored_pagination_layout()
         || st.col_count != 1
         || para.controls.len() != 1
         || !matches!(para.controls.get(ctrl_idx), Some(Control::Footnote(_)))
@@ -2673,7 +2673,7 @@ fn native_hwp5_existing_footnote_reset_overlap_break_line(
     paragraphs: &[Paragraph],
     dpi: f64,
 ) -> Option<usize> {
-    if !st.profile.native_hwp5_layout()
+    if !st.profile.hwp5_stored_pagination_layout()
         || st.col_count != 1
         || st.current_footnote_height <= 0.0
         || !para_has_visible_text(para)
@@ -8017,27 +8017,27 @@ impl TypesetEngine {
                             para_index: para_idx,
                             control_index: ctrl_idx,
                         };
-                        let native_table_host_footnote = if st.profile.native_hwp5_layout()
-                            && st.col_count == 1
-                            && para
-                                .controls
-                                .iter()
-                                .filter(|control| matches!(control, Control::Footnote(_)))
-                                .count()
-                                == 1
-                        {
-                            let mut top_level_tables =
-                                para.controls
+                        let native_table_host_footnote =
+                            if st.profile.hwp5_stored_pagination_layout()
+                                && st.col_count == 1
+                                && para
+                                    .controls
                                     .iter()
-                                    .enumerate()
-                                    .filter_map(|(index, control)| {
-                                        if let Control::Table(table) = control {
-                                            Some((index, table))
-                                        } else {
-                                            None
-                                        }
-                                    });
-                            match (top_level_tables.next(), top_level_tables.next()) {
+                                    .filter(|control| matches!(control, Control::Footnote(_)))
+                                    .count()
+                                    == 1
+                            {
+                                let mut top_level_tables =
+                                    para.controls.iter().enumerate().filter_map(
+                                        |(index, control)| {
+                                            if let Control::Table(table) = control {
+                                                Some((index, table))
+                                            } else {
+                                                None
+                                            }
+                                        },
+                                    );
+                                match (top_level_tables.next(), top_level_tables.next()) {
                                 (Some((table_control_index, table)), None)
                                     if table_control_index + 1 == ctrl_idx
                                         && native_hwp5_rowbreak_host_precedes_first_fragment(
@@ -8078,9 +8078,9 @@ impl TypesetEngine {
                                 }
                                 _ => None,
                             }
-                        } else {
-                            None
-                        };
+                            } else {
+                                None
+                            };
                         if let Some((
                             terminal_fragment_is_current,
                             content_height,
@@ -8142,7 +8142,7 @@ impl TypesetEngine {
                             // reserve하던 각주가 빠져 후속 page break를 바꾼다. native HWP5의
                             // multi-note stored LINE_SEG ownership만 대상으로 하여 다른 profile과
                             // first-note 흐름은 바꾸지 않는다.
-                            let multi_note_routed = if st.profile.native_hwp5_layout() {
+                            let multi_note_routed = if st.profile.hwp5_stored_pagination_layout() {
                                 crate::renderer::pagination::find_inline_control_target_page(
                                     &st.pages,
                                     &st.current_items,
@@ -8165,7 +8165,7 @@ impl TypesetEngine {
                             // 모두 확인해 일반 각주를 임의 capacity로 나누지 않는다.
                             let source_reset_fragments = st
                                 .profile
-                                .native_hwp5_layout()
+                                .hwp5_stored_pagination_layout()
                                 .then(|| native_hwp5_footnote_reset_fragments(fn_ctrl, self.dpi))
                                 .flatten();
                             let stored_reset_fragments = body_tail_reset

@@ -4,7 +4,9 @@
 
 - `scripts/visual_sweep.py` · `gym/` 는 건드리지 않는다.
 - DocumentCore / serializer 구현을 바꾸지 않는다. 기존 CLI (`export-hwpx` / `convert --verify-pages`) 만 부른다.
-- `#3518` `#3521` `#3737` `#4056` `#4882` `#5128` 은 고치지 않는다. 카탈로그 expected-fail 로 남긴다.
+- `#3518` `#3521` `#3737` `#4056` `#5128` 은 카탈로그 expected-fail 로 남긴다.
+- `#4882` (정책연구용역 중간진도보고서) 는 M05-6 가 고쳤다. 카탈로그에서 뺀다.
+- `#4056` `#5128` · ole/shape-component · char_shapes 는 이 좌석에서 고치지 않는다.
 - 판정은 데이터다. 기본 종료 코드는 불일치가 있어도 0. `--strict` 만 신규 위반·ERROR 에서 1.
 
 ## 1커맨드 (CI 부분집합)
@@ -19,18 +21,27 @@ python tools/page_roundtrip/harness.py --ci --strict
 
 `--ci` 는 `tools/page_roundtrip/fixtures/ci-subset.json` 을 읽는다. samples/ 전수가 아니다.
 
-단위 시험 (가짜 rhwp, 실문서 불필요):
+단위 시험 (가짜 rhwp, 실문서 전수 불필요):
 
 ```text
-python -m unittest tools.page_roundtrip.test_harness
-python -m unittest tools/page_roundtrip/test_harness.py
+python -m unittest tools.page_roundtrip.test_harness tools.page_roundtrip.test_note_probe tools.page_roundtrip.test_analyze
+python -m unittest tools/page_roundtrip/test_harness.py tools/page_roundtrip/test_note_probe.py tools/page_roundtrip/test_analyze.py
 ```
+
+#4882 실측 코퍼스 (100MB hwp 를 다시 커밋하지 않는다. 동반 HWPX XML 스니펫 + 리포트):
+
+```text
+python tools/page_roundtrip/build_issue_4882_corpus.py
+```
+
+산출: `fixtures/issue_4882/` (각주 lineseg 인덱스·NDJSON·측정 리포트), `transcripts/` (수정 전 215→223 / 수정 후 215==215).
 
 ## samples/ + --limit
 
 ```text
 python tools/page_roundtrip/harness.py --docs samples --limit 20
 python tools/page_roundtrip/harness.py --file samples/foo.hwp --route hwpx
+python tools/page_roundtrip/harness.py --file "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp" --route hwpx --transcript-dir tools/page_roundtrip/transcripts/out
 ```
 
 `--limit N` 은 문서 N개다. 경로는 `--route` 로 펼친다.

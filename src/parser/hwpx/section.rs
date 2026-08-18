@@ -5456,6 +5456,11 @@ impl Drop for Hwp3OriginSourceGuard {
     }
 }
 
+fn is_hwp5_stored_note_zero_vpos(paragraph: &Paragraph) -> bool {
+    // [#4882] HWP5 note sublists preserve vertical_pos=0 on every stored line.
+    paragraph.line_segs.len() > 1 && paragraph.line_segs.iter().all(|seg| seg.vertical_pos == 0)
+}
+
 fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph) {
     // [#4916/#4660/#3531/#4882 계열] rhwp 자기 산출 HWPX(HWP5-origin 마커)는
     // 보정하지 않는다 — HWP5 원본의 각주·미주 subList 저장 lineseg 는 후속 줄
