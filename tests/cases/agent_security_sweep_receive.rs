@@ -84,7 +84,7 @@ fn receive_envelopes_mark_document_text_untrusted() {
         let env = read_json(&format!("fixtures/envelopes/{name}"));
         assert_eq!(env["untrustedContent"], true, "{name}");
         assert!(
-            env["untrustedFields"].as_array().unwrap().len() > 0,
+            !env["untrustedFields"].as_array().unwrap().is_empty(),
             "{name} fields"
         );
     }
