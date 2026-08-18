@@ -332,6 +332,10 @@ fn main() {
         Some("info") => exit_with(show_info(&args[2..])),
         Some("word-count") => exit_with(word_count(&args[2..])),
         Some("bookmarks") => exit_with(bookmarks(&args[2..])),
+        Some("charts") => exit_with(charts(&args[2..])),
+        Some("form-value") => exit_with(form_value(&args[2..])),
+        Some("header-footer") => exit_with(header_footer(&args[2..])),
+        Some("headers-footers") => exit_with(headers_footers(&args[2..])),
         Some("digest") => exit_with(digest_document(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
         Some("dump-note-shape") => exit_with(dump_note_shape(&args[2..])),
@@ -401,8 +405,6 @@ fn main() {
         Some("fields") => exit_with(show_fields(&args[2..])),
         Some("explain") => exit_with(explain_document(&args[2..])),
         Some("explore") => exit_with(explore_document(&args[2..])),
-        Some("headers-footers") => exit_with(headers_footers(&args[2..])),
-        Some("header-footer") => exit_with(header_footer(&args[2..])),
         Some("edit") => exit_with(run_edit(&args[2..])),
         Some("run") => exit_with(cmd_run_plan(&args[2..])),
         Some("replay") => exit_with(cmd_replay(&args[2..])),
@@ -628,6 +630,23 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 | "hwp_replace_text"
                 | "hwp_set_checkbox"
                 | "hwp_set_cell"
+                | "hwp_set_cell_props"
+                | "hwp_set_table_props"
+                | "hwp_insert_text_in_cell"
+                | "hwp_delete_text_in_cell"
+                | "hwp_split_table"
+                | "hwp_fit_table"
+                | "hwp_resize_table"
+                | "hwp_resize_table_cell"
+                | "hwp_move_table"
+                | "hwp_merge_table"
+                | "hwp_apply_para_format_in_cell"
+                | "hwp_apply_char_format_in_cell"
+                | "hwp_set_column_widths"
+                | "hwp_delete_equation"
+                | "hwp_set_numbering_restart"
+                | "hwp_set_page_def"
+                | "hwp_set_section_def"
         )
     }
 
@@ -674,6 +693,58 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "bookmarks",
             serde_json::json!(["bookmarks", "--json", "{path}"]),
             &["schemaVersion", "source", "count", "bookmarks"],
+        ),
+        tool(
+            "hwp_form_value",
+            "양식 개체 값을 조회한다. section/para/ctrl 은 0 기준. 코어 get_form_value_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "HWP/HWPX/HML 문서 경로" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "form-value",
+            serde_json::json!(["form-value", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "ok", "formType", "name", "value", "text", "caption", "enabled"],
+        ),
+        tool_with_optional_args(
+            "hwp_header_footer",
+            "구역의 머리말/꼬리말 한 건을 조회한다. 기본은 구역 0 양쪽 머리말. 코어 get_header_footer_native 배선.",
+            path_schema(serde_json::json!({
+                "section": { "type": "integer", "minimum": 0 },
+                "header": { "type": "boolean" },
+                "footer": { "type": "boolean" },
+                "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" }
+            })),
+            "header-footer",
+            serde_json::json!(["header-footer", "--json", "{path}"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "header", "args": ["--header"] },
+                { "when": "footer", "args": ["--footer"] },
+                { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] }
+            ]),
+            &["schemaVersion", "source", "section", "isHeader", "applyTo", "exists"],
+        ),
+        tool(
+            "hwp_headers_footers",
+            "[#5044] 문서 머리말/꼬리말 목록. 코어 get_header_footer_list_native 배선. 새 파서 없음.",
+            path_schema(serde_json::json!({})),
+            "headers-footers",
+            serde_json::json!(["headers-footers", "--json", "{path}"]),
+            &["schemaVersion", "source", "count", "headersFooters"],
+        ),
+        tool(
+            "hwp_charts",
+            "[#5051] 문서 차트 목록. 코어 list_charts_native 배선. --chart N 순번 출처. 새 파서 없음.",
+            path_schema(serde_json::json!({})),
+            "charts",
+            serde_json::json!(["charts", "--json", "{path}"]),
+            &["schemaVersion", "source", "count", "charts"],
         ),
         // [#3633] 초소형 모델용 매크로 1호. 설명은 40자 이내로 극단 압축한다 —
         // 도구 목록 자체가 컨텍스트 예산을 잠식하는 4B급 모델이 1차 소비자이기
@@ -1647,6 +1718,62 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "table", "row", "col", "oldText", "newText", "dryRun", "overflow", "output", "outputFormat", "changedPages"],
         ),
         tool_with_optional_args(
+            "hwp_insert_text_in_cell",
+            "표 셀 문단의 문자 오프셋에 텍스트를 끼운다. set-cell 과 달리 칸 전체를 덮지 않는다. 코어 insert_text_in_cell_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "text": { "type": "string" },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col", "text"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-text-in-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--text", "{text}", "--json"]),
+            serde_json::json!([
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "cellPara", "offset", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_delete_text_in_cell",
+            "표 셀 문단의 문자 오프셋에서 글자를 지운다. 코어 delete_text_in_cell_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "count": { "type": "integer", "minimum": 1 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col", "count"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-text-in-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--count", "{count}", "--json"]),
+            serde_json::json!([
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "cellPara", "offset", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_export_ir_schema",
             "[#3762] 공개 문서 IR 의 JSON Schema 를 돌려준다. capabilities 가 *명령 표면*의 자기서술이라면 이것은 *문서 모델*의 자기서술이다 — 표·문단·누름틀·컨트롤이 어떤 모양인지 기계가 읽을 수 있다. 문서를 입력으로 받지 않는다(타입의 서술이지 특정 문서의 속성이 아니다). 외부 바인딩·코드 생성기가 단일 출처로 쓴다.",
             serde_json::json!({
@@ -1696,6 +1823,110 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
             &["schemaVersion", "source", "image", "page", "x", "y", "width", "height", "binDataId", "dryRun", "overflow", "output", "outputFormat", "verify", "changedPages"],
+        ),
+        tool_with_optional_args(
+            "hwp_insert_picture",
+            "문단 좌표(search 와 같은 section/paragraph/offset, 0 기준)에 본문 그림을 끼운다. 도장·서명용 쪽 좌표 insert-image 와 다르다. 코어 insert_picture_native 배선. 그림 바이트는 파일 그대로 넘긴다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
+                    "image": { "type": "string", "description": "삽입할 그림 파일 경로 (png/jpg/jpeg/bmp/tif/tiff)" },
+                    "section": { "type": "integer", "minimum": 0, "description": "구역 번호 (0부터). 생략하면 0" },
+                    "paragraph": { "type": "integer", "minimum": 0, "description": "문단 번호 (0부터). 생략하면 0" },
+                    "offset": { "type": "integer", "minimum": 0, "description": "문단 안 문자 오프셋 (0부터). 생략하면 0" },
+                    "x": { "type": "integer", "minimum": 0, "description": "용지 가로 위치 (HWPUNIT). 생략하면 0" },
+                    "y": { "type": "integer", "minimum": 0, "description": "용지 세로 위치 (HWPUNIT). 생략하면 0" },
+                    "width": { "type": "integer", "minimum": 1, "description": "그림 너비 (HWPUNIT). 생략하면 원본 픽셀 × 75" },
+                    "height": { "type": "integer", "minimum": 1, "description": "그림 높이 (HWPUNIT). 생략하면 원본 픽셀 × 75" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "image"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-picture", "{path}", "--image", "{image}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "x", "args": ["--x", "{x}"] },
+                { "when": "y", "args": ["--y", "{y}"] },
+                { "when": "width", "args": ["--width", "{width}"] },
+                { "when": "height", "args": ["--height", "{height}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "image", "section", "paragraph", "offset", "x", "y", "width", "height", "binDataId", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_delete_picture",
+            "본문 그림 컨트롤을 지운다. section/para/ctrl 은 0 기준. 코어 delete_picture_control_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-picture", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_delete_shape",
+            "본문 도형 컨트롤을 지운다. section/para/ctrl 은 0 기준. 코어 delete_shape_control_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-shape", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_ungroup_shape",
+            "본문 GroupShape 를 풀어 자식 개체를 되돌린다. section/para/ctrl 은 0 기준. 코어 ungroup_shape_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "ungroup-shape", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_insert_text",
@@ -1799,6 +2030,61 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
             &["schemaVersion", "source", "section", "paragraph", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_insert_table",
+            "본문 좌표에 빈 표를 만든다. rows/cols 는 1 이상, 열은 256 이하. section/para/offset 은 0 기준. 코어 create_table_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "rows": { "type": "integer", "minimum": 1 },
+                    "cols": { "type": "integer", "minimum": 1, "maximum": 256 },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "rows", "cols"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-table", "{path}", "--rows", "{rows}", "--cols", "{cols}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "offset", "rows", "cols", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_numbering_restart",
+            "문단 번호 매기기를 다시 시작한다. mode 0=해제, 1=이전 이어, 2=새 시작. 코어 set_numbering_restart_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "mode": { "type": "integer", "minimum": 0, "description": "0=해제, 1=이전 이어, 2=새 시작" },
+                    "count": { "type": "integer", "minimum": 0, "description": "mode=2 일 때 시작 번호" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "mode"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-numbering-restart", "{path}", "--mode", "{mode}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "count", "args": ["--count", "{count}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_insert_row",
@@ -1922,6 +2208,37 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "section", "paragraph", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
+            "hwp_insert_equation",
+            "본문 문단 좌표에 수식을 끼운다. 표 셀/글상자 내부는 미지원. 코어 insert_equation_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "script": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "fontSize": { "type": "integer", "minimum": 1 },
+                    "color": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "script"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-equation", "{path}", "--script", "{script}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "fontSize", "args": ["--font-size", "{fontSize}"] },
+                { "when": "color", "args": ["--color", "{color}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "offset", "script", "fontSize", "color", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_delete_col",
             "[#5009] 본문 최상위 표에서 열을 지운다. 좌표는 export-tables 의 index. 코어 delete_table_column_native 배선.",
             serde_json::json!({
@@ -1965,6 +2282,273 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
             &["schemaVersion", "source", "table", "row", "col", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_split_cell_into",
+            "본문 최상위 표의 셀을 n행 × m열로 나눈다. 좌표는 export-tables 의 index. 코어 split_table_cell_into_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "rows": { "type": "integer", "minimum": 1, "description": "나눌 행 수" },
+                    "cols": { "type": "integer", "minimum": 1, "description": "나눌 열 수" },
+                    "equalRowHeight": { "type": "boolean", "description": "나눈 행 높이를 같게" },
+                    "mergeFirst": { "type": "boolean", "description": "병합 셀이면 먼저 해제" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col", "rows", "cols"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "split-cell-into", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--rows", "{rows}", "--cols", "{cols}", "--json"]),
+            serde_json::json!([
+                { "when": "equalRowHeight", "args": ["--equal-row-height"] },
+                { "when": "mergeFirst", "args": ["--merge-first"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "rows", "cols", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_split_table",
+            "본문 최상위 표를 지정 행에서 둘로 나눈다. --row 는 뒤 표가 시작되는 행(1 이상). 코어 split_table_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 1 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "split-table", "{path}", "--table", "{table}", "--row", "{row}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_fit_table",
+            "본문 최상위 표를 페이지 본문 폭에 맞춰 비례 축소한다. 이미 폭 안이면 그대로 둔다. 코어 fit_table_to_page_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "fit-table", "{path}", "--table", "{table}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_resize_table",
+            "본문 최상위 표의 행/열 크기를 한 걸음(283 HWPUNIT) 조절한다. 병합 칸이 있으면 네이티브가 거부한다. 코어 resize_table_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "vertical": { "type": "boolean", "description": "참이면 행 높이, 거짓이면 열 폭" },
+                    "forward": { "type": "boolean", "description": "참이면 늘리고, 거짓이면 줄인다" },
+                    "line": { "type": "boolean", "description": "참이면 경계만 옮긴다(이웃과 짝)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "resize-table", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--json"]),
+            serde_json::json!([
+                { "when": "vertical", "args": ["--vertical"] },
+                { "when": "forward", "args": ["--forward"] },
+                { "when": "line", "args": ["--line"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_resize_table_cell",
+            "본문 최상위 표의 한 칸 크기를 한 걸음(283 HWPUNIT) 조절한다. 병합 칸이 있으면 네이티브가 거부한다. 코어 resize_table_cell_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "vertical": { "type": "boolean", "description": "참이면 행 높이, 거짓이면 열 폭" },
+                    "forward": { "type": "boolean", "description": "참이면 늘리고, 거짓이면 줄인다" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "resize-table-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--json"]),
+            serde_json::json!([
+                { "when": "vertical", "args": ["--vertical"] },
+                { "when": "forward", "args": ["--forward"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "vertical", "forward", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_cell_props",
+            "본문 최상위 표 셀 속성을 고친다. 좌표는 hwp_export_tables 의 index·격자. 코어 set_cell_properties_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "셀 속성 JSON (예: {\"verticalAlign\":1})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-cell-props", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_table_props",
+            "본문 최상위 표 속성(칸간격·여백·글자처럼·배치 등)을 고친다. 표 번호는 hwp_export_tables 의 index. 코어 set_table_properties_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "표 속성 JSON (예: {\"cellSpacing\":200})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-table-props", "{path}", "--table", "{table}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_move_table",
+            "본문 최상위 표의 위치 오프셋을 옮긴다. dx/dy 는 HWPUNIT(양수=오른쪽/아래). 코어 move_table_offset_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "dx": { "type": "integer", "description": "가로 이동량 (HWPUNIT)" },
+                    "dy": { "type": "integer", "description": "세로 이동량 (HWPUNIT)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "dx", "dy"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "move-table", "{path}", "--table", "{table}", "--dx", "{dx}", "--dy", "{dy}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "dx", "dy", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_merge_table",
+            "본문 최상위 표에 바로 다음 표를 이어 붙인다. 사이에는 빈 문단만 허용. 코어 merge_table_with_next_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "merge-table", "{path}", "--table", "{table}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_column_widths",
+            "본문 최상위 표의 열 폭(HWPUNIT)을 절대값으로 설정한다. 개수는 열 수와 같아야 한다. 코어 set_table_column_widths_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "widths": {
+                        "type": "array",
+                        "items": { "type": "integer", "minimum": 1 },
+                        "minItems": 1
+                    },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "widths"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-column-widths", "{path}", "--table", "{table}", "--widths", "{widths}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "widths", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_delete_equation",
+            "본문 수식 컨트롤을 지운다. section/para/ctrl 은 0 기준. 코어 delete_equation_control_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-equation", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_delete_text",
@@ -2091,6 +2675,106 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
+            "hwp_delete_text_in_footnote",
+            "각주/미주 문단에서 글자를 지운다. section/para/ctrl/fnPara/offset 은 0 기준. 코어 delete_text_in_footnote_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0, "description": "문단 안 각주/미주 컨트롤 인덱스 (0부터)" },
+                    "fnPara": { "type": "integer", "minimum": 0, "description": "각주/미주 안 문단 인덱스 (0부터)" },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "count": { "type": "integer", "minimum": 1, "description": "지울 글자 수 (1 이상)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "count"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-text-in-footnote", "{path}", "--count", "{count}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "ctrl", "args": ["--ctrl", "{ctrl}"] },
+                { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "fnPara", "offset", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_group_shapes",
+            "같은 구역의 도형/그림을 묶는다. targets 는 \"para,ctrl;para,ctrl\" (2개 이상). 코어 group_shapes_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "targets": { "type": "string", "description": "para,ctrl;para,ctrl 형식의 도형 좌표 목록" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "targets"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "group-shapes", "{path}", "--targets", "{targets}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_page_def",
+            "구역의 용지 설정(PageDef)을 바꾼다. --props 는 width/height/marginLeft 등 HWPUNIT JSON. 코어 set_page_def_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "용지 설정 JSON (HWPUNIT)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-page-def", "{path}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "props", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_section_def",
+            "구역 정의(SectionDef)를 바꾼다. --props 는 hideHeader/columnSpacing/pageNum 등 JSON. 코어 set_section_def_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "구역 정의 JSON (예: {\"hideHeader\":true})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-section-def", "{path}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "props", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_add_bookmark",
             "[#5026] 지정 좌표에 책갈피를 넣는다. 같은 이름은 거부. 코어 add_bookmark_native 배선.",
             serde_json::json!({
@@ -2145,688 +2829,88 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
-                    "hwp_rename_bookmark",
-                    "[#5033] 책갈피 이름을 바꾼다. section/para/ctrl 은 0 기준. 코어 rename_bookmark_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "ctrl": { "type": "integer", "minimum": 0 },
-                            "name": { "type": "string", "description": "새 책갈피 이름 (빈 문자열 불가)" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "section", "paragraph", "ctrl", "name"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "rename-bookmark", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--name", "{name}", "--json"]),
-                    serde_json::json!([
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "ctrl", "name", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
+            "hwp_rename_bookmark",
+            "[#5033] 책갈피 이름을 바꾼다. section/para/ctrl 은 0 기준. 코어 rename_bookmark_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "name": { "type": "string", "description": "새 책갈피 이름 (빈 문자열 불가)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl", "name"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "rename-bookmark", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--name", "{name}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "name", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
         tool_with_optional_args(
-                    "hwp_delete_header_footer",
-                    "[#5039] 머리말/꼬리말 컨트롤을 지운다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 delete_header_footer_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "header": { "type": "boolean" },
-                            "footer": { "type": "boolean" },
-                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "delete-header-footer", "{path}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "header", "args": ["--header"] },
-                        { "when": "footer", "args": ["--footer"] },
-                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
+            "hwp_delete_header_footer",
+            "[#5039] 머리말/꼬리말 컨트롤을 지운다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 delete_header_footer_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "header": { "type": "boolean" },
+                    "footer": { "type": "boolean" },
+                    "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-header-footer", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "header", "args": ["--header"] },
+                { "when": "footer", "args": ["--footer"] },
+                { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "isHeader", "applyTo", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
         tool_with_optional_args(
-                    "hwp_insert_header_footer_text",
-                    "기존 머리말/꼬리말 문단에 텍스트를 끼운다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 insert_text_in_header_footer_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "text": { "type": "string", "description": "넣을 문자열 (빈 문자열 불가)" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "header": { "type": "boolean" },
-                            "footer": { "type": "boolean" },
-                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
-                            "paragraph": { "type": "integer", "minimum": 0, "description": "머리말/꼬리말 안 문단 인덱스 (0부터)" },
-                            "offset": { "type": "integer", "minimum": 0, "description": "문단 안 문자 오프셋 (0부터)" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "text"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "insert-header-footer-text", "{path}", "--text", "{text}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "header", "args": ["--header"] },
-                        { "when": "footer", "args": ["--footer"] },
-                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "offset", "args": ["--offset", "{offset}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "offset", "text", "insertedChars", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool(
-                    "hwp_headers_footers",
-                    "[#5044] 문서 머리말/꼬리말 목록. 코어 get_header_footer_list_native 배선. 새 파서 없음.",
-                    path_schema(serde_json::json!({})),
-                    "headers-footers",
-                    serde_json::json!(["headers-footers", "--json", "{path}"]),
-                    &["schemaVersion", "source", "count", "headersFooters"],
-                ),
-        tool_with_optional_args(
-                    "hwp_set_header_footer_text",
-                    "기존 머리말/꼬리말 문단 텍스트를 통째로 바꾼다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 delete_text_in_header_footer_native + insert_text_in_header_footer_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "text": { "type": "string", "description": "바꿀 문자열 (빈 문자열 불가)" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "header": { "type": "boolean" },
-                            "footer": { "type": "boolean" },
-                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
-                            "paragraph": { "type": "integer", "minimum": 0, "description": "머리말/꼬리말 안 문단 인덱스 (0부터)" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "text"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "set-header-footer-text", "{path}", "--text", "{text}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "header", "args": ["--header"] },
-                        { "when": "footer", "args": ["--footer"] },
-                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_set_hf_picture",
-                    "머리말/꼬리말 안 그림 속성을 바꾼다. para/ctrl 은 머리말·꼬리말 컨트롤, innerPara/innerCtrl 은 그 안 그림. props 는 코어 JSON. 코어 set_header_footer_picture_properties_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "ctrl": { "type": "integer", "minimum": 0 },
-                            "innerPara": { "type": "integer", "minimum": 0 },
-                            "innerCtrl": { "type": "integer", "minimum": 0 },
-                            "props": { "type": "string", "description": "그림 속성 JSON" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "section", "paragraph", "ctrl", "innerPara", "innerCtrl", "props"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "set-hf-picture", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--inner-para", "{innerPara}", "--inner-ctrl", "{innerCtrl}", "--props", "{props}", "--json"]),
-                    serde_json::json!([
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "ctrl", "innerPara", "innerCtrl", "props", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_header_footer",
-                    "구역의 머리말/꼬리말 한 건을 조회한다. 기본은 구역 0 양쪽 머리말. 코어 get_header_footer_native 배선.",
-                    path_schema(serde_json::json!({
-                        "section": { "type": "integer", "minimum": 0 },
-                        "header": { "type": "boolean" },
-                        "footer": { "type": "boolean" },
-                        "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" }
-                    })),
-                    "header-footer",
-                    serde_json::json!(["header-footer", "--json", "{path}"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "header", "args": ["--header"] },
-                        { "when": "footer", "args": ["--footer"] },
-                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "exists"],
-                ),
-        tool_with_optional_args(
-                    "hwp_apply_hf_template",
-                    "머리말/꼬리말에 마당(템플릿)을 적용한다. --header 또는 --footer 필수. template 0 빈 / 1 왼쪽 쪽번호 / 2 가운데 / 3 오른쪽 / 4 쪽번호+파일이름 / 5 파일이름+쪽번호 / 6~10 동일 배치+볼드밑줄. 코어 apply_hf_template_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "header": { "type": "boolean", "description": "머리말에 적용 (footer 와 동시에 쓰지 않는다)" },
-                            "footer": { "type": "boolean", "description": "꼬리말에 적용 (header 와 동시에 쓰지 않는다)" },
-                            "template": { "type": "integer", "minimum": 0, "maximum": 10, "description": "마당 ID 0~10" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "template"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "apply-hf-template", "{path}", "--template", "{template}", "--json"]),
-                    serde_json::json!([
-                        { "when": "header", "args": ["--header"] },
-                        { "when": "footer", "args": ["--footer"] },
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "templateId", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_delete_hf_text",
-                    "기존 머리말/꼬리말 문단에서 글자를 지운다. --header 또는 --footer 와 --count 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 delete_text_in_header_footer_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "count": { "type": "integer", "minimum": 1, "description": "지울 글자 수 (1 이상)" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "header": { "type": "boolean" },
-                            "footer": { "type": "boolean" },
-                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
-                            "paragraph": { "type": "integer", "minimum": 0, "description": "머리말/꼬리말 안 문단 인덱스 (0부터)" },
-                            "offset": { "type": "integer", "minimum": 0, "description": "문단 안 문자 오프셋 (0부터)" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "count"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "delete-hf-text", "{path}", "--count", "{count}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "header", "args": ["--header"] },
-                        { "when": "footer", "args": ["--footer"] },
-                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "offset", "args": ["--offset", "{offset}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "offset", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_insert_field_in_hf",
-                    "기존 머리말/꼬리말 문단에 필드 마커를 넣는다. --header 또는 --footer 필수. fieldType 1 쪽번호 / 2 총쪽수 / 3 파일이름. 코어 insert_field_in_hf_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "header": { "type": "boolean", "description": "머리말에 삽입 (footer 와 동시에 쓰지 않는다)" },
-                            "footer": { "type": "boolean", "description": "꼬리말에 삽입 (header 와 동시에 쓰지 않는다)" },
-                            "fieldType": { "type": "integer", "minimum": 1, "maximum": 3, "description": "1 쪽번호 / 2 총쪽수 / 3 파일이름" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "offset": { "type": "integer", "minimum": 0 },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "fieldType"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "insert-field-in-hf", "{path}", "--field-type", "{fieldType}", "--json"]),
-                    serde_json::json!([
-                        { "when": "header", "args": ["--header"] },
-                        { "when": "footer", "args": ["--footer"] },
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "offset", "args": ["--offset", "{offset}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "offset", "fieldType", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_split_paragraph_in_hf",
-                    "기존 머리말/꼬리말 문단을 오프셋에서 나눈다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 split_paragraph_in_header_footer_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "header": { "type": "boolean" },
-                            "footer": { "type": "boolean" },
-                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
-                            "paragraph": { "type": "integer", "minimum": 0, "description": "머리말/꼬리말 안 문단 인덱스 (0부터)" },
-                            "offset": { "type": "integer", "minimum": 0, "description": "문단 안 문자 오프셋 (0부터)" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "split-paragraph-in-hf", "{path}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "header", "args": ["--header"] },
-                        { "when": "footer", "args": ["--footer"] },
-                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "offset", "args": ["--offset", "{offset}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_toggle_hide_hf",
-                    "지정 쪽의 머리말 또는 꼬리말 감추기를 토글한다. --header 또는 --footer 필수. page 는 0부터. 코어 toggle_hide_header_footer_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "header": { "type": "boolean", "description": "머리말을 토글 (footer 와 동시에 쓰지 않는다)" },
-                            "footer": { "type": "boolean", "description": "꼬리말을 토글 (header 와 동시에 쓰지 않는다)" },
-                            "page": { "type": "integer", "minimum": 0, "description": "쪽 번호 (0부터)" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "toggle-hide-hf", "{path}", "--json"]),
-                    serde_json::json!([
-                        { "when": "header", "args": ["--header"] },
-                        { "when": "footer", "args": ["--footer"] },
-                        { "when": "page", "args": ["--page", "{page}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "page", "isHeader", "hidden", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_merge_paragraph_in_hf",
-                    "머리말/꼬리말 문단을 바로 앞 문단과 합친다. --header 또는 --footer 필수. --para 는 합쳐질 문단(1 이상). applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 merge_paragraph_in_header_footer_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "header": { "type": "boolean" },
-                            "footer": { "type": "boolean" },
-                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
-                            "paragraph": { "type": "integer", "minimum": 1, "description": "합쳐질 머리말/꼬리말 문단 인덱스 (1부터)" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "merge-paragraph-in-hf", "{path}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "header", "args": ["--header"] },
-                        { "when": "footer", "args": ["--footer"] },
-                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_apply_char_format",
-                    "본문 문단 글자 범위에 글자 서식을 적용한다. --props 는 bold/italic/underline/superscript 등 JSON. 코어 apply_char_format_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "offset": { "type": "integer", "minimum": 0 },
-                            "count": { "type": "integer", "minimum": 0 },
-                            "props": { "type": "string", "description": "글자 서식 JSON (예: {\"bold\":true})" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "props"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "apply-char-format", "{path}", "--props", "{props}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "offset", "args": ["--offset", "{offset}"] },
-                        { "when": "count", "args": ["--count", "{count}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "offset", "count", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_split_paragraph",
-                    "[#5082] 본문 문단을 지정 오프셋에서 가른다. 주소는 search 와 같다. 코어 split_paragraph_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "offset": { "type": "integer", "minimum": 0 },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "split-paragraph", "{path}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "offset", "args": ["--offset", "{offset}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_apply_para_format",
-                    "본문 문단에 문단 서식 JSON을 적용한다. 코어 apply_para_format_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "props": { "type": "string", "description": "문단 서식 JSON (예: {\"alignment\":\"center\"})" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "props"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "apply-para-format", "{path}", "--props", "{props}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_apply_style",
-                    "본문 문단에 스타일 ID를 적용한다. 코어 apply_style_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "style": { "type": "integer", "minimum": 0 },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "style"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "apply-style", "{path}", "--style", "{style}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_set_numbering_restart",
-                    "문단 번호 매기기를 다시 시작한다. mode 0=해제, 1=이전 이어, 2=새 시작. 코어 set_numbering_restart_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "mode": { "type": "integer", "minimum": 0, "description": "0=해제, 1=이전 이어, 2=새 시작" },
-                            "count": { "type": "integer", "minimum": 0, "description": "mode=2 일 때 시작 번호" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "mode"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "set-numbering-restart", "{path}", "--mode", "{mode}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "count", "args": ["--count", "{count}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_apply_para_format_in_hf",
-                    "[#5109] 머리말/꼬리말 문단에 문단 서식을 적용한다. --header 또는 --footer 와 --props JSON. 코어 apply_para_format_in_hf_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "header": { "type": "boolean", "description": "머리말에 적용 (footer 와 동시에 쓰지 않는다)" },
-                            "footer": { "type": "boolean", "description": "꼬리말에 적용 (header 와 동시에 쓰지 않는다)" },
-                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "props": { "type": "string", "description": "문단 서식 JSON (alignment 등)" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "props"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "apply-para-format-in-hf", "{path}", "--props", "{props}", "--json"]),
-                    serde_json::json!([
-                        { "when": "header", "args": ["--header"] },
-                        { "when": "footer", "args": ["--footer"] },
-                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "props", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_apply_endnote_shape",
-                    "구역의 미주 모양 JSON을 적용한다. 코어 apply_endnote_shape_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "props": { "type": "string", "description": "미주 모양 JSON (예: {\"startNumber\":2})" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "props"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "apply-endnote-shape", "{path}", "--props", "{props}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_insert_footnote_text",
-                    "[#5110] 각주 문단에 텍스트를 넣는다. --ctrl 은 본문 문단의 각주 컨트롤 인덱스. 코어 insert_text_in_footnote_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "text": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "ctrl": { "type": "integer", "minimum": 0 },
-                            "fnPara": { "type": "integer", "minimum": 0 },
-                            "offset": { "type": "integer", "minimum": 0 },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "text", "ctrl"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "insert-footnote-text", "{path}", "--ctrl", "{ctrl}", "--text", "{text}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
-                        { "when": "offset", "args": ["--offset", "{offset}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "ctrl", "fnPara", "offset", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_delete_text_in_footnote",
-                    "각주/미주 문단에서 글자를 지운다. section/para/ctrl/fnPara/offset 은 0 기준. 코어 delete_text_in_footnote_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "ctrl": { "type": "integer", "minimum": 0, "description": "문단 안 각주/미주 컨트롤 인덱스 (0부터)" },
-                            "fnPara": { "type": "integer", "minimum": 0, "description": "각주/미주 안 문단 인덱스 (0부터)" },
-                            "offset": { "type": "integer", "minimum": 0 },
-                            "count": { "type": "integer", "minimum": 1, "description": "지울 글자 수 (1 이상)" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "count"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "delete-text-in-footnote", "{path}", "--count", "{count}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "ctrl", "args": ["--ctrl", "{ctrl}"] },
-                        { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
-                        { "when": "offset", "args": ["--offset", "{offset}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "ctrl", "fnPara", "offset", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_split_paragraph_in_footnote",
-                    "각주/미주 문단을 오프셋에서 나눈다. section/para/ctrl/fnPara/offset 은 0 기준. 코어 split_paragraph_in_footnote_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "ctrl": { "type": "integer", "minimum": 0, "description": "문단 안 각주/미주 컨트롤 인덱스 (0부터)" },
-                            "fnPara": { "type": "integer", "minimum": 0, "description": "각주/미주 안 문단 인덱스 (0부터)" },
-                            "offset": { "type": "integer", "minimum": 0 },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "split-paragraph-in-footnote", "{path}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "ctrl", "args": ["--ctrl", "{ctrl}"] },
-                        { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
-                        { "when": "offset", "args": ["--offset", "{offset}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "ctrl", "fnPara", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_merge_paragraph_in_footnote",
-                    "각주/미주 문단을 바로 앞 문단에 합친다. fnPara 는 합쳐질 문단(1 이상). 코어 merge_paragraph_in_footnote_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "ctrl": { "type": "integer", "minimum": 0, "description": "문단 안 각주/미주 컨트롤 인덱스 (0부터)" },
-                            "fnPara": { "type": "integer", "minimum": 1, "description": "합쳐질 각주/미주 문단 인덱스 (1 이상)" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "merge-paragraph-in-footnote", "{path}", "--json"]),
-                    serde_json::json!([
-                        { "when": "section", "args": ["--section", "{section}"] },
-                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
-                        { "when": "ctrl", "args": ["--ctrl", "{ctrl}"] },
-                        { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "ctrl", "fnPara", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
-        tool_with_optional_args(
-                    "hwp_apply_para_format_in_footnote",
-                    "각주/미주 문단에 문단 서식을 적용한다. --section/--para/--ctrl 은 각주 컨트롤 좌표. --props 는 alignment 등 JSON. 코어 apply_para_format_in_footnote_native 배선.",
-                    serde_json::json!({
-                        "type": "object",
-                        "properties": {
-                            "path": { "type": "string" },
-                            "section": { "type": "integer", "minimum": 0 },
-                            "paragraph": { "type": "integer", "minimum": 0 },
-                            "ctrl": { "type": "integer", "minimum": 0 },
-                            "fnPara": { "type": "integer", "minimum": 0 },
-                            "props": { "type": "string", "description": "문단 서식 JSON (예: {\"alignment\":\"center\"})" },
-                            "output": { "type": "string" },
-                            "dryRun": { "type": "boolean" }
-                        },
-                        "required": ["path", "section", "paragraph", "ctrl", "props"],
-                    }),
-                    "edit",
-                    serde_json::json!(["edit", "apply-para-format-in-footnote", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--props", "{props}", "--json"]),
-                    serde_json::json!([
-                        { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
-                        { "when": "output", "args": ["-o", "{output}"] },
-                        { "when": "dryRun", "args": ["--dry-run"] }
-                    ]),
-                    &["schemaVersion", "source", "section", "paragraph", "ctrl", "count", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-                ),
+            "hwp_set_header_footer_text",
+            "기존 머리말/꼬리말 문단 텍스트를 통째로 바꾼다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 delete_text_in_header_footer_native + insert_text_in_header_footer_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "text": { "type": "string", "description": "바꿀 문자열 (빈 문자열 불가)" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "header": { "type": "boolean" },
+                    "footer": { "type": "boolean" },
+                    "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
+                    "paragraph": { "type": "integer", "minimum": 0, "description": "머리말/꼬리말 안 문단 인덱스 (0부터)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "text"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-header-footer-text", "{path}", "--text", "{text}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "header", "args": ["--header"] },
+                { "when": "footer", "args": ["--footer"] },
+                { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
         tool_with_optional_args(
             "hwp_delete_table",
             "[#5028] 본문 최상위 표를 지운다. 좌표는 export-tables 의 index. 코어 delete_table_control_native 배선.",
@@ -2847,6 +2931,39 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
             &["schemaVersion", "source", "table", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_insert_header_footer_text",
+            "기존 머리말/꼬리말 문단에 텍스트를 끼운다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 insert_text_in_header_footer_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "text": { "type": "string", "description": "넣을 문자열 (빈 문자열 불가)" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "header": { "type": "boolean" },
+                    "footer": { "type": "boolean" },
+                    "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
+                    "paragraph": { "type": "integer", "minimum": 0, "description": "머리말/꼬리말 안 문단 인덱스 (0부터)" },
+                    "offset": { "type": "integer", "minimum": 0, "description": "문단 안 문자 오프셋 (0부터)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "text"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-header-footer-text", "{path}", "--text", "{text}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "header", "args": ["--header"] },
+                { "when": "footer", "args": ["--footer"] },
+                { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "offset", "text", "insertedChars", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_insert_header_footer",
@@ -2891,6 +3008,504 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
             &["schemaVersion", "source", "section", "isHeader", "applyTo", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_insert_field_in_hf",
+            "기존 머리말/꼬리말 문단에 필드 마커를 넣는다. --header 또는 --footer 필수. fieldType 1 쪽번호 / 2 총쪽수 / 3 파일이름. 코어 insert_field_in_hf_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "header": { "type": "boolean", "description": "머리말에 삽입 (footer 와 동시에 쓰지 않는다)" },
+                    "footer": { "type": "boolean", "description": "꼬리말에 삽입 (header 와 동시에 쓰지 않는다)" },
+                    "fieldType": { "type": "integer", "minimum": 1, "maximum": 3, "description": "1 쪽번호 / 2 총쪽수 / 3 파일이름" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "fieldType"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-field-in-hf", "{path}", "--field-type", "{fieldType}", "--json"]),
+            serde_json::json!([
+                { "when": "header", "args": ["--header"] },
+                { "when": "footer", "args": ["--footer"] },
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "offset", "fieldType", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_column_def",
+            "[#5081] 구역의 단(다단) 정의를 바꾼다. count 는 단 수. type 0 일반 / 1 배분 / 2 평행. 코어 set_column_def_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "count": { "type": "integer", "minimum": 1, "description": "단 수" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "columnType": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 일반 / 1 배분 / 2 평행" },
+                    "sameWidth": { "type": "boolean", "description": "단 너비 동일 (기본 true)" },
+                    "spacing": { "type": "integer", "description": "단 간격 (HWPUNIT)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "count"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-column-def", "{path}", "--count", "{count}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "columnType", "args": ["--type", "{columnType}"] },
+                { "when": "sameWidth", "args": ["--same-width"] },
+                { "when": "spacing", "args": ["--spacing", "{spacing}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "columnCount", "columnType", "sameWidth", "spacing", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_delete_hf_text",
+            "기존 머리말/꼬리말 문단에서 글자를 지운다. --header 또는 --footer 와 --count 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 delete_text_in_header_footer_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "count": { "type": "integer", "minimum": 1, "description": "지울 글자 수 (1 이상)" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "header": { "type": "boolean" },
+                    "footer": { "type": "boolean" },
+                    "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
+                    "paragraph": { "type": "integer", "minimum": 0, "description": "머리말/꼬리말 안 문단 인덱스 (0부터)" },
+                    "offset": { "type": "integer", "minimum": 0, "description": "문단 안 문자 오프셋 (0부터)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "count"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-hf-text", "{path}", "--count", "{count}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "header", "args": ["--header"] },
+                { "when": "footer", "args": ["--footer"] },
+                { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "offset", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_split_paragraph_in_hf",
+            "기존 머리말/꼬리말 문단을 오프셋에서 나눈다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 split_paragraph_in_header_footer_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "header": { "type": "boolean" },
+                    "footer": { "type": "boolean" },
+                    "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
+                    "paragraph": { "type": "integer", "minimum": 0, "description": "머리말/꼬리말 안 문단 인덱스 (0부터)" },
+                    "offset": { "type": "integer", "minimum": 0, "description": "문단 안 문자 오프셋 (0부터)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "split-paragraph-in-hf", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "header", "args": ["--header"] },
+                { "when": "footer", "args": ["--footer"] },
+                { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_merge_paragraph_in_hf",
+            "머리말/꼬리말 문단을 바로 앞 문단과 합친다. --header 또는 --footer 필수. --para 는 합쳐질 문단(1 이상). applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 merge_paragraph_in_header_footer_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "header": { "type": "boolean" },
+                    "footer": { "type": "boolean" },
+                    "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
+                    "paragraph": { "type": "integer", "minimum": 1, "description": "합쳐질 머리말/꼬리말 문단 인덱스 (1부터)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "merge-paragraph-in-hf", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "header", "args": ["--header"] },
+                { "when": "footer", "args": ["--footer"] },
+                { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_split_paragraph_in_cell",
+            "표 셀 문단을 오프셋에서 나눈다. export-tables 격자와 같은 --table/--row/--col. 코어 split_paragraph_in_cell_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 0 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "split-paragraph-in-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--json"]),
+            serde_json::json!([
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "paragraph", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_merge_paragraph_in_cell",
+            "표 셀 문단을 바로 앞 문단과 합친다. --cell-para 는 합쳐질 문단(1 이상). export-tables 격자와 같은 --table/--row/--col. 코어 merge_paragraph_in_cell_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 1 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "merge-paragraph-in-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--json"]),
+            serde_json::json!([
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "paragraph", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_split_paragraph",
+            "[#5082] 본문 문단을 지정 오프셋에서 가른다. 주소는 search 와 같다. 코어 split_paragraph_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "split-paragraph", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_page_hide",
+            "[#5083] 문단에 쪽 감추기(PageHide) 컨트롤을 넣거나 갱신한다. 플래그를 모두 끄면 제거. 코어 set_page_hide_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "hideHeader": { "type": "boolean" },
+                    "hideFooter": { "type": "boolean" },
+                    "hideMasterPage": { "type": "boolean" },
+                    "hideBorder": { "type": "boolean" },
+                    "hideFill": { "type": "boolean" },
+                    "hidePageNum": { "type": "boolean" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-page-hide", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "hideHeader", "args": ["--hide-header"] },
+                { "when": "hideFooter", "args": ["--hide-footer"] },
+                { "when": "hideMasterPage", "args": ["--hide-master"] },
+                { "when": "hideBorder", "args": ["--hide-border"] },
+                { "when": "hideFill", "args": ["--hide-fill"] },
+                { "when": "hidePageNum", "args": ["--hide-page-num"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "hideHeader", "hideFooter", "hideMasterPage", "hideBorder", "hideFill", "hidePageNum", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_transpose_table",
+            "[#5108] 본문 최상위 표의 행/열을 제자리에서 바꾼다. 병합 셀이 있으면 거부. 좌표는 export-tables 의 index. 코어 transpose_table_cells_in_place_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "transpose-table", "{path}", "--table", "{table}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "section", "paragraph", "ctrl", "sourceRows", "sourceCols", "targetRows", "targetCols", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_apply_char_format",
+            "본문 문단 글자 범위에 글자 서식을 적용한다. --props 는 bold/italic/underline/superscript 등 JSON. 코어 apply_char_format_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "count": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "글자 서식 JSON (예: {\"bold\":true})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "apply-char-format", "{path}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "count", "args": ["--count", "{count}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "offset", "count", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_apply_para_format",
+            "본문 문단에 문단 서식을 적용한다. --props 는 alignment/lineSpacing/marginLeft 등 JSON. 코어 apply_para_format_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "문단 서식 JSON (예: {\"alignment\":\"center\"})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "apply-para-format", "{path}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_apply_para_format_in_cell",
+            "표 셀 문단에 문단 서식을 적용한다. --props 는 alignment/marginLeft 등 JSON. export-tables 격자와 같은 --table/--row/--col. 코어 apply_para_format_in_cell_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "문단 서식 JSON (예: {\"alignment\":\"center\"})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "apply-para-format-in-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_apply_char_format_in_cell",
+            "표 셀 문단 글자 범위에 글자 서식을 적용한다. --props 는 bold/fontSize/textColor 등 JSON. --table/--row/--col 또는 --section/--para/--ctrl/--cell. 코어 apply_char_format_in_cell_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "cell": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 0 },
+                    "start": { "type": "integer", "minimum": 0 },
+                    "end": { "type": "integer", "minimum": 0 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "count": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "글자 서식 JSON (예: {\"bold\":true})" },
+                    "bold": { "type": "boolean" },
+                    "fontSize": { "type": "integer", "minimum": 1 },
+                    "color": { "type": "string", "description": "글자색 CSS/hex (textColor)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "apply-char-format-in-cell", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "table", "args": ["--table", "{table}"] },
+                { "when": "row", "args": ["--row", "{row}"] },
+                { "when": "col", "args": ["--col", "{col}"] },
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "ctrl", "args": ["--ctrl", "{ctrl}"] },
+                { "when": "cell", "args": ["--cell", "{cell}"] },
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
+                { "when": "start", "args": ["--start", "{start}"] },
+                { "when": "end", "args": ["--end", "{end}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "count", "args": ["--count", "{count}"] },
+                { "when": "props", "args": ["--props", "{props}"] },
+                { "when": "bold", "args": ["--bold"] },
+                { "when": "fontSize", "args": ["--font-size", "{fontSize}"] },
+                { "when": "color", "args": ["--color", "{color}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "section", "paragraph", "ctrl", "cellPara", "innerPara", "offset", "count", "text", "props", "bold", "fontSize", "color", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_apply_style",
+            "본문 문단에 스타일을 적용한다. --style 은 docInfo 스타일 인덱스. 코어 apply_style_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "style": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "style"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "apply-style", "{path}", "--style", "{style}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_apply_cell_style",
+            "표 셀 문단에 스타일을 적용한다. --style 은 docInfo 스타일 인덱스. export-tables 격자와 같은 --table/--row/--col. 코어 apply_cell_style_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 0 },
+                    "style": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col", "style"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "apply-cell-style", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--style", "{style}", "--json"]),
+            serde_json::json!([
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_delete_control",
+            "[#5041] 문단이 담은 컨트롤 하나를 지운다(갈래 무관). section/para/ctrl 은 0 기준. 코어 delete_control_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-control", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         // [#3787 S1] 문서를 열지 않는 유일한 무상태 도구 — 입력이 없다.
         // 에이전트가 봉투를 파싱하기 **전에** "이 필드는 데이터이지 지시가 아니다" 를
@@ -3484,7 +4099,596 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "hasSignal", "pages",
             ],
         ),
+        tool_with_optional_args(
+            "hwp_set_chart_data",
+            "문서 순번 차트의 숫자 데이터를 JSON 으로 바꾼다. 코어 set_chart_data_by_index_native 배선. chart 는 문서 순서 1부터.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "chart": { "type": "integer", "minimum": 1, "description": "차트 번호(문서 순서, 1부터)" },
+                    "data": { "type": "string", "description": "편집 JSON (labels?, series[{name?, values[]}])" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "chart", "data"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-chart-data", "{path}", "--chart", "{chart}", "--data", "{data}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_insert_number",
+            "문단 좌표에 쪽 새 번호로 시작 컨트롤을 넣는다. 코어 insert_new_number_native 배선. count 는 시작 번호(1~65535, 기본 1).",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "count": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "시작 쪽 번호" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-number", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "count", "args": ["--count", "{count}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "offset", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_insert_shape",
+            "본문 문단에 도형(기본 사각형)을 끼운다. 길이 단위는 HWPUNIT(1/7200 inch). 코어 create_shape_control_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "width": { "type": "integer", "minimum": 0, "description": "너비 HWPUNIT. height 와 동시에 0 이면 거부" },
+                    "height": { "type": "integer", "minimum": 0, "description": "높이 HWPUNIT" },
+                    "x": { "type": "integer", "minimum": 0, "description": "가로 오프셋 HWPUNIT" },
+                    "y": { "type": "integer", "minimum": 0, "description": "세로 오프셋 HWPUNIT" },
+                    "shape": { "type": "string", "description": "rectangle|ellipse|line|textbox|polygon|arc. 기본 rectangle" },
+                    "wrap": { "type": "string", "description": "Square|Tight|Through|TopAndBottom|BehindText|InFrontOfText. 기본 InFrontOfText" },
+                    "treatAsChar": { "type": "boolean" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "width", "height"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-shape", "{path}", "--width", "{width}", "--height", "{height}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "x", "args": ["--x", "{x}"] },
+                { "when": "y", "args": ["--y", "{y}"] },
+                { "when": "shape", "args": ["--shape", "{shape}"] },
+                { "when": "wrap", "args": ["--wrap", "{wrap}"] },
+                { "when": "treatAsChar", "args": ["--treat-as-char"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "offset", "width", "height", "x", "y", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_picture",
+            "본문 그림 속성을 JSON 으로 바꾼다. section/para/ctrl 은 0 기준. 코어 set_picture_properties_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "그림 속성 JSON (예: {\"brightness\":50,\"treatAsChar\":true})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-picture", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_form_value",
+            "본문 양식 컨트롤의 값을 JSON으로 바꾼다. section/para/ctrl 은 0 기준.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "value": { "type": "string", "description": "양식 값 JSON (예: {\"text\":\"값\"})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl", "value"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-form-value", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--value", "{value}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "value", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_form_value_in_cell",
+            "표 셀 안 양식 컨트롤의 값을 JSON으로 바꾼다. 모든 좌표는 0 기준.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "tablePara": { "type": "integer", "minimum": 0 },
+                    "tableCi": { "type": "integer", "minimum": 0 },
+                    "cell": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "value": { "type": "string", "description": "양식 값 JSON (예: {\"value\":1})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "tablePara", "tableCi", "cell", "cellPara", "ctrl", "value"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-form-value-in-cell", "{path}", "--section", "{section}", "--table-para", "{tablePara}", "--table-ci", "{tableCi}", "--cell", "{cell}", "--cell-para", "{cellPara}", "--ctrl", "{ctrl}", "--value", "{value}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "tablePara", "tableCi", "cell", "cellPara", "ctrl", "value", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_equation_properties",
+            "본문 수식 속성을 바꾼다. --section/--para/--ctrl 은 수식 컨트롤 좌표. --props 는 script 등 JSON. 코어 set_equation_properties_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "수식 속성 JSON (예: {\"script\":\"x^2\"})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-equation-properties", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_page_border_fill",
+            "구역의 쪽 테두리/배경을 바꾼다. --props 는 spacingLeft/fillColor 등 JSON. 코어 set_page_border_fill_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "쪽 테두리/배경 JSON (예: {\"spacingLeft\":100})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-page-border-fill", "{path}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "props", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
     ];
+    // 최신 devel의 각주·머리말 편집 명령은 충돌 병합 때 실행 함수만 남고
+    // MCP 자기서술 표면이 빠질 수 있다. CLI 디스패치와 같은 계약을 여기서
+    // 함께 보충해 capabilities와 mcp-serve가 동일한 도구를 노출하게 한다.
+    let mut add_edit_tool = |name: &str,
+                             description: &str,
+                             properties: serde_json::Value,
+                             required: &[&str],
+                             args: serde_json::Value,
+                             optional_args: serde_json::Value,
+                             output_fields: &[&str]| {
+        tools.push(tool_with_optional_args(
+            name,
+            description,
+            serde_json::json!({
+                "type": "object",
+                "properties": properties,
+                "required": required,
+            }),
+            "edit",
+            args,
+            optional_args,
+            output_fields,
+        ));
+    };
+
+    add_edit_tool(
+        "hwp_set_hf_picture",
+        "머리말/꼬리말 안 그림 속성을 바꾼다. para/ctrl은 머리말·꼬리말 컨트롤, innerPara/innerCtrl은 그 안 그림이다.",
+        serde_json::json!({
+            "path": { "type": "string" },
+            "section": { "type": "integer", "minimum": 0 },
+            "paragraph": { "type": "integer", "minimum": 0 },
+            "ctrl": { "type": "integer", "minimum": 0 },
+            "innerPara": { "type": "integer", "minimum": 0 },
+            "innerCtrl": { "type": "integer", "minimum": 0 },
+            "props": { "type": "string", "description": "그림 속성 JSON" },
+            "output": { "type": "string" },
+            "dryRun": { "type": "boolean" }
+        }),
+        &["path", "section", "paragraph", "ctrl", "innerPara", "innerCtrl", "props"],
+        serde_json::json!(["edit", "set-hf-picture", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--inner-para", "{innerPara}", "--inner-ctrl", "{innerCtrl}", "--props", "{props}", "--json"]),
+        serde_json::json!([
+            { "when": "output", "args": ["-o", "{output}"] },
+            { "when": "dryRun", "args": ["--dry-run"] }
+        ]),
+        &["schemaVersion", "source", "section", "paragraph", "ctrl", "innerPara", "innerCtrl", "props", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+    );
+    add_edit_tool(
+        "hwp_apply_hf_template",
+        "머리말/꼬리말에 마당(템플릿)을 적용한다. template은 0부터 10까지다.",
+        serde_json::json!({
+            "path": { "type": "string" },
+            "header": { "type": "boolean" },
+            "footer": { "type": "boolean" },
+            "template": { "type": "integer", "minimum": 0, "maximum": 10 },
+            "section": { "type": "integer", "minimum": 0 },
+            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2 },
+            "output": { "type": "string" },
+            "dryRun": { "type": "boolean" }
+        }),
+        &["path", "template"],
+        serde_json::json!([
+            "edit",
+            "apply-hf-template",
+            "{path}",
+            "--template",
+            "{template}",
+            "--json"
+        ]),
+        serde_json::json!([
+            { "when": "header", "args": ["--header"] },
+            { "when": "footer", "args": ["--footer"] },
+            { "when": "section", "args": ["--section", "{section}"] },
+            { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+            { "when": "output", "args": ["-o", "{output}"] },
+            { "when": "dryRun", "args": ["--dry-run"] }
+        ]),
+        &[
+            "schemaVersion",
+            "source",
+            "section",
+            "isHeader",
+            "applyTo",
+            "templateId",
+            "dryRun",
+            "changedPages",
+            "output",
+            "outputFormat",
+            "verify",
+        ],
+    );
+    add_edit_tool(
+        "hwp_toggle_hide_hf",
+        "지정 쪽의 머리말 또는 꼬리말 감추기를 토글한다. page는 0부터다.",
+        serde_json::json!({
+            "path": { "type": "string" },
+            "header": { "type": "boolean" },
+            "footer": { "type": "boolean" },
+            "page": { "type": "integer", "minimum": 0 },
+            "output": { "type": "string" },
+            "dryRun": { "type": "boolean" }
+        }),
+        &["path"],
+        serde_json::json!(["edit", "toggle-hide-hf", "{path}", "--json"]),
+        serde_json::json!([
+            { "when": "header", "args": ["--header"] },
+            { "when": "footer", "args": ["--footer"] },
+            { "when": "page", "args": ["--page", "{page}"] },
+            { "when": "output", "args": ["-o", "{output}"] },
+            { "when": "dryRun", "args": ["--dry-run"] }
+        ]),
+        &[
+            "schemaVersion",
+            "source",
+            "page",
+            "isHeader",
+            "hidden",
+            "dryRun",
+            "changedPages",
+            "output",
+            "outputFormat",
+            "verify",
+        ],
+    );
+    add_edit_tool(
+        "hwp_apply_para_format_in_hf",
+        "머리말/꼬리말 문단에 문단 서식 JSON을 적용한다.",
+        serde_json::json!({
+            "path": { "type": "string" },
+            "header": { "type": "boolean" },
+            "footer": { "type": "boolean" },
+            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2 },
+            "section": { "type": "integer", "minimum": 0 },
+            "paragraph": { "type": "integer", "minimum": 0 },
+            "props": { "type": "string", "description": "문단 서식 JSON" },
+            "output": { "type": "string" },
+            "dryRun": { "type": "boolean" }
+        }),
+        &["path", "props"],
+        serde_json::json!([
+            "edit",
+            "apply-para-format-in-hf",
+            "{path}",
+            "--props",
+            "{props}",
+            "--json"
+        ]),
+        serde_json::json!([
+            { "when": "header", "args": ["--header"] },
+            { "when": "footer", "args": ["--footer"] },
+            { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+            { "when": "section", "args": ["--section", "{section}"] },
+            { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+            { "when": "output", "args": ["-o", "{output}"] },
+            { "when": "dryRun", "args": ["--dry-run"] }
+        ]),
+        &[
+            "schemaVersion",
+            "source",
+            "section",
+            "isHeader",
+            "applyTo",
+            "paragraph",
+            "props",
+            "dryRun",
+            "changedPages",
+            "output",
+            "outputFormat",
+            "verify",
+        ],
+    );
+    add_edit_tool(
+        "hwp_apply_endnote_shape",
+        "구역의 미주 모양 JSON을 적용한다.",
+        serde_json::json!({
+            "path": { "type": "string" },
+            "section": { "type": "integer", "minimum": 0 },
+            "props": { "type": "string", "description": "미주 모양 JSON" },
+            "output": { "type": "string" },
+            "dryRun": { "type": "boolean" }
+        }),
+        &["path", "props"],
+        serde_json::json!([
+            "edit",
+            "apply-endnote-shape",
+            "{path}",
+            "--props",
+            "{props}",
+            "--json"
+        ]),
+        serde_json::json!([
+            { "when": "section", "args": ["--section", "{section}"] },
+            { "when": "output", "args": ["-o", "{output}"] },
+            { "when": "dryRun", "args": ["--dry-run"] }
+        ]),
+        &[
+            "schemaVersion",
+            "source",
+            "section",
+            "dryRun",
+            "changedPages",
+            "output",
+            "outputFormat",
+            "verify",
+        ],
+    );
+    add_edit_tool(
+        "hwp_insert_footnote_text",
+        "각주 문단에 텍스트를 넣는다. ctrl은 본문 문단의 각주 컨트롤 인덱스다.",
+        serde_json::json!({
+            "path": { "type": "string" },
+            "text": { "type": "string" },
+            "section": { "type": "integer", "minimum": 0 },
+            "paragraph": { "type": "integer", "minimum": 0 },
+            "ctrl": { "type": "integer", "minimum": 0 },
+            "fnPara": { "type": "integer", "minimum": 0 },
+            "offset": { "type": "integer", "minimum": 0 },
+            "output": { "type": "string" },
+            "dryRun": { "type": "boolean" }
+        }),
+        &["path", "text", "ctrl"],
+        serde_json::json!([
+            "edit",
+            "insert-footnote-text",
+            "{path}",
+            "--ctrl",
+            "{ctrl}",
+            "--text",
+            "{text}",
+            "--json"
+        ]),
+        serde_json::json!([
+            { "when": "section", "args": ["--section", "{section}"] },
+            { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+            { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
+            { "when": "offset", "args": ["--offset", "{offset}"] },
+            { "when": "output", "args": ["-o", "{output}"] },
+            { "when": "dryRun", "args": ["--dry-run"] }
+        ]),
+        &[
+            "schemaVersion",
+            "source",
+            "section",
+            "paragraph",
+            "ctrl",
+            "fnPara",
+            "offset",
+            "text",
+            "dryRun",
+            "changedPages",
+            "output",
+            "outputFormat",
+            "verify",
+        ],
+    );
+    add_edit_tool(
+        "hwp_split_paragraph_in_footnote",
+        "각주/미주 문단을 오프셋에서 나눈다.",
+        serde_json::json!({
+            "path": { "type": "string" },
+            "section": { "type": "integer", "minimum": 0 },
+            "paragraph": { "type": "integer", "minimum": 0 },
+            "ctrl": { "type": "integer", "minimum": 0 },
+            "fnPara": { "type": "integer", "minimum": 0 },
+            "offset": { "type": "integer", "minimum": 0 },
+            "output": { "type": "string" },
+            "dryRun": { "type": "boolean" }
+        }),
+        &["path"],
+        serde_json::json!(["edit", "split-paragraph-in-footnote", "{path}", "--json"]),
+        serde_json::json!([
+            { "when": "section", "args": ["--section", "{section}"] },
+            { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+            { "when": "ctrl", "args": ["--ctrl", "{ctrl}"] },
+            { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
+            { "when": "offset", "args": ["--offset", "{offset}"] },
+            { "when": "output", "args": ["-o", "{output}"] },
+            { "when": "dryRun", "args": ["--dry-run"] }
+        ]),
+        &[
+            "schemaVersion",
+            "source",
+            "section",
+            "paragraph",
+            "ctrl",
+            "fnPara",
+            "offset",
+            "dryRun",
+            "changedPages",
+            "output",
+            "outputFormat",
+            "verify",
+        ],
+    );
+    add_edit_tool(
+        "hwp_merge_paragraph_in_footnote",
+        "각주/미주 문단을 바로 앞 문단에 합친다. fnPara는 합쳐질 문단이다.",
+        serde_json::json!({
+            "path": { "type": "string" },
+            "section": { "type": "integer", "minimum": 0 },
+            "paragraph": { "type": "integer", "minimum": 0 },
+            "ctrl": { "type": "integer", "minimum": 0 },
+            "fnPara": { "type": "integer", "minimum": 1 },
+            "output": { "type": "string" },
+            "dryRun": { "type": "boolean" }
+        }),
+        &["path"],
+        serde_json::json!(["edit", "merge-paragraph-in-footnote", "{path}", "--json"]),
+        serde_json::json!([
+            { "when": "section", "args": ["--section", "{section}"] },
+            { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+            { "when": "ctrl", "args": ["--ctrl", "{ctrl}"] },
+            { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
+            { "when": "output", "args": ["-o", "{output}"] },
+            { "when": "dryRun", "args": ["--dry-run"] }
+        ]),
+        &[
+            "schemaVersion",
+            "source",
+            "section",
+            "paragraph",
+            "ctrl",
+            "fnPara",
+            "dryRun",
+            "changedPages",
+            "output",
+            "outputFormat",
+            "verify",
+        ],
+    );
+    add_edit_tool(
+        "hwp_apply_para_format_in_footnote",
+        "각주/미주 문단에 문단 서식 JSON을 적용한다.",
+        serde_json::json!({
+            "path": { "type": "string" },
+            "section": { "type": "integer", "minimum": 0 },
+            "paragraph": { "type": "integer", "minimum": 0 },
+            "ctrl": { "type": "integer", "minimum": 0 },
+            "fnPara": { "type": "integer", "minimum": 0 },
+            "props": { "type": "string", "description": "문단 서식 JSON" },
+            "output": { "type": "string" },
+            "dryRun": { "type": "boolean" }
+        }),
+        &["path", "section", "paragraph", "ctrl", "props"],
+        serde_json::json!([
+            "edit",
+            "apply-para-format-in-footnote",
+            "{path}",
+            "--section",
+            "{section}",
+            "--para",
+            "{paragraph}",
+            "--ctrl",
+            "{ctrl}",
+            "--props",
+            "{props}",
+            "--json"
+        ]),
+        serde_json::json!([
+            { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
+            { "when": "output", "args": ["-o", "{output}"] },
+            { "when": "dryRun", "args": ["--dry-run"] }
+        ]),
+        &[
+            "schemaVersion",
+            "source",
+            "section",
+            "paragraph",
+            "ctrl",
+            "fnPara",
+            "props",
+            "dryRun",
+            "changedPages",
+            "output",
+            "outputFormat",
+            "verify",
+        ],
+    );
+
     for definition in &mut tools {
         if definition["name"]
             .as_str()
@@ -3600,7 +4804,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 49] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 112] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3610,6 +4814,14 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 49] = [
         "본문 일괄 치환 — --find/--replace, --occurrence 로 k번째만",
     ),
     ("set-cell", "표 셀 텍스트 기록 — --table/--row/--col/--text"),
+    (
+        "insert-text-in-cell",
+        "표 셀 문단에 텍스트 삽입 — --table/--row/--col/--text [--offset] [--cell-para]",
+    ),
+    (
+        "delete-text-in-cell",
+        "표 셀 문단 텍스트 삭제 — --table/--row/--col/--count [--offset] [--cell-para]",
+    ),
     (
         "insert-text",
         "문단 좌표에 텍스트 삽입 — --section/--para/--offset/--text",
@@ -3638,6 +4850,14 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 49] = [
         "insert-column-break",
         "단 나눔 삽입 — --section/--para/--offset",
     ),
+    (
+        "insert-table",
+        "본문 표 생성 — --rows/--cols [--section/--para/--offset]",
+    ),
+    (
+        "set-numbering-restart",
+        "번호 다시 시작 — --mode [--count] [--section] [--para]",
+    ),
     ("insert-row", "표 행 삽입 — --table/--row [--below]"),
     ("insert-col", "표 열 삽입 — --table/--col [--right]"),
     ("delete-row", "표 행 삭제 — --table/--row"),
@@ -3647,11 +4867,69 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 49] = [
         "표 셀 병합 — --table/--row/--col/--end-row/--end-col",
     ),
     ("split-cell", "병합 셀 분할 — --table/--row/--col"),
+    (
+        "split-cell-into",
+        "셀 n×m 분할 — --table/--row/--col/--rows/--cols [--equal-row-height] [--merge-first]",
+    ),
+    (
+        "split-table",
+        "표 나누기 — --table/--row (row 는 뒤 표 시작 행, 0 거부)",
+    ),
+    (
+        "fit-table",
+        "표를 페이지 본문 폭에 맞춤 — --table (축소 전용)",
+    ),
+    (
+        "resize-table",
+        "표 행/열 크기 조절 — --table/--row/--col [--vertical] [--forward] [--line]",
+    ),
+    (
+        "resize-table-cell",
+        "표 셀 크기 조절 — --table/--row/--col [--vertical] [--forward]",
+    ),
+    (
+        "set-cell-props",
+        "표 셀 속성 — --table/--row/--col/--props (JSON)",
+    ),
+    ("set-table-props", "표 속성 — --table/--props (JSON)"),
+    ("move-table", "표 위치 이동 — --table/--dx/--dy (HWPUNIT)"),
+    (
+        "merge-table",
+        "다음 표와 붙이기 — --table (사이는 빈 문단만 허용)",
+    ),
+    (
+        "set-column-widths",
+        "표 열 폭 설정 — --table/--widths (HWPUNIT, 개수=열 수)",
+    ),
     ("insert-footnote", "각주 삽입 — --section/--para/--offset"),
     ("insert-endnote", "미주 삽입 — --section/--para/--offset"),
     (
+        "insert-equation",
+        "수식 삽입 — --script [--section/--para/--offset/--font-size/--color]",
+    ),
+    (
         "delete-footnote",
         "각주/미주 삭제 — --section/--para/--ctrl",
+    ),
+    (
+        "delete-text-in-footnote",
+        "각주/미주 텍스트 삭제 — --section/--para/--ctrl/--fn-para/--offset/--count",
+    ),
+    (
+        "insert-footnote-text",
+        "각주/미주 문단 텍스트 삽입 — --section/--para/--ctrl/--fn-para/--offset/--text",
+    ),
+    (
+        "split-paragraph-in-footnote",
+        "각주/미주 문단 분할 — --section/--para/--ctrl/--fn-para/--offset",
+    ),
+    (
+        "merge-paragraph-in-footnote",
+        "각주/미주 문단 병합 — --section/--para/--ctrl/--fn-para",
+    ),
+    (
+        "apply-para-format-in-footnote",
+        "각주/미주 문단 서식 적용 — --section/--para/--ctrl/--fn-para/--props",
     ),
     (
         "add-bookmark",
@@ -3660,12 +4938,140 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 49] = [
     ("delete-bookmark", "책갈피 삭제 — --section/--para/--ctrl"),
     ("delete-table", "표 삭제 — --table (본문 최상위)"),
     (
+        "rename-bookmark",
+        "책갈피 이름 변경 — --section/--para/--ctrl/--name",
+    ),
+    (
+        "delete-header-footer",
+        "머리말/꼬리말 삭제 — --header|--footer [--section] [--apply-to]",
+    ),
+    (
+        "insert-header-footer-text",
+        "머리말/꼬리말 텍스트 삽입 — --header|--footer --text [--section] [--apply-to] [--para] [--offset]",
+    ),
+    (
+        "set-header-footer-text",
+        "머리말/꼬리말 문단 텍스트 교체 — --header|--footer --text [--section] [--apply-to] [--para]",
+    ),
+    (
+        "delete-hf-text",
+        "머리말/꼬리말 텍스트 삭제 — --header|--footer --count [--section] [--apply-to] [--para] [--offset]",
+    ),
+    (
+        "set-hf-picture",
+        "머리말/꼬리말 그림 속성 설정 — --section/--para/--ctrl/--inner-para/--inner-ctrl/--props",
+    ),
+    (
+        "apply-hf-template",
+        "머리말/꼬리말 마당 적용 — --header|--footer --template [--section] [--apply-to]",
+    ),
+    (
+        "split-paragraph-in-hf",
+        "머리말/꼬리말 문단 분할 — --header|--footer [--section] [--apply-to] [--para] [--offset]",
+    ),
+    (
+        "merge-paragraph-in-hf",
+        "머리말/꼬리말 문단 병합 — --header|--footer [--section] [--apply-to] [--para]",
+    ),
+    (
+        "apply-para-format-in-hf",
+        "머리말/꼬리말 문단 서식 적용 — --header|--footer --props [--section] [--apply-to] [--para]",
+    ),
+    (
+        "toggle-hide-hf",
+        "머리말/꼬리말 감추기 토글 — --header|--footer [--page]",
+    ),
+    (
+        "split-paragraph-in-cell",
+        "표 셀 문단 분할 — --table/--row/--col [--cell-para] [--offset]",
+    ),
+    (
+        "merge-paragraph-in-cell",
+        "표 셀 문단 병합 — --table/--row/--col [--cell-para]",
+    ),
+    (
+        "apply-char-format",
+        "본문 글자 서식 적용 — --props JSON [--section] [--para] [--offset] [--count]",
+    ),
+    (
+        "apply-para-format",
+        "본문 문단 서식 적용 — --props JSON [--section] [--para]",
+    ),
+    (
+        "apply-style",
+        "본문 문단 스타일 적용 — --style N [--section] [--para]",
+    ),
+    (
+        "apply-cell-style",
+        "표 셀 문단 스타일 적용 — --table/--row/--col --style [--cell-para]",
+    ),
+    (
+        "apply-para-format-in-cell",
+        "표 셀 문단 서식 적용 — --table/--row/--col --props [--cell-para]",
+    ),
+    (
+        "apply-char-format-in-cell",
+        "표 셀 글자 서식 적용 — --table/--row/--col [--cell-para] [--start/--end] [--props]",
+    ),
+    (
+        "delete-control",
+        "문단 컨트롤 삭제 — --section/--para/--ctrl (갈래 무관)",
+    ),
+    (
         "insert-header-footer",
         "머리말/꼬리말 생성 — --header|--footer [--section] [--apply-to]",
     ),
     (
+        "insert-field-in-hf",
+        "머리말/꼬리말 필드 삽입 — --header|--footer --field-type 1|2|3 [--section] [--apply-to] [--para] [--offset]",
+    ),
+    (
+        "set-column-def",
+        "구역 단 정의 — --count [--section] [--type 0|1|2] [--same-width|--mixed-width] [--spacing]",
+    ),
+    ("delete-equation", "수식 삭제 — --section/--para/--ctrl"),
+    (
+        "split-paragraph",
+        "본문 문단 분할 — --section/--para/--offset",
+    ),
+    (
+        "set-page-hide",
+        "쪽 감추기 — [--hide-header/--hide-footer/--hide-master/--hide-border/--hide-fill/--hide-page-num]",
+    ),
+    (
+        "transpose-table",
+        "표 행/열 바꿈 — --table (병합 없는 본문 최상위 표)",
+    ),
+    (
+        "set-equation-properties",
+        "본문 수식 속성 변경 — --section/--para/--ctrl --props",
+    ),
+    (
         "insert-image",
         "도장·서명 그림 삽입 — --image/--page/--x/--y (HWPUNIT)",
+    ),
+    (
+        "group-shapes",
+        "도형 묶기 — --targets para,ctrl;para,ctrl [--section]",
+    ),
+    ("set-page-def", "용지 설정 — --props JSON [--section]"),
+    ("set-section-def", "구역 정의 — --props JSON [--section]"),
+    (
+        "apply-endnote-shape",
+        "미주 모양 설정 — --props JSON [--section]",
+    ),
+    (
+        "insert-picture",
+        "본문 그림 삽입 — --image/--section/--para/--offset (문단 좌표)",
+    ),
+    ("delete-picture", "본문 그림 삭제 — --section/--para/--ctrl"),
+    (
+        "set-picture",
+        "본문 그림 속성 — --section/--para/--ctrl/--props",
+    ),
+    (
+        "set-page-border-fill",
+        "쪽 테두리/배경 — --props JSON [--section]",
     ),
     (
         "redact",
@@ -3695,6 +5101,17 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 49] = [
     ("split-paragraph-in-footnote", "각주/미주 문단 분할"),
     ("merge-paragraph-in-footnote", "각주/미주 문단 병합"),
     ("apply-para-format-in-footnote", "각주 문단 서식 적용"),
+    ("set-chart-data", "차트 숫자 데이터 기록 — --chart/--data JSON"),
+    ("insert-number", "쪽 새 번호로 시작 — --number/--section"),
+    ("insert-shape", "본문 도형 삽입 — --width/--height"),
+    ("delete-shape", "본문 도형 삭제 — --section/--para/--ctrl"),
+    ("group-shapes", "본문 도형 묶기 — --section/--para/--ctrl"),
+    ("set-form-value", "본문 양식 값 설정 — --section/--para/--ctrl/--value"),
+    (
+        "set-form-value-in-cell",
+        "표 셀 양식 값 설정 — --table/--row/--col/--ctrl/--value",
+    ),
+    ("ungroup-shape", "본문 도형 묶음 풀기 — --section/--para/--ctrl"),
 ];
 
 const INSPECT_SUBCOMMANDS: [(&str, &str); 4] = [
@@ -3726,8 +5143,12 @@ fn attach_subcommands(commands: &mut [serde_json::Value]) {
             Some("inspect") => &INSPECT_SUBCOMMANDS,
             _ => continue,
         };
+        let mut seen = std::collections::BTreeSet::new();
         let list: Vec<serde_json::Value> = subs
             .iter()
+            // 병렬 통합 중 기존 선언이 한 번 더 들어와도 공개 surface 는 한 번만 낸다.
+            // 순서는 정본 배열의 첫 등장을 보존해 USAGE 계약과 비교 가능하게 한다.
+            .filter(|(name, _)| seen.insert(*name))
             .map(|(name, summary)| serde_json::json!({ "name": name, "summary": summary }))
             .collect();
         entry["subcommands"] = serde_json::json!(list);
@@ -3787,33 +5208,67 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             ],
         ),
         cmd_json(
-                    "headers-footers",
-                    "query",
-                    "문서 머리말/꼬리말 목록 — 코어 get_header_footer_list_native",
-                    true,
-                    &["--json"],
-                    &[
-                        "schemaVersion",
-                        "source",
-                        "count",
-                        "headersFooters",
-                    ],
-                ),
+            "header-footer",
+            "query",
+            "구역 머리말/꼬리말 한 건 조회 — 코어 get_header_footer_native",
+            true,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "section",
+                "isHeader",
+                "applyTo",
+                "exists",
+            ],
+        ),
         cmd_json(
-                    "header-footer",
-                    "query",
-                    "구역 머리말/꼬리말 한 건 조회 — 코어 get_header_footer_native",
-                    true,
-                    &["--json"],
-                    &[
-                        "schemaVersion",
-                        "source",
-                        "section",
-                        "isHeader",
-                        "applyTo",
-                        "exists",
-                    ],
-                ),
+            "headers-footers",
+            "query",
+            "문서 머리말/꼬리말 목록 — 코어 get_header_footer_list_native",
+            true,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "count",
+                "headersFooters",
+            ],
+        ),
+        cmd_json(
+            "charts",
+            "query",
+            "문서 차트 목록 — 코어 list_charts_native",
+            true,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "count",
+                "charts",
+            ],
+        ),
+        cmd_json(
+            "form-value",
+            "query",
+            "양식 개체 값 조회 — 코어 get_form_value_native",
+            true,
+            &["--section", "--para", "--ctrl", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "section",
+                "paragraph",
+                "ctrl",
+                "ok",
+                "formType",
+                "name",
+                "value",
+                "text",
+                "caption",
+                "enabled",
+            ],
+        ),
         cmd_json(
             "export-text",
             "export",
@@ -4714,7 +6169,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / delete-text-in-cell: 표 셀 문단 삭제 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-table: 본문 표 생성 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / split-table: 표 나누기 / fit-table: 표 폭 맞춤 / resize-table: 표 크기 조절 / merge-table: 다음 표와 붙이기 / merge-paragraph-in-cell: 표 셀 문단 병합 / set-column-widths: 표 열 폭 설정 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / insert-header-footer-text: 머리말/꼬리말 텍스트 삽입 / set-header-footer-text: 머리말/꼬리말 문단 텍스트 교체 / delete-hf-text: 머리말/꼬리말 텍스트 삭제 / split-paragraph-in-hf: 머리말/꼬리말 문단 분할 / merge-paragraph-in-hf: 머리말/꼬리말 문단 병합 / split-paragraph-in-cell: 표 셀 문단 분할 / delete-control: 컨트롤 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
             false,
             &[
                 "--data",
@@ -4726,16 +6181,46 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--col",
                 "--below",
                 "--right",
+                "--vertical",
+                "--forward",
+                "--line",
                 "--end-row",
                 "--end-col",
+                "--rows",
+                "--cols",
+                "--widths",
                 "--count",
+                "--cell-para",
+                "--cell",
+                "--start",
+                "--end",
+                "--bold",
+                "--font-size",
+                "--color",
                 "--text",
+                "--props",
+                "--style",
+                "--script",
                 // [#4990] insert-text 축. search 주소와 같은 0 기준 구역·문단·문자 오프셋.
                 "--section",
                 "--para",
                 "--offset",
                 "--ctrl",
                 "--name",
+                "--header",
+                "--footer",
+                "--apply-to",
+                "--field-type",
+                "--type",
+                "--same-width",
+                "--mixed-width",
+                "--spacing",
+                "--hide-header",
+                "--hide-footer",
+                "--hide-master",
+                "--hide-border",
+                "--hide-fill",
+                "--hide-page-num",
                 // 같은 항목의 summary 가 이미 이름을 대고 있고 MCP 도구
                 // hwp_set_checkbox 가 이 플래그를 고정 배선한다 — 목록에만 없었다.
                 "--occurrence",
@@ -4747,6 +6232,9 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--y",
                 "--width",
                 "--height",
+                "--shape",
+                "--wrap",
+                "--treat-as-char",
                 // [#3719 §6-11] redact/sanitize 축. 선언 누락은 매니페스트만 읽는
                 // 에이전트에게 "그 기능이 없는 것"과 같다.
                 "--kind",
@@ -4776,19 +6264,40 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "right",
                 "endRow",
                 "endCol",
+                "rows",
+                "cols",
+                "widths",
                 "count",
+                "columnCount",
+                "columnType",
+                "sameWidth",
+                "spacing",
                 "oldText",
                 "newText",
                 "keepStyle",
                 "overflow",
+                "cellPara",
+                "innerPara",
+                "props",
+                "bold",
+                "fontSize",
+                "color",
                 // [#4990] insert-text 봉투 축.
                 "section",
                 "paragraph",
                 "offset",
                 "ctrl",
                 "name",
+                "isHeader",
+                "applyTo",
                 "text",
                 "insertedChars",
+                "script",
+                "fontSize",
+                "color",
+                "script",
+                "fontSize",
+                "color",
                 // [#3719 §6-5] insert-image 봉투 축.
                 "image",
                 "page",
@@ -5659,11 +7168,29 @@ fn print_help() {
     println!();
     println!("      --json                  책갈피 봉투를 JSON으로 stdout에 출력");
     println!();
+    println!("  header-footer <파일.hwp|파일.hwpx|파일.hml> [--header|--footer] [--json]");
+    println!("      구역의 머리말/꼬리말 한 건을 조회한다 (기본: 구역 0 양쪽 머리말)");
+    println!();
+    println!("      --header / --footer     둘 중 하나 (생략 시 머리말)");
+    println!("      --section N             구역 (0부터, 기본 0)");
+    println!("      --apply-to N            0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
+    println!("      --json                  조회 봉투를 JSON으로 stdout에 출력");
+    println!();
     println!("  headers-footers <파일.hwp|파일.hwpx|파일.hml> [--json]");
     println!("      문서 머리말/꼬리말 목록을 조회한다");
     println!();
-    println!("  header-footer <파일.hwp|파일.hwpx|파일.hml> [--header|--footer] [--section N] [--apply-to 0|1|2] [--json]");
-    println!("      구역 머리말 또는 꼬리말 한 건을 조회한다");
+    println!("      --json                  머리말/꼬리말 봉투를 JSON으로 stdout에 출력");
+    println!();
+    println!("  charts <파일.hwp|파일.hwpx|파일.hml> [--json]");
+    println!("      문서 차트 목록을 조회한다 (chart-to-csv --chart N 순번)");
+    println!();
+    println!("      --json                  차트 봉투를 JSON으로 stdout에 출력");
+    println!();
+    println!("  form-value <파일.hwp|파일.hwpx|파일.hml> --section N --para N --ctrl N [--json]");
+    println!("      양식 개체 값을 조회한다 (체크·콤보·라디오·편집·단추)");
+    println!();
+    println!("      --section/--para/--ctrl 구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      --json                  양식 값 봉투를 JSON으로 stdout에 출력");
     println!();
     println!("  digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]");
     println!("      문서 요약 봉투 한 줄 출력 — 메타(info)·개요 상위 노드·첫 페이지 발췌·");
@@ -5948,6 +7475,42 @@ fn print_help() {
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      병합으로 덮인 칸은 앵커 좌표 안내와 함께 오류 종료");
     println!();
+    println!("  edit insert-text-in-cell <파일> --table N --row N --col N --text <문자열> [옵션]");
+    println!("      표 셀 문단의 문자 오프셋에 텍스트를 끼운다 (칸 전체를 덮지 않음)");
+    println!();
+    println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
+    println!("      --text <문자열>           끼울 문자열 (빈 문자열 불가)");
+    println!("      --offset N                셀 문단 문자 오프셋 (0부터, 기본 0)");
+    println!("      --cell-para N             셀 안 문단 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cellins.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-text-in-cell <파일> --table N --row N --col N --count N [옵션]");
+    println!("      표 셀 문단의 문자 오프셋에서 글자를 지운다");
+    println!();
+    println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
+    println!("      --count N                 지울 글자 수 (1 이상)");
+    println!("      --offset N                셀 문단 문자 오프셋 (0부터, 기본 0)");
+    println!("      --cell-para N             셀 안 문단 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_celldel.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-page-def <파일> --props <JSON> [옵션]");
+    println!("      구역의 용지 설정(너비·높이·여백)을 바꾼다");
+    println!();
+    println!("      --props <JSON>            HWPUNIT 용지 설정(JSON, 필수)");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_pagedef.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-section-def <파일> --props <JSON> [옵션]");
+    println!("      구역 정의(머리말 감추기·시작 번호 등)를 바꾼다");
+    println!();
+    println!("      --props <JSON>            구역 정의 JSON (필수)");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_secdef.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
     println!(
         "  edit insert-text <파일> --text <문자열> [--section N] [--para N] [--offset N] [옵션]"
     );
@@ -6010,6 +7573,23 @@ fn print_help() {
     println!("      --dry-run                 파일을 쓰지 않고 예정만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!();
+    println!("  edit insert-table <파일> --rows N --cols N [옵션]");
+    println!("      본문 좌표에 빈 표를 만든다");
+    println!();
+    println!("      --rows/--cols             행·열 수 (1 이상, 열은 256 이하)");
+    println!("      --section/--para/--offset 구역·문단·문자 오프셋 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_table.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-numbering-restart <파일> --mode N [옵션]");
+    println!("      문단 번호 매기기를 다시 시작한다");
+    println!();
+    println!("      --mode N                  0=해제, 1=이전 이어, 2=새 시작");
+    println!("      --count N                 mode=2 일 때 시작 번호 (기본 1)");
+    println!("      --section/--para          구역·문단 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_numrst.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
     println!("  edit insert-row <파일> --table <번호> --row <행> [--below] [옵션]");
     println!("      본문 최상위 표에 행을 끼운다 (export-tables 좌표)");
     println!();
@@ -6055,6 +7635,75 @@ fn print_help() {
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_split.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
+    println!("  edit split-cell-into <파일> --table N --row N --col N --rows N --cols N [옵션]");
+    println!("      본문 최상위 표의 셀을 n행 × m열로 나눈다");
+    println!();
+    println!("      --table/--row/--col       표·행·열 (0부터)");
+    println!("      --rows/--cols             나눌 행·열 수 (1 이상)");
+    println!("      --equal-row-height        나눈 행 높이를 같게");
+    println!("      --merge-first             병합 셀이면 먼저 해제");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_splitinto.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit split-table <파일> --table N --row N [옵션]");
+    println!("      본문 최상위 표를 지정 행에서 둘로 나눈다");
+    println!();
+    println!("      --table N                 export-tables 의 최상위 표 번호 (0부터)");
+    println!("      --row N                   뒤 표가 시작되는 행 (1 이상, 첫 행 거부)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_tblsplit.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit fit-table <파일> --table N [옵션]");
+    println!("      본문 최상위 표를 페이지 본문 폭에 맞춰 비례 축소한다");
+    println!();
+    println!("      --table N                 export-tables 의 최상위 표 번호 (0부터)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_fittbl.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit resize-table <파일> --table N --row N --col N [옵션]");
+    println!("      본문 최상위 표의 행/열 크기를 한 걸음(283 HWPUNIT) 조절한다");
+    println!();
+    println!("      --table/--row/--col       표·행·열 (0부터)");
+    println!("      --vertical                행 높이 (생략 시 열 폭)");
+    println!("      --forward                 늘리기 (생략 시 줄이기)");
+    println!("      --line                    경계만 옮김 (이웃과 짝)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_tblrsz.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit merge-table <파일> --table N [옵션]");
+    println!("      본문 최상위 표에 바로 다음 표를 이어 붙인다");
+    println!();
+    println!("      --table N                 export-tables 의 최상위 표 번호 (0부터)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_mergetbl.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-column-widths <파일> --table N --widths W1,W2,... [옵션]");
+    println!("      본문 최상위 표의 열 폭을 HWPUNIT 절대값으로 설정한다");
+    println!();
+    println!("      --table N                 export-tables 의 최상위 표 번호 (0부터)");
+    println!("      --widths W1,W2,...        열 폭 (개수는 열 수와 같아야 함, 1 이상)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_colw.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit move-table <파일> --table N --dx N --dy N [옵션]");
+    println!("      본문 최상위 표의 위치 오프셋을 옮긴다");
+    println!();
+    println!("      --table N                 export-tables 의 최상위 표 번호 (0부터)");
+    println!("      --dx/--dy                 가로·세로 이동량 (HWPUNIT, 음수 허용)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_movetbl.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-cell-props <파일> --table N --row N --col N --props <JSON> [옵션]");
+    println!("      본문 최상위 표 셀 속성(세로정렬·여백·폭 등)을 고친다");
+    println!();
+    println!("  edit set-table-props <파일> --table N --props <JSON> [옵션]");
+    println!("      본문 최상위 표 속성(칸간격·여백·글자처럼·배치 등)을 고친다");
+    println!();
+    println!("      --table/--row/--col       표·행·열 (0부터, export-tables index)");
+    println!("      --props <JSON>            셀 속성 (예: {{\"verticalAlign\":1}})");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cellprop.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
     println!("  edit insert-footnote <파일> [--section N] [--para N] [--offset N] [옵션]");
     println!("      문단 좌표에 각주를 끼운다");
     println!();
@@ -6069,11 +7718,28 @@ fn print_help() {
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_endnote.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
+    println!("  edit insert-equation <파일> --script <수식> [옵션]");
+    println!("      본문 문단 좌표에 수식을 끼운다 (표 셀/글상자 내부는 미지원)");
+    println!();
+    println!("      --script <수식>           한컴 수식 스크립트 (빈 문자열 불가)");
+    println!("      --section/--para/--offset 구역·문단·문자 오프셋 (0부터, 기본 0)");
+    println!("      --font-size N             글자 크기 (HWPUNIT, 기본 1000)");
+    println!("      --color N                 RGB 정수 (기본 0=검정)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_eq.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
     println!("  edit delete-footnote <파일> --section N --para N --ctrl N [옵션]");
     println!("      본문 각주/미주 컨트롤을 지운다");
     println!();
     println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_delfn.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-equation <파일> --section N --para N --ctrl N [옵션]");
+    println!("      본문 수식 컨트롤을 지운다");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_deleq.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!(
@@ -6093,12 +7759,151 @@ fn print_help() {
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_delbm.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
+    println!("  edit rename-bookmark <파일> --section N --para N --ctrl N --name <이름> [옵션]");
+    println!("      책갈피 이름을 바꾼다 (같은 이름은 거부)");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      --name <이름>             새 책갈피 이름 (필수)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_renbm.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-header-footer <파일> --header|--footer [옵션]");
+    println!("      머리말/꼬리말 컨트롤을 지운다");
+    println!();
+    println!("      --header / --footer       둘 중 하나 필수");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      --apply-to N              0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_delhf.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
     println!("  edit delete-table <파일> --table <번호> [옵션]");
     println!("      본문 최상위 표를 지운다 (export-tables 좌표)");
     println!();
     println!("      --table                   표 번호 (0부터)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_deltable.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit insert-header-footer-text <파일> --header|--footer --text <문자열> [옵션]");
+    println!("      기존 머리말/꼬리말 문단에 텍스트를 끼운다");
+    println!();
+    println!("      --header / --footer       둘 중 하나 필수");
+    println!("      --text <문자열>           넣을 문자열 (필수, 빈 문자열 불가)");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      --apply-to N              0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
+    println!("      --para N                  머리말/꼬리말 안 문단 (0부터, 기본 0)");
+    println!("      --offset N                문단 안 문자 오프셋 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_hfins.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-header-footer-text <파일> --header|--footer --text <문자열> [옵션]");
+    println!("      기존 머리말/꼬리말 문단 텍스트를 통째로 바꾼다");
+    println!();
+    println!("      --header / --footer       둘 중 하나 필수");
+    println!("      --text <문자열>           바꿀 문자열 (필수, 빈 문자열 불가)");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      --apply-to N              0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
+    println!("      --para N                  머리말/꼬리말 안 문단 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_hfset.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-hf-text <파일> --header|--footer --count <글자수> [옵션]");
+    println!("      기존 머리말/꼬리말 문단에서 글자를 지운다");
+    println!();
+    println!("      --header / --footer       둘 중 하나 필수");
+    println!("      --count <글자수>          지울 글자 수 (필수, 1 이상)");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      --apply-to N              0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
+    println!("      --para N                  머리말/꼬리말 안 문단 (0부터, 기본 0)");
+    println!("      --offset N                문단 안 문자 오프셋 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_hfdeltxt.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit split-paragraph-in-hf <파일> --header|--footer [옵션]");
+    println!("      기존 머리말/꼬리말 문단을 오프셋에서 나눈다");
+    println!();
+    println!("      --header / --footer       둘 중 하나 필수");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      --apply-to N              0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
+    println!("      --para N                  머리말/꼬리말 안 문단 (0부터, 기본 0)");
+    println!("      --offset N                문단 안 문자 오프셋 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_hfsplit.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit merge-paragraph-in-hf <파일> --header|--footer [옵션]");
+    println!("      머리말/꼬리말 문단을 바로 앞 문단과 합친다");
+    println!();
+    println!("      --header / --footer       둘 중 하나 필수");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      --apply-to N              0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
+    println!("      --para N                  합쳐질 문단 (1부터, 기본 1)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_hfmerge.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit split-paragraph-in-cell <파일> --table N --row N --col N [옵션]");
+    println!("      표 셀 문단을 오프셋에서 나눈다");
+    println!();
+    println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
+    println!("      --cell-para N             셀 안 문단 (0부터, 기본 0)");
+    println!("      --offset N                문단 안 문자 오프셋 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cellsplit.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit merge-paragraph-in-cell <파일> --table N --row N --col N [옵션]");
+    println!("      표 셀 문단을 바로 앞 문단과 합친다");
+    println!();
+    println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
+    println!("      --cell-para N             합쳐질 셀 문단 (1부터, 기본 1)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cellmerge.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit apply-char-format <파일> --props <JSON> [옵션]");
+    println!("      본문 문단 글자 범위에 글자 서식을 적용한다");
+    println!();
+    println!("      --props <JSON>            글자 서식 (예: {{\"bold\":true}})");
+    println!("      --section/--para          구역·문단 인덱스 (0부터, 기본 0)");
+    println!("      --offset N                시작 문자 오프셋 (0부터, 기본 0)");
+    println!("      --count N                 적용 글자 수 (생략 시 문단 끝까지)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_chfmt.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit apply-para-format <파일> --props <JSON> [옵션]");
+    println!("      본문 문단에 문단 서식을 적용한다");
+    println!();
+    println!("      --props <JSON>            문단 서식 (예: {{\"alignment\":\"center\"}})");
+    println!("      --section/--para          구역·문단 인덱스 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_pfmt.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit apply-style <파일> --style N [옵션]");
+    println!("      본문 문단에 스타일을 적용한다");
+    println!();
+    println!("      --style N                 docInfo 스타일 인덱스 (0부터, 필수)");
+    println!("      --section/--para          구역·문단 인덱스 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_style.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit apply-cell-style <파일> --table N --row N --col N --style N [옵션]");
+    println!("      표 셀 문단에 스타일을 적용한다");
+    println!();
+    println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
+    println!("      --style N                 docInfo 스타일 인덱스 (0부터, 필수)");
+    println!("      --cell-para N             셀 안 문단 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cellstyle.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!(
+        "  edit apply-para-format-in-cell <파일> --table N --row N --col N --props <JSON> [옵션]"
+    );
+    println!("      표 셀 문단에 문단 서식을 적용한다");
+    println!();
+    println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
+    println!("      --props <JSON>            문단 서식 (예: {{\"alignment\":\"center\"}})");
+    println!("      --cell-para N             셀 안 문단 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cellpfmt.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-control <파일> --section N --para N --ctrl N [옵션]");
+    println!("      문단이 담은 컨트롤 하나를 지운다 (갈래 무관)");
     println!();
     println!("  edit insert-header-footer <파일> --header|--footer [옵션]");
     println!("      머리말 또는 꼬리말을 만든다 (같은 apply-to 가 있으면 거부)");
@@ -6107,6 +7912,67 @@ fn print_help() {
     println!("      --section N               구역 (0부터, 기본 0)");
     println!("      --apply-to N              0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_hf.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit insert-field-in-hf <파일> --header|--footer --field-type N [옵션]");
+    println!("      기존 머리말/꼬리말 문단에 필드 마커를 넣는다");
+    println!();
+    println!("      --header / --footer       둘 중 하나 필수");
+    println!("      --field-type N            1 쪽번호 / 2 총쪽수 / 3 파일이름");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      --apply-to N              0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
+    println!("      --para N                  머리말/꼬리말 안 문단 (0부터, 기본 0)");
+    println!("      --offset N                문단 안 문자 오프셋 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_hffield.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-column-def <파일> --count N [옵션]");
+    println!("      구역의 단(다단) 정의를 바꾼다");
+    println!();
+    println!("      --count N                 단 수 (1 이상, 필수)");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      --type N                  0 일반 / 1 배분 / 2 평행 (기본 0)");
+    println!("      --same-width              단 너비 동일 (기본)");
+    println!("      --mixed-width             단 너비를 따로 둔다");
+    println!("      --spacing N               단 간격 (HWPUNIT, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_coldef.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit split-paragraph <파일> [--section N] [--para N] [--offset N] [옵션]");
+    println!("      본문 문단을 지정 오프셋에서 가른다");
+    println!();
+    println!("      --section/--para/--offset 구역·문단·문자 오프셋 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_splitpara.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-page-hide <파일> [옵션]");
+    println!("      문단에 쪽 감추기(PageHide) 컨트롤을 넣거나 갱신한다");
+    println!();
+    println!("      --section/--para          구역·문단 (0부터, 기본 0)");
+    println!("      --hide-header             머리말 감추기");
+    println!("      --hide-footer             꼬리말 감추기");
+    println!("      --hide-master             바탕쪽 감추기");
+    println!("      --hide-border             테두리 감추기");
+    println!("      --hide-fill               배경 감추기");
+    println!("      --hide-page-num           쪽번호 감추기");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_pagehide.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit transpose-table <파일> --table <번호> [옵션]");
+    println!("      본문 최상위 표의 행/열을 제자리에서 바꾼다 (병합 셀 거부)");
+    println!();
+    println!("      --table <번호>            export-tables 의 본문 최상위 표 번호");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_transpose.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!(
+        "  edit set-equation-properties <파일> --section N --para N --ctrl N --props <JSON> [옵션]"
+    );
+    println!("      본문 수식 컨트롤의 속성을 JSON으로 변경한다");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      --props <JSON>            수식 속성 JSON 객체 (필수)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_eqprop.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit insert-image <파일> --image <그림> [옵션]");
@@ -6124,7 +7990,46 @@ fn print_help() {
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      (쪽 밖으로 나가면 자르지 않고 --json 응답의 overflow 로 알린다)");
     println!();
+    println!("  edit insert-picture <파일> --image <그림> [옵션]");
+    println!("      문단 좌표에 본문 그림을 끼운다 (insert-image 도장·서명과 다름)");
+    println!();
+    println!("      --image <경로>            png·jpg·jpeg·bmp·tif·tiff (그 밖은 인자 오류)");
+    println!("      --section/--para/--offset 구역·문단·문자 오프셋 (0부터, 기본 0)");
+    println!("      --x/--y <값>              용지 기준 위치 HWPUNIT (기본 0)");
+    println!("      --width/--height <값>     그림 크기 (생략: 원본 픽셀 ×75, 한쪽만: 비율 유지)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_picture.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-picture <파일> --section N --para N --ctrl N [옵션]");
+    println!("      본문 그림 컨트롤을 지운다");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_delpic.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-shape <파일> --section N --para N --ctrl N [옵션]");
+    println!("      본문 도형 컨트롤을 지운다");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_delshape.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit ungroup-shape <파일> --section N --para N --ctrl N [옵션]");
+    println!("      본문 묶음 도형을 풀어 자식 개체를 되돌린다");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_ungroup.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
     println!("      edit 명령 공통: 산출물은 **입력 형식을 보존**한다 (HWPX 입력 → HWPX 산출).");
+    println!("  edit group-shapes <파일> --targets P,C;P,C [옵션]");
+    println!("      같은 구역의 도형/그림을 하나로 묶는다");
+    println!();
+    println!("      --targets P,C;P,C         문단·컨트롤 좌표 2개 이상 (0부터)");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_grpshape.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
     println!(
         "  edit redact <파일.hwp|파일.hwpx> [--kind …] [--dry-run] [--no-raw] [-o <출력>|--in-place]"
     );
@@ -12564,6 +14469,1483 @@ fn bookmarks(args: &[String]) -> i32 {
     EXIT_OK
 }
 
+fn charts(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp charts <파일.hwp|파일.hwpx|파일.hml> [--json]");
+        return EXIT_USAGE;
+    };
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let raw = match doc.list_charts_native() {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: 차트 조회 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let items: serde_json::Value = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 차트 JSON 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let count = items.as_array().map(|a| a.len()).unwrap_or(0);
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "count": count,
+            "charts": items,
+        });
+        println!("{}", provenance::marked(envelope, "charts"));
+        return EXIT_OK;
+    }
+    println!("{file_path}: 차트 {count}개");
+    if let Some(arr) = items.as_array() {
+        for c in arr {
+            let idx = c["index"].as_u64().unwrap_or(0);
+            let sec = c["section"].as_u64().unwrap_or(0);
+            let para = c["paragraph"].as_u64().unwrap_or(0);
+            let ctrl = c["control"].as_u64().unwrap_or(0);
+            println!("  {idx}  구역 {sec} 문단 {para} 컨트롤 {ctrl}");
+        }
+    }
+    EXIT_OK
+}
+
+fn edit_set_chart_data(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-chart-data <파일> --chart N --data <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut chart_arg: Option<usize> = None;
+    let mut data: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--chart" => {
+                i += 1;
+                match args.get(i).map(|v| v.parse::<usize>()) {
+                    Some(Ok(n)) if n >= 1 => chart_arg = Some(n),
+                    _ => {
+                        eprintln!("오류: --chart 뒤에 1 이상의 정수가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--data" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => data = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --data 뒤에 JSON 문자열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(chart_no), Some(data)) = (file_path, chart_arg, data) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        match doc.set_chart_data_by_index_native(chart_no - 1, &data) {
+            Ok(raw) => {
+                let parsed: serde_json::Value =
+                    serde_json::from_str(&raw).unwrap_or(serde_json::Value::Null);
+                if parsed["ok"] != true {
+                    if json_mode {
+                        let envelope = serde_json::json!({
+                            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                            "source": file_path,
+                            "count": chart_no,
+                            "dryRun": false,
+                            "invalid": parsed["invalid"],
+                        });
+                        println!("{}", provenance::marked(envelope, "edit"));
+                    } else {
+                        eprintln!("오류: 차트 데이터 변경 실패 - {raw}");
+                    }
+                    return EXIT_USAGE;
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 차트 데이터 변경 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "chartdata",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "count": chart_no }),
+        &[(0, 0)],
+        &format!("차트 데이터 예정: {file_path} 차트 {chart_no}"),
+        &format!("차트 데이터 기록 완료: {file_path}"),
+    )
+}
+
+fn edit_insert_number(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-number <파일> [--section N] [--para N] [--offset N] [--count N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut offset: usize = 0;
+    let mut start_num: u16 = 1;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--offset" | "--count" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--section" => match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--para" => match v.parse::<usize>() {
+                        Ok(n) => para = n,
+                        Err(_) => {
+                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--offset" => match v.parse::<usize>() {
+                        Ok(n) => offset = n,
+                        Err(_) => {
+                            eprintln!("오류: --offset 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) if n >= 1 => start_num = n,
+                        Ok(_) => {
+                            eprintln!("오류: --count 는 1 이상 65535 이하여야 합니다.");
+                            return EXIT_USAGE;
+                        }
+                        Err(_) => {
+                            eprintln!("오류: --count 뒤에 1 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.insert_new_number_native(section, para, offset, start_num) {
+            eprintln!("오류: 새 번호 삽입 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "newnum",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "offset": offset,
+            "count": start_num,
+        }),
+        &[(section, para)],
+        &format!(
+            "새 번호 예정: {file_path} 구역 {section} 문단 {para} 오프셋 {offset} 번호 {start_num}"
+        ),
+        &format!("새 번호 삽입 완료: {file_path}"),
+    )
+}
+
+fn edit_insert_shape(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-shape <파일> --width N --height N [--section N] [--para N] [--offset N] [--x N] [--y N] [--shape rectangle] [--wrap InFrontOfText] [--treat-as-char] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut offset: usize = 0;
+    let mut width_arg: Option<u32> = None;
+    let mut height_arg: Option<u32> = None;
+    let mut x_hu: u32 = 0;
+    let mut y_hu: u32 = 0;
+    let mut shape_type = "rectangle".to_string();
+    let mut wrap = "InFrontOfText".to_string();
+    let mut treat_as_char = false;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--offset" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = n,
+                        "--para" => para = n,
+                        _ => offset = n,
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--width" | "--height" | "--x" | "--y" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다 (HWPUNIT).");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<u32>() {
+                    Ok(n) => match name.as_str() {
+                        "--width" => width_arg = Some(n),
+                        "--height" => height_arg = Some(n),
+                        "--x" => x_hu = n,
+                        _ => y_hu = n,
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다 (HWPUNIT): {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--shape" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => shape_type = v.clone(),
+                    None => {
+                        eprintln!("오류: --shape 뒤에 도형 종류가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--wrap" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => wrap = v.clone(),
+                    None => {
+                        eprintln!("오류: --wrap 뒤에 감싸기 값이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--treat-as-char" => treat_as_char = true,
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(width), Some(height)) = (file_path, width_arg, height_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if width == 0 && height == 0 {
+        eprintln!("오류: --width 와 --height 가 모두 0입니다.");
+        return EXIT_USAGE;
+    }
+    if shape_type.trim().is_empty() {
+        eprintln!("오류: --shape 은 비어 있을 수 없습니다.");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.create_shape_control_native(
+            section,
+            para,
+            offset,
+            width,
+            height,
+            x_hu,
+            y_hu,
+            treat_as_char,
+            &wrap,
+            &shape_type,
+            false,
+            false,
+            &[],
+        ) {
+            eprintln!("오류: 도형 삽입 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "shape",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "offset": offset,
+            "width": width,
+            "height": height,
+            "x": x_hu,
+            "y": y_hu,
+        }),
+        &[(section, para)],
+        &format!("도형 삽입 예정: {file_path} 구역 {section} 문단 {para} {width}x{height}"),
+        &format!("도형 삽입 완료: {file_path}"),
+    )
+}
+
+fn edit_delete_shape(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit delete-shape <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl)) = (file_path, section, para, ctrl)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.delete_shape_control_native(section, para, ctrl) {
+            eprintln!("오류: 도형 삭제 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "delshape",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "ctrl": ctrl }),
+        &[(section, para)],
+        &format!("도형 삭제 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("도형 삭제 완료: {file_path}"),
+    )
+}
+
+fn edit_group_shapes(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit group-shapes <파일> --targets P,C;P,C [--section N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut targets: Vec<(usize, usize)> = Vec::new();
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => section = n,
+                    Err(_) => {
+                        eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--targets" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --targets 뒤에 para,ctrl;para,ctrl 목록이 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match parse_shape_targets(v) {
+                    Some(list) => targets.extend(list),
+                    None => {
+                        eprintln!("오류: --targets 형식이 아닙니다 (예: 0,1;0,2): {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--target" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --target 뒤에 para,ctrl 이 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match parse_shape_target(v) {
+                    Some(pair) => targets.push(pair),
+                    None => {
+                        eprintln!("오류: --target 형식이 아닙니다 (예: 0,1): {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if targets.len() < 2 {
+        eprintln!("오류: 묶으려면 --targets 또는 --target 을 2개 이상 지정해야 합니다.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let mut group_para = targets[0].0;
+    let mut group_ctrl = targets[0].1;
+    if !dry_run {
+        match doc.group_shapes_native(section, &targets) {
+            Ok(raw) => {
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&raw) {
+                    if let Some(n) = v["paraIdx"].as_u64() {
+                        group_para = n as usize;
+                    }
+                    if let Some(n) = v["controlIdx"].as_u64() {
+                        group_ctrl = n as usize;
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 도형 묶기 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "grpshape",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": group_para,
+            "ctrl": group_ctrl,
+            "count": targets.len(),
+        }),
+        &[(section, group_para)],
+        &format!(
+            "도형 묶기 예정: {file_path} 구역 {section} {}개",
+            targets.len()
+        ),
+        &format!("도형 묶기 완료: {file_path}"),
+    )
+}
+
+fn edit_set_form_value(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-form-value <파일> --section N --para N --ctrl N --value <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut value: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--value" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => value = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --value 뒤에 JSON 이 필요합니다. 예: {{\"value\":1}}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl), Some(value)) =
+        (file_path, section, para, ctrl, value)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if value.trim().is_empty() {
+        eprintln!("오류: --value 는 비어 있을 수 없습니다.");
+        return EXIT_USAGE;
+    }
+    match serde_json::from_str::<serde_json::Value>(&value) {
+        Ok(v) if v.is_object() => {}
+        _ => {
+            eprintln!("오류: --value 는 JSON 객체여야 합니다. 예: {{\"value\":1}} 또는 {{\"text\":\"입력값\"}}");
+            return EXIT_USAGE;
+        }
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        match doc.set_form_value_native(section, para, ctrl, &value) {
+            Ok(raw) => {
+                let v: serde_json::Value =
+                    serde_json::from_str(&raw).unwrap_or(serde_json::json!({}));
+                if v["ok"] == false {
+                    let err = v["error"].as_str().unwrap_or("양식 값 설정 실패");
+                    eprintln!("오류: {err}");
+                    return EXIT_RUNTIME;
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 양식 값 설정 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "formval",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "value": value
+        }),
+        &[(section, para)],
+        &format!("양식 값 설정 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("양식 값 설정 완료: {file_path}"),
+    )
+}
+
+fn edit_set_form_value_in_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-form-value-in-cell <파일> --section N --table-para N --table-ci N --cell N --cell-para N --ctrl N --value <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut table_para: Option<usize> = None;
+    let mut table_ci: Option<usize> = None;
+    let mut cell: Option<usize> = None;
+    let mut cell_para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut value: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--table-para" | "--table-ci" | "--cell" | "--cell-para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--table-para" => table_para = Some(n),
+                        "--table-ci" => table_ci = Some(n),
+                        "--cell" => cell = Some(n),
+                        "--cell-para" => cell_para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--value" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => value = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --value 뒤에 JSON 이 필요합니다. 예: {{\"value\":1}}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (
+        Some(file_path),
+        Some(section),
+        Some(table_para),
+        Some(table_ci),
+        Some(cell),
+        Some(cell_para),
+        Some(ctrl),
+        Some(value),
+    ) = (
+        file_path, section, table_para, table_ci, cell, cell_para, ctrl, value,
+    )
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if value.trim().is_empty() {
+        eprintln!("오류: --value 는 비어 있을 수 없습니다.");
+        return EXIT_USAGE;
+    }
+    match serde_json::from_str::<serde_json::Value>(&value) {
+        Ok(v) if v.is_object() => {}
+        _ => {
+            eprintln!("오류: --value 는 JSON 객체여야 합니다. 예: {{\"value\":1}} 또는 {{\"text\":\"입력값\"}}");
+            return EXIT_USAGE;
+        }
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        match doc.set_form_value_in_cell_native(
+            section, table_para, table_ci, cell, cell_para, ctrl, &value,
+        ) {
+            Ok(raw) => {
+                let v: serde_json::Value =
+                    serde_json::from_str(&raw).unwrap_or(serde_json::json!({}));
+                if v["ok"] == false {
+                    let err = v["error"].as_str().unwrap_or("셀 양식 값 설정 실패");
+                    eprintln!("오류: {err}");
+                    return EXIT_RUNTIME;
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 셀 양식 값 설정 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "formcell",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "tablePara": table_para,
+            "tableCi": table_ci,
+            "cell": cell,
+            "cellPara": cell_para,
+            "ctrl": ctrl,
+            "value": value
+        }),
+        &[(section, table_para)],
+        &format!(
+            "셀 양식 값 설정 예정: {file_path} 구역 {section} 표문단 {table_para} 표컨트롤 {table_ci} 셀 {cell}"
+        ),
+        &format!("셀 양식 값 설정 완료: {file_path}"),
+    )
+}
+
+fn edit_set_page_border_fill(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-page-border-fill <파일> --props <JSON> [--section N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut props: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => section = n,
+                    Err(_) => {
+                        eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 쪽 테두리/배경 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(props)) = (file_path, props) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if serde_json::from_str::<serde_json::Value>(props).is_err() {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.set_page_border_fill_native(section, props) {
+            eprintln!("오류: 쪽 테두리/배경 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "pgborder",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "props": props
+        }),
+        &[(section, 0)],
+        &format!("쪽 테두리/배경 예정: {file_path} 구역 {section}"),
+        &format!("쪽 테두리/배경 완료: {file_path}"),
+    )
+}
+
+fn parse_shape_targets(raw: &str) -> Option<Vec<(usize, usize)>> {
+    let mut out = Vec::new();
+    for piece in raw.split([';', '|']) {
+        let piece = piece.trim();
+        if piece.is_empty() {
+            continue;
+        }
+        out.push(parse_shape_target(piece)?);
+    }
+    if out.is_empty() {
+        None
+    } else {
+        Some(out)
+    }
+}
+
+fn parse_shape_target(raw: &str) -> Option<(usize, usize)> {
+    let sep = if raw.contains(',') {
+        ','
+    } else if raw.contains(':') {
+        ':'
+    } else {
+        return None;
+    };
+    let mut parts = raw.split(sep);
+    let para = parts.next()?.trim().parse::<usize>().ok()?;
+    let ctrl = parts.next()?.trim().parse::<usize>().ok()?;
+    if parts.next().is_some() {
+        return None;
+    }
+    Some((para, ctrl))
+}
+
+/// 양식 개체 값 조회 — 코어 `get_form_value_native`.
+fn form_value(args: &[String]) -> i32 {
+    const USAGE: &str =
+        "사용법: rhwp form-value <파일.hwp|파일.hwpx|파일.hml> --section N --para N --ctrl N [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl)) = (file_path, section, para, ctrl)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let raw = match doc.get_form_value_native(section, para, ctrl) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: 양식 값 조회 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let form: serde_json::Value = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 양식 JSON 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    if json_mode {
+        let mut envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+        });
+        if let Some(obj) = form.as_object() {
+            for (k, v) in obj {
+                envelope[k] = v.clone();
+            }
+        }
+        println!("{}", provenance::marked(envelope, "form-value"));
+        return EXIT_OK;
+    }
+    if form["ok"] == true {
+        println!(
+            "{file_path}: 양식 {} name={} value={} text={} caption={} enabled={}",
+            form["formType"].as_str().unwrap_or(""),
+            form["name"].as_str().unwrap_or(""),
+            form["value"],
+            form["text"].as_str().unwrap_or(""),
+            form["caption"].as_str().unwrap_or(""),
+            form["enabled"]
+        );
+    } else {
+        let err = form["error"].as_str().unwrap_or("not a form object");
+        println!("{file_path}: 양식 아님 — {err} (구역 {section} 문단 {para} 컨트롤 {ctrl})");
+    }
+    EXIT_OK
+}
+
+/// `header-footer` — 구역의 머리말/꼬리말 한 건 조회.
+fn header_footer(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut is_header: Option<bool> = None;
+    let mut section: usize = 0;
+    let mut apply_to: u8 = 0;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--header" => {
+                if is_header.replace(true).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--footer" => {
+                if is_header.replace(false).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--section" | "--apply-to" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                if name == "--section" {
+                    match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    }
+                } else {
+                    match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => apply_to = n,
+                        _ => {
+                            eprintln!(
+                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    }
+                }
+            }
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let Some(file_path) = file_path else {
+        eprintln!(
+            "사용법: rhwp header-footer <파일.hwp|파일.hwpx|파일.hml> [--header|--footer] [--section N] [--apply-to 0|1|2] [--json]"
+        );
+        return EXIT_USAGE;
+    };
+    let is_header = is_header.unwrap_or(true);
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let raw = match doc.get_header_footer_native(section, is_header, apply_to) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: 머리말/꼬리말 조회 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let parsed: serde_json::Value = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 머리말/꼬리말 JSON 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let exists = parsed["exists"].as_bool().unwrap_or(false);
+    if json_mode {
+        let mut envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "section": section,
+            "isHeader": is_header,
+            "applyTo": apply_to,
+            "exists": exists,
+        });
+        if exists {
+            if let Some(obj) = parsed.as_object() {
+                for key in [
+                    "kind",
+                    "label",
+                    "paraIndex",
+                    "controlIndex",
+                    "paraCount",
+                    "text",
+                ] {
+                    if let Some(v) = obj.get(key) {
+                        envelope[key] = v.clone();
+                    }
+                }
+            }
+        }
+        println!("{}", provenance::marked(envelope, "header-footer"));
+        return EXIT_OK;
+    }
+    let kind = if is_header { "머리말" } else { "꼬리말" };
+    if exists {
+        let text = parsed["text"].as_str().unwrap_or("");
+        println!("{file_path}: {kind} 있음 (구역 {section} apply-to {apply_to})");
+        if !text.is_empty() {
+            println!("  {text}");
+        }
+    } else {
+        println!("{file_path}: {kind} 없음 (구역 {section} apply-to {apply_to})");
+    }
+    EXIT_OK
+}
+
+/// [#5044] `headers-footers` — 문서 머리말/꼬리말 목록.
+fn headers_footers(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp headers-footers <파일.hwp|파일.hwpx|파일.hml> [--json]");
+        return EXIT_USAGE;
+    };
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let raw = match doc.get_header_footer_list_native(0, true, 0) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: 머리말/꼬리말 조회 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let parsed: serde_json::Value = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 머리말/꼬리말 JSON 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let items = parsed
+        .get("items")
+        .cloned()
+        .unwrap_or(serde_json::json!([]));
+    let count = items.as_array().map(|a| a.len()).unwrap_or(0);
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "count": count,
+            "headersFooters": items,
+        });
+        println!("{}", provenance::marked(envelope, "headers-footers"));
+        return EXIT_OK;
+    }
+    println!("{file_path}: 머리말/꼬리말 {count}개");
+    if let Some(arr) = items.as_array() {
+        for h in arr {
+            let label = h["label"].as_str().unwrap_or("");
+            let sec = h["sectionIdx"].as_u64().unwrap_or(0);
+            let apply = h["applyTo"].as_u64().unwrap_or(0);
+            println!("  {label}  구역 {sec} apply-to {apply}");
+        }
+    }
+    EXIT_OK
+}
 fn show_info(args: &[String]) -> i32 {
     // [#3237] --json은 위치와 무관하다. 단일 입력 명령이므로 추가 경로를 무시하지 않는다.
     let mut json_mode = false;
@@ -19037,12 +22419,14 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-table|insert-header-footer|insert-image|redact|sanitize|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|set-hf-picture|apply-hf-template|delete-hf-text|insert-field-in-hf|split-paragraph-in-hf|toggle-hide-hf|merge-paragraph-in-hf|apply-char-format|split-paragraph|apply-para-format|apply-style|set-numbering-restart|apply-para-format-in-hf|apply-endnote-shape|insert-footnote-text|delete-text-in-footnote|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-table|set-numbering-restart|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-cell-into|split-table|fit-table|resize-table|resize-table-cell|set-cell-props|set-table-props|move-table|merge-table|set-column-widths|insert-footnote|insert-endnote|insert-equation|delete-footnote|delete-text-in-footnote|insert-footnote-text|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote|add-bookmark|delete-bookmark|delete-table|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|delete-hf-text|set-hf-picture|apply-hf-template|split-paragraph-in-hf|merge-paragraph-in-hf|apply-para-format-in-hf|toggle-hide-hf|split-paragraph-in-cell|merge-paragraph-in-cell|apply-char-format|apply-para-format|apply-style|apply-cell-style|apply-para-format-in-cell|apply-char-format-in-cell|delete-control|insert-header-footer|insert-field-in-hf|set-column-def|delete-equation|split-paragraph|set-page-hide|transpose-table|set-equation-properties|insert-image|group-shapes|set-page-def|set-section-def|apply-endnote-shape|insert-picture|delete-picture|set-picture|set-page-border-fill|redact|sanitize|set-chart-data|insert-number|insert-shape|delete-shape|set-form-value|set-form-value-in-cell|ungroup-shape> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
         Some("replace-text") => edit_replace_text(&args[1..]),
         Some("set-cell") => edit_set_cell(&args[1..]),
+        Some("insert-text-in-cell") => edit_insert_text_in_cell(&args[1..]),
+        Some("delete-text-in-cell") => edit_delete_text_in_cell(&args[1..]),
         Some("insert-text") => edit_insert_text(&args[1..]),
         Some("delete-text") => edit_delete_text(&args[1..]),
         Some("insert-paragraph") => edit_insert_paragraph(&args[1..]),
@@ -19050,43 +22434,80 @@ fn run_edit(args: &[String]) -> i32 {
         Some("merge-paragraph") => edit_merge_paragraph(&args[1..]),
         Some("insert-page-break") => edit_insert_page_break(&args[1..]),
         Some("insert-column-break") => edit_insert_column_break(&args[1..]),
+        Some("insert-table") => edit_insert_table(&args[1..]),
         Some("insert-row") => edit_insert_row(&args[1..]),
         Some("insert-col") => edit_insert_col(&args[1..]),
         Some("delete-row") => edit_delete_row(&args[1..]),
         Some("delete-col") => edit_delete_col(&args[1..]),
         Some("merge-cells") => edit_merge_cells(&args[1..]),
         Some("split-cell") => edit_split_cell(&args[1..]),
+        Some("split-cell-into") => edit_split_cell_into(&args[1..]),
+        Some("split-table") => edit_split_table(&args[1..]),
+        Some("fit-table") => edit_fit_table(&args[1..]),
+        Some("resize-table") => edit_resize_table(&args[1..]),
+        Some("resize-table-cell") => edit_resize_table_cell(&args[1..]),
+        Some("set-cell-props") => edit_set_cell_props(&args[1..]),
+        Some("set-table-props") => edit_set_table_props(&args[1..]),
+        Some("move-table") => edit_move_table(&args[1..]),
+        Some("merge-table") => edit_merge_table(&args[1..]),
+        Some("set-column-widths") => edit_set_column_widths(&args[1..]),
         Some("insert-footnote") => edit_insert_footnote(&args[1..]),
         Some("insert-endnote") => edit_insert_endnote(&args[1..]),
+        Some("insert-equation") => edit_insert_equation(&args[1..]),
         Some("delete-footnote") => edit_delete_footnote(&args[1..]),
+        Some("insert-footnote-text") => edit_insert_footnote_text(&args[1..]),
+        Some("delete-text-in-footnote") => edit_delete_text_in_footnote(&args[1..]),
+        Some("split-paragraph-in-footnote") => edit_split_paragraph_in_footnote(&args[1..]),
+        Some("merge-paragraph-in-footnote") => edit_merge_paragraph_in_footnote(&args[1..]),
+        Some("apply-para-format-in-footnote") => edit_apply_para_format_in_footnote(&args[1..]),
         Some("add-bookmark") => edit_add_bookmark(&args[1..]),
         Some("delete-bookmark") => edit_delete_bookmark(&args[1..]),
-        Some("apply-para-format-in-footnote") => edit_apply_para_format_in_footnote(&args[1..]),
-        Some("merge-paragraph-in-footnote") => edit_merge_paragraph_in_footnote(&args[1..]),
-        Some("split-paragraph-in-footnote") => edit_split_paragraph_in_footnote(&args[1..]),
-        Some("delete-text-in-footnote") => edit_delete_text_in_footnote(&args[1..]),
-        Some("insert-footnote-text") => edit_insert_footnote_text(&args[1..]),
-        Some("apply-endnote-shape") => edit_apply_endnote_shape(&args[1..]),
-        Some("apply-para-format-in-hf") => edit_apply_para_format_in_hf(&args[1..]),
-        Some("set-numbering-restart") => edit_set_numbering_restart(&args[1..]),
-        Some("apply-style") => edit_apply_style(&args[1..]),
-        Some("apply-para-format") => edit_apply_para_format(&args[1..]),
-        Some("split-paragraph") => edit_split_paragraph(&args[1..]),
-        Some("apply-char-format") => edit_apply_char_format(&args[1..]),
-        Some("merge-paragraph-in-hf") => edit_merge_paragraph_in_hf(&args[1..]),
-        Some("toggle-hide-hf") => edit_toggle_hide_hf(&args[1..]),
-        Some("split-paragraph-in-hf") => edit_split_paragraph_in_hf(&args[1..]),
-        Some("insert-field-in-hf") => edit_insert_field_in_hf(&args[1..]),
-        Some("delete-hf-text") => edit_delete_hf_text(&args[1..]),
-        Some("apply-hf-template") => edit_apply_hf_template(&args[1..]),
-        Some("set-hf-picture") => edit_set_hf_picture(&args[1..]),
-        Some("set-header-footer-text") => edit_set_header_footer_text(&args[1..]),
-        Some("insert-header-footer-text") => edit_insert_header_footer_text(&args[1..]),
-        Some("delete-header-footer") => edit_delete_header_footer(&args[1..]),
         Some("rename-bookmark") => edit_rename_bookmark(&args[1..]),
+        Some("delete-header-footer") => edit_delete_header_footer(&args[1..]),
+        Some("insert-header-footer-text") => edit_insert_header_footer_text(&args[1..]),
+        Some("set-header-footer-text") => edit_set_header_footer_text(&args[1..]),
+        Some("delete-hf-text") => edit_delete_hf_text(&args[1..]),
+        Some("set-hf-picture") => edit_set_hf_picture(&args[1..]),
+        Some("apply-hf-template") => edit_apply_hf_template(&args[1..]),
+        Some("split-paragraph-in-hf") => edit_split_paragraph_in_hf(&args[1..]),
+        Some("merge-paragraph-in-hf") => edit_merge_paragraph_in_hf(&args[1..]),
+        Some("apply-para-format-in-hf") => edit_apply_para_format_in_hf(&args[1..]),
+        Some("toggle-hide-hf") => edit_toggle_hide_hf(&args[1..]),
+        Some("split-paragraph-in-cell") => edit_split_paragraph_in_cell(&args[1..]),
+        Some("merge-paragraph-in-cell") => edit_merge_paragraph_in_cell(&args[1..]),
+        Some("apply-char-format") => edit_apply_char_format(&args[1..]),
+        Some("apply-para-format") => edit_apply_para_format(&args[1..]),
+        Some("apply-style") => edit_apply_style(&args[1..]),
+        Some("set-numbering-restart") => edit_set_numbering_restart(&args[1..]),
+        Some("apply-cell-style") => edit_apply_cell_style(&args[1..]),
+        Some("apply-para-format-in-cell") => edit_apply_para_format_in_cell(&args[1..]),
+        Some("apply-char-format-in-cell") => edit_apply_char_format_in_cell(&args[1..]),
+        Some("delete-control") => edit_delete_control(&args[1..]),
         Some("delete-table") => edit_delete_table(&args[1..]),
         Some("insert-header-footer") => edit_insert_header_footer(&args[1..]),
+        Some("insert-field-in-hf") => edit_insert_field_in_hf(&args[1..]),
+        Some("set-column-def") => edit_set_column_def(&args[1..]),
+        Some("delete-equation") => edit_delete_equation(&args[1..]),
+        Some("split-paragraph") => edit_split_paragraph(&args[1..]),
+        Some("set-page-hide") => edit_set_page_hide(&args[1..]),
+        Some("transpose-table") => edit_transpose_table(&args[1..]),
+        Some("set-equation-properties") => edit_set_equation_properties(&args[1..]),
         Some("insert-image") => edit_insert_image(&args[1..]),
+        Some("group-shapes") => edit_group_shapes(&args[1..]),
+        Some("set-page-def") => edit_set_page_def(&args[1..]),
+        Some("set-section-def") => edit_set_section_def(&args[1..]),
+        Some("apply-endnote-shape") => edit_apply_endnote_shape(&args[1..]),
+        Some("insert-picture") => edit_insert_picture(&args[1..]),
+        Some("delete-picture") => edit_delete_picture(&args[1..]),
+        Some("set-picture") => edit_set_picture(&args[1..]),
+        Some("set-chart-data") => edit_set_chart_data(&args[1..]),
+        Some("insert-number") => edit_insert_number(&args[1..]),
+        Some("insert-shape") => edit_insert_shape(&args[1..]),
+        Some("delete-shape") => edit_delete_shape(&args[1..]),
+        Some("set-form-value") => edit_set_form_value(&args[1..]),
+        Some("set-form-value-in-cell") => edit_set_form_value_in_cell(&args[1..]),
+        Some("ungroup-shape") => edit_ungroup_shape(&args[1..]),
+        Some("set-page-border-fill") => edit_set_page_border_fill(&args[1..]),
         // [#3719 §6-11] 공개 전 정리 — 개인정보 마스킹 / 메타데이터 제거.
         Some("redact") => edit_redact(&args[1..]),
         Some("sanitize") => edit_sanitize(&args[1..]),
@@ -19153,15 +22574,15 @@ impl EditOutputFormat {
     }
 }
 
-// 입력 형식과 사용자가 지정한 `-o` 경로로 `edit` 산출 형식을 정한다 (#3383).
-//
-// 기본은 **입력 형식 보존**이다 — HWPX 입력은 HWPX 로, 그 외(HWP5/HWP3)는 HWP5 로.
-// 예외는 하나뿐이다: HWPX 입력에 사용자가 `-o ….hwp` 를 명시한 경우. 이때는 지정한
-// **경로를 그대로 존중해** HWP5 로 저장하되(기존 스크립트 호환), 형식이 바뀐다는 사실과
-// 손실 가능성을 stderr 로 알린다(이슈 제안 2의 과도기 경고).
-//
-// 반대 방향(HWP 입력에 `-o ….hwpx`)은 `edit` 의 책임이 아니다 — 형식 변환은
-// `rhwp export-hwpx` 가 담당한다. 여기서는 경고만 하고 형식을 바꾸지 않는다.
+/// 입력 형식과 사용자가 지정한 `-o` 경로로 `edit` 산출 형식을 정한다 (#3383).
+///
+/// 기본은 **입력 형식 보존**이다 — HWPX 입력은 HWPX 로, 그 외(HWP5/HWP3)는 HWP5 로.
+/// 예외는 하나뿐이다: HWPX 입력에 사용자가 `-o ….hwp` 를 명시한 경우. 이때는 지정한
+/// **경로를 그대로 존중해** HWP5 로 저장하되(기존 스크립트 호환), 형식이 바뀐다는 사실과
+/// 손실 가능성을 stderr 로 알린다(이슈 제안 2의 과도기 경고).
+///
+/// 반대 방향(HWP 입력에 `-o ….hwpx`)은 `edit` 의 책임이 아니다 — 형식 변환은
+/// `rhwp export-hwpx` 가 담당한다. 여기서는 경고만 하고 형식을 바꾸지 않는다.
 fn edit_output_format(input_bytes: &[u8], explicit_out: Option<&str>) -> EditOutputFormat {
     let source_is_hwpx = matches!(
         rhwp::parser::detect_format(input_bytes),
@@ -19194,13 +22615,13 @@ fn edit_output_format(input_bytes: &[u8], explicit_out: Option<&str>) -> EditOut
     }
 }
 
-// 결정된 형식으로 편집 결과를 직렬화한다 (#3383).
-//
-// HWP5 산출은 반드시 **어댑터 경유**(`export_hwp_with_adapter`)다. HWPX 출처 IR 을 HWP
-// 호환 형태로 옮기는 #178 어댑터를 건너뛰면 한컴 호환성과 이미지·차트가 깨진다.
-// [#3702] 편집 저장본 자기검증 — 편집 후 IR 과 저장본 재파싱 IR 을 내부 대조한다.
-// 반환: (verify 봉투 값, exit 3 여부). 비교기는 diff_documents 재사용(신규 로직 없음).
-// HWPX 소스→HWP5 산출은 #3505/#3930 출처 전용 노이즈 제거를 승계한다.
+/// 결정된 형식으로 편집 결과를 직렬화한다 (#3383).
+///
+/// HWP5 산출은 반드시 **어댑터 경유**(`export_hwp_with_adapter`)다. HWPX 출처 IR 을 HWP
+/// 호환 형태로 옮기는 #178 어댑터를 건너뛰면 한컴 호환성과 이미지·차트가 깨진다.
+/// [#3702] 편집 저장본 자기검증 — 편집 후 IR 과 저장본 재파싱 IR 을 내부 대조한다.
+/// 반환: (verify 봉투 값, exit 3 여부). 비교기는 diff_documents 재사용(신규 로직 없음).
+/// HWPX 소스→HWP5 산출은 #3505/#3930 출처 전용 노이즈 제거를 승계한다.
 fn edit_verify_report(
     doc: &rhwp::wasm_api::HwpDocument,
     out_bytes: &[u8],
@@ -24917,12 +28338,12 @@ fn evaluate_step_condition(
     }
 }
 
-// `edit_serialize` 와 같은 바이트를 내되 **IR 을 건드리지 않는다**.
-//
-// 무상태 CLI 는 저장 직후 프로세스가 끝나므로 어댑터가 살아 있는 IR 을 정규화해도
-// 관측되지 않는다. 세션 핸들은 다르다 — 도구 계약이 "핸들은 저장 후에도 열려 있다"
-// 이므로 저장은 스냅숏이어야 한다. 그래서 세션 경로만 이쪽을 쓰고 CLI 의 `&mut`
-// 경로는 그대로 둔다(CLI 에 문서 1회 clone 비용을 지우지 않는다).
+/// `edit_serialize` 와 같은 바이트를 내되 **IR 을 건드리지 않는다**.
+///
+/// 무상태 CLI 는 저장 직후 프로세스가 끝나므로 어댑터가 살아 있는 IR 을 정규화해도
+/// 관측되지 않는다. 세션 핸들은 다르다 — 도구 계약이 "핸들은 저장 후에도 열려 있다"
+/// 이므로 저장은 스냅숏이어야 한다. 그래서 세션 경로만 이쪽을 쓰고 CLI 의 `&mut`
+/// 경로는 그대로 둔다(CLI 에 문서 1회 clone 비용을 지우지 않는다).
 fn edit_serialize_snapshot(
     doc: &rhwp::wasm_api::HwpDocument,
     format: EditOutputFormat,
@@ -24934,10 +28355,10 @@ fn edit_serialize_snapshot(
     .map_err(|e| e.to_string())
 }
 
-// `edit fill-fields` — 누름틀에 값을 채운다 (메일머지).
-//
-// 검증된 코어 경로(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없다.
-// 필드 값만 바꾸므로 레이아웃·구조는 불변이다.
+/// `edit fill-fields` — 누름틀에 값을 채운다 (메일머지).
+///
+/// 검증된 코어 경로(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없다.
+/// 필드 값만 바꾸므로 레이아웃·구조는 불변이다.
 fn edit_fill_fields(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut data_arg: Option<&str> = None;
@@ -25272,12 +28693,12 @@ fn fill_fields_core(
     })
 }
 
-// `edit replace-text` — 문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비).
-//
-// [#3373] 검증된 코어 경로(`replace_all` — 역순 치환으로 오프셋 안전, 본문+표 셀)를
-// 재사용하므로 새 편집 로직이 없다. `--dry-run` 은 파일 생성 경로를 타지 않고
-// 읽기 전용 `grep` 으로 치환 예정 건수만 보고한다. **0건이면 출력 파일을 만들지
-// 않는다** — 무변경 산출물이 생기지 않게 한다.
+/// `edit replace-text` — 문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비).
+///
+/// [#3373] 검증된 코어 경로(`replace_all` — 역순 치환으로 오프셋 안전, 본문+표 셀)를
+/// 재사용하므로 새 편집 로직이 없다. `--dry-run` 은 파일 생성 경로를 타지 않고
+/// 읽기 전용 `grep` 으로 치환 예정 건수만 보고한다. **0건이면 출력 파일을 만들지
+/// 않는다** — 무변경 산출물이 생기지 않게 한다.
 fn edit_replace_text(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut find_arg: Option<&str> = None;
@@ -25572,12 +28993,12 @@ const REDACT_DESTINATION_REQUIRED: &str = "오류: 마스킹은 되돌릴 수 �
      산출 경로를 -o <출력> 으로 지정하거나, 원본을 덮어쓸 의도라면 --in-place 를 \
      명시하세요 (먼저 --dry-run 으로 무엇이 지워질지 확인하기를 권합니다).";
 
-// `edit redact` — 개인정보를 찾아 자릿수를 유지한 채 마스킹한다.
-//
-// 탐지는 [`rhwp::document_core::queries::pii_scan`] 의 읽기 전용 판정을 쓰고, 실제
-// 변경은 검증된 치환 경로(`replace_all_native`)를 재사용한다 — 새 편집 로직이 없다.
-// 되돌릴 수 없는 작업이라 ① `--dry-run` 이 권장 흐름이고 ② 산출 경로를 명시하지
-// 않으면 exit 2 로 거부한다.
+/// `edit redact` — 개인정보를 찾아 자릿수를 유지한 채 마스킹한다.
+///
+/// 탐지는 [`rhwp::document_core::queries::pii_scan`] 의 읽기 전용 판정을 쓰고, 실제
+/// 변경은 검증된 치환 경로(`replace_all_native`)를 재사용한다 — 새 편집 로직이 없다.
+/// 되돌릴 수 없는 작업이라 ① `--dry-run` 이 권장 흐름이고 ② 산출 경로를 명시하지
+/// 않으면 exit 2 로 거부한다.
 fn edit_redact(args: &[String]) -> i32 {
     use rhwp::document_core::queries::pii_scan::PiiKind;
 
@@ -26079,10 +29500,10 @@ fn preview_text_is_current(preview: &str, body_signature: &str) -> bool {
     stripped.is_empty() || body_signature.starts_with(&stripped)
 }
 
-// `edit sanitize` — 문서 메타데이터를 제거한다 (본문은 건드리지 않는다).
-//
-// 작성자·회사·최종수정자·작성일과 미리보기(PrvText/PrvImage)를 지운다. 무엇을
-// 지웠는지 `removed[]` 로 남긴다 — 조용히 지우면 감사할 수 없다.
+/// `edit sanitize` — 문서 메타데이터를 제거한다 (본문은 건드리지 않는다).
+///
+/// 작성자·회사·최종수정자·작성일과 미리보기(PrvText/PrvImage)를 지운다. 무엇을
+/// 지웠는지 `removed[]` 로 남긴다 — 조용히 지우면 감사할 수 없다.
 fn edit_sanitize(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut out_path: Option<String> = None;
@@ -26971,13 +30392,464 @@ fn insert_image_page_anchor(
     None
 }
 
-// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-// [#4990 / #3608 M9] `edit insert-text` — 문단 좌표에 새 텍스트를 삽입한다.
-//
-// 에이전트는 기존 문자열을 바꿀 수 있었지만(replace-text·fill-fields·set-cell)
-// **없는 자리에 글자를 넣는** 표면이 없었다. 새 편집 로직은 없다 —
-// 검증된 코어 `insert_text_native`(스튜디오·세션이 이미 쓰는 경로)만 배선한다.
-// 주소 어휘는 `search` 와 같다(구역·문단·문자 오프셋, 전부 0 기준).
+/// `edit set-equation-properties` — 본문 수식 속성을 바꾼다.
+fn edit_set_equation_properties(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-equation-properties <파일> --section N --para N --ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path = None;
+    let mut section = None;
+    let mut para = None;
+    let mut ctrl = None;
+    let mut props = None;
+    let mut out_path = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let flag = args[i].clone();
+                i += 1;
+                let Some(value) = args.get(i) else {
+                    eprintln!("오류: {flag} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                let Ok(value) = value.parse::<usize>() else {
+                    eprintln!("오류: {flag} 뒤에 0 이상의 정수가 필요합니다: {value}");
+                    return EXIT_USAGE;
+                };
+                match flag.as_str() {
+                    "--section" => section = Some(value),
+                    "--para" => para = Some(value),
+                    _ => ctrl = Some(value),
+                }
+            }
+            "--props" => {
+                i += 1;
+                props = args
+                    .get(i)
+                    .map(String::as_str)
+                    .filter(|value| !value.is_empty());
+                if props.is_none() {
+                    eprintln!("오류: --props 뒤에 수식 속성 JSON 이 필요합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                let Some(value) = args.get(i) else {
+                    eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                out_path = Some(value.clone());
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            option if option.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {option}");
+                return EXIT_USAGE;
+            }
+            path => {
+                if file_path.replace(path).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {path}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl), Some(props)) =
+        (file_path, section, para, ctrl, props)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if serde_json::from_str::<serde_json::Value>(props).is_err() {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, error);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(doc) => doc,
+        Err(error) => return error.report(),
+    };
+    if !dry_run {
+        if let Err(error) =
+            doc.set_equation_properties_native(section, para, ctrl, None, None, props)
+        {
+            eprintln!("오류: 수식 속성 설정 실패 - {error}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "eqprop",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "ctrl": ctrl, "text": props }),
+        &[(section, para)],
+        &format!("수식 속성 설정 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("수식 속성 설정 완료: {file_path}"),
+    )
+}
+
+/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+/// `edit insert-text-in-cell` — 표 셀 문단에 텍스트 삽입. 코어 `insert_text_in_cell_native`.
+fn edit_insert_text_in_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-text-in-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [--offset N] [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut text_arg: Option<&str> = None;
+    let mut offset_arg: usize = 0;
+    let mut cell_para_arg: usize = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" | "--offset" | "--cell-para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" | "--offset" | "--cell-para" => match v.parse::<usize>() {
+                        Ok(n) => match name.as_str() {
+                            "--table" => table_arg = Some(n),
+                            "--offset" => offset_arg = n,
+                            _ => cell_para_arg = n,
+                        },
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "--text" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => text_arg = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --text 뒤에 넣을 문자열이 필요합니다 (빈 문자열 불가).");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col), Some(text)) =
+        (file_path, table_arg, row_arg, col_arg, text_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl, cell_idx, para_lens, _old) =
+        match resolve_table_cell(doc.document(), table_no, row, col) {
+            Ok(v) => v,
+            Err(CellResolveError::Usage(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_USAGE;
+            }
+            Err(CellResolveError::Runtime(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_RUNTIME;
+            }
+        };
+    if cell_para_arg >= para_lens.len() {
+        eprintln!(
+            "오류: --cell-para 가 범위를 벗어났습니다 (셀 문단 0~{}): {cell_para_arg}",
+            para_lens.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    if offset_arg > para_lens[cell_para_arg] {
+        eprintln!(
+            "오류: --offset 이 문단 길이를 넘습니다 (문단 길이 {}): {offset_arg}",
+            para_lens[cell_para_arg]
+        );
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) = doc.insert_text_in_cell_native(
+            sec,
+            para,
+            ctrl,
+            cell_idx,
+            cell_para_arg,
+            offset_arg,
+            text,
+        ) {
+            eprintln!("오류: 셀 텍스트 삽입 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "cellins",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "cellPara": cell_para_arg,
+            "offset": offset_arg,
+            "text": text
+        }),
+        &[(sec, para)],
+        &format!(
+            "셀 텍스트 삽입 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg} 오프셋 {offset_arg}"
+        ),
+        &format!("셀 텍스트 삽입 완료: {file_path}"),
+    )
+}
+
+/// `edit delete-text-in-cell` — 표 셀 문단 텍스트 삭제. 코어 `delete_text_in_cell_native`.
+fn edit_delete_text_in_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit delete-text-in-cell <파일> --table <번호> --row <행> --col <열> --count <글자수> [--offset N] [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut count_arg: Option<usize> = None;
+    let mut offset_arg: usize = 0;
+    let mut cell_para_arg: usize = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" | "--offset" | "--cell-para" | "--count" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" | "--offset" | "--cell-para" | "--count" => {
+                        match v.parse::<usize>() {
+                            Ok(n) => match name.as_str() {
+                                "--table" => table_arg = Some(n),
+                                "--offset" => offset_arg = n,
+                                "--count" => {
+                                    if n == 0 {
+                                        eprintln!("오류: --count 는 1 이상이어야 합니다.");
+                                        return EXIT_USAGE;
+                                    }
+                                    count_arg = Some(n);
+                                }
+                                _ => cell_para_arg = n,
+                            },
+                            Err(_) => {
+                                eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                                return EXIT_USAGE;
+                            }
+                        }
+                    }
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col), Some(count)) =
+        (file_path, table_arg, row_arg, col_arg, count_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl, cell_idx, para_lens, _old) =
+        match resolve_table_cell(doc.document(), table_no, row, col) {
+            Ok(v) => v,
+            Err(CellResolveError::Usage(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_USAGE;
+            }
+            Err(CellResolveError::Runtime(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_RUNTIME;
+            }
+        };
+    if cell_para_arg >= para_lens.len() {
+        eprintln!(
+            "오류: --cell-para 가 범위를 벗어났습니다 (셀 문단 0~{}): {cell_para_arg}",
+            para_lens.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    if offset_arg > para_lens[cell_para_arg] {
+        eprintln!(
+            "오류: --offset 이 문단 길이를 넘습니다 (문단 길이 {}): {offset_arg}",
+            para_lens[cell_para_arg]
+        );
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) = doc.delete_text_in_cell_native(
+            sec,
+            para,
+            ctrl,
+            cell_idx,
+            cell_para_arg,
+            offset_arg,
+            count,
+        ) {
+            eprintln!("오류: 셀 텍스트 삭제 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "celldel",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "cellPara": cell_para_arg,
+            "offset": offset_arg,
+            "count": count
+        }),
+        &[(sec, para)],
+        &format!(
+            "셀 텍스트 삭제 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg} 오프셋 {offset_arg} 글자 {count}"
+        ),
+        &format!("셀 텍스트 삭제 완료: {file_path}"),
+    )
+}
+
+/// [#4990 / #3608 M9] `edit insert-text` — 문단 좌표에 새 텍스트를 삽입한다.
+///
+/// 에이전트는 기존 문자열을 바꿀 수 있었지만(replace-text·fill-fields·set-cell)
+/// **없는 자리에 글자를 넣는** 표면이 없었다. 새 편집 로직은 없다 —
+/// 검증된 코어 `insert_text_native`(스튜디오·세션이 이미 쓰는 경로)만 배선한다.
+/// 주소 어휘는 `search` 와 같다(구역·문단·문자 오프셋, 전부 0 기준).
 fn edit_insert_text(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-text <파일> --text <문자열> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
 
@@ -27279,7 +31151,7 @@ fn finish_edit_write(
     EXIT_OK
 }
 
-// [#4992] `edit insert-paragraph` — 지정 자리에 빈 문단을 끼운다.
+/// [#4992] `edit insert-paragraph` — 지정 자리에 빈 문단을 끼운다.
 fn edit_insert_paragraph(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27389,7 +31261,7 @@ fn edit_insert_paragraph(args: &[String]) -> i32 {
     )
 }
 
-// [#4993] `edit insert-page-break` — 쪽 나눔 삽입.
+/// [#4993] `edit insert-page-break` — 쪽 나눔 삽입.
 fn edit_insert_page_break(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-page-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27508,7 +31380,7 @@ fn edit_insert_page_break(args: &[String]) -> i32 {
     )
 }
 
-// [#5019] `edit insert-column-break` — 단 나눔 삽입.
+/// [#5019] `edit insert-column-break` — 단 나눔 삽입.
 fn edit_insert_column_break(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-column-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27627,7 +31499,245 @@ fn edit_insert_column_break(args: &[String]) -> i32 {
     )
 }
 
-// [#4994] `edit insert-row` — 표 행 삽입.
+/// `edit insert-table` — 본문 표 생성. 코어 `create_table_native` 배선.
+fn edit_insert_table(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-table <파일> --rows N --cols N [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut rows_arg: Option<u16> = None;
+    let mut cols_arg: Option<u16> = None;
+    let mut section_arg: usize = 0;
+    let mut para_arg: usize = 0;
+    let mut offset_arg: usize = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--rows" | "--cols" | "--section" | "--para" | "--offset" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--rows" | "--cols" => match v.parse::<u16>() {
+                        Ok(n) if n >= 1 => {
+                            if name == "--rows" {
+                                rows_arg = Some(n);
+                            } else if n > 256 {
+                                eprintln!("오류: --cols 는 1~256 이어야 합니다: {v}");
+                                return EXIT_USAGE;
+                            } else {
+                                cols_arg = Some(n);
+                            }
+                        }
+                        _ => {
+                            eprintln!("오류: {name} 뒤에 1 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<usize>() {
+                        Ok(n) => match name.as_str() {
+                            "--section" => section_arg = n,
+                            "--para" => para_arg = n,
+                            _ => offset_arg = n,
+                        },
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(rows), Some(cols)) = (file_path, rows_arg, cols_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.create_table_native(section_arg, para_arg, offset_arg, rows, cols) {
+            eprintln!("오류: 표 생성 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "table",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section_arg,
+            "paragraph": para_arg,
+            "offset": offset_arg,
+            "rows": rows,
+            "cols": cols
+        }),
+        &[(section_arg, para_arg)],
+        &format!("표 생성 예정: {file_path} {rows}x{cols} 구역 {section_arg} 문단 {para_arg} 오프셋 {offset_arg}"),
+        &format!("표 생성 완료: {file_path}"),
+    )
+}
+
+/// [#5120] `edit set-numbering-restart` — 문단 번호 다시 시작.
+fn edit_set_numbering_restart(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-numbering-restart <파일> --mode N [--count N] [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut mode_arg: Option<u8> = None;
+    let mut start_num: u32 = 1;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--mode" | "--count" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--section" => match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--para" => match v.parse::<usize>() {
+                        Ok(n) => para = n,
+                        Err(_) => {
+                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--mode" => match v.parse::<u8>() {
+                        Ok(n) => mode_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --mode 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u32>() {
+                        Ok(n) => start_num = n,
+                        Err(_) => {
+                            eprintln!("오류: --count 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(mode)) = (file_path, mode_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.set_numbering_restart_native(section, para, mode, start_num) {
+            eprintln!("오류: 번호 다시 시작 설정 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "numrst",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "count": start_num }),
+        &[(section, para)],
+        &format!("번호 다시 시작 예정: {file_path} 구역 {section} 문단 {para} mode {mode}"),
+        &format!("번호 다시 시작 설정 완료: {file_path}"),
+    )
+}
+
+/// [#4994] `edit insert-row` — 표 행 삽입.
 fn edit_insert_row(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-row <파일> --table <번호> --row <행> [--below] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27736,7 +31846,7 @@ fn edit_insert_row(args: &[String]) -> i32 {
     )
 }
 
-// [#4995] `edit insert-col` — 표 열 삽입.
+/// [#4995] `edit insert-col` — 표 열 삽입.
 fn edit_insert_col(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-col <파일> --table <번호> --col <열> [--right] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27845,7 +31955,7 @@ fn edit_insert_col(args: &[String]) -> i32 {
     )
 }
 
-// [#4996] `edit delete-row` — 표 행 삭제.
+/// [#4996] `edit delete-row` — 표 행 삭제.
 fn edit_delete_row(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-row <파일> --table <번호> --row <행> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27952,7 +32062,7 @@ fn edit_delete_row(args: &[String]) -> i32 {
     )
 }
 
-// [#4997] `edit merge-cells` — 표 셀 병합.
+/// [#4997] `edit merge-cells` — 표 셀 병합.
 fn edit_merge_cells(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit merge-cells <파일> --table <번호> --row <행> --col <열> --end-row <행> --end-col <열> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28096,7 +32206,7 @@ fn edit_merge_cells(args: &[String]) -> i32 {
     )
 }
 
-// [#4998] `edit insert-footnote` — 각주 삽입.
+/// [#4998] `edit insert-footnote` — 각주 삽입.
 fn edit_insert_footnote(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-footnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28192,7 +32302,144 @@ fn edit_insert_footnote(args: &[String]) -> i32 {
     )
 }
 
-// [#5009] `edit delete-col` — 표 열 삭제.
+/// [#5009] `edit delete-col` — 표 열 삭제.
+/// `edit insert-equation` — 본문 수식 삽입. 코어 `insert_equation_native`.
+fn edit_insert_equation(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-equation <파일> --script <수식> [--section N] [--para N] [--offset N] [--font-size N] [--color N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut script_arg: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut offset: usize = 0;
+    let mut font_size: u32 = 1000;
+    let mut color: u32 = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--offset" | "--font-size" | "--color" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--font-size" | "--color" => match v.parse::<u32>() {
+                        Ok(n) => {
+                            if name == "--font-size" {
+                                if n == 0 {
+                                    eprintln!("오류: --font-size 는 1 이상이어야 합니다.");
+                                    return EXIT_USAGE;
+                                }
+                                font_size = n;
+                            } else {
+                                color = n;
+                            }
+                        }
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<usize>() {
+                        Ok(n) => match name.as_str() {
+                            "--section" => section = n,
+                            "--para" => para = n,
+                            _ => offset = n,
+                        },
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "--script" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => script_arg = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --script 뒤에 수식 문자열이 필요합니다 (빈 문자열 불가).");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(script)) = (file_path, script_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.insert_equation_native(section, para, offset, script, font_size, color)
+        {
+            eprintln!("오류: 수식 삽입 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "eq",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "offset": offset,
+            "script": script,
+            "fontSize": font_size,
+            "color": color
+        }),
+        &[(section, para)],
+        &format!("수식 삽입 예정: {file_path} 구역 {section} 문단 {para} 오프셋 {offset}"),
+        &format!("수식 삽입 완료: {file_path}"),
+    )
+}
+
+/// [#5009] `edit delete-col` — 표 열 삭제.
 fn edit_delete_col(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-col <파일> --table <번호> --col <열> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28299,7 +32546,7 @@ fn edit_delete_col(args: &[String]) -> i32 {
     )
 }
 
-// [#5010] `edit split-cell` — 병합 셀 분할.
+/// [#5010] `edit split-cell` — 병합 셀 분할.
 fn edit_split_cell(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit split-cell <파일> --table <번호> --row <행> --col <열> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28416,7 +32663,721 @@ fn edit_split_cell(args: &[String]) -> i32 {
     )
 }
 
-// [#5011] `edit delete-text` — 문단 좌표 텍스트 삭제.
+/// [#5120] `edit split-cell-into` — 셀을 n행 × m열로 나눈다. 코어 `split_table_cell_into_native`.
+fn edit_split_cell_into(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit split-cell-into <파일> --table <번호> --row <행> --col <열> --rows <행수> --cols <열수> [--equal-row-height] [--merge-first] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut rows_arg: Option<u16> = None;
+    let mut cols_arg: Option<u16> = None;
+    let mut equal_row_height = false;
+    let mut merge_first = false;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--equal-row-height" => equal_row_height = true,
+            "--merge-first" => merge_first = true,
+            "--table" | "--row" | "--col" | "--rows" | "--cols" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" => match v.parse::<usize>() {
+                        Ok(n) => table_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--col" => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--rows" => match v.parse::<u16>() {
+                        Ok(n) if n >= 1 => rows_arg = Some(n),
+                        Ok(_) => {
+                            eprintln!("오류: --rows 는 1 이상이어야 합니다.");
+                            return EXIT_USAGE;
+                        }
+                        Err(_) => {
+                            eprintln!("오류: --rows 뒤에 1 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) if n >= 1 => cols_arg = Some(n),
+                        Ok(_) => {
+                            eprintln!("오류: --cols 는 1 이상이어야 합니다.");
+                            return EXIT_USAGE;
+                        }
+                        Err(_) => {
+                            eprintln!("오류: --cols 뒤에 1 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col), Some(n_rows), Some(m_cols)) =
+        (file_path, table_arg, row_arg, col_arg, rows_arg, cols_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    if !dry_run {
+        if let Err(e) = doc.split_table_cell_into_native(
+            sec,
+            para,
+            ctrl,
+            row,
+            col,
+            n_rows,
+            m_cols,
+            equal_row_height,
+            merge_first,
+        ) {
+            eprintln!("오류: 셀 n×m 분할 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "splitinto",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "rows": n_rows,
+            "cols": m_cols
+        }),
+        &[(sec, para)],
+        &format!("셀 n×m 분할 예정: {file_path} 표 {table_no} ({row},{col}) {n_rows}×{m_cols}"),
+        &format!("셀 n×m 분할 완료: {file_path}"),
+    )
+}
+
+/// `edit split-table` — 표를 지정 행에서 둘로 나눈다. 코어 `split_table_native`.
+fn edit_split_table(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit split-table <파일> --table <번호> --row <행> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" => match v.parse::<usize>() {
+                        Ok(n) => table_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => {
+                            if n == 0 {
+                                eprintln!("오류: --row 는 1 이상이어야 합니다 (첫 행에서는 나눌 수 없음).");
+                                return EXIT_USAGE;
+                            }
+                            row_arg = Some(n);
+                        }
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row)) = (file_path, table_arg, row_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    if !dry_run {
+        if let Err(e) = doc.split_table_native(sec, para, ctrl, row) {
+            eprintln!("오류: 표 나누기 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "tblsplit",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "table": table_no, "row": row }),
+        &[(sec, para)],
+        &format!("표 나누기 예정: {file_path} 표 {table_no} 행 {row}"),
+        &format!("표 나누기 완료: {file_path}"),
+    )
+}
+
+/// `edit fit-table` — 표를 페이지 본문 폭에 맞춘다. 코어 `fit_table_to_page_native`.
+fn edit_fit_table(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit fit-table <파일> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => table_arg = Some(n),
+                    Err(_) => {
+                        eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no)) = (file_path, table_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    if !dry_run {
+        if let Err(e) = doc.fit_table_to_page_native(sec, para, ctrl) {
+            eprintln!("오류: 표 폭 맞춤 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "fittbl",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "table": table_no }),
+        &[(sec, para)],
+        &format!("표 폭 맞춤 예정: {file_path} 표 {table_no}"),
+        &format!("표 폭 맞춤 완료: {file_path}"),
+    )
+}
+
+/// `edit resize-table` — 표 행/열 크기 조절. 코어 `resize_table_native`.
+fn edit_resize_table(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit resize-table <파일> --table <번호> --row <행> --col <열> [--vertical] [--forward] [--line] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut vertical = false;
+    let mut forward = false;
+    let mut line_mode = false;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--vertical" => vertical = true,
+            "--forward" => forward = true,
+            "--line" => line_mode = true,
+            "--table" | "--row" | "--col" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" => match v.parse::<usize>() {
+                        Ok(n) => table_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col)) =
+        (file_path, table_arg, row_arg, col_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    if !dry_run {
+        if let Err(e) =
+            doc.resize_table_native(sec, para, ctrl, row, col, vertical, forward, line_mode)
+        {
+            eprintln!("오류: 표 크기 조절 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "tblrsz",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "table": table_no, "row": row, "col": col }),
+        &[(sec, para)],
+        &format!("표 크기 조절 예정: {file_path} 표 {table_no} 행 {row} 열 {col}"),
+        &format!("표 크기 조절 완료: {file_path}"),
+    )
+}
+
+/// `edit merge-table` — 다음 표를 이어 붙인다. 코어 `merge_table_with_next_native`.
+fn edit_merge_table(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit merge-table <파일> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => table_arg = Some(n),
+                    Err(_) => {
+                        eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no)) = (file_path, table_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    if !dry_run {
+        if let Err(e) = doc.merge_table_with_next_native(sec, para, ctrl) {
+            eprintln!("오류: 표 붙이기 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "mergetbl",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "table": table_no }),
+        &[(sec, para)],
+        &format!("표 붙이기 예정: {file_path} 표 {table_no}"),
+        &format!("표 붙이기 완료: {file_path}"),
+    )
+}
+
+/// `edit set-column-widths` — 열 폭 설정. 코어 `set_table_column_widths_native`.
+fn edit_set_column_widths(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-column-widths <파일> --table <번호> --widths <W1,W2,...> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut widths_arg: Option<Vec<u32>> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => table_arg = Some(n),
+                    Err(_) => {
+                        eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--widths" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --widths 뒤에 HWPUNIT 목록(쉼표 구분)이 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                let mut parsed: Vec<u32> = Vec::new();
+                for token in v.split(',').map(str::trim).filter(|t| !t.is_empty()) {
+                    match token.parse::<u32>() {
+                        Ok(n) if n >= 1 => parsed.push(n),
+                        Ok(_) => {
+                            eprintln!("오류: --widths 각 값은 1 이상이어야 합니다: {token}");
+                            return EXIT_USAGE;
+                        }
+                        Err(_) => {
+                            eprintln!("오류: --widths 뒤에 HWPUNIT 정수가 필요합니다: {token}");
+                            return EXIT_USAGE;
+                        }
+                    }
+                }
+                if parsed.is_empty() {
+                    eprintln!("오류: --widths 뒤에 HWPUNIT 목록(쉼표 구분)이 필요합니다.");
+                    return EXIT_USAGE;
+                }
+                widths_arg = Some(parsed);
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(widths)) = (file_path, table_arg, widths_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    if !dry_run {
+        if let Err(e) = doc.set_table_column_widths_native(sec, para, ctrl, widths.clone()) {
+            eprintln!("오류: 열 폭 설정 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "colw",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "table": table_no, "widths": widths }),
+        &[(sec, para)],
+        &format!("열 폭 설정 예정: {file_path} 표 {table_no}"),
+        &format!("열 폭 설정 완료: {file_path}"),
+    )
+}
+
+/// [#5011] `edit delete-text` — 문단 좌표 텍스트 삭제.
 fn edit_delete_text(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-text <파일> --count <글자수> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28527,7 +33488,335 @@ fn edit_delete_text(args: &[String]) -> i32 {
     )
 }
 
-// [#5012] `edit delete-paragraph` — 문단 삭제.
+/// `edit delete-text-in-footnote` — 각주/미주 문단 텍스트 삭제.
+fn edit_delete_text_in_footnote(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit delete-text-in-footnote <파일> --count <글자수> [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut ctrl: usize = 0;
+    let mut fn_para: usize = 0;
+    let mut offset: usize = 0;
+    let mut count_arg: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" | "--fn-para" | "--offset" | "--count" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = n,
+                        "--para" => para = n,
+                        "--ctrl" => ctrl = n,
+                        "--fn-para" => fn_para = n,
+                        "--offset" => offset = n,
+                        _ => {
+                            if n == 0 {
+                                eprintln!("오류: --count 는 1 이상이어야 합니다.");
+                                return EXIT_USAGE;
+                            }
+                            count_arg = Some(n);
+                        }
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(count)) = (file_path, count_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) =
+            doc.delete_text_in_footnote_native(section, para, ctrl, fn_para, offset, count)
+        {
+            eprintln!("오류: 각주/미주 텍스트 삭제 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "fndeltxt",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "fnPara": fn_para,
+            "offset": offset,
+            "count": count
+        }),
+        &[(section, para)],
+        &format!(
+            "각주/미주 텍스트 삭제 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} 각주문단 {fn_para} 오프셋 {offset} 글자 {count}"
+        ),
+        &format!("각주/미주 텍스트 삭제 완료: {file_path}"),
+    )
+}
+fn edit_set_page_def(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-page-def <파일> --props <JSON> [--section N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut props: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => section = n,
+                    Err(_) => {
+                        eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 용지 설정 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(props)) = (file_path, props) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if serde_json::from_str::<serde_json::Value>(props).is_err() {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.set_page_def_native(section, props) {
+            eprintln!("오류: 용지 설정 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "pagedef",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "props": props }),
+        &[(section, 0)],
+        &format!("용지 설정 예정: {file_path} 구역 {section}"),
+        &format!("용지 설정 완료: {file_path}"),
+    )
+}
+
+/// `edit set-section-def` — 구역 정의. 코어 `set_section_def_native`.
+fn edit_set_section_def(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-section-def <파일> --props <JSON> [--section N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut props: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => section = n,
+                    Err(_) => {
+                        eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 구역 정의 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(props)) = (file_path, props) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if serde_json::from_str::<serde_json::Value>(props).is_err() {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.set_section_def_native(section, props) {
+            eprintln!("오류: 구역 정의 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "secdef",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "props": props
+        }),
+        &[(section, 0)],
+        &format!("구역 정의 예정: {file_path} 구역 {section}"),
+        &format!("구역 정의 완료: {file_path}"),
+    )
+}
+
+/// [#5012] `edit delete-paragraph` — 문단 삭제.
 fn edit_delete_paragraph(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28624,7 +33913,7 @@ fn edit_delete_paragraph(args: &[String]) -> i32 {
     )
 }
 
-// [#5018] `edit merge-paragraph` — 문단 병합.
+/// [#5018] `edit merge-paragraph` — 문단 병합.
 fn edit_merge_paragraph(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit merge-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28721,7 +34010,7 @@ fn edit_merge_paragraph(args: &[String]) -> i32 {
     )
 }
 
-// [#5013] `edit insert-endnote` — 미주 삽입.
+/// [#5013] `edit insert-endnote` — 미주 삽입.
 fn edit_insert_endnote(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-endnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28817,7 +34106,7 @@ fn edit_insert_endnote(args: &[String]) -> i32 {
     )
 }
 
-// [#5017] `edit delete-footnote` — 각주/미주 삭제.
+/// [#5017] `edit delete-footnote` — 각주/미주 삭제.
 fn edit_delete_footnote(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-footnote <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28914,7 +34203,601 @@ fn edit_delete_footnote(args: &[String]) -> i32 {
     )
 }
 
-// [#5026] `edit add-bookmark` — 책갈피 추가.
+/// `edit resize-table-cell` — 한 칸 크기 조절. 코어 `resize_table_cell_native`.
+fn edit_resize_table_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit resize-table-cell <파일> --table <번호> --row <행> --col <열> [--vertical] [--forward] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut vertical = false;
+    let mut forward = false;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--vertical" => vertical = true,
+            "--forward" => forward = true,
+            "--table" | "--row" | "--col" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" => match v.parse::<usize>() {
+                        Ok(n) => table_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col)) =
+        (file_path, table_arg, row_arg, col_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    if !dry_run {
+        if let Err(e) = doc.resize_table_cell_native(sec, para, ctrl, row, col, vertical, forward) {
+            eprintln!("오류: 셀 크기 조절 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "cellrsz",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "vertical": vertical,
+            "forward": forward
+        }),
+        &[(sec, para)],
+        &format!("셀 크기 조절 예정: {file_path} 표 {table_no} ({row},{col})"),
+        &format!("셀 크기 조절 완료: {file_path}"),
+    )
+}
+
+/// `edit set-cell-props` — 표 셀 속성. 코어 `set_cell_properties_native`.
+fn edit_set_cell_props(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-cell-props <파일> --table <번호> --row <행> --col <열> --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut props: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" => match v.parse::<usize>() {
+                        Ok(n) => table_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => props = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --props 뒤에 JSON 문자열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col), Some(props)) =
+        (file_path, table_arg, row_arg, col_arg, props)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if !matches!(
+        serde_json::from_str::<serde_json::Value>(&props),
+        Ok(serde_json::Value::Object(_))
+    ) {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다.");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl, cell_idx, _para_lens, _old) =
+        match resolve_table_cell(doc.document(), table_no, row, col) {
+            Ok(v) => v,
+            Err(CellResolveError::Usage(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_USAGE;
+            }
+            Err(CellResolveError::Runtime(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_RUNTIME;
+            }
+        };
+    if !dry_run {
+        if let Err(e) = doc.set_cell_properties_native(sec, para, ctrl, cell_idx, &props) {
+            eprintln!("오류: 셀 속성 변경 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "cellprop",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "table": table_no, "row": row, "col": col }),
+        &[(sec, para)],
+        &format!("셀 속성 변경 예정: {file_path} 표 {table_no} ({row},{col})"),
+        &format!("셀 속성 변경 완료: {file_path}"),
+    )
+}
+
+/// `edit set-table-props` — 표 속성. 코어 `set_table_properties_native`.
+fn edit_set_table_props(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-table-props <파일> --table <번호> --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut props: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => table_arg = Some(n),
+                    Err(_) => {
+                        eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => props = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --props 뒤에 JSON 문자열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(props)) = (file_path, table_arg, props) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if !matches!(
+        serde_json::from_str::<serde_json::Value>(&props),
+        Ok(serde_json::Value::Object(_))
+    ) {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다.");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    if !dry_run {
+        if let Err(e) = doc.set_table_properties_native(sec, para, ctrl, &props) {
+            eprintln!("오류: 표 속성 변경 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "tblprop",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "table": table_no }),
+        &[(sec, para)],
+        &format!("표 속성 변경 예정: {file_path} 표 {table_no}"),
+        &format!("표 속성 변경 완료: {file_path}"),
+    )
+}
+
+/// `edit move-table` — 표 위치 오프셋 이동. 코어 `move_table_offset_native`.
+fn edit_move_table(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit move-table <파일> --table <번호> --dx <가로> --dy <세로> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut dx_arg: Option<i32> = None;
+    let mut dy_arg: Option<i32> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => table_arg = Some(n),
+                    Err(_) => {
+                        eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dx" | "--dy" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<i32>() {
+                    Ok(n) if name == "--dx" => dx_arg = Some(n),
+                    Ok(n) => dy_arg = Some(n),
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(dx), Some(dy)) =
+        (file_path, table_arg, dx_arg, dy_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    if !dry_run {
+        if let Err(e) = doc.move_table_offset_native(sec, para, ctrl, dx, dy) {
+            eprintln!("오류: 표 이동 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "movetbl",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "table": table_no, "dx": dx, "dy": dy }),
+        &[(sec, para)],
+        &format!("표 이동 예정: {file_path} 표 {table_no} dx={dx} dy={dy}"),
+        &format!("표 이동 완료: {file_path}"),
+    )
+}
+
+/// [#5120] `edit delete-equation` — 본문 수식 삭제.
+fn edit_delete_equation(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit delete-equation <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl)) = (file_path, section, para, ctrl)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.delete_equation_control_native(section, para, ctrl) {
+            eprintln!("오류: 수식 삭제 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "deleq",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "ctrl": ctrl }),
+        &[(section, para)],
+        &format!("수식 삭제 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("수식 삭제 완료: {file_path}"),
+    )
+}
+
+/// [#5026] `edit add-bookmark` — 책갈피 추가.
 fn edit_add_bookmark(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit add-bookmark <파일> --name <이름> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29043,7 +34926,7 @@ fn edit_add_bookmark(args: &[String]) -> i32 {
     )
 }
 
-// [#5027] `edit delete-bookmark` — 책갈피 삭제.
+/// [#5027] `edit delete-bookmark` — 책갈피 삭제.
 fn edit_delete_bookmark(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-bookmark <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29151,7 +35034,7 @@ fn edit_delete_bookmark(args: &[String]) -> i32 {
     )
 }
 
-// [#5028] `edit delete-table` — 본문 최상위 표 삭제.
+/// [#5028] `edit delete-table` — 본문 최상위 표 삭제.
 fn edit_delete_table(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-table <파일> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29247,7 +35130,7 @@ fn edit_delete_table(args: &[String]) -> i32 {
     )
 }
 
-// [#5036] `edit insert-header-footer` — 머리말/꼬리말 생성.
+/// [#5036] `edit insert-header-footer` — 머리말/꼬리말 생성.
 fn edit_insert_header_footer(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29367,17 +35250,7 @@ fn edit_insert_header_footer(args: &[String]) -> i32 {
     )
 }
 
-// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-//
-// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-//
-// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-//
-// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+/// [#5033] `edit rename-bookmark` — 책갈피 이름 변경.
 fn edit_rename_bookmark(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit rename-bookmark <파일> --section N --para N --ctrl N --name <이름> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29508,18 +35381,7 @@ fn edit_rename_bookmark(args: &[String]) -> i32 {
     )
 }
 
-// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-//
-// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-//
-// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-//
-// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
-
+/// [#5039] `edit delete-header-footer` — 머리말/꼬리말 삭제.
 fn edit_delete_header_footer(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29640,18 +35502,7 @@ fn edit_delete_header_footer(args: &[String]) -> i32 {
     )
 }
 
-// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-//
-// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-//
-// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-//
-// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
-
+/// `edit insert-header-footer-text` — 기존 머리말/꼬리말 문단에 텍스트 삽입.
 fn edit_insert_header_footer_text(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-header-footer-text <파일> --header|--footer --text <문자열> [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29809,82 +35660,7 @@ fn edit_insert_header_footer_text(args: &[String]) -> i32 {
     )
 }
 
-// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
-
-fn headers_footers(args: &[String]) -> i32 {
-    let mut file_path: Option<&str> = None;
-    let mut json_mode = false;
-    for a in args {
-        match a.as_str() {
-            "--json" => json_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-    }
-    let Some(file_path) = file_path else {
-        eprintln!("사용법: rhwp headers-footers <파일.hwp|파일.hwpx|파일.hml> [--json]");
-        return EXIT_USAGE;
-    };
-    let data = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let doc = match load_document(&data) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    let raw = match doc.get_header_footer_list_native(0, true, 0) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("오류: 머리말/꼬리말 조회 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    };
-    let parsed: serde_json::Value = match serde_json::from_str(&raw) {
-        Ok(v) => v,
-        Err(e) => {
-            eprintln!("오류: 머리말/꼬리말 JSON 파싱 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    };
-    let items = parsed
-        .get("items")
-        .cloned()
-        .unwrap_or(serde_json::json!([]));
-    let count = items.as_array().map(|a| a.len()).unwrap_or(0);
-    if json_mode {
-        let envelope = serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": file_path,
-            "count": count,
-            "headersFooters": items,
-        });
-        println!("{}", provenance::marked(envelope, "headers-footers"));
-        return EXIT_OK;
-    }
-    println!("{file_path}: 머리말/꼬리말 {count}개");
-    if let Some(arr) = items.as_array() {
-        for h in arr {
-            let label = h["label"].as_str().unwrap_or("");
-            let sec = h["sectionIdx"].as_u64().unwrap_or(0);
-            let apply = h["applyTo"].as_u64().unwrap_or(0);
-            println!("  {label}  구역 {sec} apply-to {apply}");
-        }
-    }
-    EXIT_OK
-}
-
+/// `edit set-header-footer-text` — 기존 머리말/꼬리말 문단 텍스트 교체.
 fn edit_set_header_footer_text(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit set-header-footer-text <파일> --header|--footer --text <문자열> [--section N] [--apply-to 0|1|2] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -30055,437 +35831,7 @@ fn edit_set_header_footer_text(args: &[String]) -> i32 {
     )
 }
 
-// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
-
-fn edit_set_hf_picture(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit set-hf-picture <파일> --section N --para N --ctrl N --inner-para N --inner-ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut section: Option<usize> = None;
-    let mut para: Option<usize> = None;
-    let mut ctrl: Option<usize> = None;
-    let mut inner_para: Option<usize> = None;
-    let mut inner_ctrl: Option<usize> = None;
-    let mut props: Option<&str> = None;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--section" | "--para" | "--ctrl" | "--inner-para" | "--inner-ctrl" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match v.parse::<usize>() {
-                    Ok(n) => match name.as_str() {
-                        "--section" => section = Some(n),
-                        "--para" => para = Some(n),
-                        "--ctrl" => ctrl = Some(n),
-                        "--inner-para" => inner_para = Some(n),
-                        _ => inner_ctrl = Some(n),
-                    },
-                    Err(_) => {
-                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--props" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) if !v.is_empty() => props = Some(v.as_str()),
-                    _ => {
-                        eprintln!("오류: --props 뒤에 그림 속성 JSON이 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (
-        Some(file_path),
-        Some(section),
-        Some(para),
-        Some(ctrl),
-        Some(inner_para),
-        Some(inner_ctrl),
-        Some(props),
-    ) = (
-        file_path, section, para, ctrl, inner_para, inner_ctrl, props,
-    )
-    else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    if !dry_run {
-        if let Err(e) = doc.set_header_footer_picture_properties_native(
-            section, para, ctrl, inner_para, inner_ctrl, props,
-        ) {
-            eprintln!("오류: 머리말/꼬리말 그림 속성 변경 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "hfpic",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({
-            "section": section,
-            "paragraph": para,
-            "ctrl": ctrl,
-            "innerPara": inner_para,
-            "innerCtrl": inner_ctrl,
-            "props": props
-        }),
-        &[(section, para)],
-        &format!(
-            "머리말/꼬리말 그림 속성 변경 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} 내부 {inner_para}/{inner_ctrl}"
-        ),
-        &format!("머리말/꼬리말 그림 속성 변경 완료: {file_path}"),
-    )
-}
-
-// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-//
-// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-//
-// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-//
-// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
-
-fn header_footer(args: &[String]) -> i32 {
-    let mut file_path: Option<&str> = None;
-    let mut is_header: Option<bool> = None;
-    let mut section: usize = 0;
-    let mut apply_to: u8 = 0;
-    let mut json_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--header" => {
-                if is_header.replace(true).is_some() {
-                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--footer" => {
-                if is_header.replace(false).is_some() {
-                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--section" | "--apply-to" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                if name == "--section" {
-                    match v.parse::<usize>() {
-                        Ok(n) => section = n,
-                        Err(_) => {
-                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
-                            return EXIT_USAGE;
-                        }
-                    }
-                } else {
-                    match v.parse::<u8>() {
-                        Ok(n) if n <= 2 => apply_to = n,
-                        _ => {
-                            eprintln!(
-                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
-                            );
-                            return EXIT_USAGE;
-                        }
-                    }
-                }
-            }
-            "--json" => json_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let Some(file_path) = file_path else {
-        eprintln!(
-            "사용법: rhwp header-footer <파일.hwp|파일.hwpx|파일.hml> [--header|--footer] [--section N] [--apply-to 0|1|2] [--json]"
-        );
-        return EXIT_USAGE;
-    };
-    let is_header = is_header.unwrap_or(true);
-    let data = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let doc = match load_document(&data) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    let raw = match doc.get_header_footer_native(section, is_header, apply_to) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("오류: 머리말/꼬리말 조회 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    };
-    let parsed: serde_json::Value = match serde_json::from_str(&raw) {
-        Ok(v) => v,
-        Err(e) => {
-            eprintln!("오류: 머리말/꼬리말 JSON 파싱 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    };
-    let exists = parsed["exists"].as_bool().unwrap_or(false);
-    if json_mode {
-        let mut envelope = serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": file_path,
-            "section": section,
-            "isHeader": is_header,
-            "applyTo": apply_to,
-            "exists": exists,
-        });
-        if exists {
-            if let Some(obj) = parsed.as_object() {
-                for key in [
-                    "kind",
-                    "label",
-                    "paraIndex",
-                    "controlIndex",
-                    "paraCount",
-                    "text",
-                ] {
-                    if let Some(v) = obj.get(key) {
-                        envelope[key] = v.clone();
-                    }
-                }
-            }
-        }
-        println!("{}", provenance::marked(envelope, "header-footer"));
-        return EXIT_OK;
-    }
-    let kind = if is_header { "머리말" } else { "꼬리말" };
-    if exists {
-        let text = parsed["text"].as_str().unwrap_or("");
-        println!("{file_path}: {kind} 있음 (구역 {section} apply-to {apply_to})");
-        if !text.is_empty() {
-            println!("  {text}");
-        }
-    } else {
-        println!("{file_path}: {kind} 없음 (구역 {section} apply-to {apply_to})");
-    }
-    EXIT_OK
-}
-
-fn edit_apply_hf_template(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit apply-hf-template <파일> --header|--footer --template <0-10> [--section N] [--apply-to 0|1|2] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut is_header: Option<bool> = None;
-    let mut template: Option<u8> = None;
-    let mut section: usize = 0;
-    let mut apply_to: u8 = 0;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--header" => {
-                if is_header.replace(true).is_some() {
-                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--footer" => {
-                if is_header.replace(false).is_some() {
-                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--template" => {
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: --template 뒤에 0~10 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match v.parse::<u8>() {
-                    Ok(n) if n <= 10 => template = Some(n),
-                    _ => {
-                        eprintln!("오류: --template 은 0~10 만 허용합니다: {v}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--section" | "--apply-to" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                if name == "--section" {
-                    match v.parse::<usize>() {
-                        Ok(n) => section = n,
-                        Err(_) => {
-                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
-                            return EXIT_USAGE;
-                        }
-                    }
-                } else {
-                    match v.parse::<u8>() {
-                        Ok(n) if n <= 2 => apply_to = n,
-                        _ => {
-                            eprintln!(
-                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
-                            );
-                            return EXIT_USAGE;
-                        }
-                    }
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(is_header), Some(template)) = (file_path, is_header, template)
-    else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    if !dry_run {
-        if let Err(e) = doc.apply_hf_template_native(section, is_header, apply_to, template) {
-            eprintln!("오류: 머리말/꼬리말 마당 적용 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    let kind = if is_header { "머리말" } else { "꼬리말" };
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "hftpl",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({
-            "section": section,
-            "isHeader": is_header,
-            "applyTo": apply_to,
-            "templateId": template
-        }),
-        &[(section, 0)],
-        &format!("{kind} 마당 적용 예정: {file_path} 구역 {section} template {template}"),
-        &format!("{kind} 마당 적용 완료: {file_path}"),
-    )
-}
-
-// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-//
-// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-//
-// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-//
-// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
-
+/// `edit delete-hf-text` — 기존 머리말/꼬리말 문단에서 글자를 지운다.
 fn edit_delete_hf_text(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-hf-text <파일> --header|--footer --count <글자수> [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -30640,8 +35986,1664 @@ fn edit_delete_hf_text(args: &[String]) -> i32 {
     )
 }
 
-// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
+/// `edit split-paragraph-in-hf` — 기존 머리말/꼬리말 문단을 오프셋에서 나눈다.
+fn edit_split_paragraph_in_hf(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit split-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut is_header: Option<bool> = None;
+    let mut section: usize = 0;
+    let mut apply_to: u8 = 0;
+    let mut para: usize = 0;
+    let mut offset: usize = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--header" => {
+                if is_header.replace(true).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--footer" => {
+                if is_header.replace(false).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--section" | "--apply-to" | "--para" | "--offset" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--section" => match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--apply-to" => match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => apply_to = n,
+                        _ => {
+                            eprintln!(
+                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--para" => match v.parse::<usize>() {
+                        Ok(n) => para = n,
+                        Err(_) => {
+                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<usize>() {
+                        Ok(n) => offset = n,
+                        Err(_) => {
+                            eprintln!("오류: --offset 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(is_header)) = (file_path, is_header) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.split_paragraph_in_header_footer_native(
+            section, is_header, apply_to, para, offset, None,
+        ) {
+            eprintln!("오류: 머리말/꼬리말 문단 분할 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    let kind = if is_header { "머리말" } else { "꼬리말" };
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "hfsplit",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "isHeader": is_header,
+            "applyTo": apply_to,
+            "paragraph": para,
+            "offset": offset
+        }),
+        &[(section, 0)],
+        &format!("{kind} 문단 분할 예정: {file_path} 구역 {section} 문단 {para} 오프셋 {offset}"),
+        &format!("{kind} 문단 분할 완료: {file_path}"),
+    )
+}
 
+/// `edit merge-paragraph-in-hf` — 머리말/꼬리말 문단을 바로 앞 문단과 합친다.
+fn edit_merge_paragraph_in_hf(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit merge-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut is_header: Option<bool> = None;
+    let mut section: usize = 0;
+    let mut apply_to: u8 = 0;
+    let mut para: usize = 1;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--header" => {
+                if is_header.replace(true).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--footer" => {
+                if is_header.replace(false).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--section" | "--apply-to" | "--para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--section" => match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--apply-to" => match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => apply_to = n,
+                        _ => {
+                            eprintln!(
+                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<usize>() {
+                        Ok(n) => para = n,
+                        Err(_) => {
+                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(is_header)) = (file_path, is_header) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) =
+            doc.merge_paragraph_in_header_footer_native(section, is_header, apply_to, para)
+        {
+            eprintln!("오류: 머리말/꼬리말 문단 병합 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    let kind = if is_header { "머리말" } else { "꼬리말" };
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "hfmerge",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "isHeader": is_header,
+            "applyTo": apply_to,
+            "paragraph": para
+        }),
+        &[(section, 0)],
+        &format!("{kind} 문단 병합 예정: {file_path} 구역 {section} 문단 {para}"),
+        &format!("{kind} 문단 병합 완료: {file_path}"),
+    )
+}
+
+/// `edit split-paragraph-in-cell` — 표 셀 문단을 오프셋에서 나눈다.
+fn edit_split_paragraph_in_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit split-paragraph-in-cell <파일> --table <번호> --row <행> --col <열> [--cell-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut cell_para_arg: usize = 0;
+    let mut offset_arg: usize = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" | "--offset" | "--cell-para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" | "--offset" | "--cell-para" => match v.parse::<usize>() {
+                        Ok(n) => match name.as_str() {
+                            "--table" => table_arg = Some(n),
+                            "--offset" => offset_arg = n,
+                            _ => cell_para_arg = n,
+                        },
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col)) =
+        (file_path, table_arg, row_arg, col_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl, cell_idx, para_lens, _old) =
+        match resolve_table_cell(doc.document(), table_no, row, col) {
+            Ok(v) => v,
+            Err(CellResolveError::Usage(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_USAGE;
+            }
+            Err(CellResolveError::Runtime(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_RUNTIME;
+            }
+        };
+    if cell_para_arg >= para_lens.len() {
+        eprintln!(
+            "오류: --cell-para 가 범위를 벗어났습니다 (셀 문단 0~{}): {cell_para_arg}",
+            para_lens.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    if offset_arg > para_lens[cell_para_arg] {
+        eprintln!(
+            "오류: --offset 이 문단 길이를 넘습니다 (문단 길이 {}): {offset_arg}",
+            para_lens[cell_para_arg]
+        );
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) = doc.split_paragraph_in_cell_native(
+            sec,
+            para,
+            ctrl,
+            cell_idx,
+            cell_para_arg,
+            offset_arg,
+            None,
+        ) {
+            eprintln!("오류: 셀 문단 분할 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "cellsplit",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "paragraph": cell_para_arg,
+            "offset": offset_arg
+        }),
+        &[(sec, para)],
+        &format!(
+            "셀 문단 분할 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg} 오프셋 {offset_arg}"
+        ),
+        &format!("셀 문단 분할 완료: {file_path}"),
+    )
+}
+
+/// `edit merge-paragraph-in-cell` — 표 셀 문단을 바로 앞 문단과 합친다.
+fn edit_merge_paragraph_in_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit merge-paragraph-in-cell <파일> --table <번호> --row <행> --col <열> [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut cell_para_arg: usize = 1;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" | "--cell-para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" | "--cell-para" => match v.parse::<usize>() {
+                        Ok(n) => match name.as_str() {
+                            "--table" => table_arg = Some(n),
+                            _ => cell_para_arg = n,
+                        },
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col)) =
+        (file_path, table_arg, row_arg, col_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if cell_para_arg == 0 {
+        eprintln!("오류: --cell-para 는 1 이상이어야 합니다 (첫 문단은 병합할 수 없습니다).");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl, cell_idx, para_lens, _old) =
+        match resolve_table_cell(doc.document(), table_no, row, col) {
+            Ok(v) => v,
+            Err(CellResolveError::Usage(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_USAGE;
+            }
+            Err(CellResolveError::Runtime(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_RUNTIME;
+            }
+        };
+    if cell_para_arg >= para_lens.len() {
+        eprintln!(
+            "오류: --cell-para 가 범위를 벗어났습니다 (셀 문단 1~{}): {cell_para_arg}",
+            para_lens.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) = doc.merge_paragraph_in_cell_native(sec, para, ctrl, cell_idx, cell_para_arg)
+        {
+            eprintln!("오류: 셀 문단 병합 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "cellmerge",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "paragraph": cell_para_arg
+        }),
+        &[(sec, para)],
+        &format!("셀 문단 병합 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg}"),
+        &format!("셀 문단 병합 완료: {file_path}"),
+    )
+}
+
+/// `edit apply-char-format` — 본문 문단 글자 범위에 글자 서식을 적용한다.
+fn edit_apply_char_format(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-char-format <파일> --props <JSON> [--section N] [--para N] [--offset N] [--count N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut offset: usize = 0;
+    let mut count_arg: Option<usize> = None;
+    let mut props_arg: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--offset" | "--count" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = n,
+                        "--para" => para = n,
+                        "--offset" => offset = n,
+                        _ => count_arg = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props_arg = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 글자 서식 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(props)) = (file_path, props_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if serde_json::from_str::<serde_json::Value>(props).is_err() {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let Some(sec) = doc.document().sections.get(section) else {
+        eprintln!("오류: 구역 {section} 이 없습니다.");
+        return EXIT_USAGE;
+    };
+    let Some(paragraph) = sec.paragraphs.get(para) else {
+        eprintln!("오류: 문단 {para} 이 없습니다.");
+        return EXIT_USAGE;
+    };
+    let para_len = paragraph.text.chars().count();
+    if offset > para_len {
+        eprintln!("오류: --offset 이 문단 길이를 넘습니다 (문단 길이 {para_len}): {offset}");
+        return EXIT_USAGE;
+    }
+    let end = match count_arg {
+        Some(n) => offset.saturating_add(n).min(para_len),
+        None => para_len,
+    };
+    if !dry_run {
+        if let Err(e) = doc.apply_char_format_native(section, para, offset, end, props) {
+            eprintln!("오류: 글자 서식 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "chfmt",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "offset": offset,
+            "count": end.saturating_sub(offset),
+            "text": props
+        }),
+        &[(section, para)],
+        &format!("글자 서식 적용 예정: {file_path} 구역 {section} 문단 {para} 오프셋 {offset}"),
+        &format!("글자 서식 적용 완료: {file_path}"),
+    )
+}
+
+/// `edit apply-para-format` — 본문 문단에 문단 서식을 적용한다.
+fn edit_apply_para_format(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-para-format <파일> --props <JSON> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut props_arg: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = n,
+                        _ => para = n,
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props_arg = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 문단 서식 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(props)) = (file_path, props_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if serde_json::from_str::<serde_json::Value>(props).is_err() {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let Some(sec) = doc.document().sections.get(section) else {
+        eprintln!("오류: 구역 {section} 이 없습니다.");
+        return EXIT_USAGE;
+    };
+    if sec.paragraphs.get(para).is_none() {
+        eprintln!("오류: 문단 {para} 이 없습니다.");
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) = doc.apply_para_format_native(section, para, props) {
+            eprintln!("오류: 문단 서식 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "pfmt",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "text": props
+        }),
+        &[(section, para)],
+        &format!("문단 서식 적용 예정: {file_path} 구역 {section} 문단 {para}"),
+        &format!("문단 서식 적용 완료: {file_path}"),
+    )
+}
+
+/// `edit apply-char-format-in-cell` — 표 셀 글자 서식. 코어 `apply_char_format_in_cell_native`.
+fn edit_apply_char_format_in_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-char-format-in-cell <파일> (--table N --row N --col N | --section N --para N --ctrl N --cell N) [--cell-para N] [--start N] [--end N] [--offset N] [--count N] [--props JSON] [--bold] [--font-size N] [--color 색] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut section_arg: Option<usize> = None;
+    let mut para_arg: Option<usize> = None;
+    let mut ctrl_arg: Option<usize> = None;
+    let mut cell_arg: Option<usize> = None;
+    let mut cell_para_arg: usize = 0;
+    let mut start_arg: Option<usize> = None;
+    let mut end_arg: Option<usize> = None;
+    let mut offset_arg: Option<usize> = None;
+    let mut count_arg: Option<usize> = None;
+    let mut props_arg: Option<String> = None;
+    let mut bold_flag = false;
+    let mut font_size_arg: Option<i32> = None;
+    let mut color_arg: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" | "--section" | "--para" | "--ctrl" | "--cell"
+            | "--cell-para" | "--start" | "--end" | "--offset" | "--count" | "--font-size" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--col" => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--font-size" => match v.parse::<i32>() {
+                        Ok(n) if n > 0 => font_size_arg = Some(n),
+                        _ => {
+                            eprintln!("오류: --font-size 뒤에 1 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<usize>() {
+                        Ok(n) => match name.as_str() {
+                            "--table" => table_arg = Some(n),
+                            "--section" => section_arg = Some(n),
+                            "--para" => para_arg = Some(n),
+                            "--ctrl" => ctrl_arg = Some(n),
+                            "--cell" => cell_arg = Some(n),
+                            "--cell-para" => cell_para_arg = n,
+                            "--start" => start_arg = Some(n),
+                            "--end" => end_arg = Some(n),
+                            "--offset" => offset_arg = Some(n),
+                            _ => count_arg = Some(n),
+                        },
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props_arg = Some(v.clone()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 글자 서식 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--color" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => color_arg = Some(v.clone()),
+                    _ => {
+                        eprintln!("오류: --color 뒤에 색 값이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--bold" => bold_flag = true,
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let mut props_val = match props_arg.as_deref() {
+        Some(raw) => match serde_json::from_str::<serde_json::Value>(raw) {
+            Ok(serde_json::Value::Object(map)) => serde_json::Value::Object(map),
+            Ok(_) | Err(_) => {
+                eprintln!("오류: --props 는 JSON 객체여야 합니다: {raw}");
+                return EXIT_USAGE;
+            }
+        },
+        None => serde_json::json!({}),
+    };
+    if bold_flag {
+        props_val["bold"] = serde_json::json!(true);
+    }
+    if let Some(n) = font_size_arg {
+        props_val["fontSize"] = serde_json::json!(n);
+    }
+    if let Some(ref c) = color_arg {
+        props_val["textColor"] = serde_json::json!(c);
+    }
+    if props_val.as_object().is_none_or(|o| o.is_empty()) {
+        eprintln!("오류: --props 또는 --bold/--font-size/--color 가 필요합니다.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    }
+    let props = props_val.to_string();
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, parent_para, ctrl, cell_idx, para_lens, table_no, row, col) = match (
+        table_arg,
+        row_arg,
+        col_arg,
+        section_arg,
+        para_arg,
+        ctrl_arg,
+        cell_arg,
+    ) {
+        (Some(table_no), Some(row), Some(col), _, _, _, _) => {
+            match resolve_table_cell(doc.document(), table_no, row, col) {
+                Ok((sec, para, ctrl, cell_idx, para_lens, _)) => {
+                    (sec, para, ctrl, cell_idx, para_lens, table_no, row, col)
+                }
+                Err(CellResolveError::Usage(msg)) => {
+                    eprintln!("{msg}");
+                    return EXIT_USAGE;
+                }
+                Err(CellResolveError::Runtime(msg)) => {
+                    eprintln!("{msg}");
+                    return EXIT_RUNTIME;
+                }
+            }
+        }
+        (_, _, _, Some(sec), Some(para), Some(ctrl), Some(cell_idx)) => {
+            let para_lens = match cell_para_lens(doc.document(), sec, para, ctrl, cell_idx) {
+                Ok(v) => v,
+                Err(msg) => {
+                    eprintln!("{msg}");
+                    return EXIT_USAGE;
+                }
+            };
+            (sec, para, ctrl, cell_idx, para_lens, 0, 0, 0)
+        }
+        _ => {
+            eprintln!("{USAGE}");
+            return EXIT_USAGE;
+        }
+    };
+    if cell_para_arg >= para_lens.len() {
+        eprintln!(
+            "오류: --cell-para 가 범위를 벗어났습니다 (셀 문단 0~{}): {cell_para_arg}",
+            para_lens.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    let para_len = para_lens[cell_para_arg];
+    let start = start_arg.or(offset_arg).unwrap_or(0);
+    if start > para_len {
+        eprintln!("오류: --start/--offset 이 문단 길이를 넘습니다 (문단 길이 {para_len}): {start}");
+        return EXIT_USAGE;
+    }
+    let end = if let Some(e) = end_arg {
+        e
+    } else if let Some(n) = count_arg {
+        start.saturating_add(n)
+    } else {
+        para_len
+    };
+    if end < start || end > para_len {
+        eprintln!("오류: --end 가 범위를 벗어났습니다 (시작 {start}, 문단 길이 {para_len}): {end}");
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) = doc.apply_char_format_in_cell_native(
+            sec,
+            parent_para,
+            ctrl,
+            cell_idx,
+            cell_para_arg,
+            start,
+            end,
+            &props,
+        ) {
+            eprintln!("오류: 셀 글자 서식 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "chfmtcell",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "section": sec,
+            "paragraph": parent_para,
+            "ctrl": ctrl,
+            "cellPara": cell_para_arg,
+            "innerPara": cell_para_arg,
+            "offset": start,
+            "count": end.saturating_sub(start),
+            "text": props,
+            "props": props,
+            "bold": bold_flag,
+            "fontSize": font_size_arg,
+            "color": color_arg,
+        }),
+        &[(sec, parent_para)],
+        &format!(
+            "셀 글자 서식 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg} {start}..{end}"
+        ),
+        &format!("셀 글자 서식 적용 완료: {file_path}"),
+    )
+}
+
+fn cell_para_lens(
+    document: &rhwp::model::document::Document,
+    section: usize,
+    para: usize,
+    ctrl: usize,
+    cell_idx: usize,
+) -> Result<Vec<usize>, String> {
+    use rhwp::model::control::Control;
+    let Some(sec) = document.sections.get(section) else {
+        return Err(format!("오류: 구역 {section} 이 없습니다."));
+    };
+    let Some(paragraph) = sec.paragraphs.get(para) else {
+        return Err(format!("오류: 문단 {para} 이 없습니다."));
+    };
+    let Some(Control::Table(table)) = paragraph.controls.get(ctrl) else {
+        return Err(format!("오류: 문단 {para} 컨트롤 {ctrl} 은 표가 아닙니다."));
+    };
+    let Some(cell) = table.cells.get(cell_idx) else {
+        return Err(format!(
+            "오류: --cell 이 범위를 벗어났습니다 (셀 0~{}): {cell_idx}",
+            table.cells.len().saturating_sub(1)
+        ));
+    };
+    Ok(cell
+        .paragraphs
+        .iter()
+        .map(|p| p.text.chars().count())
+        .collect())
+}
+
+/// `edit apply-style` — 본문 문단에 스타일을 적용한다.
+fn edit_apply_style(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-style <파일> --style N [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut style_arg: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--style" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = n,
+                        "--para" => para = n,
+                        _ => style_arg = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(style_id)) = (file_path, style_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if style_id >= doc.document().doc_info.styles.len() {
+        eprintln!(
+            "오류: --style 이 범위를 벗어났습니다 (스타일 0~{}): {style_id}",
+            doc.document().doc_info.styles.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    let Some(sec) = doc.document().sections.get(section) else {
+        eprintln!("오류: 구역 {section} 이 없습니다.");
+        return EXIT_USAGE;
+    };
+    if sec.paragraphs.get(para).is_none() {
+        eprintln!("오류: 문단 {para} 이 없습니다.");
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) = doc.apply_style_native(section, para, style_id) {
+            eprintln!("오류: 스타일 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "style",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": style_id
+        }),
+        &[(section, para)],
+        &format!("스타일 적용 예정: {file_path} 구역 {section} 문단 {para} 스타일 {style_id}"),
+        &format!("스타일 적용 완료: {file_path}"),
+    )
+}
+
+/// `edit apply-cell-style` — 표 셀 문단에 스타일을 적용한다.
+fn edit_apply_cell_style(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-cell-style <파일> --table <번호> --row <행> --col <열> --style N [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut cell_para_arg: usize = 0;
+    let mut style_arg: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" | "--cell-para" | "--style" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" | "--cell-para" | "--style" => match v.parse::<usize>() {
+                        Ok(n) => match name.as_str() {
+                            "--table" => table_arg = Some(n),
+                            "--style" => style_arg = Some(n),
+                            _ => cell_para_arg = n,
+                        },
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col), Some(style_id)) =
+        (file_path, table_arg, row_arg, col_arg, style_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if style_id >= doc.document().doc_info.styles.len() {
+        eprintln!(
+            "오류: --style 이 범위를 벗어났습니다 (스타일 0~{}): {style_id}",
+            doc.document().doc_info.styles.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    let (sec, para, ctrl, cell_idx, para_lens, _old) =
+        match resolve_table_cell(doc.document(), table_no, row, col) {
+            Ok(v) => v,
+            Err(CellResolveError::Usage(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_USAGE;
+            }
+            Err(CellResolveError::Runtime(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_RUNTIME;
+            }
+        };
+    if cell_para_arg >= para_lens.len() {
+        eprintln!(
+            "오류: --cell-para 가 범위를 벗어났습니다 (셀 문단 0~{}): {cell_para_arg}",
+            para_lens.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) =
+            doc.apply_cell_style_native(sec, para, ctrl, cell_idx, cell_para_arg, style_id)
+        {
+            eprintln!("오류: 셀 스타일 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "cellstyle",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "paragraph": cell_para_arg,
+            "ctrl": style_id
+        }),
+        &[(sec, para)],
+        &format!(
+            "셀 스타일 적용 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg} 스타일 {style_id}"
+        ),
+        &format!("셀 스타일 적용 완료: {file_path}"),
+    )
+}
+
+/// `edit apply-para-format-in-cell` — 표 셀 문단에 문단 서식을 적용한다.
+fn edit_apply_para_format_in_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-para-format-in-cell <파일> --table <번호> --row <행> --col <열> --props <JSON> [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut cell_para_arg: usize = 0;
+    let mut props_arg: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" | "--cell-para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" | "--cell-para" => match v.parse::<usize>() {
+                        Ok(n) => match name.as_str() {
+                            "--table" => table_arg = Some(n),
+                            _ => cell_para_arg = n,
+                        },
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props_arg = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 문단 서식 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col), Some(props)) =
+        (file_path, table_arg, row_arg, col_arg, props_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if serde_json::from_str::<serde_json::Value>(props).is_err() {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl, cell_idx, para_lens, _old) =
+        match resolve_table_cell(doc.document(), table_no, row, col) {
+            Ok(v) => v,
+            Err(CellResolveError::Usage(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_USAGE;
+            }
+            Err(CellResolveError::Runtime(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_RUNTIME;
+            }
+        };
+    if cell_para_arg >= para_lens.len() {
+        eprintln!(
+            "오류: --cell-para 가 범위를 벗어났습니다 (셀 문단 0~{}): {cell_para_arg}",
+            para_lens.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) =
+            doc.apply_para_format_in_cell_native(sec, para, ctrl, cell_idx, cell_para_arg, props)
+        {
+            eprintln!("오류: 셀 문단 서식 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "cellpfmt",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "paragraph": cell_para_arg,
+            "text": props
+        }),
+        &[(sec, para)],
+        &format!(
+            "셀 문단 서식 적용 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg}"
+        ),
+        &format!("셀 문단 서식 적용 완료: {file_path}"),
+    )
+}
+
+/// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
+fn edit_delete_control(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit delete-control <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl)) = (file_path, section, para, ctrl)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.delete_control_native(section, para, ctrl) {
+            eprintln!("오류: 컨트롤 삭제 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "delctrl",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "ctrl": ctrl }),
+        &[(section, para)],
+        &format!("컨트롤 삭제 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("컨트롤 삭제 완료: {file_path}"),
+    )
+}
+
+/// `edit insert-field-in-hf` — 머리말/꼬리말 필드 삽입. 코어 `insert_field_in_hf_native`.
 fn edit_insert_field_in_hf(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-field-in-hf <파일> --header|--footer --field-type <1|2|3> [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -30798,26 +37800,15 @@ fn edit_insert_field_in_hf(args: &[String]) -> i32 {
     )
 }
 
-// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-//
-// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-//
-// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-//
-// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
-
-fn edit_split_paragraph_in_hf(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit split-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
+/// [#5081] `edit set-column-def` — 구역 단 정의. 코어 `set_column_def_native`.
+fn edit_set_column_def(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-column-def <파일> --count N [--section N] [--type 0|1|2] [--same-width|--mixed-width] [--spacing N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
-    let mut is_header: Option<bool> = None;
+    let mut count_arg: Option<u16> = None;
     let mut section: usize = 0;
-    let mut apply_to: u8 = 0;
-    let mut para: usize = 0;
-    let mut offset: usize = 0;
+    let mut column_type: u8 = 0;
+    let mut same_width = true;
+    let mut spacing: i16 = 0;
     let mut out_path: Option<String> = None;
     let mut dry_run = false;
     let mut json_mode = false;
@@ -30825,19 +37816,7 @@ fn edit_split_paragraph_in_hf(args: &[String]) -> i32 {
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
-            "--header" => {
-                if is_header.replace(true).is_some() {
-                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--footer" => {
-                if is_header.replace(false).is_some() {
-                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--section" | "--apply-to" | "--para" | "--offset" => {
+            "--count" | "--section" | "--type" | "--spacing" => {
                 let name = args[i].clone();
                 i += 1;
                 let Some(v) = args.get(i) else {
@@ -30845,6 +37824,13 @@ fn edit_split_paragraph_in_hf(args: &[String]) -> i32 {
                     return EXIT_USAGE;
                 };
                 match name.as_str() {
+                    "--count" => match v.parse::<u16>() {
+                        Ok(n) if n >= 1 => count_arg = Some(n),
+                        _ => {
+                            eprintln!("오류: --count 뒤에 1 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
                     "--section" => match v.parse::<usize>() {
                         Ok(n) => section = n,
                         Err(_) => {
@@ -30852,31 +37838,24 @@ fn edit_split_paragraph_in_hf(args: &[String]) -> i32 {
                             return EXIT_USAGE;
                         }
                     },
-                    "--apply-to" => match v.parse::<u8>() {
-                        Ok(n) if n <= 2 => apply_to = n,
+                    "--type" => match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => column_type = n,
                         _ => {
-                            eprintln!(
-                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
-                            );
+                            eprintln!("오류: --type 은 0(일반)·1(배분)·2(평행) 만 허용합니다: {v}");
                             return EXIT_USAGE;
                         }
                     },
-                    "--para" => match v.parse::<usize>() {
-                        Ok(n) => para = n,
+                    _ => match v.parse::<i16>() {
+                        Ok(n) => spacing = n,
                         Err(_) => {
-                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
-                            return EXIT_USAGE;
-                        }
-                    },
-                    _ => match v.parse::<usize>() {
-                        Ok(n) => offset = n,
-                        Err(_) => {
-                            eprintln!("오류: --offset 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            eprintln!("오류: --spacing 뒤에 정수가 필요합니다: {v}");
                             return EXIT_USAGE;
                         }
                     },
                 }
             }
+            "--same-width" => same_width = true,
+            "--mixed-width" => same_width = false,
             "-o" | "--output" => {
                 i += 1;
                 match args.get(i) {
@@ -30903,7 +37882,7 @@ fn edit_split_paragraph_in_hf(args: &[String]) -> i32 {
         }
         i += 1;
     }
-    let (Some(file_path), Some(is_header)) = (file_path, is_header) else {
+    let (Some(file_path), Some(count)) = (file_path, count_arg) else {
         eprintln!("{USAGE}");
         return EXIT_USAGE;
     };
@@ -30919,434 +37898,35 @@ fn edit_split_paragraph_in_hf(args: &[String]) -> i32 {
         Err(e) => return e.report(),
     };
     if !dry_run {
-        if let Err(e) = doc.split_paragraph_in_header_footer_native(
-            section, is_header, apply_to, para, offset, None,
-        ) {
-            eprintln!("오류: 머리말/꼬리말 문단 분할 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    let kind = if is_header { "머리말" } else { "꼬리말" };
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "hfsplit",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({
-            "section": section,
-            "isHeader": is_header,
-            "applyTo": apply_to,
-            "paragraph": para,
-            "offset": offset
-        }),
-        &[(section, 0)],
-        &format!("{kind} 문단 분할 예정: {file_path} 구역 {section} 문단 {para} 오프셋 {offset}"),
-        &format!("{kind} 문단 분할 완료: {file_path}"),
-    )
-}
-
-// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
-
-fn edit_toggle_hide_hf(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit toggle-hide-hf <파일> --header|--footer [--page N] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut is_header: Option<bool> = None;
-    let mut page: u32 = 0;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--header" => {
-                if is_header.replace(true).is_some() {
-                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--footer" => {
-                if is_header.replace(false).is_some() {
-                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--page" => {
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: --page 뒤에 0 이상의 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match v.parse::<u32>() {
-                    Ok(n) => page = n,
-                    Err(_) => {
-                        eprintln!("오류: --page 뒤에 0 이상의 정수가 필요합니다: {v}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(is_header)) = (file_path, is_header) else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    let mut hidden = false;
-    if !dry_run {
-        match doc.toggle_hide_header_footer_native(page, is_header) {
-            Ok(raw) => {
-                hidden = serde_json::from_str::<serde_json::Value>(&raw)
-                    .ok()
-                    .and_then(|v| v.get("hidden").and_then(|h| h.as_bool()))
-                    .unwrap_or(false);
-            }
-            Err(e) => {
-                eprintln!("오류: 머리말/꼬리말 감추기 토글 실패 - {e}");
-                return EXIT_RUNTIME;
-            }
-        }
-    }
-    let kind = if is_header { "머리말" } else { "꼬리말" };
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "hfhide",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({
-            "page": page,
-            "isHeader": is_header,
-            "hidden": hidden
-        }),
-        &[(0, 0)],
-        &format!("{kind} 감추기 토글 예정: {file_path} 쪽 {page}"),
-        &format!("{kind} 감추기 토글 완료: {file_path}"),
-    )
-}
-
-// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-//
-// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-//
-// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-//
-// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
-
-fn edit_merge_paragraph_in_hf(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit merge-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut is_header: Option<bool> = None;
-    let mut section: usize = 0;
-    let mut apply_to: u8 = 0;
-    let mut para: usize = 1;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--header" => {
-                if is_header.replace(true).is_some() {
-                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--footer" => {
-                if is_header.replace(false).is_some() {
-                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--section" | "--apply-to" | "--para" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match name.as_str() {
-                    "--section" => match v.parse::<usize>() {
-                        Ok(n) => section = n,
-                        Err(_) => {
-                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
-                            return EXIT_USAGE;
-                        }
-                    },
-                    "--apply-to" => match v.parse::<u8>() {
-                        Ok(n) if n <= 2 => apply_to = n,
-                        _ => {
-                            eprintln!(
-                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
-                            );
-                            return EXIT_USAGE;
-                        }
-                    },
-                    _ => match v.parse::<usize>() {
-                        Ok(n) => para = n,
-                        Err(_) => {
-                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
-                            return EXIT_USAGE;
-                        }
-                    },
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(is_header)) = (file_path, is_header) else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    if !dry_run {
-        if let Err(e) =
-            doc.merge_paragraph_in_header_footer_native(section, is_header, apply_to, para)
+        if let Err(e) = doc.set_column_def_native(section, count, column_type, same_width, spacing)
         {
-            eprintln!("오류: 머리말/꼬리말 문단 병합 실패 - {e}");
+            eprintln!("오류: 단 정의 변경 실패 - {e}");
             return EXIT_RUNTIME;
         }
     }
-    let kind = if is_header { "머리말" } else { "꼬리말" };
     finish_edit_write(
         &mut doc,
         &bytes,
         file_path,
         out_path,
-        "hfmerge",
+        "coldef",
         dry_run,
         json_mode,
         verify_mode,
         serde_json::json!({
             "section": section,
-            "isHeader": is_header,
-            "applyTo": apply_to,
-            "paragraph": para
+            "columnCount": count,
+            "columnType": column_type,
+            "sameWidth": same_width,
+            "spacing": spacing
         }),
         &[(section, 0)],
-        &format!("{kind} 문단 병합 예정: {file_path} 구역 {section} 문단 {para}"),
-        &format!("{kind} 문단 병합 완료: {file_path}"),
+        &format!("단 정의 변경 예정: {file_path} 구역 {section} 단 {count}"),
+        &format!("단 정의 변경 완료: {file_path}"),
     )
 }
 
-// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
-
-fn edit_apply_char_format(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit apply-char-format <파일> --props <JSON> [--section N] [--para N] [--offset N] [--count N] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut section: usize = 0;
-    let mut para: usize = 0;
-    let mut offset: usize = 0;
-    let mut count_arg: Option<usize> = None;
-    let mut props_arg: Option<&str> = None;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--section" | "--para" | "--offset" | "--count" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match v.parse::<usize>() {
-                    Ok(n) => match name.as_str() {
-                        "--section" => section = n,
-                        "--para" => para = n,
-                        "--offset" => offset = n,
-                        _ => count_arg = Some(n),
-                    },
-                    Err(_) => {
-                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--props" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) if !v.is_empty() => props_arg = Some(v.as_str()),
-                    _ => {
-                        eprintln!("오류: --props 뒤에 글자 서식 JSON 이 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(props)) = (file_path, props_arg) else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    if serde_json::from_str::<serde_json::Value>(props).is_err() {
-        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
-        return EXIT_USAGE;
-    }
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    let Some(sec) = doc.document().sections.get(section) else {
-        eprintln!("오류: 구역 {section} 이 없습니다.");
-        return EXIT_USAGE;
-    };
-    let Some(paragraph) = sec.paragraphs.get(para) else {
-        eprintln!("오류: 문단 {para} 이 없습니다.");
-        return EXIT_USAGE;
-    };
-    let para_len = paragraph.text.chars().count();
-    if offset > para_len {
-        eprintln!("오류: --offset 이 문단 길이를 넘습니다 (문단 길이 {para_len}): {offset}");
-        return EXIT_USAGE;
-    }
-    let end = match count_arg {
-        Some(n) => offset.saturating_add(n).min(para_len),
-        None => para_len,
-    };
-    if !dry_run {
-        if let Err(e) = doc.apply_char_format_native(section, para, offset, end, props) {
-            eprintln!("오류: 글자 서식 적용 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "chfmt",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({
-            "section": section,
-            "paragraph": para,
-            "offset": offset,
-            "count": end.saturating_sub(offset),
-            "text": props
-        }),
-        &[(section, para)],
-        &format!("글자 서식 적용 예정: {file_path} 구역 {section} 문단 {para} 오프셋 {offset}"),
-        &format!("글자 서식 적용 완료: {file_path}"),
-    )
-}
-
-// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
-
+/// [#5082] `edit split-paragraph` — 본문 문단 분할. 코어 `split_paragraph_native`.
 fn edit_split_paragraph(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit split-paragraph <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -31442,24 +38022,18 @@ fn edit_split_paragraph(args: &[String]) -> i32 {
     )
 }
 
-// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-//
-// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-//
-// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-//
-// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
-
-fn edit_apply_para_format(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit apply-para-format <파일> --props <JSON> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+/// [#5083] `edit set-page-hide` — 쪽 감추기. 코어 `set_page_hide_native`.
+fn edit_set_page_hide(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-page-hide <파일> [--section N] [--para N] [--hide-header] [--hide-footer] [--hide-master] [--hide-border] [--hide-fill] [--hide-page-num] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
     let mut section: usize = 0;
     let mut para: usize = 0;
-    let mut props: Option<String> = None;
+    let mut hide_header = false;
+    let mut hide_footer = false;
+    let mut hide_master = false;
+    let mut hide_border = false;
+    let mut hide_fill = false;
+    let mut hide_page_num = false;
     let mut out_path: Option<String> = None;
     let mut dry_run = false;
     let mut json_mode = false;
@@ -31475,847 +38049,25 @@ fn edit_apply_para_format(args: &[String]) -> i32 {
                     return EXIT_USAGE;
                 };
                 match v.parse::<usize>() {
-                    Ok(n) => match name.as_str() {
-                        "--section" => section = n,
-                        _ => para = n,
-                    },
+                    Ok(n) => {
+                        if name == "--section" {
+                            section = n;
+                        } else {
+                            para = n;
+                        }
+                    }
                     Err(_) => {
                         eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
                         return EXIT_USAGE;
                     }
                 }
             }
-            "--props" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => props = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: --props 뒤에 JSON 문자열이 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(props)) = (file_path, props) else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    if !dry_run {
-        if let Err(e) = doc.apply_para_format_native(section, para, &props) {
-            eprintln!("오류: 문단 서식 적용 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "pafmt",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({ "section": section, "paragraph": para }),
-        &[(section, para)],
-        &format!("문단 서식 예정: {file_path} 구역 {section} 문단 {para}"),
-        &format!("문단 서식 적용 완료: {file_path}"),
-    )
-}
-
-// [#4994] `edit insert-row` — 표 행 삽입.
-
-fn edit_apply_style(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit apply-style <파일> --style N [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut section: usize = 0;
-    let mut para: usize = 0;
-    let mut style_arg: Option<usize> = None;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--section" | "--para" | "--style" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match v.parse::<usize>() {
-                    Ok(n) => match name.as_str() {
-                        "--section" => section = n,
-                        "--para" => para = n,
-                        _ => style_arg = Some(n),
-                    },
-                    Err(_) => {
-                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(style_id)) = (file_path, style_arg) else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    if !dry_run {
-        if let Err(e) = doc.apply_style_native(section, para, style_id) {
-            eprintln!("오류: 스타일 적용 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "style",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({ "section": section, "paragraph": para }),
-        &[(section, para)],
-        &format!("스타일 적용 예정: {file_path} 구역 {section} 문단 {para} 스타일 {style_id}"),
-        &format!("스타일 적용 완료: {file_path}"),
-    )
-}
-
-// [#4994] `edit insert-row` — 표 행 삽입.
-
-fn edit_set_numbering_restart(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit set-numbering-restart <파일> --mode N [--count N] [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut section: usize = 0;
-    let mut para: usize = 0;
-    let mut mode_arg: Option<u8> = None;
-    let mut start_num: u32 = 1;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--section" | "--para" | "--mode" | "--count" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match name.as_str() {
-                    "--section" => match v.parse::<usize>() {
-                        Ok(n) => section = n,
-                        Err(_) => {
-                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
-                            return EXIT_USAGE;
-                        }
-                    },
-                    "--para" => match v.parse::<usize>() {
-                        Ok(n) => para = n,
-                        Err(_) => {
-                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
-                            return EXIT_USAGE;
-                        }
-                    },
-                    "--mode" => match v.parse::<u8>() {
-                        Ok(n) => mode_arg = Some(n),
-                        Err(_) => {
-                            eprintln!("오류: --mode 뒤에 0 이상의 정수가 필요합니다: {v}");
-                            return EXIT_USAGE;
-                        }
-                    },
-                    _ => match v.parse::<u32>() {
-                        Ok(n) => start_num = n,
-                        Err(_) => {
-                            eprintln!("오류: --count 뒤에 0 이상의 정수가 필요합니다: {v}");
-                            return EXIT_USAGE;
-                        }
-                    },
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(mode)) = (file_path, mode_arg) else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    if !dry_run {
-        if let Err(e) = doc.set_numbering_restart_native(section, para, mode, start_num) {
-            eprintln!("오류: 번호 다시 시작 설정 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "numrst",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({ "section": section, "paragraph": para, "count": start_num }),
-        &[(section, para)],
-        &format!("번호 다시 시작 예정: {file_path} 구역 {section} 문단 {para} mode {mode}"),
-        &format!("번호 다시 시작 설정 완료: {file_path}"),
-    )
-}
-
-// [#4994] `edit insert-row` — 표 행 삽입.
-
-fn edit_apply_para_format_in_hf(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit apply-para-format-in-hf <파일> --header|--footer --props <JSON> [--section N] [--apply-to 0|1|2] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut is_header: Option<bool> = None;
-    let mut props: Option<&str> = None;
-    let mut section: usize = 0;
-    let mut apply_to: u8 = 0;
-    let mut para: usize = 0;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--header" => {
-                if is_header.replace(true).is_some() {
-                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--footer" => {
-                if is_header.replace(false).is_some() {
-                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
-                    return EXIT_USAGE;
-                }
-            }
-            "--props" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) if !v.is_empty() => props = Some(v.as_str()),
-                    _ => {
-                        eprintln!("오류: --props 뒤에 문단 서식 JSON 이 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--section" | "--apply-to" | "--para" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match name.as_str() {
-                    "--section" => match v.parse::<usize>() {
-                        Ok(n) => section = n,
-                        Err(_) => {
-                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
-                            return EXIT_USAGE;
-                        }
-                    },
-                    "--apply-to" => match v.parse::<u8>() {
-                        Ok(n) if n <= 2 => apply_to = n,
-                        _ => {
-                            eprintln!(
-                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
-                            );
-                            return EXIT_USAGE;
-                        }
-                    },
-                    _ => match v.parse::<usize>() {
-                        Ok(n) => para = n,
-                        Err(_) => {
-                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
-                            return EXIT_USAGE;
-                        }
-                    },
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(is_header), Some(props)) = (file_path, is_header, props) else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    if !dry_run {
-        if let Err(e) =
-            doc.apply_para_format_in_hf_native(section, is_header, apply_to, para, props)
-        {
-            eprintln!("오류: 머리말/꼬리말 문단 서식 적용 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    let kind = if is_header { "머리말" } else { "꼬리말" };
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "hfpfmt",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({
-            "section": section,
-            "isHeader": is_header,
-            "applyTo": apply_to,
-            "paragraph": para,
-            "props": props
-        }),
-        &[(section, 0)],
-        &format!("{kind} 문단 서식 적용 예정: {file_path} 구역 {section}"),
-        &format!("{kind} 문단 서식 적용 완료: {file_path}"),
-    )
-}
-
-// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-//
-// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-//
-// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-//
-// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
-
-fn edit_apply_endnote_shape(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit apply-endnote-shape <파일> --props <JSON> [--section N] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut section: usize = 0;
-    let mut props: Option<String> = None;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--section" => {
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match v.parse::<usize>() {
-                    Ok(n) => section = n,
-                    Err(_) => {
-                        eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--props" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => props = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: --props 뒤에 JSON 문자열이 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(props)) = (file_path, props) else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    if !dry_run {
-        if let Err(e) = doc.apply_endnote_shape_native(section, &props) {
-            eprintln!("오류: 미주 모양 적용 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "enshape",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({ "section": section }),
-        &[(section, 0)],
-        &format!("미주 모양 예정: {file_path} 구역 {section}"),
-        &format!("미주 모양 적용 완료: {file_path}"),
-    )
-}
-
-// [#5017] `edit delete-footnote` — 각주/미주 삭제.
-
-fn edit_insert_footnote_text(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit insert-footnote-text <파일> --ctrl N --text <문자열> [--section N] [--para N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut text_arg: Option<&str> = None;
-    let mut section: usize = 0;
-    let mut para: usize = 0;
-    let mut ctrl_arg: Option<usize> = None;
-    let mut fn_para: usize = 0;
-    let mut offset: usize = 0;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--text" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) if !v.is_empty() => text_arg = Some(v.as_str()),
-                    _ => {
-                        eprintln!("오류: --text 뒤에 넣을 문자열이 필요합니다 (빈 문자열 거부).");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--section" | "--para" | "--ctrl" | "--fn-para" | "--offset" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match v.parse::<usize>() {
-                    Ok(n) => match name.as_str() {
-                        "--section" => section = n,
-                        "--para" => para = n,
-                        "--ctrl" => ctrl_arg = Some(n),
-                        "--fn-para" => fn_para = n,
-                        _ => offset = n,
-                    },
-                    Err(_) => {
-                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(ctrl), Some(text)) = (file_path, ctrl_arg, text_arg) else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    if !dry_run {
-        if let Err(e) =
-            doc.insert_text_in_footnote_native(section, para, ctrl, fn_para, offset, text)
-        {
-            eprintln!("오류: 각주 텍스트 삽입 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "fntext",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({
-            "section": section,
-            "paragraph": para,
-            "ctrl": ctrl,
-            "fnPara": fn_para,
-            "offset": offset,
-            "text": text
-        }),
-        &[(section, para)],
-        &format!("각주 텍스트 삽입 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
-        &format!("각주 텍스트 삽입 완료: {file_path}"),
-    )
-}
-
-// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-//
-// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-//
-// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-//
-// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
-
-fn edit_delete_text_in_footnote(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit delete-text-in-footnote <파일> --count <글자수> [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut section: usize = 0;
-    let mut para: usize = 0;
-    let mut ctrl: usize = 0;
-    let mut fn_para: usize = 0;
-    let mut offset: usize = 0;
-    let mut count_arg: Option<usize> = None;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--section" | "--para" | "--ctrl" | "--fn-para" | "--offset" | "--count" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match v.parse::<usize>() {
-                    Ok(n) => match name.as_str() {
-                        "--section" => section = n,
-                        "--para" => para = n,
-                        "--ctrl" => ctrl = n,
-                        "--fn-para" => fn_para = n,
-                        "--offset" => offset = n,
-                        _ => {
-                            if n == 0 {
-                                eprintln!("오류: --count 는 1 이상이어야 합니다.");
-                                return EXIT_USAGE;
-                            }
-                            count_arg = Some(n);
-                        }
-                    },
-                    Err(_) => {
-                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(count)) = (file_path, count_arg) else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    if !dry_run {
-        if let Err(e) =
-            doc.delete_text_in_footnote_native(section, para, ctrl, fn_para, offset, count)
-        {
-            eprintln!("오류: 각주/미주 텍스트 삭제 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "fndeltxt",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({
-            "section": section,
-            "paragraph": para,
-            "ctrl": ctrl,
-            "fnPara": fn_para,
-            "offset": offset,
-            "count": count
-        }),
-        &[(section, para)],
-        &format!(
-            "각주/미주 텍스트 삭제 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} 각주문단 {fn_para} 오프셋 {offset} 글자 {count}"
-        ),
-        &format!("각주/미주 텍스트 삭제 완료: {file_path}"),
-    )
-}
-
-// [#5012] `edit delete-paragraph` — 문단 삭제.
-
-fn edit_split_paragraph_in_footnote(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit split-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut section: usize = 0;
-    let mut para: usize = 0;
-    let mut ctrl: usize = 0;
-    let mut fn_para: usize = 0;
-    let mut offset: usize = 0;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--section" | "--para" | "--ctrl" | "--fn-para" | "--offset" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match v.parse::<usize>() {
-                    Ok(n) => match name.as_str() {
-                        "--section" => section = n,
-                        "--para" => para = n,
-                        "--ctrl" => ctrl = n,
-                        "--fn-para" => fn_para = n,
-                        _ => offset = n,
-                    },
-                    Err(_) => {
-                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
+            "--hide-header" => hide_header = true,
+            "--hide-footer" => hide_footer = true,
+            "--hide-master" => hide_master = true,
+            "--hide-border" => hide_border = true,
+            "--hide-fill" => hide_fill = true,
+            "--hide-page-num" => hide_page_num = true,
             "-o" | "--output" => {
                 i += 1;
                 match args.get(i) {
@@ -32358,10 +38110,17 @@ fn edit_split_paragraph_in_footnote(args: &[String]) -> i32 {
         Err(e) => return e.report(),
     };
     if !dry_run {
-        if let Err(e) =
-            doc.split_paragraph_in_footnote_native(section, para, ctrl, fn_para, offset, None)
-        {
-            eprintln!("오류: 각주/미주 문단 분할 실패 - {e}");
+        if let Err(e) = doc.set_page_hide_native(
+            section,
+            para,
+            hide_header,
+            hide_footer,
+            hide_master,
+            hide_border,
+            hide_fill,
+            hide_page_num,
+        ) {
+            eprintln!("오류: 쪽 감추기 설정 실패 - {e}");
             return EXIT_RUNTIME;
         }
     }
@@ -32370,34 +38129,31 @@ fn edit_split_paragraph_in_footnote(args: &[String]) -> i32 {
         &bytes,
         file_path,
         out_path,
-        "fnsplit",
+        "pagehide",
         dry_run,
         json_mode,
         verify_mode,
         serde_json::json!({
             "section": section,
             "paragraph": para,
-            "ctrl": ctrl,
-            "fnPara": fn_para,
-            "offset": offset
+            "hideHeader": hide_header,
+            "hideFooter": hide_footer,
+            "hideMasterPage": hide_master,
+            "hideBorder": hide_border,
+            "hideFill": hide_fill,
+            "hidePageNum": hide_page_num
         }),
         &[(section, para)],
-        &format!(
-            "각주/미주 문단 분할 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} 각주문단 {fn_para} 오프셋 {offset}"
-        ),
-        &format!("각주/미주 문단 분할 완료: {file_path}"),
+        &format!("쪽 감추기 예정: {file_path} 구역 {section} 문단 {para}"),
+        &format!("쪽 감추기 완료: {file_path}"),
     )
 }
 
-// [#5012] `edit delete-paragraph` — 문단 삭제.
-
-fn edit_merge_paragraph_in_footnote(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit merge-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+/// [#5108] `edit transpose-table` — 표 행/열 바꿈. 코어 `transpose_table_cells_in_place_native`.
+fn edit_transpose_table(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit transpose-table <파일> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
-    let mut section: usize = 0;
-    let mut para: usize = 0;
-    let mut ctrl: usize = 0;
-    let mut fn_para: usize = 1;
+    let mut table_arg: Option<usize> = None;
     let mut out_path: Option<String> = None;
     let mut dry_run = false;
     let mut json_mode = false;
@@ -32405,28 +38161,16 @@ fn edit_merge_paragraph_in_footnote(args: &[String]) -> i32 {
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
-            "--section" | "--para" | "--ctrl" | "--fn-para" => {
-                let name = args[i].clone();
+            "--table" => {
                 i += 1;
                 let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다.");
                     return EXIT_USAGE;
                 };
                 match v.parse::<usize>() {
-                    Ok(n) => match name.as_str() {
-                        "--section" => section = n,
-                        "--para" => para = n,
-                        "--ctrl" => ctrl = n,
-                        _ => {
-                            if n == 0 {
-                                eprintln!("오류: --fn-para 는 1 이상이어야 합니다.");
-                                return EXIT_USAGE;
-                            }
-                            fn_para = n;
-                        }
-                    },
+                    Ok(n) => table_arg = Some(n),
                     Err(_) => {
-                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
                         return EXIT_USAGE;
                     }
                 }
@@ -32457,7 +38201,7 @@ fn edit_merge_paragraph_in_footnote(args: &[String]) -> i32 {
         }
         i += 1;
     }
-    let Some(file_path) = file_path else {
+    let (Some(file_path), Some(table_no)) = (file_path, table_arg) else {
         eprintln!("{USAGE}");
         return EXIT_USAGE;
     };
@@ -32472,10 +38216,31 @@ fn edit_merge_paragraph_in_footnote(args: &[String]) -> i32 {
         Ok(d) => d,
         Err(e) => return e.report(),
     };
+    let (section, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(v) => v,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    let mut source_rows = 0u32;
+    let mut source_cols = 0u32;
+    let mut target_rows = 0u32;
+    let mut target_cols = 0u32;
     if !dry_run {
-        if let Err(e) = doc.merge_paragraph_in_footnote_native(section, para, ctrl, fn_para) {
-            eprintln!("오류: 각주/미주 문단 병합 실패 - {e}");
-            return EXIT_RUNTIME;
+        match doc.transpose_table_cells_in_place_native(section, para, ctrl) {
+            Ok(raw) => {
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&raw) {
+                    source_rows = v["sourceRows"].as_u64().unwrap_or(0) as u32;
+                    source_cols = v["sourceCols"].as_u64().unwrap_or(0) as u32;
+                    target_rows = v["targetRows"].as_u64().unwrap_or(0) as u32;
+                    target_cols = v["targetCols"].as_u64().unwrap_or(0) as u32;
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 표 행/열 바꿈 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
         }
     }
     finish_edit_write(
@@ -32483,150 +38248,37 @@ fn edit_merge_paragraph_in_footnote(args: &[String]) -> i32 {
         &bytes,
         file_path,
         out_path,
-        "fnmerge",
+        "transpose",
         dry_run,
         json_mode,
         verify_mode,
         serde_json::json!({
+            "table": table_no,
             "section": section,
             "paragraph": para,
             "ctrl": ctrl,
-            "fnPara": fn_para
+            "sourceRows": source_rows,
+            "sourceCols": source_cols,
+            "targetRows": target_rows,
+            "targetCols": target_cols
         }),
         &[(section, para)],
-        &format!(
-            "각주/미주 문단 병합 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} 각주문단 {fn_para}"
-        ),
-        &format!("각주/미주 문단 병합 완료: {file_path}"),
+        &format!("표 행/열 바꿈 예정: {file_path} 표 {table_no}"),
+        &format!("표 행/열 바꿈 완료: {file_path}"),
     )
 }
 
-// [#5012] `edit delete-paragraph` — 문단 삭제.
-
-fn edit_apply_para_format_in_footnote(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit apply-para-format-in-footnote <파일> --section N --para N --ctrl N --props <JSON> [--fn-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
-    let mut file_path: Option<&str> = None;
-    let mut section: Option<usize> = None;
-    let mut para: Option<usize> = None;
-    let mut ctrl: Option<usize> = None;
-    let mut fn_para: usize = 0;
-    let mut props_arg: Option<&str> = None;
-    let mut out_path: Option<String> = None;
-    let mut dry_run = false;
-    let mut json_mode = false;
-    let mut verify_mode = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--section" | "--para" | "--ctrl" | "--fn-para" => {
-                let name = args[i].clone();
-                i += 1;
-                let Some(v) = args.get(i) else {
-                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
-                    return EXIT_USAGE;
-                };
-                match v.parse::<usize>() {
-                    Ok(n) => match name.as_str() {
-                        "--section" => section = Some(n),
-                        "--para" => para = Some(n),
-                        "--ctrl" => ctrl = Some(n),
-                        _ => fn_para = n,
-                    },
-                    Err(_) => {
-                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--props" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) if !v.is_empty() => props_arg = Some(v.as_str()),
-                    _ => {
-                        eprintln!("오류: --props 뒤에 문단 서식 JSON 이 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "-o" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--dry-run" => dry_run = true,
-            "--json" => json_mode = true,
-            "--verify" => verify_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-    let (Some(file_path), Some(section), Some(para), Some(ctrl), Some(props)) =
-        (file_path, section, para, ctrl, props_arg)
-    else {
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    };
-    if serde_json::from_str::<serde_json::Value>(props).is_err() {
-        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
-        return EXIT_USAGE;
-    }
-    let bytes = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let mut doc = match load_document(&bytes) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-    if !dry_run {
-        if let Err(e) =
-            doc.apply_para_format_in_footnote_native(section, para, ctrl, fn_para, props)
-        {
-            eprintln!("오류: 각주 문단 서식 적용 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
-    }
-    finish_edit_write(
-        &mut doc,
-        &bytes,
-        file_path,
-        out_path,
-        "fnpfmt",
-        dry_run,
-        json_mode,
-        verify_mode,
-        serde_json::json!({
-            "section": section,
-            "paragraph": para,
-            "ctrl": ctrl,
-            "count": fn_para,
-            "text": props
-        }),
-        &[(section, para)],
-        &format!("각주 문단 서식 적용 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
-        &format!("각주 문단 서식 적용 완료: {file_path}"),
-    )
-}
-
-// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
-
+/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+///
+/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+///
+/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+///
+/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 fn edit_insert_image(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]";
 
@@ -33004,6 +38656,598 @@ fn edit_insert_image(args: &[String]) -> i32 {
         process::exit(3);
     }
     EXIT_OK
+}
+
+/// `edit insert-picture` — 문단 좌표에 본문 그림을 끼운다. 코어 `insert_picture_native`.
+/// `insert-image`(도장·서명, 쪽 좌표) 와 다르다.
+fn edit_insert_picture(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-picture <파일> --image <그림> [--section N] [--para N] [--offset N] [--width N] [--height N] [--x N] [--y N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut image_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut offset: usize = 0;
+    let mut x_hu: u32 = 0;
+    let mut y_hu: u32 = 0;
+    let mut width_arg: Option<u32> = None;
+    let mut height_arg: Option<u32> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--image" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => image_path = Some(v),
+                    None => {
+                        eprintln!("오류: --image 뒤에 그림 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--section" | "--para" | "--offset" | "--x" | "--y" | "--width" | "--height" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--section" => match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--para" => match v.parse::<usize>() {
+                        Ok(n) => para = n,
+                        Err(_) => {
+                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--offset" => match v.parse::<usize>() {
+                        Ok(n) => offset = n,
+                        Err(_) => {
+                            eprintln!("오류: --offset 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--x" => match v.parse::<u32>() {
+                        Ok(n) => x_hu = n,
+                        Err(_) => {
+                            eprintln!("오류: --x 뒤에 0 이상의 정수가 필요합니다 (HWPUNIT): {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--y" => match v.parse::<u32>() {
+                        Ok(n) => y_hu = n,
+                        Err(_) => {
+                            eprintln!("오류: --y 뒤에 0 이상의 정수가 필요합니다 (HWPUNIT): {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--width" => match v.parse::<u32>() {
+                        Ok(n) => width_arg = Some(n),
+                        Err(_) => {
+                            eprintln!(
+                                "오류: --width 뒤에 0 이상의 정수가 필요합니다 (HWPUNIT): {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u32>() {
+                        Ok(n) => height_arg = Some(n),
+                        Err(_) => {
+                            eprintln!(
+                                "오류: --height 뒤에 0 이상의 정수가 필요합니다 (HWPUNIT): {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(image_path)) = (file_path, image_path) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    for (name, value) in [("--width", width_arg), ("--height", height_arg)] {
+        if value == Some(0) {
+            eprintln!("오류: {name} 는 1 이상이어야 합니다 (HWPUNIT, 1/7200 inch).");
+            return EXIT_USAGE;
+        }
+    }
+    let image_ext = Path::new(image_path)
+        .extension()
+        .map(|e| e.to_string_lossy().to_ascii_lowercase())
+        .unwrap_or_default();
+    if !INSERT_IMAGE_FORMATS.contains(&image_ext.as_str()) {
+        eprintln!(
+            "오류: 지원하지 않는 그림 형식입니다 - {} (지원: {})",
+            if image_ext.is_empty() {
+                "확장자 없음".to_string()
+            } else {
+                image_ext.clone()
+            },
+            INSERT_IMAGE_FORMATS.join(", ")
+        );
+        return EXIT_USAGE;
+    }
+    let image_bytes = match fs::read(image_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 그림 파일을 읽을 수 없습니다 - {}: {}", image_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let Some((natural_w_px, natural_h_px)) = insert_image_dimensions(&image_bytes) else {
+        eprintln!(
+            "오류: 그림 형식을 알아볼 수 없습니다 - {} (지원: {})",
+            image_path,
+            INSERT_IMAGE_FORMATS.join(", ")
+        );
+        return EXIT_USAGE;
+    };
+    let (width_hu, height_hu) = match (width_arg, height_arg) {
+        (Some(w), Some(h)) => (w, h),
+        (Some(w), None) => (
+            w,
+            ((w as u64 * natural_h_px as u64) / natural_w_px as u64).max(1) as u32,
+        ),
+        (None, Some(h)) => (
+            ((h as u64 * natural_w_px as u64) / natural_h_px as u64).max(1) as u32,
+            h,
+        ),
+        (None, None) => (
+            natural_w_px.saturating_mul(HWPUNIT_PER_PX),
+            natural_h_px.saturating_mul(HWPUNIT_PER_PX),
+        ),
+    };
+    for (name, value) in [
+        ("--x", x_hu),
+        ("--y", y_hu),
+        ("--width", width_hu),
+        ("--height", height_hu),
+    ] {
+        if value > i32::MAX as u32 {
+            eprintln!(
+                "오류: {name} 값이 너무 큽니다 (HWPUNIT 최대 {}): {value}",
+                i32::MAX
+            );
+            return EXIT_USAGE;
+        }
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let section_count = doc.document().sections.len();
+    if section >= section_count {
+        eprintln!(
+            "오류: --section 이 범위를 벗어났습니다 (0~{}): {section}",
+            section_count.saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    let para_count = doc.document().sections[section].paragraphs.len();
+    if para >= para_count {
+        eprintln!(
+            "오류: --para 이 범위를 벗어났습니다 (구역 {section} 문단 0~{}): {para}",
+            para_count.saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    let mut bin_data_id = serde_json::Value::Null;
+    if !dry_run {
+        let description = Path::new(image_path)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let inserted = match doc.insert_picture_native(
+            section,
+            para,
+            offset,
+            &[],
+            &image_bytes,
+            width_hu,
+            height_hu,
+            natural_w_px,
+            natural_h_px,
+            &image_ext,
+            &description,
+            Some(x_hu as i32),
+            Some(y_hu as i32),
+        ) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("오류: 그림 삽입 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+        let ctrl_idx = serde_json::from_str::<serde_json::Value>(&inserted)
+            .ok()
+            .and_then(|v| v["controlIdx"].as_u64())
+            .unwrap_or_default() as usize;
+        if let Some(rhwp::model::control::Control::Picture(picture)) = doc
+            .document()
+            .sections
+            .get(section)
+            .and_then(|s| s.paragraphs.get(para))
+            .and_then(|p| p.controls.get(ctrl_idx))
+        {
+            bin_data_id = serde_json::json!(picture.image_attr.bin_data_id);
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "picture",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "image": image_path,
+            "section": section,
+            "paragraph": para,
+            "offset": offset,
+            "x": x_hu,
+            "y": y_hu,
+            "width": width_hu,
+            "height": height_hu,
+            "binDataId": bin_data_id,
+        }),
+        &[(section, para)],
+        &format!(
+            "그림 삽입 예정: {file_path} 구역 {section} 문단 {para} 오프셋 {offset} ← {image_path}"
+        ),
+        &format!("그림 삽입 완료: {file_path}"),
+    )
+}
+
+/// `edit delete-picture` — 본문 그림 컨트롤 삭제. 코어 `delete_picture_control_native`.
+fn edit_delete_picture(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit delete-picture <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl)) = (file_path, section, para, ctrl)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.delete_picture_control_native(section, para, ctrl) {
+            eprintln!("오류: 그림 삭제 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "delpic",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "ctrl": ctrl }),
+        &[(section, para)],
+        &format!("그림 삭제 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("그림 삭제 완료: {file_path}"),
+    )
+}
+
+/// `edit set-picture` — 본문 그림 속성. 코어 `set_picture_properties_native`.
+fn edit_set_picture(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-picture <파일> --section N --para N --ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut props: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => props = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --props 뒤에 JSON 문자열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl), Some(props)) =
+        (file_path, section, para, ctrl, props)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if props.trim().is_empty() {
+        eprintln!("오류: --props 는 비어 있을 수 없습니다.");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.set_picture_properties_native(section, para, ctrl, &props) {
+            eprintln!("오류: 그림 속성 설정 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "setpic",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "ctrl": ctrl }),
+        &[(section, para)],
+        &format!("그림 속성 변경 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("그림 속성 변경 완료: {file_path}"),
+    )
+}
+
+/// `edit ungroup-shape` — 묶음 풀기. 코어 `ungroup_shape_native`.
+fn edit_ungroup_shape(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit ungroup-shape <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl)) = (file_path, section, para, ctrl)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.ungroup_shape_native(section, para, ctrl) {
+            eprintln!("오류: 도형 묶음 풀기 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "ungroup",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "ctrl": ctrl }),
+        &[(section, para)],
+        &format!("도형 묶음 풀기 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("도형 묶음 풀기 완료: {file_path}"),
+    )
 }
 
 /// rhwp 는 이미 필드에 값을 **쓸 수** 있는데(`set_field_value_by_name`) 조회 API 는
@@ -34954,3 +41198,1155 @@ mod tests {
         ));
     }
 }
+fn edit_set_hf_picture(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-hf-picture <파일> --section N --para N --ctrl N --inner-para N --inner-ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut inner_para: Option<usize> = None;
+    let mut inner_ctrl: Option<usize> = None;
+    let mut props: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" | "--inner-para" | "--inner-ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        "--ctrl" => ctrl = Some(n),
+                        "--inner-para" => inner_para = Some(n),
+                        _ => inner_ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 그림 속성 JSON이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (
+        Some(file_path),
+        Some(section),
+        Some(para),
+        Some(ctrl),
+        Some(inner_para),
+        Some(inner_ctrl),
+        Some(props),
+    ) = (
+        file_path, section, para, ctrl, inner_para, inner_ctrl, props,
+    )
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.set_header_footer_picture_properties_native(
+            section, para, ctrl, inner_para, inner_ctrl, props,
+        ) {
+            eprintln!("오류: 머리말/꼬리말 그림 속성 변경 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "hfpic",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "innerPara": inner_para,
+            "innerCtrl": inner_ctrl,
+            "props": props
+        }),
+        &[(section, para)],
+        &format!(
+            "머리말/꼬리말 그림 속성 변경 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} 내부 {inner_para}/{inner_ctrl}"
+        ),
+        &format!("머리말/꼬리말 그림 속성 변경 완료: {file_path}"),
+    )
+}
+
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+
+fn edit_apply_hf_template(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-hf-template <파일> --header|--footer --template <0-10> [--section N] [--apply-to 0|1|2] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut is_header: Option<bool> = None;
+    let mut template: Option<u8> = None;
+    let mut section: usize = 0;
+    let mut apply_to: u8 = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--header" => {
+                if is_header.replace(true).is_some() {
+                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--footer" => {
+                if is_header.replace(false).is_some() {
+                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--template" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --template 뒤에 0~10 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<u8>() {
+                    Ok(n) if n <= 10 => template = Some(n),
+                    _ => {
+                        eprintln!("오류: --template 은 0~10 만 허용합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--section" | "--apply-to" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                if name == "--section" {
+                    match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    }
+                } else {
+                    match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => apply_to = n,
+                        _ => {
+                            eprintln!(
+                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(is_header), Some(template)) = (file_path, is_header, template)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.apply_hf_template_native(section, is_header, apply_to, template) {
+            eprintln!("오류: 머리말/꼬리말 마당 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    let kind = if is_header { "머리말" } else { "꼬리말" };
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "hftpl",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "isHeader": is_header,
+            "applyTo": apply_to,
+            "templateId": template
+        }),
+        &[(section, 0)],
+        &format!("{kind} 마당 적용 예정: {file_path} 구역 {section} template {template}"),
+        &format!("{kind} 마당 적용 완료: {file_path}"),
+    )
+}
+
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+
+fn edit_toggle_hide_hf(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit toggle-hide-hf <파일> --header|--footer [--page N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut is_header: Option<bool> = None;
+    let mut page: u32 = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--header" => {
+                if is_header.replace(true).is_some() {
+                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--footer" => {
+                if is_header.replace(false).is_some() {
+                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--page" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --page 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<u32>() {
+                    Ok(n) => page = n,
+                    Err(_) => {
+                        eprintln!("오류: --page 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(is_header)) = (file_path, is_header) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let mut hidden = false;
+    if !dry_run {
+        match doc.toggle_hide_header_footer_native(page, is_header) {
+            Ok(raw) => {
+                hidden = serde_json::from_str::<serde_json::Value>(&raw)
+                    .ok()
+                    .and_then(|v| v.get("hidden").and_then(|h| h.as_bool()))
+                    .unwrap_or(false);
+            }
+            Err(e) => {
+                eprintln!("오류: 머리말/꼬리말 감추기 토글 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+    let kind = if is_header { "머리말" } else { "꼬리말" };
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "hfhide",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "page": page,
+            "isHeader": is_header,
+            "hidden": hidden
+        }),
+        &[(0, 0)],
+        &format!("{kind} 감추기 토글 예정: {file_path} 쪽 {page}"),
+        &format!("{kind} 감추기 토글 완료: {file_path}"),
+    )
+}
+
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+
+fn edit_apply_para_format_in_hf(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-para-format-in-hf <파일> --header|--footer --props <JSON> [--section N] [--apply-to 0|1|2] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut is_header: Option<bool> = None;
+    let mut props: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut apply_to: u8 = 0;
+    let mut para: usize = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--header" => {
+                if is_header.replace(true).is_some() {
+                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--footer" => {
+                if is_header.replace(false).is_some() {
+                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 문단 서식 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--section" | "--apply-to" | "--para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--section" => match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--apply-to" => match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => apply_to = n,
+                        _ => {
+                            eprintln!(
+                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<usize>() {
+                        Ok(n) => para = n,
+                        Err(_) => {
+                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(is_header), Some(props)) = (file_path, is_header, props) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) =
+            doc.apply_para_format_in_hf_native(section, is_header, apply_to, para, props)
+        {
+            eprintln!("오류: 머리말/꼬리말 문단 서식 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    let kind = if is_header { "머리말" } else { "꼬리말" };
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "hfpfmt",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "isHeader": is_header,
+            "applyTo": apply_to,
+            "paragraph": para,
+            "props": props
+        }),
+        &[(section, 0)],
+        &format!("{kind} 문단 서식 적용 예정: {file_path} 구역 {section}"),
+        &format!("{kind} 문단 서식 적용 완료: {file_path}"),
+    )
+}
+
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+
+fn edit_apply_endnote_shape(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-endnote-shape <파일> --props <JSON> [--section N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut props: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => section = n,
+                    Err(_) => {
+                        eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => props = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --props 뒤에 JSON 문자열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(props)) = (file_path, props) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.apply_endnote_shape_native(section, &props) {
+            eprintln!("오류: 미주 모양 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "enshape",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section }),
+        &[(section, 0)],
+        &format!("미주 모양 예정: {file_path} 구역 {section}"),
+        &format!("미주 모양 적용 완료: {file_path}"),
+    )
+}
+
+// [#5017] `edit delete-footnote` — 각주/미주 삭제.
+
+fn edit_insert_footnote_text(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-footnote-text <파일> --ctrl N --text <문자열> [--section N] [--para N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut text_arg: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut ctrl_arg: Option<usize> = None;
+    let mut fn_para: usize = 0;
+    let mut offset: usize = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--text" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => text_arg = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --text 뒤에 넣을 문자열이 필요합니다 (빈 문자열 거부).");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--section" | "--para" | "--ctrl" | "--fn-para" | "--offset" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = n,
+                        "--para" => para = n,
+                        "--ctrl" => ctrl_arg = Some(n),
+                        "--fn-para" => fn_para = n,
+                        _ => offset = n,
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(ctrl), Some(text)) = (file_path, ctrl_arg, text_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) =
+            doc.insert_text_in_footnote_native(section, para, ctrl, fn_para, offset, text)
+        {
+            eprintln!("오류: 각주 텍스트 삽입 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "fntext",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "fnPara": fn_para,
+            "offset": offset,
+            "text": text
+        }),
+        &[(section, para)],
+        &format!("각주 텍스트 삽입 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("각주 텍스트 삽입 완료: {file_path}"),
+    )
+}
+
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+
+fn edit_split_paragraph_in_footnote(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit split-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut ctrl: usize = 0;
+    let mut fn_para: usize = 0;
+    let mut offset: usize = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" | "--fn-para" | "--offset" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = n,
+                        "--para" => para = n,
+                        "--ctrl" => ctrl = n,
+                        "--fn-para" => fn_para = n,
+                        _ => offset = n,
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) =
+            doc.split_paragraph_in_footnote_native(section, para, ctrl, fn_para, offset, None)
+        {
+            eprintln!("오류: 각주/미주 문단 분할 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "fnsplit",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "fnPara": fn_para,
+            "offset": offset
+        }),
+        &[(section, para)],
+        &format!(
+            "각주/미주 문단 분할 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} 각주문단 {fn_para} 오프셋 {offset}"
+        ),
+        &format!("각주/미주 문단 분할 완료: {file_path}"),
+    )
+}
+
+// [#5012] `edit delete-paragraph` — 문단 삭제.
+
+fn edit_merge_paragraph_in_footnote(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit merge-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut ctrl: usize = 0;
+    let mut fn_para: usize = 1;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" | "--fn-para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = n,
+                        "--para" => para = n,
+                        "--ctrl" => ctrl = n,
+                        _ => {
+                            if n == 0 {
+                                eprintln!("오류: --fn-para 는 1 이상이어야 합니다.");
+                                return EXIT_USAGE;
+                            }
+                            fn_para = n;
+                        }
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.merge_paragraph_in_footnote_native(section, para, ctrl, fn_para) {
+            eprintln!("오류: 각주/미주 문단 병합 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "fnmerge",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "fnPara": fn_para
+        }),
+        &[(section, para)],
+        &format!(
+            "각주/미주 문단 병합 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} 각주문단 {fn_para}"
+        ),
+        &format!("각주/미주 문단 병합 완료: {file_path}"),
+    )
+}
+
+// [#5012] `edit delete-paragraph` — 문단 삭제.
+
+fn edit_apply_para_format_in_footnote(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-para-format-in-footnote <파일> --section N --para N --ctrl N --props <JSON> [--fn-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut fn_para: usize = 0;
+    let mut props_arg: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" | "--fn-para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        "--ctrl" => ctrl = Some(n),
+                        _ => fn_para = n,
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props_arg = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 문단 서식 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl), Some(props)) =
+        (file_path, section, para, ctrl, props_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if serde_json::from_str::<serde_json::Value>(props).is_err() {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) =
+            doc.apply_para_format_in_footnote_native(section, para, ctrl, fn_para, props)
+        {
+            eprintln!("오류: 각주 문단 서식 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "fnpfmt",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "count": fn_para,
+            "text": props
+        }),
+        &[(section, para)],
+        &format!("각주 문단 서식 적용 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("각주 문단 서식 적용 완료: {file_path}"),
+    )
+}
+
+// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).

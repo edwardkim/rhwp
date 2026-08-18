@@ -189,6 +189,18 @@ devel 위에 PR head를 합친 결과 tree와 conflict를 확인한다. conflict
 
 ## 4.3 변경 범위별 기본 검증
 
+**Rust 를 한 줄이라도 바꾼 PR 은 아래가 실패하면 생성하지 않는다.**
+
+```bash
+cargo fmt --all
+cargo fmt --all -- --check
+node scripts/rust-test-suite-manifest.mjs --check
+node scripts/rust-unit-test-tiers.mjs --check
+```
+
+CI `Lint (fmt, clippy, WASM check)` 의 Format check 단계는
+`cargo fmt --all -- --check` 이다. `cargo fmt --check` 만 실행하면 CI 가 실패한다.
+
 `PR 준비` 지시는 이 절에서 해당 변경 범위에 지정한 검증을 실제로 실행하는 승인이다. PR 본문 초안,
 review 문서, 오늘할일만 작성하고 이 표의 필수 회귀 게이트를 남겨 두면 준비 완료로 보고하지 않는다.
 사용자가 검증을 명시적으로 축소·생략했을 때만 실행하지 않은 명령과 사유를 PR 기록에 남긴다. 이 승인은

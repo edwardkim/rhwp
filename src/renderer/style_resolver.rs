@@ -450,16 +450,78 @@ pub fn detect_lang_category(ch: char) -> usize {
 ///
 /// HWP 문서의 폰트 이름을 웹/SVG에서 렌더링 가능한 폰트로 치환한다.
 /// webhwp의 g_SubstFonts 치환 체인을 평탄화(flatten)한 테이블을 사용한다.
-fn lookup_font_name(doc_info: &DocInfo, lang_index: usize, font_id: u16) -> String {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum FontSubstitutionBoundary {
+    LegacyLatin,
+    Hft,
+    Ttf,
+}
+
+impl FontSubstitutionBoundary {
+    pub(crate) const fn source_boundary_id(self) -> &'static str {
+        match self {
+            Self::LegacyLatin => "rust-style-resolution.legacy-latin",
+            Self::Hft => "rust-style-resolution.hft",
+            Self::Ttf => "rust-style-resolution.ttf",
+        }
+    }
+
+    pub(crate) fn language_condition(self, source_face: &str) -> &'static str {
+        match self {
+            Self::LegacyLatin => "1",
+            Self::Ttf => "all",
+            Self::Hft if resolve_hft_font(source_face, 0).is_some() => "all",
+            Self::Hft => "1",
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct FontNameDecision {
+    pub(crate) language_slot: usize,
+    pub(crate) font_id: u16,
+    pub(crate) requested_face: Option<String>,
+    pub(crate) alt_type: Option<u8>,
+    pub(crate) embedded: Option<bool>,
+    pub(crate) normalized_face: Option<String>,
+    pub(crate) subst_font: Option<String>,
+    pub(crate) css_family_chain: Vec<String>,
+    pub(crate) substitution_boundary: Option<FontSubstitutionBoundary>,
+}
+
+pub(crate) fn lookup_font_name_decision(
+    doc_info: &DocInfo,
+    lang_index: usize,
+    font_id: u16,
+) -> FontNameDecision {
+    let mut decision = FontNameDecision {
+        language_slot: lang_index,
+        font_id,
+        requested_face: None,
+        alt_type: None,
+        embedded: None,
+        normalized_face: None,
+        subst_font: None,
+        css_family_chain: Vec::new(),
+        substitution_boundary: None,
+    };
     if lang_index < doc_info.font_faces.len() {
         let lang_fonts = &doc_info.font_faces[lang_index];
         if (font_id as usize) < lang_fonts.len() {
             let font = &lang_fonts[font_id as usize];
             let name = &font.name;
+            decision.requested_face = Some(name.clone());
+            decision.alt_type = Some(font.alt_type);
+            decision.embedded = Some(font.is_embedded);
             // 폰트 치환: HFT 등 웹 미지원 폰트를 렌더링 가능한 폰트로 완전 대체
-            let resolved = resolve_font_substitution(name, font.alt_type, lang_index)
+            let substitution = resolve_font_substitution_decision(name, font.alt_type, lang_index);
+            let resolved = substitution
+                .map(|(face, _)| face)
                 .unwrap_or(name)
                 .to_string();
+            decision.normalized_face = Some(resolved.clone());
+            decision.substitution_boundary = substitution.map(|(_, boundary)| boundary);
+            decision.css_family_chain.push(resolved.clone());
             if let Some(substitute) = font
                 .subst_font
                 .as_ref()
@@ -467,12 +529,19 @@ fn lookup_font_name(doc_info: &DocInfo, lang_index: usize, font_id: u16) -> Stri
                 .filter(|substitute| !substitute.face.trim().is_empty())
                 .filter(|substitute| substitute.face.trim() != resolved)
             {
-                return format!("{resolved},{}", substitute.face.trim());
+                let face = substitute.face.trim().to_string();
+                decision.subst_font = Some(face.clone());
+                decision.css_family_chain.push(face);
             }
-            return resolved;
         }
     }
-    String::new()
+    decision
+}
+
+fn lookup_font_name(doc_info: &DocInfo, lang_index: usize, font_id: u16) -> String {
+    lookup_font_name_decision(doc_info, lang_index, font_id)
+        .css_family_chain
+        .join(",")
 }
 
 /// 폰트명에서 원본(첫 번째) 폰트명만 추출 (폴백 제거)
@@ -490,22 +559,30 @@ pub(crate) fn resolve_font_substitution(
     alt_type: u8,
     lang_index: usize,
 ) -> Option<&'static str> {
+    resolve_font_substitution_decision(name, alt_type, lang_index).map(|(face, _)| face)
+}
+
+pub(crate) fn resolve_font_substitution_decision(
+    name: &str,
+    alt_type: u8,
+    lang_index: usize,
+) -> Option<(&'static str, FontSubstitutionBoundary)> {
     // HWP3 원본/일부 한컴 재저장본은 HCI 영문 폰트를 TTF(type=1) 또는
     // unknown(type=0)으로 싣기도 한다. 한컴은 같은 face를 보여주므로
     // alt_type 차이와 무관하게 legacy 영문 HFT 치환을 우선 적용한다.
     if let Some(result) = resolve_legacy_latin_font(name, lang_index) {
-        return Some(result);
+        return Some((result, FontSubstitutionBoundary::LegacyLatin));
     }
 
     // HFT(type=2) 폰트 치환
     if alt_type == 2 {
         if let Some(result) = resolve_hft_font(name, lang_index) {
-            return Some(result);
+            return Some((result, FontSubstitutionBoundary::Hft));
         }
     }
 
     // TTF(type=1) 또는 알수없음(type=0) 치환
-    resolve_ttf_font(name)
+    resolve_ttf_font(name).map(|face| (face, FontSubstitutionBoundary::Ttf))
 }
 
 fn resolve_legacy_latin_font(name: &str, lang_index: usize) -> Option<&'static str> {
@@ -1281,6 +1358,23 @@ mod tests {
         assert_eq!(
             lookup_font_name(&doc_info, 0, 0),
             "정부상징 부처명_16040911,한컴바탕"
+        );
+
+        let decision = lookup_font_name_decision(&doc_info, 0, 0);
+        assert_eq!(decision.language_slot, 0);
+        assert_eq!(decision.font_id, 0);
+        assert_eq!(
+            decision.requested_face.as_deref(),
+            Some("정부상징 부처명_16040911")
+        );
+        assert_eq!(
+            decision.normalized_face.as_deref(),
+            decision.requested_face.as_deref()
+        );
+        assert_eq!(decision.subst_font.as_deref(), Some("한컴바탕"));
+        assert_eq!(
+            decision.css_family_chain,
+            ["정부상징 부처명_16040911", "한컴바탕"]
         );
     }
 

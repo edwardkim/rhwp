@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/wasm_agent_surface/browser_bridge.md
-last_verified: 2026-08-03
+last_verified: 2026-08-17
 ---
 
 # 브라우저 내 MCP-유사 브리지 설계
@@ -27,8 +27,9 @@ last_verified: 2026-08-03
    클라이언트 `npm/editor`(`@rhwp/editor` 0.8.2, index 253줄 + transport 239줄).
    버전 협상·capability 협상·origin 고정·transferable 이 **이미 구현돼 있다.**
 2. **그 프로토콜은 MCP 가 아니다.** `rhwp-request`/`rhwp-response` 라는 자체 봉투이고,
-   메서드는 **11개**뿐이며 전부 뷰어/내보내기 축이다(`rpc-router.ts:70-101`).
-   에이전트 동사(`digest`·`fields`·`inspect`)는 하나도 없다.
+   메서드는 뷰어/내보내기 축과 #4961의 제한형 font decision trace다
+   (`rhwp-studio/src/embed/rpc-router.ts`). 일반 에이전트 동사
+   (`digest`·`fields`·`inspect`)는 하나도 없다.
 3. **채택: `MessageChannel` 위에 MCP JSON-RPC 를 얹는다.** 기존 embed 핸드셰이크로
    포트를 얻고, 그 포트 위 메시지를 JSON-RPC 로 바꾼다. `window.postMessage` 는
    핸드셰이크에만 쓰고 본 통신에는 쓰지 않는다 — 이유는 §3.
@@ -79,6 +80,7 @@ export const EMBED_CAPABILITIES = [
   'transferable-array-buffer',
   'hml-export',
   'renderer-diagnostics-v1',
+  'font-decision-trace-v1',
   'notify-saved-v1',
 ] as const;
 ```
@@ -100,9 +102,9 @@ export const EMBED_CAPABILITIES = [
 거부 응답이 `supportedVersions` 를 함께 준다는 점이 중요하다 — 클라이언트가 재시도를
 판단할 수 있다. **MCP `initialize` 의 버전 협상과 같은 구조**다.
 
-### 1.3 메서드는 11개, 전부 뷰어 축
+### 1.3 별도 font decision trace를 포함한 embed 메서드
 
-`rhwp-studio/src/embed/rpc-router.ts:70-101` 의 `switch` 전수:
+`rhwp-studio/src/embed/rpc-router.ts` 의 공개 조회/산출 `switch`:
 
 | 메서드 | 반환 | 축 |
 | --- | --- | --- |
@@ -110,13 +112,27 @@ export const EMBED_CAPABILITIES = [
 | `loadFile(data, fileName, skipUnsavedGuard, suppressDialogs)` | `{pageCount}` | 입력 |
 | `pageCount` | `number` | 조회 |
 | `getRendererDiagnostics(page)` | `EmbedRendererDiagnosticsV1` | 진단 |
+| `getFontDecisionTrace({page, limits?})` | `FontDecisionTraceV1` | font layout/paint 계보 진단 |
 | `getPageSvg(page)` | `string` | 렌더 |
 | `exportHwp` / `exportHwpx` / `exportHml` | `Uint8Array` | 산출 |
 | `getHmlSaveState` | `HmlSaveState` | 조회 |
 | `exportHwpVerify` | `unknown` | 검증 |
 | `notifySaved(fileName?)` | `{ok, wasDirty}` | 수명주기 |
 
-**에이전트 동사는 0개다.** `digest`·`search`·`fields`·`extract-data`·`inspect` 어느
+`getFontDecisionTrace`는 #4961에서 추가된 제한형 진단 query다. `page`는 0 이상의 safe integer,
+`limits.maxCharacters`는 1..=4096의 safe integer만 허용하며, 알 수 없는 parameter를 거부한다.
+WASM layout trace에 현재 Canvas2D local/web/generic supply와 CanvasKit SFNT/typeface snapshot을
+결합할 뿐 font fetch, Local Font Access 권한 요청, repaint 또는 backend 변경을 시작하지 않는다.
+CSS가 실제 glyph face를 공개하지 않는 경우 `certainty: notObserved`와
+`cssActualGlyphFaceUnobservable`을 함께 반환한다.
+
+2026-08-17 Stage 5에서 headless Chrome과 Windows 호스트 Chrome CDP 양쪽의 실제
+`@rhwp/editor.getFontDecisionTrace(0, {maxCharacters: 64})`를 검증했다. 두 환경 모두 bounded
+`truncated` v1 trace와 Canvas2D·CanvasKit snapshot을 반환했고, 호출 전후 SVG·HWP bytes가 같았다.
+호출 구간의 `fetch`, `FontFace.load`, Local Font Access 호출도 모두 0건이었다. 이 결과는 trace가
+선택 authority나 초기화 trigger가 아니라 현재 snapshot의 읽기 전용 관찰자라는 공개 계약을 고정한다.
+
+**일반 에이전트 동사는 아직 0개다.** `digest`·`search`·`fields`·`extract-data`·`inspect` 어느
 것도 없다. 그런데 그중 다수는 **WASM 에는 이미 있다**(`searchAllText`
 `wasm_api.rs:4869`, `getFieldList` `4542` 등 — [self_description.md §1.3](self_description.md)).
 
