@@ -1,0 +1,146 @@
+{
+  "schemaVersion": "1.0",
+  "generator": "tools/oracle_public/oracle_resolver.py",
+  "targetPairCount": 269,
+  "pairCount": 11,
+  "matchedSampleCount": 7,
+  "unmatchedCount": 2,
+  "oracleLinkCount": 11,
+  "oracleRoots": [
+    "pdf",
+    "pdf-2020",
+    "pdf-large"
+  ],
+  "byHancomVersion": {
+    "2018": 0,
+    "2020": 6,
+    "2022": 5,
+    "2024": 0
+  },
+  "pairs": [
+    {
+      "id": "samples/3-09월_교육_통합_2022.hwp::pdf/3-09월_교육_통합_2022.pdf",
+      "sample": "samples/3-09월_교육_통합_2022.hwp",
+      "pdf": "pdf/3-09월_교육_통합_2022.pdf",
+      "stem": "3-09월_교육_통합_2022",
+      "hancomVersion": "2022",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/basic/calendar_year.hwp::pdf/basic/calendar_year-2022.pdf",
+      "sample": "samples/basic/calendar_year.hwp",
+      "pdf": "pdf/basic/calendar_year-2022.pdf",
+      "stem": "calendar_year",
+      "hancomVersion": "2022",
+      "variant": "2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/exam_kor.hwp::pdf/exam_kor-2022.pdf",
+      "sample": "samples/exam_kor.hwp",
+      "pdf": "pdf/exam_kor-2022.pdf",
+      "stem": "exam_kor",
+      "hancomVersion": "2022",
+      "variant": "2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/exam_kor.hwp::pdf/exam_kor-2020.pdf",
+      "sample": "samples/exam_kor.hwp",
+      "pdf": "pdf/exam_kor-2020.pdf",
+      "stem": "exam_kor",
+      "hancomVersion": "2020",
+      "variant": "2020",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/exam_kor.hwp::pdf-2020/exam_kor-2020.pdf",
+      "sample": "samples/exam_kor.hwp",
+      "pdf": "pdf-2020/exam_kor-2020.pdf",
+      "stem": "exam_kor",
+      "hancomVersion": "2020",
+      "variant": "2020",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf-2020"
+    },
+    {
+      "id": "samples/exam_kor.hwpx::pdf/exam_kor-2022.pdf",
+      "sample": "samples/exam_kor.hwpx",
+      "pdf": "pdf/exam_kor-2022.pdf",
+      "stem": "exam_kor",
+      "hancomVersion": "2022",
+      "variant": "2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/exam_kor.hwpx::pdf/exam_kor-2020.pdf",
+      "sample": "samples/exam_kor.hwpx",
+      "pdf": "pdf/exam_kor-2020.pdf",
+      "stem": "exam_kor",
+      "hancomVersion": "2020",
+      "variant": "2020",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/exam_kor.hwpx::pdf-2020/exam_kor-2020.pdf",
+      "sample": "samples/exam_kor.hwpx",
+      "pdf": "pdf-2020/exam_kor-2020.pdf",
+      "stem": "exam_kor",
+      "hancomVersion": "2020",
+      "variant": "2020",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf-2020"
+    },
+    {
+      "id": "samples/hwp3-sample-hwpx.hwpx::pdf/hwp3-sample-hwpx-2022.pdf",
+      "sample": "samples/hwp3-sample-hwpx.hwpx",
+      "pdf": "pdf/hwp3-sample-hwpx-2022.pdf",
+      "stem": "hwp3-sample-hwpx",
+      "hancomVersion": "2022",
+      "variant": "2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/편람.hwp::pdf/편람-hwp-2020.pdf",
+      "sample": "samples/편람.hwp",
+      "pdf": "pdf/편람-hwp-2020.pdf",
+      "stem": "편람",
+      "hancomVersion": "2020",
+      "variant": "hwp-2020",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/편람.hwpx::pdf/편람-hwpx-2020.pdf",
+      "sample": "samples/편람.hwpx",
+      "pdf": "pdf/편람-hwpx-2020.pdf",
+      "stem": "편람",
+      "hancomVersion": "2020",
+      "variant": "hwpx-2020",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    }
+  ],
+  "unmatched": [
+    {
+      "sample": "samples/hwp3-sample.hwp",
+      "stem": "hwp3-sample",
+      "sourceFormat": "hwp",
+      "reason": "no_oracle_pdf"
+    },
+    {
+      "sample": "samples/lonely.hwp",
+      "stem": "lonely",
+      "sourceFormat": "hwp",
+      "reason": "no_oracle_pdf"
+    }
+  ]
+}
