@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "id": "c04-charOverlap-tabLeader-textControlMark",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "flow 클러스터 charOverlap+tabLeader+textControlMark 순서 유지",
+  "ops": [
+    {
+      "kind": "charOverlap",
+      "x": 10.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": "A",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "tabLeader",
+      "x": 70.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textControlMark",
+      "x": 130.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": "C",
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "charOverlap",
+    "tabLeader",
+    "textControlMark"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  charOverlap bbox=10.00,10.00,40.00,20.00",
+    "  tabLeader bbox=70.00,10.00,40.00,20.00",
+    "  textControlMark bbox=130.00,10.00,40.00,20.00",
+    "end_page ops=3"
+  ]
+}

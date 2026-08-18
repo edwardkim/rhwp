@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "id": "s505-offset",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "페이지 가장자리 bbox",
+  "ops": [
+    {
+      "kind": "rectangle",
+      "x": 350.0,
+      "y": 250.0,
+      "w": 40.0,
+      "h": 40.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 299.0,
+      "w": 400.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 2.0,
+      "y": 2.0,
+      "w": 40.0,
+      "h": 12.0,
+      "text": "모서리",
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "rectangle",
+    "line",
+    "textRun"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  rectangle bbox=350.00,250.00,40.00,40.00",
+    "  line bbox=0.00,299.00,400.00,0.00",
+    "  textRun bbox=2.00,2.00,40.00,12.00",
+    "end_page ops=3"
+  ]
+}

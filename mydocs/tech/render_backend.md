@@ -349,3 +349,22 @@ let png: RasterRenderOutput = backend.finish()?;
 - sparse-checkout 에서 `gym/` 을 빼면 `src/mcp_serve.rs:827` 의
   `include_str!("../gym/README.md")` 때문에 **bin 타깃 빌드가 실패한다.**
   `git sparse-checkout add gym` 으로 해소한다(라이브러리 빌드는 영향 없음).
+
+## 8. M06-f 계약 카탈로그·픽스처
+
+M06-1/2/3 이 Svg/Png/Skia 어댑터와 광고 정직성을 넣은 뒤, 이 계층은 **시험 가능한 표**
+가 비어 있었다. M06-f 는 `src/renderer/**` 를 건드리지 않고 다음을 얹는다.
+
+| 모듈 | 역할 |
+| --- | --- |
+| `catalog.rs` | 18 kind × plane × capability |
+| `scenes.rs` | 합성 장면 빌더 |
+| `contract.rs` | 생명주기 스크립트·치수 사례 |
+| `honesty.rs` | 광고 vs 실지원 표 |
+| `fixture.rs` | JSON 스키마·최소 파서 |
+| `diff.rs` | 가족 비교·형식 skip |
+
+정본 표는 [계약 카탈로그](../manual/render_backend_contract_catalog.md),
+장면 목록은 [픽스처 카탈로그](render_backend_fixture_catalog.md) 다.
+통합 시험은 `tests/cases/render_backend_m06f_*.rs` 에만 둔다. source-side
+`#[cfg(test)]` 모듈은 늘리지 않는다.

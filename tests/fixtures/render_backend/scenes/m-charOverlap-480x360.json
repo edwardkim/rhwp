@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "m-charOverlap-480x360",
+  "width": 480.0,
+  "height": 360.0,
+  "contract": "charOverlap 를 480x360 페이지에 올리면 begin_page 헤더가 480.00x360.00",
+  "ops": [
+    {
+      "kind": "charOverlap",
+      "x": 4.0,
+      "y": 6.0,
+      "w": 24.0,
+      "h": 12.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "charOverlap"
+  ],
+  "expectedTrace": [
+    "begin_page 480.00x360.00",
+    "  charOverlap bbox=4.00,6.00,24.00,12.00",
+    "end_page ops=1"
+  ]
+}

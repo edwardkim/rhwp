@@ -45,3 +45,4 @@
 - [프로젝트 로드맵](ROADMAP.md): 제품 전체의 버전 단계와 계속 다듬는 일곱 분야. 세부 기술 로드맵의 우선순위를 자동 승인하지 않는다.
 - [에이전트 표면 플레이북](mydocs/manual/agent_surface_playbook.md): CLI `--json`·MCP 도구를 추가하는 공식 절차와 수용 기준.
 - [에이전트 로드맵 문서 지도](mydocs/tech/agent_roadmap/README.md): 프로젝트 로드맵 “AI 활용과 자동화” 분야의 R1~R100 상세 기준 문서. 조망 이슈 #3907·상세 원천 #3608을 연결한다.
+- [RenderBackend 계약 카탈로그](mydocs/manual/render_backend_contract_catalog.md): 출력 백엔드 생명주기·kind·정직성 표. 픽스처는 [장면 목록](mydocs/tech/render_backend_fixture_catalog.md).

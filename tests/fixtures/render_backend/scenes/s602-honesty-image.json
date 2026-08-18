@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s602-honesty-image",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "정직성 이미지 프로브",
+  "ops": [
+    {
+      "kind": "image",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 8.0,
+      "h": 8.0,
+      "text": null,
+      "gradient": false,
+      "image": true
+    }
+  ],
+  "expectedKinds": [
+    "image"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  image bbox=0.00,0.00,8.00,8.00",
+    "end_page ops=1"
+  ]
+}

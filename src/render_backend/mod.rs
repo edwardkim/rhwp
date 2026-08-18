@@ -67,10 +67,23 @@
 //! ```
 //!
 //! 설계 배경과 기존 백엔드 채택 시나리오는 `mydocs/tech/render_backend.md`.
+//!
+//! # M06-f 계약·픽스처
+//!
+//! 어댑터 본체 위에 **카탈로그·장면·정직성·픽스처·상호 diff** 를 얹는다.
+//! `src/renderer/**` 는 여전히 한 줄도 바꾸지 않는다. 새 `#[cfg(test)]`
+//! 모듈도 만들지 않는다 — 통합 시험은 `tests/cases/render_backend_m06f_*.rs`
+//! 와 `tests/fixtures/render_backend/` 가 맡는다.
 
 pub mod backends;
 pub mod caps;
+pub mod catalog;
+pub mod contract;
+pub mod diff;
+pub mod fixture;
+pub mod honesty;
 pub mod png_adapter;
+pub mod scenes;
 pub mod skia_adapter;
 pub mod svg_adapter;
 pub mod traits;
@@ -78,7 +91,31 @@ pub mod util;
 
 pub use backends::{DrawStats, NullBackend, TraceBackend};
 pub use caps::{BackendCapabilities, BackendFeature};
+pub use catalog::{
+    catalog_invariants_hold, classify_op, spec_for_kind, ClassifiedOp, OpBounds, PaintOpKindSpec,
+    PAINT_OP_KIND_COUNT, PAINT_OP_KIND_SPECS,
+};
+pub use contract::{
+    error_display_holds, page_size_cases_hold, run_lifecycle, standard_lifecycle_scripts,
+    LifecycleExpect, LifecycleScript, LifecycleStep, PageSizeCase, PAGE_SIZE_CASES,
+};
+pub use diff::{
+    all_families_share_trace, compare_shots, kind_set, shot_from_tree, svg_is_deterministic,
+    BackendFamily, BackendShot, OutputFamily, PairVerdict,
+};
+pub use fixture::{
+    fixture_root, load_manifest, load_scene_fixtures, parse_fixture_json, FixtureManifest,
+    FixtureScene,
+};
+pub use honesty::{
+    expected_honesty_table, honesty_table_holds, observe_svg, HonestyRow, SvgObservation,
+    ALL_FEATURES, PNG_SIGNATURE,
+};
 pub use png_adapter::PngBackend;
+pub use scenes::{
+    builtin_scene, builtin_scenes, materializable_kinds, materialize_scene_op, SceneOp, SceneSpec,
+    HONESTY_TEXT, TINY_PNG,
+};
 pub use skia_adapter::SkiaBackend;
 pub use svg_adapter::SvgBackend;
 pub use traits::{PageSize, RenderBackend, RenderBackendError};
