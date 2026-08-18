@@ -1,0 +1,11 @@
+{
+  "id": "T27",
+  "title": "fields 기본 출력은 비JSON",
+  "steps": [
+    {
+      "note": "기존 CLI 표면만. 새 플래그 없음",
+      "usesExistingCommand": true
+    }
+  ],
+  "notGym": true
+}

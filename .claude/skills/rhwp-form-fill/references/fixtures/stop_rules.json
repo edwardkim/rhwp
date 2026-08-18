@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5300,
+  "rules": [
+    {
+      "id": "F01",
+      "when": "runtime exit 1",
+      "action": "중단. 원본 불변"
+    },
+    {
+      "id": "F02",
+      "when": "fieldCount 0",
+      "action": "rhwp-table-exchange"
+    },
+    {
+      "id": "F03",
+      "when": "textSecurity not clean",
+      "action": "rhwp-security-sweep"
+    },
+    {
+      "id": "F04",
+      "when": "조사만 요청",
+      "action": "fields 에서 정지"
+    },
+    {
+      "id": "F05",
+      "when": "ambiguous 비어 있지 않음",
+      "action": "이름[N] 재지목"
+    },
+    {
+      "id": "F06",
+      "when": "notFound 잔류",
+      "action": "name 을 그대로 복사"
+    },
+    {
+      "id": "F07",
+      "when": "verify + 빈 배열",
+      "action": "채움 완료"
+    },
+    {
+      "id": "F08",
+      "when": "제출 요청",
+      "action": "sanitize"
+    },
+    {
+      "id": "F09",
+      "when": "데이터 행 0",
+      "action": "exit 2, 상류 확인"
+    },
+    {
+      "id": "F10",
+      "when": "batch 행 실패",
+      "action": "행별 레코드로 격리"
+    },
+    {
+      "id": "F11",
+      "when": "name-field notFound",
+      "action": "게이트에서 제외"
+    },
+    {
+      "id": "F12",
+      "when": "verify identical false",
+      "action": "exit 3, 산출은 남음"
+    },
+    {
+      "id": "F13",
+      "when": "서식 N개 폴더",
+      "action": "rhwp-bulk-pipeline"
+    },
+    {
+      "id": "F14",
+      "when": "질문이 이미 답",
+      "action": "다음 단 금지"
+    }
+  ]
+}
