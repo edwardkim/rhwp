@@ -5,7 +5,7 @@
 - 구현 기준선: `c3c35306b1428a2dcd97656d1cbe4a8c74c780a7`
 - 구현 커밋: `cb4b057ac`
 - 수행일: 2026-08-19
-- 상태: 완료 — 최신 `upstream/devel` 동기화 및 다음 Stage 2 절편 승인 대기
+- 상태: 완료 — 최신 `upstream/devel` 동기화·재검증 완료, 다음 Stage 2 절편 승인 대기
 
 ## 1. 절편 선정
 
@@ -88,17 +88,43 @@ stdout/stderr 배치에 변화가 없다. 여분 위치 인자를 무시하는 �
 영향이 없었다. parser·serializer·renderer 계산 로직은 바꾸지 않고 diagnostic adapter의
 위치만 옮겼으므로 시각 검증과 WASM 빌드는 추가하지 않았다.
 
-## 6. 원격 변화와 다음 절편 관문
+## 6. 최신 `devel` 동기화와 재검증
 
-최종 fetch 기준 `upstream/devel`은 `9d352d56d37a1dbd305b209ff660a0f25557e14b`이며 현재
-branch는 이 보고서 커밋 후 3 behind / 18 ahead다. 최신 원격과의 통합 시뮬레이션은
-clean이지만, 실제 동기화와 그 이후 재검증은 다음 승인 절차에서 수행한다. remote push는
-수행하지 않았다.
+메인테이너 승인 뒤 `upstream/devel@9d352d56d37a1dbd305b209ff660a0f25557e14b`을 기존
+절편 SHA 계보를 보존하는 merge 방식으로 반영했다. 통합 커밋은 `7a6b4902d`이며 충돌은 없었다.
+통합 직후 branch는 0 behind / 19 ahead다.
+
+통합 head에서 다음 게이트를 다시 실행했다.
+
+| 통합 재검증 | 결과 |
+|---|---|
+| `diag` focused nextest | 19/19 통과 |
+| `cli_catalog_contract` | 10/10 통과 |
+| #5525 한글 2024 호환 focused test | 1/1 통과 |
+| release-test 전체 nextest | 7,312/7,312 통과, 3 slow, 38 skipped, 165.905초 |
+| clippy `-D warnings` | 통과 |
+| doc-test | 8/8 통과, 2 ignored |
+| fmt / diff check | 통과 |
+| Rust test suite manifest | 717 sources / 3,270 static test attrs / 43 integration targets |
+| Rust unit tier | 4,225 tests / 298 modules |
+
+#5525의 새 case는 `rust-test-suite-manifest --prepare`로 로컬 생성 harness에 편입한 뒤 실행했다.
+생성 harness는 추적 파일을 바꾸지 않았고 최종 `--check`가 통과했다. 통합 후 `main.rs`는
+40,828줄이며 diagnostics 944줄, 최상위 함수 332개, `wasm_api::HwpDocument` 42회,
+`rhwp::model` 63회, `rhwp::renderer` 24회, `rhwp::service` 0회다.
+
+## 7. 다음 절편 관문
 
 병합된 PR #5525는 `dump-pages --compat 2022|2024`를 추가했지만 해당 PR의 self-review에
 help·capabilities·JSON·사용자 문서 계약 보정이 후속 과제로 기록되어 있다. 따라서
 `dump-pages`는 이 드리프트를 먼저 해소하기 전 move-only 후보로 선택하지 않는다. 다음
-Stage 2 후보는 약 150줄의 self-contained diagnostic인 `dump-records`다. parser·암호 처리와
-`cli_password` 의존성, 출력 및 종료 코드 기준선을 다시 계측한 뒤 실제 절편 적합성을 확정한다.
+Stage 2 후보는 상한 상수와 handler를 합쳐 약 154줄인 `dump-records`다. 이를 옮겨도
+diagnostics 모듈은 약 1,100줄로 1,200줄 상한 이내다. 활성 PR 중 `src/main.rs`, diagnostics,
+해당 exit-code·catalog 계약 파일과 겹치는 변경은 없다.
+
+다만 현재 테스트는 인자 누락, 읽기 실패와 일반 HWP5 성공만 직접 보호한다. CFB 열기,
+FileHeader 읽기·파싱, 지원하지 않는 암호 버전, 비밀번호 누락·불일치, record 파싱과 기존 여분
+인자 처리의 출력·exit-code 기준선은 이동 전에 추가로 고정해야 한다. 따라서 일곱 번째 절편은
+characterization과 hash 기준선 확보를 먼저 수행한 뒤 move-only를 진행하는 조건부 후보로 둔다.
 
 다음 절편은 메인테이너 승인 전 시작하지 않으며 remote push도 별도 승인 전 수행하지 않는다.
