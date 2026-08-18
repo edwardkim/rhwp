@@ -23,6 +23,7 @@ last_verified: 2026-08-10
 | HWPX와 HWP IR 차이 | [HWP/HWPX IR 차이](hwp_hwpx_ir_differences.md) | [HWPX 한컴 참조](hwpx_hancom_reference.md), [HWPX DVC 참조](hwpx_dvc_reference.md), [로컬 OWPML XML 스키마](../manual/owpml_schema_reference.md) |
 | Document IR와 LineSeg 계약 | [Document IR LineSeg 표준](document_ir_lineseg_standard.md) | [Issue #310 LineSeg vpos 조사](investigations/issue-310/README.md), [HWPX LineSeg 검증](hwpx_lineseg_validation.md) |
 | 렌더링 엔진 | [렌더링 엔진 설계](rendering_engine_design.md) | [Issue #516 다층 렌더링 후보 조사](investigations/issue-516/README.md), [Issue #124 캔버스·폰트 측정 조사](investigations/issue-124/README.md) |
+| 수식 명령 디스패치 | [수식 모듈 매뉴얼](../manual/equation_module.md) | 분류 정본 [`src/renderer/equation/dispatch.rs`](../../src/renderer/equation/dispatch.rs), [Issue #139 수식 지원 조사](investigations/issue-139/README.md) |
 | 표 레이아웃 | [표 레이아웃 규칙](table_layout_rules.md) | [HWP 표 렌더링](hwp_table_rendering.md), [Issue #101 부분 표 흐름 조사](investigations/issue-101/README.md) |
 | 레이아웃 이상탐지(overflow/overlap/empty_page) | [레이아웃 이상탐지 — 세 번째 층](layout_anomaly_detection.md) | CLI `layout-anomaly`, `render_geom_diff`(변위 비교)와의 관계 |
 | 폰트 대체와 충실도 | [폰트 fallback 전략](font_fallback_strategy.md) | [Issue #124 캔버스·폰트 측정 조사](investigations/issue-124/README.md), [Issue #2125 font ownership 조사](investigations/issue-2125/README.md) |

@@ -2635,7 +2635,7 @@
       "id": "src/renderer/equation/parser.rs::latex_compat_tests#1",
       "file": "src/renderer/equation/parser.rs",
       "sourcePath": "src/renderer/equation/parser.rs",
-      "line": 2199,
+      "line": 2076,
       "module": "latex_compat_tests",
       "testAttributes": 50,
       "tier": "white_box",
@@ -2648,7 +2648,7 @@
       "id": "src/renderer/equation/parser.rs::tests#1",
       "file": "src/renderer/equation/parser.rs",
       "sourcePath": "src/renderer/equation/parser.rs",
-      "line": 1774,
+      "line": 1651,
       "module": "tests",
       "testAttributes": 25,
       "tier": "white_box",
@@ -4027,28 +4027,28 @@
     {
       "id": "src/renderer/equation/parser.rs::cfg-fn#1",
       "file": "src/renderer/equation/parser.rs",
-      "line": 2145,
+      "line": 2022,
       "kind": "fn",
       "testAttributes": 1
     },
     {
       "id": "src/renderer/equation/parser.rs::cfg-fn#2",
       "file": "src/renderer/equation/parser.rs",
-      "line": 2162,
+      "line": 2039,
       "kind": "fn",
       "testAttributes": 1
     },
     {
       "id": "src/renderer/equation/parser.rs::cfg-fn#3",
       "file": "src/renderer/equation/parser.rs",
-      "line": 2177,
+      "line": 2054,
       "kind": "fn",
       "testAttributes": 1
     },
     {
       "id": "src/renderer/equation/parser.rs::cfg-fn#4",
       "file": "src/renderer/equation/parser.rs",
-      "line": 2187,
+      "line": 2064,
       "kind": "fn",
       "testAttributes": 1
     },

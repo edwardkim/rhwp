@@ -39,6 +39,7 @@ last_verified: 2026-08-15
 | 웹한글컨트롤 호환 층 개발·Oracle 대조 | [웹한글컨트롤 호환 개발 가이드](webhwpctrl_compat_development.md) | [`@rhwp/hwpctrl` 패키지 안내](../../npm/hwpctrl-ocx/README.md), [호환 하니스](../../tools/hwpctrl_compat/README.md) |
 | CLI 로 실물 서식 채우기(누름틀·표 좌표·치환) | [서식 자동화 심화 가이드](form_filling_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md), [에이전트 실무 대체 예제집](agent_task_playbook.md) |
 | 편집 command와 단축키 | [Command/Undo 검토 체크리스트](edit_command_review_checklist.md) | [키보드 단축키 추가](keyboard_shortcut_guide.md) |
+| 수식 스크립트 파서·명령 디스패치 | [수식 모듈 매뉴얼](equation_module.md) | 모듈 지도 [`src/renderer/equation/README.md`](../../src/renderer/equation/README.md), 분류 정본 [`dispatch.rs`](../../src/renderer/equation/dispatch.rs) |
 | 품질 지표와 리팩터링 검토 | [코드 품질 대시보드](dashboard.md) | [SOLID 채점 기준](solid_scoring_guide.md) |
 | release 준비와 배포 | [배포 가이드](publish_guide.md) | [개발 환경 가이드](dev_environment_guide.md) |
 | rhwp-studio UI 명칭·CSS 접두어 | [rhwp-studio UI 명칭과 CSS 접두어](rhwp_studio_ui_conventions.md) | [개발 환경 가이드](dev_environment_guide.md) |
