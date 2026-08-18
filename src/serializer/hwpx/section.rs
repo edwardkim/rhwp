@@ -631,6 +631,16 @@ pub fn write_section(
             let pid = ctx.next_para_id();
             let sid = ctx.effective_style_id(p.style_id);
             extra.push_str(&render_hp_p_open(p, pid, sid));
+            // [#4056] 후속 문단이 구역나누기(SectionDef)면 그 구역을 secPr 로 방출한다.
+            // `render_runs` 는 SectionDef 슬롯을 hidden 처리해 XML 을 내지 않으므로
+            // 여기서 내지 않으면 뒤 구역이 통째로 사라져 쪽나눔이 소실된다.
+            if let Some(Control::SectionDef(sd)) = p
+                .controls
+                .iter()
+                .find(|c| matches!(c, Control::SectionDef(_)))
+            {
+                extra.push_str(&build_secpr_run(sd, first_run_char_shape_id(p)));
+            }
             extra.push_str(&runs);
             extra.push_str(&linesegs);
             extra.push_str("</hp:p>");
@@ -670,6 +680,35 @@ pub(crate) fn render_hp_p_open(p: &Paragraph, id: u32, style_id_ref: u8) -> Stri
 /// 비어있으면 0 (기본 글자모양) 반환.
 fn first_run_char_shape_id(p: &Paragraph) -> u32 {
     p.char_shapes.first().map(|r| r.char_shape_id).unwrap_or(0)
+}
+
+/// [#4056] 후속 구역(SectionDef)을 HWPX `<hp:secPr>` run 으로 방출한다.
+///
+/// HWP5 는 한 BodyText 섹션에 구역(secd)을 여럿 담을 수 있다(issue-505: 수식 4개가
+/// 각 구역 = 4쪽). 종전 HWPX 직렬화기는 `render_runs` 에서 **모든 SectionDef 를 드롭**해
+/// (첫 구역만 write_section 의 secPr 템플릿으로 살아남음) 뒤 구역들의 쪽나눔이 사라졌다
+/// (issue-505: 4→1쪽). HWPX 는 한 section0.xml 안에 secPr 를 여럿 둘 수 있으므로(한글
+/// 원본 실증: issue2019 10개·06544 63개), 뒤 구역마다 secPr 를 방출한다.
+///
+/// secPr 템플릿(`EMPTY_SECTION_XML`)에서 secPr 블록만 잘라 IR 값으로 치환한다 —
+/// 커스터마이즈 앵커(pagePr·visibility·scalars·footNotePr·pageBorderFill)가 모두 secPr
+/// 내부라 첫 구역과 같은 함수를 재사용한다. 바탕쪽(masterPage)은 이 경로에서 미지원
+/// (`masterPageCnt="0"` 유지) — 후속 구역의 바탕쪽은 드물다.
+fn build_secpr_run(sd: &SectionDef, first_cs: u32) -> String {
+    let start = EMPTY_SECTION_XML
+        .find("<hp:secPr ")
+        .expect("템플릿에 secPr 열기 태그가 있어야 함");
+    let end = EMPTY_SECTION_XML[start..]
+        .find("</hp:secPr>")
+        .map(|e| start + e + "</hp:secPr>".len())
+        .expect("템플릿에 secPr 닫기 태그가 있어야 함");
+    let mut secpr = EMPTY_SECTION_XML[start..end].to_string();
+    secpr = replace_page_pr(&secpr, &sd.page_def);
+    secpr = replace_page_border_fill(&secpr, sd);
+    secpr = replace_visibility(&secpr, sd);
+    secpr = replace_secpr_scalars(&secpr, sd);
+    secpr = replace_footnote_shape(&secpr, sd);
+    format!(r#"<hp:run charPrIDRef="{}">{}</hp:run>"#, first_cs, secpr)
 }
 
 /// Paragraph 하나를 (완전한 `<hp:run>` 시퀀스 XML, `<hp:linesegarray>` 요소 XML,
