@@ -1,0 +1,12 @@
+{
+  "claim": "V-w2-edit-set-hf-picture",
+  "command": "edit-set-hf-picture",
+  "family": "bbox",
+  "title": "edit set-hf-picture bbox 가 HF 영역 안",
+  "rowCount": 20000,
+  "byVerdict": {
+    "BBOX_OK": 14286,
+    "BBOX_OOB": 5714
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_set_hf_picture/"
+}

@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-paint-layer-count",
+  "command": "paint-layer-count",
+  "family": "count_eq",
+  "title": "paint layerCount 가 레이어 배열 길이",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5595,
+    "COUNT_OK": 14286,
+    "USAGE": 119
+  },
+  "ownedPath": "tools/llm_verifier/w2_paint_layer_count/"
+}

@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-batch-stderr-isolate",
+  "command": "batch-stderr-isolate",
+  "family": "isolate",
+  "title": "batch stderr 요약이 실패 행만 포함",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 2857,
+    "ISOLATED": 14286,
+    "POISON": 2857
+  },
+  "ownedPath": "tools/llm_verifier/w2_batch_stderr_isolate/"
+}

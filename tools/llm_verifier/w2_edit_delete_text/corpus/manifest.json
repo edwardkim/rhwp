@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-delete-text",
+  "command": "edit-delete-text",
+  "family": "mutate",
+  "title": "edit delete-text 후 글자 수가 before-count",
+  "rowCount": 20000,
+  "byVerdict": {
+    "MUTATE_DRIFT": 5570,
+    "MUTATE_OK": 14191,
+    "USAGE": 239
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_delete_text/"
+}

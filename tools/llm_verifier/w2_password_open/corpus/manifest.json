@@ -1,0 +1,15 @@
+{
+  "claim": "V-w2-password-open",
+  "command": "password-open",
+  "family": "avail",
+  "title": "암호 문서 키 없으면 exit 2",
+  "rowCount": 20000,
+  "byVerdict": {
+    "AVAIL_RUN": 5714,
+    "EXIT_UNKNOWN": 2857,
+    "FALSE_UNAVAIL": 2857,
+    "UNAVAIL_LIE": 5714,
+    "UNAVAIL_OK": 2858
+  },
+  "ownedPath": "tools/llm_verifier/w2_password_open/"
+}

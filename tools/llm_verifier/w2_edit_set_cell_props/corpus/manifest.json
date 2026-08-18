@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-set-cell-props",
+  "command": "edit-set-cell-props",
+  "family": "reread",
+  "title": "edit set-cell-props --verify 재독",
+  "rowCount": 20000,
+  "byVerdict": {
+    "NOT_EVIDENCE": 2857,
+    "REREAD_DRIFT": 2857,
+    "REREAD_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_set_cell_props/"
+}

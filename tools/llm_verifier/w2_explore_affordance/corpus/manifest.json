@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-explore-affordance",
+  "command": "explore-affordance",
+  "family": "count_eq",
+  "title": "explore affordanceCount 가 항목 수",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5595,
+    "COUNT_OK": 14286,
+    "USAGE": 119
+  },
+  "ownedPath": "tools/llm_verifier/w2_explore_affordance/"
+}

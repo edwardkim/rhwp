@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-studio-export-png",
+  "command": "studio-export-png",
+  "family": "bytes",
+  "title": "studio export-png 바이트가 양수",
+  "rowCount": 20000,
+  "byVerdict": {
+    "BYTES_OK": 14286,
+    "EMPTY_OUTPUT": 2857,
+    "ZERO_BYTES": 2857
+  },
+  "ownedPath": "tools/llm_verifier/w2_studio_export_png/"
+}

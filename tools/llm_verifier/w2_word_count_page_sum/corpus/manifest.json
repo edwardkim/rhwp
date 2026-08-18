@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-word-count-page-sum",
+  "command": "word-count-page-sum",
+  "family": "count_eq",
+  "title": "word-count 쪽별 합이 전체와 같음",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5595,
+    "COUNT_OK": 14286,
+    "USAGE": 119
+  },
+  "ownedPath": "tools/llm_verifier/w2_word_count_page_sum/"
+}

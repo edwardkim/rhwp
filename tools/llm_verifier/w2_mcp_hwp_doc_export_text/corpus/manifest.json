@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-mcp-hwp-doc-export-text",
+  "command": "mcp-hwp-doc-export-text",
+  "family": "bound",
+  "title": "mcp hwp_doc_export_text 상한과 truncated",
+  "rowCount": 20000,
+  "byVerdict": {
+    "BOUND_FALSE_POS": 5714,
+    "BOUND_LIE": 2857,
+    "BOUND_OK": 11429
+  },
+  "ownedPath": "tools/llm_verifier/w2_mcp_hwp_doc_export_text/"
+}

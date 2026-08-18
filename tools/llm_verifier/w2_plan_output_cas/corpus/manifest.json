@@ -1,0 +1,14 @@
+{
+  "claim": "V-w2-plan-output-cas",
+  "command": "plan-output-cas",
+  "family": "cas",
+  "title": "run 계획 outputSha256 이 산출과 일치",
+  "rowCount": 20000,
+  "byVerdict": {
+    "CAS_MISMATCH": 2857,
+    "CAS_OK": 8572,
+    "SKIP": 2857,
+    "USAGE": 5714
+  },
+  "ownedPath": "tools/llm_verifier/w2_plan_output_cas/"
+}

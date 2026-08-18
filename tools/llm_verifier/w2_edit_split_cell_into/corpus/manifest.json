@@ -1,0 +1,12 @@
+{
+  "claim": "V-w2-edit-split-cell-into",
+  "command": "edit-split-cell-into",
+  "family": "dims",
+  "title": "edit split-cell-into 분할 치수가 양수",
+  "rowCount": 20000,
+  "byVerdict": {
+    "DIM_DRIFT": 5714,
+    "DIM_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_split_cell_into/"
+}

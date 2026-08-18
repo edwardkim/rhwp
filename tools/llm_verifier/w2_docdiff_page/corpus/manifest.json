@@ -1,0 +1,12 @@
+{
+  "claim": "V-w2-docdiff-page",
+  "command": "docdiff-page",
+  "family": "diff",
+  "title": "docdiff 쪽 차이 수가 항목 수",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5714,
+    "DIFF_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/w2_docdiff_page/"
+}

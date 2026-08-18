@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-set-column-def",
+  "command": "edit-set-column-def",
+  "family": "count_eq",
+  "title": "edit set-column-def count 가 단 수",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5595,
+    "COUNT_OK": 14286,
+    "USAGE": 119
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_set_column_def/"
+}

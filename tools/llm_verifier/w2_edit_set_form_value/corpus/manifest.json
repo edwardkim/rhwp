@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-set-form-value",
+  "command": "edit-set-form-value",
+  "family": "reread",
+  "title": "edit set-form-value --verify 재독",
+  "rowCount": 20000,
+  "byVerdict": {
+    "NOT_EVIDENCE": 2857,
+    "REREAD_DRIFT": 2857,
+    "REREAD_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_set_form_value/"
+}

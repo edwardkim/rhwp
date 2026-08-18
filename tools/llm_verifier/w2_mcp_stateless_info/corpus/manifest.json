@@ -1,0 +1,15 @@
+{
+  "claim": "V-w2-mcp-stateless-info",
+  "command": "mcp-stateless-info",
+  "family": "layer",
+  "title": "무상태 MCP 판정 3층 rpc/isError/envelope",
+  "rowCount": 20000,
+  "byVerdict": {
+    "ENV_JUDGE": 8571,
+    "ENV_OK": 2857,
+    "ENV_UNKNOWN": 2857,
+    "RPC_FAIL": 2858,
+    "TOOL_FAIL": 2857
+  },
+  "ownedPath": "tools/llm_verifier/w2_mcp_stateless_info/"
+}

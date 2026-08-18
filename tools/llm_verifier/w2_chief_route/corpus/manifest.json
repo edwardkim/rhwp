@@ -1,0 +1,12 @@
+{
+  "claim": "V-w2-chief-route",
+  "command": "chief-route",
+  "family": "route",
+  "title": "chief 라우트가 pdf/fill/table/needs-agent/fde",
+  "rowCount": 20000,
+  "byVerdict": {
+    "ROUTE_OK": 17143,
+    "ROUTE_UNKNOWN": 2857
+  },
+  "ownedPath": "tools/llm_verifier/w2_chief_route/"
+}

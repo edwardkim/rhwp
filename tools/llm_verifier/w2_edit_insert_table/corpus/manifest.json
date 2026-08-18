@@ -1,0 +1,12 @@
+{
+  "claim": "V-w2-edit-insert-table",
+  "command": "edit-insert-table",
+  "family": "dims",
+  "title": "edit insert-table 행·열 수가 요청 치수",
+  "rowCount": 20000,
+  "byVerdict": {
+    "DIM_DRIFT": 5714,
+    "DIM_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_insert_table/"
+}

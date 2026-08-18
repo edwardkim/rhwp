@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-insert-number",
+  "command": "edit-insert-number",
+  "family": "mutate",
+  "title": "edit insert-number 후 번호 필드 수 +1",
+  "rowCount": 20000,
+  "byVerdict": {
+    "MUTATE_DRIFT": 5570,
+    "MUTATE_OK": 14191,
+    "USAGE": 239
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_insert_number/"
+}

@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-mcp-hwp-doc-fields",
+  "command": "mcp-hwp-doc-fields",
+  "family": "count_eq",
+  "title": "mcp hwp_doc_fields fieldCount 가 배열 길이",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5595,
+    "COUNT_OK": 14286,
+    "USAGE": 119
+  },
+  "ownedPath": "tools/llm_verifier/w2_mcp_hwp_doc_fields/"
+}

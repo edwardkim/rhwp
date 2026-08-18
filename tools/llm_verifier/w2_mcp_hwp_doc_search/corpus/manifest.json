@@ -1,0 +1,12 @@
+{
+  "claim": "V-w2-mcp-hwp-doc-search",
+  "command": "mcp-hwp-doc-search",
+  "family": "search",
+  "title": "mcp hwp_doc_search matchCount 가 배열 길이",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5714,
+    "SEARCH_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/w2_mcp_hwp_doc_search/"
+}

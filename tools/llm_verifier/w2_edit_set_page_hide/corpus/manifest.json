@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-set-page-hide",
+  "command": "edit-set-page-hide",
+  "family": "reread",
+  "title": "edit set-page-hide --verify 재독",
+  "rowCount": 20000,
+  "byVerdict": {
+    "NOT_EVIDENCE": 2857,
+    "REREAD_DRIFT": 2857,
+    "REREAD_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_set_page_hide/"
+}

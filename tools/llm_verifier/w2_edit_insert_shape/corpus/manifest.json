@@ -1,0 +1,12 @@
+{
+  "claim": "V-w2-edit-insert-shape",
+  "command": "edit-insert-shape",
+  "family": "bbox",
+  "title": "edit insert-shape 폭·높이가 쪽 안",
+  "rowCount": 20000,
+  "byVerdict": {
+    "BBOX_OK": 14286,
+    "BBOX_OOB": 5714
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_insert_shape/"
+}

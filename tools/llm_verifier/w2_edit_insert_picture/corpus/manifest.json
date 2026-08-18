@@ -1,0 +1,12 @@
+{
+  "claim": "V-w2-edit-insert-picture",
+  "command": "edit-insert-picture",
+  "family": "bbox",
+  "title": "edit insert-picture bbox 가 쪽 안",
+  "rowCount": 20000,
+  "byVerdict": {
+    "BBOX_OK": 14286,
+    "BBOX_OOB": 5714
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_insert_picture/"
+}

@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-add-bookmark",
+  "command": "edit-add-bookmark",
+  "family": "reread",
+  "title": "edit add-bookmark 후 bookmarks 에 이름 존재",
+  "rowCount": 20000,
+  "byVerdict": {
+    "NOT_EVIDENCE": 2857,
+    "REREAD_DRIFT": 2857,
+    "REREAD_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_add_bookmark/"
+}

@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-insert-page-break",
+  "command": "edit-insert-page-break",
+  "family": "mutate",
+  "title": "edit insert-page-break 후 쪽 수 증가",
+  "rowCount": 20000,
+  "byVerdict": {
+    "MUTATE_DRIFT": 5570,
+    "MUTATE_OK": 14191,
+    "USAGE": 239
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_insert_page_break/"
+}

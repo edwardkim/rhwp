@@ -1,0 +1,12 @@
+{
+  "claim": "V-w2-edit-set-column-widths",
+  "command": "edit-set-column-widths",
+  "family": "dims",
+  "title": "edit set-column-widths 폭 개수가 열 수",
+  "rowCount": 20000,
+  "byVerdict": {
+    "DIM_DRIFT": 5714,
+    "DIM_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_set_column_widths/"
+}

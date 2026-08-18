@@ -1,0 +1,15 @@
+{
+  "claim": "V-w2-mcp-hwp-close",
+  "command": "mcp-hwp-close",
+  "family": "lease",
+  "title": "mcp hwp_close 후 세션이 닫힘",
+  "rowCount": 20000,
+  "byVerdict": {
+    "EXIT_UNKNOWN": 2857,
+    "LEASE_FAIL": 5714,
+    "LEASE_OK": 2857,
+    "LEASE_STALE": 2857,
+    "SESSION_CLOSED": 5715
+  },
+  "ownedPath": "tools/llm_verifier/w2_mcp_hwp_close/"
+}

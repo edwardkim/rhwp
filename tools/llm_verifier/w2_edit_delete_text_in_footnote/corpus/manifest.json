@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-delete-text-in-footnote",
+  "command": "edit-delete-text-in-footnote",
+  "family": "mutate",
+  "title": "edit delete-text-in-footnote 글자 수 감소",
+  "rowCount": 20000,
+  "byVerdict": {
+    "MUTATE_DRIFT": 5570,
+    "MUTATE_OK": 14191,
+    "USAGE": 239
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_delete_text_in_footnote/"
+}

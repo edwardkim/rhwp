@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-plan-step-count",
+  "command": "plan-step-count",
+  "family": "order",
+  "title": "run 계획 steps 가 0..n-1 연속",
+  "rowCount": 20000,
+  "byVerdict": {
+    "ORDER_GAP": 5535,
+    "ORDER_OK": 14286,
+    "USAGE": 179
+  },
+  "ownedPath": "tools/llm_verifier/w2_plan_step_count/"
+}

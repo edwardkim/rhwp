@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-insert-footnote-text",
+  "command": "edit-insert-footnote-text",
+  "family": "reread",
+  "title": "edit insert-footnote-text 재독",
+  "rowCount": 20000,
+  "byVerdict": {
+    "NOT_EVIDENCE": 2857,
+    "REREAD_DRIFT": 2857,
+    "REREAD_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_insert_footnote_text/"
+}

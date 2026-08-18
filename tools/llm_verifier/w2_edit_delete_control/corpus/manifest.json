@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-delete-control",
+  "command": "edit-delete-control",
+  "family": "mutate",
+  "title": "edit delete-control 후 컨트롤 수 -1",
+  "rowCount": 20000,
+  "byVerdict": {
+    "MUTATE_DRIFT": 5570,
+    "MUTATE_OK": 14191,
+    "USAGE": 239
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_delete_control/"
+}

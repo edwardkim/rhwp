@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-run-journal-count",
+  "command": "run-journal-count",
+  "family": "count_eq",
+  "title": "run 저널 항목 수가 스텝 수",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5595,
+    "COUNT_OK": 14286,
+    "USAGE": 119
+  },
+  "ownedPath": "tools/llm_verifier/w2_run_journal_count/"
+}

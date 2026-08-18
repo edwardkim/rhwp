@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-font-metric-face",
+  "command": "font-metric-face",
+  "family": "count_eq",
+  "title": "font-metric face 수가 선언과 일치",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5595,
+    "COUNT_OK": 14286,
+    "USAGE": 119
+  },
+  "ownedPath": "tools/llm_verifier/w2_font_metric_face/"
+}

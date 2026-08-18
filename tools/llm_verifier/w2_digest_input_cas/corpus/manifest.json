@@ -1,0 +1,14 @@
+{
+  "claim": "V-w2-digest-input-cas",
+  "command": "digest-input-cas",
+  "family": "cas",
+  "title": "digest 입력 SHA-256 이 전제와 일치",
+  "rowCount": 20000,
+  "byVerdict": {
+    "CAS_MISMATCH": 2857,
+    "CAS_OK": 8572,
+    "SKIP": 2857,
+    "USAGE": 5714
+  },
+  "ownedPath": "tools/llm_verifier/w2_digest_input_cas/"
+}

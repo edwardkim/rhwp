@@ -1,0 +1,13 @@
+{
+  "claim": "V-w2-edit-merge-table",
+  "command": "edit-merge-table",
+  "family": "mutate",
+  "title": "edit merge-table 후 표 수가 before-1",
+  "rowCount": 20000,
+  "byVerdict": {
+    "MUTATE_DRIFT": 5570,
+    "MUTATE_OK": 14191,
+    "USAGE": 239
+  },
+  "ownedPath": "tools/llm_verifier/w2_edit_merge_table/"
+}
