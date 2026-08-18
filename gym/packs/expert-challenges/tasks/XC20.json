@@ -1,0 +1,94 @@
+{
+  "id": "XC20",
+  "tier": 5,
+  "title": "L4와 4세대 리콜 동시",
+  "input": "samples/table-001.hwp",
+  "axis": "자동화",
+  "instructions": "XC20 — L4와 4세대 리콜 동시.\n\n입력 표본은 `samples/table-001.hwp` 이다. 보스 존 과제다. 한 단만 빠지면 최종 판정이 막힌다. 저장소 samples/ 에 이미 있는 실문서만 쓰고 새 픽스처를 만들지 않는다. expert-challenges pack 은 기존 CLI 표면(keygen · replay · run · anchor · settle · conformance · recall-scope · lineage · audit-report · export-tables) 만으로 여러 축을 한 제출에 묶는다. 새 명령·새 연산자·새 pack 은 없다. 원본을 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. 정답 해시·건수를 과제 파일에 박제하지 마라. 채점은 같은 판정 명령을 다시 돌린다.\n\n서명·앵커된 4세대로 **L4 --deep** 과 뿌리 리콜 영향 **4건 이상**을 동시에 받아라. unaffected 는 묻지 않는다. L5 원장은 넣지 마라.\n\n제출 폴더에 l4rec/g0.capsule.json · l4rec/g1.capsule.json · l4rec/g2.capsule.json · l4rec/g3.capsule.json · keyring.json · anchor.ndjson · policy.json 를 두어라.\n\n수행 힌트: conformance L4 --deep + recall-scope affected>=4.\n\n이 과제는 XC01(L5 --deep 사다리 완주) · XC02(unaffected==0 과 affected>=2 동시) · XC03(정산 4관문 capsuleOk/gateOk/ledgerOk/workorderOk) · XC04(3세대 lineage --deep) · XC05(L3 --deep + audit-report) 를 복제하지 않는다. AU14+ 한 축 저티어 여정, WR 일일 3해시 answer.json, T07 서식 채움(fill-fields · 첫 필드 홍길동) 도 베끼지 마라.\n\n리콜만 맞추고 서명을 빠뜨리면 L4 가 막힌다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "l4rec/g0.capsule.json",
+      "l4rec/g1.capsule.json",
+      "l4rec/g2.capsule.json",
+      "l4rec/g3.capsule.json",
+      "keyring.json",
+      "anchor.ndjson",
+      "policy.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "영향권 4건 이상",
+      "op": "len_ge",
+      "value": 4,
+      "path": "affected",
+      "cmd": [
+        "recall-scope",
+        "--contaminated",
+        "{file:l4rec/g0.capsule.json}",
+        "--among",
+        "{file:l4rec}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "L4 깊은 적합",
+      "op": "value_eq",
+      "value": "conformant",
+      "path": "verdict",
+      "cmd": [
+        "conformance",
+        "{file:l4rec}",
+        "--level",
+        "L4",
+        "--deep",
+        "--keyring",
+        "{file:keyring.json}",
+        "--anchor-log",
+        "{file:anchor.ndjson}",
+        "--policy",
+        "{file:policy.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "막내 앵커 등재",
+      "op": "value_eq",
+      "value": true,
+      "path": "logged",
+      "cmd": [
+        "anchor",
+        "verify",
+        "{file:l4rec/g3.capsule.json}",
+        "--log",
+        "{file:anchor.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "앵커 로그 실재",
+      "op": "file_exists",
+      "file": "anchor.ndjson",
+      "minBytes": 40
+    },
+    {
+      "name": "막내 캡슐 실재",
+      "op": "file_exists",
+      "file": "l4rec/g3.capsule.json",
+      "minBytes": 80
+    }
+  ]
+}

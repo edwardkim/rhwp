@@ -1,0 +1,69 @@
+{
+  "id": "XC22",
+  "tier": 4,
+  "title": "쌍 캡슐 각각 앵커",
+  "input": "samples/table-004.hwp",
+  "axis": "자동화",
+  "instructions": "XC22 — 쌍 캡슐 각각 앵커.\n\n입력 표본은 `samples/table-004.hwp` 이다. 보스 존 과제다. 한 단만 빠지면 최종 판정이 막힌다. 저장소 samples/ 에 이미 있는 실문서만 쓰고 새 픽스처를 만들지 않는다. expert-challenges pack 은 기존 CLI 표면(keygen · replay · run · anchor · settle · conformance · recall-scope · lineage · audit-report · export-tables) 만으로 여러 축을 한 제출에 묶는다. 새 명령·새 연산자·새 pack 은 없다. 원본을 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. 정답 해시·건수를 과제 파일에 박제하지 마라. 채점은 같은 판정 명령을 다시 돌린다.\n\n같은 키로 서명한 **서로 다른** 두 캡슐 alpha·beta 를 pair/ 에 두고, 각각을 같은 앵커 로그에 등재하라. 채점은 두 캡슐 모두 logged==true. 계보로 잇지 마라.\n\n제출 폴더에 pair/p.capsule.json · pair/q.capsule.json · keyring.json · anchor.ndjson 를 두어라.\n\n수행 힌트: replay 두 번(다른 셀 문구) → anchor add 두 번 → anchor verify 각각.\n\n이 과제는 XC01(L5 --deep 사다리 완주) · XC02(unaffected==0 과 affected>=2 동시) · XC03(정산 4관문 capsuleOk/gateOk/ledgerOk/workorderOk) · XC04(3세대 lineage --deep) · XC05(L3 --deep + audit-report) 를 복제하지 않는다. AU14+ 한 축 저티어 여정, WR 일일 3해시 answer.json, T07 서식 채움(fill-fields · 첫 필드 홍길동) 도 베끼지 마라.\n\n한 캡슐을 두 번 내면 files 가 같고 보스가 아니다. 두 산출이 달라야 한다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "pair/p.capsule.json",
+      "pair/q.capsule.json",
+      "keyring.json",
+      "anchor.ndjson"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫째 캡슐 등재",
+      "op": "value_eq",
+      "value": true,
+      "path": "logged",
+      "cmd": [
+        "anchor",
+        "verify",
+        "{file:pair/p.capsule.json}",
+        "--log",
+        "{file:anchor.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "둘째 캡슐 등재",
+      "op": "value_eq",
+      "value": true,
+      "path": "logged",
+      "cmd": [
+        "anchor",
+        "verify",
+        "{file:pair/q.capsule.json}",
+        "--log",
+        "{file:anchor.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "두 캡슐 바이트가 다름",
+      "op": "files_differ",
+      "files": [
+        "pair/p.capsule.json",
+        "pair/q.capsule.json"
+      ]
+    },
+    {
+      "name": "막내 캡슐 실재",
+      "op": "file_exists",
+      "file": "pair/q.capsule.json",
+      "minBytes": 80
+    }
+  ]
+}
