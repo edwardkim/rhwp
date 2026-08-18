@@ -1,0 +1,110 @@
+{
+  "id": "roundtrip_plain",
+  "sample": "samples/hwp_table_test.hwp",
+  "table": 0,
+  "steps": [
+    {
+      "id": "scan",
+      "command": [
+        "rhwp",
+        "export-tables",
+        "samples/hwp_table_test.hwp",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "tables[].index",
+        "tables[].rows",
+        "tables[].cols",
+        "cells[].rowSpan"
+      ]
+    },
+    {
+      "id": "extract",
+      "command": [
+        "rhwp",
+        "table-to-csv",
+        "samples/hwp_table_test.hwp",
+        "--table",
+        "0",
+        "-o",
+        "table0.csv",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "tables[].csv",
+        "bom",
+        "untrustedFields"
+      ]
+    },
+    {
+      "id": "dry-run",
+      "command": [
+        "rhwp",
+        "csv-to-table",
+        "samples/hwp_table_test.hwp",
+        "--csv",
+        "table0_edited.csv",
+        "--table",
+        "0",
+        "--dry-run",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "changedCount",
+        "invalid",
+        "dryRun",
+        "changedPages"
+      ],
+      "forbidFieldsPresent": [
+        "output"
+      ],
+      "expect": {
+        "dryRun": true,
+        "changedPages": null
+      }
+    },
+    {
+      "id": "write-verify",
+      "command": [
+        "rhwp",
+        "csv-to-table",
+        "samples/hwp_table_test.hwp",
+        "--csv",
+        "table0_edited.csv",
+        "--table",
+        "0",
+        "-o",
+        "table_updated.hwp",
+        "--verify",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "changedCount",
+        "invalid",
+        "verify.identical"
+      ],
+      "expect": {
+        "changedCount": 9,
+        "invalid": [],
+        "verify.identical": true
+      }
+    },
+    {
+      "id": "reread",
+      "command": [
+        "rhwp",
+        "export-tables",
+        "table_updated.hwp",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "tables[0].cells"
+      ]
+    }
+  ]
+}

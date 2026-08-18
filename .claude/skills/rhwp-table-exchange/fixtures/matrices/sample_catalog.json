@@ -1,0 +1,72 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-table-exchange",
+  "issue": 5306,
+  "samples": [
+    {
+      "path": "samples/hwp_table_test.hwp",
+      "role": "레시피 02 정본 왕복",
+      "tables": 10,
+      "focus": {
+        "index": 0,
+        "rows": 4,
+        "cols": 3,
+        "merged": 0
+      }
+    },
+    {
+      "path": "samples/table-001.hwp",
+      "role": "병합 보존·치수 거부",
+      "tables": 1,
+      "focus": {
+        "index": 0,
+        "rows": 19,
+        "cols": 9,
+        "cells": 131,
+        "merged": 20
+      }
+    },
+    {
+      "path": "samples/inner-table-01.hwp",
+      "role": "중첩 표 v1 밖",
+      "topLevel": 1,
+      "nestedCells": 24
+    },
+    {
+      "path": "samples/basic/treatise sample.hwp",
+      "role": "컨테이너 표 vs info",
+      "info": 1,
+      "exportTables": 3
+    },
+    {
+      "path": "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
+      "role": "index 0 = 머리말, 표 53",
+      "tables": 53
+    },
+    {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "role": "코덱스 20장 실측",
+      "tables": 5
+    },
+    {
+      "path": "samples/multi-table-001.hwp",
+      "role": "--table 지목",
+      "tables": 6
+    },
+    {
+      "path": "samples/hwpx/basic-table-01.hwpx",
+      "role": "cli_commands 사용 예"
+    },
+    {
+      "path": "samples/복학원서.hwp",
+      "role": "누름틀 0 → set-cell",
+      "tables": 3,
+      "fields": 0
+    },
+    {
+      "path": "samples/추진일정.hwp",
+      "role": "싼 왕복",
+      "tables": 1
+    }
+  ]
+}
