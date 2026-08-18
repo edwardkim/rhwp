@@ -334,7 +334,7 @@ MD_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 def slug_heading(title: str) -> str:
     title = re.sub(r"<[^>]+>", "", title)
     title = title.replace("`", "")
-    title = re.sub(r"[^\w가-힣0-9\- ]+", "", title, flags=re.UNICODE)
+    title = re.sub(r"[^\w -]+", "", title, flags=re.UNICODE)
     title = re.sub(r"\s+", "-", title.strip())
     return title.lower()
 
