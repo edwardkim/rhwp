@@ -600,7 +600,7 @@ class ThinPackExpansionGateTests(unittest.TestCase):
             "automation", "batch-ops", "casual-rides", "core-cli",
             "corpus-diagnostics", "expert-challenges", "extraction",
             "form-journeys",
-            "layout-rendering", "objects-media", "render-tree", "security",
+            "layout-rendering", "objects-media", "oracle-probe", "render-tree", "security",
             "self-description", "serialization", "showcase", "studio-e2e",
             "table-csv", "table-editing", "text-editing", "work-receipt",
         }
