@@ -1,0 +1,14 @@
+{
+  "id": "mcp-stateless-tool",
+  "layer": "mcp-stateless",
+  "ssot": "mcp_tool_definitions()",
+  "steps": [
+    "대응하는 --json CLI 가 이미 있는가? 없으면 CLI 를 먼저",
+    "tool() / tool_with_optional_args() 로 한 곳에서 선언",
+    "inputSchema.required 와 cli.args 자리표시자 1:1",
+    "선택 인자는 optionalArgs 만 — 미치환 문자열 사고 방지",
+    "outputFields 에 판정 필드(overflow, identical, notFound) 명시",
+    "코어 + 봉투 helper 재사용",
+    "capabilities_mcp_covers_every_json_command green"
+  ]
+}
