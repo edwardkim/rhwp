@@ -265,12 +265,12 @@ class ExtractionPackTests(unittest.TestCase):
     """extraction pack — 읽기 추출. 새 pack·T07 복제 없음."""
 
     PACK = PACKS / "extraction"
-    EXPECTED = [f"EX{i:02d}" for i in range(1, 23)]
+    EXPECTED = [f"EX{i:02d}" for i in range(1, 29)]
 
     def _tasks(self):
         return [read_json(p) for p in sorted((self.PACK / "tasks").glob("EX*.json"))]
 
-    def test_task_ids_are_ex01_to_ex22(self):
+    def test_task_ids_are_ex01_to_ex28(self):
         ids = [t["id"] for t in self._tasks()]
         self.assertEqual(ids, self.EXPECTED)
 
@@ -356,12 +356,12 @@ class TableCsvPackTests(unittest.TestCase):
     """table-csv pack — 표 CSV 왕복. 전역 훑기 금지."""
 
     PACK = PACKS / "table-csv"
-    EXPECTED = [f"TC{i:02d}" for i in range(1, 18)]
+    EXPECTED = [f"TC{i:02d}" for i in range(1, 26)]
 
     def _tasks(self):
         return [read_json(p) for p in sorted((self.PACK / "tasks").glob("TC*.json"))]
 
-    def test_task_ids_are_tc01_to_tc17(self):
+    def test_task_ids_are_tc01_to_tc25(self):
         self.assertEqual([t["id"] for t in self._tasks()], self.EXPECTED)
 
     def test_every_task_has_matching_reference(self):
@@ -430,7 +430,8 @@ class TableCsvPackTests(unittest.TestCase):
         self.assertIn("TC06", bom_ids)
 
     def test_json_envelope_tasks_are_answers(self):
-        for tid in ("TC07", "TC08", "TC10", "TC11", "TC12", "TC13", "TC15", "TC17"):
+        for tid in ("TC07", "TC08", "TC10", "TC11", "TC12", "TC13", "TC15", "TC17",
+                    "TC18", "TC21", "TC22", "TC25"):
             task = read_json(self.PACK / "tasks" / f"{tid}.json")
             self.assertEqual(task["submit"]["kind"], "answer", tid)
             self.assertEqual(task["checks"][0]["op"], "answer_eq", tid)
@@ -454,12 +455,12 @@ class BatchOpsPackTests(unittest.TestCase):
     """batch-ops pack — batch fill 메일머지. fill-fields(T07) 복제 아님."""
 
     PACK = PACKS / "batch-ops"
-    EXPECTED = [f"BO{i:02d}" for i in range(1, 13)]
+    EXPECTED = [f"BO{i:02d}" for i in range(1, 21)]
 
     def _tasks(self):
         return [read_json(p) for p in sorted((self.PACK / "tasks").glob("BO*.json"))]
 
-    def test_task_ids_are_bo01_to_bo12(self):
+    def test_task_ids_are_bo01_to_bo20(self):
         self.assertEqual([t["id"] for t in self._tasks()], self.EXPECTED)
 
     def test_every_task_has_matching_reference(self):
@@ -480,7 +481,9 @@ class BatchOpsPackTests(unittest.TestCase):
                 answers.append(task["id"])
                 continue
             artifacts.append(task["id"])
-            self.assertGreaterEqual(len(task["submit"]["files"]), 2, task["id"])
+            # BO13 은 1행 최소 대량 — 1부만 제출한다.
+            min_files = 1 if task["id"] == "BO13" else 2
+            self.assertGreaterEqual(len(task["submit"]["files"]), min_files, task["id"])
             ops = [c["op"] for c in task["checks"]]
             self.assertIn("file_exists", ops, task["id"])
             self.assertIn("differs_from_input", ops, task["id"])
@@ -505,7 +508,7 @@ class BatchOpsPackTests(unittest.TestCase):
                 task = read_json(self.PACK / "tasks" / f"{tid}.json")
                 for fname in task["submit"]["files"]:
                     self.assertNotRegex(fname, r"000\d\.", tid)
-        self.assertTrue({"BO02", "BO06", "BO12"}.issubset(named), named)
+        self.assertTrue({"BO02", "BO06", "BO12", "BO15", "BO16", "BO17"}.issubset(named), named)
 
     def test_sequential_tasks_use_padded_names(self):
         sequential = []
@@ -580,6 +583,13 @@ class CoverageDocsTests(unittest.TestCase):
         self.assertIn("TC02", text)
         self.assertIn("BO02", text)
         self.assertNotIn("T07 복제", text)
+        fat = REPO_ROOT / "mydocs" / "working" / "gym_coverage_and_extract.md"
+        self.assertTrue(fat.is_file())
+        fat_text = fat.read_text(encoding="utf-8")
+        self.assertIn("EX05", fat_text)
+        self.assertIn("TC04", fat_text)
+        self.assertIn("BO04", fat_text)
+        self.assertGreater(len(fat_text.splitlines()), 200)
 
 
 class ThinPackExpansionGateTests(unittest.TestCase):

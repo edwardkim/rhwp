@@ -1,0 +1,35 @@
+{
+  "id": "TC19",
+  "tier": 2,
+  "title": "선확인 — 동일 CSV 는 변경 0칸",
+  "input": "samples/hwpx/basic-table-01.hwpx",
+  "instructions": "원본 격자와 같은 CSV(gym/packs/table-csv/assets/TC19-identity.csv)를 csv-to-table --dry-run 으로 적용하면 changedCount 는 0 이어야 한다. 파일을 쓰지 말고 answer.json 에 {\"changed\": 0} 을 제출하라. 힌트: rhwp csv-to-table <문서> --table 0 --csv gym/packs/table-csv/assets/TC19-identity.csv --dry-run --json.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "동일 격자는 변경 0",
+      "op": "value_eq",
+      "path": "changedCount",
+      "value": 0,
+      "cmd": [
+        "csv-to-table",
+        "{input}",
+        "--table",
+        "0",
+        "--csv",
+        "gym/packs/table-csv/assets/TC19-identity.csv",
+        "--dry-run",
+        "--json"
+      ]
+    },
+    {
+      "name": "제출 값도 0",
+      "op": "json_value_eq",
+      "file": "answer.json",
+      "path": "changed",
+      "value": 0
+    }
+  ]
+}
