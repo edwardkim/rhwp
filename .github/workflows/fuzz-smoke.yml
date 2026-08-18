@@ -1,0 +1,85 @@
+name: Fuzz smoke
+
+# M03-1 / #5359 — #3141 1단계 스모크 배선.
+# 기존 cargo-fuzz 타깃 6개(parse_hwp / parse_hwp3 / parse_hwpx / parse_hml /
+# parse_wmf / parse_ooxml_chart)를 각 60초 돌리고, 크래시·타임아웃·OOM 산출물을
+# 실패 시 아티팩트로 올린다.
+#
+# PR required check 가 아니다. pull_request 트리거를 두지 않는다.
+# DoS 수정은 M03-3 이후. OSS-Fuzz 등재는 M10. 왕복 정합성은 M04.
+
+on:
+  schedule:
+    # 다른 nightly(cache-generation-sweep 18:23, CodeQL 월 06:00)와 시각을 겹치지 않게 한다.
+    - cron: "41 2 * * *"
+  workflow_dispatch:
+    inputs:
+      max_total_time:
+        description: 타깃당 libFuzzer 실행 초 (nightly 기본 60)
+        required: false
+        default: "60"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fuzz-smoke
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fuzz-smoke:
+    name: fuzz ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    # 컴파일(sanitizer) + 60초 런. hang 상한이지 성능 목표가 아니다.
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - parse_hwp
+          - parse_hwp3
+          - parse_hwpx
+          - parse_hml
+          - parse_wmf
+          - parse_ooxml_chart
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install nightly toolchain
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+        with:
+          toolchain: nightly
+
+      - name: Cache cargo-fuzz + sanitizer build
+        uses: Swatinem/rust-cache@258712b0b7b1ddf8bddc9fc3b0faca682b2736c3 # v2.9.1
+        with:
+          workspaces: fuzz
+          shared-key: fuzz-smoke-${{ matrix.target }}
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz
+
+      - name: Smoke-run ${{ matrix.target }} (60s)
+        env:
+          TARGET: ${{ matrix.target }}
+          MAX_TOTAL_TIME: ${{ github.event_name == 'workflow_dispatch' && inputs.max_total_time || '60' }}
+        run: |
+          set -euo pipefail
+          cargo +nightly fuzz run "${TARGET}" -- \
+            -max_total_time="${MAX_TOTAL_TIME}" \
+            -rss_limit_mb=2048 \
+            -timeout=30 \
+            -print_final_stats=1
+
+      - name: Upload crash artifacts
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fuzz-crash-${{ matrix.target }}-${{ github.run_id }}
+          path: |
+            fuzz/artifacts/${{ matrix.target }}/
+          if-no-files-found: warn
+          retention-days: 14
