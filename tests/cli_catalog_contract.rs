@@ -346,3 +346,24 @@ fn raw_record_diagnostic_is_owned_by_the_query_module() {
         "dump-records dispatch가 diagnostics 모듈 API를 사용해야 한다"
     );
 }
+
+#[test]
+fn search_query_is_owned_by_its_query_module() {
+    let search_source = include_str!("../src/cli/queries/search.rs");
+    let compact_main: String = MAIN_SOURCE
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    assert!(
+        search_source.contains("pub(crate) fn search_document("),
+        "search_document 구현이 search query 모듈에 있어야 한다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn search_document("),
+        "search_document 구현이 main.rs로 되돌아가면 안 된다"
+    );
+    assert!(
+        compact_main.contains("cli::queries::search::search_document("),
+        "search dispatch가 search query 모듈 API를 사용해야 한다"
+    );
+}

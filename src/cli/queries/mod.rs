@@ -2,4 +2,5 @@
 
 pub(crate) mod diagnostics;
 pub(crate) mod document_inventory;
+pub(crate) mod search;
 pub(crate) mod structured_objects;
