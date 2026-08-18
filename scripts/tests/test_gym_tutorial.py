@@ -6,7 +6,7 @@
   · `gym/PARK.md` · `gym/INVITE.md` 가 실재하고 서로를 가리킨다.
 - 프로파일 일곱 이름과 packs 묶음이 `gym/profiles/*.json` 과 같다.
 - 입문존 CR01~CR04 의 명령·답 키·입력이 안내에 그대로 있다.
-- `gym/core/checks.py` 의 `REGISTRY` 가 열일곱 이름 그대로다.
+- `gym/core/checks.py` 의 `REGISTRY` 가 검토된 서른세 이름 그대로다.
   휴게실 작업이 채점 논리를 바꾸면 이 시험이 실패한다.
 
 바이너리 없이 순수 파일 검사다. 새 pack · 새 과제 JSON 을 만들지 않는다.
@@ -114,7 +114,7 @@ REQUIRED_DOCS = (
     REPO_ROOT / "mydocs" / "working" / "gym_tutorial.md",
 )
 
-REGISTRY_SNAPSHOT = {
+FILE_OPERATOR_SNAPSHOT = {
     "same_hash",
     "differs_from_input",
     "file_exists",
@@ -123,6 +123,25 @@ REGISTRY_SNAPSHOT = {
     "json_value_eq",
     "csv_cell_eq",
     "utf8_bom",
+    "json_len_eq",
+    "csv_row_count_eq",
+    "ndjson_count_eq",
+    "ndjson_field_eq",
+    "json_keys_contain",
+    "text_line_eq",
+    "json_type_eq",
+    "json_len_ge",
+    "json_array_item_eq",
+    "csv_col_count_eq",
+    "csv_header_eq",
+    "csv_row_eq",
+    "ndjson_keys_contain",
+    "ndjson_len_eq",
+    "text_line_count_eq",
+    "text_line_contains",
+}
+
+CLI_OPERATOR_SNAPSHOT = {
     "answer_eq",
     "len_answer_eq",
     "len_ge",
@@ -133,6 +152,8 @@ REGISTRY_SNAPSHOT = {
     "not_contains",
     "cell_text_eq",
 }
+
+REGISTRY_SNAPSHOT = FILE_OPERATOR_SNAPSHOT | CLI_OPERATOR_SNAPSHOT
 
 FORBIDDEN_PROFILE_FLAGS = (
     "--profile Family",
@@ -439,10 +460,10 @@ class ScoringUntouchedTests(unittest.TestCase):
         checks = load_checks()
         self.assertEqual(set(checks.REGISTRY), REGISTRY_SNAPSHOT)
 
-    def test_registry_has_seventeen_operators(self):
+    def test_registry_has_thirty_three_operators(self):
         checks = load_checks()
-        self.assertEqual(len(checks.REGISTRY), 17)
-        self.assertEqual(len(set(checks.REGISTRY)), 17)
+        self.assertEqual(len(checks.REGISTRY), 33)
+        self.assertEqual(len(set(checks.REGISTRY)), 33)
 
     def test_global_scan_ops_unchanged(self):
         checks = load_checks()
@@ -452,33 +473,8 @@ class ScoringUntouchedTests(unittest.TestCase):
         checks = load_checks()
         file_ops = {name for name, (_fn, cli) in checks.REGISTRY.items() if not cli}
         cli_ops = {name for name, (_fn, cli) in checks.REGISTRY.items() if cli}
-        self.assertEqual(
-            file_ops,
-            {
-                "same_hash",
-                "differs_from_input",
-                "file_exists",
-                "files_differ",
-                "xml_root_eq",
-                "json_value_eq",
-                "csv_cell_eq",
-                "utf8_bom",
-            },
-        )
-        self.assertEqual(
-            cli_ops,
-            {
-                "answer_eq",
-                "len_answer_eq",
-                "len_ge",
-                "value_eq",
-                "value_ge",
-                "value_in",
-                "deep_contains",
-                "not_contains",
-                "cell_text_eq",
-            },
-        )
+        self.assertEqual(file_ops, FILE_OPERATOR_SNAPSHOT)
+        self.assertEqual(cli_ops, CLI_OPERATOR_SNAPSHOT)
 
     def test_honesty_page_lists_every_registry_name(self):
         text = _read(TUTORIAL / "15-scoring-honesty.md")
@@ -559,9 +555,9 @@ class AdmissionContractTests(unittest.TestCase):
         self.assertIn("만점", text)
         self.assertIn("입장 거부", text)
 
-    def test_score_py_allow_rule_unchanged(self):
-        source = _read(GYM / "score.py")
-        self.assertIn('verdict": "allow" if card["total"]["packsScored"] >= 1 else "deny"', source)
+    def test_runner_allow_rule_unchanged(self):
+        source = _read(GYM / "core" / "runner.py")
+        self.assertIn('"verdict": "allow" if scored >= 1 else "deny",', source)
 
 
 class StarterPathContractTests(unittest.TestCase):

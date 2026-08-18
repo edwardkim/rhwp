@@ -116,10 +116,10 @@ last_verified: 2026-08-18
 2. `GLOBAL_SCAN_OPS` 집합 변경
 3. `op_*` 함수의 비교 의미 변경
 4. 다른 열린 PR 이 만지는 `gym/packs/*/tasks/*.json` 편집
-5. `gym/score.py` 의 `verdict` 계산식 변경
+5. `gym/core/runner.py` 의 `verdict` 계산식 변경
 6. `score_pack` 의 unavailable 규칙을 0점으로 접기
 
-`REGISTRY` 스냅샷 (devel, 이 규약이 잠그는 집합):
+`REGISTRY` 스냅샷 (현재, 이 규약이 잠그는 집합):
 
 ```
 same_hash
@@ -130,6 +130,22 @@ xml_root_eq
 json_value_eq
 csv_cell_eq
 utf8_bom
+json_len_eq
+csv_row_count_eq
+ndjson_count_eq
+ndjson_field_eq
+json_keys_contain
+text_line_eq
+json_type_eq
+json_len_ge
+json_array_item_eq
+csv_col_count_eq
+csv_header_eq
+csv_row_eq
+ndjson_keys_contain
+ndjson_len_eq
+text_line_count_eq
+text_line_contains
 answer_eq
 len_answer_eq
 len_ge
@@ -149,7 +165,8 @@ cell_text_eq
 
 ## 6. 입장 봉투
 
-`admission.json` 의 키와 의미는 `gym/score.py` 가 정본이다.
+`admission.json` 의 키와 의미는 `gym/core/runner.py` 가 정본이며,
+`gym/score.py` 는 하위 호환 진입점이다.
 
 - `kind` = `gymAdmission`
 - `verdict` = `packsScored >= 1` 이면 `allow`, 아니면 `deny`

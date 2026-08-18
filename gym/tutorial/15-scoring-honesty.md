@@ -26,8 +26,8 @@ last_verified: 2026-08-18
 
 ## 연산자 등록부 — 읽기만
 
-`gym/core/checks.py` 의 `REGISTRY` 는 지금 이 열일곱 이름이다. 휴게실
-작업이 열여덟 번째를 추가하지 않는다. 시험이 이 집합을 잠근다.
+`gym/core/checks.py` 의 `REGISTRY` 는 지금 이 서른세 이름이다. 휴게실
+작업이 서른네 번째를 추가하지 않는다. 시험이 이 집합을 잠근다.
 
 파일 연산자(CLI 를 부르지 않음):
 
@@ -39,6 +39,22 @@ last_verified: 2026-08-18
 - `json_value_eq`
 - `csv_cell_eq`
 - `utf8_bom`
+- `json_len_eq`
+- `csv_row_count_eq`
+- `ndjson_count_eq`
+- `ndjson_field_eq`
+- `json_keys_contain`
+- `text_line_eq`
+- `json_type_eq`
+- `json_len_ge`
+- `json_array_item_eq`
+- `csv_col_count_eq`
+- `csv_header_eq`
+- `csv_row_eq`
+- `ndjson_keys_contain`
+- `ndjson_len_eq`
+- `text_line_count_eq`
+- `text_line_contains`
 
 봉투 연산자(CLI 를 부름):
 
