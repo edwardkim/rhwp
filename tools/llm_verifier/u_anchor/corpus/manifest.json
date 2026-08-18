@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-anchor",
+  "command": "anchor",
+  "family": "count_eq",
+  "title": "anchor 에폭 항목 수가 선언과 일치",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5595,
+    "COUNT_OK": 14286,
+    "USAGE": 119
+  },
+  "ownedPath": "tools/llm_verifier/u_anchor/"
+}

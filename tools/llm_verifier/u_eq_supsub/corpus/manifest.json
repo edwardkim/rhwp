@@ -1,0 +1,12 @@
+{
+  "claim": "V-unit-eq-supsub",
+  "command": "eq-supsub",
+  "family": "parse",
+  "title": "수식 첨자 사이 공백이 파싱을 떨어뜨리면 실패",
+  "rowCount": 20000,
+  "byVerdict": {
+    "PARSE_DROP": 5714,
+    "PARSE_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/u_eq_supsub/"
+}

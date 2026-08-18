@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-export-ontology",
+  "command": "export-ontology",
+  "family": "count_eq",
+  "title": "ontology 용어 수가 선언과 일치",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5595,
+    "COUNT_OK": 14286,
+    "USAGE": 119
+  },
+  "ownedPath": "tools/llm_verifier/u_export_ontology/"
+}

@@ -937,6 +937,7 @@ jobs:
           python3 -m unittest discover -s tools/llm_verifier/untrusted_sandbox/tests -p 'test_*.py'
           python3 -m unittest discover -s tools/llm_verifier/lineage_chain/tests -p 'test_*.py'
           cargo test --manifest-path tools/llm_verifier/repeat_eval/Cargo.toml
+          python3 tools/llm_verifier/verify_cycle_units.py
 
       - name: Validate Render Diff trigger policy
         run: python3 -m unittest scripts/tests/test_render_diff_workflow.py

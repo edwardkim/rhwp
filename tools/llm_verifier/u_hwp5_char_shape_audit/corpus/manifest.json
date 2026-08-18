@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-hwp5-char-shape-audit",
+  "command": "hwp5-char-shape-audit",
+  "family": "round",
+  "title": "hwp5-char-shape-audit 전후 charShape 수",
+  "rowCount": 20000,
+  "byVerdict": {
+    "FORMAT_NA": 2857,
+    "ROUND_DRIFT": 5714,
+    "ROUND_OK": 11429
+  },
+  "ownedPath": "tools/llm_verifier/u_hwp5_char_shape_audit/"
+}

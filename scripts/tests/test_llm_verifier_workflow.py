@@ -30,6 +30,7 @@ class LlmVerifierWorkflowTests(unittest.TestCase):
             "tools/llm_verifier/untrusted_sandbox/tests",
             "tools/llm_verifier/lineage_chain/tests",
             "cargo test --manifest-path tools/llm_verifier/repeat_eval/Cargo.toml",
+            "python3 tools/llm_verifier/verify_cycle_units.py",
         ]:
             self.assertIn(command, body)
 

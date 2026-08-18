@@ -1,0 +1,12 @@
+{
+  "claim": "V-unit-conformance",
+  "command": "conformance",
+  "family": "level",
+  "title": "conformance level 이 L1..L5 닫힌 집합",
+  "rowCount": 20000,
+  "byVerdict": {
+    "LEVEL_OK": 17143,
+    "LEVEL_UNKNOWN": 2857
+  },
+  "ownedPath": "tools/llm_verifier/u_conformance/"
+}

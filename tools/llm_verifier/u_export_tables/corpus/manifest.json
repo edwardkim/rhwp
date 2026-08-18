@@ -1,0 +1,12 @@
+{
+  "claim": "V-unit-export-tables",
+  "command": "export-tables",
+  "family": "span",
+  "title": "export-tables rowSpan/colSpan 이 격자 안",
+  "rowCount": 20000,
+  "byVerdict": {
+    "SPAN_OK": 17143,
+    "SPAN_OOB": 2857
+  },
+  "ownedPath": "tools/llm_verifier/u_export_tables/"
+}

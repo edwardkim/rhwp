@@ -1,0 +1,12 @@
+{
+  "claim": "V-unit-search",
+  "command": "search",
+  "family": "search",
+  "title": "search matchCount 가 matches 길이와 같고 쪽이 범위 안",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5714,
+    "SEARCH_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/u_search/"
+}

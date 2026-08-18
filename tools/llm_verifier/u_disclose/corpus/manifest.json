@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-disclose",
+  "command": "disclose",
+  "family": "count_eq",
+  "title": "disclose 공개 필드 수가 선언과 일치",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 5595,
+    "COUNT_OK": 14286,
+    "USAGE": 119
+  },
+  "ownedPath": "tools/llm_verifier/u_disclose/"
+}

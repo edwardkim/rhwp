@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-batch",
+  "command": "batch",
+  "family": "isolate",
+  "title": "batch 입력 N = 성공+실패, 실패 행이 이웃을 오염하지 않음",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 2857,
+    "ISOLATED": 14286,
+    "POISON": 2857
+  },
+  "ownedPath": "tools/llm_verifier/u_batch/"
+}

@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-scan",
+  "command": "scan",
+  "family": "signal",
+  "title": "scan findingCount 와 hasSignal 이 일치",
+  "rowCount": 20000,
+  "byVerdict": {
+    "ANOMALY": 8571,
+    "CLEAN": 8572,
+    "SIGNAL_LIE": 2857
+  },
+  "ownedPath": "tools/llm_verifier/u_scan/"
+}

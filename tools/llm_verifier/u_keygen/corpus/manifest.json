@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-keygen",
+  "command": "keygen",
+  "family": "bytes",
+  "title": "keygen 공개키가 비지 않음",
+  "rowCount": 20000,
+  "byVerdict": {
+    "BYTES_OK": 14286,
+    "EMPTY_OUTPUT": 2857,
+    "ZERO_BYTES": 2857
+  },
+  "ownedPath": "tools/llm_verifier/u_keygen/"
+}

@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-charshape-hwpx",
+  "command": "charshape-hwpx",
+  "family": "round",
+  "title": "HWPX 왕복 char_shapes 수 보존",
+  "rowCount": 20000,
+  "byVerdict": {
+    "FORMAT_NA": 2857,
+    "ROUND_DRIFT": 5714,
+    "ROUND_OK": 11429
+  },
+  "ownedPath": "tools/llm_verifier/u_charshape_hwpx/"
+}

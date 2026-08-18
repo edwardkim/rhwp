@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-recipe-visual",
+  "command": "recipe-visual",
+  "family": "px",
+  "title": "레시피 render-diff 수치 판정",
+  "rowCount": 20000,
+  "byVerdict": {
+    "PX_FAIL": 3968,
+    "PX_OK": 13175,
+    "STRUCT": 2857
+  },
+  "ownedPath": "tools/llm_verifier/u_recipe_visual/"
+}

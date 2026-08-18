@@ -1,0 +1,15 @@
+{
+  "claim": "V-unit-gate",
+  "command": "gate",
+  "family": "avail",
+  "title": "gate 거부는 exit 3 이고 nextCall 이 있음",
+  "rowCount": 20000,
+  "byVerdict": {
+    "AVAIL_RUN": 5714,
+    "EXIT_UNKNOWN": 2857,
+    "FALSE_UNAVAIL": 2857,
+    "UNAVAIL_LIE": 5714,
+    "UNAVAIL_OK": 2858
+  },
+  "ownedPath": "tools/llm_verifier/u_gate/"
+}

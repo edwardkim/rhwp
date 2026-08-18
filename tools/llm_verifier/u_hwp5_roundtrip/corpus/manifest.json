@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-hwp5-roundtrip",
+  "command": "hwp5-roundtrip",
+  "family": "round",
+  "title": "hwp5-roundtrip pageCount 보존",
+  "rowCount": 20000,
+  "byVerdict": {
+    "FORMAT_NA": 2857,
+    "ROUND_DRIFT": 5714,
+    "ROUND_OK": 11429
+  },
+  "ownedPath": "tools/llm_verifier/u_hwp5_roundtrip/"
+}

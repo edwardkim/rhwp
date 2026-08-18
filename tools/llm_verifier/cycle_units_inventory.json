@@ -1,0 +1,1408 @@
+{
+  "unitCount": 107,
+  "rowTotal": 2140000,
+  "units": [
+    {
+      "claim": "V-unit-info",
+      "command": "info",
+      "family": "count_eq",
+      "title": "info.pageCount 가 음수가 아니고 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_info/"
+    },
+    {
+      "claim": "V-unit-word-count",
+      "command": "word-count",
+      "family": "count_eq",
+      "title": "word-count 합이 쪽별 합과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_word_count/"
+    },
+    {
+      "claim": "V-unit-bookmarks",
+      "command": "bookmarks",
+      "family": "count_eq",
+      "title": "bookmarks 개수가 배열 길이와 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_bookmarks/"
+    },
+    {
+      "claim": "V-unit-charts",
+      "command": "charts",
+      "family": "count_eq",
+      "title": "charts 개수가 배열 길이와 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_charts/"
+    },
+    {
+      "claim": "V-unit-form-value",
+      "command": "form-value",
+      "family": "count_eq",
+      "title": "form-value 필드 수가 배열 길이와 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_form_value/"
+    },
+    {
+      "claim": "V-unit-header-footer",
+      "command": "header-footer",
+      "family": "window",
+      "title": "header-footer 가 요청한 쪽만 반환",
+      "rowCount": 20000,
+      "byVerdict": {
+        "USAGE": 2857,
+        "WINDOW_LEAK": 2857,
+        "WINDOW_MISS": 2857,
+        "WINDOW_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_header_footer/"
+    },
+    {
+      "claim": "V-unit-headers-footers",
+      "command": "headers-footers",
+      "family": "count_eq",
+      "title": "headers-footers 목록 길이가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_headers_footers/"
+    },
+    {
+      "claim": "V-unit-digest",
+      "command": "digest",
+      "family": "bound",
+      "title": "digest --max-chars 와 truncated 가 모순되지 않음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "BOUND_FALSE_POS": 5714,
+        "BOUND_LIE": 2857,
+        "BOUND_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_digest/"
+    },
+    {
+      "claim": "V-unit-export-text",
+      "command": "export-text",
+      "family": "window",
+      "title": "export-text -p 가 요청 쪽만 냄",
+      "rowCount": 20000,
+      "byVerdict": {
+        "USAGE": 2857,
+        "WINDOW_LEAK": 2857,
+        "WINDOW_MISS": 2857,
+        "WINDOW_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_export_text/"
+    },
+    {
+      "claim": "V-unit-export-markdown",
+      "command": "export-markdown",
+      "family": "count_eq",
+      "title": "export-markdown imageCount 가 실제 그림 수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_export_markdown/"
+    },
+    {
+      "claim": "V-unit-export-tables",
+      "command": "export-tables",
+      "family": "span",
+      "title": "export-tables rowSpan/colSpan 이 격자 안",
+      "rowCount": 20000,
+      "byVerdict": {
+        "SPAN_OK": 17143,
+        "SPAN_OOB": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_export_tables/"
+    },
+    {
+      "claim": "V-unit-export-structure",
+      "command": "export-structure",
+      "family": "count_eq",
+      "title": "export-structure nodeCount 가 순회 수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_export_structure/"
+    },
+    {
+      "claim": "V-unit-export-svg",
+      "command": "export-svg",
+      "family": "count_eq",
+      "title": "export-svg renderedCount 가 산출 쪽 수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_export_svg/"
+    },
+    {
+      "claim": "V-unit-export-pdf",
+      "command": "export-pdf",
+      "family": "bytes",
+      "title": "export-pdf bytes 가 양수이고 output 이 비지 않음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "BYTES_OK": 14286,
+        "EMPTY_OUTPUT": 2857,
+        "ZERO_BYTES": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_export_pdf/"
+    },
+    {
+      "claim": "V-unit-export-png",
+      "command": "export-png",
+      "family": "bytes",
+      "title": "export-png 산출 바이트가 양수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "BYTES_OK": 14286,
+        "EMPTY_OUTPUT": 2857,
+        "ZERO_BYTES": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_export_png/"
+    },
+    {
+      "claim": "V-unit-export-llm",
+      "command": "export-llm",
+      "family": "bound",
+      "title": "export-llm 토큰 상한과 truncated",
+      "rowCount": 20000,
+      "byVerdict": {
+        "BOUND_FALSE_POS": 5714,
+        "BOUND_LIE": 2857,
+        "BOUND_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_export_llm/"
+    },
+    {
+      "claim": "V-unit-table-to-csv",
+      "command": "table-to-csv",
+      "family": "dims",
+      "title": "table-to-csv 행·열 수가 격자 치수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "DIM_DRIFT": 5714,
+        "DIM_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_table_to_csv/"
+    },
+    {
+      "claim": "V-unit-csv-to-table",
+      "command": "csv-to-table",
+      "family": "dims",
+      "title": "csv-to-table 치수가 입력 CSV 와 같음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "DIM_DRIFT": 5714,
+        "DIM_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_csv_to_table/"
+    },
+    {
+      "claim": "V-unit-chart-to-csv",
+      "command": "chart-to-csv",
+      "family": "count_eq",
+      "title": "chart-to-csv 시리즈 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_chart_to_csv/"
+    },
+    {
+      "claim": "V-unit-csv-to-chart",
+      "command": "csv-to-chart",
+      "family": "dims",
+      "title": "csv-to-chart 범주 수가 입력과 같음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "DIM_DRIFT": 5714,
+        "DIM_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_csv_to_chart/"
+    },
+    {
+      "claim": "V-unit-export-hwpx",
+      "command": "export-hwpx",
+      "family": "round",
+      "title": "export-hwpx 후 pageCount 가 보존",
+      "rowCount": 20000,
+      "byVerdict": {
+        "FORMAT_NA": 2857,
+        "ROUND_DRIFT": 5714,
+        "ROUND_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_export_hwpx/"
+    },
+    {
+      "claim": "V-unit-export-hml",
+      "command": "export-hml",
+      "family": "round",
+      "title": "export-hml 후 paraCount 가 보존",
+      "rowCount": 20000,
+      "byVerdict": {
+        "FORMAT_NA": 2857,
+        "ROUND_DRIFT": 5714,
+        "ROUND_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_export_hml/"
+    },
+    {
+      "claim": "V-unit-export-doclang",
+      "command": "export-doclang",
+      "family": "count_eq",
+      "title": "export-doclang 블록 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_export_doclang/"
+    },
+    {
+      "claim": "V-unit-thumbnail",
+      "command": "thumbnail",
+      "family": "bytes",
+      "title": "thumbnail width/height/bytes 가 양수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "BYTES_OK": 14286,
+        "EMPTY_OUTPUT": 2857,
+        "ZERO_BYTES": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_thumbnail/"
+    },
+    {
+      "claim": "V-unit-search",
+      "command": "search",
+      "family": "search",
+      "title": "search matchCount 가 matches 길이와 같고 쪽이 범위 안",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5714,
+        "SEARCH_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_search/"
+    },
+    {
+      "claim": "V-unit-extract-data",
+      "command": "extract-data",
+      "family": "kind",
+      "title": "extract-data kind 가 닫힌 집합이고 개수가 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 2857,
+        "KIND_OK": 14286,
+        "KIND_UNKNOWN": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_extract_data/"
+    },
+    {
+      "claim": "V-unit-fields",
+      "command": "fields",
+      "family": "count_eq",
+      "title": "fields.fieldCount 가 fields[] 길이",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_fields/"
+    },
+    {
+      "claim": "V-unit-explain",
+      "command": "explain",
+      "family": "bound",
+      "title": "explain 한 줄이 비지 않고 잘림 표지가 정합",
+      "rowCount": 20000,
+      "byVerdict": {
+        "BOUND_FALSE_POS": 5714,
+        "BOUND_LIE": 2857,
+        "BOUND_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_explain/"
+    },
+    {
+      "claim": "V-unit-explore",
+      "command": "explore",
+      "family": "count_eq",
+      "title": "explore 다음  hop 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_explore/"
+    },
+    {
+      "claim": "V-unit-batch",
+      "command": "batch",
+      "family": "isolate",
+      "title": "batch 입력 N = 성공+실패, 실패 행이 이웃을 오염하지 않음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 2857,
+        "ISOLATED": 14286,
+        "POISON": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_batch/"
+    },
+    {
+      "claim": "V-unit-scan",
+      "command": "scan",
+      "family": "signal",
+      "title": "scan findingCount 와 hasSignal 이 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "ANOMALY": 8571,
+        "CLEAN": 8572,
+        "SIGNAL_LIE": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_scan/"
+    },
+    {
+      "claim": "V-unit-threat-scan",
+      "command": "threat-scan",
+      "family": "signal",
+      "title": "threat-scan 신호 수와 hasSignal 이 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "ANOMALY": 8571,
+        "CLEAN": 8572,
+        "SIGNAL_LIE": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_threat_scan/"
+    },
+    {
+      "claim": "V-unit-inspect-hidden",
+      "command": "inspect-hidden",
+      "family": "signal",
+      "title": "inspect hidden-text 은닉 수와 hasSignal",
+      "rowCount": 20000,
+      "byVerdict": {
+        "ANOMALY": 8571,
+        "CLEAN": 8572,
+        "SIGNAL_LIE": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_inspect_hidden/"
+    },
+    {
+      "claim": "V-unit-inspect-injection",
+      "command": "inspect-injection",
+      "family": "signal",
+      "title": "inspect injection 신호 수와 hasSignal",
+      "rowCount": 20000,
+      "byVerdict": {
+        "ANOMALY": 8571,
+        "CLEAN": 8572,
+        "SIGNAL_LIE": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_inspect_injection/"
+    },
+    {
+      "claim": "V-unit-inspect-unicode",
+      "command": "inspect-unicode",
+      "family": "signal",
+      "title": "inspect unicode 불일치 수와 hasSignal",
+      "rowCount": 20000,
+      "byVerdict": {
+        "ANOMALY": 8571,
+        "CLEAN": 8572,
+        "SIGNAL_LIE": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_inspect_unicode/"
+    },
+    {
+      "claim": "V-unit-armor",
+      "command": "armor",
+      "family": "signal",
+      "title": "armor 차단 수와 hasSignal",
+      "rowCount": 20000,
+      "byVerdict": {
+        "ANOMALY": 8571,
+        "CLEAN": 8572,
+        "SIGNAL_LIE": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_armor/"
+    },
+    {
+      "claim": "V-unit-convert",
+      "command": "convert",
+      "family": "round",
+      "title": "convert 뒤 format 이 목표와 같음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "FORMAT_NA": 2857,
+        "ROUND_DRIFT": 5714,
+        "ROUND_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_convert/"
+    },
+    {
+      "claim": "V-unit-extract-pages",
+      "command": "extract-pages",
+      "family": "window",
+      "title": "extract-pages 가 요청 구간만 남김",
+      "rowCount": 20000,
+      "byVerdict": {
+        "USAGE": 2857,
+        "WINDOW_LEAK": 2857,
+        "WINDOW_MISS": 2857,
+        "WINDOW_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_extract_pages/"
+    },
+    {
+      "claim": "V-unit-build-from-ingest",
+      "command": "build-from-ingest",
+      "family": "count_eq",
+      "title": "ingest 블록 수가 산출 문단 수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_build_from_ingest/"
+    },
+    {
+      "claim": "V-unit-scaffold",
+      "command": "scaffold",
+      "family": "count_eq",
+      "title": "scaffold 생성 파일 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_scaffold/"
+    },
+    {
+      "claim": "V-unit-ir-diff",
+      "command": "ir-diff",
+      "family": "diff",
+      "title": "ir-diff diffCount 가 항목 수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5714,
+        "DIFF_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_ir_diff/"
+    },
+    {
+      "claim": "V-unit-ir-sweep",
+      "command": "ir-sweep",
+      "family": "count_eq",
+      "title": "ir-sweep 문서 수가 입력 수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_ir_sweep/"
+    },
+    {
+      "claim": "V-unit-verify",
+      "command": "verify",
+      "family": "diff",
+      "title": "verify failCount 가 실패 항목 수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5714,
+        "DIFF_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_verify/"
+    },
+    {
+      "claim": "V-unit-render-diff",
+      "command": "render-diff",
+      "family": "px",
+      "title": "render-diff px 와 STRUCT_MISMATCH 가 닫힌 집합",
+      "rowCount": 20000,
+      "byVerdict": {
+        "PX_FAIL": 3968,
+        "PX_OK": 13175,
+        "STRUCT": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_render_diff/"
+    },
+    {
+      "claim": "V-unit-layout-anomaly",
+      "command": "layout-anomaly",
+      "family": "layout",
+      "title": "layout-anomaly overflow/overlap/empty_page 와 hasSignal",
+      "rowCount": 20000,
+      "byVerdict": {
+        "ANOMALY": 8571,
+        "CLEAN": 8572,
+        "SIGNAL_LIE": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_layout_anomaly/"
+    },
+    {
+      "claim": "V-unit-measure-width",
+      "command": "measure-width",
+      "family": "bytes",
+      "title": "measure-width 측정값이 음수가 아님",
+      "rowCount": 20000,
+      "byVerdict": {
+        "BYTES_OK": 14286,
+        "EMPTY_OUTPUT": 2857,
+        "ZERO_BYTES": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_measure_width/"
+    },
+    {
+      "claim": "V-unit-core-pages",
+      "command": "core-pages",
+      "family": "count_eq",
+      "title": "core-pages 쪽 수가 dump-pages 와 같음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_core_pages/"
+    },
+    {
+      "claim": "V-unit-dump",
+      "command": "dump",
+      "family": "count_eq",
+      "title": "dump 컨트롤 수가 배열 길이",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_dump/"
+    },
+    {
+      "claim": "V-unit-dump-pages",
+      "command": "dump-pages",
+      "family": "count_eq",
+      "title": "dump-pages 쪽 수가 pageCount",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_dump_pages/"
+    },
+    {
+      "claim": "V-unit-dump-extents",
+      "command": "dump-extents",
+      "family": "count_eq",
+      "title": "dump-extents 박스 수가 배열 길이",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_dump_extents/"
+    },
+    {
+      "claim": "V-unit-dump-anchors",
+      "command": "dump-anchors",
+      "family": "count_eq",
+      "title": "dump-anchors 앵커 수가 배열 길이",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_dump_anchors/"
+    },
+    {
+      "claim": "V-unit-dump-carets",
+      "command": "dump-carets",
+      "family": "count_eq",
+      "title": "dump-carets 캐럿 수가 배열 길이",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_dump_carets/"
+    },
+    {
+      "claim": "V-unit-dump-records",
+      "command": "dump-records",
+      "family": "count_eq",
+      "title": "dump-records 레코드 수가 배열 길이",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_dump_records/"
+    },
+    {
+      "claim": "V-unit-diag",
+      "command": "diag",
+      "family": "signal",
+      "title": "diag findingCount 와 hasSignal",
+      "rowCount": 20000,
+      "byVerdict": {
+        "ANOMALY": 8571,
+        "CLEAN": 8572,
+        "SIGNAL_LIE": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_diag/"
+    },
+    {
+      "claim": "V-unit-hwp5-inventory",
+      "command": "hwp5-inventory",
+      "family": "count_eq",
+      "title": "hwp5-inventory 항목 수가 배열 길이",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_hwp5_inventory/"
+    },
+    {
+      "claim": "V-unit-hwp5-inventory-diff",
+      "command": "hwp5-inventory-diff",
+      "family": "diff",
+      "title": "hwp5-inventory-diff 차이 수가 항목 수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5714,
+        "DIFF_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_hwp5_inventory_diff/"
+    },
+    {
+      "claim": "V-unit-hwp5-char-shape-audit",
+      "command": "hwp5-char-shape-audit",
+      "family": "round",
+      "title": "hwp5-char-shape-audit 전후 charShape 수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "FORMAT_NA": 2857,
+        "ROUND_DRIFT": 5714,
+        "ROUND_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_hwp5_char_shape_audit/"
+    },
+    {
+      "claim": "V-unit-hwp5-roundtrip",
+      "command": "hwp5-roundtrip",
+      "family": "round",
+      "title": "hwp5-roundtrip pageCount 보존",
+      "rowCount": 20000,
+      "byVerdict": {
+        "FORMAT_NA": 2857,
+        "ROUND_DRIFT": 5714,
+        "ROUND_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_hwp5_roundtrip/"
+    },
+    {
+      "claim": "V-unit-hwpx-roundtrip",
+      "command": "hwpx-roundtrip",
+      "family": "round",
+      "title": "hwpx-roundtrip pageCount 보존",
+      "rowCount": 20000,
+      "byVerdict": {
+        "FORMAT_NA": 2857,
+        "ROUND_DRIFT": 5714,
+        "ROUND_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_hwpx_roundtrip/"
+    },
+    {
+      "claim": "V-unit-edit-fill",
+      "command": "edit-fill",
+      "family": "reread",
+      "title": "edit fill-fields --verify 재독이 기록과 같음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "NOT_EVIDENCE": 2857,
+        "REREAD_DRIFT": 2857,
+        "REREAD_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_edit_fill/"
+    },
+    {
+      "claim": "V-unit-edit-set-cell",
+      "command": "edit-set-cell",
+      "family": "reread",
+      "title": "edit set-cell --verify 재독이 기록과 같음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "NOT_EVIDENCE": 2857,
+        "REREAD_DRIFT": 2857,
+        "REREAD_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_edit_set_cell/"
+    },
+    {
+      "claim": "V-unit-edit-replace",
+      "command": "edit-replace",
+      "family": "reread",
+      "title": "edit replace-text 치환 수가 occurrence 와 같음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "NOT_EVIDENCE": 2857,
+        "REREAD_DRIFT": 2857,
+        "REREAD_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_edit_replace/"
+    },
+    {
+      "claim": "V-unit-edit-redact",
+      "command": "edit-redact",
+      "family": "redact",
+      "title": "edit redact 후 search 가 0",
+      "rowCount": 20000,
+      "byVerdict": {
+        "CLEAR_OK": 11429,
+        "NOTHING_TO_CLEAR": 2857,
+        "NOT_EVIDENCE": 2857,
+        "STILL_PRESENT": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_edit_redact/"
+    },
+    {
+      "claim": "V-unit-edit-sanitize",
+      "command": "edit-sanitize",
+      "family": "redact",
+      "title": "edit sanitize 후 메타 잔존이 0",
+      "rowCount": 20000,
+      "byVerdict": {
+        "CLEAR_OK": 11429,
+        "NOTHING_TO_CLEAR": 2857,
+        "NOT_EVIDENCE": 2857,
+        "STILL_PRESENT": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_edit_sanitize/"
+    },
+    {
+      "claim": "V-unit-edit-dry-run",
+      "command": "edit-dry-run",
+      "family": "cas",
+      "title": "edit --dry-run 은 출력 바이트를 만들지 않음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "CAS_MISMATCH": 2857,
+        "CAS_OK": 8572,
+        "SKIP": 2857,
+        "USAGE": 5714
+      },
+      "ownedPath": "tools/llm_verifier/u_edit_dry_run/"
+    },
+    {
+      "claim": "V-unit-run-cas",
+      "command": "run-cas",
+      "family": "cas",
+      "title": "run preconditions.inputSha256 불일치는 exit 3",
+      "rowCount": 20000,
+      "byVerdict": {
+        "CAS_MISMATCH": 2857,
+        "CAS_OK": 8572,
+        "SKIP": 2857,
+        "USAGE": 5714
+      },
+      "ownedPath": "tools/llm_verifier/u_run_cas/"
+    },
+    {
+      "claim": "V-unit-run-usage",
+      "command": "run-usage",
+      "family": "cas",
+      "title": "run preconditions 형식 오류는 exit 2",
+      "rowCount": 20000,
+      "byVerdict": {
+        "CAS_MISMATCH": 2857,
+        "CAS_OK": 8572,
+        "SKIP": 2857,
+        "USAGE": 5714
+      },
+      "ownedPath": "tools/llm_verifier/u_run_usage/"
+    },
+    {
+      "claim": "V-unit-export-plan-schema",
+      "command": "export-plan-schema",
+      "family": "count_eq",
+      "title": "export-plan-schema $defs 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_export_plan_schema/"
+    },
+    {
+      "claim": "V-unit-export-ir-schema",
+      "command": "export-ir-schema",
+      "family": "count_eq",
+      "title": "export-ir-schema 정의 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_export_ir_schema/"
+    },
+    {
+      "claim": "V-unit-export-capabilities-schema",
+      "command": "export-capabilities-schema",
+      "family": "count_eq",
+      "title": "capabilities schema 명령 수가 실물과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_export_capabilities_schema/"
+    },
+    {
+      "claim": "V-unit-export-ontology",
+      "command": "export-ontology",
+      "family": "count_eq",
+      "title": "ontology 용어 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_export_ontology/"
+    },
+    {
+      "claim": "V-unit-export-provenance-map",
+      "command": "export-provenance-map",
+      "family": "count_eq",
+      "title": "provenance untrusted 슬롯 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_export_provenance_map/"
+    },
+    {
+      "claim": "V-unit-export-agent-manifest",
+      "command": "export-agent-manifest",
+      "family": "count_eq",
+      "title": "agent-manifest 축 수가 4(또는 missingAxes)",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_export_agent_manifest/"
+    },
+    {
+      "claim": "V-unit-capabilities",
+      "command": "capabilities",
+      "family": "avail",
+      "title": "capabilities available:false 명령은 exit 2",
+      "rowCount": 20000,
+      "byVerdict": {
+        "AVAIL_RUN": 5714,
+        "EXIT_UNKNOWN": 2857,
+        "FALSE_UNAVAIL": 2857,
+        "UNAVAIL_LIE": 5714,
+        "UNAVAIL_OK": 2858
+      },
+      "ownedPath": "tools/llm_verifier/u_capabilities/"
+    },
+    {
+      "claim": "V-unit-mcp-serve",
+      "command": "mcp-serve",
+      "family": "layer",
+      "title": "mcp-serve 판정 3층 rpc/isError/envelope",
+      "rowCount": 20000,
+      "byVerdict": {
+        "ENV_JUDGE": 8571,
+        "ENV_OK": 2857,
+        "ENV_UNKNOWN": 2857,
+        "RPC_FAIL": 2858,
+        "TOOL_FAIL": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_mcp_serve/"
+    },
+    {
+      "claim": "V-unit-audit",
+      "command": "audit",
+      "family": "rate",
+      "title": "audit 재현율이 reproduced/total",
+      "rowCount": 20000,
+      "byVerdict": {
+        "RATE_IMPOSSIBLE": 2857,
+        "RATE_OK": 17143
+      },
+      "ownedPath": "tools/llm_verifier/u_audit/"
+    },
+    {
+      "claim": "V-unit-audit-report",
+      "command": "audit-report",
+      "family": "rate",
+      "title": "audit-report 재현율이 분자/분모",
+      "rowCount": 20000,
+      "byVerdict": {
+        "RATE_IMPOSSIBLE": 2857,
+        "RATE_OK": 17143
+      },
+      "ownedPath": "tools/llm_verifier/u_audit_report/"
+    },
+    {
+      "claim": "V-unit-settle",
+      "command": "settle",
+      "family": "rate",
+      "title": "settle 원장 항목 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "RATE_IMPOSSIBLE": 2857,
+        "RATE_OK": 17143
+      },
+      "ownedPath": "tools/llm_verifier/u_settle/"
+    },
+    {
+      "claim": "V-unit-conformance",
+      "command": "conformance",
+      "family": "level",
+      "title": "conformance level 이 L1..L5 닫힌 집합",
+      "rowCount": 20000,
+      "byVerdict": {
+        "LEVEL_OK": 17143,
+        "LEVEL_UNKNOWN": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_conformance/"
+    },
+    {
+      "claim": "V-unit-keygen",
+      "command": "keygen",
+      "family": "bytes",
+      "title": "keygen 공개키가 비지 않음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "BYTES_OK": 14286,
+        "EMPTY_OUTPUT": 2857,
+        "ZERO_BYTES": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_keygen/"
+    },
+    {
+      "claim": "V-unit-verify-signature",
+      "command": "verify-signature",
+      "family": "avail",
+      "title": "verify-signature 키 없으면 실패, 맞으면 통과",
+      "rowCount": 20000,
+      "byVerdict": {
+        "AVAIL_RUN": 5714,
+        "EXIT_UNKNOWN": 2857,
+        "FALSE_UNAVAIL": 2857,
+        "UNAVAIL_LIE": 5714,
+        "UNAVAIL_OK": 2858
+      },
+      "ownedPath": "tools/llm_verifier/u_verify_signature/"
+    },
+    {
+      "claim": "V-unit-anchor",
+      "command": "anchor",
+      "family": "count_eq",
+      "title": "anchor 에폭 항목 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_anchor/"
+    },
+    {
+      "claim": "V-unit-gate",
+      "command": "gate",
+      "family": "avail",
+      "title": "gate 거부는 exit 3 이고 nextCall 이 있음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "AVAIL_RUN": 5714,
+        "EXIT_UNKNOWN": 2857,
+        "FALSE_UNAVAIL": 2857,
+        "UNAVAIL_LIE": 5714,
+        "UNAVAIL_OK": 2858
+      },
+      "ownedPath": "tools/llm_verifier/u_gate/"
+    },
+    {
+      "claim": "V-unit-bundle",
+      "command": "bundle",
+      "family": "triad",
+      "title": "bundle 입력·계획·산출 해시 3종",
+      "rowCount": 20000,
+      "byVerdict": {
+        "HASH_DEFECT": 2857,
+        "TRIAD_MISS": 2857,
+        "TRIAD_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_bundle/"
+    },
+    {
+      "claim": "V-unit-disclose",
+      "command": "disclose",
+      "family": "count_eq",
+      "title": "disclose 공개 필드 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_disclose/"
+    },
+    {
+      "claim": "V-unit-recall-scope",
+      "command": "recall-scope",
+      "family": "count_eq",
+      "title": "recall-scope 대상 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_recall_scope/"
+    },
+    {
+      "claim": "V-unit-harness",
+      "command": "harness",
+      "family": "count_eq",
+      "title": "harness 스텝 수가 계획 steps 길이",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_harness/"
+    },
+    {
+      "claim": "V-unit-harness-status",
+      "command": "harness-status",
+      "family": "count_eq",
+      "title": "harness-status 완료 수가 전체 이하",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_harness_status/"
+    },
+    {
+      "claim": "V-unit-gpu-info",
+      "command": "gpu-info",
+      "family": "avail",
+      "title": "gpu-info 미빌드는 exit 2",
+      "rowCount": 20000,
+      "byVerdict": {
+        "AVAIL_RUN": 5714,
+        "EXIT_UNKNOWN": 2857,
+        "FALSE_UNAVAIL": 2857,
+        "UNAVAIL_LIE": 5714,
+        "UNAVAIL_OK": 2858
+      },
+      "ownedPath": "tools/llm_verifier/u_gpu_info/"
+    },
+    {
+      "claim": "V-unit-export-png-gpu",
+      "command": "export-png-gpu",
+      "family": "avail",
+      "title": "export-png-gpu 미빌드는 exit 2",
+      "rowCount": 20000,
+      "byVerdict": {
+        "AVAIL_RUN": 5714,
+        "EXIT_UNKNOWN": 2857,
+        "FALSE_UNAVAIL": 2857,
+        "UNAVAIL_LIE": 5714,
+        "UNAVAIL_OK": 2858
+      },
+      "ownedPath": "tools/llm_verifier/u_export_png_gpu/"
+    },
+    {
+      "claim": "V-unit-export-render-tree",
+      "command": "export-render-tree",
+      "family": "count_eq",
+      "title": "export-render-tree 노드 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_export_render_tree/"
+    },
+    {
+      "claim": "V-unit-nols-2024",
+      "command": "nols-2024",
+      "family": "trap",
+      "title": "한글 2024 NO_LS 를 오라클로 쓰면 함정",
+      "rowCount": 20000,
+      "byVerdict": {
+        "FLAGGED": 2857,
+        "SAFE": 11429,
+        "TRAP": 5714
+      },
+      "ownedPath": "tools/llm_verifier/u_nols_2024/"
+    },
+    {
+      "claim": "V-unit-boundary-path",
+      "command": "boundary-path",
+      "family": "path",
+      "title": "작업 경로가 워크스페이스 밖으로 새지 않음",
+      "rowCount": 20000,
+      "byVerdict": {
+        "BREACH": 2857,
+        "ESCAPE": 2857,
+        "PATH_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_boundary_path/"
+    },
+    {
+      "claim": "V-unit-limit-bytes",
+      "command": "limit-bytes",
+      "family": "limit",
+      "title": "대형 문서 상한을 넘기면 거부",
+      "rowCount": 20000,
+      "byVerdict": {
+        "OVER_ACCEPTED": 2857,
+        "OVER_REJECT": 5714,
+        "UNDER_OK": 8572,
+        "UNDER_REJECT": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_limit_bytes/"
+    },
+    {
+      "claim": "V-unit-eq-supsub",
+      "command": "eq-supsub",
+      "family": "parse",
+      "title": "수식 첨자 사이 공백이 파싱을 떨어뜨리면 실패",
+      "rowCount": 20000,
+      "byVerdict": {
+        "PARSE_DROP": 5714,
+        "PARSE_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_eq_supsub/"
+    },
+    {
+      "claim": "V-unit-lineseg-overwrite",
+      "command": "lineseg-overwrite",
+      "family": "round",
+      "title": "저장 LineSeg 를 비교 없이 덮으면 표지",
+      "rowCount": 20000,
+      "byVerdict": {
+        "FORMAT_NA": 2857,
+        "ROUND_DRIFT": 5714,
+        "ROUND_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_lineseg_overwrite/"
+    },
+    {
+      "claim": "V-unit-compat-anchor",
+      "command": "compat-anchor",
+      "family": "count_eq",
+      "title": "compat 2024 이월 앵커 수가 선언과 일치",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 5595,
+        "COUNT_OK": 14286,
+        "USAGE": 119
+      },
+      "ownedPath": "tools/llm_verifier/u_compat_anchor/"
+    },
+    {
+      "claim": "V-unit-charshape-hwpx",
+      "command": "charshape-hwpx",
+      "family": "round",
+      "title": "HWPX 왕복 char_shapes 수 보존",
+      "rowCount": 20000,
+      "byVerdict": {
+        "FORMAT_NA": 2857,
+        "ROUND_DRIFT": 5714,
+        "ROUND_OK": 11429
+      },
+      "ownedPath": "tools/llm_verifier/u_charshape_hwpx/"
+    },
+    {
+      "claim": "V-unit-recipe-fill",
+      "command": "recipe-fill",
+      "family": "reread",
+      "title": "레시피 서식 채움 재독",
+      "rowCount": 20000,
+      "byVerdict": {
+        "NOT_EVIDENCE": 2857,
+        "REREAD_DRIFT": 2857,
+        "REREAD_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_recipe_fill/"
+    },
+    {
+      "claim": "V-unit-recipe-table",
+      "command": "recipe-table",
+      "family": "dims",
+      "title": "레시피 표 CSV 왕복 치수",
+      "rowCount": 20000,
+      "byVerdict": {
+        "DIM_DRIFT": 5714,
+        "DIM_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_recipe_table/"
+    },
+    {
+      "claim": "V-unit-recipe-redact",
+      "command": "recipe-redact",
+      "family": "redact",
+      "title": "레시피 배포 전 마스킹 잔존 0",
+      "rowCount": 20000,
+      "byVerdict": {
+        "CLEAR_OK": 11429,
+        "NOTHING_TO_CLEAR": 2857,
+        "NOT_EVIDENCE": 2857,
+        "STILL_PRESENT": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_recipe_redact/"
+    },
+    {
+      "claim": "V-unit-recipe-mailmerge",
+      "command": "recipe-mailmerge",
+      "family": "isolate",
+      "title": "레시피 메일머지 행 격리",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 2857,
+        "ISOLATED": 14286,
+        "POISON": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_recipe_mailmerge/"
+    },
+    {
+      "claim": "V-unit-recipe-visual",
+      "command": "recipe-visual",
+      "family": "px",
+      "title": "레시피 render-diff 수치 판정",
+      "rowCount": 20000,
+      "byVerdict": {
+        "PX_FAIL": 3968,
+        "PX_OK": 13175,
+        "STRUCT": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_recipe_visual/"
+    },
+    {
+      "claim": "V-unit-skill-bulk",
+      "command": "skill-bulk",
+      "family": "isolate",
+      "title": "bulk-pipeline 실패 행 격리",
+      "rowCount": 20000,
+      "byVerdict": {
+        "COUNT_DRIFT": 2857,
+        "ISOLATED": 14286,
+        "POISON": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_skill_bulk/"
+    },
+    {
+      "claim": "V-unit-skill-security",
+      "command": "skill-security",
+      "family": "signal",
+      "title": "security-sweep 3축 신호",
+      "rowCount": 20000,
+      "byVerdict": {
+        "ANOMALY": 8571,
+        "CLEAN": 8572,
+        "SIGNAL_LIE": 2857
+      },
+      "ownedPath": "tools/llm_verifier/u_skill_security/"
+    },
+    {
+      "claim": "V-unit-skill-receipt",
+      "command": "skill-receipt",
+      "family": "triad",
+      "title": "work-receipt 3해시 존재",
+      "rowCount": 20000,
+      "byVerdict": {
+        "HASH_DEFECT": 2857,
+        "TRIAD_MISS": 2857,
+        "TRIAD_OK": 14286
+      },
+      "ownedPath": "tools/llm_verifier/u_skill_receipt/"
+    },
+    {
+      "claim": "V-unit-doctor-onboard",
+      "command": "doctor-onboard",
+      "family": "avail",
+      "title": "rhwp_doctor 실패는 비정상 종료",
+      "rowCount": 20000,
+      "byVerdict": {
+        "AVAIL_RUN": 5714,
+        "EXIT_UNKNOWN": 2857,
+        "FALSE_UNAVAIL": 2857,
+        "UNAVAIL_LIE": 5714,
+        "UNAVAIL_OK": 2858
+      },
+      "ownedPath": "tools/llm_verifier/u_doctor_onboard/"
+    }
+  ],
+  "elapsedSec": 44.5
+}

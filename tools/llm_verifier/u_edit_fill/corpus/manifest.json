@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-edit-fill",
+  "command": "edit-fill",
+  "family": "reread",
+  "title": "edit fill-fields --verify 재독이 기록과 같음",
+  "rowCount": 20000,
+  "byVerdict": {
+    "NOT_EVIDENCE": 2857,
+    "REREAD_DRIFT": 2857,
+    "REREAD_OK": 14286
+  },
+  "ownedPath": "tools/llm_verifier/u_edit_fill/"
+}

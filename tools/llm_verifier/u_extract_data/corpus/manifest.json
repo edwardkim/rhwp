@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-extract-data",
+  "command": "extract-data",
+  "family": "kind",
+  "title": "extract-data kind 가 닫힌 집합이고 개수가 일치",
+  "rowCount": 20000,
+  "byVerdict": {
+    "COUNT_DRIFT": 2857,
+    "KIND_OK": 14286,
+    "KIND_UNKNOWN": 2857
+  },
+  "ownedPath": "tools/llm_verifier/u_extract_data/"
+}

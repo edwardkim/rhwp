@@ -1,0 +1,14 @@
+{
+  "claim": "V-unit-run-usage",
+  "command": "run-usage",
+  "family": "cas",
+  "title": "run preconditions 형식 오류는 exit 2",
+  "rowCount": 20000,
+  "byVerdict": {
+    "CAS_MISMATCH": 2857,
+    "CAS_OK": 8572,
+    "SKIP": 2857,
+    "USAGE": 5714
+  },
+  "ownedPath": "tools/llm_verifier/u_run_usage/"
+}

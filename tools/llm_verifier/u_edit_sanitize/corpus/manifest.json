@@ -1,0 +1,14 @@
+{
+  "claim": "V-unit-edit-sanitize",
+  "command": "edit-sanitize",
+  "family": "redact",
+  "title": "edit sanitize 후 메타 잔존이 0",
+  "rowCount": 20000,
+  "byVerdict": {
+    "CLEAR_OK": 11429,
+    "NOTHING_TO_CLEAR": 2857,
+    "NOT_EVIDENCE": 2857,
+    "STILL_PRESENT": 2857
+  },
+  "ownedPath": "tools/llm_verifier/u_edit_sanitize/"
+}

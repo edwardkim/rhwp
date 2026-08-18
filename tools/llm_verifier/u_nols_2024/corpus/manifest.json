@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-nols-2024",
+  "command": "nols-2024",
+  "family": "trap",
+  "title": "한글 2024 NO_LS 를 오라클로 쓰면 함정",
+  "rowCount": 20000,
+  "byVerdict": {
+    "FLAGGED": 2857,
+    "SAFE": 11429,
+    "TRAP": 5714
+  },
+  "ownedPath": "tools/llm_verifier/u_nols_2024/"
+}

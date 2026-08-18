@@ -1,0 +1,13 @@
+{
+  "claim": "V-unit-skill-security",
+  "command": "skill-security",
+  "family": "signal",
+  "title": "security-sweep 3축 신호",
+  "rowCount": 20000,
+  "byVerdict": {
+    "ANOMALY": 8571,
+    "CLEAN": 8572,
+    "SIGNAL_LIE": 2857
+  },
+  "ownedPath": "tools/llm_verifier/u_skill_security/"
+}
