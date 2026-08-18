@@ -770,6 +770,19 @@ pub fn serialize_para_shape(ps: &ParaShape) -> Vec<u8> {
     // 7 이상일 때 8→0, 9→1 로 엉뚱한 수준을 박는다.
     attr1 &= !(0x07 << 25);
     attr1 |= (ps.para_level.min(6) as u32) << 25;
+    // [#5327] bits 5-6: breakLatinWord(라틴 줄나눔 단위). HWPX 파서는 이 값을 lexical
+    // 필드 break_latin_word 로만 읽고 attr1 에는 싣지 않으므로(짝 breakNonLatinWord bit7 은
+    // attr1 에 인코딩하는 것과 비대칭), 여기서 lexical 값을 attr1 bits5-6 으로 재인코딩하지
+    // 않으면 HWPX→HWP5 저장에서 라틴 줄나눔 설정이 통째로 사라진다. #5298(HWP5→HWPX)의
+    // latin_break_from_attr1 역함수. None(HWP5 원본)이면 원본 attr1 비트를 보존한다.
+    if let Some(blw) = ps.break_latin_word.as_deref() {
+        let code = match blw {
+            "HYPHENATION" => 1u32,
+            "BREAK_WORD" => 2,
+            _ => 0, // KEEP_WORD
+        };
+        attr1 = (attr1 & !(0x03 << 5)) | (code << 5);
+    }
     w.write_u32(attr1).unwrap();
     w.write_i32(ps.margin_left).unwrap();
     w.write_i32(ps.margin_right).unwrap();
