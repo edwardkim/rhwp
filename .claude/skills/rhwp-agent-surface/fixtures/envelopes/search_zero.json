@@ -1,0 +1,12 @@
+{
+  "id": "search_zero",
+  "command": "search",
+  "mcp": "hwp_search",
+  "cli_exit": 0,
+  "isError": false,
+  "fields": {
+    "matchCount": 0,
+    "totalMatchCount": 0
+  },
+  "read_as": "data"
+}

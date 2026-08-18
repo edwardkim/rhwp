@@ -1,0 +1,37 @@
+{
+  "id": "fill_not_found",
+  "command": "edit fill-fields",
+  "mcp": "hwp_fill_fields",
+  "cli_exit": 0,
+  "isError": false,
+  "fields": {
+    "notFound": [
+      "없는필드"
+    ],
+    "ambiguous": [
+      {
+        "name": "목차1",
+        "matched": 1,
+        "total": 5
+      }
+    ]
+  },
+  "read_as": "data",
+  "done_when": "notFound == [] && ambiguous == []",
+  "sample": {
+    "dryRun": true,
+    "filledCount": 2,
+    "notFound": [
+      "없는필드"
+    ],
+    "ambiguous": [
+      {
+        "name": "목차1",
+        "matched": 1,
+        "total": 5
+      }
+    ],
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}
