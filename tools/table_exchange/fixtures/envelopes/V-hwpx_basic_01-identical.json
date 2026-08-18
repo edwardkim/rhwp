@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/hwpx/basic-table-01.hwpx",
+  "table": 0,
+  "rowCount": 2,
+  "colCount": 2,
+  "csv": "V-hwpx_basic_01-identical.csv",
+  "dryRun": false,
+  "changed": [],
+  "changedCount": 0,
+  "changedPages": [],
+  "invalid": [],
+  "output": "out/V-hwpx_basic_01-identical.hwpx",
+  "verify": {
+    "diffCount": 0,
+    "identical": true
+  },
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "outputFormat": "hwpx",
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "command": "csv-to-table",
+    "exit": 0,
+    "outputKept": true,
+    "mode": "verify",
+    "writes": true
+  }
+}

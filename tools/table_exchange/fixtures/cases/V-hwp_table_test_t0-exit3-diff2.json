@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "V-hwp_table_test_t0-exit3-diff2",
+  "issue": 5485,
+  "skill": "rhwp-table-exchange",
+  "family": "verify",
+  "command": "csv-to-table",
+  "title": "hwp_table_test_t0 verify 실패 diffCount=2 — exit 3, 산출 유지",
+  "sample": "samples/hwp_table_test.hwp",
+  "tableIndex": 0,
+  "rows": 4,
+  "cols": 3,
+  "mode": "verify",
+  "argv": [
+    "rhwp",
+    "csv-to-table",
+    "samples/hwp_table_test.hwp",
+    "--csv",
+    "V-hwp_table_test_t0-exit3-diff2.csv",
+    "--table",
+    "0",
+    "--json",
+    "-o",
+    "out/V-hwp_table_test_t0-exit3-diff2.hwp",
+    "--verify"
+  ],
+  "expectExit": 3,
+  "writes": true,
+  "csvRoundtrip": "allowed",
+  "notes": "고장이 아니라 판정 데이터. invalid [] 이고 outputKept true.",
+  "nextAction": "csv-to-table --verify",
+  "documented": true,
+  "occupancy": {
+    "rows": 4,
+    "cols": 3,
+    "cellCount": 12,
+    "coveredCount": 0,
+    "mergedAnchorCount": 0,
+    "areaSum": 12,
+    "gridArea": 12,
+    "areaFits": true,
+    "mergedAnchors": [],
+    "covered": []
+  },
+  "csvName": "V-hwp_table_test_t0-exit3-diff2.csv",
+  "csvLineCount": 4,
+  "invalid": [],
+  "changed": [
+    {
+      "row": 1,
+      "col": 0,
+      "oldText": "",
+      "newText": "v1_0"
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "oldText": "",
+      "newText": "v1_1"
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "oldText": "",
+      "newText": "v1_2"
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "oldText": "",
+      "newText": "v2_0"
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "oldText": "",
+      "newText": "v2_1"
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "oldText": "",
+      "newText": "v2_2"
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "oldText": "",
+      "newText": "v3_0"
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "oldText": "",
+      "newText": "v3_1"
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "oldText": "",
+      "newText": "v3_2"
+    }
+  ],
+  "envelope": {
+    "dryRun": false,
+    "changedCount": 9,
+    "changedPages": [
+      0
+    ],
+    "output": "out/V-hwp_table_test_t0-exit3-diff2.hwp",
+    "verify": {
+      "diffCount": 2,
+      "identical": false
+    },
+    "outputFormat": "hwp5",
+    "invalidCount": 0,
+    "_skillMeta": {
+      "skill": "rhwp-table-exchange",
+      "command": "csv-to-table",
+      "exit": 3,
+      "outputKept": true,
+      "mode": "verify",
+      "writes": true
+    }
+  },
+  "sourceRefs": [
+    "tests/table_csv_contract.rs",
+    ".claude/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
+    ".claude/skills/rhwp-table-exchange/references/dry_run_verify.md",
+    ".claude/skills/rhwp-table-exchange/fixtures/envelopes/csv_to_table_verify_fail.json"
+  ]
+}

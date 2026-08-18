@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "source": "synthetic/merge-pattern.hwpx",
+  "table": 0,
+  "rowCount": 4,
+  "colCount": 4,
+  "csv": "C-block_2x2-all.csv",
+  "dryRun": true,
+  "changed": [],
+  "changedCount": 0,
+  "changedPages": null,
+  "invalid": [
+    {
+      "reason": "coveredCellNotEmpty",
+      "message": "(1,2) 는 병합으로 덮인 칸입니다 — 앵커 (1,1) 를 지정하세요.",
+      "row": 1,
+      "col": 2,
+      "anchorRow": 1,
+      "anchorCol": 1
+    },
+    {
+      "reason": "coveredCellNotEmpty",
+      "message": "(2,1) 는 병합으로 덮인 칸입니다 — 앵커 (1,1) 를 지정하세요.",
+      "row": 2,
+      "col": 1,
+      "anchorRow": 1,
+      "anchorCol": 1
+    },
+    {
+      "reason": "coveredCellNotEmpty",
+      "message": "(2,2) 는 병합으로 덮인 칸입니다 — 앵커 (1,1) 를 지정하세요.",
+      "row": 2,
+      "col": 2,
+      "anchorRow": 1,
+      "anchorCol": 1
+    }
+  ],
+  "output": null,
+  "verify": null,
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "command": "csv-to-table",
+    "exit": 2,
+    "outputKept": false,
+    "mode": "dry-run",
+    "writes": false
+  }
+}

@@ -1,0 +1,300 @@
+caseId	family	command	sample	tableIndex	rows	cols	mode	expectExit	writes	csvRoundtrip	invalidReasons	changedCount	coveredCount	nextAction
+C-block_2x2-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	3	edit set-cell
+C-block_2x2-control-on-anchor	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	dry-run	2	False	extract-only	controlCharacter	0	3	edit set-cell
+C-block_2x2-empty-covered-ok-dim	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	dry-run	0	False	extract-only		0	3	edit set-cell
+C-block_2x2-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	3	edit set-cell
+C-block_2x2-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	3	edit set-cell
+C-block_2x2-second	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	write	2	False	extract-only	coveredCellNotEmpty	0	3	edit set-cell
+C-block_2x3-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	5	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	5	edit set-cell
+C-block_2x3-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	5	dry-run	2	False	extract-only	coveredCellNotEmpty	0	5	edit set-cell
+C-block_2x3-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	5	dry-run	2	False	extract-only	coveredCellNotEmpty	0	5	edit set-cell
+C-block_3x2-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	4	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	5	edit set-cell
+C-block_3x2-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	5	edit set-cell
+C-block_3x2-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	5	edit set-cell
+C-checker_safe-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty	0	2	edit set-cell
+C-checker_safe-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	2	edit set-cell
+C-checker_safe-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	2	edit set-cell
+C-colspan2_last_row-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-colspan2_last_row-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-colspan2_last_row-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-colspan2_r0c0-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-colspan2_r0c0-control-on-anchor	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	4	dry-run	2	False	extract-only	controlCharacter	0	1	edit set-cell
+C-colspan2_r0c0-empty-covered-ok-dim	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	4	dry-run	0	False	extract-only		0	1	edit set-cell
+C-colspan2_r0c0-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-colspan2_r0c0-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-colspan2_r0c1-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-colspan2_r0c1-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-colspan2_r0c1-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-colspan3_header-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty	0	2	edit set-cell
+C-colspan3_header-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	2	edit set-cell
+C-colspan3_header-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	2	edit set-cell
+C-colspan3_mid-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	5	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty	0	2	edit set-cell
+C-colspan3_mid-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	5	dry-run	2	False	extract-only	coveredCellNotEmpty	0	2	edit set-cell
+C-colspan3_mid-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	5	dry-run	2	False	extract-only	coveredCellNotEmpty	0	2	edit set-cell
+C-colspan4_full_row-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	4	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	3	edit set-cell
+C-colspan4_full_row-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	3	edit set-cell
+C-colspan4_full_row-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	3	edit set-cell
+C-corner_l-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	5	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	3	edit set-cell
+C-corner_l-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	5	dry-run	2	False	extract-only	coveredCellNotEmpty	0	3	edit set-cell
+C-corner_l-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	5	dry-run	2	False	extract-only	coveredCellNotEmpty	0	3	edit set-cell
+C-first_col_stack-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	6	3	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	4	edit set-cell
+C-first_col_stack-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	6	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	4	edit set-cell
+C-first_col_stack-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	6	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	4	edit set-cell
+C-header_plus_note-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	5	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	4	edit set-cell
+C-header_plus_note-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	5	dry-run	2	False	extract-only	coveredCellNotEmpty	0	4	edit set-cell
+C-header_plus_note-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	5	dry-run	2	False	extract-only	coveredCellNotEmpty	0	4	edit set-cell
+C-header_plus_note-second	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	5	write	2	False	extract-only	coveredCellNotEmpty	0	4	edit set-cell
+C-last_cell_span-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	3	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	3	edit set-cell
+C-last_cell_span-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	3	edit set-cell
+C-last_cell_span-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	3	edit set-cell
+C-many_small-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	8	6	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	8	edit set-cell
+C-many_small-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	8	6	dry-run	2	False	extract-only	coveredCellNotEmpty	0	8	edit set-cell
+C-many_small-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	8	6	dry-run	2	False	extract-only	coveredCellNotEmpty	0	8	edit set-cell
+C-many_small-second	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	8	6	write	2	False	extract-only	coveredCellNotEmpty	0	8	edit set-cell
+C-rowspan2_r0c0-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-rowspan2_r0c0-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-rowspan2_r0c0-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-rowspan2_r1c2-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-rowspan2_r1c2-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-rowspan2_r1c2-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	3	dry-run	2	False	extract-only	coveredCellNotEmpty	0	1	edit set-cell
+C-rowspan3_note-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	4	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty	0	2	edit set-cell
+C-rowspan3_note-control-on-anchor	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	4	dry-run	2	False	extract-only	controlCharacter	0	2	edit set-cell
+C-rowspan3_note-empty-covered-ok-dim	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	4	dry-run	0	False	extract-only		0	2	edit set-cell
+C-rowspan3_note-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	2	edit set-cell
+C-rowspan3_note-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	5	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	2	edit set-cell
+C-table001_header-all	covered	csv-to-table	samples/table-001.hwp	0	19	9	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	6	edit set-cell
+C-table001_header-control-on-anchor	covered	csv-to-table	samples/table-001.hwp	0	19	9	dry-run	2	False	extract-only	controlCharacter	0	6	edit set-cell
+C-table001_header-empty-covered-ok-dim	covered	csv-to-table	samples/table-001.hwp	0	19	9	dry-run	0	False	extract-only		0	6	edit set-cell
+C-table001_header-first	covered	csv-to-table	samples/table-001.hwp	0	19	9	dry-run	2	False	extract-only	coveredCellNotEmpty	0	6	edit set-cell
+C-table001_header-last	covered	csv-to-table	samples/table-001.hwp	0	19	9	dry-run	2	False	extract-only	coveredCellNotEmpty	0	6	edit set-cell
+C-table001_header-second	covered	csv-to-table	samples/table-001.hwp	0	19	9	write	2	False	extract-only	coveredCellNotEmpty	0	6	edit set-cell
+C-tall_col0-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	8	4	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	6	edit set-cell
+C-tall_col0-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	8	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	6	edit set-cell
+C-tall_col0-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	8	4	dry-run	2	False	extract-only	coveredCellNotEmpty	0	6	edit set-cell
+C-triple_header-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	6	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	3	edit set-cell
+C-triple_header-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	6	dry-run	2	False	extract-only	coveredCellNotEmpty	0	3	edit set-cell
+C-triple_header-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	3	6	dry-run	2	False	extract-only	coveredCellNotEmpty	0	3	edit set-cell
+C-two_colspan3-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	7	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	4	edit set-cell
+C-two_colspan3-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	7	dry-run	2	False	extract-only	coveredCellNotEmpty	0	4	edit set-cell
+C-two_colspan3-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	4	7	dry-run	2	False	extract-only	coveredCellNotEmpty	0	4	edit set-cell
+C-wide_row0-all	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	6	8	dry-run	2	False	extract-only	coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty,coveredCellNotEmpty	0	6	edit set-cell
+C-wide_row0-first	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	6	8	dry-run	2	False	extract-only	coveredCellNotEmpty	0	6	edit set-cell
+C-wide_row0-last	covered	csv-to-table	synthetic/merge-pattern.hwpx	0	6	8	dry-run	2	False	extract-only	coveredCellNotEmpty	0	6	edit set-cell
+D-chujin-both_short	dimension	csv-to-table	samples/추진일정.hwp	0	4	3	dry-run	2	False	allowed	rowCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-chujin-col_long_first	dimension	csv-to-table	samples/추진일정.hwp	0	4	3	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-chujin-col_short_all	dimension	csv-to-table	samples/추진일정.hwp	0	4	3	dry-run	2	False	allowed	colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-chujin-empty	dimension	csv-to-table	samples/추진일정.hwp	0	4	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-chujin-header_drop	dimension	csv-to-table	samples/추진일정.hwp	0	4	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-chujin-ragged-mid	dimension	csv-to-table	samples/추진일정.hwp	0	4	3	write	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-chujin-row_long_1	dimension	csv-to-table	samples/추진일정.hwp	0	4	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-chujin-row_short_1	dimension	csv-to-table	samples/추진일정.hwp	0	4	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwp_table_test_t0-both_short	dimension	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	2	False	allowed	rowCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwp_table_test_t0-col_long_first	dimension	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwp_table_test_t0-col_short_all	dimension	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	2	False	allowed	colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwp_table_test_t0-empty	dimension	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwp_table_test_t0-header_drop	dimension	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwp_table_test_t0-ragged-mid	dimension	csv-to-table	samples/hwp_table_test.hwp	0	4	3	write	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwp_table_test_t0-row_long_1	dimension	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwp_table_test_t0-row_short_1	dimension	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwp_table_test_t0-unclosed-quote	dimension	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	2	False	allowed	csvParse	0	0	CSV 라이브러리로 재생성
+D-hwpx_basic_01-both_short	dimension	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	dry-run	2	False	allowed	rowCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwpx_basic_01-col_long_first	dimension	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwpx_basic_01-col_short_all	dimension	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	dry-run	2	False	allowed	colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwpx_basic_01-empty	dimension	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwpx_basic_01-header_drop	dimension	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwpx_basic_01-row_long_1	dimension	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-hwpx_basic_01-row_short_1	dimension	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t0-both_short	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	0	2	1	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t0-col_long_first	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	0	2	1	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t0-empty	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	0	2	1	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t0-header_drop	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	0	2	1	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t0-row_long_1	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	0	2	1	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t0-row_short_1	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	0	2	1	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t1-both_short	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	dry-run	2	False	allowed	rowCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t1-col_long_first	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t1-col_short_all	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	dry-run	2	False	allowed	colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t1-empty	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t1-header_drop	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t1-row_long_1	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t1-row_short_1	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-issue2007_t1-unclosed-quote	dimension	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	dry-run	2	False	allowed	csvParse	0	0	CSV 라이브러리로 재생성
+D-jichi_body_12-both_short	dimension	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	dry-run	2	False	allowed	rowCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-jichi_body_12-col_long_first	dimension	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-jichi_body_12-col_short_all	dimension	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	dry-run	2	False	allowed	colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-jichi_body_12-empty	dimension	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-jichi_body_12-header_drop	dimension	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-jichi_body_12-row_long_1	dimension	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-jichi_body_12-row_short_1	dimension	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_2x2_m0-both_short	dimension	csv-to-table	synthetic/shape_2x2_m0.hwp	0	2	2	dry-run	2	False	allowed	rowCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_2x2_m0-col_long_first	dimension	csv-to-table	synthetic/shape_2x2_m0.hwp	0	2	2	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_2x2_m0-col_short_all	dimension	csv-to-table	synthetic/shape_2x2_m0.hwp	0	2	2	dry-run	2	False	allowed	colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_2x2_m0-empty	dimension	csv-to-table	synthetic/shape_2x2_m0.hwp	0	2	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_2x2_m0-header_drop	dimension	csv-to-table	synthetic/shape_2x2_m0.hwp	0	2	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_2x2_m0-row_long_1	dimension	csv-to-table	synthetic/shape_2x2_m0.hwp	0	2	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_2x2_m0-row_short_1	dimension	csv-to-table	synthetic/shape_2x2_m0.hwp	0	2	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_3x4_m0-both_short	dimension	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	dry-run	2	False	allowed	rowCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_3x4_m0-col_long_first	dimension	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_3x4_m0-col_short_all	dimension	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	dry-run	2	False	allowed	colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_3x4_m0-empty	dimension	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_3x4_m0-header_drop	dimension	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_3x4_m0-row_long_1	dimension	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_3x4_m0-row_short_1	dimension	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_3x4_m0-unclosed-quote	dimension	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	dry-run	2	False	allowed	csvParse	0	0	CSV 라이브러리로 재생성
+D-shape_5x5_m0-both_short	dimension	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	dry-run	2	False	allowed	rowCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_5x5_m0-col_long_first	dimension	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_5x5_m0-col_short_all	dimension	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	dry-run	2	False	allowed	colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_5x5_m0-empty	dimension	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_5x5_m0-header_drop	dimension	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_5x5_m0-ragged-mid	dimension	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	write	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_5x5_m0-row_long_1	dimension	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_5x5_m0-row_short_1	dimension	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_8x4_m0-both_short	dimension	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	dry-run	2	False	allowed	rowCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_8x4_m0-col_long_first	dimension	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_8x4_m0-col_short_all	dimension	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	dry-run	2	False	allowed	colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_8x4_m0-empty	dimension	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_8x4_m0-header_drop	dimension	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_8x4_m0-row_long_1	dimension	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_8x4_m0-row_short_1	dimension	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_9x2_m0-both_short	dimension	csv-to-table	synthetic/shape_9x2_m0.hwp	0	9	2	dry-run	2	False	allowed	rowCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_9x2_m0-col_long_first	dimension	csv-to-table	synthetic/shape_9x2_m0.hwp	0	9	2	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_9x2_m0-col_short_all	dimension	csv-to-table	synthetic/shape_9x2_m0.hwp	0	9	2	dry-run	2	False	allowed	colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_9x2_m0-empty	dimension	csv-to-table	synthetic/shape_9x2_m0.hwp	0	9	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_9x2_m0-header_drop	dimension	csv-to-table	synthetic/shape_9x2_m0.hwp	0	9	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_9x2_m0-row_long_1	dimension	csv-to-table	synthetic/shape_9x2_m0.hwp	0	9	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-shape_9x2_m0-row_short_1	dimension	csv-to-table	synthetic/shape_9x2_m0.hwp	0	9	2	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-table_001-both-2x2	dimension	csv-to-table	samples/table-001.hwp	0	19	9	dry-run	2	False	extract-only	rowCountMismatch,colCountMismatch,colCountMismatch	0	6	edit set-cell
+D-treatise_body-both_short	dimension	csv-to-table	samples/basic/treatise sample.hwp	0	3	3	dry-run	2	False	allowed	rowCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-treatise_body-col_long_first	dimension	csv-to-table	samples/basic/treatise sample.hwp	0	3	3	dry-run	2	False	allowed	colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-treatise_body-col_short_all	dimension	csv-to-table	samples/basic/treatise sample.hwp	0	3	3	dry-run	2	False	allowed	colCountMismatch,colCountMismatch,colCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-treatise_body-empty	dimension	csv-to-table	samples/basic/treatise sample.hwp	0	3	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-treatise_body-header_drop	dimension	csv-to-table	samples/basic/treatise sample.hwp	0	3	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-treatise_body-row_long_1	dimension	csv-to-table	samples/basic/treatise sample.hwp	0	3	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+D-treatise_body-row_short_1	dimension	csv-to-table	samples/basic/treatise sample.hwp	0	3	3	dry-run	2	False	allowed	rowCountMismatch	0	0	뽑은 CSV 를 표 치수에 맞춰 재생성
+E-missing-file	export-tables	export-tables	samples/does-not-exist.hwp	0	0	0	scan	1	False	forbidden		0	0	경로를 고친다
+E-occ-block_2x2	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	4	4	scan	0	False	extract-only		0	3	edit set-cell
+E-occ-block_2x3	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	5	5	scan	0	False	extract-only		0	5	edit set-cell
+E-occ-block_3x2	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	5	4	scan	0	False	extract-only		0	5	edit set-cell
+E-occ-checker_safe	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	4	4	scan	0	False	extract-only		0	2	edit set-cell
+E-occ-colspan2_last_row	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	4	3	scan	0	False	extract-only		0	1	edit set-cell
+E-occ-colspan2_r0c0	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	3	4	scan	0	False	extract-only		0	1	edit set-cell
+E-occ-colspan2_r0c1	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	3	4	scan	0	False	extract-only		0	1	edit set-cell
+E-occ-colspan3_header	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	4	4	scan	0	False	extract-only		0	2	edit set-cell
+E-occ-colspan3_mid	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	5	5	scan	0	False	extract-only		0	2	edit set-cell
+E-occ-colspan4_full_row	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	3	4	scan	0	False	extract-only		0	3	edit set-cell
+E-occ-corner_l	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	5	5	scan	0	False	extract-only		0	3	edit set-cell
+E-occ-first_col_stack	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	6	3	scan	0	False	extract-only		0	4	edit set-cell
+E-occ-header_plus_note	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	4	5	scan	0	False	extract-only		0	4	edit set-cell
+E-occ-hwp_table_test_t0	export-tables	export-tables	samples/hwp_table_test.hwp	0	4	3	scan	0	False	allowed		0	0	table-to-csv --table N
+E-occ-issue2007_t0	export-tables	export-tables	samples/basic/issue2007_nested_cell_pagination_42065.hwp	0	2	1	scan	0	False	allowed		0	0	table-to-csv --table N
+E-occ-issue2007_t1	export-tables	export-tables	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	scan	0	False	allowed		0	0	table-to-csv --table N
+E-occ-last_cell_span	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	3	3	scan	0	False	extract-only		0	3	edit set-cell
+E-occ-many_small	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	8	6	scan	0	False	extract-only		0	8	edit set-cell
+E-occ-rowspan2_r0c0	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	4	3	scan	0	False	extract-only		0	1	edit set-cell
+E-occ-rowspan2_r1c2	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	4	3	scan	0	False	extract-only		0	1	edit set-cell
+E-occ-rowspan3_note	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	5	4	scan	0	False	extract-only		0	2	edit set-cell
+E-occ-table001_header	export-tables	export-tables	samples/table-001.hwp	0	19	9	scan	0	False	extract-only		0	6	edit set-cell
+E-occ-tall_col0	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	8	4	scan	0	False	extract-only		0	6	edit set-cell
+E-occ-triple_header	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	3	6	scan	0	False	extract-only		0	3	edit set-cell
+E-occ-two_colspan3	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	4	7	scan	0	False	extract-only		0	4	edit set-cell
+E-occ-wide_row0	export-tables	export-tables	synthetic/merge-pattern.hwpx	0	6	8	scan	0	False	extract-only		0	6	edit set-cell
+E-scan-chujin	export-tables	export-tables	samples/추진일정.hwp	0	4	3	scan	0	False	allowed		0	0	containerPath 없는 표의 index 로 --table
+E-scan-hwp_table_test_t0	export-tables	export-tables	samples/hwp_table_test.hwp	0	4	3	scan	0	False	allowed		0	0	containerPath 없는 표의 index 로 --table
+E-scan-hwpx_basic_01	export-tables	export-tables	samples/hwpx/basic-table-01.hwpx	0	2	2	scan	0	False	allowed		0	0	containerPath 없는 표의 index 로 --table
+E-scan-inner_table_outer	export-tables	export-tables	samples/inner-table-01.hwp	0	4	4	scan	0	False	outer-only		0	0	containerPath 없는 표의 index 로 --table
+E-scan-issue2007_t0	export-tables	export-tables	samples/basic/issue2007_nested_cell_pagination_42065.hwp	0	2	1	scan	0	False	pick-first		0	0	containerPath 없는 표의 index 로 --table
+E-scan-jichi_header_zero	export-tables	export-tables	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	0	2	3	scan	0	False	pick-first		0	0	containerPath 없는 표의 index 로 --table
+E-scan-table_001	export-tables	export-tables	samples/table-001.hwp	0	19	9	scan	0	False	extract-only		0	6	containerPath 없는 표의 index 로 --table
+E-scan-treatise_header	export-tables	export-tables	samples/basic/treatise sample.hwp	2	2	2	scan	0	False	pick-first		0	0	containerPath 없는 표의 index 로 --table
+E-scan-wrapper_1x1	export-tables	export-tables	samples/복학원서.hwp	0	1	1	scan	0	False	skip		0	0	containerPath 없는 표의 index 로 --table
+E-usage-two-files	export-tables	export-tables	samples/hwp_table_test.hwp	0	0	0	usage	2	False	forbidden		0	0	인자 조립을 고친다
+R-chujin-ctrl-tab	dry-run	csv-to-table	samples/추진일정.hwp	0	4	3	dry-run	2	False	allowed	controlCharacter	0	0	LF/TAB 을 공백으로 치환 후 --dry-run
+R-chujin-identical	dry-run	csv-to-table	samples/추진일정.hwp	0	4	3	dry-run	0	False	allowed		0	0	csv-to-table --verify
+R-chujin-preview	dry-run	csv-to-table	samples/추진일정.hwp	0	4	3	dry-run	0	False	allowed		9	0	csv-to-table --verify
+R-hwp_table_test_t0-ctrl-lf	dry-run	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	2	False	allowed	controlCharacter	0	0	LF/TAB 을 공백으로 치환 후 --dry-run
+R-hwp_table_test_t0-ctrl-tab	dry-run	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	2	False	allowed	controlCharacter	0	0	LF/TAB 을 공백으로 치환 후 --dry-run
+R-hwp_table_test_t0-identical	dry-run	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	0	False	allowed		0	0	csv-to-table --verify
+R-hwp_table_test_t0-preview	dry-run	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	0	False	allowed		9	0	csv-to-table --verify
+R-hwpx_basic_01-identical	dry-run	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	dry-run	0	False	allowed		0	0	csv-to-table --verify
+R-hwpx_basic_01-preview	dry-run	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	dry-run	0	False	allowed		2	0	csv-to-table --verify
+R-issue2007_t1-ctrl-lf	dry-run	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	dry-run	2	False	allowed	controlCharacter	0	0	LF/TAB 을 공백으로 치환 후 --dry-run
+R-issue2007_t1-identical	dry-run	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	dry-run	0	False	allowed		0	0	csv-to-table --verify
+R-issue2007_t1-preview	dry-run	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	dry-run	0	False	allowed		3	0	csv-to-table --verify
+R-jichi_body_12-identical	dry-run	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	dry-run	0	False	allowed		0	0	csv-to-table --verify
+R-jichi_body_12-preview	dry-run	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	dry-run	0	False	allowed		16	0	csv-to-table --verify
+R-recipe02-edited	dry-run	csv-to-table	samples/hwp_table_test.hwp	0	4	3	dry-run	0	False	allowed		9	0	csv-to-table --verify
+R-shape_3x4_m0-ctrl-crlf_in_quotes	dry-run	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	dry-run	2	False	allowed	controlCharacter	0	0	LF/TAB 을 공백으로 치환 후 --dry-run
+R-shape_3x4_m0-identical	dry-run	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	dry-run	0	False	allowed		0	0	csv-to-table --verify
+R-shape_3x4_m0-preview	dry-run	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	dry-run	0	False	allowed		8	0	csv-to-table --verify
+R-shape_5x5_m0-identical	dry-run	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	dry-run	0	False	allowed		0	0	csv-to-table --verify
+R-shape_5x5_m0-preview	dry-run	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	dry-run	0	False	allowed		20	0	csv-to-table --verify
+R-shape_8x4_m0-identical	dry-run	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	dry-run	0	False	allowed		0	0	csv-to-table --verify
+R-shape_8x4_m0-preview	dry-run	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	dry-run	0	False	allowed		28	0	csv-to-table --verify
+R-shape_9x2_m0-identical	dry-run	csv-to-table	synthetic/shape_9x2_m0.hwp	0	9	2	dry-run	0	False	allowed		0	0	csv-to-table --verify
+R-shape_9x2_m0-preview	dry-run	csv-to-table	synthetic/shape_9x2_m0.hwp	0	9	2	dry-run	0	False	allowed		16	0	csv-to-table --verify
+T-block_2x2-bom	table-to-csv	table-to-csv	synthetic/merge-pattern.hwpx	0	4	4	extract	0	True	extract-only		0	3	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-block_2x2-extract	table-to-csv	table-to-csv	synthetic/merge-pattern.hwpx	0	4	4	extract	0	True	extract-only		0	3	edit set-cell
+T-chujin-bom	table-to-csv	table-to-csv	samples/추진일정.hwp	0	4	3	extract	0	True	allowed		0	0	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-chujin-extract	table-to-csv	table-to-csv	samples/추진일정.hwp	0	4	3	extract	0	True	allowed		0	0	외부 편집 후 csv-to-table --dry-run
+T-colspan2_r0c0-bom	table-to-csv	table-to-csv	synthetic/merge-pattern.hwpx	0	3	4	extract	0	True	extract-only		0	1	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-colspan2_r0c0-extract	table-to-csv	table-to-csv	synthetic/merge-pattern.hwpx	0	3	4	extract	0	True	extract-only		0	1	edit set-cell
+T-header_plus_note-bom	table-to-csv	table-to-csv	synthetic/merge-pattern.hwpx	0	4	5	extract	0	True	extract-only		0	4	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-header_plus_note-extract	table-to-csv	table-to-csv	synthetic/merge-pattern.hwpx	0	4	5	extract	0	True	extract-only		0	4	edit set-cell
+T-hwp_table_test_t0-bom	table-to-csv	table-to-csv	samples/hwp_table_test.hwp	0	4	3	extract	0	True	allowed		0	0	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-hwp_table_test_t0-extract	table-to-csv	table-to-csv	samples/hwp_table_test.hwp	0	4	3	extract	0	True	allowed		0	0	외부 편집 후 csv-to-table --dry-run
+T-hwpx_basic_01-bom	table-to-csv	table-to-csv	samples/hwpx/basic-table-01.hwpx	0	2	2	extract	0	True	allowed		0	0	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-hwpx_basic_01-extract	table-to-csv	table-to-csv	samples/hwpx/basic-table-01.hwpx	0	2	2	extract	0	True	allowed		0	0	외부 편집 후 csv-to-table --dry-run
+T-issue2007_t0-bom	table-to-csv	table-to-csv	samples/basic/issue2007_nested_cell_pagination_42065.hwp	0	2	1	extract	0	True	allowed		0	0	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-issue2007_t0-extract	table-to-csv	table-to-csv	samples/basic/issue2007_nested_cell_pagination_42065.hwp	0	2	1	extract	0	True	allowed		0	0	외부 편집 후 csv-to-table --dry-run
+T-issue2007_t1-bom	table-to-csv	table-to-csv	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	extract	0	True	allowed		0	0	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-issue2007_t1-extract	table-to-csv	table-to-csv	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	extract	0	True	allowed		0	0	외부 편집 후 csv-to-table --dry-run
+T-jichi_body_12-bom	table-to-csv	table-to-csv	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	extract	0	True	allowed		0	0	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-jichi_body_12-extract	table-to-csv	table-to-csv	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	extract	0	True	allowed		0	0	외부 편집 후 csv-to-table --dry-run
+T-many_small-bom	table-to-csv	table-to-csv	synthetic/merge-pattern.hwpx	0	8	6	extract	0	True	extract-only		0	8	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-many_small-extract	table-to-csv	table-to-csv	synthetic/merge-pattern.hwpx	0	8	6	extract	0	True	extract-only		0	8	edit set-cell
+T-multi-folder	table-to-csv	table-to-csv	samples/multi-table-001.hwp	0	2	2	extract	0	True	pick-first		0	0	export-tables 로 index 확인 후 하나만 csv-to-table
+T-recipe02-rfc4180	table-to-csv	table-to-csv	samples/hwp_table_test.hwp	0	4	3	extract	0	False	allowed		0	0	판독기가 "" 를 한 따옴표로 되돌리는지 본다
+T-rowspan3_note-bom	table-to-csv	table-to-csv	synthetic/merge-pattern.hwpx	0	5	4	extract	0	True	extract-only		0	2	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-rowspan3_note-extract	table-to-csv	table-to-csv	synthetic/merge-pattern.hwpx	0	5	4	extract	0	True	extract-only		0	2	edit set-cell
+T-shape_3x4_m0-bom	table-to-csv	table-to-csv	synthetic/shape_3x4_m0.hwp	0	3	4	extract	0	True	allowed		0	0	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-shape_3x4_m0-extract	table-to-csv	table-to-csv	synthetic/shape_3x4_m0.hwp	0	3	4	extract	0	True	allowed		0	0	외부 편집 후 csv-to-table --dry-run
+T-shape_5x5_m0-bom	table-to-csv	table-to-csv	synthetic/shape_5x5_m0.hwp	0	5	5	extract	0	True	allowed		0	0	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-shape_5x5_m0-extract	table-to-csv	table-to-csv	synthetic/shape_5x5_m0.hwp	0	5	5	extract	0	True	allowed		0	0	외부 편집 후 csv-to-table --dry-run
+T-table001_header-bom	table-to-csv	table-to-csv	samples/table-001.hwp	0	19	9	extract	0	True	extract-only		0	6	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-table001_header-extract	table-to-csv	table-to-csv	samples/table-001.hwp	0	19	9	extract	0	True	extract-only		0	6	edit set-cell
+T-table_001-bom	table-to-csv	table-to-csv	samples/table-001.hwp	0	19	9	extract	0	True	extract-only		0	6	엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.
+T-table_001-extract	table-to-csv	table-to-csv	samples/table-001.hwp	0	19	9	extract	0	True	extract-only		0	6	edit set-cell
+T-unknown-table-99999	table-to-csv	table-to-csv	samples/hwp_table_test.hwp	99999	0	0	extract	1	False	forbidden		0	0	export-tables --json
+T-usage-csv-no-args	table-to-csv	csv-to-table	samples/hwp_table_test.hwp	0	0	0	usage	2	False	forbidden		0	0	플래그를 고친다
+T-usage-csv-no-csv-flag	table-to-csv	csv-to-table	samples/hwp_table_test.hwp	0	0	0	usage	2	False	forbidden		0	0	플래그를 고친다
+T-usage-no-file	table-to-csv	table-to-csv	samples/hwp_table_test.hwp	0	0	0	usage	2	False	forbidden		0	0	플래그를 고친다
+V-chujin-exit3-diff3	verify	csv-to-table	samples/추진일정.hwp	0	4	3	verify	3	True	allowed		9	0	csv-to-table --verify
+V-chujin-identical	verify	csv-to-table	samples/추진일정.hwp	0	4	3	verify	0	True	allowed		0	0	csv-to-table --verify
+V-chujin-write-no-verify-flag	verify	csv-to-table	samples/추진일정.hwp	0	4	3	write	0	True	allowed		1	0	csv-to-table --verify
+V-chujin-write-ok	verify	csv-to-table	samples/추진일정.hwp	0	4	3	verify	0	True	allowed		1	0	csv-to-table --verify
+V-hwp_table_test_t0-exit3-diff2	verify	csv-to-table	samples/hwp_table_test.hwp	0	4	3	verify	3	True	allowed		9	0	csv-to-table --verify
+V-hwp_table_test_t0-identical	verify	csv-to-table	samples/hwp_table_test.hwp	0	4	3	verify	0	True	allowed		0	0	csv-to-table --verify
+V-hwp_table_test_t0-write-no-verify-flag	verify	csv-to-table	samples/hwp_table_test.hwp	0	4	3	write	0	True	allowed		1	0	csv-to-table --verify
+V-hwp_table_test_t0-write-ok	verify	csv-to-table	samples/hwp_table_test.hwp	0	4	3	verify	0	True	allowed		1	0	csv-to-table --verify
+V-hwpx_basic_01-exit3-diff1	verify	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	verify	3	True	allowed		2	0	csv-to-table --verify
+V-hwpx_basic_01-identical	verify	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	verify	0	True	allowed		0	0	csv-to-table --verify
+V-hwpx_basic_01-write-no-verify-flag	verify	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	write	0	True	allowed		1	0	csv-to-table --verify
+V-hwpx_basic_01-write-ok	verify	csv-to-table	samples/hwpx/basic-table-01.hwpx	0	2	2	verify	0	True	allowed		1	0	csv-to-table --verify
+V-issue2007_t1-exit3-diff1	verify	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	verify	3	True	allowed		3	0	csv-to-table --verify
+V-issue2007_t1-identical	verify	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	verify	0	True	allowed		0	0	csv-to-table --verify
+V-issue2007_t1-write-no-verify-flag	verify	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	write	0	True	allowed		1	0	csv-to-table --verify
+V-issue2007_t1-write-ok	verify	csv-to-table	samples/basic/issue2007_nested_cell_pagination_42065.hwp	1	2	3	verify	0	True	allowed		1	0	csv-to-table --verify
+V-jichi_body_12-exit3-diff2	verify	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	verify	3	True	allowed		16	0	csv-to-table --verify
+V-jichi_body_12-identical	verify	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	verify	0	True	allowed		0	0	csv-to-table --verify
+V-jichi_body_12-write-no-verify-flag	verify	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	write	0	True	allowed		1	0	csv-to-table --verify
+V-jichi_body_12-write-ok	verify	csv-to-table	samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	12	5	4	verify	0	True	allowed		1	0	csv-to-table --verify
+V-recipe02-verify-ok	verify	csv-to-table	samples/hwp_table_test.hwp	0	4	3	verify	0	True	allowed		9	0	csv-to-table --verify
+V-shape_3x4_m0-identical	verify	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	verify	0	True	allowed		0	0	csv-to-table --verify
+V-shape_3x4_m0-write-no-verify-flag	verify	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	write	0	True	allowed		1	0	csv-to-table --verify
+V-shape_3x4_m0-write-ok	verify	csv-to-table	synthetic/shape_3x4_m0.hwp	0	3	4	verify	0	True	allowed		1	0	csv-to-table --verify
+V-shape_5x5_m0-exit3-diff4	verify	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	verify	3	True	allowed		20	0	csv-to-table --verify
+V-shape_5x5_m0-identical	verify	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	verify	0	True	allowed		0	0	csv-to-table --verify
+V-shape_5x5_m0-write-no-verify-flag	verify	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	write	0	True	allowed		1	0	csv-to-table --verify
+V-shape_5x5_m0-write-ok	verify	csv-to-table	synthetic/shape_5x5_m0.hwp	0	5	5	verify	0	True	allowed		1	0	csv-to-table --verify
+V-shape_8x4_m0-identical	verify	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	verify	0	True	allowed		0	0	csv-to-table --verify
+V-shape_8x4_m0-write-no-verify-flag	verify	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	write	0	True	allowed		1	0	csv-to-table --verify
+V-shape_8x4_m0-write-ok	verify	csv-to-table	synthetic/shape_8x4_m0.hwp	0	8	4	verify	0	True	allowed		1	0	csv-to-table --verify
