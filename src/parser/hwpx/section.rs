@@ -2281,13 +2281,21 @@ fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     }
     table.common.attr = attr;
     // HWPX keeps semantic placement in hp:pos, while legacy layout code still reads
-    // table.attr bit0 (`paragraph_has_table` / `uses_tac_table_flow` on non-HWPX
-    // stored layout). treatAsChar 만으로 bit0 을 켠다 — HWP3 원본은
-    // flowWithText=0 이어도 attr bit0 이 켜져 있고(sample16 문단 394
-    // attr=0x2a0311), bit0 이 빠지면 TAC 표가 블록 표로 빠져 쪽이 +1 된다 (#3518).
-    // HWP5 저장 attr 은 어댑터가 따로 채운다. HWPX stored 경로의 TAC 판정은
-    // treatAsChar&&flowWithText (#3930) 라 이 비트와 무관하다.
-    table.attr = if table.common.treat_as_char { 0x01 } else { 0 };
+    // table.attr bit0 for some inline-table decisions. Only mirror the minimum
+    // renderer compatibility bit here; the HWP5 storage attr is packed later by
+    // the HWP adapter.
+    //
+    // 순수 HWPX 의 TAC 판정은 `treatAsChar && flowWithText` (#3930) 다. HWP5 원본은
+    // CTRL_HEADER bit0 = treatAsChar 만으로 TAC 이다. HWP5-origin HWPX 가 후자
+    // 계약을 잃으면 synam-001 문단 237 같은 flowWithText=0 TAC 표가 블록
+    // RowBreak 로 쪼개져 35→36 이 된다 (#3521).
+    table.attr = if table.common.treat_as_char
+        && (table.common.flow_with_text || HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get()))
+    {
+        0x01
+    } else {
+        0
+    };
     let mut record_attr = match table.page_break {
         TablePageBreak::CellBreak => 0x01,
         TablePageBreak::RowBreak => 0x02,
