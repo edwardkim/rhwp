@@ -2388,7 +2388,7 @@
       "id": "src/parser/mod.rs::tests#1",
       "file": "src/parser/mod.rs",
       "sourcePath": "src/parser/mod.rs",
-      "line": 2207,
+      "line": 2260,
       "module": "tests",
       "testAttributes": 57,
       "tier": "white_box",
