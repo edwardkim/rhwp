@@ -7,7 +7,7 @@ last_verified: 2026-08-18
 
 # kevin9327 누적 체리픽 통합 기록 — PR #5212–#5314
 
-기준은 `upstream/devel@0bc05ef81107ac61ec38d622f71b44a44d1b4821`이며, 검토 브랜치는 `review/kevin9327-5212-5314-20260818`다. 2026-08-18 최종 fetch에서도 기준 SHA는 변하지 않았다. 27개 열린 원 PR의 기능 commit만 순서대로 적용했고, 원 branch에는 push하지 않았다.
+초기 적용 기준은 `upstream/devel@0bc05ef81107ac61ec38d622f71b44a44d1b4821`이고, 최종 검증 기준은 #5444 병합 뒤 `upstream/devel@e79f113080ead96c391391d211a0a64fa8398378`다. 검토 브랜치는 `review/kevin9327-5212-5314-20260818`이며, 27개 열린 원 PR의 기능 commit만 순서대로 적용했고 원 branch에는 push하지 않았다.
 
 ## 원 source와 누적 적용 SHA
 
@@ -74,9 +74,9 @@ last_verified: 2026-08-18
 4. `cargo clippy --all-targets --target-dir target/pr-review -- -D warnings` 통과.
 5. 선택 regression suite 004·006·010·014·018·021·024·026: 723 passed, 6 skipped.
 6. `cargo test --doc --target-dir target/pr-review`: 8 passed, 2 ignored.
-7. CI와 같은 상호배타 nextest 분할을 모두 종료코드 0으로 실행했다: 정규 3/3 2,410개(243.588초), 정규 1/3 2,334개(418.853초), 정규 2/3 2,221개(332.790초), `overflow_cell_baseline` 1개(130.567초) — 합계 6,966개 통과. 정규 shard는 `--test-threads 4`, 마지막 baseline은 16 논리 CPU 호스트에 맞춰 `--test-threads 12`를 사용했다.
-8. push 직전 `cargo fmt --all`, `cargo fmt --all -- --check`, `node scripts/rust-test-suite-manifest.mjs --prepare --check`, `node scripts/rust-unit-test-tiers.mjs --check`, `git diff --check`를 통과했다. `tests/generated/regression_suite_*`와 `tests/suites/manifest.json`은 생성·무시 대상이며 stage하지 않았다.
+7. #5444 병합·rebase 뒤 공식 전체 명령 `cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast`을 종료코드 0으로 완료했다: 7,274/7,274 passed, 15 slow, 38 skipped, test 실행 1,030.178초(새 release-test 재컴파일 26분 16초 별도).
+8. push 직전 `cargo fmt --all`, `cargo fmt --all -- --check`, `node scripts/rust-test-suite-manifest.mjs --prepare --check`, `node scripts/rust-unit-test-tiers.mjs --check`, `git diff --check`를 다시 통과한다. `tests/generated/regression_suite_*`와 `tests/suites/manifest.json`은 생성·무시 대상이며 stage하지 않는다.
 
 ## 원격 후속 경계
 
-현재 원 PR들은 OPEN / MERGEABLE / BLOCKED 상태다. 통합 PR [#5429](https://github.com/edwardkim/rhwp/pull/5429)는 draft이며, 원격 head는 `b55244132f`다. 이번 전체 회귀 결과와 `a8489ff61` 보정·이 기록을 push한 뒤 최신 CI·CodeQL을 감시하며, 통과 후 별도 merge 승인에 따라 merge·원 PR 처리·오늘할일 archive를 진행한다.
+현재 원 PR들은 OPEN / MERGEABLE / BLOCKED 상태다. 통합 PR [#5429](https://github.com/edwardkim/rhwp/pull/5429)는 draft이며, #5444 병합 기준으로 rebase한 전체 회귀 결과·보정·이 기록을 force-with-lease push한 뒤 최신 CI·CodeQL을 감시한다. 통과 후 별도 merge 승인에 따라 merge·원 PR 처리·오늘할일 archive를 진행한다.
