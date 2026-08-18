@@ -55,6 +55,18 @@ cargo +nightly fuzz run parse_ooxml_chart -- -rss_limit_mb=2048 -timeout=30
   타임아웃으로 검출합니다. 기본값(1200초)은 이 용도에 너무 깁니다.
 - 병렬 실행이 필요하면 `-jobs=N -workers=N` 을 추가합니다.
 
+## Nightly 스모크 CI
+
+`.github/workflows/fuzz-smoke.yml` 이 **nightly(`02:41 UTC`) + `workflow_dispatch`** 로
+위 기존 타깃 6개를 각 60초 돌립니다. 플래그는 위와 같습니다
+(`-rss_limit_mb=2048 -timeout=30` + `-max_total_time=60`).
+크래시·타임아웃·OOM 이 나면 job 이 실패하고 `fuzz/artifacts/<타깃>/` 을
+아티팩트로 올립니다.
+
+이 잡은 PR required check 가 아닙니다 (`pull_request` 트리거 없음).
+왕복 정합성(#2740, M04)과 OSS-Fuzz 등재(M10)는 이 잡의 범위가 아닙니다.
+발견된 DoS 를 이 단계에서 고치지 않습니다(M03-3 이후).
+
 ### Windows 참고
 
 MSVC 링크 단계에서 `dbghelp.lib` 관련 오류가 나면 rust-lld로 우회합니다:
@@ -107,5 +119,5 @@ CFB/ZIP처럼 구조 제약이 강한 컨테이너 포맷은 시드 없이는 �
 
 - 2순위 하네스: `parse_body_text_section` / `parse_doc_info` / `parse_control` /
   EMF 등 나머지 임베드 포맷·컨테이너를 우회하는 내부 파서 직접 하네스
-- CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생
-- OSS-Fuzz 등재 (메인테이너 판단)
+- nightly 스모크는 위 CI 절. PR 게이트·왕복 정합성(M04)은 여기 넣지 않습니다
+- OSS-Fuzz 등재 (M10, 메인테이너 판단)
