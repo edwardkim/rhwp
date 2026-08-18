@@ -1,0 +1,40 @@
+{
+  "id": "TB11",
+  "tier": 3,
+  "title": "실문서 표 칸 채움",
+  "input": "samples/복학원서.hwp",
+  "instructions": "누름틀이 없는 실문서다. 첫 번째 표의 (1행,1열) 대학 칸을 '가상공과대학' 으로 바꾼 form.hwp 를 제출하라. fill-fields 가 아니라 표 좌표 set-cell 이다. 힌트: rhwp edit set-cell --table 0 --row 1 --col 1.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "form.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "form.hwp",
+      "minBytes": 1024
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "form.hwp"
+    },
+    {
+      "name": "(1,1) == 가상공과대학",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 1,
+      "col": 1,
+      "value": "가상공과대학",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:form.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

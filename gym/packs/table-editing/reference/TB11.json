@@ -1,0 +1,23 @@
+{
+  "id": "TB11",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "--col",
+        "1",
+        "--text",
+        "가상공과대학",
+        "-o",
+        "{sub:form.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "id": "TB09",
+  "tier": 3,
+  "title": "병합 표 앵커 셀 교정",
+  "input": "samples/table-001.hwp",
+  "instructions": "첫 번째 표의 (0행,1열) 을 '병합앵커' 로 바꾼 merge.hwp 를 제출하라. (0,2) 는 병합으로 덮인 칸이므로 앵커 (0,1) 만 유효하다. 힌트: rhwp edit set-cell --table 0 --row 0 --col 1.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "merge.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "merge.hwp",
+      "minBytes": 1024
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "merge.hwp"
+    },
+    {
+      "name": "(0,1) == 병합앵커",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 1,
+      "value": "병합앵커",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:merge.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "id": "TB12",
+  "tier": 2,
+  "title": "중첩 표 문서의 바깥 셀 교정",
+  "input": "samples/inner-table-01.hwp",
+  "instructions": "최상위 표의 (0행,0열) 을 '바깥칸' 으로 바꾼 outer.hwp 를 제출하라. 셀 안 중첩 표는 v1 범위 밖이므로 건드리지 않는다. 힌트: rhwp edit set-cell --table 0 --row 0 --col 0.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "outer.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "outer.hwp",
+      "minBytes": 1024
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "outer.hwp"
+    },
+    {
+      "name": "(0,0) == 바깥칸",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": "바깥칸",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:outer.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}
