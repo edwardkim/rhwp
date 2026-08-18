@@ -1,0 +1,83 @@
+corpus	source_kind	page_index	human_page	locked_count	residual	isolation	ink_budget_ppm	hist_l1	bbox_hu	font_env	wrap_risk	glyph_risk	table_risk	stage	note
+reg_76076	hwp	0	1	82	none	independent	1200	80	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p1
+reg_76076	hwp	1	2	82	none	independent	1250	90	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p2
+reg_76076	hwp	2	3	82	none	independent	1300	100	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p3
+reg_76076	hwp	3	4	82	none	independent	1350	110	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p4
+reg_76076	hwp	4	5	82	none	independent	1400	120	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p5
+reg_76076	hwp	5	6	82	none	independent	1450	80	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p6
+reg_76076	hwp	6	7	82	none	independent	1500	90	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p7
+reg_76076	hwp	7	8	82	none	independent	1200	100	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p8
+reg_76076	hwp	8	9	82	none	independent	1250	110	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p9
+reg_76076	hwp	9	10	82	none	independent	1300	120	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p10
+reg_76076	hwp	10	11	82	none	independent	1350	80	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p11
+reg_76076	hwp	11	12	82	none	independent	1400	90	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p12
+reg_76076	hwp	12	13	82	none	independent	1450	100	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p13
+reg_76076	hwp	13	14	82	none	independent	1500	110	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p14
+reg_76076	hwp	14	15	82	none	independent	1200	120	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p15
+reg_76076	hwp	15	16	82	none	independent	1250	80	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p16
+reg_76076	hwp	16	17	82	none	independent	1300	90	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p17
+reg_76076	hwp	17	18	82	glyph	independent	1350	100	48	0	0	1	0	s122	rowspan tail glyph
+reg_76076	hwp	18	19	82	glyph	independent	1400	110	32	0	0	1	0	s122	rowspan tail glyph
+reg_76076	hwp	19	20	82	none	independent	1450	120	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p20
+reg_76076	hwp	20	21	82	none	independent	1500	80	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p21
+reg_76076	hwp	21	22	82	none	independent	1200	90	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p22
+reg_76076	hwp	22	23	82	none	independent	1250	100	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p23
+reg_76076	hwp	23	24	82	none	independent	1300	110	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p24
+reg_76076	hwp	24	25	82	none	independent	1350	120	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p25
+reg_76076	hwp	25	26	82	none	independent	1400	80	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p26
+reg_76076	hwp	26	27	82	none	independent	1450	90	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p27
+reg_76076	hwp	27	28	82	none	independent	1500	100	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p28
+reg_76076	hwp	28	29	82	none	independent	1200	110	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p29
+reg_76076	hwp	29	30	82	none	independent	1250	120	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p30
+reg_76076	hwp	30	31	82	none	independent	1300	80	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p31
+reg_76076	hwp	31	32	82	none	independent	1350	90	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p32
+reg_76076	hwp	32	33	82	paint	independent	1400	100	48	0	0	1	0	s68	nested table paint
+reg_76076	hwp	33	34	82	paint	independent	1450	110	32	0	0	1	0	s78	nested table paint
+reg_76076	hwp	34	35	82	glyph	independent	1500	120	40	0	0	1	0	s77	nested fragment glyph
+reg_76076	hwp	35	36	82	paint	independent	1200	80	48	0	0	1	0	s78	nested table paint
+reg_76076	hwp	36	37	82	none	independent	1250	90	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p37
+reg_76076	hwp	37	38	82	none	independent	1300	100	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p38
+reg_76076	hwp	38	39	82	none	independent	1350	110	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p39
+reg_76076	hwp	39	40	82	none	independent	1400	120	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p40
+reg_76076	hwp	40	41	82	none	independent	1450	80	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p41
+reg_76076	hwp	41	42	82	none	independent	1500	90	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p42
+reg_76076	hwp	42	43	82	none	independent	1200	100	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p43
+reg_76076	hwp	43	44	82	none	independent	1250	110	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p44
+reg_76076	hwp	44	45	82	none	independent	1300	120	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p45
+reg_76076	hwp	45	46	82	none	independent	1350	80	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p46
+reg_76076	hwp	46	47	82	none	independent	1400	90	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p47
+reg_76076	hwp	47	48	82	none	independent	1450	100	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p48
+reg_76076	hwp	48	49	82	none	independent	1500	110	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p49
+reg_76076	hwp	49	50	82	none	independent	1200	120	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p50
+reg_76076	hwp	50	51	82	none	independent	1250	80	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p51
+reg_76076	hwp	51	52	82	none	independent	1300	90	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p52
+reg_76076	hwp	52	53	82	none	independent	1350	100	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p53
+reg_76076	hwp	53	54	82	none	independent	1400	110	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p54
+reg_76076	hwp	54	55	82	none	independent	1450	120	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p55
+reg_76076	hwp	55	56	82	none	independent	1500	80	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p56
+reg_76076	hwp	56	57	82	none	independent	1200	90	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p57
+reg_76076	hwp	57	58	82	none	independent	1250	100	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p58
+reg_76076	hwp	58	59	82	none	independent	1300	110	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p59
+reg_76076	hwp	59	60	82	none	independent	1350	120	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p60
+reg_76076	hwp	60	61	82	none	independent	1400	80	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p61
+reg_76076	hwp	61	62	82	none	independent	1450	90	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p62
+reg_76076	hwp	62	63	82	none	independent	1500	100	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p63
+reg_76076	hwp	63	64	82	none	independent	1200	110	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p64
+reg_76076	hwp	64	65	82	none	independent	1250	120	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p65
+reg_76076	hwp	65	66	82	none	independent	1300	80	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p66
+reg_76076	hwp	66	67	82	none	independent	1350	90	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p67
+reg_76076	hwp	67	68	82	none	independent	1400	100	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p68
+reg_76076	hwp	68	69	82	none	independent	1450	110	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p69
+reg_76076	hwp	69	70	82	none	independent	1500	120	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p70
+reg_76076	hwp	70	71	82	none	independent	1200	80	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p71
+reg_76076	hwp	71	72	82	none	independent	1250	90	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p72
+reg_76076	hwp	72	73	82	none	independent	1300	100	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p73
+reg_76076	hwp	73	74	82	none	independent	1350	110	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p74
+reg_76076	hwp	74	75	82	none	independent	1400	120	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p75
+reg_76076	hwp	75	76	82	none	independent	1450	80	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p76
+reg_76076	hwp	76	77	82	none	independent	1500	90	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p77
+reg_76076	hwp	77	78	82	none	independent	1200	100	48	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p78
+reg_76076	hwp	78	79	82	none	independent	1250	110	32	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p79
+reg_76076	hwp	79	80	82	none	independent	1300	120	40	0	0	0	0	s74	76076 regulatory analysis residual glyph/paint p80
+reg_76076	hwp	80	81	82	glyph	independent	1350	80	48	0	0	1	0	s82	owner-adjacent glyph
+reg_76076	hwp	81	82	82	glyph	independent	1400	90	32	0	0	1	0	s82	owner-adjacent glyph

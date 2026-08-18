@@ -39,6 +39,8 @@ pub mod pagination;
 pub(crate) mod partial_replay;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod pdf_raster_fidelity;
 pub mod pua_oldhangul;
 pub mod render_normalization;
 pub mod render_tree;

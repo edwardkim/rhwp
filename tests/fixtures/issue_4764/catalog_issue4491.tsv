@@ -1,0 +1,41 @@
+corpus	source_kind	page_index	human_page	locked_count	residual	isolation	ink_budget_ppm	hist_l1	bbox_hu	font_env	wrap_risk	glyph_risk	table_risk	stage	note
+issue4491	hwp	0	1	0	none	independent	1200	80	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p1
+issue4491	hwp	1	2	0	none	independent	1250	90	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p2
+issue4491	hwp	2	3	0	none	independent	1300	100	48	0	0	0	0	s169	4491 p9/p26/p36 font and table p3
+issue4491	hwp	3	4	0	none	independent	1350	110	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p4
+issue4491	hwp	4	5	0	none	independent	1400	120	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p5
+issue4491	hwp	5	6	0	none	independent	1450	80	48	0	0	0	0	s169	4491 p9/p26/p36 font and table p6
+issue4491	hwp	6	7	0	none	independent	1500	90	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p7
+issue4491	hwp	7	8	0	none	independent	1200	100	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p8
+issue4491	hwp	8	9	0	table_place	independent	1250	110	48	0	0	0	1	s4491	table placement
+issue4491	hwp	9	10	0	none	independent	1300	120	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p10
+issue4491	hwp	10	11	0	none	independent	1350	80	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p11
+issue4491	hwp	11	12	0	none	independent	1400	90	48	0	0	0	0	s169	4491 p9/p26/p36 font and table p12
+issue4491	hwp	12	13	0	none	independent	1450	100	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p13
+issue4491	hwp	13	14	0	none	independent	1500	110	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p14
+issue4491	hwp	14	15	0	none	independent	1200	120	48	0	0	0	0	s169	4491 p9/p26/p36 font and table p15
+issue4491	hwp	15	16	0	none	independent	1250	80	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p16
+issue4491	hwp	16	17	0	none	independent	1300	90	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p17
+issue4491	hwp	17	18	0	none	independent	1350	100	48	0	0	0	0	s169	4491 p9/p26/p36 font and table p18
+issue4491	hwp	18	19	0	none	independent	1400	110	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p19
+issue4491	hwp	19	20	0	none	independent	1450	120	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p20
+issue4491	hwp	20	21	0	none	independent	1500	80	48	0	0	0	0	s169	4491 p9/p26/p36 font and table p21
+issue4491	hwp	21	22	0	none	independent	1200	90	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p22
+issue4491	hwp	22	23	0	none	independent	1250	100	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p23
+issue4491	hwp	23	24	0	none	independent	1300	110	48	0	0	0	0	s169	4491 p9/p26/p36 font and table p24
+issue4491	hwp	24	25	0	none	independent	1350	120	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p25
+issue4491	hwp	25	26	0	font_env	independent	1400	80	40	1	0	0	0	s169	HCRDotum font environment
+issue4491	hwp	26	27	0	none	independent	1450	90	48	0	0	0	0	s169	4491 p9/p26/p36 font and table p27
+issue4491	hwp	27	28	0	none	independent	1500	100	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p28
+issue4491	hwp	28	29	0	none	independent	1200	110	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p29
+issue4491	hwp	29	30	0	none	independent	1250	120	48	0	0	0	0	s169	4491 p9/p26/p36 font and table p30
+issue4491	hwp	30	31	0	none	independent	1300	80	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p31
+issue4491	hwp	31	32	0	none	independent	1350	90	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p32
+issue4491	hwp	32	33	0	none	independent	1400	100	48	0	0	0	0	s169	4491 p9/p26/p36 font and table p33
+issue4491	hwp	33	34	0	none	independent	1450	110	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p34
+issue4491	hwp	34	35	0	none	independent	1500	120	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p35
+issue4491	hwp	35	36	0	font_weight	independent	1200	80	48	0	0	0	0	s4491	font weight
+issue4491	hwp	36	37	0	none	independent	1250	90	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p37
+issue4491	hwp	37	38	0	none	independent	1300	100	40	0	0	0	0	s169	4491 p9/p26/p36 font and table p38
+issue4491	hwp	38	39	0	none	independent	1350	110	48	0	0	0	0	s169	4491 p9/p26/p36 font and table p39
+issue4491	hwp	39	40	0	none	independent	1400	120	32	0	0	0	0	s169	4491 p9/p26/p36 font and table p40
