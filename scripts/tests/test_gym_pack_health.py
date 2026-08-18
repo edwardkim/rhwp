@@ -2,7 +2,8 @@
 
 audit.py 는 스키마·기준풀이 짝만 본다. 이 가드는 빈/짧은 instructions, 중복·누락
 check.name, 과제 id/title 공백, 빈 reference.steps, 미지 submit.kind, 힌트 정답
-노출을 픽스처로 고정한다. 실제 저장소 pack 은 고치지 않는다.
+노출, pack.json 신원, tier/input 위생, 연산자 필수 필드, 제출 경로, 고아
+reference 를 픽스처로 고정한다. 실제 저장소 pack 은 고치지 않는다.
 """
 
 from __future__ import annotations
@@ -23,6 +24,26 @@ CLEAN_INSTRUCTIONS = (
     "입력 문서의 총 쪽수를 알아내 answer.json 에 제출하라. "
     "힌트: rhwp info <문서> --json."
 )
+
+DEFAULT_CHECKS = [
+    {
+        "name": "쪽수 일치",
+        "op": "answer_eq",
+        "answer": "pages",
+        "cmd": ["info", "{input}", "--json"],
+        "path": "pageCount",
+    }
+]
+
+
+def _cli_check(name="쪽수 일치", op="answer_eq", **extra):
+    row = {
+        "name": name,
+        "op": op,
+        "cmd": extra.pop("cmd", ["info", "{input}", "--json"]),
+    }
+    row.update(extra)
+    return row
 
 
 def load():
@@ -48,9 +69,7 @@ def _task(
         "input": "samples/x.hwp",
         "instructions": instructions,
         "submit": submit if submit is not None else {"kind": "answer"},
-        "checks": checks
-        if checks is not None
-        else [{"name": "쪽수 일치", "op": "answer_eq", "answer": "pages"}],
+        "checks": checks if checks is not None else [dict(DEFAULT_CHECKS[0])],
     }
     doc.update(extra)
     return doc
@@ -72,27 +91,33 @@ def _write_json(path, doc):
         fh.write("\n")
 
 
+def _default_manifest(pid):
+    return {
+        "schemaVersion": "1.0",
+        "kind": "gymPack",
+        "id": pid,
+        "title": "t",
+        "axis": "조회 (x)",
+        "requires": {"commands": ["info"]},
+        "runner": {
+            "rhwpVersion": "0.8.4",
+            "rhwpCommit": "a" * 40,
+            "capabilitiesSha256": "b" * 64,
+        },
+    }
+
+
 def _write_pack(root, pid, tasks, refs=None, manifest=True):
     pack_dir = os.path.join(root, "packs", pid)
     os.makedirs(os.path.join(pack_dir, "tasks"), exist_ok=True)
     os.makedirs(os.path.join(pack_dir, "reference"), exist_ok=True)
     if manifest:
-        _write_json(
-            os.path.join(pack_dir, "pack.json"),
-            {
-                "schemaVersion": "1.0",
-                "kind": "gymPack",
-                "id": pid,
-                "title": "t",
-                "axis": "조회 (x)",
-                "requires": {"commands": ["info"]},
-                "runner": {
-                    "rhwpVersion": "0.8.4",
-                    "rhwpCommit": "a" * 40,
-                    "capabilitiesSha256": "b" * 64,
-                },
-            },
-        )
+        doc = dict(_default_manifest(pid))
+        if isinstance(manifest, dict):
+            doc.update(manifest)
+            if "id" not in manifest:
+                doc["id"] = pid
+        _write_json(os.path.join(pack_dir, "pack.json"), doc)
     for task in tasks:
         tid = task.get("id") or "X"
         name = extra_name(task)
@@ -238,8 +263,8 @@ class CheckNameTests(unittest.TestCase):
                 tmp,
                 "p1",
                 [
-                    _task("A01", checks=[{"name": "쪽수 일치", "op": "answer_eq"}]),
-                    _task("A02", checks=[{"name": "쪽수 일치", "op": "answer_eq"}]),
+                    _task("A01", checks=[_cli_check("쪽수 일치", answer="pages")]),
+                    _task("A02", checks=[_cli_check("쪽수 일치", answer="pages")]),
                 ],
             )
             report = mod.audit(tmp)
@@ -411,7 +436,7 @@ class HintHealthTests(unittest.TestCase):
             "첫 필드에 '홍길동' 을 채우라. "
             '힌트: rhwp edit fill-fields --data \'{"<필드이름>": "홍길동"}\'.'
         )
-        checks = [{"name": "값", "op": "value_eq", "value": "홍길동"}]
+        checks = [_cli_check("값", op="value_eq", value="홍길동")]
         with tempfile.TemporaryDirectory() as tmp:
             _write_pack(tmp, "p1", [_task(instructions=text, checks=checks)])
             report = mod.audit(tmp)
@@ -422,7 +447,7 @@ class HintHealthTests(unittest.TestCase):
     def test_format_token_inside_command_is_ok(self):
         mod = load()
         text = "입력을 HWPX 로 변환하라. 힌트: rhwp export-hwpx <입력> conv.hwpx --verify."
-        checks = [{"name": "형식", "op": "value_eq", "value": "hwpx"}]
+        checks = [_cli_check("형식", op="value_eq", value="hwpx")]
         with tempfile.TemporaryDirectory() as tmp:
             _write_pack(tmp, "p1", [_task(instructions=text, checks=checks)])
             report = mod.audit(tmp)
@@ -450,7 +475,17 @@ class HintHealthTests(unittest.TestCase):
         """과제가 '이 값으로 바꿔라'고 본문에 쓰는 것은 힌트 유출이 아니다."""
         mod = load()
         text = "첫 칸을 '계획실행' 으로 바꿔라. 힌트: rhwp run --plan-json."
-        checks = [{"name": "칸", "op": "cell_text_eq", "value": "계획실행"}]
+        checks = [
+            _cli_check(
+                "칸",
+                op="cell_text_eq",
+                value="계획실행",
+                table=0,
+                row=0,
+                col=0,
+                cmd=["export-tables", "{file:out.hwp}", "--json"],
+            )
+        ]
         with tempfile.TemporaryDirectory() as tmp:
             _write_pack(tmp, "p1", [_task(instructions=text, checks=checks)])
             report = mod.audit(tmp)
@@ -636,6 +671,811 @@ class UtilityTests(unittest.TestCase):
         self.assertFalse(mod.token_appears_bare("rhwp export-hwpx conv.hwpx", "hwpx"))
         self.assertTrue(mod.token_appears_bare("형식은 hwpx 다", "hwpx"))
         self.assertTrue(mod.token_appears_bare("셀에 계획실행을 넣으면", "계획실행"))
+
+
+def _issues(report, pack_id=None):
+    packs = report.get("packs") or []
+    if pack_id is not None:
+        packs = [p for p in packs if p["id"] == pack_id]
+    return [item for p in packs for item in p.get("issues") or []]
+
+
+class ManifestHealthTests(unittest.TestCase):
+    def test_pack_kind_must_be_gym_pack(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task()], manifest={"kind": "gymProfile"})
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_PACK_KIND, codes_of(report, "p1"))
+
+    def test_pack_schema_version(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task()], manifest={"schemaVersion": "2.0"})
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_PACK_SCHEMA_VERSION, codes_of(report, "p1"))
+
+    def test_pack_id_must_match_folder(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task()], manifest={"id": "other"})
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_PACK_ID_MISMATCH, codes_of(report, "p1"))
+
+    def test_pack_empty_title_and_axis(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task()], manifest={"title": "  ", "axis": ""})
+            report = mod.audit(tmp)
+        found = codes_of(report, "p1")
+        self.assertIn(mod.CODE_PACK_EMPTY_TITLE, found)
+        self.assertIn(mod.CODE_PACK_EMPTY_AXIS, found)
+
+    def test_pack_title_axis_whitespace(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task()], manifest={"title": " 조회 ", "axis": " 편집 "})
+            report = mod.audit(tmp)
+        found = codes_of(report, "p1")
+        self.assertIn(mod.CODE_PACK_TITLE_WHITESPACE, found)
+        self.assertIn(mod.CODE_PACK_AXIS_WHITESPACE, found)
+
+    def test_pack_missing_requires_commands(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task()], manifest={"requires": {}})
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_PACK_MISSING_REQUIRES, codes_of(report, "p1"))
+
+    def test_pack_empty_commands(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task()], manifest={"requires": {"commands": []}})
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_PACK_EMPTY_COMMANDS, codes_of(report, "p1"))
+
+    def test_pack_command_type(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task()], manifest={"requires": {"commands": [1, ""]}})
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_PACK_COMMAND_TYPE, codes_of(report, "p1"))
+
+    def test_pack_missing_runner(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task()], manifest={"runner": {}})
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_PACK_MISSING_RUNNER, codes_of(report, "p1"))
+
+    def test_pack_missing_runner_field(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(
+                tmp,
+                "p1",
+                [_task()],
+                manifest={"runner": {"rhwpVersion": "0.8.4", "rhwpCommit": "a" * 40}},
+            )
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_PACK_MISSING_RUNNER_FIELD, codes_of(report, "p1"))
+        self.assertTrue(any("capabilitiesSha256" in m for m in messages_of(report, "p1")))
+
+    def test_pack_json_array_is_type_error(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            pack_dir = _write_pack(tmp, "p1", [_task()])
+            _write_json(os.path.join(pack_dir, "pack.json"), ["not", "object"])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_PACK_TYPE, codes_of(report, "p1"))
+
+
+class InputAndTierTests(unittest.TestCase):
+    def test_missing_tier(self):
+        mod = load()
+        task = _task()
+        del task["tier"]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [task])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_MISSING_TIER, codes_of(report, "p1"))
+
+    def test_tier_bool_is_not_int(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(tier=True)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_TIER_TYPE, codes_of(report, "p1"))
+
+    def test_tier_string(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(tier="2")])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_TIER_TYPE, codes_of(report, "p1"))
+
+    def test_tier_out_of_range(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(tier=6)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_TIER_RANGE, codes_of(report, "p1"))
+
+    def test_tier_zero(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(tier=0)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_TIER_RANGE, codes_of(report, "p1"))
+
+    def test_valid_tiers_1_to_5(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            for n in range(1, 6):
+                _write_pack(tmp, f"p{n}", [_task(tid=f"A0{n}", tier=n)])
+            report = mod.audit(tmp)
+        self.assertTrue(report["ok"], report["packs"])
+
+    def test_missing_input(self):
+        mod = load()
+        task = _task()
+        del task["input"]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [task])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_MISSING_INPUT, codes_of(report, "p1"))
+
+    def test_empty_input(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(input="  ")])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_EMPTY_INPUT, codes_of(report, "p1"))
+
+    def test_input_not_string(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(input=["a.hwp", "b.hwp"])])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_INPUT_TYPE, codes_of(report, "p1"))
+
+    def test_input_edge_whitespace(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(input=" samples/x.hwp ")])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_INPUT_WHITESPACE, codes_of(report, "p1"))
+
+    def test_input_absolute_posix(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(input="/tmp/x.hwp")])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_INPUT_ABSOLUTE, codes_of(report, "p1"))
+
+    def test_input_absolute_windows(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(input="C:\\docs\\x.hwp")])
+            report = mod.audit(tmp)
+        found = codes_of(report, "p1")
+        self.assertIn(mod.CODE_INPUT_ABSOLUTE, found)
+        self.assertIn(mod.CODE_INPUT_BACKSLASH, found)
+
+    def test_input_parent_traversal(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(input="../secret/x.hwp")])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_INPUT_PARENT, codes_of(report, "p1"))
+
+    def test_title_too_short_respects_min(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(title="가")])
+            ok = mod.audit(tmp, min_title=1)
+            tight = mod.audit(tmp, min_title=3)
+        self.assertTrue(ok["ok"])
+        self.assertIn(mod.CODE_TITLE_TOO_SHORT, codes_of(tight, "p1"))
+
+
+class CheckContractTests(unittest.TestCase):
+    def test_check_name_edge_whitespace(self):
+        mod = load()
+        checks = [_cli_check(" 쪽수 일치 ", answer="pages")]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CHECK_NAME_WHITESPACE, codes_of(report, "p1"))
+
+    def test_missing_check_op(self):
+        mod = load()
+        checks = [{"name": "쪽수 일치", "answer": "pages"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_MISSING_CHECK_OP, codes_of(report, "p1"))
+
+    def test_empty_check_op(self):
+        mod = load()
+        checks = [{"name": "쪽수 일치", "op": "  "}]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_EMPTY_CHECK_OP, codes_of(report, "p1"))
+
+    def test_unknown_check_op(self):
+        mod = load()
+        checks = [_cli_check("쪽수", op="looks_ok", answer="pages")]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_UNKNOWN_CHECK_OP, codes_of(report, "p1"))
+        self.assertTrue(any("looks_ok" in m for m in messages_of(report, "p1")))
+
+    def test_answer_eq_requires_answer(self):
+        mod = load()
+        checks = [_cli_check("쪽수", op="answer_eq")]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CHECK_MISSING_ANSWER, codes_of(report, "p1"))
+
+    def test_value_eq_requires_value(self):
+        mod = load()
+        checks = [_cli_check("값", op="value_eq")]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CHECK_MISSING_VALUE, codes_of(report, "p1"))
+
+    def test_file_op_requires_file(self):
+        mod = load()
+        checks = [{"name": "존재", "op": "file_exists"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CHECK_MISSING_FILE, codes_of(report, "p1"))
+
+    def test_file_op_rejects_absolute_and_backslash(self):
+        mod = load()
+        checks = [{"name": "존재", "op": "file_exists", "file": "C:\\tmp\\out.hwp"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        found = codes_of(report, "p1")
+        self.assertIn(mod.CODE_CHECK_FILE_ABSOLUTE, found)
+        self.assertIn(mod.CODE_CHECK_FILE_BACKSLASH, found)
+
+    def test_same_hash_requires_two_files(self):
+        mod = load()
+        checks = [{"name": "동일", "op": "same_hash", "files": ["a.hwp"]}]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CHECK_FILES_SHORT, codes_of(report, "p1"))
+
+    def test_same_hash_missing_files(self):
+        mod = load()
+        checks = [{"name": "동일", "op": "same_hash"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CHECK_MISSING_FILES, codes_of(report, "p1"))
+
+    def test_cli_op_requires_cmd(self):
+        mod = load()
+        checks = [{"name": "쪽수", "op": "answer_eq", "answer": "pages"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CHECK_MISSING_CMD, codes_of(report, "p1"))
+
+    def test_cli_cmd_must_be_list(self):
+        mod = load()
+        checks = [_cli_check("쪽수", answer="pages", cmd="info")]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CHECK_CMD_TYPE, codes_of(report, "p1"))
+
+    def test_cli_cmd_empty_list(self):
+        mod = load()
+        checks = [_cli_check("쪽수", answer="pages", cmd=[])]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CHECK_CMD_EMPTY, codes_of(report, "p1"))
+
+    def test_cli_cmd_item_must_be_string(self):
+        mod = load()
+        checks = [_cli_check("쪽수", answer="pages", cmd=["info", 3])]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CHECK_CMD_ITEM_TYPE, codes_of(report, "p1"))
+
+    def test_file_op_rejects_cmd(self):
+        mod = load()
+        checks = [
+            {
+                "name": "존재",
+                "op": "file_exists",
+                "file": "out.hwp",
+                "cmd": ["info", "{file:out.hwp}"],
+            }
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CHECK_UNEXPECTED_CMD, codes_of(report, "p1"))
+
+    def test_cell_text_requires_coords(self):
+        mod = load()
+        checks = [_cli_check("칸", op="cell_text_eq", value="계획실행")]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CELL_MISSING_COORD, codes_of(report, "p1"))
+
+    def test_cell_text_bool_coord_rejected(self):
+        mod = load()
+        checks = [
+            _cli_check(
+                "칸",
+                op="cell_text_eq",
+                value="계획실행",
+                table=True,
+                row=0,
+                col=0,
+            )
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CELL_MISSING_COORD, codes_of(report, "p1"))
+
+    def test_csv_cell_requires_coords(self):
+        mod = load()
+        checks = [{"name": "셀", "op": "csv_cell_eq", "file": "out.csv", "value": "a"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_CSV_MISSING_COORD, codes_of(report, "p1"))
+
+    def test_global_scan_on_editing_axis_needs_allow(self):
+        mod = load()
+        checks = [_cli_check("훑기", op="deep_contains", value="비밀")]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(
+                tmp,
+                "p1",
+                [_task(checks=checks, axis="편집 (표 좌표 지정)")],
+                manifest={"axis": "편집 (표 좌표 지정)"},
+            )
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_GLOBAL_SCAN_UNDECLARED, codes_of(report, "p1"))
+
+    def test_global_scan_allowed_with_reason(self):
+        mod = load()
+        checks = [
+            _cli_check(
+                "훑기",
+                op="deep_contains",
+                value="비밀",
+                allowGlobalScan="은닉 문구가 좌표를 갖지 않는다",
+            )
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(
+                tmp,
+                "p1",
+                [_task(checks=checks, axis="편집 (표 좌표 지정)")],
+                manifest={"axis": "편집 (표 좌표 지정)"},
+            )
+            report = mod.audit(tmp)
+        self.assertNotIn(mod.CODE_GLOBAL_SCAN_UNDECLARED, codes_of(report, "p1"))
+        self.assertTrue(report["ok"], report["packs"])
+
+    def test_global_scan_on_inquiry_axis_is_ok(self):
+        mod = load()
+        checks = [_cli_check("훑기", op="not_contains", value="TODO")]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(checks=checks)])
+            report = mod.audit(tmp)
+        self.assertNotIn(mod.CODE_GLOBAL_SCAN_UNDECLARED, codes_of(report, "p1"))
+        self.assertTrue(report["ok"], report["packs"])
+
+    def test_well_formed_file_and_pair_ops_pass(self):
+        mod = load()
+        checks = [
+            {"name": "존재", "op": "file_exists", "file": "out.hwp"},
+            {"name": "원본과 다름", "op": "differs_from_input", "file": "out.hwp"},
+            {"name": "동일", "op": "same_hash", "files": ["o1.hwp", "o2.hwp"]},
+            {
+                "name": "칸",
+                "op": "csv_cell_eq",
+                "file": "t.csv",
+                "row": 1,
+                "col": 0,
+                "value": "앞칸",
+            },
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(
+                tmp,
+                "p1",
+                [_task(submit={"kind": "artifact", "files": ["out.hwp", "t.csv"]}, checks=checks)],
+            )
+            report = mod.audit(tmp)
+        self.assertTrue(report["ok"], report["packs"])
+
+
+class SubmitPathTests(unittest.TestCase):
+    def test_submit_files_must_be_list(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(submit={"kind": "answer", "files": "answer.json"})])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_SUBMIT_FILES_TYPE, codes_of(report, "p1"))
+
+    def test_submit_file_empty(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(submit={"kind": "artifact", "files": ["", "out.hwp"]})])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_SUBMIT_FILE_EMPTY, codes_of(report, "p1"))
+
+    def test_submit_file_not_string(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(submit={"kind": "artifact", "files": [1]})])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_SUBMIT_FILE_TYPE, codes_of(report, "p1"))
+
+    def test_submit_file_whitespace(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(submit={"kind": "artifact", "files": [" out.hwp "]})])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_SUBMIT_FILE_WHITESPACE, codes_of(report, "p1"))
+
+    def test_submit_file_absolute_and_backslash(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(
+                tmp,
+                "p1",
+                [_task(submit={"kind": "artifact", "files": ["D:\\out\\edited.hwp"]})],
+            )
+            report = mod.audit(tmp)
+        found = codes_of(report, "p1")
+        self.assertIn(mod.CODE_SUBMIT_FILE_ABSOLUTE, found)
+        self.assertIn(mod.CODE_SUBMIT_FILE_BACKSLASH, found)
+
+    def test_submit_file_duplicate(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(
+                tmp,
+                "p1",
+                [_task(submit={"kind": "artifact", "files": ["out.hwp", "out.hwp"]})],
+            )
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_SUBMIT_FILE_DUPLICATE, codes_of(report, "p1"))
+
+    def test_pair_without_files_still_warning(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(submit={"kind": "pair", "files": ["only.hwp"]})])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_PAIR_WITHOUT_FILES, codes_of(report, "p1"))
+        self.assertGreater(report["warningCount"], 0)
+
+
+class InstructionQualityTests(unittest.TestCase):
+    def test_hint_only_instructions(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions="힌트: rhwp info <문서> --json.")])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_INSTRUCTIONS_HINT_ONLY, codes_of(report, "p1"))
+
+    def test_empty_hint_after_marker(self):
+        mod = load()
+        text = "입력 문서의 총 쪽수를 알아내 answer.json 에 제출하라. 힌트:"
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_EMPTY_HINT, codes_of(report, "p1"))
+        self.assertGreater(report["warningCount"], 0)
+
+    def test_duplicate_hint_marker(self):
+        mod = load()
+        text = (
+            "입력 문서의 총 쪽수를 알아내 제출하라. "
+            "힌트: rhwp info. 힌트: 다시 적지 마라."
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_DUPLICATE_HINT_MARKER, codes_of(report, "p1"))
+
+    def test_parenthetical_hint_is_not_duplicate_tail(self):
+        """T06 처럼 본문 `(힌트: export-text)` 는 꼬리 마커가 아니다."""
+        mod = load()
+        text = (
+            "입력 문서에서 문구를 스스로 찾아(힌트: export-text) "
+            "그 문구를 바꾼 산출물을 제출하라. 힌트: rhwp edit replace-text."
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertNotIn(mod.CODE_DUPLICATE_HINT_MARKER, codes_of(report, "p1"))
+        self.assertTrue(report["ok"], report["packs"])
+        body, hint = mod.split_hint(text)
+        self.assertIn("export-text", body)
+        self.assertIsNotNone(hint)
+        self.assertIn("replace-text", hint)
+
+    def test_todo_placeholder(self):
+        mod = load()
+        text = "TODO: 여기에 쪽수 세기 지시문을 작성한다. 충분히 길게."
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_INSTRUCTIONS_TODO, codes_of(report, "p1"))
+
+    def test_fixme_placeholder(self):
+        mod = load()
+        text = "FIXME 자리표를 지우고 실제 과제를 적어라. 스무 글자는 넘긴다."
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_INSTRUCTIONS_TODO, codes_of(report, "p1"))
+
+    def test_control_character(self):
+        mod = load()
+        text = "입력 문서의 총 쪽수를 알아내 제출하라.\x00숨은문자"
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_INSTRUCTIONS_CONTROL_CHAR, codes_of(report, "p1"))
+
+    def test_newline_and_tab_are_not_control_issues(self):
+        mod = load()
+        text = "입력 문서의 총 쪽수를 알아내 제출하라.\n힌트:\trhwp info <문서> --json."
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertNotIn(mod.CODE_INSTRUCTIONS_CONTROL_CHAR, codes_of(report, "p1"))
+        self.assertTrue(report["ok"], report["packs"])
+
+
+class ReferenceDetailTests(unittest.TestCase):
+    def test_reference_id_mismatch(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task()], refs={"A01.json": _ref("B99")})
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_REFERENCE_ID_MISMATCH, codes_of(report, "p1"))
+
+    def test_reference_step_not_object(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(
+                tmp,
+                "p1",
+                [_task()],
+                refs={"A01.json": {"id": "A01", "steps": ["run info"]}},
+            )
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_REFERENCE_STEP_TYPE, codes_of(report, "p1"))
+
+    def test_reference_run_empty(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(
+                tmp,
+                "p1",
+                [_task()],
+                refs={
+                    "A01.json": {
+                        "id": "A01",
+                        "steps": [{"run": []}, {"run": ["info", "{input}", "--json"]}],
+                    }
+                },
+            )
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_REFERENCE_RUN_EMPTY, codes_of(report, "p1"))
+
+    def test_reference_answer_empty(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(
+                tmp,
+                "p1",
+                [_task()],
+                refs={
+                    "A01.json": {
+                        "id": "A01",
+                        "steps": [{"write_json": {"file": "out.json"}, "answer": {}}],
+                    }
+                },
+            )
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_REFERENCE_ANSWER_EMPTY, codes_of(report, "p1"))
+
+    def test_reference_cmd_empty(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(
+                tmp,
+                "p1",
+                [_task()],
+                refs={
+                    "A01.json": {
+                        "id": "A01",
+                        "steps": [{"answer": {"pages": {"cmd": [], "path": "pageCount"}}}],
+                    }
+                },
+            )
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_REFERENCE_CMD_EMPTY, codes_of(report, "p1"))
+
+    def test_orphan_reference(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            pack_dir = _write_pack(tmp, "p1", [_task()])
+            _write_json(os.path.join(pack_dir, "reference", "Z99.json"), _ref("Z99"))
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_ORPHAN_REFERENCE, codes_of(report, "p1"))
+
+    def test_empty_pack_is_warning(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            pack_dir = _write_pack(tmp, "p1", [_task()])
+            os.remove(os.path.join(pack_dir, "tasks", "A01.json"))
+            os.remove(os.path.join(pack_dir, "reference", "A01.json"))
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_EMPTY_PACK, codes_of(report, "p1"))
+        self.assertGreater(report["warningCount"], 0)
+
+
+class CatalogAndCliExtraTests(unittest.TestCase):
+    def test_catalog_covers_all_code_constants(self):
+        mod = load()
+        codes = set(mod.catalog_codes())
+        exported = [
+            value
+            for name, value in vars(mod).items()
+            if name.startswith("CODE_") and isinstance(value, str)
+        ]
+        missing = [item for item in exported if item not in codes]
+        self.assertEqual(missing, [], missing)
+        self.assertGreaterEqual(len(codes), 70)
+
+    def test_catalog_rows_have_severity_and_layer(self):
+        mod = load()
+        for code, severity, layer, summary in mod.ISSUE_CATALOG:
+            self.assertIn(severity, (mod.SEVERITY_ERROR, mod.SEVERITY_WARNING), code)
+            self.assertTrue(layer, code)
+            self.assertTrue(summary, code)
+
+    def test_cli_codes_lists_catalog(self):
+        mod = load()
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            code = mod.main(["--codes"])
+        text = buf.getvalue()
+        self.assertEqual(code, 0)
+        self.assertIn("empty_instructions", text)
+        self.assertIn("unknown_check_op", text)
+        self.assertIn("pack_id_mismatch", text)
+        self.assertIn("severity", text)
+
+    def test_exclude_code_drops_issue(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions="짧다")])
+            full = mod.audit(tmp)
+            trimmed = mod.audit(tmp, exclude_codes=[mod.CODE_SHORT_INSTRUCTIONS])
+        self.assertIn(mod.CODE_SHORT_INSTRUCTIONS, codes_of(full, "p1"))
+        self.assertNotIn(mod.CODE_SHORT_INSTRUCTIONS, codes_of(trimmed, "p1"))
+        self.assertIn("excludedCodes", trimmed)
+
+    def test_cli_exclude_and_json(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions="짧다")])
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = mod.main(
+                    ["--root", tmp, "--json", "--exclude", "short_instructions"]
+                )
+            payload = json.loads(buf.getvalue())
+        self.assertEqual(code, 0)
+        self.assertNotIn("short_instructions", payload.get("codes") or {})
+
+    def test_cli_bad_min_title(self):
+        mod = load()
+        err = io.StringIO()
+        with redirect_stderr(err):
+            code = mod.main(["--min-title", "0"])
+        self.assertEqual(code, 2)
+        self.assertIn("min-title", err.getvalue())
+
+    def test_render_includes_severity_and_code_summary(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions="짧다")])
+            text = mod.render_report(mod.audit(tmp))
+        self.assertIn("error", text)
+        self.assertIn("코드 집계", text)
+        self.assertIn("short_instructions", text)
+
+    def test_path_helpers(self):
+        mod = load()
+        self.assertTrue(mod.is_absolute_path("/tmp/a.hwp"))
+        self.assertTrue(mod.is_absolute_path("D:\\a.hwp"))
+        self.assertFalse(mod.is_absolute_path("samples/a.hwp"))
+        self.assertTrue(mod.has_backslash("samples\\a.hwp"))
+        self.assertTrue(mod.has_parent_traversal("foo/../bar.hwp"))
+        self.assertFalse(mod.has_parent_traversal("foo/bar.hwp"))
+        self.assertTrue(mod.is_nonneg_int(0))
+        self.assertFalse(mod.is_nonneg_int(True))
+        self.assertFalse(mod.is_nonneg_int(-1))
+
+    def test_editing_axis_prefixes(self):
+        mod = load()
+        self.assertTrue(mod.pack_axis_is_editing("편집 (표 좌표 지정)"))
+        self.assertTrue(mod.pack_axis_is_editing("보안 (은닉)"))
+        self.assertFalse(mod.pack_axis_is_editing("조회 (x)"))
+        self.assertEqual(mod.effective_axis({"axis": "조사"}, "편집"), "조사")
+        self.assertEqual(mod.effective_axis({}, "편집 (표)"), "편집 (표)")
+
+    def test_known_ops_include_registry(self):
+        mod = load()
+        mod.reset_ops_cache()
+        all_ops, cli_ops, file_ops, global_ops = mod.known_ops_bundle()
+        self.assertIn("answer_eq", cli_ops)
+        self.assertIn("file_exists", file_ops)
+        self.assertIn("deep_contains", global_ops)
+        self.assertTrue(all_ops >= (cli_ops | file_ops))
+
+    def test_scan_error_render(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            text = mod.render_report(mod.audit(tmp))
+        self.assertIn("스캔 실패", text)
+
+
+class RealRepoHealthGateTests(unittest.TestCase):
+    def test_current_tree_stays_clean(self):
+        """새 규칙은 현재 gym/packs 를 실패로 뒤집지 않는다."""
+        mod = load()
+        report = mod.audit(str(REPO_ROOT / "gym"))
+        self.assertEqual(report["kind"], "gymPackHealth")
+        self.assertGreaterEqual(report["packCount"], 10)
+        self.assertEqual(
+            report["issueCount"],
+            0,
+            report.get("codes"),
+        )
+        self.assertTrue(report["ok"], report.get("codes"))
+
+    def test_issue_rows_have_stable_keys(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions="짧다")])
+            rows = _issues(mod.audit(tmp), "p1")
+        self.assertGreater(len(rows), 0)
+        for row in rows:
+            self.assertIn("code", row)
+            self.assertIn("severity", row)
+            self.assertIn("message", row)
+            self.assertIn("where", row)
+            self.assertIn("task", row)
 
 
 if __name__ == "__main__":
