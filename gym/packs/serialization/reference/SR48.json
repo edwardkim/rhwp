@@ -1,0 +1,25 @@
+{
+  "id": "SR48",
+  "steps": [
+    {
+      "run": [
+        "convert",
+        "{input}",
+        "{sub:conv.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "info",
+            "{sub:conv.hwp}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

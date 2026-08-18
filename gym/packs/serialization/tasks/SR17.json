@@ -1,0 +1,55 @@
+{
+  "id": "SR17",
+  "tier": 3,
+  "title": "HWPX convert --verify IR 자기검증",
+  "input": "samples/hwpx_sample2.hwpx",
+  "instructions": "입력을 편집 가능 HWP5 로 변환할 때 --verify 를 켜고, 검증 객체의 identical 을 answer.json 에 {\"identical\": true|false} 로 적어라. 차이가 있어도 산출물은 남고 봉투의 verify 가 판정한다(exit 3). 힌트: rhwp convert --verify --json 의 verify.identical.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "HWP5 산출",
+      "op": "file_exists",
+      "file": "conv.hwp",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "conv.hwp"
+    },
+    {
+      "name": "info 형식",
+      "op": "value_eq",
+      "value": "hwp5",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:conv.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "verify IR 동일",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "verify.identical",
+      "cmd": [
+        "convert",
+        "{input}",
+        "{file:conv.hwp}",
+        "--verify",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

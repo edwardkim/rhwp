@@ -1,0 +1,23 @@
+{
+  "id": "SR27",
+  "steps": [
+    {
+      "answer": {
+        "identical": {
+          "cmd": [
+            "convert",
+            "{input}",
+            "{sub:conv.hwp}",
+            "--verify",
+            "--json"
+          ],
+          "path": "verify.identical",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}
