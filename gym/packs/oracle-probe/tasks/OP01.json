@@ -1,0 +1,27 @@
+{
+  "id": "OP01",
+  "tier": 1,
+  "title": "쪽수 라이브 재계산 (table-001)",
+  "input": "samples/table-001.hwp",
+  "axis": "검증",
+  "instructions": "입력 문서의 총 쪽수를 알아내 answer.json 에 {\"pages\": N} 으로 제출하라. 채점은 골든 숫자를 박제하지 않는다 — 채점 시점에 rhwp info {input} --json 의 pageCount 를 다시 읽어 네 보고와 대조한다. 힌트: rhwp info.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "쪽수 라이브 대조",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

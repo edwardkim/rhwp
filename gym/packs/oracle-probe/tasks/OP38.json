@@ -1,0 +1,27 @@
+{
+  "id": "OP38",
+  "tier": 2,
+  "title": "PII 표본 쪽수 라이브 재계산",
+  "input": "samples/task2097/75544_pii_bunseok.hwpx",
+  "axis": "검증",
+  "instructions": "PII 분석 표본의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "PII 표본 쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "OP15",
+  "tier": 2,
+  "title": "국어원 문서 쪽수 이중 계산",
+  "input": "samples/2022년 국립국어원 업무계획.hwp",
+  "axis": "검증",
+  "instructions": "같은 국어원 문서의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라. 검색 건수와 쪽수는 다른 오라클이다 — 한쪽을 베껴 넣으면 실패한다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "국어원 쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

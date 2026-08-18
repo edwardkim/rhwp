@@ -1,0 +1,29 @@
+{
+  "id": "OP33",
+  "tier": 2,
+  "title": "field-01 '마케팅' 검색 건수",
+  "input": "samples/field-01.hwp",
+  "axis": "검증",
+  "instructions": "field-01 에서 '마케팅' 이 몇 번 나오는지 answer.json 에 {\"hits\": N} 으로 제출하라. 채점기가 같은 질의를 다시 실행한다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "마케팅 검색 건수",
+      "op": "answer_eq",
+      "answer": "hits",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "마케팅"
+      ],
+      "path": "matchCount"
+    }
+  ]
+}

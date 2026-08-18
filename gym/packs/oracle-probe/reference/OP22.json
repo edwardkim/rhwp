@@ -1,0 +1,16 @@
+{
+  "id": "OP22",
+  "steps": [
+    {
+      "answer": {
+        "read": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "formats.read",
+          "len": true
+        }
+      }
+    }
+  ]
+}

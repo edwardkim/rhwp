@@ -1,0 +1,27 @@
+{
+  "id": "OP25",
+  "tier": 1,
+  "title": "쪽수 라이브 재계산 (form-01)",
+  "input": "samples/form-01.hwp",
+  "axis": "검증",
+  "instructions": "form-01 의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라. table-001 의 쪽수를 베끼면 실패한다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "form-01 쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

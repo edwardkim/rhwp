@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "oracle-probe",
+  "title": "라이브 오라클 이중 계산",
+  "axis": "검증 (라이브 오라클·이중 계산·부재 보고)",
+  "description": "에이전트가 보고한 쪽수·검색 건수·필드 수·표 수를 채점 시점에 rhwp 로 다시 계산한다. 골든 숫자를 박제하지 않는다. 산출물이 없으면 통과로 위장하지 않는다. 새 CLI 는 없다.",
+  "requires": {
+    "commands": [
+      "capabilities",
+      "dump-pages",
+      "explain",
+      "export-tables",
+      "extract-data",
+      "fields",
+      "info",
+      "scan",
+      "search",
+      "verify"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.2",
+    "rhwpCommit": "94e4790e5a6bc766b75c3c9695b290f87e3793d4",
+    "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
+  }
+}
