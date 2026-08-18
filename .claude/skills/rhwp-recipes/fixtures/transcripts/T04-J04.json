@@ -1,0 +1,12 @@
+{
+  "id": "T04-J04",
+  "recipe": "04",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"excerpt\":\"[PUA 회귀 검증 — Task #509]\\nU+0F076 (Basic, mel-001, ❖ U+2756): ❖  ← 한컴 PDF 정답지\\nU+0F09F (Basic, biz_plan, • U+2022): •  ← 한컴 PDF 정답지\\nU+0F0A0 (Basic, synam-001, ▪ U+25AA): ·  ← 한컴 PDF 정답지\\n...\",\"truncated\":true}",
+  "parsed": null,
+  "parseable": false,
+  "notGym": true
+}

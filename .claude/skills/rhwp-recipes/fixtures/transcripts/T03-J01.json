@@ -1,0 +1,62 @@
+{
+  "id": "T03-J01",
+  "recipe": "03",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/03_redact_before_sharing.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"changedPages\":null,\"dryRun\":true,\"findingCount\":4,\"findings\":[{\"charOffset\":10,\"kind\":\"card\",\"masked\":\"****-****-****-****\",\"page\":0,\"paragraph\":7,\"section\":0},{\"charOffset\":11,\"kind\":\"ssn\",\"masked\":\"******-*******\",\"page\":0,\"paragraph\":8,\"section\":0},{\"charOffset\":7,\"kind\":\"phone\",\"masked\":\"***-****-****\",\"page\":0,\"paragraph\":10,\"section\":0},{\"charOffset\":9,\"kind\":\"email\",\"masked\":\"****@*******.***\",\"page\":0,\"paragraph\":11,\"section\":0}],\"inPlace\":false,\"kinds\":[\"ssn\",\"card\",\"phone\",\"email\"],\"mask\":\"*\",\"noRaw\":true,\"redactedCount\":0,\"schemaVersion\":\"1.0\",\"source\":\"output/pii-demo.hwp\"}",
+  "parsed": {
+    "changedPages": null,
+    "dryRun": true,
+    "findingCount": 4,
+    "findings": [
+      {
+        "charOffset": 10,
+        "kind": "card",
+        "masked": "****-****-****-****",
+        "page": 0,
+        "paragraph": 7,
+        "section": 0
+      },
+      {
+        "charOffset": 11,
+        "kind": "ssn",
+        "masked": "******-*******",
+        "page": 0,
+        "paragraph": 8,
+        "section": 0
+      },
+      {
+        "charOffset": 7,
+        "kind": "phone",
+        "masked": "***-****-****",
+        "page": 0,
+        "paragraph": 10,
+        "section": 0
+      },
+      {
+        "charOffset": 9,
+        "kind": "email",
+        "masked": "****@*******.***",
+        "page": 0,
+        "paragraph": 11,
+        "section": 0
+      }
+    ],
+    "inPlace": false,
+    "kinds": [
+      "ssn",
+      "card",
+      "phone",
+      "email"
+    ],
+    "mask": "*",
+    "noRaw": true,
+    "redactedCount": 0,
+    "schemaVersion": "1.0",
+    "source": "output/pii-demo.hwp"
+  },
+  "parseable": true,
+  "notGym": true
+}

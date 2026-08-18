@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5331,
+  "rules": [
+    {
+      "id": "R01",
+      "when": "요청이 레시피 한 장과만 맞음",
+      "action": "그 카드의 firstCommand 를 치고 nextSkill 로 인계"
+    },
+    {
+      "id": "R02",
+      "when": "요청이 07 또는 08 을 가리킴",
+      "action": "결번을 정직히 알리고 만들지 않음. 09/10 으로 바꿔 쓰지 않음"
+    },
+    {
+      "id": "R03",
+      "when": "정본 레시피 파일이 없음",
+      "action": "중단. 대체 레시피를 발명하지 않음"
+    },
+    {
+      "id": "R04",
+      "when": "last_verified 가 30일보다 오래됨",
+      "action": "중단하고 날짜를 보여 줌. 명령 순서를 추측해 메우지 않음"
+    },
+    {
+      "id": "R05",
+      "when": "요청이 레시피 두 장과 동시에 맞음",
+      "action": "둘을 보여 주고 사용자에게 고르게 함. 임의로 합치지 않음"
+    },
+    {
+      "id": "R06",
+      "when": "출처 모르는 첨부인데 01/02/05/09 로 바로 가려 함",
+      "action": "04 를 먼저. 본문을 export-text 로 퍼내지 않음"
+    },
+    {
+      "id": "R07",
+      "when": "내보내기/공유인데 03 만 하고 10 의 재스윕을 건너뜀",
+      "action": "송신 방향이면 10. 마스킹 상세만이면 03. 둘이면 R05"
+    },
+    {
+      "id": "R08",
+      "when": "명단 N행인데 01 의 fill-fields 한 번만 치려 함",
+      "action": "05 로 보냄. stdin 파일 목록을 batch fill 에 넣지 않음"
+    },
+    {
+      "id": "R09",
+      "when": "폴더 수백 건인데 05 의 batch fill 을 치려 함",
+      "action": "읽기/변환이면 09. fill 은 서식 하나+데이터 행"
+    },
+    {
+      "id": "R10",
+      "when": "이 스킬 안에서 이웃 스킬 본문을 다시 쓰려 함",
+      "action": "링크만. form-fill/table-exchange/security-sweep/bulk-pipeline/visual-regression 재작성 금지"
+    },
+    {
+      "id": "R11",
+      "when": "새 rhwp 하위명령으로 라우팅을 자동화하려 함",
+      "action": "금지. 이 스킬은 문서 라우터다"
+    },
+    {
+      "id": "R12",
+      "when": "gym pack 으로 레시피를 재현하려 함",
+      "action": "금지. 실무 경로이지 gym 이 아님"
+    }
+  ],
+  "count": 12,
+  "notGym": true
+}

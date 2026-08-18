@@ -1,0 +1,12 @@
+{
+  "id": "T02-J01",
+  "recipe": "02",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/02_table_csv_roundtrip.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"schemaVersion\":\"1.0\",\"source\":\"samples/hwp_table_test.hwp\",\"tableCount\":10,\"tables\":[{\"cellCount\":12,\"cells\":[{\"col\":0,\"colSpan\":1,\"isHeader\":false,\"row\":0,\"rowSpan\":1,\"text\":\"제목\"},{\"col\":1,\"colSpan\":1,\"isHeader\":false,\"row\":0,\"rowSpan\":1,\"text\":\"담당자\"},{\"col\":2,\"colSpan\":1,\"isHeader\":false,\"row\":0,\"rowSpan\":1,\"text\":\"세부 내용\"},{\"col\":0,\"colSpan\":1,\"isHeader\":false,\"row\":1,\"rowSpan\":1,\"text\":\"\"},\"...(중략)...\",\"cols\":3,\"control\":0,\"index\":0,\"paragraph\":3,\"rows\":4,\"section\":0}]}",
+  "parsed": null,
+  "parseable": false,
+  "notGym": true
+}
