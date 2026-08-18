@@ -108,4 +108,5 @@ CFB/ZIP처럼 구조 제약이 강한 컨테이너 포맷은 시드 없이는 �
 - 2순위 하네스: `parse_body_text_section` / `parse_doc_info` / `parse_control` /
   EMF 등 나머지 임베드 포맷·컨테이너를 우회하는 내부 파서 직접 하네스
 - CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생
-- OSS-Fuzz 등재 (메인테이너 판단)
+- OSS-Fuzz 등재 — 계획 문서 [`oss-fuzz-onboarding.md`](oss-fuzz-onboarding.md) (M10-1).
+  `google/oss-fuzz` PR 은 메인테이너 승인 후 M10-2.
