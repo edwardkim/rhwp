@@ -39,6 +39,23 @@
 
 ## 문서와 검증
 
+- **PR·push 직전 필수 (건너뛰면 CI Lint 실패)**:
+  ```
+  cargo fmt --all
+  cargo fmt --all -- --check
+  node scripts/rust-test-suite-manifest.mjs --check
+  node scripts/rust-unit-test-tiers.mjs --check
+  ```
+  CI Format check 는 `cargo fmt --all -- --check` 이다. `cargo fmt --check` 만으로는
+  부족하다. 테스트만 고친 커밋도 다시 돌려야 한다. `--check` 가 실패하면
+  `cargo fmt --all` 후 다시 `--check` 가 통과하기 전에는 push 하지 않는다.
+  `src/` 의 `#[cfg(test)]` 줄이 바뀌었거나 devel 과 merge 되면
+  `node scripts/rust-unit-test-tiers.mjs --generate` 후 `--check` 한다.
+- **PR 전 필수**: `cargo fmt --all -- --check`. CI Lint Format check 와 같은 명령이다.
+  `cargo fmt --check` 만으로는 부족하다. 실패하면 `cargo fmt --all` 후 다시 `--check` 가
+  통과하기 전에는 PR 을 만들지 않는다. 이어서
+  `node scripts/rust-test-suite-manifest.mjs --check` 와
+  `node scripts/rust-unit-test-tiers.mjs --check` 도 통과해야 한다.
 - 문서 역할·생명주기·canonical 관계는 `mydocs/README.md`의 manifest를 따른다.
 - 문서 이동·정보구조 리팩토링의 링크와 메타데이터 검사는
   `mydocs/manual/markdown_link_check_guide.md`를 따른다. 일반 Markdown 추가·수정에는 자동 CI를 실행하지 않는다.

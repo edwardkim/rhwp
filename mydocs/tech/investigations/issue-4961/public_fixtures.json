@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "issue": 4961,
+  "fixtures": [
+    {
+      "format": "hwp",
+      "path": "samples/3-10월_교육_통합_2022.hwp",
+      "sha256": "5197fc670bb1783edd859a0fdfcddddd2a421aeb819cabae5887f47827942d55",
+      "size": 2950656,
+      "visibility": "repository-tracked",
+      "privateCorpus": false,
+      "purpose": "Stage 4 HWP document-face, substitution, metric and backend trace candidate"
+    },
+    {
+      "format": "hwpx",
+      "path": "samples/3-10월_교육_통합_2022.hwpx",
+      "sha256": "f37246219339c8900b19f3da65afc105fbf6823afe5f2bb357a7e4c2b14b0314",
+      "size": 2677940,
+      "visibility": "repository-tracked",
+      "privateCorpus": false,
+      "purpose": "Stage 4 HWPX document-face, substitution, metric and backend trace candidate"
+    },
+    {
+      "format": "hwp",
+      "path": "samples/143E433F503322BD33.hwp",
+      "sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+      "size": 73216,
+      "visibility": "repository-tracked",
+      "privateCorpus": false,
+      "purpose": "Stage 4 exact metric face profile with complete source coordinates"
+    },
+    {
+      "format": "hwp",
+      "path": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+      "size": 418816,
+      "visibility": "repository-tracked",
+      "privateCorpus": false,
+      "purpose": "Stage 4 missing legacy face substitution profile with complete source coordinates"
+    },
+    {
+      "format": "hwp",
+      "path": "samples/[2027] 온새미로 1 본교재.hwp",
+      "sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "size": 734720,
+      "visibility": "repository-tracked",
+      "privateCorpus": false,
+      "purpose": "Stage 4 HWP counterpart without document-declared substFont state"
+    },
+    {
+      "format": "hwpx",
+      "path": "samples/[2027] 온새미로 1 본교재.hwpx",
+      "sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+      "size": 862784,
+      "visibility": "repository-tracked",
+      "privateCorpus": false,
+      "purpose": "Stage 4 document-declared substFont profile and feature-detection counterpart"
+    }
+  ]
+}

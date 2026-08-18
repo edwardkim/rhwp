@@ -14,6 +14,7 @@ pub mod composer;
 pub mod equation;
 pub(crate) mod equation_tac_flow;
 pub mod float_placement;
+pub(crate) mod font_decision;
 pub mod font_metrics_data;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod font_paths;

@@ -91,6 +91,7 @@ import {
 import { parseStaticSvgPathLayers, type StaticSvgPathLayer } from './static-svg-path-layers';
 import { loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, type LocalFontRecord } from '@/core/local-fonts';
 import type { CanvasKitBundledFontSource } from '@/core/font-loader';
+import type { FontDecisionTraceRecordV1 } from '@/core/font-decision-trace';
 import { readBoundedResponseArrayBuffer } from './canvaskit/bounded-response';
 
 type CanvasKitApi = CanvasKit;
@@ -253,6 +254,17 @@ export interface CanvasKitFontSubstitutionDiagnostic {
   resolvedFamily: string;
   source: 'unregisteredDefault' | 'missingGlyphDefault' | 'missingGlyphSymbol' | 'oldHangul';
   kind: 'unregisteredFallback' | 'glyphCoverageFallback';
+}
+
+export interface CanvasKitFontDecisionEvidence {
+  status: 'complete' | 'notObserved' | 'unsupported' | 'failed';
+  certainty: 'observed' | 'resolved' | 'planned' | 'notObserved';
+  requested: string;
+  candidates: string[];
+  resolved: string | null;
+  source: 'local' | 'bundled' | 'default' | 'symbol' | 'glyphResource' | null;
+  capabilities: string[];
+  failures: string[];
 }
 
 export type CanvasKitImageFailureReason =
@@ -782,6 +794,118 @@ export class CanvasKitLayerRenderer {
       ).length,
       fontSubstitutions,
       replayFeatureCounts: { ...this.currentReplayFeatureCounts },
+    };
+  }
+
+  /** 준비된 CanvasKit 객체만 읽어 실제 text replay 후보의 glyph 보유 여부를 판정한다. */
+  fontDecisionEvidence(
+    record: FontDecisionTraceRecordV1,
+    pageUsesGlyphResources = false,
+  ): CanvasKitFontDecisionEvidence {
+    const requested = record.paint.canvaskit.requested
+      ?? record.layoutName.normalizedFace
+      ?? record.document.face
+      ?? '';
+    const character = record.source.character;
+    const requestedFamily = primaryFontFamily(requested);
+    const normalized = normalizedFontFamily(requestedFamily);
+    const localRecord = resolveLocalFont(requestedFamily);
+    const localKey = localRecord ? localFontFaceKey(localRecord) : '';
+    const local = localKey ? this.localTypefaces.get(localKey) ?? null : null;
+    const bundled = this.bundledTypefaceAliases.get(normalized) ?? null;
+    const primary = local ?? bundled ?? (
+      normalized === normalizedFontFamily(this.defaultFontFamily) || normalized === 'noto sans kr'
+        ? (this.defaultTypeface || this.defaultFontManager ? {
+            typeface: this.defaultTypeface,
+            fontManager: this.defaultFontManager,
+            fontFamily: this.defaultFontFamily,
+          } : null)
+        : null
+    );
+    const primarySource: CanvasKitFontDecisionEvidence['source'] = local
+      ? 'local'
+      : bundled
+        ? 'bundled'
+        : primary
+          ? 'default'
+          : null;
+    const candidates = [
+      requestedFamily,
+      primary?.fontFamily ?? '',
+      this.defaultFontFamily ?? 'CanvasKit default',
+      'CanvasKit symbol fallback',
+    ].filter((family, index, all) => family && all.indexOf(family) === index);
+    const failures: string[] = [];
+    const sourceRecordProvided = Number.isSafeInteger(record.source.sectionIndex)
+      && Number.isSafeInteger(record.source.paragraphIndex)
+      && Number.isSafeInteger(record.source.charOffset);
+    if (!sourceRecordProvided || pageUsesGlyphResources) {
+      const capabilities = sourceRecordProvided ? ['sourceRecordProvided'] : [];
+      const joinFailures = ['backendJoinMissing'];
+      if (pageUsesGlyphResources) {
+        capabilities.push('canvaskitGlyphResourceSnapshotAvailable');
+        joinFailures.push('canvaskitGlyphResourceSourceUnresolved');
+      }
+      return {
+        status: 'notObserved', certainty: 'notObserved', requested: requestedFamily,
+        candidates: requestedFamily ? [requestedFamily] : [], resolved: null, source: null,
+        capabilities,
+        failures: joinFailures,
+      };
+    }
+    const sourceCapabilities = ['sourceRecordProvided'];
+    if (localKey && this.localTypefacePending.has(localKey)) failures.push('canvaskitLocalSfntPending');
+    if (localKey && this.localTypefaceLoadFailures.has(localKey)) failures.push('canvaskitLocalSfntUnavailable');
+
+    const codePointCount = Array.from(character).length;
+    const observe = (typeface: Typeface | null, family: string, source: NonNullable<CanvasKitFontDecisionEvidence['source']>) => {
+      if (!typeface || codePointCount !== 1) return null;
+      const font = new this.canvasKit.Font(typeface, 16);
+      try {
+        return (font.getGlyphIDs(character, 1)[0] ?? 0) !== 0
+          ? { family, source }
+          : null;
+      } finally {
+        font.delete();
+      }
+    };
+    const selected = observe(primary?.typeface ?? null, primary?.fontFamily ?? requestedFamily, primarySource ?? 'default')
+      ?? (primary?.typeface !== this.defaultTypeface
+        ? observe(this.defaultTypeface, this.defaultFontFamily ?? 'CanvasKit default', 'default')
+        : null)
+      ?? (primary?.typeface !== this.symbolFallbackTypeface && this.defaultTypeface !== this.symbolFallbackTypeface
+        ? observe(this.symbolFallbackTypeface, 'CanvasKit symbol fallback', 'symbol')
+        : null);
+    if (selected) {
+      return {
+        status: 'complete', certainty: 'resolved', requested: requestedFamily, candidates,
+        resolved: selected.family, source: selected.source,
+        capabilities: [
+          ...sourceCapabilities,
+          'canvaskitSfntPrepared',
+          'canvaskitGlyphCoverageObserved',
+        ],
+        failures,
+      };
+    }
+    if (primary?.fontManager && !primary.typeface) {
+      failures.push('canvaskitGlyphCoverageUnobservable');
+      return {
+        status: 'notObserved', certainty: 'planned', requested: requestedFamily, candidates,
+        resolved: primary.fontFamily, source: primarySource,
+        capabilities: [
+          ...sourceCapabilities,
+          'canvaskitSfntPrepared',
+          'canvaskitShapingManagerPrepared',
+        ],
+        failures,
+      };
+    }
+    failures.push(primary ? 'canvaskitGlyphMissingAllCandidates' : 'canvaskitSfntAbsent');
+    return {
+      status: 'complete', certainty: 'observed', requested: requestedFamily, candidates,
+      resolved: null, source: null,
+      capabilities: [...sourceCapabilities, 'canvaskitSnapshotObserved'], failures,
     };
   }
 
