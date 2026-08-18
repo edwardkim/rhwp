@@ -204,6 +204,10 @@ path = "tests/agent_bulk_pipeline_skill_contract.rs"
 name = "agent_fidelity_compare_skill_contract"
 path = "tests/agent_fidelity_compare_skill_contract.rs"
 
+[[test]]
+name = "agent_strategist_skill_contract"
+path = "tests/cases/agent_strategist_skill_contract.rs"
+
 [dependencies]
 rhwp-contracts = { path = "crates/rhwp-contracts" }
 rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart" }

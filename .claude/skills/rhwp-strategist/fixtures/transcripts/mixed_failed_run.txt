@@ -1,0 +1,12 @@
+# transcript mixed corpus map
+$ python3 tools/strategist/engagement.py engagement.json --bin rhwp
+[A] 코퍼스 지도: 문서 4건
+[B] 근거 대장: 질문 2건
+[C] 산출물 골격
+{
+ "corpusDocuments": 4,
+ "mappedDocuments": 2,
+ "searchFailures": 4,
+ "scaffoldAdvertised": false
+}
+# failed files remain in corpus_map.json documents[]
