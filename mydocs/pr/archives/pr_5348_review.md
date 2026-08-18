@@ -40,3 +40,14 @@
 ## 권고
 
 WASM과 원격 CI가 통과하면 누적 통합 PR에서 수용한다. 개별 원 PR은 직접 병합하지 않는다.
+
+## 2026-08-18 통합 후보 재검증 갱신
+
+- 이 원 PR의 기능·보정은 누적 통합 후보 `0fb81b451`에서 함께 검증했다. 원 PR 자체를 직접 병합하지 않는다.
+- `cargo fmt --all -- --check`, `node scripts/rust-test-suite-manifest.mjs --check`, `node scripts/rust-unit-test-tiers.mjs --check`를 통과했다.
+- `CARGO_INCREMENTAL=0 cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 10 --no-fail-fast`를 완료해 **7,693 passed, 38 skipped**를 확인했다.
+- 기존 Docker WASM 로컬 재실행 제한은 유지한다. 최종 수용은 통합 PR 최신 head의 GitHub Actions(WASM 포함) 통과와 작업지시자 승인 뒤에만 확정한다.
+
+## 최종 권고 갱신
+
+**조건부 수용 유지.** 개별 기능은 누적 통합 PR에서만 수용하며, 원 PR은 통합 PR 병합 뒤 해당 통합 PR을 근거로 close한다.
