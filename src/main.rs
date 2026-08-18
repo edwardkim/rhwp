@@ -343,7 +343,9 @@ fn main() {
         )),
         Some("digest") => exit_with(digest_document(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
-        Some("dump-note-shape") => exit_with(dump_note_shape(&args[2..])),
+        Some("dump-note-shape") => {
+            exit_with(cli::queries::diagnostics::dump_note_shape(&args[2..]))
+        }
         Some("dump-endnote-lines") => exit_with(dump_endnote_lines(&args[2..])),
         Some("dump-pages") => exit_with(dump_pages(&args[2..])),
         Some("dump-extents") => exit_with(dump_extents(&args[2..])),
@@ -15679,97 +15681,6 @@ fn hu_to_mm(hu: u32) -> f64 {
 /// HWPUNIT(i32)을 mm로 변환
 fn hu_to_mm_i(hu: i32) -> f64 {
     hu as f64 * 25.4 / 7200.0
-}
-
-fn dump_note_shape(args: &[String]) -> i32 {
-    if args.is_empty() {
-        eprintln!("사용법: rhwp dump-note-shape <파일.hwp|파일.hwpx>");
-        return EXIT_USAGE;
-    }
-
-    let file_path = &args[0];
-    let data = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-
-    let doc = match load_document(&data) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-
-    let sections: Vec<serde_json::Value> = doc
-        .document()
-        .sections
-        .iter()
-        .enumerate()
-        .map(|(idx, section)| {
-            serde_json::json!({
-                "section": idx,
-                "footnoteShape": note_shape_json(&section.section_def.footnote_shape),
-                "endnoteShape": note_shape_json(&section.section_def.endnote_shape),
-            })
-        })
-        .collect();
-
-    let value = serde_json::json!({
-        "file": file_path,
-        "sections": sections,
-    });
-    match serde_json::to_string_pretty(&value) {
-        Ok(text) => {
-            println!("{}", text);
-            EXIT_OK
-        }
-        Err(e) => {
-            eprintln!("오류: JSON 생성 실패 - {}", e);
-            EXIT_RUNTIME
-        }
-    }
-}
-
-fn note_shape_json(shape: &rhwp::model::footnote::FootnoteShape) -> serde_json::Value {
-    serde_json::json!({
-        "raw": {
-            "attr": shape.attr,
-            "numberFormat": format!("{:?}", shape.number_format),
-            "userChar": shape.user_char.to_string(),
-            "prefixChar": shape.prefix_char.to_string(),
-            "suffixChar": shape.suffix_char.to_string(),
-            "startNumber": shape.start_number,
-            "separatorLength": hu_json(shape.separator_length as i32),
-            "separatorMarginTop": hu_json(shape.separator_margin_top as i32),
-            "separatorMarginBottom": hu_json(shape.separator_margin_bottom as i32),
-            "noteSpacing": hu_json(shape.note_spacing as i32),
-            "separatorLineType": shape.separator_line_type,
-            "separatorLineWidth": shape.separator_line_width,
-            "separatorColor": format!("0x{:08x}", shape.separator_color),
-            "numbering": format!("{:?}", shape.numbering),
-            "placement": format!("{:?}", shape.placement),
-            "numberCodeSuperscript": shape.number_code_superscript,
-            "printInlineAfterText": shape.print_inline_after_text,
-            "rawUnknown": hu_json(shape.raw_unknown as i32),
-        },
-        "ui": {
-            "separatorAbove": hu_json(shape.separator_above_margin_hu() as i32),
-            "separatorBelow": hu_json(shape.separator_below_margin_hu() as i32),
-            "betweenNotes": hu_json(shape.between_notes_margin_hu() as i32),
-        },
-    })
-}
-
-fn hu_json(hu: i32) -> serde_json::Value {
-    serde_json::json!({
-        "hu": hu,
-        "mm": rounded_mm(hu),
-    })
-}
-
-fn rounded_mm(hu: i32) -> f64 {
-    (hu_to_mm_i(hu) * 1000.0).round() / 1000.0
 }
 
 /// 레이아웃 트리의 항목별 **실제 extent** 를 덤프한다.
