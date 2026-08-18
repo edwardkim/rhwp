@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "requiredFields": [
+    "hangulTool",
+    "hangulVersion",
+    "exportPath",
+    "fonts",
+    "originalPath",
+    "oraclePath",
+    "referenceGrade"
+  ],
+  "tsvColumns": [
+    "role",
+    "path",
+    "grade"
+  ],
+  "roles": [
+    "source",
+    "reference_pdf"
+  ],
+  "grades": [
+    "한컴 2022 기준 PDF",
+    "한컴 2024 기준 PDF",
+    "한컴 2020 기준 PDF",
+    "참고 PDF — 버전·provenance 별도 확인",
+    "사용자 지정 기준 PDF (provenance는 출력 파일 참조)"
+  ],
+  "referenceGradeFlagDirectPairOnly": true
+}

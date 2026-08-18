@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "defaultExportFlag": "--font-style",
+  "embedDefault": false,
+  "envFontDir": "RHWP_FONT_PATH_DIR",
+  "envFontMode": "RHWP_SVG_FONT_MODE",
+  "fontModes": {
+    "style": "--font-style",
+    "subset": "--embed-fonts",
+    "full": "--embed-fonts=full"
+  },
+  "legacyFaces": [
+    {
+      "docFace": "한양중고딕",
+      "localAlias": true,
+      "note": "installed family/full name may differ"
+    },
+    {
+      "docFace": "휴먼명조",
+      "chromeFace": "HMKMM",
+      "ebdtNotdef": true,
+      "preferOutline": true
+    },
+    {
+      "docFace": "휴먼고딕",
+      "chromeFace": "HMKMG",
+      "ebdtNotdef": true,
+      "preferOutline": true
+    },
+    {
+      "docFace": "HY신명조",
+      "preserveOriginalPriority": true
+    }
+  ],
+  "tofuCodepoints": [
+    "U+25A1",
+    "U+FFFD",
+    "U+F02B1-U+F02C4",
+    "U+F02FB"
+  ],
+  "knownFind": "#3385 CharOverlap PUA tofu"
+}

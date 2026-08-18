@@ -1,0 +1,14 @@
+$ venv/bin/python tools/fidelity_compare/fidelity_compare.py plan 0 34 --out-dir /tmp/rhwp-fidelity-plan
+기준 PDF: /repo/pdf/2022-업무계획-2022.pdf
+등급: 기준 PDF: pdf/ 보존 한컴 2022 출력
+요청: 35쪽, 완료: 35쪽, 누락: 0쪽
+diff 랭킹(top 8):
+  p12: 4.82%
+  p7: 3.91%
+  p28: 3.40%
+  p3: 2.11%
+  p19: 1.88%
+  p1: 1.02%
+  p4: 0.91%
+  p35: 0.77%
+pixel report: /tmp/rhwp-fidelity-plan/report.tsv
