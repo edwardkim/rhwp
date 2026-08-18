@@ -1,0 +1,13 @@
+{
+  "cratesPresent": false,
+  "next": "git sparse-checkout add crates",
+  "_skillMeta": {
+    "skill": "rhwp-contributor",
+    "issue": 5322,
+    "command": "git",
+    "exit": 1,
+    "branch": "sparse",
+    "hardGate": "cargo fmt --all -- --check",
+    "staleFmtRejected": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "step-01-issue",
+  "step": 1,
+  "title": "이슈 선등록",
+  "evidence": "gh issue view / gh pr list --state open",
+  "items": [
+    "gh issue list / gh pr list --state open",
+    "이슈 번호 확보 (있으면 재사용)",
+    "DoD 에 HARD GATE 기록"
+  ],
+  "hardGate": "cargo fmt --all -- --check",
+  "forbids": [
+    "cargo fmt --check",
+    "git add -A",
+    "steal named worktree",
+    "invent DocumentCore edit",
+    "new rhwp CLI",
+    "edit gym/",
+    "rewrite rhwp-work-receipt"
+  ],
+  "issue": 5322
+}
