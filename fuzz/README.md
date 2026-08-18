@@ -2,7 +2,8 @@
 
 RFC #3141의 1~2단계 구현입니다(1단계 #3158: 포맷 파서 4개 / 2단계 #3273: 임베드
 WMF·OOXML 차트 2개). `cargo-fuzz`(libFuzzer) 기반으로 rhwp의 포맷 최상위
-파서 진입점 6개(포맷 4 + 임베드 WMF·OOXML 차트)를 퍼징합니다. 목적은 **비정상·적대적 입력**에 대한
+파서 진입점 6개(포맷 4 + 임베드 WMF·OOXML 차트)와 2순위 타깃 2개
+(`parse_equation` · `export_svg`, M03-13)를 퍼징합니다. 목적은 **비정상·적대적 입력**에 대한
 크래시(패닉/abort) · 자원 고갈(OOM) · 무한루프(타임아웃) 검출입니다.
 정상 입력의 왕복 정합성(#2740 영역)은 이 인프라의 대상이 아닙니다.
 
@@ -16,6 +17,8 @@ WMF·OOXML 차트 2개). `cargo-fuzz`(libFuzzer) 기반으로 rhwp의 포맷 최
 | `parse_hml` | `rhwp::parser::hml::parse_hml(&[u8])` — HML (XML) | `src/parser/hml/mod.rs` |
 | `parse_wmf` | `WMFConverter::new(data, SVGPlayer::new()).run()` — WMF (임베드 이미지) | `src/renderer/svg.rs:3308` |
 | `parse_ooxml_chart` | `rhwp::ooxml_chart::parser::parse_chart_xml(&[u8])` — OOXML 차트 | `src/ooxml_chart/parser.rs` |
+| `parse_equation` | `renderer::equation::parser::parse` + `doclang::eqedit::convert` — 수식 스크립트 | `src/renderer/equation/parser.rs`, `src/doclang/eqedit/mod.rs` |
+| `export_svg` | `DocumentCore::from_bytes` → `render_page_svg_native(0)` — 문서 SVG 내보내기 | `src/document_core/` |
 
 각 하네스는 `let _ = parse_xxx(data);` 형태로 반환값을 무시합니다 —
 파서가 `Err`를 돌려주는 것은 정상 동작이며, 퍼저가 잡는 것은
@@ -45,6 +48,8 @@ cargo +nightly fuzz run parse_hwpx -- -rss_limit_mb=2048 -timeout=30
 cargo +nightly fuzz run parse_hml  -- -rss_limit_mb=2048 -timeout=30
 cargo +nightly fuzz run parse_wmf  -- -rss_limit_mb=2048 -timeout=30
 cargo +nightly fuzz run parse_ooxml_chart -- -rss_limit_mb=2048 -timeout=30
+cargo +nightly fuzz run parse_equation -- -rss_limit_mb=2048 -timeout=30
+cargo +nightly fuzz run export_svg -- -rss_limit_mb=2048 -timeout=30
 ```
 
 ### 권장 플래그
@@ -54,6 +59,14 @@ cargo +nightly fuzz run parse_ooxml_chart -- -rss_limit_mb=2048 -timeout=30
 - `-timeout=30` — 부호확장 무한루프(#3012류)나 사실상 종료되지 않는 경로를
   타임아웃으로 검출합니다. 기본값(1200초)은 이 용도에 너무 깁니다.
 - 병렬 실행이 필요하면 `-jobs=N -workers=N` 을 추가합니다.
+
+## Nightly 스모크 (M03-1)
+
+M03-1 이 nightly 스모크에 기존 타깃 6개를 각 60초 돌립니다.
+`parse_equation` · `export_svg` 는 같은 플래그(`-rss_limit_mb=2048 -timeout=30`)로
+로컬/수동 실행하면 되고, 그 매트릭스에 넣을 때는 6+2 로 문서화합니다.
+**PR required check 가 아닙니다** (`pull_request` 트리거를 두지 않습니다).
+OSS-Fuzz 등재(M10)는 이 단계의 범위가 아닙니다.
 
 ### Windows 참고
 
@@ -77,6 +90,8 @@ CFB/ZIP처럼 구조 제약이 강한 컨테이너 포맷은 시드 없이는 �
 | `corpus/parse_hml/` | `tests/fixtures/hml/`, `samples/hml/` |
 | `corpus/parse_wmf/` | 최소 유효 시드 합성(META_PLACEABLE + 최소 헤더 + EOF, 46B) |
 | `corpus/parse_ooxml_chart/` | 최소 유효 시드 합성(`c:chartSpace` 막대 차트) |
+| `corpus/parse_equation/` | 최소 EqEdit 시드(빈 입력, `1 over 2`, `x^2`, `sqrt`, `left`/`right`) |
+| `corpus/export_svg/` | 수식 포함 최소 HML + 소형 HWPX (`parse_hml`/`parse_hwpx` 시드 재사용) |
 
 퍼징 중 커버리지를 넓힌 입력은 같은 디렉터리에 자동 축적됩니다.
 유의미하게 커버리지를 늘린 최소화 입력만 선별해 커밋하는 것을 권장합니다
@@ -105,7 +120,8 @@ CFB/ZIP처럼 구조 제약이 강한 컨테이너 포맷은 시드 없이는 �
 
 후속 단계(#3141 로드맵의 나머지):
 
-- 2순위 하네스: `parse_body_text_section` / `parse_doc_info` / `parse_control` /
+- 2순위 하네스: `parse_equation` / `export_svg` 는 M03-13 에서 추가됨.
+  `parse_body_text_section` / `parse_doc_info` / `parse_control` /
   EMF 등 나머지 임베드 포맷·컨테이너를 우회하는 내부 파서 직접 하네스
-- CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생
-- OSS-Fuzz 등재 (메인테이너 판단)
+- nightly 스모크는 위 Nightly 절. PR 게이트·왕복 정합성(M04)은 여기 넣지 않습니다
+- OSS-Fuzz 등재 (M10, 메인테이너 판단)
