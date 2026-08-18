@@ -1,0 +1,15 @@
+{
+  "id": "SD14",
+  "steps": [
+    {
+      "answer": {
+        "schemaVersion": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "schemaVersion"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "SD57",
+  "tier": 2,
+  "title": "capabilities 스키마 버전",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-capabilities-schema 가 광고하는 capabilitiesSchemaVersion 을 answer.json 에 {\"capabilitiesSchemaVersion\": S} 으로 제출하라. 힌트: rhwp export-capabilities-schema --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "capabilities 스키마 버전",
+      "op": "answer_eq",
+      "answer": "capabilitiesSchemaVersion",
+      "path": "capabilitiesSchemaVersion",
+      "cmd": [
+        "export-capabilities-schema",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

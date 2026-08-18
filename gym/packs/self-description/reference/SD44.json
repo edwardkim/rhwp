@@ -1,0 +1,19 @@
+{
+  "id": "SD44",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "capabilities",
+            "--search",
+            "plan",
+            "--json"
+          ],
+          "path": "commands",
+          "len": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "SD73",
+  "tier": 3,
+  "title": "온톨로지 확보",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 온톨로지 봉투를 ontology.json 으로 받아 제출하라. 클래스·속성·행위 규모는 봉투 최상위에 숫자로 실려 있다. 힌트: rhwp export-ontology -o ontology.json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "ontology.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "스키마 산출",
+      "op": "file_exists",
+      "file": "ontology.json",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "ontology.json"
+    },
+    {
+      "name": "온톨로지 schemaVersion",
+      "op": "json_value_eq",
+      "file": "ontology.json",
+      "path": "schemaVersion",
+      "value": "1.0"
+    }
+  ],
+  "axis": "조사"
+}

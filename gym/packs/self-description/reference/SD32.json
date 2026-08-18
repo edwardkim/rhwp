@@ -1,0 +1,16 @@
+{
+  "id": "SD32",
+  "steps": [
+    {
+      "answer": {
+        "status": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "jsonContract.textSecurity.status",
+          "len": true
+        }
+      }
+    }
+  ]
+}

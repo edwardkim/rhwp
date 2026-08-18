@@ -1,0 +1,16 @@
+{
+  "id": "SD58",
+  "steps": [
+    {
+      "answer": {
+        "defs": {
+          "cmd": [
+            "export-capabilities-schema",
+            "--json"
+          ],
+          "path": "definitionCount"
+        }
+      }
+    }
+  ]
+}

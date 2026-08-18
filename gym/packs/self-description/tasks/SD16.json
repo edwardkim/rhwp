@@ -1,0 +1,25 @@
+{
+  "id": "SD16",
+  "tier": 2,
+  "title": "버전 정책 경로",
+  "input": "samples/table-001.hwp",
+  "instructions": "스키마 레지스트리가 가리키는 정책 문서 경로를 answer.json 에 {\"policy\": S} 으로 제출하라. 힌트: capabilities 의 schemaRegistry.policy.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "버전 정책 경로",
+      "op": "answer_eq",
+      "answer": "policy",
+      "path": "schemaRegistry.policy",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

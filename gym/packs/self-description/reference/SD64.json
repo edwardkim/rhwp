@@ -1,0 +1,16 @@
+{
+  "id": "SD64",
+  "steps": [
+    {
+      "answer": {
+        "pathSyntax": {
+          "cmd": [
+            "export-provenance-map",
+            "--json"
+          ],
+          "path": "pathSyntax"
+        }
+      }
+    }
+  ]
+}

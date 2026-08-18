@@ -1,0 +1,16 @@
+{
+  "id": "SD29",
+  "steps": [
+    {
+      "answer": {
+        "fields": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "jsonContract.provenance.fields",
+          "len": true
+        }
+      }
+    }
+  ]
+}

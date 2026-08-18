@@ -1,0 +1,16 @@
+{
+  "id": "SD57",
+  "steps": [
+    {
+      "answer": {
+        "capabilitiesSchemaVersion": {
+          "cmd": [
+            "export-capabilities-schema",
+            "--json"
+          ],
+          "path": "capabilitiesSchemaVersion"
+        }
+      }
+    }
+  ]
+}

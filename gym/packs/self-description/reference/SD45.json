@@ -1,0 +1,18 @@
+{
+  "id": "SD45",
+  "steps": [
+    {
+      "answer": {
+        "search": {
+          "cmd": [
+            "capabilities",
+            "--search",
+            "schema",
+            "--json"
+          ],
+          "path": "search"
+        }
+      }
+    }
+  ]
+}
