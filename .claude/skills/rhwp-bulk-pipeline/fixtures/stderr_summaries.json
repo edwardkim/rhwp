@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "examples": [
+    {
+      "axis": "export-text",
+      "stderr": "batch: 5건 중 4 성공, 1 실패",
+      "stdoutLines": 5,
+      "exit": 1
+    },
+    {
+      "axis": "info",
+      "stderr": "batch: 5건 중 4 성공, 1 실패",
+      "stdoutLines": 5,
+      "exit": 1
+    },
+    {
+      "axis": "convert",
+      "stderr": "batch convert: 이름 충돌 — 산출을 쓰지 않습니다",
+      "stdoutLines": 0,
+      "exit": 2
+    },
+    {
+      "axis": "search",
+      "stderr": "error: --query 가 필요합니다",
+      "stdoutLines": 0,
+      "exit": 2
+    },
+    {
+      "axis": "info",
+      "stderr": "error: batch 는 --password 를 지원하지 않습니다",
+      "stdoutLines": 0,
+      "exit": 2
+    },
+    {
+      "axis": "fill",
+      "stderr": "batch fill: 3행 중 3 성공",
+      "stdoutLines": 3,
+      "exit": 0
+    },
+    {
+      "axis": "convert",
+      "stderr": "batch: 1건 중 1 성공, 검증 판정 차이",
+      "stdoutLines": 1,
+      "exit": 3
+    },
+    {
+      "axis": "convert",
+      "stderr": "batch: 1건 중 1 성공, 페이지 검증 불일치",
+      "stdoutLines": 1,
+      "exit": 4
+    }
+  ]
+}
