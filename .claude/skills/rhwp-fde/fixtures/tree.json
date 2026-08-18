@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5333,
+  "notGym": true,
+  "noNewCli": true,
+  "noNewEngineLogic": true,
+  "bugHunterRewriteForbidden": true,
+  "symptomIsData": true,
+  "readOnlyLadder": true,
+  "ladder": [
+    {
+      "step": "container",
+      "command": null,
+      "label": "매직 바이트",
+      "readOnly": true
+    },
+    {
+      "step": "capabilities",
+      "command": "capabilities --json",
+      "label": "자기서술",
+      "readOnly": true
+    },
+    {
+      "step": "info",
+      "command": "info",
+      "label": "개봉",
+      "readOnly": true
+    },
+    {
+      "step": "explain",
+      "command": "explain",
+      "label": "한줄이해",
+      "readOnly": true
+    },
+    {
+      "step": "export-structure",
+      "command": "export-structure",
+      "label": "구조",
+      "readOnly": true
+    },
+    {
+      "step": "digest",
+      "command": "digest",
+      "label": "발췌",
+      "readOnly": true
+    }
+  ],
+  "coreReuse": [
+    "tools/fde/triage.py",
+    "capabilities --json",
+    "info --json",
+    "explain --json",
+    "export-structure --json",
+    "digest --json",
+    "tools/crash_minimizer.py",
+    "convert",
+    "sanitize",
+    "export-text"
+  ],
+  "intake": [
+    "file",
+    "symptom",
+    "repro?"
+  ],
+  "firstResponse": "ticket"
+}

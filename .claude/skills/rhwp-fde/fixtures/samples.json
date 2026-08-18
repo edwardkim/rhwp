@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5333,
+  "note": "새 HWP 바이너리를 만들지 않는다. 매직 헤드만 기록.",
+  "binaries": [
+    {
+      "id": "hwpx_head",
+      "path": "fixtures/binaries/hwpx_head.bin",
+      "kind": "hwpx"
+    },
+    {
+      "id": "hwp5_head",
+      "path": "fixtures/binaries/hwp5_head.bin",
+      "kind": "hwp5"
+    },
+    {
+      "id": "hwp3_head",
+      "path": "fixtures/binaries/hwp3_head.bin",
+      "kind": "hwp3"
+    },
+    {
+      "id": "pdf_disguise",
+      "path": "fixtures/binaries/pdf_disguise.bin",
+      "kind": null
+    },
+    {
+      "id": "empty",
+      "path": "fixtures/binaries/empty.bin",
+      "kind": null
+    },
+    {
+      "id": "plain_text",
+      "path": "fixtures/binaries/plain_text.bin",
+      "kind": null
+    }
+  ],
+  "repoSamplesIfPresent": [
+    "samples/form-01.hwp",
+    "samples/field-01.hwp",
+    "samples/hwp3-sample.hwp"
+  ]
+}
