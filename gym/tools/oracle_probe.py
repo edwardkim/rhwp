@@ -92,7 +92,7 @@ def resolve_placeholders(token, task, sub_dir, mkdir=True):
     - 토큰 전체가 `{sub:이름}` 이면 `join(sub_dir, 이름)` (중첩 폴더는 미리 만든다).
     - 문자열 안의 여러 `{sub:이름}` 은 **전부** 바꾼다. 경로의 `\\` 는 JSON 에
       박힐 수 있으므로 `\\\\` 로 이스케이프한다(#4664).
-    - 박힌 `{input}` 은 바꾸지 않는다 — 기준 풀이 조립기도 그렇게 한다.
+    - 문자열 안의 `{input}` 도 모두 과제 입력 경로로 바꾼다 — 기준 풀이 조립기와 같다.
     """
     if token == INPUT_TOKEN:
         return task["input"]
@@ -114,6 +114,8 @@ def resolve_placeholders(token, task, sub_dir, mkdir=True):
             out.append(head + path.replace("\\", "\\\\"))
         out.append(rest)
         return "".join(out)
+    if isinstance(token, str) and INPUT_TOKEN in token:
+        return token.replace(INPUT_TOKEN, task["input"].replace("\\", "/"))
     return token
 
 

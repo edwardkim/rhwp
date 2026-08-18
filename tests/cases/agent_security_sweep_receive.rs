@@ -27,6 +27,18 @@ fn read_json(rel: &str) -> Value {
     serde_json::from_str(&text).unwrap_or_else(|e| panic!("{rel} JSON 파싱 실패: {e}"))
 }
 
+fn receive_procedure() -> String {
+    let skill = read_skill("SKILL.md");
+    let start = skill
+        .find("## 절차 B — 수신: 출처 모르는 문서를 열기 전")
+        .expect("수신 절차");
+    let end = skill[start..]
+        .find("## 봉투 판독 — 어느 필드로 분기하나")
+        .map(|offset| start + offset)
+        .expect("수신 절차 끝");
+    skill[start..end].to_owned()
+}
+
 #[test]
 fn receive_ladder_order() {
     let doc = read_json("fixtures/receive_ladder.json");
@@ -49,7 +61,7 @@ fn receive_ladder_order() {
 
 #[test]
 fn receive_docs_state_the_order() {
-    let text = read_skill("SKILL.md") + &read_skill("references/09_receive_path.md");
+    let text = receive_procedure() + &read_skill("references/09_receive_path.md");
     let info = text.find("info").expect("info");
     let digest = text.find("digest").expect("digest");
     let fields = text.find("fields").expect("fields");

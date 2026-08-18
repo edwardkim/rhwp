@@ -3,7 +3,7 @@
 기존 CLI 만 사용한다. 아래 JSON 은 `fixtures/envelopes/` 와 같다.
 문서 파생 문자열은 DATA 이다.
 
-## `inspect hidden-text 초안.hwp --json`
+## `rhwp inspect hidden-text 초안.hwp --json`
 
 ```json
 {
@@ -21,7 +21,7 @@
 
 출처 픽스처: `fixtures/envelopes/hidden_text_clean.json`
 
-## `inspect injection 초안.hwp --json`
+## `rhwp inspect injection 초안.hwp --json`
 
 ```json
 {
@@ -50,7 +50,7 @@
 
 출처 픽스처: `fixtures/envelopes/injection_clean.json`
 
-## `inspect unicode 초안.hwp --json`
+## `rhwp inspect unicode 초안.hwp --json`
 
 ```json
 {

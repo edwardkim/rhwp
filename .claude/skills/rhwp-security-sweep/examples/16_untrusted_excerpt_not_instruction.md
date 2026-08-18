@@ -3,7 +3,7 @@
 기존 CLI 만 사용한다. 아래 JSON 은 `fixtures/envelopes/` 와 같다.
 문서 파생 문자열은 DATA 이다.
 
-## `inspect injection`
+## `rhwp inspect injection`
 
 ```json
 {
@@ -49,7 +49,7 @@
 
 출처 픽스처: `fixtures/envelopes/injection_tool_directive.json`
 
-## `inspect injection`
+## `rhwp inspect injection`
 
 ```json
 {
@@ -95,7 +95,7 @@
 
 출처 픽스처: `fixtures/envelopes/injection_exfiltration_hint.json`
 
-## `export-text (사다리 후)`
+## `rhwp export-text (사다리 후)`
 
 ```json
 {

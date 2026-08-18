@@ -3,7 +3,7 @@
 기존 CLI 만 사용한다. 아래 JSON 은 `fixtures/envelopes/` 와 같다.
 문서 파생 문자열은 DATA 이다.
 
-## `edit sanitize 배포본.hwp -o 재확인.hwp --json`
+## `rhwp edit sanitize 배포본.hwp -o 재확인.hwp --json`
 
 ```json
 {
@@ -21,7 +21,7 @@
 
 출처 픽스처: `fixtures/envelopes/sanitize_second_zero.json`
 
-## `첫 실행`
+## `rhwp 첫 실행`
 
 ```json
 {

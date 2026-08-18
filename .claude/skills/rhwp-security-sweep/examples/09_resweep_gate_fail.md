@@ -3,7 +3,7 @@
 기존 CLI 만 사용한다. 아래 JSON 은 `fixtures/envelopes/` 와 같다.
 문서 파생 문자열은 DATA 이다.
 
-## `PII 잔여`
+## `rhwp PII 잔여`
 
 ```json
 {
@@ -121,7 +121,7 @@
 
 출처 픽스처: `fixtures/envelopes/resweep_fail_pii.json`
 
-## `은닉 잔여`
+## `rhwp 은닉 잔여`
 
 ```json
 {

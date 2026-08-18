@@ -2,20 +2,20 @@
   "schemaVersion": "1.0",
   "generator": "tools/oracle_public/oracle_resolver.py",
   "targetPairCount": 269,
-  "pairCount": 11,
-  "matchedSampleCount": 7,
+  "pairCount": 13,
+  "matchedSampleCount": 8,
   "unmatchedCount": 2,
-  "oracleLinkCount": 11,
+  "oracleLinkCount": 13,
   "oracleRoots": [
     "pdf",
     "pdf-2020",
     "pdf-large"
   ],
   "byHancomVersion": {
-    "2018": 0,
+    "2018": 1,
     "2020": 6,
     "2022": 5,
-    "2024": 0
+    "2024": 1
   },
   "pairs": [
     {
@@ -106,6 +106,26 @@
       "hancomVersion": "2022",
       "variant": "2022",
       "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/multi.hwp::pdf/multi-2024.pdf",
+      "sample": "samples/multi.hwp",
+      "pdf": "pdf/multi-2024.pdf",
+      "stem": "multi",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/multi.hwp::pdf/multi-2018.pdf",
+      "sample": "samples/multi.hwp",
+      "pdf": "pdf/multi-2018.pdf",
+      "stem": "multi",
+      "hancomVersion": "2018",
+      "variant": "2018",
+      "sourceFormat": "hwp",
       "oracleRoot": "pdf"
     },
     {

@@ -102,11 +102,11 @@ class PlaceholderTests(unittest.TestCase):
             self.assertEqual(report["resolved"], "samples/a.hwp")
             self.assertEqual(report["names"], [])
 
-    def test_embedded_input_is_not_replaced(self):
+    def test_embedded_input_is_replaced(self):
         mod = load("gym_oracle_probe_embedded_input")
         token = "keep {input} embedded"
         resolved = mod.resolve_placeholders(token, {"input": "x.hwp"}, "unused")
-        self.assertEqual(resolved, token)
+        self.assertEqual(resolved, "keep x.hwp embedded")
 
     def test_exact_sub_token_builds_path_and_parent(self):
         mod = load("gym_oracle_probe_exact_sub")

@@ -3,7 +3,7 @@
 기존 CLI 만 사용한다. 아래 JSON 은 `fixtures/envelopes/` 와 같다.
 문서 파생 문자열은 DATA 이다.
 
-## `edit redact pii-demo.hwp --dry-run --no-raw --json`
+## `rhwp edit redact pii-demo.hwp --dry-run --no-raw --json`
 
 ```json
 {

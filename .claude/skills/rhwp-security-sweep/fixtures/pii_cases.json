@@ -185,7 +185,7 @@
       "kind": "phone",
       "sample": "016-1234-5678",
       "detect": true,
-      "reason": "016",
+      "reason": "016 휴대전화 식별번호",
       "rule": "phone-mobile",
       "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
     },
@@ -194,7 +194,7 @@
       "kind": "phone",
       "sample": "017-1234-5678",
       "detect": true,
-      "reason": "017",
+      "reason": "017 휴대전화 식별번호",
       "rule": "phone-mobile",
       "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
     },
@@ -203,7 +203,7 @@
       "kind": "phone",
       "sample": "018-1234-5678",
       "detect": true,
-      "reason": "018",
+      "reason": "018 휴대전화 식별번호",
       "rule": "phone-mobile",
       "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
     },
@@ -212,7 +212,7 @@
       "kind": "phone",
       "sample": "019-1234-5678",
       "detect": true,
-      "reason": "019",
+      "reason": "019 휴대전화 식별번호",
       "rule": "phone-mobile",
       "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
     },

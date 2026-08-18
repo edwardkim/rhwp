@@ -3,7 +3,7 @@
 기존 CLI 만 사용한다. 아래 JSON 은 `fixtures/envelopes/` 와 같다.
 문서 파생 문자열은 DATA 이다.
 
-## `inspect unicode 초안.hwp --json --kind zero-width`
+## `rhwp inspect unicode 초안.hwp --json --kind zero-width`
 
 ```json
 {
@@ -49,7 +49,7 @@
 
 출처 픽스처: `fixtures/envelopes/unicode_zero_width.json`
 
-## `inspect unicode 초안.hwp --json --kind bidi`
+## `rhwp inspect unicode 초안.hwp --json --kind bidi`
 
 ```json
 {
@@ -95,7 +95,7 @@
 
 출처 픽스처: `fixtures/envelopes/unicode_bidi.json`
 
-## `inspect unicode 초안.hwp --json --kind confusable`
+## `rhwp inspect unicode 초안.hwp --json --kind confusable`
 
 ```json
 {

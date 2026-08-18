@@ -3,7 +3,7 @@
 기존 CLI 만 사용한다. 아래 JSON 은 `fixtures/envelopes/` 와 같다.
 문서 파생 문자열은 DATA 이다.
 
-## `info 첨부.hwp --json`
+## `rhwp info 첨부.hwp --json`
 
 ```json
 {
@@ -30,7 +30,7 @@
 
 출처 픽스처: `fixtures/envelopes/receive_info.json`
 
-## `digest 첨부.hwp --json --max-chars 500`
+## `rhwp digest 첨부.hwp --json --max-chars 500`
 
 ```json
 {
@@ -51,7 +51,7 @@
 
 출처 픽스처: `fixtures/envelopes/receive_digest.json`
 
-## `fields 첨부.hwp --json`
+## `rhwp fields 첨부.hwp --json`
 
 ```json
 {
