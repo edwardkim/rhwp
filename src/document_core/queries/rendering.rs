@@ -2105,7 +2105,7 @@ impl DocumentCore {
                             None => (detected, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else if detected == "application/postscript" {
-                        match crate::renderer::image_resolver::dos_eps_preview_bytes(data) {
+                        match crate::renderer::image_resolver::eps_renderable_bytes(data) {
                             Some((m, bytes)) => (m, std::borrow::Cow::Owned(bytes)),
                             None => (detected, std::borrow::Cow::Borrowed(&data[..])),
                         }
