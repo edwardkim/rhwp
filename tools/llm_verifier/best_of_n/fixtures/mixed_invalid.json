@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "1.0",
+  "claim": "V-bon",
+  "kind": "bestOfNSet",
+  "setId": "fixture-mixed-invalid",
+  "command": "csv-to-table",
+  "mode": "verify",
+  "argv": ["rhwp", "csv-to-table", "--verify", "--json"],
+  "n": 3,
+  "intendedChangedCount": 9,
+  "sample": "samples/gov/특허청/서식/2019/0088.hwp",
+  "rankFields": ["changedCount", "invalid", "verify.identical", "exitClass"],
+  "candidates": [
+    {
+      "candidateId": "c_ok",
+      "expectedRank": 1,
+      "changedCount": 9,
+      "invalid": [],
+      "verify": {"identical": true, "diffCount": 0},
+      "exitClass": 0,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/특허청/서식/2019/0088.hwp",
+        "csv": "samples/gov/특허청/서식/2019/0088.csv",
+        "table": 1,
+        "rowCount": 19,
+        "colCount": 9,
+        "changedCount": 9,
+        "changed": [],
+        "invalid": [],
+        "dryRun": false,
+        "verify": {"identical": true, "diffCount": 0},
+        "exitClass": 0
+      }
+    },
+    {
+      "candidateId": "c_io",
+      "expectedRank": 2,
+      "changedCount": 0,
+      "invalid": [],
+      "verify": null,
+      "exitClass": 1,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/특허청/서식/2019/missing.hwp",
+        "error": "io",
+        "changedCount": 0,
+        "invalid": [],
+        "verify": null,
+        "exitClass": 1
+      }
+    },
+    {
+      "candidateId": "c_invalid",
+      "expectedRank": 3,
+      "changedCount": 0,
+      "invalid": [
+        {
+          "reason": "rowCountMismatch",
+          "expected": 19,
+          "actual": 12,
+          "message": "CSV rows != table rows"
+        }
+      ],
+      "verify": null,
+      "exitClass": 2,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/특허청/서식/2019/0088.hwp",
+        "csv": "samples/gov/특허청/서식/2019/0088-bad.csv",
+        "table": 1,
+        "rowCount": 19,
+        "colCount": 9,
+        "changedCount": 0,
+        "changed": [],
+        "invalid": [
+          {
+            "reason": "rowCountMismatch",
+            "expected": 19,
+            "actual": 12,
+            "message": "CSV rows != table rows"
+          }
+        ],
+        "dryRun": false,
+        "verify": null,
+        "exitClass": 2
+      }
+    }
+  ]
+}
