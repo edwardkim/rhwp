@@ -1,0 +1,48 @@
+{
+  "id": "OM33",
+  "tier": 3,
+  "title": "회사명·작성자 쌍 채움",
+  "input": "samples/field-01.hwp",
+  "instructions": "첫 필드에 '기록사', 두 번째 필드에 '기록자' 를 넣은 pair.hwp 를 제출하라. 세 번째 필드는 비어 있어야 한다. 채점은 세 자리를 각각 value_eq 로 본다. 힌트: rhwp edit fill-fields --data 에 두 이름을 함께 넣는다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "pair.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 필드 == 기록사",
+      "op": "value_eq",
+      "value": "기록사",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:pair.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "두 번째 필드 == 기록자",
+      "op": "value_eq",
+      "value": "기록자",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:pair.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "세 번째 필드는 비어 있음",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[2].value",
+      "cmd": [
+        "fields",
+        "{file:pair.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "OM34",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"myMsg01\": \"점검메시지\"}",
+        "-o",
+        "{sub:formout.hwpx}",
+        "--json"
+      ]
+    }
+  ]
+}

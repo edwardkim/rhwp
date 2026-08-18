@@ -1,0 +1,32 @@
+{
+  "id": "CD47",
+  "tier": 3,
+  "title": "표 vs 문단 IR 대조",
+  "input": "samples/table-001.hwp",
+  "instructions": "서로 다른 두 문서(table-001 과 para-001)를 IR 로 비교해 동일 여부를 answer.json 에 {\"identical\": true|false} 로 제출하라. 보통 같지 않다. 힌트: rhwp ir-diff.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 동일 판정",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "samples/para-001.hwp",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "검증"
+}
