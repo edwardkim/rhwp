@@ -245,5 +245,338 @@ class UnusedOperatorTests(unittest.TestCase):
         self.assertIn("value_in", text)
 
 
+class CommandsInDocTests(unittest.TestCase):
+    """과제·기준풀이 문서에서 명령 첫 토큰만 모은다."""
+
+    def test_empty_doc_is_empty_set(self):
+        self.assertEqual(load().commands_in_doc({}), set())
+
+    def test_ignores_empty_cmd_and_missing_op(self):
+        used = load().commands_in_doc({
+            "checks": [
+                {"op": "file_exists", "file": "out.hwp"},
+                {"op": "value_eq", "cmd": []},
+                {"cmd": ["search", "x"]},
+            ]
+        })
+        self.assertEqual(used, {"search"})
+
+    def test_steps_run_and_nested_answer_cmds(self):
+        used = load().commands_in_doc({
+            "steps": [
+                {"run": ["batch", "fill"]},
+                {"run": []},
+                {
+                    "answer": {
+                        "n": {"cmd": ["export-text", "a"]},
+                        "m": "not-a-spec",
+                        "k": {"path": "x"},
+                    }
+                },
+            ]
+        })
+        self.assertEqual(used, {"batch", "export-text"})
+
+    def test_answer_non_dict_is_ignored(self):
+        used = load().commands_in_doc({"steps": [{"answer": ["bad"]}]})
+        self.assertEqual(used, set())
+
+
+class OperatorsInDocTests(unittest.TestCase):
+    def test_collects_only_named_ops(self):
+        ops = load().operators_in_doc({
+            "checks": [
+                {"op": "value_eq"},
+                {"op": "file_exists"},
+                {"name": "이름만"},
+                {},
+            ]
+        })
+        self.assertEqual(ops, {"value_eq", "file_exists"})
+
+    def test_reference_without_checks_is_empty(self):
+        self.assertEqual(load().operators_in_doc({"id": "X", "steps": []}), set())
+
+
+class ListPackIdsTests(unittest.TestCase):
+    def test_requires_pack_json_and_sorts(self):
+        cov = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "packs" / "zeta").mkdir(parents=True)
+            (root / "packs" / "alpha").mkdir(parents=True)
+            (root / "packs" / "alpha" / "pack.json").write_text("{}", encoding="utf-8")
+            (root / "packs" / "zeta" / "pack.json").write_text("{}", encoding="utf-8")
+            (root / "packs" / "no-manifest").mkdir()
+            (root / "packs" / "file-not-dir.txt").write_text("x", encoding="utf-8")
+            ids = cov.list_pack_ids(str(root))
+        self.assertEqual(ids, ["alpha", "zeta"])
+
+    def test_missing_packs_dir_is_empty(self):
+        cov = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(cov.list_pack_ids(tmp), [])
+
+
+class MeasureEdgeTests(unittest.TestCase):
+    def test_coverage_percent_truncates_toward_zero(self):
+        cmds = [
+            {"name": "a", "category": "query"},
+            {"name": "b", "category": "query"},
+            {"name": "c", "category": "edit"},
+        ]
+        r = load().measure(cmds, used={"a"})
+        self.assertEqual(r["covered"], 1)
+        self.assertEqual(r["uncovered"], 2)
+        self.assertEqual(r["coveragePercent"], 33)
+
+    def test_full_coverage_is_one_hundred(self):
+        cmds = [
+            {"name": "info", "category": "query"},
+            {"name": "search", "category": "query"},
+        ]
+        r = load().measure(cmds, used={"info", "search", "extra-not-in-denom"})
+        self.assertEqual(r["coveragePercent"], 100)
+        self.assertEqual(r["uncovered"], 0)
+        self.assertEqual(r["coveredCommands"], ["info", "search"])
+
+    def test_uncovered_by_category_is_sorted(self):
+        cmds = [
+            {"name": "zeta", "category": "edit"},
+            {"name": "alpha", "category": "edit"},
+            {"name": "mid", "category": "query"},
+        ]
+        r = load().measure(cmds, used=set())
+        self.assertEqual(r["uncoveredByCategory"]["edit"], ["alpha", "zeta"])
+        self.assertEqual(r["uncoveredByCategory"]["query"], ["mid"])
+
+    def test_internal_category_is_excluded(self):
+        cmds = [
+            {"name": "info", "category": "query"},
+            {"name": "secret", "category": "internal"},
+        ]
+        r = load().measure(cmds, used=set())
+        self.assertEqual(r["agentFacingTotal"], 1)
+        self.assertIn("secret", r["excludedNonAgent"])
+        self.assertNotIn("secret", r["uncoveredByCategory"].get("internal", []))
+
+    def test_duplicate_command_names_count_once(self):
+        cmds = [
+            {"name": "info", "category": "query"},
+            {"name": "info", "category": "query"},
+        ]
+        r = load().measure(cmds, used={"info"})
+        self.assertEqual(r["agentFacingTotal"], 1)
+        self.assertEqual(r["covered"], 1)
+
+    def test_sorted_pack_grid_empty_and_none(self):
+        cov = load()
+        self.assertEqual(cov._sorted_pack_grid(None), {})
+        self.assertEqual(cov._sorted_pack_grid({}), {})
+        self.assertEqual(
+            cov._sorted_pack_grid({"b": ["z", "a"], "a": ["m"]}),
+            {"a": ["m"], "b": ["a", "z"]},
+        )
+
+    def test_schema_keys_are_stable(self):
+        r = load().measure(FIXTURE, used={"info"})
+        self.assertEqual(
+            set(r),
+            {
+                "kind",
+                "schemaVersion",
+                "agentFacingTotal",
+                "covered",
+                "uncovered",
+                "coveragePercent",
+                "uncoveredByCategory",
+                "coveredCommands",
+                "excludedNonAgent",
+                "packs",
+                "unusedOperators",
+            },
+        )
+
+
+class FormatHumanTests(unittest.TestCase):
+    def test_full_coverage_message(self):
+        text = load().format_human(
+            load().measure(
+                [{"name": "info", "category": "query"}],
+                used={"info"},
+                packs={"core-cli": ["info"]},
+                unused_operators=[],
+            )
+        )
+        self.assertIn("전부 노출됨", text)
+        self.assertIn("[core-cli] info", text)
+        self.assertIn("미사용 연산자 없음", text)
+
+    def test_empty_pack_row_prints_none(self):
+        text = load().format_human(
+            load().measure(
+                FIXTURE,
+                used={"info"},
+                packs={"beta": []},
+                unused_operators=["value_in"],
+            )
+        )
+        self.assertIn("[beta] (없음)", text)
+        self.assertIn("미사용 연산자 (1): value_in", text)
+
+    def test_no_pack_scan_message(self):
+        text = load().format_human(load().measure(FIXTURE, used={"info"}))
+        self.assertIn("pack 스캔 없음", text)
+
+    def test_ends_with_newline(self):
+        text = load().format_human(load().measure(FIXTURE, used={"info"}))
+        self.assertTrue(text.endswith("\n"))
+
+
+class UnusedOperatorEdgeTests(unittest.TestCase):
+    def test_injected_registry_does_not_touch_live_checks(self):
+        cov = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _mini_gym(root)
+            unused = cov.unused_operators(str(root), registry={"only_me"})
+        self.assertEqual(unused, ["only_me"])
+
+    def test_empty_registry_means_nothing_unused(self):
+        cov = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _mini_gym(root)
+            unused = cov.unused_operators(str(root), registry=set())
+        self.assertEqual(unused, [])
+
+    def test_reference_ops_are_not_counted_as_used(self):
+        """기준풀이에는 checks 가 없다 — 과제 op 만 사용으로 친다."""
+        cov = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write(root / "packs" / "solo" / "pack.json", {"id": "solo"})
+            _write(
+                root / "packs" / "solo" / "tasks" / "S01.json",
+                {"id": "S01", "checks": [{"op": "file_exists", "file": "x"}]},
+            )
+            _write(
+                root / "packs" / "solo" / "reference" / "S01.json",
+                {"id": "S01", "steps": [{"run": ["info"]}]},
+            )
+            used = cov.used_operators(str(root))
+            unused = cov.unused_operators(
+                str(root), registry={"file_exists", "answer_eq"}
+            )
+        self.assertEqual(used, {"file_exists"})
+        self.assertEqual(unused, ["answer_eq"])
+
+
+class RealGymGridContractTests(unittest.TestCase):
+    """실제 gym 격자가 이번 PR 의 얇은 pack 확장을 반영한다."""
+
+    def test_extraction_commands_include_new_kinds(self):
+        grid = load().used_commands_by_pack(str(REPO_ROOT / "gym"))
+        for cmd in ("chart-to-csv", "export-text", "extract-data"):
+            self.assertIn(cmd, grid["extraction"], cmd)
+
+    def test_table_csv_commands_include_roundtrip(self):
+        grid = load().used_commands_by_pack(str(REPO_ROOT / "gym"))
+        for cmd in ("table-to-csv", "csv-to-table", "export-tables"):
+            self.assertIn(cmd, grid["table-csv"], cmd)
+
+    def test_batch_ops_commands_include_fill_and_search(self):
+        grid = load().used_commands_by_pack(str(REPO_ROOT / "gym"))
+        self.assertIn("batch", grid["batch-ops"])
+        self.assertIn("search", grid["batch-ops"])
+
+    def test_grid_rows_match_pack_json_folders(self):
+        cov = load()
+        gym = str(REPO_ROOT / "gym")
+        self.assertEqual(sorted(cov.used_commands_by_pack(gym)), cov.list_pack_ids(gym))
+
+    def test_report_on_real_gym_keeps_legacy_and_grid(self):
+        cov = load()
+        r = cov.report(FIXTURE, str(REPO_ROOT / "gym"))
+        self.assertEqual(r["kind"], "gymCoverage")
+        self.assertGreaterEqual(len(r["packs"]), 12)
+        self.assertIn("extraction", r["packs"])
+        self.assertTrue(r["unusedOperators"] == sorted(r["unusedOperators"]))
+
+
+class CliTests(unittest.TestCase):
+    def _cap(self, path: Path) -> None:
+        path.write_text(
+            json.dumps({"commands": FIXTURE}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+
+    def test_json_flag_emits_schema(self):
+        import subprocess
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cap = Path(tmp) / "cap.json"
+            self._cap(cap)
+            proc = subprocess.run(
+                ["python", str(TOOL), "--capabilities", str(cap), "--json"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                cwd=str(REPO_ROOT),
+            )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        payload = json.loads(proc.stdout)
+        self.assertEqual(payload["kind"], "gymCoverage")
+        self.assertEqual(payload["schemaVersion"], "1.0")
+        self.assertIn("packs", payload)
+        self.assertIn("unusedOperators", payload)
+
+    def test_human_output_mentions_grid(self):
+        import subprocess
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cap = Path(tmp) / "cap.json"
+            self._cap(cap)
+            proc = subprocess.run(
+                ["python", str(TOOL), "--capabilities", str(cap)],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                cwd=str(REPO_ROOT),
+            )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("pack×명령 격자", proc.stdout)
+        self.assertIn("미사용 연산자", proc.stdout)
+
+    def test_missing_source_exits_two(self):
+        import subprocess
+
+        proc = subprocess.run(
+            ["python", str(TOOL)],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            cwd=str(REPO_ROOT),
+        )
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("--bin", proc.stderr)
+        self.assertIn("--capabilities", proc.stderr)
+
+
+class IterPackDocsTests(unittest.TestCase):
+    def test_skips_non_json_and_missing_subdir(self):
+        cov = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write(root / "packs" / "alpha" / "pack.json", {"id": "alpha"})
+            _write(root / "packs" / "alpha" / "tasks" / "A01.json", {"id": "A01"})
+            (root / "packs" / "alpha" / "tasks" / "notes.txt").write_text("x", encoding="utf-8")
+            (root / "packs" / "beta").mkdir(parents=True)
+            docs = list(cov.iter_pack_docs(str(root), "tasks"))
+        self.assertEqual([p for p, _, _ in docs], ["alpha"])
+        self.assertEqual(docs[0][2]["id"], "A01")
+
+
 if __name__ == "__main__":
     unittest.main()
+
