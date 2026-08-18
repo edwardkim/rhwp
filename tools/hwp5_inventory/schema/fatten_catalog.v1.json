@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hwp5InventoryFattenCatalog",
+  "type": "object",
+  "required": [
+    "kind",
+    "claimId",
+    "schemaVersion",
+    "issue",
+    "caseCount"
+  ]
+}
