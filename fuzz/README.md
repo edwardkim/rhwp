@@ -109,3 +109,16 @@ CFB/ZIP처럼 구조 제약이 강한 컨테이너 포맷은 시드 없이는 �
   EMF 등 나머지 임베드 포맷·컨테이너를 우회하는 내부 파서 직접 하네스
 - CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생
 - OSS-Fuzz 등재 (메인테이너 판단)
+
+## 왕복 정합성은 여기가 아니다 (M04)
+
+위 서두가 비워 둔 **정상 입력의 왕복 정합성(#2740, IrDiff-0)** 은 cargo-fuzz
+범위 밖이다. 그 공백을 메우는 계층이 M04 다 — 퍼저 타깃을 늘리지 않는다.
+
+- **M04-2** (`tests/cases/prop_hwpx_roundtrip.rs`, #5376): 작은 HWPX 픽스처에
+  기존 `rhwp run` step 만 적용한 뒤 parse→serialize→reparse 가
+  [`diff_documents`](../src/serializer/hwpx/roundtrip.rs) IrDiff 0.
+  CI 기본은 8 cases / 0..3 steps. 전체 화력은 `PROPTEST_CASES`
+  (예: `PROPTEST_CASES=256 cargo test --test regression_suite_* prop_hwpx_roundtrip::`).
+  픽스처가 표현하지 못하는 step(누름틀/표/□ 없음)은 skip. DocumentCore
+  편집 API 발명 금지. HWP5 는 M04-3.
