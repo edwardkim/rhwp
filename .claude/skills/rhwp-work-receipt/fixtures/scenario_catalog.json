@@ -1,0 +1,1680 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-work-receipt",
+  "issue": 5308,
+  "count": 87,
+  "families": [
+    "audit",
+    "boundary",
+    "capsule",
+    "exit",
+    "lineage",
+    "pitfall",
+    "replay-attest",
+    "replay-verify",
+    "routing"
+  ],
+  "scenarios": [
+    {
+      "id": "attest-notice_year",
+      "family": "replay-attest",
+      "request": "공문 연도 치환 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-notice_year",
+      "family": "replay-verify",
+      "request": "공문 연도 치환 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-org_rename",
+      "family": "replay-attest",
+      "request": "기관명 치환 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-org_rename",
+      "family": "replay-verify",
+      "request": "기관명 치환 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-form_fill_echo",
+      "family": "replay-attest",
+      "request": "누름틀 멱등 치환 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-form_fill_echo",
+      "family": "replay-verify",
+      "request": "누름틀 멱등 치환 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-deadline",
+      "family": "replay-attest",
+      "request": "마감일 정정 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-deadline",
+      "family": "replay-verify",
+      "request": "마감일 정정 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-phone",
+      "family": "replay-attest",
+      "request": "연락처 갱신 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-phone",
+      "family": "replay-verify",
+      "request": "연락처 갱신 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-addr",
+      "family": "replay-attest",
+      "request": "주소 치환 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-addr",
+      "family": "replay-verify",
+      "request": "주소 치환 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-law_ref",
+      "family": "replay-attest",
+      "request": "조문 호수 정정 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-law_ref",
+      "family": "replay-verify",
+      "request": "조문 호수 정정 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-amount",
+      "family": "replay-attest",
+      "request": "금액 단위 정정 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-amount",
+      "family": "replay-verify",
+      "request": "금액 단위 정정 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-checkbox_mark",
+      "family": "replay-attest",
+      "request": "체크 표시 치환 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-checkbox_mark",
+      "family": "replay-verify",
+      "request": "체크 표시 치환 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-privacy_mask",
+      "family": "replay-attest",
+      "request": "주민번호 자리 마스킹 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-privacy_mask",
+      "family": "replay-verify",
+      "request": "주민번호 자리 마스킹 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-title_fix",
+      "family": "replay-attest",
+      "request": "제목 오기 정정 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-title_fix",
+      "family": "replay-verify",
+      "request": "제목 오기 정정 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-date_iso",
+      "family": "replay-attest",
+      "request": "날짜 표기 통일 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-date_iso",
+      "family": "replay-verify",
+      "request": "날짜 표기 통일 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-dept",
+      "family": "replay-attest",
+      "request": "부서명 개편 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-dept",
+      "family": "replay-verify",
+      "request": "부서명 개편 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-seal_caption",
+      "family": "replay-attest",
+      "request": "직인 안내문 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-seal_caption",
+      "family": "replay-verify",
+      "request": "직인 안내문 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-page_ref",
+      "family": "replay-attest",
+      "request": "쪽 지시 정정 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-page_ref",
+      "family": "replay-verify",
+      "request": "쪽 지시 정정 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-en_typo",
+      "family": "replay-attest",
+      "request": "영문 오탈자 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-en_typo",
+      "family": "replay-verify",
+      "request": "영문 오탈자 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-hwpx_year",
+      "family": "replay-attest",
+      "request": "HWPX 연도 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-hwpx_year",
+      "family": "replay-verify",
+      "request": "HWPX 연도 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-multi_step",
+      "family": "replay-attest",
+      "request": "연도+기관 두 스텝 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-multi_step",
+      "family": "replay-verify",
+      "request": "연도+기관 두 스텝 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-idempotent",
+      "family": "replay-attest",
+      "request": "이미 반영된 문구 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-idempotent",
+      "family": "replay-verify",
+      "request": "이미 반영된 문구 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-ws_only",
+      "family": "replay-attest",
+      "request": "공백 정리 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-ws_only",
+      "family": "replay-verify",
+      "request": "공백 정리 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-newline_keep",
+      "family": "replay-attest",
+      "request": "개행 유지 치환 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-newline_keep",
+      "family": "replay-verify",
+      "request": "개행 유지 치환 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-table_label",
+      "family": "replay-attest",
+      "request": "표 제목 치환 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-table_label",
+      "family": "replay-verify",
+      "request": "표 제목 치환 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-footer",
+      "family": "replay-attest",
+      "request": "바닥글 문구 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-footer",
+      "family": "replay-verify",
+      "request": "바닥글 문구 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-version_tag",
+      "family": "replay-attest",
+      "request": "문서 버전 표기 증명해 줘",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "expectExit": 0,
+      "expectKeys": [
+        "inputSha256",
+        "planSha256",
+        "outputSha256",
+        "toolVersion",
+        "mode"
+      ],
+      "mode": "attest",
+      "pitfall": "output 경로가 생기지 않는다. 실산출은 run",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-version_tag",
+      "family": "replay-verify",
+      "request": "문서 버전 표기 산출 해시가 맞는지 확인해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<64hex>",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "expectKeys": [
+        "reproduced",
+        "expectedOutputSha256",
+        "outputSha256"
+      ],
+      "mode": "verify",
+      "pitfall": "reproduced:false 는 exit 3 판정이지 크래시가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "verify-bad-hex",
+      "family": "replay-verify",
+      "request": "해시가 짧다",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "abc"
+      ],
+      "expectExit": 2,
+      "pitfall": "64hex 가 아니면 판정 전에 사용법",
+      "reference": "exit-codes.md"
+    },
+    {
+      "id": "attest-plan-file",
+      "family": "replay-attest",
+      "request": "계획 파일로 영수증",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--json"
+      ],
+      "expectExit": 0,
+      "pitfall": "위치 인자는 계획 경로. 캡슐 경로가 아니다",
+      "reference": "replay-attest.md"
+    },
+    {
+      "id": "attest-missing-plan",
+      "family": "replay-attest",
+      "request": "없는 계획",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "missing.json"
+      ],
+      "expectExit": 1,
+      "stdoutBytes": 0,
+      "reference": "exit-codes.md"
+    },
+    {
+      "id": "capsule-issue",
+      "family": "capsule",
+      "request": "작업 캡슐 만들어",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--capsule",
+        "a.capsule.json",
+        "--json"
+      ],
+      "expectExit": 0,
+      "writes": [
+        "a.capsule.json"
+      ],
+      "kind": "workCapsule",
+      "reference": "capsule-chain.md"
+    },
+    {
+      "id": "capsule-parent",
+      "family": "capsule",
+      "request": "이어서 기록",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<planB>",
+        "--capsule",
+        "b.capsule.json",
+        "--parent",
+        "a.capsule.json",
+        "--json"
+      ],
+      "expectExit": 0,
+      "parentRelativeTo": "b.capsule.json",
+      "reference": "capsule-chain.md"
+    },
+    {
+      "id": "capsule-same-file",
+      "family": "capsule",
+      "request": "부모와 같은 파일",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--capsule",
+        "a.capsule.json",
+        "--parent",
+        "a.capsule.json"
+      ],
+      "expectExit": 2,
+      "reference": "capsule-chain.md"
+    },
+    {
+      "id": "capsule-immutability",
+      "family": "capsule",
+      "request": "캡슐을 고쳐서 재제출",
+      "command": "lineage",
+      "argv": [
+        "lineage",
+        "child.capsule.json",
+        "--json"
+      ],
+      "expectExit": 3,
+      "pitfall": "에디터 저장은 파일 바이트를 바꾼다. 재발급하라",
+      "reference": "capsule-chain.md"
+    },
+    {
+      "id": "run-then-chain",
+      "family": "capsule",
+      "request": "실산출을 다음 입력으로",
+      "command": "run",
+      "argv": [
+        "run",
+        "planA.json",
+        "--json"
+      ],
+      "next": [
+        "replay --capsule b --parent a"
+      ],
+      "pitfall": "replay 만으로는 O1 이 디스크에 없다",
+      "reference": "capsule-chain.md"
+    },
+    {
+      "id": "audit-all",
+      "family": "audit",
+      "request": "이 폴더 전수 재현율",
+      "command": "audit",
+      "argv": [
+        "audit",
+        "<dir>",
+        "--json"
+      ],
+      "expectKeys": [
+        "total",
+        "reproduced",
+        "reproducedRate",
+        "failed"
+      ],
+      "glob": "*.capsule.json",
+      "recursive": false,
+      "reference": "audit-accounting.md"
+    },
+    {
+      "id": "audit-empty",
+      "family": "audit",
+      "request": "빈 폴더 감사",
+      "command": "audit",
+      "argv": [
+        "audit",
+        "empty",
+        "--json"
+      ],
+      "expectExit": 2,
+      "stdoutBytes": 0,
+      "reference": "audit-accounting.md"
+    },
+    {
+      "id": "audit-nested",
+      "family": "audit",
+      "request": "하위 폴더 캡슐도 세어줘",
+      "command": "audit",
+      "argv": [
+        "audit",
+        "nested-ignored",
+        "--json"
+      ],
+      "expectedTotalIgnoresNested": true,
+      "pitfall": "비재귀. 하위는 그 폴더에서 따로 audit",
+      "reference": "audit-accounting.md"
+    },
+    {
+      "id": "audit-rate",
+      "family": "audit",
+      "request": "재현율 숫자",
+      "command": "audit",
+      "argv": [
+        "audit",
+        "mixed",
+        "--json"
+      ],
+      "formula": "reproduced/total",
+      "expectExit": 3,
+      "reference": "audit-accounting.md"
+    },
+    {
+      "id": "audit-decoy-ext",
+      "family": "audit",
+      "request": "bak 도 세나",
+      "command": "audit",
+      "argv": [
+        "audit",
+        "mixed-ext",
+        "--json"
+      ],
+      "countedSuffix": ".capsule.json",
+      "notCounted": [
+        ".json",
+        ".bak",
+        ".txt"
+      ],
+      "reference": "audit-accounting.md"
+    },
+    {
+      "id": "lineage-head",
+      "family": "lineage",
+      "request": "계보 검증",
+      "command": "lineage",
+      "argv": [
+        "lineage",
+        "b.capsule.json",
+        "--json"
+      ],
+      "expectKeys": [
+        "head",
+        "depth",
+        "valid",
+        "brokenAt",
+        "links"
+      ],
+      "axes": [
+        "parentOk",
+        "lineageOk",
+        "reproduced"
+      ],
+      "reference": "lineage-chronicle.md"
+    },
+    {
+      "id": "lineage-deep",
+      "family": "lineage",
+      "request": "링크마다 재실행까지",
+      "command": "lineage",
+      "argv": [
+        "lineage",
+        "b.capsule.json",
+        "--deep",
+        "--json"
+      ],
+      "cost": "링크 수",
+      "reference": "lineage-chronicle.md"
+    },
+    {
+      "id": "lineage-missing",
+      "family": "lineage",
+      "request": "없는 머리",
+      "command": "lineage",
+      "argv": [
+        "lineage",
+        "missing.capsule.json"
+      ],
+      "expectExit": 1,
+      "reference": "exit-codes.md"
+    },
+    {
+      "id": "lineage-noargs",
+      "family": "lineage",
+      "request": "인자 없이",
+      "command": "lineage",
+      "argv": [
+        "lineage"
+      ],
+      "expectExit": 2,
+      "reference": "exit-codes.md"
+    },
+    {
+      "id": "lineage-parentOk",
+      "family": "lineage",
+      "request": "부모 파일을 고쳤다",
+      "command": "lineage",
+      "argv": [
+        "lineage",
+        "b.capsule.json",
+        "--json"
+      ],
+      "expectExit": 3,
+      "brokenAxis": "parentOk",
+      "reference": "lineage-chronicle.md"
+    },
+    {
+      "id": "lineage-lineageOk",
+      "family": "lineage",
+      "request": "입력이 부모 산출이 아니다",
+      "command": "lineage",
+      "argv": [
+        "lineage",
+        "b.capsule.json",
+        "--json"
+      ],
+      "expectExit": 3,
+      "brokenAxis": "lineageOk",
+      "reference": "lineage-chronicle.md"
+    },
+    {
+      "id": "lineage-relative",
+      "family": "lineage",
+      "request": "부모 경로가 하위 폴더",
+      "command": "lineage",
+      "argv": [
+        "lineage",
+        "child/b.capsule.json",
+        "--json"
+      ],
+      "parentResolvedFrom": "capsule file",
+      "reference": "lineage-chronicle.md"
+    },
+    {
+      "id": "toolversion-precheck",
+      "family": "pitfall",
+      "request": "다른 버전에서 재현 실패",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--expect-output-sha256",
+        "<hex>",
+        "--json"
+      ],
+      "pitfall": "toolVersion 을 먼저 대조. 불일치를 상대 부정으로 단정하지 마라",
+      "reference": "pitfalls.md"
+    },
+    {
+      "id": "no-attribution",
+      "family": "pitfall",
+      "request": "누가 했는지 증명해",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "--plan-json",
+        "<plan>",
+        "--json"
+      ],
+      "proves": "what/how/bytes",
+      "doesNotProve": "who",
+      "reference": "pitfalls.md"
+    },
+    {
+      "id": "no-new-cli",
+      "family": "boundary",
+      "request": "receipt 명령 만들어",
+      "command": null,
+      "refuse": true,
+      "existing": [
+        "replay",
+        "audit",
+        "lineage"
+      ],
+      "reference": "SKILL.md"
+    },
+    {
+      "id": "no-gym",
+      "family": "boundary",
+      "request": "gym pack 으로 채점",
+      "command": null,
+      "refuse": true,
+      "reference": "SKILL.md"
+    },
+    {
+      "id": "exit3-is-data",
+      "family": "exit",
+      "request": "재현 실패가 났는데 크래시야?",
+      "command": "replay",
+      "expectExit": 3,
+      "judgment": true,
+      "reference": "exit-codes.md"
+    },
+    {
+      "id": "fail-stdout-silent",
+      "family": "exit",
+      "request": "exit 2 인데 JSON 이 안 나와",
+      "command": "replay",
+      "expectExit": 2,
+      "stdoutBytes": 0,
+      "reference": "exit-codes.md"
+    },
+    {
+      "id": "phrase-00-attest",
+      "family": "routing",
+      "request": "이 작업 증명해",
+      "command": "replay",
+      "tag": "attest",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-01-attest",
+      "family": "routing",
+      "request": "영수증 남겨",
+      "command": "replay",
+      "tag": "attest",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-02-verify",
+      "family": "routing",
+      "request": "타인 산출물 재현 검증",
+      "command": "replay",
+      "tag": "verify",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-03-capsule",
+      "family": "routing",
+      "request": "작업 캡슐 만들어",
+      "command": "replay",
+      "tag": "capsule",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-04-parent",
+      "family": "routing",
+      "request": "체인 만들어",
+      "command": "replay",
+      "tag": "parent",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-05-folder",
+      "family": "routing",
+      "request": "캡슐 폴더 감사",
+      "command": "audit",
+      "tag": "folder",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-06-rate",
+      "family": "routing",
+      "request": "재현율",
+      "command": "audit",
+      "tag": "rate",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-07-head",
+      "family": "routing",
+      "request": "계보 검증",
+      "command": "lineage",
+      "tag": "head",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-08-deep",
+      "family": "routing",
+      "request": "deep 로 다시",
+      "command": "lineage",
+      "tag": "deep",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-09-parentOk",
+      "family": "routing",
+      "request": "부모 해시 깨졌어",
+      "command": "lineage",
+      "tag": "parentOk",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-10-lineageOk",
+      "family": "routing",
+      "request": "산출이 다음 입력이냐",
+      "command": "lineage",
+      "tag": "lineageOk",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-11-no-attribution",
+      "family": "routing",
+      "request": "서명으로 누가 했는지",
+      "command": null,
+      "tag": "no-attribution",
+      "reference": "decision-tree.md"
+    },
+    {
+      "id": "phrase-12-no-new-cli",
+      "family": "routing",
+      "request": "새 명령 work-receipt",
+      "command": null,
+      "tag": "no-new-cli",
+      "reference": "decision-tree.md"
+    }
+  ]
+}

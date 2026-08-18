@@ -19,6 +19,29 @@ description: rhwp 검증 사다리(작업 영수증·감사·계보)로 에이�
 전제는 **결정론**이다 — 같은 계획은 같은 바이트를 낸다(저장소 실측 고정).
 그래서 "재실행해서 해시가 같다"가 증명이 된다.
 
+이 스킬은 **새 CLI 를 만들지 않는다.** 이미 devel 에 있는 `replay` /
+`--capsule` / `--parent` / `audit` / `lineage` 를 에이전트가 잘못 조립하지
+않게 배선한다. gym 트레이스가 아니라 실작업 증명이다.
+
+## 자식 문서 (이 스킬의 본문)
+
+SKILL.md 는 라우터다. 작업 종류에 맞는 자식을 **읽고 나서** 명령을 조립한다.
+
+| 작업 | 읽기 | 경로 |
+|------|------|------|
+| 단건 발급·제3자 검증 | 영수증 | [references/replay-attest.md](references/replay-attest.md) |
+| 캡슐·부모 해시 체인 | 캡슐 | [references/capsule-chain.md](references/capsule-chain.md) |
+| 폴더 전수 재현율 | 감사 | [references/audit-accounting.md](references/audit-accounting.md) |
+| 연대기 3축 | 계보 | [references/lineage-chronicle.md](references/lineage-chronicle.md) |
+| exit 3/1/2 | 종료 코드 | [references/exit-codes.md](references/exit-codes.md) |
+| toolVersion·귀속 금지 | 함정 | [references/pitfalls.md](references/pitfalls.md) |
+| 요청 → 단 고르기 | 판단 트리 | [references/decision-tree.md](references/decision-tree.md) |
+| 봉투 키 사전 | 카탈로그 | [references/envelope-field-catalog.md](references/envelope-field-catalog.md) |
+| 레시피 색인 | 색인 | [references/recipe-index.md](references/recipe-index.md) |
+
+실측 워크스루는 [examples/](examples/README.md) 다.
+기계가 읽는 픽스처는 [fixtures/catalog.json](fixtures/catalog.json) 다.
+
 ## 판정 규약 (모든 단 공통)
 
 - 판정은 예외가 아니라 **봉투 데이터**다: `reproduced`·`reproducedRate`·
@@ -89,9 +112,33 @@ exit 3. 머리 캡슐 없음은 exit 1(IO)이다.
 - "작업들을 이어서 기록" → 절차 2 체인 → 마지막에 절차 4 로 전체 판정.
 - "쌓인 캡슐 전수 점검" → 절차 3 → 실패분만 개별 verify.
 
+자세한 분기는 [references/decision-tree.md](references/decision-tree.md).
+
 ## 경계 (정직)
 
 - 캡슐·영수증은 **누가** 했는지는 증명하지 않는다 — 귀속(서명) 축은 4년 축
-  구현(#4511) 착지 후 이 스킬의 2부로 확장된다.
+  구현(#4511) 착지 후 이 스킬의 2부로 확장된다. **attribution/signature claim 없음**.
 - 영수증의 `toolVersion` 이 다르면 재현 불일치가 날 수 있다 — 판정 전에 버전
   부터 대조하라.
+- 새 `receipt` / `work-receipt` / `prove` 명령을 발명하지 않는다.
+- gym pack·채점·admission 을 이 경로에 끌어들이지 않는다.
+- 온보딩·MCP 세션·출처 표지·안전 편집·문서 트리아지 스킬 본문을 이 파동에서
+  고치지 않는다.
+- DocumentCore 편집 구현을 건드리지 않는다.
+
+## 상세 레퍼런스
+
+- 영수증: [references/replay-attest.md](references/replay-attest.md)
+- 캡슐: [references/capsule-chain.md](references/capsule-chain.md)
+- 감사: [references/audit-accounting.md](references/audit-accounting.md)
+- 계보: [references/lineage-chronicle.md](references/lineage-chronicle.md)
+- 종료 코드: [references/exit-codes.md](references/exit-codes.md)
+- 함정: [references/pitfalls.md](references/pitfalls.md)
+- 판단 트리: [references/decision-tree.md](references/decision-tree.md)
+- 필드 카탈로그: [references/envelope-field-catalog.md](references/envelope-field-catalog.md)
+- 레시피 색인: [references/recipe-index.md](references/recipe-index.md)
+- 워크스루: [examples/README.md](examples/README.md)
+- 픽스처: [fixtures/catalog.json](fixtures/catalog.json)
+- 작업 기록: [`mydocs/working/agent_work_receipt.md`](../../../mydocs/working/agent_work_receipt.md)
+- 명령 정본: [`mydocs/manual/cli_commands.md`](../../../mydocs/manual/cli_commands.md)
+- 지식 지도 §영수증·감사·계보: [`mydocs/manual/agent_knowledge_map.md`](../../../mydocs/manual/agent_knowledge_map.md)

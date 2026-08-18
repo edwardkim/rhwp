@@ -1,0 +1,14 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/table-001.hwp",
+  "output": "out/cell.hwp",
+  "steps": [
+    {
+      "action": "set_cell",
+      "table": 0,
+      "row": 1,
+      "col": 1,
+      "text": "1,234"
+    }
+  ]
+}
