@@ -1,0 +1,22 @@
+{
+  "id": "LR31",
+  "steps": [
+    {
+      "answer": {
+        "status": {
+          "cmd": [
+            "render-diff",
+            "{input}",
+            "--json"
+          ],
+          "path": "status",
+          "allowExits": [
+            0,
+            3,
+            4
+          ]
+        }
+      }
+    }
+  ]
+}

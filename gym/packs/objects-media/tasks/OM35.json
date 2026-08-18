@@ -1,0 +1,48 @@
+{
+  "id": "OM35",
+  "tier": 3,
+  "title": "작성자·부서 쌍 채움",
+  "input": "samples/field-01.hwp",
+  "instructions": "두 번째 필드에 '운영자', 세 번째 필드에 '운영팀' 을 넣은 ops.hwp 를 제출하라. 첫 번째 필드는 비어 있어야 한다. OM06 과 채우는 자리 조합이 다르다. 힌트: rhwp edit fill-fields.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "ops.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "두 번째 필드 == 운영자",
+      "op": "value_eq",
+      "value": "운영자",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:ops.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "세 번째 필드 == 운영팀",
+      "op": "value_eq",
+      "value": "운영팀",
+      "path": "fields[2].value",
+      "cmd": [
+        "fields",
+        "{file:ops.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "첫 번째 필드는 비어 있음",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:ops.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

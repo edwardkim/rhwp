@@ -1,0 +1,29 @@
+{
+  "id": "OM36",
+  "tier": 2,
+  "title": "HWPX 서식 썸네일 세로",
+  "input": "samples/hwpx/form-01.hwpx",
+  "instructions": "form-01.hwpx 썸네일의 **세로 픽셀**을 answer.json 에 {\"height\": N} 으로 제출하라. 필드 조사(OM14–OM16)와 같은 입력이지만 미리보기 축이다. 힌트: rhwp thumbnail 의 height.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "세로 픽셀",
+      "op": "answer_eq",
+      "answer": "height",
+      "path": "height",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

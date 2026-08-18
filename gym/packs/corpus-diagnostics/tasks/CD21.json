@@ -1,0 +1,48 @@
+{
+  "id": "CD21",
+  "tier": 2,
+  "title": "2쪽 시험지 IR 자기대조",
+  "input": "samples/exam-kor-2p.hwp",
+  "instructions": "2쪽 시험지를 IR 로 자기 비교해 동일 여부를 answer.json 에 {\"identical\": true|false} 로 제출하라. 힌트: rhwp ir-diff A A.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 동일 판정",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "자기 자신과 동일",
+      "op": "value_eq",
+      "value": true,
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "검증"
+}

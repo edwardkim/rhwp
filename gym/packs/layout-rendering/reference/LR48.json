@@ -1,0 +1,23 @@
+{
+  "id": "LR48",
+  "steps": [
+    {
+      "answer": {
+        "passed": {
+          "cmd": [
+            "verify",
+            "{input}",
+            "--expect-min-pages",
+            "100",
+            "--json"
+          ],
+          "path": "passCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

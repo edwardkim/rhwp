@@ -1,0 +1,17 @@
+{
+  "id": "CD46",
+  "steps": [
+    {
+      "run": [
+        "extract-pages",
+        "{input}",
+        "{sub:page4.hwp}",
+        "--from",
+        "4",
+        "--to",
+        "4",
+        "--json"
+      ]
+    }
+  ]
+}
