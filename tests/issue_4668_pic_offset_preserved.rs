@@ -64,4 +64,9 @@ fn issue_4668_pic_offset_is_not_rewritten_from_pos() {
         !saved.contains(r#"<hp:offset x="0" y="10436"/>"#),
         "hp:pic offset 이 pos vertOffset 으로 재작성됐다(#4668 재발)"
     );
+    // offset↔행렬 병진이 입력에서 일치하던 값이 저장 후에도 맞아야 한다.
+    assert!(
+        saved.contains(r#"<hc:transMatrix e1="1" e2="0" e3="5250" e4="0" e5="1" e6="-4332"/>"#),
+        "transMatrix 병진이 offset wraparound 와 어긋나면 한글 표시가 갈라진다"
+    );
 }

@@ -3623,7 +3623,7 @@
       "id": "src/serializer/hwpx/picture.rs::tests#1",
       "file": "src/serializer/hwpx/picture.rs",
       "sourcePath": "src/serializer/hwpx/picture.rs",
-      "line": 551,
+      "line": 539,
       "module": "tests",
       "testAttributes": 26,
       "tier": "white_box",
