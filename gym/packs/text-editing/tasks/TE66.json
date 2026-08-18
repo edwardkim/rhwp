@@ -1,0 +1,27 @@
+{
+  "id": "TE66",
+  "tier": 1,
+  "title": "표 문서 한 줄 문단 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력의 문단 수를 answer.json 에 {\"paras\": N} 으로 제출하라. 힌트: rhwp explain.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "표 문서 한 줄 문단 수 · paras",
+      "op": "answer_eq",
+      "answer": "paras",
+      "path": "paragraphCount",
+      "cmd": [
+        "explain",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

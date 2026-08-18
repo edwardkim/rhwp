@@ -1,0 +1,17 @@
+{
+  "id": "TE68",
+  "steps": [
+    {
+      "answer": {
+        "fmt": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "format"
+        }
+      }
+    }
+  ]
+}

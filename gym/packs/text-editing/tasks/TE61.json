@@ -1,0 +1,29 @@
+{
+  "id": "TE61",
+  "tier": 1,
+  "title": "표 문서 '표' 검색",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력에서 '표' 가 몇 번 나오는지 answer.json 에 {\"hits\": N} 으로 제출하라. 힌트: rhwp search --json 의 matchCount. 값을 추측해 박제하지 마라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "표 문서 '표' 검색 · hits",
+      "op": "answer_eq",
+      "answer": "hits",
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "표"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

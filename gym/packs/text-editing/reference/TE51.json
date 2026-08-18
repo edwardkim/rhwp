@@ -1,0 +1,33 @@
+{
+  "id": "TE51",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "규제",
+        "--replace",
+        "심사",
+        "-o",
+        "{sub:edited51.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "untouched": {
+          "cmd": [
+            "search",
+            "{sub:edited51.hwp}",
+            "--json",
+            "--",
+            "ⅰ"
+          ],
+          "path": "matchCount"
+        }
+      }
+    }
+  ]
+}

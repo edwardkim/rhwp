@@ -1,0 +1,46 @@
+{
+  "id": "TE21",
+  "tier": 3,
+  "title": "국어 세 번째만",
+  "input": "samples/2022년 국립국어원 업무계획.hwp",
+  "instructions": "입력의 '국어' 가운데 **0 기준 2번째만** '언어' 로 바꾼 once21.hwp 을 제출하라. 전건 치환은 통과하지 못한다 — 옛 문구가 남아 있어야 한다. 힌트: rhwp edit replace-text --occurrence 2.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "once21.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:once21.hwp}",
+        "--json",
+        "--",
+        "언어"
+      ]
+    },
+    {
+      "name": "옛 문구 잔여(전건 치환 거부)",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:once21.hwp}",
+        "--json",
+        "--",
+        "국어"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "once21.hwp"
+    }
+  ]
+}

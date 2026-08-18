@@ -1,0 +1,27 @@
+{
+  "id": "TE84",
+  "steps": [
+    {
+      "answer": {
+        "off": {
+          "cmd": [
+            "edit",
+            "insert-text",
+            "{input}",
+            "--text",
+            "짐표지TE84",
+            "--section",
+            "0",
+            "--para",
+            "0",
+            "--offset",
+            "0",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "offset"
+        }
+      }
+    }
+  ]
+}

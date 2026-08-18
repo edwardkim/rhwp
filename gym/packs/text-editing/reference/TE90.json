@@ -1,0 +1,25 @@
+{
+  "id": "TE90",
+  "steps": [
+    {
+      "answer": {
+        "planned": {
+          "cmd": [
+            "edit",
+            "replace-text",
+            "{input}",
+            "--find",
+            "의",
+            "--replace",
+            "◎",
+            "--occurrence",
+            "0",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "replacedCount"
+        }
+      }
+    }
+  ]
+}

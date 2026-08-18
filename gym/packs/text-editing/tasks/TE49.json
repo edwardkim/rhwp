@@ -1,0 +1,37 @@
+{
+  "id": "TE49",
+  "tier": 2,
+  "title": "삽입 선확인(좌표 0,0,0)",
+  "input": "samples/para-001.hwp",
+  "instructions": "구역 0 · 문단 0 · 오프셋 0 에 '짐표지TE49' 를 넣을 예정 글자 수를 적용하지 않고 answer.json 에 {\"chars\": N} 으로 제출하라. 힌트: rhwp edit insert-text --dry-run 의 insertedChars. 파일을 쓰지 마라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "삽입 선확인(좌표 0,0,0) · chars",
+      "op": "answer_eq",
+      "answer": "chars",
+      "path": "insertedChars",
+      "cmd": [
+        "edit",
+        "insert-text",
+        "{input}",
+        "--text",
+        "짐표지TE49",
+        "--section",
+        "0",
+        "--para",
+        "0",
+        "--offset",
+        "0",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

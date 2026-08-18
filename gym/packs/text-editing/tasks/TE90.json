@@ -1,0 +1,35 @@
+{
+  "id": "TE90",
+  "tier": 2,
+  "title": "occurrence 0 선확인(의)",
+  "input": "samples/hwp3-sample.hwp",
+  "instructions": "입력의 '의' 가운데 0 기준 첫 번째만 '◎' 로 바꿀 예정 건수를 answer.json 에 {\"planned\": N} 으로 제출하라. 보통 1 이다. 박제하지 마라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "occurrence 0 선확인(의) · planned",
+      "op": "answer_eq",
+      "answer": "planned",
+      "path": "replacedCount",
+      "cmd": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "의",
+        "--replace",
+        "◎",
+        "--occurrence",
+        "0",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

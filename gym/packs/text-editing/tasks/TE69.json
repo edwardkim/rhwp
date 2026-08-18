@@ -1,0 +1,27 @@
+{
+  "id": "TE69",
+  "tier": 2,
+  "title": "표 문서 구조 노드",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력의 구조 노드 수를 answer.json 에 {\"nodes\": N} 으로 제출하라. TE07 은 중첩셀 표본이다. 이번은 table-001 이다. T07(fill-fields)이 아니다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "표 문서 구조 노드 · nodes",
+      "op": "answer_eq",
+      "answer": "nodes",
+      "path": "nodeCount",
+      "cmd": [
+        "export-structure",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

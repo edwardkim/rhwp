@@ -1,0 +1,23 @@
+{
+  "id": "TE26",
+  "steps": [
+    {
+      "answer": {
+        "planned": {
+          "cmd": [
+            "edit",
+            "replace-text",
+            "{input}",
+            "--find",
+            "보험료",
+            "--replace",
+            "보험금",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "replacedCount"
+        }
+      }
+    }
+  ]
+}

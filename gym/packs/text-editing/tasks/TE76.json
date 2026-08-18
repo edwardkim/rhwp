@@ -1,0 +1,27 @@
+{
+  "id": "TE76",
+  "tier": 1,
+  "title": "2쪽 시험지 쪽수",
+  "input": "samples/exam-kor-2p.hwp",
+  "instructions": "입력의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라. 파일 이름에 속지 말고 info 를 읽어라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "2쪽 시험지 쪽수 · pages",
+      "op": "answer_eq",
+      "answer": "pages",
+      "path": "pageCount",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

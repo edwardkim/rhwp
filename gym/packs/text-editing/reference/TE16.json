@@ -1,0 +1,21 @@
+{
+  "id": "TE16",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "규제",
+        "--replace",
+        "감독",
+        "--occurrence",
+        "2",
+        "-o",
+        "{sub:once16.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}
