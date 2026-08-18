@@ -51,7 +51,13 @@ fn assert_code(args: &[&str], expected: i32) -> Output {
 /// 인자 없이 호출 → 사용법 오류(2).
 #[test]
 fn missing_arguments_report_usage_error() {
-    for cmd in ["info", "dump-note-shape", "dump-pages", "dump-records"] {
+    for cmd in [
+        "info",
+        "dump-note-shape",
+        "dump-pages",
+        "dump-extents",
+        "dump-records",
+    ] {
         assert_code(&[cmd], 2);
     }
     // dump-endnote-lines 는 인자 4개 미만이면 사용법 오류.
@@ -65,6 +71,7 @@ fn unreadable_input_reports_runtime_failure() {
     assert_code(&["info", "does-not-exist.hwp"], 1);
     assert_code(&["dump-note-shape", "does-not-exist.hwp"], 1);
     assert_code(&["dump-pages", "does-not-exist.hwp"], 1);
+    assert_code(&["dump-extents", "does-not-exist.hwp"], 1);
     assert_code(&["dump-records", "does-not-exist.hwp"], 1);
     assert_code(
         &["dump-endnote-lines", "does-not-exist.hwp", "0", "0", "0"],
@@ -76,12 +83,21 @@ fn unreadable_input_reports_runtime_failure() {
     );
 }
 
-/// dump-pages 페이지 범위 초과 → 사용법 오류(2) (형제 명령과 정합, #2551 후속 확인).
+/// 페이지 진단 명령의 범위 초과 → 사용법 오류(2) (형제 명령과 정합, #2551 후속 확인).
 #[test]
-fn dump_pages_out_of_range_reports_usage_error() {
+fn dump_page_diagnostics_out_of_range_report_usage_error() {
     let sample = sample_path();
     let sample = sample.to_str().expect("valid utf8 path");
     assert_code(&["dump-pages", sample, "-p", "999999"], 2);
+    assert_code(&["dump-extents", sample, "-p", "999999"], 2);
+}
+
+#[test]
+fn dump_extents_rejects_invalid_numeric_options() {
+    let sample = sample_path();
+    let sample = sample.to_str().expect("valid utf8 path");
+    assert_code(&["dump-extents", sample, "-p", "not-a-page"], 2);
+    assert_code(&["dump-extents", sample, "--min-h", "not-a-height"], 2);
 }
 
 /// build-from-ingest 출력 경로 누락 → 사용법 오류(2).
@@ -110,6 +126,7 @@ fn successful_diagnostic_commands_return_zero() {
             describe(&[cmd, sample], &output)
         );
     }
+    assert_code(&["dump-extents", sample, "-p", "0", "--min-h", "1000"], 0);
 
     let hwp5_sample = hwp5_sample_path();
     let hwp5_sample = hwp5_sample.to_str().expect("valid utf8 path");
