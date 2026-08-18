@@ -73,6 +73,78 @@ class ReleaseGateWorkflowTests(unittest.TestCase):
         gate_at = self.wf.index("release_gate.py")
         self.assertLess(audit_at, gate_at, "트라젝토리 감사가 게이트보다 먼저 배선돼야 한다")
 
+    def test_discriminate_runs_on_the_new_binary_only(self):
+        """판별 감사는 현재 릴리스 바이너리만 본다. --old 를 넘기지 않는다.
+
+        약한 오라클은 '지금 벤치가 일을 거부하는가' 이지 '두 바이너리가
+        같은가' 가 아니다. 구 바이너리를 넣으면 차등과 겹친다.
+        """
+        # 감사 스텝 본문에 --old 가 없어야 한다. 게이트 스텝은 --old 를 쓴다.
+        audit_at = self.wf.index("Discrimination audit")
+        gate_at = self.wf.index("Run release gate")
+        audit_block = self.wf[audit_at:gate_at]
+        self.assertIn("discriminate.py", audit_block)
+        self.assertIn("target/debug/rhwp", audit_block)
+        self.assertNotIn("--old", audit_block)
+
+    def test_discriminate_failure_fails_the_job_before_gate(self):
+        """판별 실패는 워크플로 기본 동작으로 잡을 닫는다.
+
+        continue-on-error 가 있으면 exit 1 이 게이트까지 흘러가지 않고,
+        약한 오라클이 있는 릴리스가 차등만 통과해 나갈 수 있다.
+        """
+        audit_at = self.wf.index("Discrimination audit")
+        gate_at = self.wf.index("Run release gate")
+        audit_block = self.wf[audit_at:gate_at]
+        self.assertNotIn("continue-on-error", audit_block)
+        self.assertNotIn("|| true", audit_block)
+
+    def test_gate_step_does_not_swallow_nonzero(self):
+        """게이트 스텝도 종료 코드를 삼키지 않는다. review(2)/block(3) 이
+        워크플로 실패로 보여야 사람이 본다. fail(1) 도 같다.
+        """
+        gate_at = self.wf.index("Run release gate")
+        upload_at = self.wf.index("Upload verdict")
+        gate_block = self.wf[gate_at:upload_at]
+        self.assertNotIn("continue-on-error", gate_block)
+        self.assertNotIn("|| true", gate_block)
+
+    def test_upload_verdict_runs_even_when_gate_fails(self):
+        """판정이 fail/block 이어도 봉투를 올려야 리뷰어가 이유를 본다."""
+        self.assertIn("if: always()", self.wf)
+        self.assertIn("gate-verdict.json", self.wf)
+        self.assertIn("gym-release-gate-verdict", self.wf)
+
+    def test_old_ref_empty_skips_old_build_not_the_gate(self):
+        """old_ref 가 비면 구 바이너리 빌드만 생략한다. 게이트는 --new 만으로 돈다."""
+        self.assertIn("if: ${{ github.event.inputs.old_ref != '' }}", self.wf)
+        self.assertIn("--new target/debug/rhwp", self.wf)
+
+    def test_concurrency_cancels_in_progress(self):
+        self.assertIn("cancel-in-progress: true", self.wf)
+        self.assertIn("gym-release-gate-${{ github.ref }}", self.wf)
+
+    def test_does_not_add_write_permissions(self):
+        """게이트는 판정만 한다. pull-requests: write 같은 권한이 생기면 침습이다."""
+        self.assertNotIn("pull-requests: write", self.wf)
+        self.assertNotIn("contents: write", self.wf)
+        self.assertNotIn("id-token: write", self.wf)
+
+    def test_runner_docs_exist(self):
+        """#5259 문서 계약 — 규약과 작업 기록이 커밋되어 있어야 한다."""
+        docs = REPO_ROOT / "gym/docs/release_gate.md"
+        working = REPO_ROOT / "mydocs/working/gym_release_gate.md"
+        self.assertTrue(docs.is_file(), "gym/docs/release_gate.md 이 없다")
+        self.assertTrue(working.is_file(), "mydocs/working/gym_release_gate.md 이 없다")
+        text = docs.read_text(encoding="utf-8")
+        for needle in ("missing-old-bin", "missing-new-bin", "discriminate-fail",
+                       "surface-changed", "regression"):
+            self.assertIn(needle, text, needle)
+
+    def test_workflow_comment_states_honesty_clause(self):
+        self.assertIn("어느 쪽이 옳은가", self.wf)
+        self.assertIn("regression 만 차단", self.wf)
+
 
 class GateRunnerContractTests(unittest.TestCase):
     """러너의 판정 계약 — 종료 코드가 게이트 의미론과 일치하는지."""
@@ -136,11 +208,20 @@ class GateRunnerContractTests(unittest.TestCase):
 
     def test_missing_old_binary_skips_diff_not_fail(self):
         from unittest import mock
-        # old 경로가 없으면(find_bin 이 그대로 반환, exists=False) 차등은 skipped.
-        with mock.patch("os.path.exists", return_value=False):
+        # 구 바이너리 부재는 차등 생략이지 실패가 아니다.
+        # 신 바이너리까지 없다고 목하면 그 경로가 이긴다 — 이 시험은
+        # missing-old 만 분리한다. 신 경로는 있다고 본다.
+        def exists(path):
+            text = str(path).replace("\\", "/")
+            if "ledger.ndjson" in text:
+                return False
+            return True
+
+        with mock.patch("os.path.exists", side_effect=exists):
             v = self.rg.gate(None, "new", "agent", None, verify_board=False)
         self.assertEqual(v["diff"]["classification"], "skipped")
         self.assertEqual(v["verdict"], "pass")
+        self.assertEqual(v["reason"], "missing-old-bin")
 
 
 if __name__ == "__main__":
