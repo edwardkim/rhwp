@@ -428,8 +428,10 @@ fn parse_page_margin(e: &quick_xml::events::BytesStart, page: &mut PageDef) {
 /// `parse_paragraph` 를 경유**하므로, 그 진입 깊이를 스레드-로컬 카운터로 세어 한
 /// 곳에서 전 경로를 막는다(파라미터를 여러 호출부에 관통시키지 않는다). 그룹
 /// (`<hp:container>`) 자기재귀는 별도로 `MAX_HWPX_CONTAINER_DEPTH` 가 막는다.
-/// 상한 64 는 그 형제 가드와 같은 값이다(실문서의 표 중첩은 이에 한참 못 미친다).
-const MAX_HWPX_SECTION_DEPTH: u32 = 64;
+/// 상한은 컨테이너(64)보다 작다. 한 겹마다 `parse_paragraph`·`parse_table`·
+/// `parse_table_cell` 큰 프레임이 겹쳐, 64 로 두면 기본/WASM 스택에서 가드보다
+/// SIGSEGV 가 앞선다. 실문서의 표 중첩은 이에 한참 못 미친다.
+const MAX_HWPX_SECTION_DEPTH: u32 = 16;
 
 thread_local! {
     // 완전 경로 — 이 모듈의 `Cell` 은 이미 `crate::model::table::Cell`(표 셀)이다.
@@ -517,7 +519,17 @@ fn parse_paragraph(
     reader: &mut Reader<&[u8]>,
 ) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
     // [#4759] 문단-경유 상호재귀(표·글상자·서브리스트) 깊이 상한 — 위 가드 참고.
+    // 가드는 큰 본문 프레임을 쌓기 전에 실행한다. 상한 초과 호출이
+    // `Paragraph`·`SectionDef` 지역 상태를 먼저 잡으면 기본 스택에서
+    // 가드보다 SIGSEGV 가 앞설 수 있다.
     let _depth_guard = SectionDepthGuard::enter()?;
+    parse_paragraph_body(e, reader)
+}
+
+fn parse_paragraph_body(
+    e: &quick_xml::events::BytesStart,
+    reader: &mut Reader<&[u8]>,
+) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
     let mut para = Paragraph::default();
     let mut sec_def: Option<SectionDef> = None;
 
@@ -4571,6 +4583,10 @@ const MAX_HWPX_CONTAINER_DEPTH: u32 = 64;
 /// `depth` 는 중첩 그룹의 현재 깊이다(최상위 호출은 0). 최대 64개 그룹을
 /// 허용하며, 그 다음 그룹은 스택을 고갈시키기 전에 오류로 거부한다 — 위
 /// `MAX_HWPX_CONTAINER_DEPTH` 참고.
+///
+/// 가드는 큰 지역 상태를 가진 본문보다 먼저 실행돼야 한다. 상한 검사를
+/// 본문과 같은 프레임에서 하면 거절하는 65번째 호출도 큰 프레임을 먼저
+/// 쌓아, 기본/WASM 스택에서 가드보다 SIGSEGV 가 앞설 수 있다.
 fn parse_container(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
@@ -4582,6 +4598,14 @@ fn parse_container(
             MAX_HWPX_CONTAINER_DEPTH
         )));
     }
+    parse_container_body(e, reader, depth)
+}
+
+fn parse_container_body(
+    e: &quick_xml::events::BytesStart,
+    reader: &mut Reader<&[u8]>,
+    depth: u32,
+) -> Result<Control, HwpxError> {
     let mut common = CommonObjAttr::default();
     let mut shape_attr = ShapeComponentAttr::default();
     let mut has_pos = false;
@@ -7285,6 +7309,18 @@ mod tests {
         );
     }
 
+    fn assert_section_nesting_xml_error(result: Result<Section, HwpxError>, needle: &str) {
+        match result {
+            Err(HwpxError::XmlError(msg)) => {
+                assert!(
+                    msg.contains(needle),
+                    "XmlError 메시지에 `{needle}` 가 없다: {msg}"
+                );
+            }
+            other => panic!("상한 초과가 XmlError 로 거부되지 않았다: {other:?}"),
+        }
+    }
+
     // ---------- [#4730] <hp:container> 무한 중첩 → 스택 오버플로 DoS 가드 ----------
 
     fn nested_container_section_xml(depth: usize) -> String {
@@ -7309,11 +7345,7 @@ mod tests {
         // 기본 테스트 스레드에서 실행해, 실제 호출자가 흔히 쓰는 스택에서도 가드가
         // 재귀 프레임 고갈보다 먼저 동작함을 검증한다.
         let xml = nested_container_section_xml(MAX_HWPX_CONTAINER_DEPTH as usize + 1);
-        let rejected = parse_hwpx_section(&xml).is_err();
-        assert!(
-            rejected,
-            "상한 초과 container 중첩이 거부되지 않았다 — 재귀 깊이 가드 회귀"
-        );
+        assert_section_nesting_xml_error(parse_hwpx_section(&xml), "container nesting exceeds");
     }
 
     #[test]
