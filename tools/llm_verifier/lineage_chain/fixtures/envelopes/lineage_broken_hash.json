@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "head": "broken_child.capsule.json",
+  "depth": 2,
+  "valid": false,
+  "brokenAt": "broken_child.capsule.json",
+  "links": [
+    {
+      "capsule": "broken_child.capsule.json",
+      "inputSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "outputSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "parentOk": true,
+      "lineageOk": false,
+      "reproduced": null
+    },
+    {
+      "capsule": "notice_year.capsule.json",
+      "inputSha256": "9872f62399b737c8ebe6cbe2adff4a9d777642e0cd507234428c8e9b3a439a3c",
+      "outputSha256": "3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3",
+      "parentOk": null,
+      "lineageOk": null,
+      "reproduced": null
+    }
+  ],
+  "untrustedContent": false,
+  "untrustedFields": []
+}

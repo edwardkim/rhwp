@@ -1,0 +1,8 @@
+{
+  "stderr": "사용법: rhwp lineage <캡슐.json> [--deep] [--json]",
+  "_skillMeta": {
+    "exit": 2,
+    "branch": "lineage-usage",
+    "command": "lineage"
+  }
+}

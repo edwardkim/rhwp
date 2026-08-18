@@ -1,0 +1,8 @@
+{
+  "stderr": "오류: 캡슐을 읽을 수 없습니다 - missing.capsule.json",
+  "_skillMeta": {
+    "exit": 1,
+    "branch": "lineage-io",
+    "command": "lineage"
+  }
+}
