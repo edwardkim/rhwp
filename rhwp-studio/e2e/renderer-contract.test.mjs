@@ -1109,6 +1109,35 @@ function runExecutableTextSpecialReplay() {
       positionsComplete: true,
     },
   }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'tabLeader',
+    bbox: { x: 10, y: 20, width: 40, height: 16 },
+    leaders: [{ startX: 4, endX: 30, fillType: 2 }],
+    color: '#000000',
+    fontSize: 16,
+    baseline: 12,
+    rotation: 0,
+    isVertical: true,
+    leadersComplete: true,
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'textDecoration',
+    bbox: { x: 10, y: 20, width: 40, height: 16 },
+    decoration: {
+      kind: 'emphasisDot',
+      baseline: 12,
+      rotation: 0,
+      isVertical: true,
+      fontSize: 16,
+      ratio: 1,
+      color: '#000000',
+      shape: 0,
+      underline: 'none',
+      emphasisDot: 1,
+      positions: [0, 12],
+      positionsComplete: true,
+    },
+  }, 'screen');
   const beforeMirror = events.length;
   renderer.renderTextRun(canvas, {
     type: 'textRun',
@@ -2486,6 +2515,11 @@ for (const diagnostic of [
     `malformed text visuals should report ${diagnostic}`,
   );
 }
+assert.equal(
+  textSpecialReplay.unsupportedOps.has('textRun:verticalText'),
+  false,
+  'vertical tab-leader and decoration must not pin the document to a verticalText fallback',
+);
 
 const alternatingGlyphText = 'A'.repeat(4098);
 const alternatingGlyphReplay = runExecutableTextReplay({

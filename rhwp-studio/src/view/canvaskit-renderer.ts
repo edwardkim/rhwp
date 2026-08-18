@@ -2695,10 +2695,6 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderTabLeader(canvas: SkCanvas, op: LayerTabLeaderOp): void {
-    if (op.isVertical) {
-      this.unsupportedOps.add('textRun:verticalText');
-      return;
-    }
     if (!Array.isArray(op.leaders)) {
       this.unsupportedOps.add('tabLeader:invalidGeometry');
       return;
@@ -2777,10 +2773,6 @@ export class CanvasKitLayerRenderer {
       || !Array.isArray(decoration.positions)
       || !['underline', 'strikethrough', 'emphasisDot'].includes(decoration.kind)) {
       this.unsupportedOps.add('textDecoration:invalidGeometry');
-      return;
-    }
-    if (decoration.isVertical) {
-      this.unsupportedOps.add('textRun:verticalText');
       return;
     }
     if (decoration.positionsComplete !== true
