@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5296,
+  "ladder": [
+    "info",
+    "explain",
+    "export-structure",
+    "digest",
+    "search",
+    "extract-data"
+  ],
+  "notGym": true,
+  "noNewCli": true,
+  "bands": [
+    {
+      "id": "tiny",
+      "min": 1,
+      "max": 3,
+      "label": "1~3쪽",
+      "first": "export-text --json",
+      "forbid": [
+        "unlimited export-png",
+        "batch of one file"
+      ],
+      "stop_after": "export-text --json 전문이 컨텍스트에 들어가면 여기서 멈춘다",
+      "why": "전문이 한 화면보다 짧아 사다리를 타면 왕복만 늘어난다"
+    },
+    {
+      "id": "small",
+      "min": 4,
+      "max": 8,
+      "label": "4~8쪽",
+      "first": "info --json 다음 explain --json",
+      "forbid": [
+        "export-text without --max-chars when only a fact is needed"
+      ],
+      "stop_after": "explain 한 줄로 종류가 밝혀지고 질문이 종류뿐이면 멈춘다",
+      "why": "짧지만 표·누름틀이 있으면 전문보다 구조가 싸다"
+    },
+    {
+      "id": "medium",
+      "min": 9,
+      "max": 30,
+      "label": "9~30쪽",
+      "first": "info --json → explain --json → digest --json --max-chars",
+      "forbid": [
+        "export-text 무제한",
+        "전 쪽 export-png"
+      ],
+      "stop_after": "digest excerpt+outline 으로 질문에 답하면 멈춘다",
+      "why": "전문 덤프가 컨텍스트를 밀어내기 시작하는 구간"
+    },
+    {
+      "id": "large",
+      "min": 31,
+      "max": 100,
+      "label": "31~100쪽",
+      "first": "info --json → digest --json --max-chars 800",
+      "forbid": [
+        "export-text 무제한",
+        "digest excerpt 를 문서 전체로 읽기"
+      ],
+      "stop_after": "search/extract-data 가 주소를 주면 그 쪽만 후속",
+      "why": "편람·업무계획 규모. 첫 3쪽 발췌로 뒤를 판단하면 틀린다"
+    },
+    {
+      "id": "huge",
+      "min": 101,
+      "max": null,
+      "label": "101쪽 이상",
+      "first": "info --json → digest --json --max-chars 600 → search --limit 20",
+      "forbid": [
+        "export-text 무제한",
+        "digest --pages 0..last 한 방에",
+        "전 쪽 PNG"
+      ],
+      "stop_after": "질문에 답하는 매치/항목이 나오면 즉시 멈춘다",
+      "why": "컨텍스트 예산의 적. 좁히지 않으면 실패가 기본값이다"
+    }
+  ]
+}
