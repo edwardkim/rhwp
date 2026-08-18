@@ -71,6 +71,33 @@ _BODY_KEYS = (
     "sections", "paraCount",
 )
 
+# 명시 오류 코드. 문서·시험·예외 클래스가 같은 표다. 숫자를 지어내지 않는다.
+ERR_MISSING_FILE = "missing-file"
+ERR_BAD_JSON = "bad-json"
+ERR_ENCODING = "encoding"
+ERR_EMPTY_SCORECARD = "empty-scorecard"
+ERR_UNKNOWN_AGENT = "unknown-agent"
+ERR_PAYLOAD_SHAPE = "payload-shape"
+ERROR_CODES = (
+    ERR_MISSING_FILE,
+    ERR_BAD_JSON,
+    ERR_ENCODING,
+    ERR_EMPTY_SCORECARD,
+    ERR_UNKNOWN_AGENT,
+    ERR_PAYLOAD_SHAPE,
+)
+ERROR_KIND = "gymCompetitiveBenchError"
+DEFAULT_ERROR_EXIT = 2
+# 도구 이름·집계 예약어. 에이전트 식별자로 쓰면 경로/표가 섞인다.
+RESERVED_AGENT_IDS = frozenset({
+    "all", "any", "none", "null", "self", "default", "unknown",
+    "rhwp", "pyhwp", "soffice", "hwplib", "hancom", "hancomsdk",
+    "baseline", "ref", "reference",
+})
+SCORECARD_KIND = "gymScorecard"
+SCORECARD_SCHEMA_VERSIONS = ("1.0", "2.0")
+SCORECARD_TOTAL_KEYS = ("score", "max", "packsScored")
+
 # --------------------------------------------------------------------------
 # 능력 매트릭스 — 문서화·검증 가능한 사실만. 값 = "yes" | "partial" | "no".
 # --------------------------------------------------------------------------
@@ -733,8 +760,13 @@ def render_report(payload: dict) -> str:
     # 도구별 각주(형식 한계 등)
     notes = []
     for task in payload.get("tasks", []):
-        for r in task.get("results", []):
-            if r.get("note"):
+        if not isinstance(task, dict):
+            continue
+        results = task.get("results")
+        if not isinstance(results, list):
+            continue
+        for r in results:
+            if isinstance(r, dict) and r.get("note"):
                 notes.append(f"- **{r['tool']} / {task['task']}**: {r['note']}")
     if notes:
         out.append("주석:")
@@ -1201,6 +1233,24 @@ def format_bench_error(err: BenchError) -> str:
     return f"오류[{err.code}]: {err.message}{loc}"
 
 
+def error_catalog() -> list[dict]:
+    """명시 오류 표. 문서·시험이 같은 목록을 본다. 순수."""
+    return [
+        {"code": ERR_MISSING_FILE, "exit": DEFAULT_ERROR_EXIT,
+         "when": "경로가 비었거나 없거나 디렉터리이거나 읽을 수 없다"},
+        {"code": ERR_BAD_JSON, "exit": DEFAULT_ERROR_EXIT,
+         "when": "JSON 텍스트가 없거나 비었거나 잘렸거나 최상위가 객체가 아니다"},
+        {"code": ERR_ENCODING, "exit": DEFAULT_ERROR_EXIT,
+         "when": "바이트가 UTF-8 이 아니거나 디코드할 값이 없다"},
+        {"code": ERR_EMPTY_SCORECARD, "exit": DEFAULT_ERROR_EXIT,
+         "when": "스코어카드에 측정(packs/total)이 없다"},
+        {"code": ERR_UNKNOWN_AGENT, "exit": DEFAULT_ERROR_EXIT,
+         "when": "에이전트 식별자가 비었거나 예약어이거나 알려진 집합 밖이다"},
+        {"code": ERR_PAYLOAD_SHAPE, "exit": DEFAULT_ERROR_EXIT,
+         "when": "보고 봉투 kind/tasks 형태가 깨졌거나 비가용 칸에 숫자를 실었다"},
+    ]
+
+
 def error_exit_code(err) -> int:
     if isinstance(err, BenchError):
         return err.exit_code
@@ -1298,8 +1348,12 @@ def load_json_object(path) -> dict:
     return require_json_object(parse_json_text(read_text_utf8(path), path=path), path=path)
 
 
-def load_report_payload(path) -> dict:
-    """--from-json 입력. 봉투 형태가 아니면 PayloadShapeError."""
+def load_report_from_path(path) -> dict:
+    """경로에서 보고 봉투를 읽는다. 형태가 아니면 PayloadShapeError.
+
+    문자열 JSON 재렌더(`load_report_payload(raw)`)와 이름을 갈라 둔다.
+    CLI 플래그는 바꾸지 않는다. `--from-json` 은 기존처럼 문자열 경로를 쓴다.
+    """
     payload = load_json_object(path)
     issues = payload_shape_issues(payload)
     if issues:
