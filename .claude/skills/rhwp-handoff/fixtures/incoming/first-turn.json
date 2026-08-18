@@ -1,0 +1,11 @@
+{
+  "firstTurn": "read-only",
+  "executeAfterRead": true,
+  "maxCommandsFirstTurn": 1,
+  "forbiddenFirstTurn": [
+    "DocumentCore",
+    "git add -A",
+    "git checkout named worktree",
+    "rhwp handoff"
+  ]
+}
