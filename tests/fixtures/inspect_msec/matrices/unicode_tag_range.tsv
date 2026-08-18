@@ -1,0 +1,129 @@
+codepoint	offset	decodedAscii	inAxis
+U+E0000	0		True
+U+E0001	1		True
+U+E0002	2		True
+U+E0003	3		True
+U+E0004	4		True
+U+E0005	5		True
+U+E0006	6		True
+U+E0007	7		True
+U+E0008	8		True
+U+E0009	9		True
+U+E000A	10		True
+U+E000B	11		True
+U+E000C	12		True
+U+E000D	13		True
+U+E000E	14		True
+U+E000F	15		True
+U+E0010	16		True
+U+E0011	17		True
+U+E0012	18		True
+U+E0013	19		True
+U+E0014	20		True
+U+E0015	21		True
+U+E0016	22		True
+U+E0017	23		True
+U+E0018	24		True
+U+E0019	25		True
+U+E001A	26		True
+U+E001B	27		True
+U+E001C	28		True
+U+E001D	29		True
+U+E001E	30		True
+U+E001F	31		True
+U+E0020	32	 	True
+U+E0021	33	!	True
+U+E0022	34	"	True
+U+E0023	35	#	True
+U+E0024	36	$	True
+U+E0025	37	%	True
+U+E0026	38	&	True
+U+E0027	39	'	True
+U+E0028	40	(	True
+U+E0029	41	)	True
+U+E002A	42	*	True
+U+E002B	43	+	True
+U+E002C	44	,	True
+U+E002D	45	-	True
+U+E002E	46	.	True
+U+E002F	47	/	True
+U+E0030	48	0	True
+U+E0031	49	1	True
+U+E0032	50	2	True
+U+E0033	51	3	True
+U+E0034	52	4	True
+U+E0035	53	5	True
+U+E0036	54	6	True
+U+E0037	55	7	True
+U+E0038	56	8	True
+U+E0039	57	9	True
+U+E003A	58	:	True
+U+E003B	59	;	True
+U+E003C	60	<	True
+U+E003D	61	=	True
+U+E003E	62	>	True
+U+E003F	63	?	True
+U+E0040	64	@	True
+U+E0041	65	A	True
+U+E0042	66	B	True
+U+E0043	67	C	True
+U+E0044	68	D	True
+U+E0045	69	E	True
+U+E0046	70	F	True
+U+E0047	71	G	True
+U+E0048	72	H	True
+U+E0049	73	I	True
+U+E004A	74	J	True
+U+E004B	75	K	True
+U+E004C	76	L	True
+U+E004D	77	M	True
+U+E004E	78	N	True
+U+E004F	79	O	True
+U+E0050	80	P	True
+U+E0051	81	Q	True
+U+E0052	82	R	True
+U+E0053	83	S	True
+U+E0054	84	T	True
+U+E0055	85	U	True
+U+E0056	86	V	True
+U+E0057	87	W	True
+U+E0058	88	X	True
+U+E0059	89	Y	True
+U+E005A	90	Z	True
+U+E005B	91	[	True
+U+E005C	92	\	True
+U+E005D	93	]	True
+U+E005E	94	^	True
+U+E005F	95	_	True
+U+E0060	96	`	True
+U+E0061	97	a	True
+U+E0062	98	b	True
+U+E0063	99	c	True
+U+E0064	100	d	True
+U+E0065	101	e	True
+U+E0066	102	f	True
+U+E0067	103	g	True
+U+E0068	104	h	True
+U+E0069	105	i	True
+U+E006A	106	j	True
+U+E006B	107	k	True
+U+E006C	108	l	True
+U+E006D	109	m	True
+U+E006E	110	n	True
+U+E006F	111	o	True
+U+E0070	112	p	True
+U+E0071	113	q	True
+U+E0072	114	r	True
+U+E0073	115	s	True
+U+E0074	116	t	True
+U+E0075	117	u	True
+U+E0076	118	v	True
+U+E0077	119	w	True
+U+E0078	120	x	True
+U+E0079	121	y	True
+U+E007A	122	z	True
+U+E007B	123	{	True
+U+E007C	124	|	True
+U+E007D	125	}	True
+U+E007E	126	~	True
+U+E007F	127		True

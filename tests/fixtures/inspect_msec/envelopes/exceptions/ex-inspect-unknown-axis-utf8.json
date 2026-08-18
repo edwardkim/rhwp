@@ -1,0 +1,34 @@
+{
+  "id": "ex-inspect-unknown-axis-utf8",
+  "issue": 5476,
+  "axis": "inspect",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "utf8 → unicode 교정 후보."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "utf8",
+      "x.hwp"
+    ],
+    "exitCode": 2,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "inspect unicode"
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "utf8 → unicode 교정 후보.",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}

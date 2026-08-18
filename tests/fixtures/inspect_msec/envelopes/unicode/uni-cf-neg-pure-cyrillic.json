@@ -1,0 +1,51 @@
+{
+  "id": "uni-cf-neg-pure-cyrillic",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "confusable",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/text_security.rs",
+    "symbol": "confusable_offender",
+    "note": "순수 키릴 인용문은 정상. 라틴 낱말에 섞일 때만."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "synth:unicode/confusable/neg-pure-cyrillic.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true"
+  },
+  "pair": null,
+  "why": "Тотал 같은 순수 키릴은 스푸핑이 아니다.",
+  "note": "목록을 넓히는 것보다 정확히 유지하는 편이 오탐을 막는다.",
+  "human": "유니코드 기만 검사 — 탐지 0건, 깨끗합니다\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:unicode/confusable/neg-pure-cyrillic.hwp",
+    "kindFilter": "all",
+    "scannedChars": 6,
+    "findings": [],
+    "findingCount": 0,
+    "clean": true,
+    "severityCounts": {
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "kindCounts": {
+      "zero_width": 0,
+      "bidi_override": 0,
+      "tag_char": 0,
+      "confusable": 0
+    }
+  }
+}

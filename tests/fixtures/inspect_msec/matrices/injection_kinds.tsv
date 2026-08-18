@@ -1,0 +1,7 @@
+id	confidence	symbol	meaning
+role_impersonation	high	SignalKind::RoleImpersonation	SYSTEM:/Assistant:/<|im_start|>/[INST] 역할 표지
+instruction_override	high	SignalKind::InstructionOverride	이전 지시를 무시 / ignore previous instructions
+tool_directive	high	SignalKind::ToolDirective	실제 MCP 도구 이름을 명령형으로 부름
+authority_claim	medium	SignalKind::AuthorityClaim	사용자가 이미 승인했다 / admin override
+exfiltration_hint	medium	SignalKind::ExfiltrationHint	본문 URL/이메일 + 전송 명령형
+delimiter_break	low	SignalKind::DelimiterBreak	코드펜스·</system> 구분자 흉내

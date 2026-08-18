@@ -1,0 +1,4 @@
+minConfidence	role	override	tool	authority	exfil	delim
+low	True	True	True	True	True	True
+medium	True	True	True	True	True	False
+high	True	True	True	False	False	False
