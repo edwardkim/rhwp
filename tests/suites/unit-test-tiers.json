@@ -2479,7 +2479,7 @@
       "id": "src/render_backend/mod.rs::tests#1",
       "file": "src/render_backend/mod.rs",
       "sourcePath": "src/render_backend/mod.rs",
-      "line": 80,
+      "line": 108,
       "module": "tests",
       "testAttributes": 15,
       "tier": "white_box",

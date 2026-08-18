@@ -64,6 +64,34 @@
 //! ```
 //!
 //! 설계 배경과 기존 백엔드 채택 시나리오는 `mydocs/tech/render_backend.md`.
+//!
+//! # 네 번째 어댑터를 붙일 때
+//!
+//! devel 의 구체 어댑터는 [`SvgBackend`] 하나다. M06-1 `PngBackend`, M06-2
+//! `SkiaBackend` 가 이어지고, 그 다음이 어댑터 4 다(후보: 직접 PDF).
+//! 작성 절차·능력 정직성·피처 게이트·시험(M06-3/M06-4)의 정본은
+//! `mydocs/manual/render_backend_adapter_guide.md` 다.
+//!
+//! 한 줄 요약: `src/renderer/**` 는 고치지 않는다. [`PageState`] 로 생명주기를
+//! 판정한다. [`BackendCapabilities`] 가 광고한 능력만 산출물에 남긴다. 선택
+//! 피처가 꺼져도 컴파일·생명주기를 지키고, 광고가 그 사실을 숨기지 않는다.
+//! 정직성 대조는 기존 `render_backend` 단위 시험에 접고(새 `#[test]` 금지),
+//! M06-4 하네스에 이름을 등재한다.
+//!
+//! ```ignore
+//! impl RenderBackend for PdfBackend {
+//!     type Output = Vec<u8>;
+//!     type Error = RenderBackendError;
+//!     fn capabilities(&self) -> BackendCapabilities { /* 광고 = 실지원 */ }
+//!     fn begin_page(&mut self, size: PageSize) -> Result<(), Self::Error> { /* PageState */ }
+//!     fn draw(&mut self, op: &PaintOp) -> Result<(), Self::Error> { /* … */ }
+//!     fn end_page(&mut self) -> Result<(), Self::Error> { /* 기존 API 호출만 */ }
+//!     fn finish(self) -> Result<Self::Output, Self::Error> { /* … */ }
+//!     fn finish_boxed(self: Box<Self>) -> Result<Self::Output, Self::Error> {
+//!         (*self).finish()
+//!     }
+//! }
+//! ```
 
 pub mod backends;
 pub mod caps;
