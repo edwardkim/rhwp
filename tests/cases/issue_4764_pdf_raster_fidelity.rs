@@ -468,7 +468,7 @@ fn issue_4764_pdf_page_manifest_builds() {
         }
         let c: Vec<&str> = line.split('\t').collect();
         let page_index: u16 = c[1].parse().unwrap();
-        if page_index % 23 != 0 {
+        if !page_index.is_multiple_of(23) {
             continue;
         }
         let width: u32 = c[2].parse().unwrap();

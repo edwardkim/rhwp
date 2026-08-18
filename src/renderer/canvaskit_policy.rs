@@ -3165,7 +3165,8 @@ mod tests {
             );
         }
 
-        for text in ["\u{1112}\u{119e}\u{11ab}"] {
+        {
+            let text = "\u{1112}\u{119e}\u{11ab}";
             let mut effected = text_run(text);
             effected.style.shadow_type = 1;
             let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), effected)]);

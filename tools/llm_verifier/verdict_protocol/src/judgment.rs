@@ -206,16 +206,20 @@ mod tests {
 
     #[test]
     fn fingerprint_distinguishes_verify_block() {
-        let mut a = JudgmentFields::default();
-        a.verify = Some(VerifyBlock {
-            identical: Some(true),
-            diff_count: Some(0),
-        });
-        let mut b = JudgmentFields::default();
-        b.verify = Some(VerifyBlock {
-            identical: Some(false),
-            diff_count: Some(3),
-        });
+        let a = JudgmentFields {
+            verify: Some(VerifyBlock {
+                identical: Some(true),
+                diff_count: Some(0),
+            }),
+            ..Default::default()
+        };
+        let b = JudgmentFields {
+            verify: Some(VerifyBlock {
+                identical: Some(false),
+                diff_count: Some(3),
+            }),
+            ..Default::default()
+        };
         assert_ne!(a.fingerprint(), b.fingerprint());
     }
 }

@@ -706,7 +706,7 @@ fn exit_contract_transcript_covers_strict_and_batch() {
         let cols: Vec<&str> = line.split('\t').collect();
         assert_eq!(cols.len(), 3, "{line}");
         let exit: i32 = cols[1].parse().unwrap();
-        assert!(matches!(exit, 0 | 1 | 2 | 3), "exit 계약 밖: {line}");
+        assert!(matches!(exit, 0..=3), "exit 계약 밖: {line}");
         seen.insert(cols[0].to_string());
     }
     for want in [

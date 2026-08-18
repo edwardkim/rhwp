@@ -302,11 +302,13 @@ mod tests {
 
     #[test]
     fn verify_block_roundtrip_fields() {
-        let mut j = JudgmentFields::default();
-        j.verify = Some(VerifyBlock {
-            identical: Some(false),
-            diff_count: Some(1),
-        });
+        let j = JudgmentFields {
+            verify: Some(VerifyBlock {
+                identical: Some(false),
+                diff_count: Some(1),
+            }),
+            ..Default::default()
+        };
         assert!(j.has_any_fail_signal());
     }
 }

@@ -73,7 +73,7 @@ fn catalog_row_pagebackground() {
     assert_eq!(spec.kind, "pageBackground");
     assert_eq!(spec.plane_name(), "background");
     assert_eq!(spec.feature_name(), "none");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -83,7 +83,7 @@ fn catalog_row_textrun() {
     assert_eq!(spec.kind, "textRun");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "vectorText");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -93,7 +93,7 @@ fn catalog_row_glyphrun() {
     assert_eq!(spec.kind, "glyphRun");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "vectorText");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -103,7 +103,7 @@ fn catalog_row_glyphoutline() {
     assert_eq!(spec.kind, "glyphOutline");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "vectorText");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -113,7 +113,7 @@ fn catalog_row_charoverlap() {
     assert_eq!(spec.kind, "charOverlap");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "vectorText");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -123,7 +123,7 @@ fn catalog_row_textcontrolmark() {
     assert_eq!(spec.kind, "textControlMark");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "none");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -133,7 +133,7 @@ fn catalog_row_tableader() {
     assert_eq!(spec.kind, "tabLeader");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "none");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -143,7 +143,7 @@ fn catalog_row_textdecoration() {
     assert_eq!(spec.kind, "textDecoration");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "vectorText");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -153,7 +153,7 @@ fn catalog_row_footnotemarker() {
     assert_eq!(spec.kind, "footnoteMarker");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "vectorText");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -163,7 +163,7 @@ fn catalog_row_line() {
     assert_eq!(spec.kind, "line");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "none");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -173,7 +173,7 @@ fn catalog_row_rectangle() {
     assert_eq!(spec.kind, "rectangle");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "none");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -183,7 +183,7 @@ fn catalog_row_ellipse() {
     assert_eq!(spec.kind, "ellipse");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "none");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -193,7 +193,7 @@ fn catalog_row_path() {
     assert_eq!(spec.kind, "path");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "none");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -203,7 +203,7 @@ fn catalog_row_image() {
     assert_eq!(spec.kind, "image");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "images");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -213,7 +213,7 @@ fn catalog_row_equation() {
     assert_eq!(spec.kind, "equation");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "none");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -223,7 +223,7 @@ fn catalog_row_formobject() {
     assert_eq!(spec.kind, "formObject");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "none");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -233,7 +233,7 @@ fn catalog_row_placeholder() {
     assert_eq!(spec.kind, "placeholder");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "none");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
 
@@ -243,6 +243,6 @@ fn catalog_row_rawsvg() {
     assert_eq!(spec.kind, "rawSvg");
     assert_eq!(spec.plane_name(), "flow");
     assert_eq!(spec.feature_name(), "none");
-    assert_eq!(spec.survives_flatten, true);
+    assert!(spec.survives_flatten);
     assert!(spec.appears_in_trace);
 }
