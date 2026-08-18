@@ -442,7 +442,8 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         .iter()
         .any(|(path, _)| path == crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH);
     let _hwp5_origin_guard = section::Hwp5OriginSourceGuard::set(has_hwp5_origin);
-    // 원본 HWP3→HWPX 만 — 변환본 HWPX(hwp5-origin)는 8유닛 슬롯이 정본이다.
+    // 원본 HWP3→HWPX 만 — 변환본 HWPX(hwp5-origin)는 8유닛 슬롯과 기존 HWP5
+    // TAC 계약을 쓴다.
     let _hwp3_origin_guard =
         section::Hwp3OriginSourceGuard::set(has_hwp3_origin && !has_hwp5_origin);
     let mut sections = Vec::new();

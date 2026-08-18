@@ -515,11 +515,11 @@ fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
 pub(crate) fn uses_hwp3_origin_flow_spacing_before(document: &Document) -> bool {
     // HWP3→HWP5 변환본은 parser 가 ParaShape spacing 을 절반으로 정규화하므로
     // 본문 흐름에서만 원래 spacing_before 를 복원(*2)한다.
-    // 원본 HWP3 는 HWP3 parser 가 만든 값을 그대로 쓰고 여기서 재확대하지 않는다.
+    // 원본 HWP3 는 parser 가 만든 값을 그대로 쓰고 여기서 재확대하지 않는다.
     // 그 HWPX export 도 IR 이 같은 스케일이다. 마커만으로 hwp3_layout 을 켜면
-    // *2 가 한 번 더 들어가 spacing_before 가 2배가 되고 쪽이 +1 된다
-    // (#3518 hwp3-sample16: 64→65). HWP5 변환본의 HWPX 는 hwp5-origin 마커가
-    // 있어 절반 정규화가 있었던 경우만 *2 를 유지한다.
+    // *2 가 한 번 더 들어가 sample16은 64→65, sample11은 151→152로 갈라진다
+    // (#3518, #3737). HWP5 변환본의 HWPX는 hwp5-origin 마커가 있어 절반
+    // 정규화가 있었던 경우만 *2를 유지한다.
     let profile = document.layout_profile();
     profile.hwp3_layout()
         && !profile.hwp3_native_layout()

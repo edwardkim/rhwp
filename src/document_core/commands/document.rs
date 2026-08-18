@@ -129,7 +129,7 @@ impl DocumentCore {
         // line_height/line_spacing 을 계산해야 줄바꿈·높이가 정상 동작한다.
         // HWP5/HWP3 의 빈 line_segs 는 종전대로 reflow 하지 않는다 (페이지 수 보존).
         // 원본 HWP3→HWPX 도 같은 계약이다 — XML 이라 해서 빈 줄을 합성하면
-        // sample16 이 64→65 로 갈라진다 (#3518).
+        // sample16 이 64→65, sample11 이 151→152로 갈라진다 (#3518, #3737).
         let include_empty =
             use_xml_import_semantics && !document.layout_profile().hwp3_native_layout();
         // [#2195] HWP5 native 확장은 **셀 내부의 컨트롤 없는 순수 빈 문단** 한정
