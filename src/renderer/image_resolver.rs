@@ -369,7 +369,7 @@ fn oversized_bmp_to_downscaled_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
 ///
 /// 변환 사슬은 `resolve_image_payload`·`emitted_image_bytes`·`svg.rs`·`html.rs`·`web_canvas.rs`
 /// 다섯 곳에서 쓴다. 갈래 선택을 여기 한 곳에 두지 않으면 백엔드마다 다른 그림이 나온다.
-pub(crate) fn eps_renderable_bytes(data: &[u8]) -> Option<(&'static str, Vec<u8>)> {
+pub fn eps_renderable_bytes(data: &[u8]) -> Option<(&'static str, Vec<u8>)> {
     if let Some(preview) = dos_eps_preview_bytes(data) {
         return Some(preview);
     }
@@ -966,7 +966,7 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
 /// 실패하는 개별 파손 바이트까지 잡으려면 여기서 변환을 한 번 더 돌려야 하는데, 그 비용은
 /// 매 페이지 조판마다 붙는다. 지금 동작(변환 실패 시 원본 그대로 → 빈 공간)은 그대로 두고
 /// 판정만 넓히지 않는다.
-pub(crate) fn is_displayable_image_data(data: &[u8]) -> bool {
+pub fn is_displayable_image_data(data: &[u8]) -> bool {
     match detect_image_mime_type(data) {
         "image/png" | "image/jpeg" | "image/gif" | "image/webp" | "image/bmp" | "image/svg+xml"
         | "image/tiff" | "image/x-pcx" | "image/x-wmf" | "image/x-emf" => true,
@@ -1839,44 +1839,6 @@ mod emitted_bytes_key_agreement_tests {
         );
 
         assert_paths_agree("손상 BMP", &image);
-    }
-
-    /// 프리뷰 없는 텍스트 EPS 도 아트워크를 읽어 SVG 로 내보낸다 (#4062).
-    ///
-    /// 이 판정이 `is_displayable_image_data` 와 갈라지면 "그릴 수 있다"고 본 그림에
-    /// 그림-없음 표시(#5513)가 덧그려지거나 그 반대가 된다.
-    #[test]
-    fn issue_4062_text_eps_artwork_is_emitted_as_svg() {
-        let eps = b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 100 50\n%%EndSetup\n\
-                    0 0 0 1 k\n10 10 m\n90 10 L\n90 40 L\n10 40 L\nf\n%%Trailer\n"
-            .to_vec();
-
-        assert_eq!(
-            super::detect_image_mime_type(&eps),
-            "application/postscript"
-        );
-        let (mime, bytes) = emitted_image_bytes(&eps, false);
-        assert_eq!(mime, "image/svg+xml", "아트워크를 SVG 로 옮긴다");
-        assert!(bytes.starts_with(b"<svg"), "SVG 문서가 나온다");
-        assert!(
-            super::is_displayable_image_data(&eps),
-            "그릴 수 있다고 본다"
-        );
-    }
-
-    /// 그릴 것이 없는 PostScript 는 여전히 "그릴 수 없는 바이트"다 (#5513 표시 유지).
-    #[test]
-    fn issue_4062_postscript_without_artwork_stays_undecodable() {
-        let text_only = b"%!PS-Adobe-3.0\n%%BoundingBox: 0 0 10 10\n%%EndSetup\n%%Trailer\n";
-
-        assert_eq!(
-            super::detect_image_mime_type(text_only),
-            "application/postscript"
-        );
-        let (mime, bytes) = emitted_image_bytes(text_only, false);
-        assert_eq!(mime, "application/postscript", "변환 실패면 원본 mime");
-        assert_eq!(bytes.as_ref(), &text_only[..], "원본 바이트를 그대로 둔다");
-        assert!(!super::is_displayable_image_data(text_only));
     }
 
     /// 신원 키를 낼 수 없는 그림은 키 조회로 되찾을 수 없다 — 그래서 생략 대상이 아니다.
