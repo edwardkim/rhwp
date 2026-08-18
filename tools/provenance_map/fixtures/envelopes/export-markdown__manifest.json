@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "export-markdown__manifest",
+  "command": "export-markdown",
+  "family": "export",
+  "mode": "manifest",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp export-markdown <파일> --json ",
+  "whyThisMode": "본문은 MD 파일 쪽",
+  "sampleKind": "typical",
+  "risk": "low",
+  "note": "매니페스트는 쪽별 산출 경로·바이트뿐이다 — 본문은 MD 파일 쪽에 있다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "source": "C",
+    "pages": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "매니페스트만.",
+  "trap": "MD 파일을 cat 해서 프롬프트에 붙이지 않는다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [
+    "tool_arg_path",
+    "tool_arg_output",
+    "filename_from_title"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "<repo>/samples/fixture-export-markdown.hwp",
+    "pages": [
+      {
+        "bytes": "engine:export-markdown:pages[].bytes"
+      }
+    ],
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

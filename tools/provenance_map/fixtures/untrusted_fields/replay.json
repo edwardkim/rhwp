@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "replay",
+  "mapIndex": 26,
+  "family": "receipt",
+  "familyTitle": "영수증·감사",
+  "opensDocument": false,
+  "cli": "rhwp replay --plan-json <계획> --json",
+  "risk": "none",
+  "whyRisk": "문서 문자열이 나갈 자리가 없다.",
+  "note": "영수증 봉투는 해시(inputSha256·planSha256·outputSha256)·모드·step 수·도구 버전·재현 판정뿐이다 — run 과 달리 저널을 싣지 않아 문서 문자열이 나갈 자리가 없다. input 경로와 expectedOutputSha256 은 계획서(호출자)가 준 값의 에코다.",
+  "consumerRule": "영수증은 엔진 데이터. 재실행 내부의 문서 문자열은 이 봉투에 없다.",
+  "trap": "이 자리를 고치지 않는다. replay 석의 파일은 다른 진행 석.",
+  "untrusted": [],
+  "origins": {},
+  "engineFields": [
+    [
+      "inputSha256",
+      "입력 해시"
+    ],
+    [
+      "planSha256",
+      "계획 해시"
+    ],
+    [
+      "outputSha256",
+      "산출 해시"
+    ],
+    [
+      "reproduced",
+      "재현 판정"
+    ]
+  ],
+  "callerFields": [
+    [
+      "input",
+      "계획서 경로 에코"
+    ],
+    [
+      "expectedOutputSha256",
+      "호출자 기대 해시"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "receipt",
+      "flags": [
+        "--json"
+      ],
+      "present": [],
+      "why": "해시·판정만. 저널 없음",
+      "sampleKind": "typical",
+      "untrustedContent": false
+    }
+  ],
+  "fields": [],
+  "forbiddenSlots": [
+    "permission_judgment",
+    "policy_exception"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

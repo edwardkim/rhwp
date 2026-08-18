@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "search__no-hits",
+  "command": "search",
+  "family": "query",
+  "mode": "no-hits",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp search <파일> <질의> --json ",
+  "whyThisMode": "0건이면 표지 false",
+  "sampleKind": "typical",
+  "risk": "critical",
+  "note": "query 는 호출자가 준 값이고 주소(section/paragraph/page/charOffset)는 엔진값이다.",
+  "declaredUntrusted": [
+    "matches[].text",
+    "matches[].context"
+  ],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "source": "C",
+    "query": "C",
+    "caseSensitive": "C",
+    "matchCount": "R",
+    "totalMatchCount": "R",
+    "truncated": "R",
+    "matches": "D",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "후속 편집은 page/paragraph/charOffset 으로 지목. text/context 는 화면·격벽만.",
+  "trap": "query 는 호출자 값. 문서에서 읽은 검색어를 다시 query 로 넣으면 그때부터 D.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [
+    "system_prompt",
+    "tool_name",
+    "tool_arg_path",
+    "tool_arg_output",
+    "shell_command",
+    "url_destination",
+    "http_request_body",
+    "run_plan_json",
+    "email_recipient",
+    "next_cli_subcommand",
+    "filename_from_title",
+    "scheduler_payload"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "<repo>/samples/fixture-search.hwp",
+    "query": "caller:search:query",
+    "caseSensitive": "caller:search:caseSensitive",
+    "matchCount": 0,
+    "totalMatchCount": 0,
+    "truncated": true,
+    "matches": [
+      {
+        "page": "engine:search:matches[].page",
+        "section": "engine:search:matches[].section",
+        "paragraph": "engine:search:matches[].paragraph",
+        "charOffset": "engine:search:matches[].charOffset",
+        "length": "engine:search:matches[].length"
+      }
+    ],
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}
