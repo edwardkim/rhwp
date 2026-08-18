@@ -456,6 +456,7 @@ fn walk(
     path: String,
     column: Option<u16>,
     suppress: bool,
+    off_canvas_suppress: bool,
     boundary: &BoundingBox,
     page: &BoundingBox,
     opts: &AnomalyOptions,
@@ -504,10 +505,14 @@ fn walk(
     }
 
     let mut next_suppress = suppress;
-    if !suppress && is_checkable(&node.node_type) {
+    let mut next_off_canvas_suppress = off_canvas_suppress;
+    if is_checkable(&node.node_type) {
         let label = node_type_label(&node.node_type);
-        check_off_canvas(&node.bbox, &path, label, page, opts, off_canvas_out);
-        if type_allowed(label, opts) {
+        if !off_canvas_suppress {
+            check_off_canvas(&node.bbox, &path, label, page, opts, off_canvas_out);
+            next_off_canvas_suppress = true;
+        }
+        if !suppress && type_allowed(label, opts) {
             check_overflow(&node.bbox, &path, label, boundary, opts, overflow_out);
             if is_overlap_candidate(node) {
                 flow_out.push(FlowCandidate {
@@ -530,6 +535,7 @@ fn walk(
             child_path,
             column,
             next_suppress,
+            next_off_canvas_suppress,
             boundary,
             page,
             opts,
@@ -591,6 +597,7 @@ pub fn scan_page(
             body,
             "Page/Body".to_string(),
             None,
+            false,
             false,
             &boundary,
             &page_boundary,
