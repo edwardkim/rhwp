@@ -332,7 +332,8 @@ impl Document {
     /// `hwpx_stored_layout` = (HWPX 컨테이너 && rhwp HWP5→HWPX 산출물 마커
     /// 없음) || rhwp HWPX→HWP 변환본. HWP5→HWPX 마커는 세션 중 부착될 수
     /// 있어 저장 값이 아닌 현재 문서 상태에서 파생한다. `native_hwp5_layout`은
-    /// HWP5 컨테이너이면서 HWP3/HWPX 변환 계보가 없는 경우에만 true다.
+    /// 변환 계보가 없는 원본 HWP5 컨테이너에만 true다. HWP5-origin HWPX는
+    /// `hwp5_stored_pagination_layout`으로 별도 호환 계약을 적용한다.
     pub fn layout_profile(&self) -> crate::model::provenance::LayoutCompatibilityProfile {
         use crate::model::provenance::SourceFormat;
         let hwp5_origin_hwpx = self.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some();

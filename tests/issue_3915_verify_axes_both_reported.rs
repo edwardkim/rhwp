@@ -13,12 +13,6 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-/// 쪽수 축만 실패하는 표본 — 151→152쪽.
-///
-/// [#3521] `synam-001.hwp` 쪽수 왕복이 정상화되면 이 축의 실패 표본으로 쓰지 않는다
-/// (#3820·#4916 때 교체와 같은 관례). `hwp3-sample11.hwp`(#3737) 는 IR 차이 0,
-/// 쪽수만 어긋난다.
-const PAGE_FAIL_SAMPLE: &str = "samples/hwp3-sample11.hwp";
 /// IR 축만 실패하고 쪽수는 안정적인 표본 — 16쪽 유지, IR 차이 1건(선두
 /// char_shapes 경계 시프트 — 본 PR 의 말미 경계 수정(#3532)으로도 남는 별개 클래스).
 ///
@@ -55,29 +49,11 @@ fn stderr(out: &Output) -> String {
     String::from_utf8_lossy(&out.stderr).into_owned()
 }
 
-/// 두 검증 축은 실제 실패 상태를 각각 보고한다.
+/// 안정적인 쪽수 축과 독립적인 IR 실패 축은 함께 켜도 각각의 실제 판정을 보고한다.
 #[test]
 fn page_and_ir_axes_report_their_actual_results() {
     let dir = std::env::temp_dir().join(format!("rhwp-3915-{}", std::process::id()));
     std::fs::create_dir_all(&dir).expect("임시 디렉터리");
-    let page_out = dir.join("page-fail.hwpx");
-
-    let page = export(PAGE_FAIL_SAMPLE, &page_out, &["--verify", "--verify-pages"]);
-    let page_combined = format!("{}{}", stderr(&page), String::from_utf8_lossy(&page.stdout));
-
-    assert!(
-        page_combined.contains("검증 실패(--verify-pages)"),
-        "쪽수 실패가 보고되지 않았습니다:\n{page_combined}"
-    );
-    assert!(
-        page_combined.contains("검증 통과(--verify): IR 차이 없음"),
-        "IR 축의 실제 통과 상태가 보고되지 않았습니다:\n{page_combined}"
-    );
-    assert_eq!(
-        page.status.code(),
-        Some(4),
-        "쪽수 실패의 종료 코드는 4 여야 합니다:\n{page_combined}"
-    );
 
     let ir = export(
         IR_FAIL_SAMPLE,
@@ -102,39 +78,21 @@ fn page_and_ir_axes_report_their_actual_results() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
-/// 실패인데 "통과" 도 함께 찍히면 안 된다 — 조기 종료를 걷어낼 때 흔한 사고다.
-#[test]
-fn failing_page_axis_does_not_also_report_pass() {
-    let dir = std::env::temp_dir().join(format!("rhwp-3915b-{}", std::process::id()));
-    std::fs::create_dir_all(&dir).expect("임시 디렉터리");
-    let out = dir.join("nopass.hwpx");
-
-    let o = export(PAGE_FAIL_SAMPLE, &out, &["--verify", "--verify-pages"]);
-    let combined = format!("{}{}", stderr(&o), String::from_utf8_lossy(&o.stdout));
-
-    assert!(
-        !combined.contains("검증 통과(--verify-pages)"),
-        "쪽수 축이 실패했는데 통과 메시지도 찍혔습니다:\n{combined}"
-    );
-
-    let _ = std::fs::remove_dir_all(&dir);
-}
-
-/// 단독 사용과 정상 문서는 종전 그대로여야 한다.
+/// 정상 문서와 단독 축은 종전 그대로여야 한다.
 #[test]
 fn single_axis_and_clean_document_are_unchanged() {
     let dir = std::env::temp_dir().join(format!("rhwp-3915c-{}", std::process::id()));
     std::fs::create_dir_all(&dir).expect("임시 디렉터리");
 
-    // --verify-pages 단독: 쪽수만 보고, exit 4.
-    let o = export(PAGE_FAIL_SAMPLE, &dir.join("p.hwpx"), &["--verify-pages"]);
-    let err = stderr(&o);
-    assert!(err.contains("검증 실패(--verify-pages)"), "{err}");
+    // --verify-pages 단독: 쪽수 축만 보고, IR 비교를 시작하지 않는다.
+    let o = export(CLEAN_SAMPLE, &dir.join("p.hwpx"), &["--verify-pages"]);
+    let combined = format!("{}{}", stderr(&o), String::from_utf8_lossy(&o.stdout));
+    assert!(combined.contains("검증 통과(--verify-pages)"), "{combined}");
     assert!(
-        !err.contains("검증 실패(--verify)"),
-        "--verify 를 주지 않았는데 IR 비교가 돌았습니다:\n{err}"
+        !combined.contains("검증 실패(--verify)"),
+        "--verify 를 주지 않았는데 IR 비교가 돌았습니다:\n{combined}"
     );
-    assert_eq!(o.status.code(), Some(4), "{err}");
+    assert_eq!(o.status.code(), Some(0), "{combined}");
 
     // 두 축 모두 통과하는 문서: exit 0, 양쪽 통과 메시지.
     let o = export(

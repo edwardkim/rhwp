@@ -231,6 +231,12 @@ pub struct ShapeComponentAttr {
     pub original_width: u32,
     /// 초기 높이
     pub original_height: u32,
+    /// [#4669] HWPX 원본이 `orgSz width="0"`을 기록했고 HWP 저장 계약을 위해
+    /// 유효한 extent로 materialize한 경우 true.
+    pub original_width_was_zero: bool,
+    /// [#4669] HWPX 원본이 `orgSz height="0"`을 기록했고 HWP 저장 계약을 위해
+    /// 유효한 extent로 materialize한 경우 true.
+    pub original_height_was_zero: bool,
     /// 현재 폭
     pub current_width: u32,
     /// 현재 높이
@@ -281,6 +287,8 @@ impl Default for ShapeComponentAttr {
             local_file_version: 0,
             original_width: 0,
             original_height: 0,
+            original_width_was_zero: false,
+            original_height_was_zero: false,
             current_width: 0,
             current_height: 0,
             current_width_was_zero: false,

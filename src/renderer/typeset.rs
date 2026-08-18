@@ -2772,7 +2772,7 @@ fn native_hwp5_text_reset_before_large_tac_topbottom_picture_break_line(
     dpi: f64,
 ) -> Option<usize> {
     // [#5128] HWP5-origin HWPX 도 원본 HWP5 와 같은 저장 pagination 을 쓴다.
-    // native_hwp5_layout() 만 보면 스펙 문서 문단 84 앞 TAC 그림 분할이
+    // hwp5_stored_pagination_layout() 만 보면 스펙 문서 문단 84 앞 TAC 그림 분할이
     // 빠져 69→68 이 된다.
     if !st.profile.hwp5_stored_pagination_layout()
         || st.col_count != 1
@@ -5880,7 +5880,7 @@ impl TypesetEngine {
             .caption
             .as_ref()
             .is_some_and(|caption| matches!(caption.direction, CaptionDirection::Bottom));
-        if !st.profile.native_hwp5_layout()
+        if !st.profile.hwp5_stored_pagination_layout()
             || st.col_count != 1
             || st.current_items.is_empty()
             || st.current_footnote_height <= 0.0
@@ -6549,7 +6549,8 @@ impl TypesetEngine {
                 continue;
             }
 
-            let is_native_hwp5_figure_table_overlay_guide_empty = profile.native_hwp5_layout()
+            let is_native_hwp5_figure_table_overlay_guide_empty = profile
+                .hwp5_stored_pagination_layout()
                 && native_hwp5_figure_table_overlay_guide_empty(para_idx, para, paragraphs);
             if is_native_hwp5_figure_table_overlay_guide_empty {
                 // `그림 67` 같은 2×1 그림 표는 선언한 표 높이로 이미 flow를 예약한다.
@@ -6680,7 +6681,7 @@ impl TypesetEngine {
             // HWP5-origin 문서는 section PageHide를 연 빈 marker와, 같은 쪽 장식 host의
             // Page break를 함께 기록할 수 있다. marker의 break는 적용하되 marker
             // 자체를 배치하지 않아 host가 그 새 쪽을 바로 소유하도록 한다.
-            if (profile.native_hwp5_layout() || profile.hwpx_stored_layout())
+            if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
                 && hwp5_origin_redundant_pagehide_break_marker(
                     para_idx,
                     para,
@@ -16477,7 +16478,7 @@ impl TypesetEngine {
                     // control과 reset 뒤의 줄은 종전 보수 budget을 유지한다.
                     let native_hwp5_reset_tail_fits_actual_footnote_boundary = st
                         .profile
-                        .native_hwp5_layout()
+                        .hwp5_stored_pagination_layout()
                         && st.col_count == 1
                         && st.current_footnote_height > 0.0
                         && para.controls.is_empty()
@@ -16957,7 +16958,7 @@ impl TypesetEngine {
                         let fragment_split = self
                             .profile
                             .get()
-                            .native_hwp5_layout()
+                            .hwp5_stored_pagination_layout()
                             .then(|| native_hwp5_footnote_reset_fragments(fn_ctrl, self.dpi))
                             .flatten();
                         table_footnotes.push(TableCellFootnote {
@@ -18178,7 +18179,8 @@ impl TypesetEngine {
         // fragment가 흔들린다(#1891). 그림 구조는 두 원본에서 같은 저장 계약을
         // 따르지만, 선언 높이 신뢰 특례는 native HWP5에서만 허용한다.
         let is_stored_anchor_table = is_stored_anchor_picture_table(table)
-            || (st.profile.native_hwp5_layout() && single_rowbreak_declared_height_is_trustworthy);
+            || (st.profile.hwp5_stored_pagination_layout()
+                && single_rowbreak_declared_height_is_trustworthy);
         let stored_single_topbottom_top = (is_topbottom_para_float
             && topbottom_float_count == 1
             && is_stored_anchor_table
@@ -18652,7 +18654,7 @@ impl TypesetEngine {
                 matches!(control, Control::Table(previous)
                     if is_para_topbottom_float(&previous.common))
             });
-        let issue2439_visible_host_stack = st.profile.native_hwp5_layout()
+        let issue2439_visible_host_stack = st.profile.hwp5_stored_pagination_layout()
             && st.col_count == 1
             && st.current_zone_y_offset.abs() < 0.5
             && is_visible_para_float
@@ -19861,7 +19863,7 @@ impl TypesetEngine {
                 // Direct HWPX의 local reset은 physical frame이 아니다. 선언 cell 안에
                 // source frame이 완결될 때만 short-row bleed를 막아 source owner를
                 // 보존한다.
-                && !(((st.profile.native_hwp5_layout() || st.profile.hwp5_origin_hwpx())
+                && !(((st.profile.hwp5_stored_pagination_layout() || st.profile.hwp5_origin_hwpx())
                     && rowbreak_row_has_internal_saved_vpos_reset(table, r))
                     || (st.profile.hwpx_stored_layout()
                         && !st.profile.hwp5_origin_hwpx()
@@ -19955,7 +19957,7 @@ impl TypesetEngine {
                 mt.max_padding_for_row(r)
             };
             let mut budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
-            let native_hwp5_internal_reset_row_tail = st.profile.native_hwp5_layout()
+            let native_hwp5_internal_reset_row_tail = st.profile.hwp5_stored_pagination_layout()
                 && !table.common.treat_as_char
                 && mt.allows_row_break_split()
                 && r > cursor_row
@@ -19976,23 +19978,24 @@ impl TypesetEngine {
             // may contain other `vpos=0` transitions for control-only
             // paragraphs; those are local layout coordinates and keep the
             // existing source-frame tail contract.
-            let ordinary_cut_ends_at_plain_text_saved_reset = st.profile.native_hwp5_layout()
-                && !table.common.treat_as_char
-                && terminal_response_before_empty_spacer
-                && layout_engine.row_cut_ends_at_plain_text_saved_reset(
-                    table,
-                    r,
-                    row_start_cut,
-                    &res.end_cut,
-                    styles,
-                );
+            let ordinary_cut_ends_at_plain_text_saved_reset =
+                st.profile.hwp5_stored_pagination_layout()
+                    && !table.common.treat_as_char
+                    && terminal_response_before_empty_spacer
+                    && layout_engine.row_cut_ends_at_plain_text_saved_reset(
+                        table,
+                        r,
+                        row_start_cut,
+                        &res.end_cut,
+                        styles,
+                    );
             let source_frame_tail_contract = (terminal_response_before_empty_spacer
                 && !ordinary_cut_ends_at_plain_text_saved_reset)
                 || terminal_source_frame
                 || continued_source_frame
                 || opening_source_frame;
             let mut uses_source_frame_tail = false;
-            if (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout())
+            if (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
                 && !table.common.treat_as_char
                 && source_frame_tail_contract
             {
@@ -20201,7 +20204,7 @@ impl TypesetEngine {
                 // 일반 native continuation에 strict cut을 넓히면 원본 giant-cell이
                 // 한컴 115쪽보다 1쪽 더 생긴다. 저장 뒤에도 남는 1열→2열 split
                 // topology에만 실제 paint tail 재-cut을 허용한다 (#4138).
-                let native_split_continuation_row_tail = st.profile.native_hwp5_layout()
+                let native_split_continuation_row_tail = st.profile.hwp5_stored_pagination_layout()
                     && mt.allows_row_break_split()
                     && r == cursor_row
                     && is_continuation
@@ -20486,16 +20489,17 @@ impl TypesetEngine {
         // p77에는 row 전체가 재배치되어 그림 51이 별도 page로 밀린다. native HWP5의
         // 비-TAC TopAndBottom RowBreak 표, 기존 각주, 표 자체 각주 없음, 실제 cell
         // reset이라는 네 축이 모두 있을 때만 실제 FootnoteArea 직전까지의 공간을 쓴다.
-        let internal_reset_tail_uses_actual_footnote_boundary = st.profile.native_hwp5_layout()
-            && !table.common.treat_as_char
-            && is_para_topbottom_float(&table.common)
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            )
-            && ft.table_footnotes.is_empty()
-            && st.current_footnote_height > 0.0
-            && rowbreak_table_has_internal_saved_vpos_reset(table);
+        let internal_reset_tail_uses_actual_footnote_boundary =
+            st.profile.hwp5_stored_pagination_layout()
+                && !table.common.treat_as_char
+                && is_para_topbottom_float(&table.common)
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && ft.table_footnotes.is_empty()
+                && st.current_footnote_height > 0.0
+                && rowbreak_table_has_internal_saved_vpos_reset(table);
         let host_spacing_total = ft.host_spacing.before + ft.host_spacing.after_for_fit;
         let mut table_total = ft.effective_height + host_spacing_total;
         // [#3738 Stage 21] 단조 저장 vpos를 가진 긴 빈-host 1×1 RowBreak 표도,
@@ -20506,7 +20510,7 @@ impl TypesetEngine {
         // 증거가 있을 때만 margin을 풀어 통짜 배치를 허용한다. vpos reset 표의
         // 기존 특례와는 독립된 1×1 empty-host 형상으로 한정한다.
         let native_single_rowbreak_full_table_fits_actual_footnote_boundary =
-            st.profile.native_hwp5_layout()
+            st.profile.hwp5_stored_pagination_layout()
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
@@ -20532,7 +20536,7 @@ impl TypesetEngine {
         // scan에 실제 footnote boundary를 준다. scan은 그 경계를 넘어 행을 자르지
         // 않으므로 각주와의 물리 overlap을 허용하지 않는다.
         let native_ordinary_rowbreak_rewind_uses_actual_footnote_boundary =
-            st.profile.native_hwp5_layout()
+            st.profile.hwp5_stored_pagination_layout()
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
@@ -21100,7 +21104,7 @@ impl TypesetEngine {
             const NATIVE_HWP5_NEAR_ANCHOR_ROWBREAK_FRAGMENT_TOLERANCE_PX: f64 = 24.0;
             let has_rowspan = table.cells.iter().any(|cell| cell.row_span > 1);
             let native_hwp5_near_anchor_rowbreak_needs_fragment_scan =
-                st.profile.native_hwp5_layout()
+                st.profile.hwp5_stored_pagination_layout()
                     && !table.common.treat_as_char
                     && is_para_topbottom_float(&table.common)
                     && matches!(
@@ -21134,7 +21138,7 @@ impl TypesetEngine {
             // overrun으로 표 전체를 이월하지 않는다. 이 경우 RowBreak scanner가 저장
             // frame의 실제 행 prefix를 현재 page owner로 확정한다.
             let native_hwp5_anchor_line_rowbreak_needs_fragment_scan =
-                st.profile.native_hwp5_layout()
+                st.profile.hwp5_stored_pagination_layout()
                     && !table.common.treat_as_char
                     && is_para_topbottom_float(&table.common)
                     && matches!(
@@ -21181,29 +21185,30 @@ impl TypesetEngine {
             // 실제 footnote boundary 안에 있고, 현재 flow의 초과분이 해당 표의
             // `measured - declared` 팽창으로 설명될 때만 anchor를 복원한다. 이 경우에만
             // 첫 fragment scan은 reset 전 cell tail을 현 페이지에 남길 수 있다.
-            native_hwp5_internal_reset_rewind_needs_anchor_resync = st.profile.native_hwp5_layout()
-                && !table.common.treat_as_char
-                && is_para_topbottom_float(&table.common)
-                && matches!(
-                    table.page_break,
-                    crate::model::table::TablePageBreak::RowBreak
-                )
-                && !para_has_visible_text(para)
-                && table.row_count == 1
-                && table.col_count == 1
-                && table.cells.len() == 1
-                && ft.table_footnotes.is_empty()
-                && st.current_footnote_height > 0.0
-                && has_internal_saved_vpos_reset
-                && next_rewinds_after_table
-                && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
-                    let flow_overrun = st.current_height - top_px;
-                    let measured_excess = (table_total - declared_total).max(0.0);
-                    top_px <= st.current_height
-                        && top_px <= available
-                        && bottom_px <= available
-                        && flow_overrun <= measured_excess
-                });
+            native_hwp5_internal_reset_rewind_needs_anchor_resync =
+                st.profile.hwp5_stored_pagination_layout()
+                    && !table.common.treat_as_char
+                    && is_para_topbottom_float(&table.common)
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+                    && !para_has_visible_text(para)
+                    && table.row_count == 1
+                    && table.col_count == 1
+                    && table.cells.len() == 1
+                    && ft.table_footnotes.is_empty()
+                    && st.current_footnote_height > 0.0
+                    && has_internal_saved_vpos_reset
+                    && next_rewinds_after_table
+                    && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
+                        let flow_overrun = st.current_height - top_px;
+                        let measured_excess = (table_total - declared_total).max(0.0);
+                        top_px <= st.current_height
+                            && top_px <= available
+                            && bottom_px <= available
+                            && flow_overrun <= measured_excess
+                    });
             // [#3931 Stage 2] 다행 RowBreak 표도 cell 문단 경계의 저장 vpos reset과
             // 후속 source 문단의 되감김이 함께 있으면, 선언 common.height는 첫
             // physical fragment의 span이고 측정 table_total은 다음 쪽 tail까지 합친
@@ -21218,7 +21223,7 @@ impl TypesetEngine {
             // 저장 span이 현재 flow와 이미 맞거나 declared가 넘치지 않는 경우에는
             // 동작하지 않는다.
             native_hwp5_multirow_internal_reset_needs_anchor_resync =
-                st.profile.native_hwp5_layout()
+                st.profile.hwp5_stored_pagination_layout()
                     && !table.common.treat_as_char
                     && is_para_topbottom_float(&table.common)
                     && matches!(
@@ -21270,7 +21275,7 @@ impl TypesetEngine {
             // anchor가 없음을 확인한 경우에만 예약을 풀어 실제 첫 조각 경계를 정한다.
             // 따라서 이 분기는 그 안전한 재스캔 경로에 *진입*시키는 역할만 한다.
             let native_hwp5_own_footnote_fragment_can_start_before_reservation =
-                st.profile.native_hwp5_layout()
+                st.profile.hwp5_stored_pagination_layout()
                     && !table.common.treat_as_char
                     && is_para_topbottom_float(&table.common)
                     && matches!(
@@ -21325,7 +21330,7 @@ impl TypesetEngine {
             // 이 형상은 현재 쪽에서 cell-unit fragment scan을 시작해야 하며, 그렇지
             // 않으면 p4처럼 첫 fragment 전체가 불필요하게 다음 쪽으로 밀린다.
             let native_hwp5_large_single_cell_rowbreak_needs_fragment_scan =
-                st.profile.native_hwp5_layout()
+                st.profile.hwp5_stored_pagination_layout()
                     && !table.common.treat_as_char
                     && table.row_count == 1
                     && table.col_count == 1
@@ -21340,14 +21345,15 @@ impl TypesetEngine {
             // 빈 host의 native HWP5 RowBreak 표가 셀 안에 명시적 저장 frame
             // reset을 가지면, declared object bottom만으로 통째 이월할 수 없다.
             // row-cut scanner가 source-owned frame prefix를 확정해야 한다.
-            let native_hwp5_stored_rowbreak_needs_fragment_scan = st.profile.native_hwp5_layout()
-                && !table.common.treat_as_char
-                && matches!(
-                    table.page_break,
-                    crate::model::table::TablePageBreak::RowBreak
-                )
-                && !para_has_visible_text(para)
-                && rowbreak_table_has_internal_saved_vpos_reset(table);
+            let native_hwp5_stored_rowbreak_needs_fragment_scan =
+                st.profile.hwp5_stored_pagination_layout()
+                    && !table.common.treat_as_char
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+                    && !para_has_visible_text(para)
+                    && rowbreak_table_has_internal_saved_vpos_reset(table);
             if !st.current_items.is_empty()
                 && !ft.strict_following_plain_text_fit
                 && declared_overflows_current
@@ -21409,7 +21415,7 @@ impl TypesetEngine {
         // 문단 vpos rewind가 physical fragment 경계를 명시하고, rowspan/cell-footnote가
         // 없는 ordinary-row 형상에서만 measured row footprint를 권위로 삼는다.
         // 일반 HWPX, page-top 표, rowspan 및 실제 intra-row cut은 기존 경로를 유지한다.
-        let native_hwp5_rewinding_rowbreak_uses_painted_row_footprint = st.profile.native_hwp5_layout()
+        let native_hwp5_rewinding_rowbreak_uses_painted_row_footprint = st.profile.hwp5_stored_pagination_layout()
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
@@ -21445,7 +21451,7 @@ impl TypesetEngine {
             eprintln!(
                 "TABLE_PAINT_FOOTPRINT pi={} native={} rewind={} measured={:.1} effective={:.1} whole_fit={}",
                 para_idx,
-                st.profile.native_hwp5_layout(),
+                st.profile.hwp5_stored_pagination_layout(),
                 next_rewinds_after_table,
                 measured_row_table_height.unwrap_or(0.0),
                 ft.effective_height,
@@ -21740,7 +21746,7 @@ impl TypesetEngine {
         // 일반 중첩 표의 행 cursor가 달라져 59043 pagination이 39 -> 41쪽으로
         // 회귀한다. 따라서 physical continuation 계약이 있는 wrapper로만 좁힌다.
         let effective_row_geometry_table = row_geometry_table(table);
-        let hwp5_single_cell_rowbreak_wrapper = (st.profile.native_hwp5_layout()
+        let hwp5_single_cell_rowbreak_wrapper = (st.profile.hwp5_stored_pagination_layout()
             || st.profile.hwp5_origin_hwpx())
             && table.row_count == 1
             && table.col_count == 1
@@ -21974,7 +21980,7 @@ impl TypesetEngine {
         // 시작할 수 있는 본문 여백도 확인해, 빈 조각을 만드는 경우는 제외한다.
         let native_hwp5_oversized_single_row_fragment_queues_footnotes =
             !table.common.treat_as_char
-                && st.profile.native_hwp5_layout()
+                && st.profile.hwp5_stored_pagination_layout()
                 && is_para_topbottom_float(&table.common)
                 && matches!(
                     table.page_break,
@@ -21996,7 +22002,7 @@ impl TypesetEngine {
                 .is_some_and(|split| split.force_next_page)
         });
         let queue_table_footnotes = !table.common.treat_as_char
-            && st.profile.native_hwp5_layout()
+            && st.profile.hwp5_stored_pagination_layout()
             && matches!(
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
@@ -22145,22 +22151,23 @@ impl TypesetEngine {
                 st.current_items.len(),
             );
         }
-        let native_picture_caption_fits_actual_footnote_boundary = st.profile.native_hwp5_layout()
-            && !table.common.treat_as_char
-            && is_para_topbottom_float(&table.common)
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            )
-            && ft.table_footnotes.is_empty()
-            && st.current_footnote_height > 0.0
-            && is_two_row_picture_caption_rowbreak_table(table)
-            && st.current_height + table_total
-                <= st.base_available_height()
-                    - st.current_footnote_height
-                    - st.current_zone_y_offset
-                    - st.current_bottom_fixed_exclusion
-                    + 0.5;
+        let native_picture_caption_fits_actual_footnote_boundary =
+            st.profile.hwp5_stored_pagination_layout()
+                && !table.common.treat_as_char
+                && is_para_topbottom_float(&table.common)
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && ft.table_footnotes.is_empty()
+                && st.current_footnote_height > 0.0
+                && is_two_row_picture_caption_rowbreak_table(table)
+                && st.current_height + table_total
+                    <= st.base_available_height()
+                        - st.current_footnote_height
+                        - st.current_zone_y_offset
+                        - st.current_bottom_fixed_exclusion
+                        + 0.5;
         if remaining_on_page < split_unit_h && !st.current_items.is_empty() {
             let first_row_splittable = (first_block_is_single_row || !first_block_protected)
                 && can_intra_split
@@ -22176,37 +22183,37 @@ impl TypesetEngine {
             // 끌어올린다(정책연구용역 보고서 그림 23: PDF p24 → rhwp p23). 한 페이지에
             // 통째로 들어가는 native HWP 및 original HWPX 저장 그림 표에만 적용해,
             // 실제로 페이지보다 큰 1×1 표의 셀 내부 분할 계약은 보존한다.
-            let rewound_empty_figure_float_should_defer = (st.profile.native_hwp5_layout()
-                || st.profile.hwpx_stored_layout())
-                && !table.common.treat_as_char
-                && is_para_topbottom_float(&table.common)
-                && matches!(
-                    table.page_break,
-                    crate::model::table::TablePageBreak::RowBreak
-                )
-                && !para_has_visible_text(para)
-                && table.row_count == 1
-                && table.col_count == 1
-                && table.cells.len() == 1
-                && table.cells.iter().any(|cell| {
-                    cell.paragraphs.iter().any(|cell_para| {
-                        cell_para
-                            .controls
-                            .iter()
-                            .any(|control| matches!(control, Control::Picture(_)))
+            let rewound_empty_figure_float_should_defer =
+                (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                    && !table.common.treat_as_char
+                    && is_para_topbottom_float(&table.common)
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+                    && !para_has_visible_text(para)
+                    && table.row_count == 1
+                    && table.col_count == 1
+                    && table.cells.len() == 1
+                    && table.cells.iter().any(|cell| {
+                        cell.paragraphs.iter().any(|cell_para| {
+                            cell_para
+                                .controls
+                                .iter()
+                                .any(|control| matches!(control, Control::Picture(_)))
+                        })
                     })
-                })
-                && para
-                    .line_segs
-                    .iter()
-                    .find(|seg| !is_synthetic_line_seg(seg))
-                    .zip(paragraphs_all.get(para_idx + 1).and_then(|next| {
-                        next.line_segs
-                            .iter()
-                            .find(|seg| !is_synthetic_line_seg(seg))
-                    }))
-                    .is_some_and(|(current, next)| next.vertical_pos < current.vertical_pos)
-                && table_total <= (base_available - first_frag_overhead).max(0.0);
+                    && para
+                        .line_segs
+                        .iter()
+                        .find(|seg| !is_synthetic_line_seg(seg))
+                        .zip(paragraphs_all.get(para_idx + 1).and_then(|next| {
+                            next.line_segs
+                                .iter()
+                                .find(|seg| !is_synthetic_line_seg(seg))
+                        }))
+                        .is_some_and(|(current, next)| next.vertical_pos < current.vertical_pos)
+                    && table_total <= (base_available - first_frag_overhead).max(0.0);
             let first_row_force_splittable = !first_block_protected
                 && can_intra_split
                 && remaining_on_page > 0.0
@@ -22533,7 +22540,7 @@ impl TypesetEngine {
     ) {
         let split = st
             .profile
-            .native_hwp5_layout()
+            .hwp5_stored_pagination_layout()
             .then(|| native_hwp5_footnote_reset_fragments(footnote, self.dpi))
             .flatten()
             .filter(|split| split.force_next_page && st.col_count == 1);
@@ -22962,7 +22969,7 @@ impl TypesetEngine {
             // whole row를 수용할 수 없다. 그 마지막 행의 cell-unit partial cut은
             // footnote-aware row scanner가 소유한다.
             let mut source_first_fragment_overflow_allowance = saved_first_fragment_source_frame
-                .filter(|_| st.profile.native_hwp5_layout())
+                .filter(|_| st.profile.hwp5_stored_pagination_layout())
                 .filter(|_| st.current_footnote_height <= 0.0)
                 .map(|(_, flow_bottom_px)| {
                     saved_rowbreak_first_fragment_flow_overflow_allowance(

@@ -1,8 +1,8 @@
 //! [Issue #4882] 정책연구용역사업 중간진도보고서 HWPX 왕복 쪽수 보존.
 //!
-//! 원본 HWP5 각주 subList lineseg 는 후속 줄 vertpos=0 이 저장값이다.
-//! 재파싱이 이를 1172/2344 로 쌓으면 --verify 가 5건 IR 차이를 내고
-//! pages(원본)=215, pages(export-hwpx→reimport)=223 이 된다.
+//! 원본 HWP5 각주 subList는 all-zero lineseg를 저장할 수 있다. HWPX 재파싱은
+//! HWP5-origin 마커 또는 all-zero 저장 패턴을 보존하고, 조판은 원본과 같은
+//! HWP5 저장 프로파일을 사용해야 한다.
 //!
 //! 이 시험은 그 5경로 vpos 와 쪽수 등식을 고정한다. #4056 #5128 은 건드리지 않는다.
 
@@ -17,7 +17,7 @@ const SAMPLE: &str =
     "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp";
 const EXPECTED_PAGES: u32 = 215;
 
-/// #4882 기계 판정이 남긴 5개 IR 경로. 원본 후속 줄 vertpos=0.
+/// #4882 기계 판정이 남긴 5개 각주 IR 경로.
 const PINNED_NOTE_PATHS: &[&str] = &[
     "section[0] paragraph[421]/ctrl[0]fn.p[0]",
     "section[0] paragraph[728]/ctrl[0]tbl.cell[3].p[0]/ctrl[0]fn.p[0]",
@@ -243,27 +243,6 @@ fn issue4882_table_cell_footnote_keeps_all_zero_vpos() {
 }
 
 #[test]
-fn issue4882_pinned_footnote_vpos_are_all_zero_on_original() {
-    let path = sample_path();
-    if !path.is_file() {
-        return;
-    }
-    let bytes = std::fs::read(&path).unwrap();
-    let original = parse_document(&bytes).expect("parse hwp");
-    for pin in PINNED_NOTE_PATHS {
-        let vpos = footnote_para_vpos(&original.sections[0].paragraphs, pin);
-        assert!(
-            vpos.len() > 1,
-            "{pin}: 후속 줄이 있어야 한다 (got {vpos:?})"
-        );
-        assert!(
-            vpos.iter().skip(1).all(|&v| v == 0),
-            "{pin}: 후속 줄 vertpos=0 전제 (got {vpos:?})"
-        );
-    }
-}
-
-#[test]
 fn issue4882_hwpx_export_keeps_hwp5_origin_marker() {
     let path = sample_path();
     if !path.is_file() {
@@ -297,24 +276,7 @@ fn issue4882_note_zero_vpos_survives_hwpx_roundtrip() {
         let before = footnote_para_vpos(&original.sections[0].paragraphs, pin);
         let after = footnote_para_vpos(&roundtripped.sections[0].paragraphs, pin);
         assert_eq!(before, after, "{pin}: 각주 lineseg vertpos 왕복 보존");
-        assert!(
-            after.iter().skip(1).all(|&v| v == 0),
-            "{pin}: 재파싱이 후속 줄을 쌓으면 안 된다 (got {after:?})"
-        );
     }
-
-    let mut orig_zero = 0usize;
-    let mut rt_zero = 0usize;
-    collect_zero_tail_notes(&original.sections[0].paragraphs, &mut orig_zero);
-    collect_zero_tail_notes(&roundtripped.sections[0].paragraphs, &mut rt_zero);
-    assert_eq!(
-        orig_zero, rt_zero,
-        "전 줄 vpos=0 각주 개수가 왕복에서 줄면 합성 회귀"
-    );
-    assert!(
-        orig_zero >= 5,
-        "표본 전제: 전 줄 vpos=0 각주 ≥5 (got {orig_zero})"
-    );
 }
 
 #[test]

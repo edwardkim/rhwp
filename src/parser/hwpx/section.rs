@@ -2882,6 +2882,7 @@ fn parse_picture(
                                 b"width" => {
                                     let v = parse_u32(&attr);
                                     shape_attr.original_width = v;
+                                    shape_attr.original_width_was_zero = v == 0;
                                     if common.width == 0 {
                                         common.width = v;
                                     }
@@ -2889,6 +2890,7 @@ fn parse_picture(
                                 b"height" => {
                                     let v = parse_u32(&attr);
                                     shape_attr.original_height = v;
+                                    shape_attr.original_height_was_zero = v == 0;
                                     if common.height == 0 {
                                         common.height = v;
                                     }
@@ -3460,6 +3462,7 @@ fn parse_object_layout_child(
                     b"width" => {
                         let v = parse_u32(&attr);
                         shape_attr.current_width = v;
+                        shape_attr.current_width_was_zero = v == 0;
                         if v > 0 {
                             common.width = v;
                         }
@@ -3467,6 +3470,7 @@ fn parse_object_layout_child(
                     b"height" => {
                         let v = parse_u32(&attr);
                         shape_attr.current_height = v;
+                        shape_attr.current_height_was_zero = v == 0;
                         if v > 0 {
                             common.height = v;
                         }
@@ -3481,6 +3485,7 @@ fn parse_object_layout_child(
                     b"width" => {
                         let v = parse_u32(&attr);
                         shape_attr.original_width = v;
+                        shape_attr.original_width_was_zero = v == 0;
                         if common.width == 0 {
                             common.width = v;
                         }
@@ -3488,6 +3493,7 @@ fn parse_object_layout_child(
                     b"height" => {
                         let v = parse_u32(&attr);
                         shape_attr.original_height = v;
+                        shape_attr.original_height_was_zero = v == 0;
                         if common.height == 0 {
                             common.height = v;
                         }
@@ -5334,7 +5340,7 @@ fn parse_ctrl_footnote(
     }
     note.paragraphs = parse_sublist_paragraphs(reader, b"footNote")?;
     for paragraph in &mut note.paragraphs {
-        normalize_hwpx_note_line_vpos(paragraph);
+        normalize_hwpx_note_line_vpos(paragraph, true);
     }
     Ok(Control::Footnote(Box::new(note)))
 }
@@ -5390,7 +5396,7 @@ fn parse_ctrl_endnote(
     }
     note.paragraphs = parse_sublist_paragraphs(reader, b"endNote")?;
     for paragraph in &mut note.paragraphs {
-        normalize_hwpx_note_line_vpos(paragraph);
+        normalize_hwpx_note_line_vpos(paragraph, false);
     }
     Ok(Control::Endnote(Box::new(note)))
 }
@@ -5461,14 +5467,13 @@ fn is_hwp5_stored_note_zero_vpos(paragraph: &Paragraph) -> bool {
     paragraph.line_segs.len() > 1 && paragraph.line_segs.iter().all(|seg| seg.vertical_pos == 0)
 }
 
-fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph) {
-    // [#4916/#4660/#3531/#4882 계열] rhwp 자기 산출 HWPX(HWP5-origin 마커)는
-    // 보정하지 않는다 — HWP5 원본의 각주·미주 subList 저장 lineseg 는 후속 줄
-    // vpos=0 이 **정당한 저장값**이라(마커 계약: lineSeg 시멘틱은 HWP5 원본을
-    // 따른다, #1770), 여기서 합성하면 h2x 왕복 IR 이 원본 파싱과 어긋나고
-    // (--verify vertpos 차이) 쪽수 자기정합도 깨진다. 실물 한컴 HWPX 의
-    // "미주 내부 후속 줄 vpos=0 아티팩트" 보정(task 1692, SO-SUEOP)은 종전 유지.
-    if HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get()) {
+fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph, preserve_all_zero: bool) {
+    // [#4882] HWP5-origin HWPX는 note lineSeg 저장값 전체를 보존한다. marker가
+    // 없는 HWP5 footnote는 all-zero 저장 패턴만 보존하고, 일반 HWPX endnote의
+    // 후속 줄 0은 연속줄 아티팩트라 종전 정규화 계약을 적용한다 (#1692).
+    if HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get())
+        || (preserve_all_zero && is_hwp5_stored_note_zero_vpos(paragraph))
+    {
         return;
     }
     if paragraph.line_segs.len() <= 1 {

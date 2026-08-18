@@ -2938,7 +2938,8 @@ impl LayoutEngine {
         extend_completed_nested_table_border_clips(
             tree,
             &mut table_node,
-            self.profile.get().native_hwp5_layout() || self.profile.get().hwp5_origin_hwpx(),
+            self.profile.get().hwp5_stored_pagination_layout()
+                || self.profile.get().hwp5_origin_hwpx(),
             self.profile.get().hwpx_container(),
         );
 
@@ -4644,11 +4645,12 @@ impl LayoutEngine {
                                     cell, table, styles, su, eu, cp_idx, ctrl_idx,
                                 )
                             });
-                        let fragment_owned_square_flow = self.profile.get().native_hwp5_layout()
-                            && fragment_cut_units.is_some()
-                            && visible_non_inline_control
-                            && pic.common.flow_with_text
-                            && matches!(pic.common.text_wrap, TextWrap::Square);
+                        let fragment_owned_square_flow =
+                            self.profile.get().hwp5_stored_pagination_layout()
+                                && fragment_cut_units.is_some()
+                                && visible_non_inline_control
+                                && pic.common.flow_with_text
+                                && matches!(pic.common.text_wrap, TextWrap::Square);
                         if !pic.common.treat_as_char
                             && fragment_cut_units.is_some()
                             && !visible_non_inline_control
@@ -4855,9 +4857,9 @@ impl LayoutEngine {
                                 && matches!(pic.common.vert_rel_to, VertRelTo::Para);
                             let reset_relocated_stored_picture_offset =
                                 stored_layout_relocated_empty_rowbreak_picture_resets_offset(
-                                    self.profile.get().native_hwp5_layout()
+                                    self.profile.get().hwp5_stored_pagination_layout()
                                         || self.profile.get().hwpx_stored_layout(),
-                                    self.profile.get().native_hwp5_layout(),
+                                    self.profile.get().hwp5_stored_pagination_layout(),
                                     outer_host_stored_vpos_hu,
                                     table,
                                     cell,
@@ -5429,11 +5431,12 @@ impl LayoutEngine {
                         // 하단으로 미래 descendant를 clamp하면 42065 p17 제목이
                         // p16에 미리 들어온다. HWPX는 실제로 셀 밖으로 빠진 중첩 표만
                         // 막기 위해 아래의 좁은 누적-offset guard를 계속 적용한다.
-                        let hwp5_rowbreak_fragment = (self.profile.get().native_hwp5_layout()
-                            || self.profile.get().hwp5_origin_hwpx())
-                            && row_filter.is_some()
-                            && table.row_count == 1
-                            && table.col_count == 1;
+                        let hwp5_rowbreak_fragment =
+                            (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwp5_origin_hwpx())
+                                && row_filter.is_some()
+                                && table.row_count == 1
+                                && table.col_count == 1;
                         let nested_y = if single_row_continuation || hwp5_rowbreak_fragment {
                             nested_y
                         } else {
@@ -6562,7 +6565,7 @@ impl LayoutEngine {
     ) -> f64 {
         let measurer = super::super::height_measurer::HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(self.profile.get().hwp3_layout())
-            .with_native_hwp5(self.profile.get().native_hwp5_layout())
+            .with_native_hwp5(self.profile.get().hwp5_stored_pagination_layout())
             .with_render_normalization(self.render_normalization_overlay());
         measurer.cell_controls_height(&cell.paragraphs, styles, 0, 0.0)
     }
@@ -6603,7 +6606,7 @@ impl LayoutEngine {
         // 호스트 **뒤에** 저장 사다리가 이어지면(뒤 문단 저장 vpos 존재) 그
         // 사다리가 흐름-표 높이까지 이미 증명하므로 사다리 끝점으로 캡한다.
         // 호스트가 마지막 문단이면 기존 휴리스틱 유지(lh 미반영 문서의 원 목적).
-        let native_hwp5 = self.profile.get().native_hwp5_layout();
+        let native_hwp5 = self.profile.get().hwp5_stored_pagination_layout();
         let ladder_end: f64 = if native_hwp5
             && paragraphs
                 .iter()
@@ -7128,7 +7131,7 @@ impl LayoutEngine {
                 // HWP5-origin HWPX는 변환 과정에서 단일 로컬 reset을 남길 수
                 // 있으므로 #3637의 31쪽 계약처럼 기존 HWPX 원장을 유지한다.
                 // 이 예외는 원본 HWP5 바이너리의 저장 좌표 계약에만 적용한다.
-                && self.profile.get().native_hwp5_layout()
+                && self.profile.get().hwp5_stored_pagination_layout()
                 && nested_table_height > page_height + 0.5;
             // direct HWPX도 물리 한 쪽을 넘는 1×1 표에 저장 reset이 하나 있으면
             // canonical CellUnit의 높이/세분성이 필요하다(#3637: 1740.6px,
@@ -7145,8 +7148,8 @@ impl LayoutEngine {
             // 그렇지 않으면 #3637 pi=197의 마지막 RowBreak 조각이 한 조각 늘어
             // 후속 표 전체가 불필요한 32쪽으로 밀린다. HWP5-origin HWPX는 원본
             // HWP5의 pagination marker를 보존하므로 canonical 경로를 유지한다.
-            let canonical_stored_frame_profile =
-                self.profile.get().native_hwp5_layout() || self.profile.get().hwp5_origin_hwpx();
+            let canonical_stored_frame_profile = self.profile.get().hwp5_stored_pagination_layout()
+                || self.profile.get().hwp5_origin_hwpx();
             if let Ok(pattern) = std::env::var("RHWP_DIAG_MIXFRAG") {
                 if cell
                     .paragraphs
@@ -7935,7 +7938,7 @@ impl LayoutEngine {
                                       cur: &crate::model::paragraph::LineSeg|
          -> bool {
             let profile = self.profile.get();
-            if (!profile.native_hwp5_layout()
+            if (!profile.hwp5_stored_pagination_layout()
                 && !profile.hwp5_origin_hwpx()
                 && !direct_hwpx_stored_frame_cell)
                 || line_seg_is_synthetic(prev)
@@ -8003,7 +8006,7 @@ impl LayoutEngine {
         // 의도한 여백일 수 있으므로, 양쪽이 non-inline flow 문단인 2개 이상 run만 대상이다.
         // HWPX/CellBreak/TAC에는 stored-layout 의미가 달라 이 predicate를 적용하지 않는다.
         let native_hwp5_rowbreak_float_ladder =
-            self.profile.get().native_hwp5_layout() && is_block_rowbreak_table;
+            self.profile.get().hwp5_stored_pagination_layout() && is_block_rowbreak_table;
         let plain_empty_paragraph: Vec<bool> = cell
             .paragraphs
             .iter()
@@ -8175,7 +8178,7 @@ impl LayoutEngine {
             let is_empty_spacer_para = p.text.trim().is_empty() && p.controls.is_empty();
             let preserve_forward_stored_empty_spacer = {
                 let profile = self.profile.get();
-                (profile.native_hwp5_layout() || profile.hwp5_origin_hwpx())
+                (profile.hwp5_stored_pagination_layout() || profile.hwp5_origin_hwpx())
                     && is_empty_spacer_para
                     && matches!(p.line_segs.as_slice(), [seg] if !line_seg_is_synthetic(seg))
                     && match (p.line_segs.first(), cell.paragraphs.get(pi + 1)) {
@@ -9676,7 +9679,7 @@ impl LayoutEngine {
         end_cut: usize,
         styles: &ResolvedStyleSet,
     ) -> f64 {
-        if !self.profile.get().native_hwp5_layout()
+        if !self.profile.get().hwp5_stored_pagination_layout()
             || table.row_count <= 1
             || table.common.treat_as_char
             || !matches!(
@@ -10426,7 +10429,7 @@ impl LayoutEngine {
         let native_hwp5_single_cell_topbottom_cross_para_reset = self
             .profile
             .get()
-            .native_hwp5_layout()
+            .hwp5_stored_pagination_layout()
             && !table.common.treat_as_char
             && matches!(
                 table.page_break,
@@ -10463,12 +10466,13 @@ impl LayoutEngine {
         let allow_midpage_reset_absorb =
             self.profile.get().hwpx_stored_layout() || row_has_top_and_bottom_flow;
         let rewind_internal_hard_break_orphan = Self::row_has_prior_rowspan_cover(table, row);
-        let native_hwp5_atomic_non_inline_entry = self.profile.get().native_hwp5_layout()
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            )
-            && !table.common.treat_as_char;
+        let native_hwp5_atomic_non_inline_entry =
+            self.profile.get().hwp5_stored_pagination_layout()
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && !table.common.treat_as_char;
         for (i, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
@@ -10619,7 +10623,9 @@ impl LayoutEngine {
                     // 편집 뒤에는 reflow suffix가 같은 tag/metrics를 계승할 수 있어
                     // line segment만으로는 원본과 구별되지 않는다. 편집 관문이 남긴
                     // provenance가 있을 때는 일반 capacity cut으로 새 줄을 분할한다.
-                    if self.profile.get().native_hwp5_layout() && !table.text_reflowed_after_edit {
+                    if self.profile.get().hwp5_stored_pagination_layout()
+                        && !table.text_reflowed_after_edit
+                    {
                         if let Some((absorbed_h, absorbed_j)) =
                             Self::absorb_tail_before_stored_frame_break(&units, j, h, avail_height)
                         {
@@ -11991,7 +11997,7 @@ impl LayoutEngine {
         let terminal_table_before_host_successor = recursive_cut.is_none()
             && terminal
             && is_offset_continuation
-            && self.profile.get().native_hwp5_layout()
+            && self.profile.get().hwp5_stored_pagination_layout()
             && single_cell_nested_continuation
             && has_later_host_source_owner
             && cell
@@ -12068,7 +12074,10 @@ impl LayoutEngine {
             // physical tail. Otherwise the source remains in export-text but
             // SVG/Canvas clips it (42065 p17 section 4).
             flow_visible + first_visible_content_height * 2.0 + 4.0
-        } else if self.profile.get().native_hwp5_layout() && compensate_first_visible && !terminal {
+        } else if self.profile.get().hwp5_stored_pagination_layout()
+            && compensate_first_visible
+            && !terminal
+        {
             // `compensate_first_visible` advances the child content origin by
             // one unit because the preceding viewport already reserved it.
             // Native HWP5 must shorten the child paint viewport by the same
@@ -12077,7 +12086,7 @@ impl LayoutEngine {
             // parent flow height unchanged so pagination/sibling placement
             // continues to use the authoritative RowCut geometry.
             (flow_visible - first_visible_content_height).max(0.0)
-        } else if self.profile.get().native_hwp5_layout()
+        } else if self.profile.get().hwp5_stored_pagination_layout()
             && is_offset_continuation
             && first_visible_starts_after_table
             && !terminal
@@ -12485,7 +12494,7 @@ impl LayoutEngine {
                 .unwrap_or(0.0);
             let offset_within_start = (offset - first_visible_content_height).max(0.0);
             let terminal = end_unit >= units.len();
-            let authoritative_recursive_run = self.profile.get().native_hwp5_layout()
+            let authoritative_recursive_run = self.profile.get().hwp5_stored_pagination_layout()
                 && has_recursive_fragment
                 && !has_non_recursive_fragment;
             let single_cell_nested_continuation = table.row_count == 1
@@ -12671,7 +12680,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> bool {
         if !start_cut.is_empty()
-            || !self.profile.get().native_hwp5_layout()
+            || !self.profile.get().hwp5_stored_pagination_layout()
             || table.common.treat_as_char
             || !matches!(table.page_break, TablePageBreak::RowBreak)
         {
@@ -12830,7 +12839,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> Option<RowCut> {
         if !start_cut.is_empty()
-            || !self.profile.get().native_hwp5_layout()
+            || !self.profile.get().hwp5_stored_pagination_layout()
             || table.common.treat_as_char
             || !matches!(table.page_break, TablePageBreak::RowBreak)
         {

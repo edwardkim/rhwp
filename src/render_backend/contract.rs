@@ -329,17 +329,19 @@ where
     F: FnMut(&mut B) -> Result<(), RenderBackendError>,
 {
     for (index, row) in script.rows.iter().enumerate() {
+        // `finish(self)`는 backend를 소비한다. 이 러너는 그 직전 상태까지만
+        // 적용하고, 마지막 기대값은 `finish_matches` 또는 호출자가 소비 시점에
+        // 검사한다. 여기서 Ok(())를 합성하면 Finish가 Err인 스크립트가 거짓 실패한다.
+        if matches!(row.step, LifecycleStep::Finish) {
+            continue;
+        }
         let result = match &row.step {
             LifecycleStep::Begin { width, height } => {
                 backend.begin_page(PageSize::new(*width, *height))
             }
             LifecycleStep::Draw => draw_op(backend),
             LifecycleStep::End => backend.end_page(),
-            LifecycleStep::Finish => {
-                // finish 는 self 소비라 여기서는 호출하지 않는다.
-                // 호출자가 마지막에 따로 검사한다.
-                Ok(())
-            }
+            LifecycleStep::Finish => unreachable!("finish 는 위에서 건너뜀"),
         };
         match (&row.expect, result) {
             (LifecycleExpect::Ok, Ok(())) => {}
