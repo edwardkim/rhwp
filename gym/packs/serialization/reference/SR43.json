@@ -1,0 +1,19 @@
+{
+  "id": "SR43",
+  "steps": [
+    {
+      "answer": {
+        "format": {
+          "cmd": [
+            "export-doclang",
+            "{input}",
+            "-o",
+            "{sub:out.doclang}",
+            "--json"
+          ],
+          "path": "format"
+        }
+      }
+    }
+  ]
+}

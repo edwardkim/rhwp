@@ -7,8 +7,12 @@
   "description": "형식을 넘나드는 왕복. 변환물이 진짜 그 형식인지, 내용이 보존됐는지를 각각 본다.",
   "requires": {
     "commands": [
+      "convert",
       "export-doclang",
+      "export-hwpx",
       "export-markdown",
+      "export-pdf",
+      "extract-pages",
       "info",
       "ir-diff"
     ]

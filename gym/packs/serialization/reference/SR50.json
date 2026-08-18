@@ -1,0 +1,19 @@
+{
+  "id": "SR50",
+  "steps": [
+    {
+      "answer": {
+        "backend": {
+          "cmd": [
+            "export-pdf",
+            "{input}",
+            "-o",
+            "{sub:out.pdf}",
+            "--json"
+          ],
+          "path": "backend"
+        }
+      }
+    }
+  ]
+}
