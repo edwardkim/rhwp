@@ -1,0 +1,75 @@
+{
+  "id": "FJ65",
+  "tier": 4,
+  "title": "반복 중간 두 칸만 (목차1[1]·[3])",
+  "input": "samples/field-01.hwp",
+  "instructions": "목차1[1]='중간둘째', 목차1[3]='중간넷째' 만 넣은 skip-toc.hwp 를 제출하라. FJ16 은 양끝 [0]·[4] 다. 이번은 중간 짝수 칸이다. 회사명과 목차1[0]·[2] 는 비운다. 힌트: --data '{\"목차1[1]\": \"중간둘째\", \"목차1[3]\": \"중간넷째\"}' -o skip-toc.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "skip-toc.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "목차1[1] 값",
+      "op": "value_eq",
+      "value": "중간둘째",
+      "path": "fields[6].value",
+      "cmd": [
+        "fields",
+        "{file:skip-toc.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "목차1[3] 값",
+      "op": "value_eq",
+      "value": "중간넷째",
+      "path": "fields[8].value",
+      "cmd": [
+        "fields",
+        "{file:skip-toc.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "목차1[0] 공란",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[5].value",
+      "cmd": [
+        "fields",
+        "{file:skip-toc.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "목차1[2] 공란",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[7].value",
+      "cmd": [
+        "fields",
+        "{file:skip-toc.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:skip-toc.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "skip-toc.hwp"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "id": "FJ67",
+  "tier": 3,
+  "title": "메모 표본 제목 채움 뒤 sanitize",
+  "input": "samples/field-01-memo.hwp",
+  "instructions": "field-01-memo 의 제목에 '메모제출제목' 을 채운 뒤 sanitize 한 submit.hwp 를 내라. FJ48 은 같은 칸을 채우기만 한다. 회사명은 비운다. 힌트: fill-fields 제목=메모제출제목 → edit sanitize -o submit.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "submit.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "제목 본문 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:submit.hwp}",
+        "--json",
+        "--",
+        "메모제출제목"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:submit.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "재 sanitize 0건",
+      "op": "value_eq",
+      "value": 0,
+      "path": "removedCount",
+      "cmd": [
+        "edit",
+        "sanitize",
+        "{file:submit.hwp}",
+        "-o",
+        "{file:recheck.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "submit.hwp"
+    }
+  ]
+}
