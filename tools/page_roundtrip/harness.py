@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """페이지 수 왕복 공통 하네스 — pages(원본)==pages(export→reimport).
 
-MEGA QUEUE M05-1 (#5367). 판정 도구만. #3518 #3521 #3737 #4056 #4882 #5128
-은 고치지 않는다. `scripts/visual_sweep.py` · gym · DocumentCore/serializer
-구현을 건드리지 않는다.
+MEGA QUEUE M05-7 (#5128). 한글 스펙문서 쪽수 왕복. #4056 은 planet #5253,
+#4882 는 PR #5470 — 그 샘플을 다시 하지 않는다. gym 은 건드리지 않는다.
 
 기존 CLI 가 쪽수를 잰다:
 
@@ -210,6 +209,8 @@ def find_rhwp(explicit: str | None = None, repo: Path | None = None) -> Path | N
     for rel in (
         Path("target") / "release" / "rhwp.exe",
         Path("target") / "release" / "rhwp",
+        Path("target") / "release-test" / "rhwp.exe",
+        Path("target") / "release-test" / "rhwp",
         Path("target") / "debug" / "rhwp.exe",
         Path("target") / "debug" / "rhwp",
     ):

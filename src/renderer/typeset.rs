@@ -2771,7 +2771,10 @@ fn native_hwp5_text_reset_before_large_tac_topbottom_picture_break_line(
     para_idx: usize,
     dpi: f64,
 ) -> Option<usize> {
-    if !st.profile.native_hwp5_layout()
+    // [#5128] HWP5-origin HWPX 도 원본 HWP5 와 같은 저장 pagination 을 쓴다.
+    // native_hwp5_layout() 만 보면 스펙 문서 문단 84 앞 TAC 그림 분할이
+    // 빠져 69→68 이 된다.
+    if !st.profile.hwp5_stored_pagination_layout()
         || st.col_count != 1
         || st.current_footnote_height > 0.0
         || st.current_items.is_empty()
@@ -21538,9 +21541,10 @@ impl TypesetEngine {
             && ft.table_footnotes.is_empty()
             // HWPX stored-layout keeps a pagination frame independent from
             // the native HWP5 table declaration. Its near measured fit is a
-            // converter provenance contract; native HWP5 must additionally
-            // prove that its object frame owns all declared row geometry.
-            && (!st.profile.native_hwp5_layout()
+            // converter provenance contract; native HWP5 and HWP5-origin HWPX
+            // must additionally prove that the object frame owns all declared
+            // row geometry (#5128 스펙 문서 표 174/193/203/284 통째 흡수 방지).
+            && (!st.profile.hwp5_stored_pagination_layout()
                 || declared_excess_has_source_frame
                 || has_leading_rowspan_band)
             && declared_object_total > host_spacing_total
@@ -22391,7 +22395,7 @@ impl TypesetEngine {
                 seg.vertical_pos
                     > crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi)
             });
-        let native_hwp5_host_precedes_first_fragment = st.profile.native_hwp5_layout()
+        let native_hwp5_host_precedes_first_fragment = st.profile.hwp5_stored_pagination_layout()
             && native_hwp5_rowbreak_host_precedes_first_fragment(para, table);
         if (st.profile.hwpx_stored_layout()
             && host_vpos_is_cumulative
@@ -22595,7 +22599,7 @@ impl TypesetEngine {
                 // 약 한 줄뿐이다. 기존 32px guard는 그 실측 간격보다 커 111번을
                 // 다음 page로 잘못 넘겼다.
                 12.0
-            } else if st.profile.native_hwp5_layout() {
+            } else if st.profile.hwp5_stored_pagination_layout() {
                 32.0
             } else {
                 0.0

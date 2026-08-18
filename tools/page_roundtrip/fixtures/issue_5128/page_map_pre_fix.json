@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "issue5128PageMap",
+  "phase": "pre_fix",
+  "srcPages": 69,
+  "rtPages": 68,
+  "firstDiffPage": 16,
+  "srcP015": "partialTable#p73",
+  "srcP016": "partialParagraph#p84",
+  "rtP015": "partialTable#p73 +2 items",
+  "rtP016": "paragraph 86 text",
+  "notes": [
+    "IR 차이 없음",
+    "HWP5-origin HWPX 가 TAC 그림 앞 저장 reset 분할을 건너뜀",
+    "RowBreak 표 174/193/203/284 가 통째 fit"
+  ]
+}

@@ -1,0 +1,4 @@
+{"schemaVersion": 1, "kind": "pageRoundtripTranscript", "issue": 4056, "doc": "samples/issue-505-equations.hwp", "route": "hwpx", "created": "2026-08-18T11:40:05Z"}
+{"seq": 0, "kind": "meta", "tool": "tools/page_roundtrip/transcript.py", "issue": 4056}
+{"seq": 1, "kind": "note", "text": "planet #5253 좌석 — M05-7 가 고치지 않는다"}
+{"seq": 2, "kind": "verdict", "verdict": "EXPECTED_FAIL", "cataloged": true, "issue": 4056}

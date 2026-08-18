@@ -92,13 +92,14 @@ class CatalogTests(unittest.TestCase):
     def test_shipped_catalog_lists_m05_issues(self) -> None:
         entries = prt.load_catalog(HERE / "catalog.json")
         issues = {e.issue for e in entries}
-        self.assertEqual(issues, {3518, 3521, 3737, 4056, 4882, 5128})
+        self.assertEqual(issues, {3518, 3521, 3737, 4056, 4882})
+        self.assertNotIn(5128, issues)
         self.assertTrue(all(e.route == "hwpx" for e in entries))
         docs = {e.doc for e in entries}
         self.assertIn("samples/hwp3-sample16.hwp", docs)
         self.assertIn("samples/issue-505-equations.hwp", docs)
         self.assertTrue(any("중간진도보고서" in e.doc for e in entries))
-        self.assertTrue(any("revision1.3" in e.doc for e in entries))
+        self.assertFalse(any("revision1.3" in e.doc for e in entries))
 
     def test_ci_subset_includes_cataloged_fixture(self) -> None:
         docs = prt.load_manifest(HERE / "fixtures" / "ci-subset.json", HERE.parents[1])

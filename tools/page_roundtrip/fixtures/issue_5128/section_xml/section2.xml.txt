@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<hs:sec xmlns:ha="http://www.hancom.co.kr/hwpml/2011/app" xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" xmlns:hp10="http://www.hancom.co.kr/hwpml/2016/paragraph" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section" xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core" xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head" xmlns:hhs="http://www.hancom.co.kr/hwpml/2011/history" xmlns:hm="http://www.hancom.co.kr/hwpml/2011/master-page" xmlns:hpf="http://www.hancom.co.kr/schema/2011/hpf" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf/" xmlns:ooxmlchart="http://www.hancom.co.kr/hwpml/2016/ooxmlchart" xmlns:hwpunitchar="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0">
+<hp:p id="104" paraPrIDRef="41" styleIDRef="3" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="26">
+<hp:ctrl>
+<hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/>
+</hp:ctrl>
+<hp:secPr id="" textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="2" memoShapeIDRef="0" textVerticalWidthHead="0" masterPageCnt="0">
+<hp:grid lineGrid="0" charGrid="0" wonggojiFormat="0"/>
+<hp:startNum pageStartsOn="BOTH" page="0" pic="0" tbl="0" equation="0"/>
+<hp:visibility hideFirstHeader="0" hideFirstFooter="0" hideFirstMasterPage="0" border="SHOW_ALL" fill="SHOW_ALL" hideFirstPageNum="0" hideFirstEmptyLine="0" showLineNumber="0"/>
+<hp:lineNumberShape restartType="0" countBy="0" distance="0" startNumber="0"/>
+<hp:pagePr landscape="WIDELY" width="59528" height="84188" gutterType="LEFT_ONLY">
+<hp:margin header="4167" footer="3033" gutter="0" left="7200" right="7200" top="3600" bottom="3600"/>
+</hp:pagePr>
+<hp:footNotePr>
+<hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/>
+<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>
+<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>
+<hp:numbering type="CONTINUOUS" newNum="1"/>
+<hp:placement place="EACH_COLUMN" beneathText="0"/>
+</hp:footNotePr>
+<hp:endNotePr>
+<hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/>
+<hp:noteLine length="12280" type="SOLID" width="0.12 mm" color="#000000"/>
+<hp:noteSpacing betweenNotes="0" belowLine="567" aboveLine="224"/>
+<hp:numbering type="CONTINUOUS" newNum="1"/>
+<hp:placement place="END_OF_DOCUMENT" beneathText="0"/>
+</hp:endNotePr>
+<hp:pageBorderFill type="BOTH" borderFillIDRef="7" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER">
+<hp:offset left="1417" right="1417" top="1417" bottom="1417"/>
+</hp:pageBorderFill>
+<hp:pageBorderFill type="EVEN" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER">
+<hp:offset left="1417" right="1417" top="1417" bottom="1417"/>
+</hp:pageBorderFill>
+<hp:pageBorderFill type="ODD" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER">
+<hp:offset left="1417" right="1417" top="1417" bottom="1417"/>
+</hp:pageBorderFill>
+</hp:secPr>
+</hp:run>
+<hp:run charPrIDRef="26">
+<hp:ctrl>
+<hp:pageNum pos="OUTSIDE_BOTTOM" formatType="DIGIT" sideChar="-"/>
+</hp:ctrl>
+<hp:ctrl>
+<hp:newNum num="1" numType="PAGE"/>
+</hp:ctrl>
+<hp:t>
+저작권
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="0" vertsize="1600" textheight="1600" baseline="1360" spacing="960" horzpos="50" horzsize="45078" flags="2490368"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="105" paraPrIDRef="19" styleIDRef="2" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="11">
+<hp:t>
+(주)한글과컴퓨터(이하 ‘한컴’)는 문서 형식의 개방성과 표준화에 대하여 적극 찬성합니다. 한컴은 ᄒᆞᆫ글 97의 문서 형식을 무상으로 지원한 바 있으며, ᄒᆞᆫ글 2002~2010 문서의 XML 형식은 HWPML에 대해서도 문서 형식을 공개한 바 있습니다. 개방형 문서 표준화 및 코드 관련 위원회에도 적극적으로 참여하여 파일 형식의 표준화와 개방성을 위해 노력해 왔습니다. 이러한 결과로 HWPML 스펙이 OWPML란 이름으로 한국산업표준(KS X 6101:2011)으로 제정되었습니다. 또한, 한컴오피스에서 기록물 장기보존 표준 포맷인 PDF/A-1의 지원과 ISO 국제 문서 형식인 ODF와 OOXML 파일 형식의 불러오기와 저장하기를 적극적으로 지원하였습니다.
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="3060" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="60" vertpos="4660" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="124" vertpos="6260" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="181" vertpos="7860" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="236" vertpos="9460" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="296" vertpos="11060" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="357" vertpos="12660" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="106" paraPrIDRef="19" styleIDRef="2" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="11">
+<hp:t>
+본 문서를 열람하고자 하는 자라면 누구에게나 제공되는 것이며, 본 문서를 열람하는 것 외에 복사, 배포, 게재 및 본 문서에 기재되어 있는 내용을 사용하고자 하는 자는 한글과컴퓨터의 본 저작권을 충분히 인식하고 동의하여야 합니다.
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="14760" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="55" vertpos="16360" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="109" vertpos="17960" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="107" paraPrIDRef="19" styleIDRef="2" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="11">
+<hp:t>
+본 문서를 누구나 열람, 복사, 배포, 게재 및 사용을 자유롭게 할 수 있습니다. 다만, 배포는 원 내용이 일체 수정되지 않은 원본 또는 복사본으로 제한됩니다. 원본 및 복사본은 한컴에서 제공하는 스펙의 최신 버전을 포함하고 있어야 합니다.
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="20060" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="60" vertpos="21660" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="114" vertpos="23260" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="108" paraPrIDRef="19" styleIDRef="2" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="11">
+<hp:t>
+한컴은 한컴오피스 ᄒᆞᆫ글 문서 파일(.hwp) 공개 문서에 따라 얻은 결과물을 기초로 또 다른 독점적, 배타적 권리를 취득하고 이를 (주)한글과컴퓨터를 상대로 행사하고자 하는 자를 상대로는 적극적으로 권리행사를 할 수도 있습니다.
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="25360" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="59" vertpos="26960" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="113" vertpos="28560" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="109" paraPrIDRef="19" styleIDRef="2" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="11">
+<hp:t>
+그리고, 본 문서 및 본 문서에 기재된 내용을 참고하여 개발한 결과물에 대한 모든 저작권은 결과물을 개발한 개인 또는 단체에 있을 것입니다. 그러나 반드시 개발 결과물에 “본 제품은 한글과컴퓨터의 ᄒᆞᆫ글 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다.”라고 제품 내 사용자 인터페이스, 매뉴얼, 도움말 및 소스에 모두 기재하여야 하며 제품이 이러한 구성물이 없을 시에는 존재하는 구성물에만 기재합니다. 한컴은 본 문서 및 본 문서에 기재된 내용을 참고하여 개발한 결과물에 대해서 어떠한 정확성, 진실성도 보증하지 아니합니다.
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="30660" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="56" vertpos="32260" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="110" vertpos="33860" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="172" vertpos="35460" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="225" vertpos="37060" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="279" vertpos="38660" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="110" paraPrIDRef="37" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="1">
+<hp:t>
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="40260" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="45128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="111" paraPrIDRef="41" styleIDRef="3" pageBreak="1" columnBreak="0" merged="0">
+<hp:run charPrIDRef="26">
+<hp:t>
+본 문서에 대하여...
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="0" vertsize="0" textheight="0" baseline="0" spacing="0" horzpos="0" horzsize="0" flags="2147942400"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="112" paraPrIDRef="19" styleIDRef="2" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="11">
+<hp:t>
+본 문서는 ᄒᆞᆫ글 워드 프로세서의 파일 저장 형식 중, ᄒᆞᆫ글 2002 이후 제품에서 사용되는 ᄒᆞᆫ글 문서 파일 형식 5.0 에 관하여 설명한다.
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="3060" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="63" vertpos="4660" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="113" paraPrIDRef="19" styleIDRef="2" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="11">
+<hp:t>
+본 문서는 ᄒᆞᆫ글 문서 파일 형식 5.0의 주요한 자료 형식 및 파일 구조, 레코드 구조에 대해서 설명한다.
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="6760" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="114" paraPrIDRef="19" styleIDRef="2" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="11">
+<hp:t>
+ᄒᆞᆫ글 문서 수식, 차트, 배포용 문서, ᄒᆞᆫ글 문서 파일 형식 3.0, HWPML에 관해서는 별도의 문서에서 설명한다.
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="8860" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+<hp:lineseg textpos="64" vertpos="10460" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="39628" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="115" paraPrIDRef="37" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="1">
+<hp:t>
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="12060" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="45128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="116" paraPrIDRef="37" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="1">
+<hp:t>
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="13660" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="45128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="117" paraPrIDRef="37" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="1">
+<hp:t>
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="15260" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="45128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+</hs:sec>

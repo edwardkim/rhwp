@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "kind": "expectedFailLedger",
+  "notes": [
+    "M05-7 는 #5128 만 닫는다. #4056 #4882 는 카탈로그에 남긴다."
+  ],
+  "resolved": [
+    5128
+  ],
+  "held": [
+    3518,
+    3521,
+    3737,
+    4056,
+    4882
+  ],
+  "catalog": [
+    {
+      "doc": "samples/hwp3-sample16.hwp",
+      "route": "hwpx",
+      "issue": 3518,
+      "reason": "HWPX 내보내기 전후 쪽수 불일치 (64→65)"
+    },
+    {
+      "doc": "samples/synam-001.hwp",
+      "route": "hwpx",
+      "issue": 3521,
+      "reason": "HWPX 내보내기 전후 쪽수 불일치 (35→36)"
+    },
+    {
+      "doc": "samples/hwp3-sample11.hwp",
+      "route": "hwpx",
+      "issue": 3737,
+      "reason": "HWPX 내보내기 전후 쪽수 불일치 (151→152)"
+    },
+    {
+      "doc": "samples/issue-505-equations.hwp",
+      "route": "hwpx",
+      "issue": 4056,
+      "reason": "HWPX 내보내기 전후 쪽수 불일치 (4→1)"
+    },
+    {
+      "doc": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "route": "hwpx",
+      "issue": 4882,
+      "reason": "HWPX 내보내기 전후 쪽수 불일치 (215→223) — PR #5470, 이 좌석에서 다시 하지 않는다"
+    }
+  ],
+  "scopeErrors": []
+}
