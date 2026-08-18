@@ -2000,12 +2000,8 @@ export class CanvasKitLayerRenderer {
         || (codePoint >= 0xa960 && codePoint <= 0xa97f)
         || (codePoint >= 0xd7b0 && codePoint <= 0xd7ff);
     });
-    const hasBoxedPua = codePoints.some((character) => {
-      const codePoint = character.codePointAt(0) ?? 0;
-      return codePoint >= 0xf02b1 && codePoint <= 0xf02c4;
-    });
     const requiresUnsupportedShaping = textRequiresComplexShaping(replayText)
-      || (textRunHasPaintEffects(style) && (hasOldHangul || hasBoxedPua));
+      || (textRunHasPaintEffects(style) && hasOldHangul);
     if (requiresUnsupportedShaping) {
       this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
     }

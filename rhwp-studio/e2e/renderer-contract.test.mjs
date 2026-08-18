@@ -2508,6 +2508,35 @@ assert.equal(
   'Hancom boxed-number PUA should preserve the encoded number',
 );
 
+const boxedPuaRatioReplay = runExecutableTextReplay({
+  type: 'textRun',
+  bbox: { x: 0, y: 20, width: 20, height: 20 },
+  text: '\u{F02B1}',
+  baseline: 15,
+  positions: [0, 18],
+  style: { fontFamily: 'Prepared', fontSize: 20, ratio: 0.8, shadowType: 1 },
+}, {
+  glyphIds: [0],
+  fallbackGlyphIds: [0],
+  symbolGlyphIds: [0],
+  usePreparedTypeface: true,
+});
+assert.equal(
+  boxedPuaRatioReplay.unsupportedOps.has('textRun:scriptTextRequiresShaping'),
+  false,
+  'boxed-PUA with 장평 must not fail closed as a shaping gap',
+);
+assert.equal(
+  boxedPuaRatioReplay.events.some(event => event.type === 'font.scaleX' && event.scale === 0.8),
+  true,
+  'boxed-PUA 장평 should apply setScaleX on the digit font',
+);
+assert.equal(
+  boxedPuaRatioReplay.events.some(event => event.type === 'canvas.drawRect'),
+  true,
+  'boxed-PUA with 장평 should keep the bounded vector box',
+);
+
 const textSpecialReplay = runExecutableTextSpecialReplay();
 assert.equal(textSpecialReplay.events.some(event => event.type === 'canvas.drawOval'), true);
 assert.equal(
