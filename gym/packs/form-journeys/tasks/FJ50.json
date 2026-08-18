@@ -1,0 +1,86 @@
+{
+  "id": "FJ50",
+  "tier": 4,
+  "title": "작성자·이메일·제목 삼칸, 회사명·목차 공란",
+  "input": "samples/field-01.hwp",
+  "instructions": "작성자 '삼칸기록자', 이메일 'triple@journey.go.kr', 제목 '삼칸여정제목' 을 한 번에 넣은 triple.hwp 를 제출하라. 회사명과 목차1[0] 은 반드시 비운다. 세 칸을 채웠다고 첫 칸 홍길동을 넣으면 실패다. 힌트: 세 키 JSON, 회사명·목차1 키는 넣지 않는다. 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "triple.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "작성자 값",
+      "op": "value_eq",
+      "value": "삼칸기록자",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "이메일 값",
+      "op": "value_eq",
+      "value": "triple@journey.go.kr",
+      "path": "fields[4].value",
+      "cmd": [
+        "fields",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "제목 값",
+      "op": "value_eq",
+      "value": "삼칸여정제목",
+      "path": "fields[10].value",
+      "cmd": [
+        "fields",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "목차1[0] 공란 값",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[5].value",
+      "cmd": [
+        "fields",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "부서명 공란 값",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[2].value",
+      "cmd": [
+        "fields",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "triple.hwp"
+    }
+  ]
+}

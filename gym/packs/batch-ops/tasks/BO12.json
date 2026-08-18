@@ -1,0 +1,59 @@
+{
+  "id": "BO12",
+  "tier": 3,
+  "title": "메일머지 — HWP5 + --name-field myMsg01",
+  "input": "samples/form-01.hwp",
+  "instructions": "HWP5 서식에 CSV 2행을 병합하되, 파일 이름은 그 행의 myMsg01 값이어야 한다 (out/NameHwpAlpha.hwp·out/NameHwpBeta.hwp). 힌트: rhwp batch fill --form samples/form-01.hwp --data gym/packs/batch-ops/assets/BO12-data.csv --out-dir out --name-field myMsg01 --json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out/NameHwpAlpha.hwp",
+      "out/NameHwpBeta.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "1부 산출 존재",
+      "op": "file_exists",
+      "file": "out/NameHwpAlpha.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "마지막 산출 존재 (단건이 아니라 대량)",
+      "op": "file_exists",
+      "file": "out/NameHwpBeta.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "원본 서식과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "out/NameHwpAlpha.hwp"
+    },
+    {
+      "name": "NameHwpAlpha 값이 그 문서에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/NameHwpAlpha.hwp}",
+        "--json",
+        "--",
+        "NameHwpAlpha"
+      ]
+    },
+    {
+      "name": "NameHwpBeta 값이 그 문서에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/NameHwpBeta.hwp}",
+        "--json",
+        "--",
+        "NameHwpBeta"
+      ]
+    }
+  ]
+}

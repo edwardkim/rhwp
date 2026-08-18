@@ -1,0 +1,26 @@
+{
+  "id": "SD68",
+  "tier": 3,
+  "title": "MCP 스키마 $ref",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-capabilities-schema 의 mcpSchema.$ref 를 answer.json 에 {\"ref\": S} 으로 제출하라. 힌트: rhwp export-capabilities-schema --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "MCP 스키마 $ref",
+      "op": "answer_eq",
+      "answer": "ref",
+      "path": "mcpSchema.$ref",
+      "cmd": [
+        "export-capabilities-schema",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

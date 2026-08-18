@@ -1,0 +1,17 @@
+{
+  "id": "FJ53",
+  "steps": [
+    {
+      "answer": {
+        "para": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fields[2].location.paragraph"
+        }
+      }
+    }
+  ]
+}

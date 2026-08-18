@@ -1,0 +1,20 @@
+{
+  "id": "CD13",
+  "steps": [
+    {
+      "answer": {
+        "files": {
+          "cmd": [
+            "scan",
+            "samples/unicode",
+            "--max-depth",
+            "1",
+            "--json"
+          ],
+          "path": "files",
+          "len": true
+        }
+      }
+    }
+  ]
+}

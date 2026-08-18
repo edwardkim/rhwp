@@ -1,0 +1,53 @@
+{
+  "id": "FJ49",
+  "tier": 2,
+  "title": "메모 표본 이메일 채움",
+  "input": "samples/field-01-memo.hwp",
+  "instructions": "field-01-memo 의 이메일에만 'memo@journey.go.kr' 을 넣은 memo-mail.hwp 를 제출하라. FJ08 의 journey@example.go.kr 과 도메인이 다르다. 회사명·전화번호 공란. 힌트: --data '{\"이메일\": \"memo@journey.go.kr\"}' 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "memo-mail.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "이메일 값",
+      "op": "value_eq",
+      "value": "memo@journey.go.kr",
+      "path": "fields[4].value",
+      "cmd": [
+        "fields",
+        "{file:memo-mail.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:memo-mail.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "전화번호 공란 값",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[3].value",
+      "cmd": [
+        "fields",
+        "{file:memo-mail.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "memo-mail.hwp"
+    }
+  ]
+}

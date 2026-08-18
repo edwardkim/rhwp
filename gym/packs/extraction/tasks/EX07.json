@@ -1,0 +1,25 @@
+{
+  "id": "EX07",
+  "tier": 2,
+  "title": "전종류 수확 — extract-data --kind all",
+  "input": "samples/20250130-hongbo.hwp",
+  "instructions": "extract-data --kind all 로 이 문서에서 날짜·금액·수량을 모두 수확해, 항목 수(itemCount)를 보고하라. 답 형식: {\"items\": <수>}. 힌트: rhwp extract-data <문서> --kind all --json 의 itemCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "items 일치",
+      "op": "answer_eq",
+      "answer": "items",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "all",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "1.0",
+  "commands": {
+    "info": {
+      "command": "info",
+      "issue": "#3237",
+      "keys": [
+        "schemaVersion",
+        "source",
+        "format",
+        "sizeBytes",
+        "version",
+        "sections",
+        "pageCount",
+        "paraCount",
+        "fonts"
+      ],
+      "optional": [
+        "title",
+        "warnings"
+      ],
+      "purpose": "열리는지·얼마나 큰지·암호인지",
+      "next_on_ok": "pageCount 분기로 explain 또는 export-text",
+      "next_on_fail": "암호면 --password-stdin, 아니면 중단"
+    },
+    "explain": {
+      "command": "explain",
+      "issue": "#3828",
+      "keys": [
+        "schemaVersion",
+        "source",
+        "format",
+        "pageCount",
+        "paragraphCount",
+        "tables",
+        "fields",
+        "footnoteCount",
+        "endnoteCount",
+        "encrypted",
+        "summary"
+      ],
+      "optional": [],
+      "purpose": "결정론 한 줄 요약. LLM 판정 아님",
+      "next_on_ok": "표 많음→table-exchange, 누름틀→form-fill, 아니면 질문별 분기",
+      "next_on_fail": "info 와 같은 암호/런타임 규약"
+    },
+    "export-structure": {
+      "command": "export-structure",
+      "issue": "#3261",
+      "keys": [
+        "schemaVersion",
+        "source",
+        "mode",
+        "nodeCount",
+        "structure"
+      ],
+      "optional": [],
+      "purpose": "개요/조문 뼈대. 본문 전체를 싣지 않는다",
+      "next_on_ok": "목차 요청이면 정지. 더 읽으려면 digest --sections",
+      "next_on_fail": "법령인데 outline 이면 --mode clause 재시도"
+    },
+    "digest": {
+      "command": "digest",
+      "issue": "#3633",
+      "keys": [
+        "schemaVersion",
+        "source",
+        "format",
+        "pageCount",
+        "paraCount",
+        "outline",
+        "excerpt",
+        "truncated",
+        "nextStep"
+      ],
+      "optional": [
+        "sections",
+        "sectionsMode",
+        "sectionCount",
+        "pages"
+      ],
+      "purpose": "메타+상위 개요+첫 3쪽 발췌. 뒤를 대표하지 않는다",
+      "next_on_ok": "더 필요하면 --sections 또는 --pages a..b. nextStep 을 받아 적는다",
+      "next_on_fail": "stdout 0바이트, exit 1/2"
+    },
+    "search": {
+      "command": "search",
+      "issue": "#3283",
+      "keys": [
+        "schemaVersion",
+        "source",
+        "query",
+        "caseSensitive",
+        "matchCount",
+        "totalMatchCount",
+        "truncated",
+        "omittedCount",
+        "matches"
+      ],
+      "optional": [],
+      "purpose": "사실 찾기. 매치마다 구역·문단·쪽 주소",
+      "next_on_ok": "매치 쪽만 export-text -p / export-png -p. 0건이면 어휘 바꿔 재시도",
+      "next_on_fail": "검색어가 - 로 시작하면 -- 뒤에. 파일 없음은 exit 1"
+    },
+    "extract-data": {
+      "command": "extract-data",
+      "issue": "#3719",
+      "keys": [
+        "schemaVersion",
+        "source",
+        "kind",
+        "itemCount",
+        "totalItemCount",
+        "truncated",
+        "counts",
+        "items"
+      ],
+      "optional": [],
+      "purpose": "날짜·금액·수량 + 주소. 모름은 null",
+      "next_on_ok": "normalized 로 집계, null 은 raw 만 인용. 질문이 수치면 정지",
+      "next_on_fail": "0건은 성공. --limit 0 은 exit 2"
+    }
+  }
+}

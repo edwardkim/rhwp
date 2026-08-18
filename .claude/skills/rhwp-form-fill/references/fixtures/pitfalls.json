@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5300,
+  "pitfalls": [
+    {
+      "id": "P01",
+      "trap": "--data 파일을 CP949 로 저장",
+      "signal": "stream did not contain valid UTF-8, exit 1",
+      "fix": "UTF-8 로 다시 저장"
+    },
+    {
+      "id": "P02",
+      "trap": "--name-field 컬럼이 매 행 notFound",
+      "signal": "notFound 에 파일명 용도 컬럼",
+      "fix": "게이트 비교에서 그 컬럼 제외. 실패가 아니다"
+    },
+    {
+      "id": "P03",
+      "trap": "batch fill 에 stdin 파일 목록",
+      "signal": "아무 일도 안 일어남",
+      "fix": "--form + --data 인자 축"
+    },
+    {
+      "id": "P04",
+      "trap": "ambiguous 무시",
+      "signal": "14개 중 1개만 채워진 문서",
+      "fix": "이름[N] 재지목 루프"
+    },
+    {
+      "id": "P05",
+      "trap": "헤더만 있는 CSV",
+      "signal": "오류: --data 에 데이터 행이 없습니다, exit 2",
+      "fix": "상류 명단 조회 0건부터"
+    },
+    {
+      "id": "P06",
+      "trap": "name-field 값 중복",
+      "signal": "나중 행이 먼저 행을 덮어씀(_2 접미가 있음)",
+      "fix": "명령이 중복 검사를 안 한다. 데이터에서 유일키를 만든다"
+    },
+    {
+      "id": "P07",
+      "trap": "머리말/각주 필드가 fields 에 없음",
+      "signal": "사람이 보는 칸이 목록에 없다",
+      "fix": "실재 사각지대. 이 스킬이 재귀를 넓히지 않는다"
+    },
+    {
+      "id": "P08",
+      "trap": "페이지를 1부터 셈",
+      "signal": "insert-image --page 1 이 두 번째 쪽",
+      "fix": "0 기준. 한컴 표기(1부터)와 혼동 금지"
+    },
+    {
+      "id": "P09",
+      "trap": "insert-image 좌표를 mm/px 로 줌",
+      "signal": "도장이 점만 하거나 overflow",
+      "fix": "HWPUNIT. 1mm ≈ 283.46"
+    },
+    {
+      "id": "P10",
+      "trap": "로고 셀의 기관명 필드를 채움",
+      "signal": "로고와 텍스트 겹침",
+      "fix": "location.nested + export-tables 로 그림 칸이면 건너뜀"
+    },
+    {
+      "id": "P11",
+      "trap": "보고만 믿고 재독 생략",
+      "signal": "filledCount 는 맞는데 값이 안 보임",
+      "fix": "fields 재독 또는 --verify"
+    },
+    {
+      "id": "P12",
+      "trap": "새 플래그·새 명령 발명",
+      "signal": "알 수 없는 하위명령, exit 2",
+      "fix": "cli_commands.md 표면만. 이 스킬은 발명 금지"
+    }
+  ]
+}

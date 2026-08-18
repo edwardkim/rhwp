@@ -1,0 +1,17 @@
+{
+  "id": "SD08",
+  "steps": [
+    {
+      "answer": {
+        "tools": {
+          "cmd": [
+            "capabilities",
+            "--mcp"
+          ],
+          "path": "tools",
+          "len": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "TC04",
+  "tier": 2,
+  "title": "표 CSV 추출 — table-001 첫 칸",
+  "input": "samples/table-001.hwp",
+  "instructions": "이 문서 표 0 을 CSV 로 뽑아 table.csv 로 제출하라. 첫 칸 (0,0) 은 '구 분' 이어야 한다. 힌트: rhwp table-to-csv <문서> --table 0 -o table.csv.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "table.csv"
+    ]
+  },
+  "checks": [
+    {
+      "name": "CSV 산출",
+      "op": "file_exists",
+      "file": "table.csv",
+      "minBytes": 8
+    },
+    {
+      "name": "원본과 다름(무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "table.csv"
+    },
+    {
+      "name": "표0 (0,0) 이 구 분",
+      "op": "csv_cell_eq",
+      "file": "table.csv",
+      "row": 0,
+      "col": 0,
+      "value": "구 분"
+    }
+  ]
+}

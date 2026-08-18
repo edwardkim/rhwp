@@ -1,0 +1,11 @@
+{
+  "id": "T19",
+  "title": "insert-image overflow 보고",
+  "steps": [
+    {
+      "note": "기존 CLI 표면만. 새 플래그 없음",
+      "usesExistingCommand": true
+    }
+  ],
+  "notGym": true
+}

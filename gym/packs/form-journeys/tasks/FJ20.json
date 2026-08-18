@@ -1,0 +1,47 @@
+{
+  "id": "FJ20",
+  "tier": 3,
+  "title": "form-02 채움 뒤 sanitize 제출본",
+  "input": "samples/form-02.hwp",
+  "instructions": "form-02 의 myMsg01 에 '배포후확인' 을 채운 뒤 sanitize 한 submit2.hwp 를 내라. FJ05 는 form-01+'배포전값' 이다. 표본과 값이 다르다. 채점은 본문 잔존과 재 sanitize 의 removedCount==0 이다. 힌트: fill-fields 후 rhwp edit sanitize filled.hwp -o submit2.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "submit2.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "채운 값 본문 잔존",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:submit2.hwp}",
+        "--json",
+        "--",
+        "배포후확인"
+      ]
+    },
+    {
+      "name": "재 sanitize 0건",
+      "op": "value_eq",
+      "value": 0,
+      "path": "removedCount",
+      "cmd": [
+        "edit",
+        "sanitize",
+        "{file:submit2.hwp}",
+        "-o",
+        "{file:recheck2.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "submit2.hwp"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "SE69",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "redact",
+        "{input}",
+        "-o",
+        "{sub:masked.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

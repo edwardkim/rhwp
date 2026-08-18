@@ -1,0 +1,59 @@
+{
+  "id": "BO06",
+  "tier": 3,
+  "title": "메일머지 — --name-field outname (별도 이름 열)",
+  "input": "samples/hwpx/form-01.hwpx",
+  "instructions": "CSV 헤더는 myMsg01,outname 이고 데이터 2행(GammaMerge,gamma / DeltaMerge,delta)이다. 산출 파일 이름은 outname 열이어야 한다(out/gamma.hwpx·out/delta.hwpx). 본문에는 myMsg01 값(GammaMerge·DeltaMerge)이 들어가야 한다. 힌트: rhwp batch fill --form samples/hwpx/form-01.hwpx --data gym/packs/batch-ops/assets/BO06-data.csv --out-dir out --name-field outname --json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out/gamma.hwpx",
+      "out/delta.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "1부 산출 존재",
+      "op": "file_exists",
+      "file": "out/gamma.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "마지막 산출 존재 (단건이 아니라 대량)",
+      "op": "file_exists",
+      "file": "out/delta.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "원본 서식과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "out/gamma.hwpx"
+    },
+    {
+      "name": "GammaMerge 값이 gamma 문서에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/gamma.hwpx}",
+        "--json",
+        "--",
+        "GammaMerge"
+      ]
+    },
+    {
+      "name": "DeltaMerge 값이 delta 문서에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/delta.hwpx}",
+        "--json",
+        "--",
+        "DeltaMerge"
+      ]
+    }
+  ]
+}

@@ -12,6 +12,7 @@
     "corpus-diagnostics",
     "expert-challenges",
     "extraction",
+    "form-journeys",
     "layout-rendering",
     "objects-media",
     "oracle-probe",
@@ -23,6 +24,7 @@
     "studio-e2e",
     "table-csv",
     "table-editing",
-    "text-editing"
+    "text-editing",
+    "work-receipt"
   ]
 }

@@ -1,0 +1,25 @@
+{
+  "id": "SD37",
+  "tier": 3,
+  "title": "batch 입력 규약",
+  "input": "samples/table-001.hwp",
+  "instructions": "capabilities 가 선언하는 batch.input 규약을 answer.json 에 {\"input\": S} 으로 제출하라. 힌트: capabilities 의 batch.input.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "batch 입력 규약",
+      "op": "answer_eq",
+      "answer": "input",
+      "path": "batch.input",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

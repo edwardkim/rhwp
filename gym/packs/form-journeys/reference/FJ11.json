@@ -1,0 +1,26 @@
+{
+  "id": "FJ11",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "이메일": "desk@journey.or.kr",
+          "전화번호": "031-900-4411"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:pair-et.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

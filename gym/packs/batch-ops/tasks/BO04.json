@@ -1,0 +1,22 @@
+{
+  "id": "BO04",
+  "tier": 2,
+  "title": "선확인 — batch fill --dry-run 예정 행 수 (HWPX CSV)",
+  "input": "samples/hwpx/form-01.hwpx",
+  "instructions": "gym/packs/batch-ops/assets/BO02-data.csv 는 헤더 + 데이터 2행이다. 서식에 병합을 **적용하지 않고** 몇 부가 만들어질지 보고하라. 답 형식: {\"planned\": 2}. 원본은 건드리지 마라. 힌트: rhwp batch fill --form samples/hwpx/form-01.hwpx --data gym/packs/batch-ops/assets/BO02-data.csv --out-dir out --dry-run --json. --dry-run 이어도 --out-dir 는 필수다. 산출 파일은 만들지 마라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "예정 행 수",
+      "op": "json_value_eq",
+      "file": "answer.json",
+      "path": "planned",
+      "value": 2
+    }
+  ]
+}

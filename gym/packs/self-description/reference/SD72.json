@@ -1,0 +1,12 @@
+{
+  "id": "SD72",
+  "steps": [
+    {
+      "run": [
+        "export-plan-schema",
+        "-o",
+        "{sub:plan-schema.json}"
+      ]
+    }
+  ]
+}

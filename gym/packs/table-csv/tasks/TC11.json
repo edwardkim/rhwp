@@ -1,0 +1,38 @@
+{
+  "id": "TC11",
+  "tier": 2,
+  "title": "치수 계약 — table-001 행·열 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "table-to-csv --table 0 --json 으로 표 0 의 행 수와 열 수를 보고하라. 답 형식: {\"rows\": <수>, \"cols\": <수>}.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "행 수 일치",
+      "op": "answer_eq",
+      "answer": "rows",
+      "cmd": [
+        "table-to-csv",
+        "{input}",
+        "--table",
+        "0",
+        "--json"
+      ],
+      "path": "tables[0].rowCount"
+    },
+    {
+      "name": "열 수 일치",
+      "op": "answer_eq",
+      "answer": "cols",
+      "cmd": [
+        "table-to-csv",
+        "{input}",
+        "--table",
+        "0",
+        "--json"
+      ],
+      "path": "tables[0].colCount"
+    }
+  ]
+}

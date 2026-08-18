@@ -1,0 +1,17 @@
+{
+  "id": "EX27",
+  "steps": [
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "export-text",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

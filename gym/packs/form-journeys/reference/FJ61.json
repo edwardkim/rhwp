@@ -1,0 +1,26 @@
+{
+  "id": "FJ61",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "myMsg01": "폼01검증값"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:form01-verified.hwp}",
+        "--verify",
+        "--json"
+      ]
+    }
+  ]
+}

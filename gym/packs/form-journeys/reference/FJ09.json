@@ -1,0 +1,25 @@
+{
+  "id": "FJ09",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "제목": "서식여정점검표"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:title.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

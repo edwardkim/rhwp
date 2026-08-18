@@ -1,0 +1,23 @@
+{
+  "id": "EX12",
+  "tier": 2,
+  "title": "본문 텍스트 — 2쪽 시험지 HWPX 페이지 수",
+  "input": "samples/hwpx/exam-kor-2p.hwpx",
+  "instructions": "EX11 의 HWPX 쌍이다. export-text 의 pageCount 를 보고하라. 답 형식: {\"pages\": <수>}.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "pages 일치",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "export-text",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

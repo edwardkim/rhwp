@@ -1,0 +1,76 @@
+{
+  "id": "XC49",
+  "tier": 5,
+  "title": "5세대 중간 오염과 계보",
+  "input": "samples/hwp_table_test.hwp",
+  "axis": "자동화",
+  "instructions": "XC49 — 5세대 중간 오염과 계보.\n\n입력 표본은 `samples/hwp_table_test.hwp` 이다. 보스 존 과제다. 한 단만 빠지면 최종 판정이 막힌다. 저장소 samples/ 에 이미 있는 실문서만 쓰고 새 픽스처를 만들지 않는다. expert-challenges pack 은 기존 CLI 표면(keygen · replay · run · anchor · settle · conformance · recall-scope · lineage · audit-report · export-tables) 만으로 여러 축을 한 제출에 묶는다. 새 명령·새 연산자·새 pack 은 없다. 원본을 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. 정답 해시·건수를 과제 파일에 박제하지 마라. 채점은 같은 판정 명령을 다시 돌린다.\n\n표시험 5세대에서 셋째 세대 오염 폐쇄(3건+)와 막내 계보 깊이 5 를 동시에 본다.\n\n제출 폴더에 m5/g0.capsule.json · m5/g1.capsule.json · m5/g2.capsule.json · m5/g3.capsule.json · m5/g4.capsule.json 를 두어라.\n\n수행 힌트: recall-scope g2 + lineage --deep depth 5.\n\n이 과제는 XC01(L5 --deep 사다리 완주) · XC02(unaffected==0 과 affected>=2 동시) · XC03(정산 4관문 capsuleOk/gateOk/ledgerOk/workorderOk) · XC04(3세대 lineage --deep) · XC05(L3 --deep + audit-report) 를 복제하지 않는다. AU14+ 한 축 저티어 여정, WR 일일 3해시 answer.json, T07 서식 채움(fill-fields · 첫 필드 홍길동) 도 베끼지 마라.\n\n중간 오염과 전체 깊이 5 가 둘 다 맞아야 한다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "m5/g0.capsule.json",
+      "m5/g1.capsule.json",
+      "m5/g2.capsule.json",
+      "m5/g3.capsule.json",
+      "m5/g4.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "깊이 5세대",
+      "op": "value_eq",
+      "value": 5,
+      "path": "depth",
+      "cmd": [
+        "lineage",
+        "{file:m5/g4.capsule.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "사슬 온전",
+      "op": "value_eq",
+      "value": true,
+      "path": "valid",
+      "cmd": [
+        "lineage",
+        "{file:m5/g4.capsule.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "영향권 3건 이상",
+      "op": "len_ge",
+      "value": 3,
+      "path": "affected",
+      "cmd": [
+        "recall-scope",
+        "--contaminated",
+        "{file:m5/g2.capsule.json}",
+        "--among",
+        "{file:m5}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "막내 캡슐 실재",
+      "op": "file_exists",
+      "file": "m5/g4.capsule.json",
+      "minBytes": 80
+    }
+  ]
+}

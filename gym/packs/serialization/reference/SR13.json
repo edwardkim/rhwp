@@ -1,0 +1,18 @@
+{
+  "id": "SR13",
+  "steps": [
+    {
+      "answer": {
+        "wasDistribution": {
+          "cmd": [
+            "convert",
+            "{input}",
+            "{sub:conv.hwp}",
+            "--json"
+          ],
+          "path": "wasDistribution"
+        }
+      }
+    }
+  ]
+}

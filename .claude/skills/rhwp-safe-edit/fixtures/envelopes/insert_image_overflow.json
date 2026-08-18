@@ -1,0 +1,28 @@
+{
+  "source": "신청서_filled.hwp",
+  "image": "samples/images/moogung.jpg",
+  "page": 0,
+  "x": 50000,
+  "y": 70000,
+  "width": 5000,
+  "height": 5000,
+  "dryRun": true,
+  "overflow": [
+    {
+      "page": 0,
+      "paperWidthHu": 59528,
+      "paperHeightHu": 84188,
+      "rightHu": 62000,
+      "bottomHu": 76000,
+      "overflowXHu": 2472,
+      "overflowYHu": 0
+    }
+  ],
+  "schemaVersion": "1.0",
+  "_skillMeta": {
+    "exit": 0,
+    "branch": "WarnOverflow",
+    "layer": "edit-insert-image",
+    "complete": false
+  }
+}

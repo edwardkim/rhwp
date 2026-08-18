@@ -1,0 +1,43 @@
+{
+  "id": "SR54",
+  "tier": 3,
+  "title": "3쪽 문서에서 마지막 쪽만 남긴 문단 수",
+  "input": "samples/exam-kor-3p.hwp",
+  "instructions": "3쪽 표본의 셋째 쪽만 남겨 slice.hwp 로 저장하고, 남긴 문단 수를 answer.json 에 {\"paragraphsKept\": N} 으로 제출하라. 힌트: rhwp extract-pages --from 3 --to 3 --json 의 paragraphsKept.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "slice.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "추출물 실재",
+      "op": "file_exists",
+      "file": "slice.hwp",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "slice.hwp"
+    },
+    {
+      "name": "남긴 문단 수",
+      "op": "answer_eq",
+      "answer": "paragraphsKept",
+      "path": "paragraphsKept",
+      "cmd": [
+        "extract-pages",
+        "{input}",
+        "{file:slice.hwp}",
+        "--from",
+        "3",
+        "--to",
+        "3",
+        "--json"
+      ]
+    }
+  ]
+}

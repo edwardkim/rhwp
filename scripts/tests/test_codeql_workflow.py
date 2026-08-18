@@ -447,14 +447,19 @@ PREFLIGHT_SCRIPT
             )
             completed = subprocess.run(
                 ["bash"],
-                input=self.language_script,
+                # Windows text pipes translate LF to CRLF.  Feed Bash bytes so
+                # the YAML shell block keeps its POSIX line endings.
+                input=self.language_script.encode("utf-8"),
                 check=False,
-                text=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 env=env,
             )
-            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(
+                completed.returncode,
+                0,
+                completed.stderr.decode("utf-8", errors="replace"),
+            )
             output.seek(0)
             return dict(
                 line.rstrip("\n").split("=", maxsplit=1)

@@ -1,0 +1,11 @@
+{
+  "id": "ws_corpus",
+  "task": "워크스페이스 코퍼스",
+  "choice": "session",
+  "first_tool": "hwp_ws_list",
+  "why": "--workspace 전제.",
+  "forbidden": [
+    "invented_tools",
+    "relative_paths"
+  ]
+}

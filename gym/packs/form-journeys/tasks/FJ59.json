@@ -1,0 +1,53 @@
+{
+  "id": "FJ59",
+  "tier": 3,
+  "title": "메모 표본 목차1[2] 순번 채움",
+  "input": "samples/field-01-memo.hwp",
+  "instructions": "field-01-memo 의 세 번째 목차1(목차1[2]) 에만 '메모셋째목차' 를 넣은 memo-toc2.hwp 를 제출하라. FJ03 은 field-01 의 같은 순번이다. 이번은 메모 표본이다. 회사명과 목차1[0] 은 비운다. 힌트: --data '{\"목차1[2]\": \"메모셋째목차\"}' -o memo-toc2.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "memo-toc2.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "목차1[2] 값",
+      "op": "value_eq",
+      "value": "메모셋째목차",
+      "path": "fields[7].value",
+      "cmd": [
+        "fields",
+        "{file:memo-toc2.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "목차1[0] 공란",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[5].value",
+      "cmd": [
+        "fields",
+        "{file:memo-toc2.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:memo-toc2.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "memo-toc2.hwp"
+    }
+  ]
+}

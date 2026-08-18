@@ -1,0 +1,16 @@
+{
+  "id": "TC04",
+  "steps": [
+    {
+      "run": [
+        "table-to-csv",
+        "{input}",
+        "--table",
+        "0",
+        "-o",
+        "{sub:table.csv}",
+        "--json"
+      ]
+    }
+  ]
+}

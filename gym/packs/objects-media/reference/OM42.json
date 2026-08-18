@@ -1,0 +1,19 @@
+{
+  "id": "OM42",
+  "steps": [
+    {
+      "answer": {
+        "mime": {
+          "cmd": [
+            "thumbnail",
+            "{input}",
+            "-o",
+            "{sub:t.png}",
+            "--json"
+          ],
+          "path": "mime"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "planVersion": "1.0",
+  "dryRun": true,
+  "input": "samples/field-01.hwp",
+  "output": "out/plan_result.hwp",
+  "preview": [
+    {
+      "step": 0,
+      "action": "fill_fields",
+      "targets": [
+        {
+          "name": "회사명",
+          "occurrence": 0,
+          "sameNameCount": 1,
+          "value": "페타플로"
+        }
+      ]
+    },
+    {
+      "step": 1,
+      "action": "replace_text",
+      "find": "2025년",
+      "matches": 7,
+      "willReplace": 7
+    }
+  ],
+  "invalid": [],
+  "assertions": {
+    "notFoundEmpty": true,
+    "verify": true
+  },
+  "schemaVersion": "1.0",
+  "_skillMeta": {
+    "exit": 0,
+    "branch": "preview",
+    "outputKept": false,
+    "layer": "run"
+  }
+}

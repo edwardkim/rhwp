@@ -1,0 +1,29 @@
+{
+  "id": "T05",
+  "title": "batch 2행 실측",
+  "sample": "samples/form-01.hwp",
+  "steps": [
+    {
+      "argv": [
+        "batch",
+        "fill",
+        "--form",
+        "samples/form-01.hwp",
+        "--data",
+        "row1.jsonl",
+        "--out-dir",
+        "batch_out",
+        "--json"
+      ],
+      "ndjson": true,
+      "rows": 2,
+      "expectEach": {
+        "filledCount": 1,
+        "notFound": [],
+        "ambiguous": []
+      }
+    }
+  ],
+  "stop": "F10",
+  "measuredIn": "recipes/05"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "CR29",
+  "tier": 1,
+  "title": "KTX 문서에 'KTX' 가 몇 번?",
+  "input": "samples/KTX.hwp",
+  "instructions": "가족사진존 — CR29 는 키 제한 없는 입문 놀이기구다. 파일 이름에 KTX 가 있다고 1을 쓰지 마라. search 로 센다. 문서는 `samples/KTX.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: search {입력} --json -- KTX. answer.json 에는 {\"hits\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. search matchCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "KTX 문서에 'KTX' 가 몇 번?",
+      "op": "answer_eq",
+      "answer": "hits",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "KTX"
+      ],
+      "path": "matchCount"
+    }
+  ],
+  "axis": "입문"
+}

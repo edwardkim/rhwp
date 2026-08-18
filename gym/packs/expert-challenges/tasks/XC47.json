@@ -1,0 +1,74 @@
+{
+  "id": "XC47",
+  "tier": 5,
+  "title": "쌍 사슬 L4 깊은 게이트",
+  "input": "samples/inner-table-01.hwp",
+  "axis": "자동화",
+  "instructions": "XC47 — 쌍 사슬 L4 깊은 게이트.\n\n입력 표본은 `samples/inner-table-01.hwp` 이다. 보스 존 과제다. 한 단만 빠지면 최종 판정이 막힌다. 저장소 samples/ 에 이미 있는 실문서만 쓰고 새 픽스처를 만들지 않는다. expert-challenges pack 은 기존 CLI 표면(keygen · replay · run · anchor · settle · conformance · recall-scope · lineage · audit-report · export-tables) 만으로 여러 축을 한 제출에 묶는다. 새 명령·새 연산자·새 pack 은 없다. 원본을 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. 정답 해시·건수를 과제 파일에 박제하지 마라. 채점은 같은 판정 명령을 다시 돌린다.\n\n같은 키로 서명한 독립 캡슐 두 장(p,q)을 한 폴더에 두고 둘 다 앵커한 뒤 **L4 --deep** 을 통과하라. 한 장만 내면 보스가 아니다.\n\n제출 폴더에 duall4/p.capsule.json · duall4/q.capsule.json · keyring.json · anchor.ndjson · policy.json 를 두어라.\n\n수행 힌트: replay --sign-key 두 번, anchor add 두 번, conformance L4 --deep.\n\n이 과제는 XC01(L5 --deep 사다리 완주) · XC02(unaffected==0 과 affected>=2 동시) · XC03(정산 4관문 capsuleOk/gateOk/ledgerOk/workorderOk) · XC04(3세대 lineage --deep) · XC05(L3 --deep + audit-report) 를 복제하지 않는다. AU14+ 한 축 저티어 여정, WR 일일 3해시 answer.json, T07 서식 채움(fill-fields · 첫 필드 홍길동) 도 베끼지 마라.\n\n두 장을 부모로 잇지 마라. 독립 두 장이다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "duall4/p.capsule.json",
+      "duall4/q.capsule.json",
+      "keyring.json",
+      "anchor.ndjson",
+      "policy.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "L4 깊은 적합",
+      "op": "value_eq",
+      "value": "conformant",
+      "path": "verdict",
+      "cmd": [
+        "conformance",
+        "{file:duall4}",
+        "--level",
+        "L4",
+        "--deep",
+        "--keyring",
+        "{file:keyring.json}",
+        "--anchor-log",
+        "{file:anchor.ndjson}",
+        "--policy",
+        "{file:policy.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "막내 앵커 등재",
+      "op": "value_eq",
+      "value": true,
+      "path": "logged",
+      "cmd": [
+        "anchor",
+        "verify",
+        "{file:duall4/q.capsule.json}",
+        "--log",
+        "{file:anchor.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "앵커 로그 실재",
+      "op": "file_exists",
+      "file": "anchor.ndjson",
+      "minBytes": 40
+    },
+    {
+      "name": "막내 캡슐 실재",
+      "op": "file_exists",
+      "file": "duall4/q.capsule.json",
+      "minBytes": 80
+    }
+  ]
+}

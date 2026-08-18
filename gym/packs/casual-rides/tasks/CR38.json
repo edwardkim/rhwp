@@ -1,0 +1,26 @@
+{
+  "id": "CR38",
+  "tier": 1,
+  "title": "서식 문서에 '서식' 이 몇 번?",
+  "input": "samples/form-01.hwp",
+  "instructions": "미니서커스 — CR38 는 키 제한 없는 입문 놀이기구다. 칸을 채우지 말고 본문 검색만 한다. 문서는 `samples/form-01.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: search {입력} --json -- 서식. answer.json 에는 {\"hits\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. search matchCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "서식 문서에 '서식' 이 몇 번?",
+      "op": "answer_eq",
+      "answer": "hits",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "서식"
+      ],
+      "path": "matchCount"
+    }
+  ],
+  "axis": "입문"
+}
