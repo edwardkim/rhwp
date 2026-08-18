@@ -39,4 +39,3 @@ gym tutorial·PARK·프로파일 문서와 CI tutorial 검사를 정비한다. C
 ## 현재 판정
 
 **로컬 수용 권고, 원격 CI·승인 대기.** 새 통합 PR을 push하거나 원 PR을 merge·close하지 않았다. push 직전에 upstream/devel과 모든 원 head·required check를 다시 확인하고, 작업지시자 승인 뒤에만 원격 후속 처리를 진행한다.
-
