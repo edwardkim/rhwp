@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/schema/v-decomp.row.json",
+  "title": "V-decomp corpus row",
+  "description": "(task, criterionId, envelopeField, atomPass, holisticWouldHide) 실픽스처 한 행.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rowId",
+    "task",
+    "criterionId",
+    "envelopeField",
+    "atomPass",
+    "holisticWouldHide",
+    "command",
+    "bundlePassCount",
+    "bundleTotal",
+    "expected"
+  ],
+  "properties": {
+    "rowId": { "type": "string", "pattern": "^CD-[0-9]{6}$" },
+    "task": { "type": "string" },
+    "criterionId": { "type": "string", "minLength": 1 },
+    "envelopeField": { "type": "string" },
+    "atomPass": { "type": "boolean" },
+    "holisticWouldHide": { "type": "boolean" },
+    "command": { "type": "string" },
+    "bundlePassCount": { "type": "integer", "minimum": 0 },
+    "bundleTotal": { "type": "integer", "minimum": 0 },
+    "expected": { "$ref": "envelope_atom.schema.json" },
+    "observed": true,
+    "failKind": {
+      "type": "string",
+      "enum": [
+        "invented_field",
+        "holistic_only",
+        "empty_task",
+        "empty_criterion",
+        "missing_field",
+        "atom_mismatch",
+        "bundle_shape"
+      ]
+    },
+    "file": { "type": "string" },
+    "holisticOnly": { "type": "boolean" }
+  }
+}
