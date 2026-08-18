@@ -1,0 +1,11 @@
+{
+  "id": "T21",
+  "title": "A4 좌표 환산 100mm",
+  "steps": [
+    {
+      "note": "기존 CLI 표면만. 새 플래그 없음",
+      "usesExistingCommand": true
+    }
+  ],
+  "notGym": true
+}
