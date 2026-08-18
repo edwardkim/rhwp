@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "id": "s900-pair-rectangle-line",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "flow 안 rectangle 다음 line 순서 유지",
+  "ops": [
+    {
+      "kind": "rectangle",
+      "x": 20.0,
+      "y": 20.0,
+      "w": 30.0,
+      "h": 16.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 80.0,
+      "y": 20.0,
+      "w": 30.0,
+      "h": 16.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "rectangle",
+    "line"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  rectangle bbox=20.00,20.00,30.00,16.00",
+    "  line bbox=80.00,20.00,30.00,16.00",
+    "end_page ops=2"
+  ]
+}

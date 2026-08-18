@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "id": "s905-pair-image-equation",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "flow 안 image 다음 equation 순서 유지",
+  "ops": [
+    {
+      "kind": "image",
+      "x": 20.0,
+      "y": 20.0,
+      "w": 30.0,
+      "h": 16.0,
+      "text": null,
+      "gradient": false,
+      "image": true
+    },
+    {
+      "kind": "equation",
+      "x": 80.0,
+      "y": 20.0,
+      "w": 30.0,
+      "h": 16.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "image",
+    "equation"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  image bbox=20.00,20.00,30.00,16.00",
+    "  equation bbox=80.00,20.00,30.00,16.00",
+    "end_page ops=2"
+  ]
+}

@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "id": "s302-all-materializable",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "만들 수 있는 kind 전부 + 배경 재정렬",
+  "ops": [
+    {
+      "kind": "textRun",
+      "x": 55.0,
+      "y": 20.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": "k1",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "charOverlap",
+      "x": 100.0,
+      "y": 20.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textControlMark",
+      "x": 145.0,
+      "y": 20.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "tabLeader",
+      "x": 190.0,
+      "y": 20.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textDecoration",
+      "x": 235.0,
+      "y": 20.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "footnoteMarker",
+      "x": 280.0,
+      "y": 20.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 325.0,
+      "y": 20.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "rectangle",
+      "x": 10.0,
+      "y": 100.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "ellipse",
+      "x": 55.0,
+      "y": 100.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "path",
+      "x": 100.0,
+      "y": 100.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "image",
+      "x": 145.0,
+      "y": 100.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": true
+    },
+    {
+      "kind": "equation",
+      "x": 190.0,
+      "y": 100.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "formObject",
+      "x": 235.0,
+      "y": 100.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "placeholder",
+      "x": 280.0,
+      "y": 100.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "rawSvg",
+      "x": 325.0,
+      "y": 100.0,
+      "w": 36.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "pageBackground",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 400.0,
+      "h": 300.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "pageBackground",
+    "textRun",
+    "charOverlap",
+    "textControlMark",
+    "tabLeader",
+    "textDecoration",
+    "footnoteMarker",
+    "line",
+    "rectangle",
+    "ellipse",
+    "path",
+    "image",
+    "equation",
+    "formObject",
+    "placeholder",
+    "rawSvg"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  pageBackground bbox=0.00,0.00,400.00,300.00",
+    "  textRun bbox=55.00,20.00,36.00,24.00",
+    "  charOverlap bbox=100.00,20.00,36.00,24.00",
+    "  textControlMark bbox=145.00,20.00,36.00,24.00",
+    "  tabLeader bbox=190.00,20.00,36.00,24.00",
+    "  textDecoration bbox=235.00,20.00,36.00,24.00",
+    "  footnoteMarker bbox=280.00,20.00,36.00,24.00",
+    "  line bbox=325.00,20.00,36.00,24.00",
+    "  rectangle bbox=10.00,100.00,36.00,24.00",
+    "  ellipse bbox=55.00,100.00,36.00,24.00",
+    "  path bbox=100.00,100.00,36.00,24.00",
+    "  image bbox=145.00,100.00,36.00,24.00",
+    "  equation bbox=190.00,100.00,36.00,24.00",
+    "  formObject bbox=235.00,100.00,36.00,24.00",
+    "  placeholder bbox=280.00,100.00,36.00,24.00",
+    "  rawSvg bbox=325.00,100.00,36.00,24.00",
+    "end_page ops=16"
+  ]
+}

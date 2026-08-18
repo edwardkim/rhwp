@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "m-line-160x120",
+  "width": 160.0,
+  "height": 120.0,
+  "contract": "line 를 160x120 페이지에 올리면 begin_page 헤더가 160.00x120.00",
+  "ops": [
+    {
+      "kind": "line",
+      "x": 4.0,
+      "y": 6.0,
+      "w": 24.0,
+      "h": 12.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "line"
+  ],
+  "expectedTrace": [
+    "begin_page 160.00x120.00",
+    "  line bbox=4.00,6.00,24.00,12.00",
+    "end_page ops=1"
+  ]
+}

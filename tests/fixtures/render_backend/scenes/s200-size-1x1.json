@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s200-size-1x1",
+  "width": 1.0,
+  "height": 1.0,
+  "contract": "페이지 치수 1x1 가 begin_page 에 그대로 찍힌다",
+  "ops": [
+    {
+      "kind": "rectangle",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 1.0,
+      "h": 1.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "rectangle"
+  ],
+  "expectedTrace": [
+    "begin_page 1.00x1.00",
+    "  rectangle bbox=0.00,0.00,1.00,1.00",
+    "end_page ops=1"
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "id": "s501-text-ladder",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "텍스트 10줄",
+  "ops": [
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 16.0,
+      "w": 180.0,
+      "h": 16.0,
+      "text": "줄00",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 36.0,
+      "w": 180.0,
+      "h": 16.0,
+      "text": "줄01",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 56.0,
+      "w": 180.0,
+      "h": 16.0,
+      "text": "줄02",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 76.0,
+      "w": 180.0,
+      "h": 16.0,
+      "text": "줄03",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 96.0,
+      "w": 180.0,
+      "h": 16.0,
+      "text": "줄04",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 116.0,
+      "w": 180.0,
+      "h": 16.0,
+      "text": "줄05",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 136.0,
+      "w": 180.0,
+      "h": 16.0,
+      "text": "줄06",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 156.0,
+      "w": 180.0,
+      "h": 16.0,
+      "text": "줄07",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 176.0,
+      "w": 180.0,
+      "h": 16.0,
+      "text": "줄08",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 196.0,
+      "w": 180.0,
+      "h": 16.0,
+      "text": "줄09",
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "textRun",
+    "textRun",
+    "textRun",
+    "textRun",
+    "textRun",
+    "textRun",
+    "textRun",
+    "textRun",
+    "textRun",
+    "textRun"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  textRun bbox=10.00,16.00,180.00,16.00",
+    "  textRun bbox=10.00,36.00,180.00,16.00",
+    "  textRun bbox=10.00,56.00,180.00,16.00",
+    "  textRun bbox=10.00,76.00,180.00,16.00",
+    "  textRun bbox=10.00,96.00,180.00,16.00",
+    "  textRun bbox=10.00,116.00,180.00,16.00",
+    "  textRun bbox=10.00,136.00,180.00,16.00",
+    "  textRun bbox=10.00,156.00,180.00,16.00",
+    "  textRun bbox=10.00,176.00,180.00,16.00",
+    "  textRun bbox=10.00,196.00,180.00,16.00",
+    "end_page ops=10"
+  ]
+}

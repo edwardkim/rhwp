@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "id": "c02-image-placeholder-rawSvg",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "flow 클러스터 image+placeholder+rawSvg 순서 유지",
+  "ops": [
+    {
+      "kind": "image",
+      "x": 10.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": null,
+      "gradient": false,
+      "image": true
+    },
+    {
+      "kind": "placeholder",
+      "x": 70.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "rawSvg",
+      "x": 130.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "image",
+    "placeholder",
+    "rawSvg"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  image bbox=10.00,10.00,40.00,20.00",
+    "  placeholder bbox=70.00,10.00,40.00,20.00",
+    "  rawSvg bbox=130.00,10.00,40.00,20.00",
+    "end_page ops=3"
+  ]
+}

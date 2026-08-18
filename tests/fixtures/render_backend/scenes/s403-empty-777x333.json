@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "id": "s403-empty-777x333",
+  "width": 777.0,
+  "height": 333.0,
+  "contract": "빈 777x333 페이지",
+  "ops": [],
+  "expectedKinds": [],
+  "expectedTrace": [
+    "begin_page 777.00x333.00",
+    "end_page ops=0"
+  ]
+}

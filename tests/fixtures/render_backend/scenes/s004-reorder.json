@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "id": "s004-reorder",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "트리 순서가 뒤바뀌어도 배경이 먼저 재생된다",
+  "ops": [
+    {
+      "kind": "rectangle",
+      "x": 20.0,
+      "y": 20.0,
+      "w": 10.0,
+      "h": 10.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 50.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "pageBackground",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 400.0,
+      "h": 300.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "pageBackground",
+    "rectangle",
+    "line"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  pageBackground bbox=0.00,0.00,400.00,300.00",
+    "  rectangle bbox=20.00,20.00,10.00,10.00",
+    "  line bbox=0.00,0.00,50.00,0.00",
+    "end_page ops=3"
+  ]
+}

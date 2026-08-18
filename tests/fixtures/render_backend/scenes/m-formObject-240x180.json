@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "m-formObject-240x180",
+  "width": 240.0,
+  "height": 180.0,
+  "contract": "formObject 를 240x180 페이지에 올리면 begin_page 헤더가 240.00x180.00",
+  "ops": [
+    {
+      "kind": "formObject",
+      "x": 4.0,
+      "y": 6.0,
+      "w": 24.0,
+      "h": 12.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "formObject"
+  ],
+  "expectedTrace": [
+    "begin_page 240.00x180.00",
+    "  formObject bbox=4.00,6.00,24.00,12.00",
+    "end_page ops=1"
+  ]
+}

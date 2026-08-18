@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "m-image-640x480",
+  "width": 640.0,
+  "height": 480.0,
+  "contract": "image 를 640x480 페이지에 올리면 begin_page 헤더가 640.00x480.00",
+  "ops": [
+    {
+      "kind": "image",
+      "x": 4.0,
+      "y": 6.0,
+      "w": 24.0,
+      "h": 12.0,
+      "text": null,
+      "gradient": false,
+      "image": true
+    }
+  ],
+  "expectedKinds": [
+    "image"
+  ],
+  "expectedTrace": [
+    "begin_page 640.00x480.00",
+    "  image bbox=4.00,6.00,24.00,12.00",
+    "end_page ops=1"
+  ]
+}
