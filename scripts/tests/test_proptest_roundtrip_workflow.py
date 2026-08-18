@@ -28,9 +28,19 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
         self.assertTrue(RUNNER.is_file(), "run-prop-roundtrip.mjs 가 없다")
 
     def test_runs_on_pull_request(self) -> None:
-        """PR 마다 도는 always-on job. nightly 전용 퍼지가 아니다."""
+        """PR 마다 preflight를 거치며 nightly 전용 퍼지가 아니다."""
         self.assertIn("pull_request:", self.wf)
         self.assertIn("branches: [main, devel]", self.wf)
+
+    def test_mydocs_only_devel_pr_skips_worker_without_hiding_check(self) -> None:
+        self.assertIn("name: Proptest preflight", self.wf)
+        self.assertIn("pr.base.ref !== 'devel'", self.wf)
+        self.assertIn("file.filename.startsWith('mydocs/')", self.wf)
+        self.assertIn("file.previous_filename.startsWith('mydocs/')", self.wf)
+        self.assertIn("name: prop roundtrip", self.wf)
+        self.assertIn("needs: preflight", self.wf)
+        self.assertIn("needs.preflight.outputs.fast_pass != 'true'", self.wf)
+        self.assertNotRegex(self.wf, r"(?m)^\\s{2,4}paths-ignore:")
 
     def test_is_not_a_long_fuzz(self) -> None:
         self.assertNotIn("cargo-fuzz", self.wf)
@@ -59,6 +69,7 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
 
     def test_read_only_permissions(self) -> None:
         self.assertIn("contents: read", self.wf)
+        self.assertIn("pull-requests: read", self.wf)
 
 
 if __name__ == "__main__":
