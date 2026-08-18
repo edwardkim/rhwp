@@ -7,6 +7,10 @@ last_verified: 2026-08-18
 
 # table-csv — 표 CSV 왕복 (되쓰기)
 
+이 브랜치에 등재된 과제는 **TC01–TC25** 다. TC18–TC25 는 재정표
+치수·동일 격자 0칸·수입 55·tableCount·다른 표 표본·BOM 재정·
+`--verify` 되쓰기·표 1 선택이다.
+
 이 pack 은 표를 CSV 로 뽑아 고친 뒤 **같은 자리**에 되넣는 편집
 축이다. `table-to-csv` ↔ `csv-to-table` 왕복이 본판이고,
 `export-tables` 는 채점 재조회에만 쓴다. 새 CLI 는 없다. 표본은

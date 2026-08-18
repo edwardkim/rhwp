@@ -577,6 +577,93 @@ class IterPackDocsTests(unittest.TestCase):
         self.assertEqual(docs[0][2]["id"], "A01")
 
 
+class UnknownCategoryAndOverlapTests(unittest.TestCase):
+    """분모 정직성 — 모르는 카테고리·빈 used·이름 겹침."""
+
+    def test_unknown_category_is_neither_agent_nor_excluded(self):
+        cmds = [
+            {"name": "mystery", "category": "unknown-cat"},
+            {"name": "info", "category": "query"},
+            {"name": "hwp5-inventory", "category": "diagnostic"},
+        ]
+        r = load().measure(cmds, used={"info", "mystery"})
+        self.assertEqual(r["agentFacingTotal"], 1)
+        self.assertEqual(r["coveredCommands"], ["info"])
+        self.assertNotIn("mystery", r["coveredCommands"])
+        self.assertNotIn("mystery", r["excludedNonAgent"])
+        flat = [n for names in r["uncoveredByCategory"].values() for n in names]
+        self.assertNotIn("mystery", flat)
+        self.assertIn("hwp5-inventory", r["excludedNonAgent"])
+
+    def test_empty_used_set_covers_nothing_of_agent_facing(self):
+        r = load().measure(FIXTURE, used=set())
+        self.assertEqual(r["covered"], 0)
+        self.assertEqual(r["uncovered"], 2)
+        self.assertEqual(r["coveragePercent"], 0)
+        self.assertEqual(r["coveredCommands"], [])
+        flat = [n for names in r["uncoveredByCategory"].values() for n in names]
+        self.assertEqual(set(flat), {"info", "csv-to-table"})
+
+    def test_empty_used_and_empty_denominator_is_full(self):
+        r = load().measure([], used=set())
+        self.assertEqual(r["agentFacingTotal"], 0)
+        self.assertEqual(r["coveragePercent"], 100)
+        self.assertEqual(r["uncovered"], 0)
+
+    def test_overlapping_names_across_categories_count_once(self):
+        cmds = [
+            {"name": "info", "category": "query"},
+            {"name": "info", "category": "query"},
+            {"name": "search", "category": "query"},
+            {"name": "search", "category": "export"},
+        ]
+        r = load().measure(cmds, used={"info", "search"})
+        self.assertEqual(r["agentFacingTotal"], 2)
+        self.assertEqual(r["covered"], 2)
+        self.assertEqual(r["uncovered"], 0)
+        self.assertEqual(r["coveredCommands"], ["info", "search"])
+
+    def test_used_outside_agent_facing_does_not_inflate_covered(self):
+        r = load().measure(FIXTURE, used={"info", "hwp5-inventory", "mcp-serve"})
+        self.assertEqual(r["covered"], 1)
+        self.assertEqual(r["coveredCommands"], ["info"])
+        self.assertNotIn("hwp5-inventory", r["coveredCommands"])
+
+    def test_real_gym_expanded_packs_expose_expected_ops_and_cmds(self):
+        cov = load()
+        gym = str(REPO_ROOT / "gym")
+        used = cov.used_commands(gym)
+        ops = cov.used_operators(gym)
+        grid = cov.used_commands_by_pack(gym)
+        for cmd in (
+            "extract-data",
+            "export-text",
+            "chart-to-csv",
+            "table-to-csv",
+            "csv-to-table",
+            "export-tables",
+            "batch",
+            "search",
+        ):
+            self.assertIn(cmd, used, cmd)
+        for op in (
+            "answer_eq",
+            "len_answer_eq",
+            "csv_cell_eq",
+            "utf8_bom",
+            "cell_text_eq",
+            "json_value_eq",
+            "value_eq",
+            "value_ge",
+            "file_exists",
+            "differs_from_input",
+        ):
+            self.assertIn(op, ops, op)
+        self.assertEqual(len(grid["extraction"]), len(set(grid["extraction"])))
+        self.assertEqual(len(grid["table-csv"]), len(set(grid["table-csv"])))
+        self.assertEqual(len(grid["batch-ops"]), len(set(grid["batch-ops"])))
+
+
 if __name__ == "__main__":
     unittest.main()
 
