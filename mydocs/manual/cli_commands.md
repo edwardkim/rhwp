@@ -1091,6 +1091,15 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 ### `edit insert-table <파일> --rows N --cols N [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5040)
 본문 좌표에 빈 표를 만든다. 코어 `create_table_native`. `--rows`/`--cols` 는 1 이상이고, 열 수는 256 이하이다.
 
+### `edit set-chart-data <파일> --chart N --data <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+문서 순번 차트의 숫자 데이터를 바꾼다. 코어 `set_chart_data_by_index_native`. `--chart` 는
+문서 순서 1부터(`charts` 와 같다). `--data` 는 `{"labels"?,"series":[{"name"?,"values":["…"]}]}`.
+계열 수·값 개수·이름이 다르면 한 칸도 쓰지 않는다.
+
+### `edit insert-number <파일> [--section N] [--para N] [--offset N] [--count N] [-o <출력>] [--dry-run] [--verify] [--json]`
+문단 좌표에 쪽 새 번호로 시작 컨트롤을 넣는다. 코어 `insert_new_number_native`. `--count` 는
+시작 쪽 번호(1~65535, 기본 1).
+
 ### `edit insert-row <파일> --table <번호> --row <행> [--below] [-o <출력>] [--dry-run] [--verify] [--json]` (#4994)
 본문 최상위 표에 행을 끼운다. 코어 `insert_table_row_native`. `--below` 면 지정 행 아래.
 
@@ -1201,6 +1210,25 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 머리말 또는 꼬리말을 만든다. 코어 `create_header_footer_native`. `--header`/`--footer` 중
 하나 필수. `--apply-to` 는 0 양쪽·1 짝수·2 홀수(기본 0). 같은 적용 대상이 있으면 거부.
 
+### `edit set-equation-properties <파일> --section N --para N --ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+
+본문 수식 속성을 바꾼다. 코어 `set_equation_properties_native`. `--section`/`--para`/`--ctrl`/`--props`는 필수다 (예: `{"script":"x^2"}`).
+
+### `edit insert-shape <파일> --width N --height N [--section N] [--para N] [--offset N] [--x N] [--y N] [--shape rectangle] [--wrap InFrontOfText] [--treat-as-char] [-o <출력>] [--dry-run] [--verify] [--json]`
+
+본문 문단에 도형(기본 사각형)을 끼운다. 코어 `create_shape_control_native` 배선이며 새 편집 로직은 없다.
+
+- `--width` / `--height` (필수) — HWPUNIT. 둘 다 0 이면 거부.
+- `--section` / `--para` / `--offset` — 0 기준. 생략하면 0.
+- `--x` / `--y` — 가로·세로 오프셋(HWPUNIT, 기본 0).
+- `--shape` — `rectangle`(기본)·`ellipse`·`line`·`textbox`·`polygon`·`arc`.
+- `--wrap` — `InFrontOfText`(기본) 등 네이티브가 받는 감싸기 값.
+- `--json` 봉투: `section`/`paragraph`/`offset`/`width`/`height`/`x`/`y`.
+
+### `edit delete-shape <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 도형 컨트롤을 지운다. 코어 `delete_shape_control_native` 배선이며 새 편집 로직은 없다.
+`--section`/`--para`/`--ctrl` 은 필수(0 기준). 지정 컨트롤이 Shape 이 아니면 거부한다.
+
 ### `edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]` (#3719 §6-5)
 도장·서명 같은 그림을 쪽 좌표에 붙인다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각.
 - `--image <그림>` (필수) — 지원 형식은 `png`·`jpg`·`jpeg`·`bmp`·`tif`·`tiff` 뿐(확장자와 내용
@@ -1226,6 +1254,49 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 rhwp edit insert-image 신청서_filled.hwp --image samples/images/moogung.jpg \
   --page 0 --x 50000 --y 70000 --width 5000 --height 5000 \
   -o 제출본.hwp --json | jq '{output, overflow}'
+```
+
+### `edit insert-picture <파일> --image <그림> [--section N] [--para N] [--offset N] [--width N] [--height N] [--x N] [--y N] [-o <출력>] [--dry-run] [--verify] [--json]`
+문단 좌표에 **본문 그림**을 끼운다. `insert-image` 는 도장·서명용 쪽 좌표(용지 기준 floating)
+축이고, 이 명령은 `search` 와 같은 구역·문단·문자 오프셋에 코어 `insert_picture_native` 만
+배선한다. 새 편집 로직은 없다. 그림 바이트는 파일 그대로 넘긴다.
+
+- `--image <그림>` (필수) — `png`·`jpg`·`jpeg`·`bmp`·`tif`·`tiff`. 확장자·내용 둘 다 검사.
+- `--section` / `--para` / `--offset` — 0 기준. 생략하면 0.
+- `--width` / `--height` — HWPUNIT. 생략 시 원본 픽셀 ×75, 한쪽만 주면 비율 유지.
+- `--x` / `--y` — 용지 기준 위치(HWPUNIT, 기본 0).
+- `--json` 봉투: `image`·`section`·`paragraph`·`offset`·`x`·`y`·`width`·`height`·`binDataId`.
+
+```bash
+rhwp edit insert-picture 공문.hwp --image assets/logo/logo-16.png \
+  --section 0 --para 0 --offset 0 --width 1200 --height 1200 \
+  -o 그림본.hwp --json | jq '{section, paragraph, offset, binDataId}'
+```
+
+### `edit delete-picture <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 그림 컨트롤을 지운다. 코어 `delete_picture_control_native`. `--section`/`--para`/`--ctrl`
+은 필수(0 기준). 인덱스는 문서를 스캔해 Picture 컨트롤을 고른다(하드코드 금지).
+
+```bash
+rhwp edit delete-picture 그림본.hwp --section 0 --para 0 --ctrl 0 -o 지움.hwp --json
+```
+
+### `edit set-picture <파일> --section N --para N --ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 그림 속성을 바꾼다. 코어 `set_picture_properties_native`. `--section`/`--para`/`--ctrl`/
+`--props` 필수. 인덱스는 문서를 스캔해 Picture 컨트롤을 고른다. `--props` 예:
+`{"brightness":50}`, `{"treatAsChar":true}`, `{"hasCaption":true}`.
+
+```bash
+rhwp edit set-picture 그림본.hwp --section 0 --para 0 --ctrl 0 \
+  --props '{"brightness":50}' -o 조정본.hwp --json
+```
+
+### `edit ungroup-shape <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 GroupShape 를 풀어 자식 개체를 되돌린다. 코어 `ungroup_shape_native`. `--section`/`--para`/`--ctrl`
+은 필수(0 기준). 인덱스는 문서를 스캔해 GroupShape 를 고른다(하드코드 금지).
+
+```bash
+rhwp edit ungroup-shape 묶음.hwp --section 0 --para 0 --ctrl 0 -o 풀림.hwp --json
 ```
 
 ### `edit redact <파일> [--kind …] [--mask <문자>] [--dry-run] [--no-raw] [-o <출력>|--in-place]` (#3719 §6-11)

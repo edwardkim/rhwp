@@ -1,7 +1,12 @@
 import { WasmBridge, type DeferredFocusedPagePatch } from '@/core/wasm-bridge';
 import type { LayerRenderProfile } from '@/core/types';
+import type { FontDecisionTraceRecordV1 } from '@/core/font-decision-trace';
 import { layerPaintOpReplayPlane } from './canvaskit/replay-plane';
-import type { CanvasKitLayerRenderer, CanvasKitRenderDiagnostics } from './canvaskit-renderer';
+import type {
+  CanvasKitFontDecisionEvidence,
+  CanvasKitLayerRenderer,
+  CanvasKitRenderDiagnostics,
+} from './canvaskit-renderer';
 import {
   cacheableImageKeySignature,
   collectImagePrefetchDataUrls,
@@ -258,6 +263,18 @@ export class PageRenderer {
       readinessBlockers: [...diagnostics.readinessBlockers],
       replayFeatureCounts: { ...diagnostics.replayFeatureCounts },
     };
+  }
+
+  getCanvasKitFontDecisionEvidence(
+    pageIndex: number,
+    record: FontDecisionTraceRecordV1,
+  ): CanvasKitFontDecisionEvidence | null {
+    const diagnostics = this.canvaskitDiagnosticsByPage.get(pageIndex);
+    if (!diagnostics) return null;
+    return this.canvaskitRenderer?.fontDecisionEvidence(
+      record,
+      diagnostics.replayFeatureCounts.glyphRuns > 0,
+    ) ?? null;
   }
 
   releasePageDiagnostics(pageIdx: number): void {

@@ -23,8 +23,8 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **85개**(그중 `--json` 계약 **54개**, batch 축 **9개**) · MCP 도구 **104개**(무상태 88 + 세션 전용 16) |
-| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **261개** · §2 전수 사전 **264개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
+| 표면 규모 | CLI 명령 **98개**(그중 `--json` 계약 **65개**, batch 축 **9개**) · MCP 도구 **181개**(무상태 163 + 세션 전용 18) |
+| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **321개** · §2 전수 사전 **329개**(자기서술 밖 실측·참조 필드 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
 **재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.
@@ -108,6 +108,9 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 체크박스 켜기 | `edit replace-text --find □ --replace ☑ --occurrence k` (`hwp_set_checkbox`) | `replacedCount` | 같은 절 |
 | 도장·서명 붙이기 | `edit insert-image` (`hwp_insert_image`) | `binDataId`·`overflow` | [CLI 매뉴얼](cli_commands.md) §edit insert-image |
 | 도형 묶기 | `edit group-shapes` (`hwp_group_shapes`) | `count`·`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit group-shapes |
+| 본문 문단 좌표에 그림 넣기 | `edit insert-picture` (`hwp_insert_picture`) | `binDataId`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-picture |
+| 본문 그림 지우기 | `edit delete-picture` (`hwp_delete_picture`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit delete-picture |
+| 본문 그림 속성 바꾸기 | `edit set-picture` (`hwp_set_picture`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit set-picture |
 | 없는 자리에 글자 넣기 | `edit insert-text` (`hwp_insert_text`) | `insertedChars`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-text |
 | 개인정보 마스킹 | `edit redact` (`hwp_redact`) | `findingCount`·`redactedCount` | [보안 소비자 가이드](../tech/agent_security/consumer_guide.md) |
 | 메타데이터 제거 | `edit sanitize` (`hwp_sanitize`) | `removedCount`·`removed[]` | 같은 문서 |
@@ -298,10 +301,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 323개 필드
+### 2-2. 전수 사전 — 329개 필드
 
-`capabilities` 의 `recordFields` 고유 **303개**와 그 밖의 실측-only 필드
-`applyTo`·`assertions`·`docId`·`exists`·`isHeader`·`preview`·`dx`·`dy` **8개**를 합친 314개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **321개**와 그 밖의 실측·참조 필드를 합친
+329개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -330,7 +333,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
 | `rows` | number | 생성할 표의 행 수 (1 이상) | `edit insert-table` |
 | `cols` | number | 생성할 표의 열 수 (1 이상, 256 이하) | `edit insert-table` |
-| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`merge-paragraph` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`insert-number`·`merge-paragraph` |
 | `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
 | `cellPara` | number | 셀 안 문단 번호 (0부터) | `edit insert-text-in-cell`·`edit delete-text-in-cell` |
@@ -463,12 +466,18 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `filledCount` | number | 실제로 채운 필드 수 | `edit fill-fields`·`batch fill` |
 | `filled` | array | 채운 내역 `{name,occurrence,value}` | `edit fill-fields` |
 | `notFound` | string[] | 문서에 없는 이름(오타·범위 밖 순번). **조용히 무시되지 않는다.** 비어 있지 않아도 exit 0 이다 | `edit fill-fields`·`batch fill` |
+| `ok` | bool | 지정 좌표의 양식 값을 읽었는지. 대상이 양식 컨트롤이 아니면 `false` | `form-value` |
+| `formType` | string\|null | 양식 종류. 대상이 양식 컨트롤이 아니면 `null` | `form-value` |
+| `value` | string\|null | 양식에 저장된 값. 문서 파생 | `form-value` |
+| `caption` | string\|null | 단추 등 양식의 표시 캡션. 문서 파생 | `form-value` |
+| `enabled` | bool\|null | 양식이 현재 입력을 받을 수 있는지. 대상이 양식 컨트롤이 아니면 `null` | `form-value` |
 
 #### 편집 공통
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
 | `dryRun` | bool | 파일을 쓰지 않는 사전 확인 모드 | `edit` 6종·`csv-to-table`·`batch fill` |
+| `script` | string | 수식 컨트롤에 넣거나 바꿀 수식 스크립트 | `edit insert-equation` |
 | `output` | string | **실제로 저장된 경로. 저장했을 때만 실린다** — dry-run·치환 0건이면 키 자체가 없다 | 산출 계열 13종 |
 | `outputFormat` | string | 산출 형식(`hwp5`·`hwpx`·`csv`) — 입력 형식 보존 규약의 결과 | `run`·`table-to-csv`·`csv-to-table`·`edit` |
 | `bytes` | number | 산출물 크기 | `export-pdf`·`export-hwpx`·`export-hml`·`export-doclang`·`convert`·`build-from-ingest`·`thumbnail` |
@@ -491,7 +500,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 |---|---|---|---|
 | `page` | number | 붙일 쪽(0 기준) | `edit insert-image` |
 | `x` / `y` | number | 용지 왼쪽 위 기준 위치 — 단위는 **HWPUNIT(1/7200 inch)**, 픽셀이 아니다 | `edit insert-image` |
-| `width` / `height` | number | 그림 크기(HWPUNIT). `thumbnail` 에서는 **픽셀** — 같은 이름, 다른 단위 | `edit insert-image`·`thumbnail` |
+| `width` / `height` | number | 그림·도형 크기(HWPUNIT). `thumbnail` 에서는 **픽셀** — 같은 이름, 다른 단위 | `edit insert-image`·`insert-shape`·`thumbnail` |
 | `binDataId` | number\|null | 문서에 새로 등록된 이진 자원 ID. **dry-run 이면 `null`** (아직 등록하지 않았다) | `edit insert-image` |
 
 #### 계획 실행 (`run`)
@@ -1003,7 +1012,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `row` / `col` | 표 격자 좌표 | 0 | `export-tables`·`edit set-cell` |
 | `이름[N]` | 반복 누름틀 순번 | 0 | `edit fill-fields`·`hwp_doc_fill_fields` |
 | `control` / `cell` | 표 컨트롤·칸 일련번호 | 0 | `fields[].location.nested`·`matches[].cell` |
-| HWPUNIT | 길이 | 1/7200 inch | `edit insert-image` 의 `x`·`y`·`width`·`height` |
+| HWPUNIT | 길이 | 1/7200 inch | `edit insert-image`·`insert-shape` 의 `x`·`y`·`width`·`height` |
 
 ### 3-2. 명령별로 어느 주소를 받고 어느 주소를 주나
 
@@ -1109,7 +1118,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 
 ## 6. MCP 도구 전수 지도 — 113개
 
-### 6-1. 무상태 97개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 163개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
@@ -1201,6 +1210,9 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_group_shapes` | `edit group-shapes --json` | `path`,`targets` |
 | `hwp_set_page_def` | `edit set-page-def --json` | `path`,`props` |
 | `hwp_set_section_def` | `edit set-section-def --json` | `path`,`props` |
+| `hwp_insert_picture` | `edit insert-picture --json` | `path`,`image` |
+| `hwp_delete_picture` | `edit delete-picture --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_set_picture` | `edit set-picture --json` | `path`,`section`,`paragraph`,`ctrl`,`props` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
@@ -1246,7 +1258,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `hwp_batch`·`hwp_batch_search`·`hwp_batch_extract_data` 는 `invocation.stdinTools` 로
 표시된 stdin 도구다 — CLI 로 직접 조립할 때 경로 목록을 stdin 으로 흘려야 한다.
 
-### 6-2. 세션 전용 16개 (`mcp-serve` 전용, `capabilities --mcp` 에는 없다)
+### 6-2. 세션 전용 18개 (`mcp-serve` 전용, `capabilities --mcp` 에는 없다)
 
 `hwp_open` · `hwp_ws_list` · `hwp_ws_open` · `hwp_doc_info` · `hwp_doc_text` ·
 `hwp_doc_tree` · `hwp_doc_fields` · `hwp_doc_tables` · `hwp_doc_search` ·
