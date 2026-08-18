@@ -1,0 +1,164 @@
+{
+  "schemaVersion": "1.0",
+  "journeys": [
+    {
+      "id": "J01",
+      "ask": "이 hwp 뭐야?",
+      "pages": "any",
+      "steps": [
+        "info",
+        "explain"
+      ],
+      "stop": "S04",
+      "sample": "samples/para-001.hwp"
+    },
+    {
+      "id": "J02",
+      "ask": "몇 쪽짜리야? 암호 걸려 있어?",
+      "pages": "any",
+      "steps": [
+        "info"
+      ],
+      "stop": "S03",
+      "sample": "samples/hwp3-sample.hwp"
+    },
+    {
+      "id": "J03",
+      "ask": "목차만 뽑아줘",
+      "pages": "medium+",
+      "steps": [
+        "info",
+        "export-structure"
+      ],
+      "stop": "S05",
+      "sample": "samples/hwp3-sample16.hwp"
+    },
+    {
+      "id": "J04",
+      "ask": "긴 문서인데 다 읽지 말고 훑어줘",
+      "pages": "large",
+      "steps": [
+        "info",
+        "digest"
+      ],
+      "stop": "S06",
+      "sample": "samples/hwp3-sample.hwp"
+    },
+    {
+      "id": "J05",
+      "ask": "어디에 위임전결이 나와?",
+      "pages": "large",
+      "steps": [
+        "info",
+        "search"
+      ],
+      "stop": "S07",
+      "sample": "samples/hwp3-sample.hwp"
+    },
+    {
+      "id": "J06",
+      "ask": "금액만 쪽과 함께 뽑아줘",
+      "pages": "large",
+      "steps": [
+        "info",
+        "extract-data"
+      ],
+      "stop": "S09",
+      "sample": "samples/hwp3-sample.hwp"
+    },
+    {
+      "id": "J07",
+      "ask": "이 서식 채울 수 있어?",
+      "pages": "small",
+      "steps": [
+        "info",
+        "explain"
+      ],
+      "stop": "S11",
+      "sample": "samples/field-01.hwp"
+    },
+    {
+      "id": "J08",
+      "ask": "표가 많은 문서야?",
+      "pages": "any",
+      "steps": [
+        "info",
+        "explain"
+      ],
+      "stop": "S11",
+      "sample": "samples/table-001.hwp"
+    },
+    {
+      "id": "J09",
+      "ask": "짧은 메모 전문 보여줘",
+      "pages": "tiny",
+      "steps": [
+        "info",
+        "export-text"
+      ],
+      "stop": "tiny band",
+      "sample": "samples/para-001.hwp"
+    },
+    {
+      "id": "J10",
+      "ask": "뒷부분도 더 읽어줘",
+      "pages": "large",
+      "steps": [
+        "digest --pages"
+      ],
+      "stop": "S10",
+      "sample": "samples/hwp3-sample.hwp"
+    },
+    {
+      "id": "J11",
+      "ask": "절 단위로 나눠서 요약해",
+      "pages": "medium+",
+      "steps": [
+        "digest --sections"
+      ],
+      "stop": "S06",
+      "sample": "samples/hwp3-sample16.hwp"
+    },
+    {
+      "id": "J12",
+      "ask": "폴더에서 위임전결 있는 파일만",
+      "pages": "folder",
+      "steps": [
+        "batch search"
+      ],
+      "stop": "S14",
+      "sample": "docs/*.hwp"
+    },
+    {
+      "id": "J13",
+      "ask": "암호 걸린 문서 열어봐",
+      "pages": "any",
+      "steps": [
+        "info"
+      ],
+      "stop": "S02",
+      "sample": "samples/hwp3-sample16-hwp5-2024-password-123456.hwp"
+    },
+    {
+      "id": "J14",
+      "ask": "이 문서 보내도 돼?",
+      "pages": "any",
+      "steps": [
+        "info",
+        "handoff security-sweep"
+      ],
+      "stop": "S12",
+      "sample": "samples/para-001.hwp"
+    },
+    {
+      "id": "J15",
+      "ask": "날짜가 언제로 되어 있어?",
+      "pages": "any",
+      "steps": [
+        "extract-data --kind date"
+      ],
+      "stop": "S09",
+      "sample": "samples/hwp3-sample.hwp"
+    }
+  ]
+}
