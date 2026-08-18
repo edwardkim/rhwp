@@ -509,8 +509,15 @@ impl EqParser {
 
         if is_function(cmd) {
             let func_name = lookup_function(cmd).unwrap_or(cmd).to_string();
+            // 함수명 뒤 Thin 공백은 종전대로 소비하되, 바로 뒤가 첨자면 남겨서
+            // try_parse_scripts 가 폭을 보존하며 결합하게 한다(#5534).
             if self.current_type() == TokenType::Whitespace && self.current_value() == "`" {
-                self.pos += 1;
+                let after_space_is_script = self.tokens.get(self.pos + 1).is_some_and(|t| {
+                    t.ty == TokenType::Subscript || t.ty == TokenType::Superscript
+                });
+                if !after_space_is_script {
+                    self.pos += 1;
+                }
             }
             let node = EqNode::Function(func_name);
             return self.try_parse_scripts(node);
@@ -756,13 +763,20 @@ impl EqParser {
             if self.at_end() {
                 break;
             }
-            // Thin 공백(`) 뒤에 첨자가 바로 오는 경우 공백을 건너뛰기
+            // Thin 공백(`) 뒤에 첨자가 오면 첨자 결합은 유지하되(과거 exam_math
+            // `log`_{2}` 첨자 파싱 실패 수정), 공백의 시각 폭은 base 뒤에 보존한다.
+            // 한컴은 `a_{2}` 와 `` a`_{2} `` 를 다르게 렌더한다 — 공백 토큰을
+            // 삭제만 하면 첨자가 붙는 위치(가로)와 AST 정보가 함께 사라진다(#5534).
+            // Subscript/Superscript 레이아웃은 base box 오른쪽 끝에 첨자를 두므로
+            // base 를 Row[base, Space(Thin)] 로 감싸면 첨자가 1/4 공백만큼
+            // 오른쪽에 놓인다.
             if self.current_type() == TokenType::Whitespace && self.current_value() == "`" {
                 let next_pos = self.pos + 1;
                 if next_pos < self.tokens.len() {
                     let next_ty = self.tokens[next_pos].ty;
                     if next_ty == TokenType::Subscript || next_ty == TokenType::Superscript {
-                        self.pos += 1; // Thin 공백 건너뛰기
+                        self.pos += 1; // Thin 공백 소비 (폭은 아래에서 보존)
+                        result = EqNode::Row(vec![result, EqNode::Space(SpaceKind::Thin)]);
                     }
                 }
             }
