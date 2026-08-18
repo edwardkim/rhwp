@@ -2349,7 +2349,7 @@
       "id": "src/parser/hwpx/section.rs::tests#1",
       "file": "src/parser/hwpx/section.rs",
       "sourcePath": "src/parser/hwpx/section.rs",
-      "line": 7203,
+      "line": 7217,
       "module": "tests",
       "testAttributes": 94,
       "tier": "white_box",

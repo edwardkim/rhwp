@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "kind": "issue4882ZeroVposNotes",
+  "source": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+  "count": 2,
+  "notes": [
+    {
+      "kind": "footNote",
+      "number": "30",
+      "instId": "1937553231",
+      "inTable": false,
+      "tableDepth": 0,
+      "xmlOffset": 631521,
+      "pathHint": "footNote[instId=1937553231 number=30]",
+      "hwp5ZeroPattern": true,
+      "paragraphs": [
+        {
+          "paraIndex": 0,
+          "text": "Aktuelle Entwicklungen der Lebertransplantation in Deutschland: MELD-basierte Organallokation und „incentives” für Transplantationszentren",
+          "vpos": [
+            0,
+            0
+          ],
+          "allZeroVpos": true,
+          "hangulArtifact": false,
+          "segs": [
+            {
+              "textpos": 0,
+              "vertpos": 0,
+              "vertsize": 900,
+              "textheight": 900,
+              "baseline": 765,
+              "spacing": 272,
+              "horzpos": 0,
+              "horzsize": 45352,
+              "flags": 393216
+            },
+            {
+              "textpos": 107,
+              "vertpos": 0,
+              "vertsize": 900,
+              "textheight": 900,
+              "baseline": 765,
+              "spacing": 272,
+              "horzpos": 0,
+              "horzsize": 45352,
+              "flags": 1441792
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "footNote",
+      "number": "234",
+      "instId": "1937553430",
+      "inTable": true,
+      "tableDepth": 1,
+      "xmlOffset": 2913058,
+      "pathHint": "tbl.footNote[instId=1937553430 number=234]",
+      "hwp5ZeroPattern": true,
+      "paragraphs": [
+        {
+          "paraIndex": 0,
+          "text": "Wu C, Lu C, Xu C. Short-term and long-term outcomes of liver transplantation using moderately and severely steatotic donor livers: A systematic review.Medicine. 2018;97(35):e12026.",
+          "vpos": [
+            0,
+            0
+          ],
+          "allZeroVpos": true,
+          "hangulArtifact": false,
+          "segs": [
+            {
+              "textpos": 0,
+              "vertpos": 0,
+              "vertsize": 900,
+              "textheight": 900,
+              "baseline": 765,
+              "spacing": 272,
+              "horzpos": 0,
+              "horzsize": 45352,
+              "flags": 393216
+            },
+            {
+              "textpos": 107,
+              "vertpos": 0,
+              "vertsize": 900,
+              "textheight": 900,
+              "baseline": 765,
+              "spacing": 272,
+              "horzpos": 0,
+              "horzsize": 45352,
+              "flags": 1441792
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
