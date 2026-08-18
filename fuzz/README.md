@@ -153,3 +153,10 @@ Windows 호스트에서 `cmin --sanitizer none` 은 rust-lld 가 `__sanitizer_co
   (예: `PROPTEST_CASES=256 cargo test --test regression_suite_* prop_hwpx_roundtrip::`).
   픽스처가 표현하지 못하는 step(누름틀/표/□ 없음)은 skip. DocumentCore
   편집 API 발명 금지. HWP5 는 M04-3.
+- **M04-3** (`tests/cases/prop_hwp5_roundtrip.rs`, #5382): 작은 HWP5 픽스처에
+  기존 `rhwp run` step 만 적용한 뒤 parse→serialize→reparse 가
+  [`diff_documents`](../src/serializer/hwpx/roundtrip.rs) IrDiff 0.
+  CI 기본은 8 cases / 0..3 steps. 전체 화력은 `PROPTEST_CASES`
+  (예: `PROPTEST_CASES=256 cargo test --test regression_suite_* prop_hwp5_roundtrip::`).
+  픽스처가 표현하지 못하는 step(누름틀/표/□ 없음)은 skip. DocumentCore
+  편집 API 발명 금지. HWPX 는 M04-2.

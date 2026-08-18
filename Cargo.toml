@@ -325,6 +325,7 @@ zip = { version = "8.5", default-features = false, features = ["deflate"] }
 sha2 = "0.11"
 # [#5363] M04-1 편집 계획 시퀀스 생성기. 왕복 property 본체는 M04-2/3.
 # [#5376] M04-2 HWPX 왕복 property. 기존 run step 만 조합한다. 왕복 본체는 통합 시험.
+# [#5382] M04-3 HWP5 왕복 property. 기존 run step 만 조합한다. 왕복 본체는 통합 시험.
 proptest = "1.6"
 
 # ── Clippy 린트 정책 ──
