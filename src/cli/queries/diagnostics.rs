@@ -813,3 +813,132 @@ pub(crate) fn dump_extents(args: &[String]) -> i32 {
     }
     EXIT_OK
 }
+
+pub(crate) fn diag_document(args: &[String]) -> i32 {
+    if args.is_empty() {
+        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp diag <파일.hwp>");
+        return EXIT_USAGE;
+    }
+
+    // [#3884 G2] diag 는 추가 옵션이 없다 — 지금까지는 어떤 플래그를 붙여도(--json 포함)
+    // 조용히 무시하고 exit 0 이라, 옵션이 먹혔다는 착각을 만들었다.
+    if let Some(bad) = args.iter().find(|a| a.starts_with('-')) {
+        eprintln!("오류: 알 수 없는 옵션입니다 - {bad}");
+        eprintln!("사용법: rhwp diag <파일.hwp>");
+        return EXIT_USAGE;
+    }
+
+    let file_path = &args[0];
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+
+    let document = doc.document();
+    use rhwp::model::style::HeadType;
+
+    // === DocInfo 요약 ===
+    println!("=== DocInfo 요약 ===");
+    println!("  Numbering: {}개", document.doc_info.numberings.len());
+    for (i, num) in document.doc_info.numberings.iter().enumerate() {
+        let formats: Vec<String> = num
+            .level_formats
+            .iter()
+            .enumerate()
+            .filter(|(_, f)| !f.is_empty())
+            .map(|(lv, f)| format!("L{}=\"{}\"", lv + 1, f))
+            .collect();
+        println!(
+            "    [{}] start={}, formats: {}",
+            i,
+            num.start_number,
+            formats.join(", ")
+        );
+    }
+
+    println!("  Bullet: {}개", document.doc_info.bullets.len());
+    for (i, bullet) in document.doc_info.bullets.iter().enumerate() {
+        println!(
+            "    [{}] char='{}' (U+{:04X})",
+            i, bullet.bullet_char, bullet.bullet_char as u32
+        );
+    }
+
+    // === ParaShape head_type 분포 ===
+    println!("\n=== ParaShape head_type 분포 ===");
+    let mut count_none = 0u32;
+    let mut count_outline = 0u32;
+    let mut count_number = 0u32;
+    let mut count_bullet = 0u32;
+    for ps in &document.doc_info.para_shapes {
+        match ps.head_type {
+            HeadType::None => count_none += 1,
+            HeadType::Outline => count_outline += 1,
+            HeadType::Number => count_number += 1,
+            HeadType::Bullet => count_bullet += 1,
+        }
+    }
+    println!(
+        "  None: {}개, Outline: {}개, Number: {}개, Bullet: {}개",
+        count_none, count_outline, count_number, count_bullet
+    );
+
+    // === SectionDef 개요번호 ===
+    println!("\n=== SectionDef 개요번호 ===");
+    for (sec_idx, section) in document.sections.iter().enumerate() {
+        // SectionDef의 raw_ctrl_extra에서 바이트 14-15 추출 (outline_numbering_id)
+        // 현재 outline_numbering_id 필드가 없으므로 파싱 전 상태에서는 raw_ctrl_extra 참조
+        // 6단계에서 필드 추가 후 직접 참조로 변경 예정
+        let sd = &section.section_def;
+        let num_ref = if sd.outline_numbering_id > 0 {
+            format!(" → Numbering[{}]", sd.outline_numbering_id - 1)
+        } else {
+            " (없음)".to_string()
+        };
+        println!(
+            "  구역{}: outline_numbering_id={}{}, flags={:#010x}",
+            sec_idx, sd.outline_numbering_id, num_ref, sd.flags
+        );
+    }
+
+    // === 비None head_type 문단 ===
+    println!("\n=== 비None head_type 문단 ===");
+    for (sec_idx, section) in document.sections.iter().enumerate() {
+        for (para_idx, para) in section.paragraphs.iter().enumerate() {
+            if let Some(ps) = document
+                .doc_info
+                .para_shapes
+                .get(para.para_shape_id as usize)
+            {
+                if ps.head_type != HeadType::None {
+                    let text_preview: String = para.text.chars().take(40).collect();
+                    let text_display = if para.text.chars().count() > 40 {
+                        format!("\"{}...\"", text_preview)
+                    } else {
+                        format!("\"{}\"", text_preview)
+                    };
+                    println!(
+                        "  구역{}:문단{} head={:?} level={} num_id={} text={}",
+                        sec_idx,
+                        para_idx,
+                        ps.head_type,
+                        ps.para_level,
+                        ps.numbering_id,
+                        text_display
+                    );
+                }
+            }
+        }
+    }
+
+    EXIT_OK
+}
