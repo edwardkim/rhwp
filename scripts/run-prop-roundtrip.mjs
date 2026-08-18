@@ -18,10 +18,20 @@ const SCRIPT_PATH = fileURLToPath(import.meta.url);
 export const REQUIRED_CASES = ['prop_roundtrip_ci'];
 
 /**
- * M04-2 / M04-3 본체. 원본이 아직 없으면 skip — CI 를 실패시키지 않는다.
+ * M04-1 생성기 · M04-2/3 본체 · M04-f 고도화.
+ * 원본이 아직 없으면 skip — CI 를 실패시키지 않는다.
  * nextest archive 정규 shard 도 tests/cases 원본을 자동 실행한다.
  */
-export const OPTIONAL_CASES = ['prop_hwpx_roundtrip', 'prop_hwp5_roundtrip'];
+export const OPTIONAL_CASES = [
+  'prop_edit_plan',
+  'prop_hwpx_roundtrip',
+  'prop_hwp5_roundtrip',
+  'prop_m04f_catalog',
+  'prop_m04f_skip',
+  'prop_m04f_plans',
+  'prop_m04f_exceptions',
+  'prop_m04f_mutations',
+];
 
 export function caseSourcePath(caseName, root = ROOT) {
   return path.join(root, 'tests', 'cases', `${caseName}.rs`);

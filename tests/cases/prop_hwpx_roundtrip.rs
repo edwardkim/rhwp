@@ -293,6 +293,57 @@ fn handwritten_set_cell_roundtrips() {
 }
 
 #[test]
+fn handwritten_replace_variants_roundtrip() {
+    for (find, replace, occurrence) in [
+        ("안녕", "한국", None),
+        ("Hello", "", None),
+        ("123", "2026", Some(0)),
+        ("안녕", "X", Some(0)),
+    ] {
+        let steps = [ExistingRunStep::ReplaceText {
+            find: find.into(),
+            replace: replace.into(),
+            occurrence,
+        }];
+        assert_edit_serialize_reparse(FIXTURE_TEXT, &steps)
+            .unwrap_or_else(|e| panic!("{find}->{replace:?}: {e}"));
+    }
+}
+
+#[test]
+fn handwritten_set_cell_grid_roundtrips() {
+    for row in 0u16..2 {
+        for col in 0u16..3 {
+            let steps = [ExistingRunStep::SetCell {
+                table: 0,
+                row,
+                col,
+                text: "서울".into(),
+            }];
+            assert_edit_serialize_reparse(FIXTURE_TABLE, &steps)
+                .unwrap_or_else(|e| panic!("cell({row},{col}): {e}"));
+        }
+    }
+}
+
+#[test]
+fn empty_find_is_skipped_not_applied() {
+    let mut core = DocumentCore::from_bytes(FIXTURE_TEXT).expect("parse");
+    assert!(
+        !apply_existing_step(
+            &mut core,
+            &ExistingRunStep::ReplaceText {
+                find: "".into(),
+                replace: "한국".into(),
+                occurrence: None,
+            },
+        )
+        .expect("empty find"),
+        "빈 find 는 문서 전체 치환이 아니라 skip"
+    );
+}
+
+#[test]
 fn inexpressible_steps_are_skipped_not_invented() {
     let mut core = DocumentCore::from_bytes(FIXTURE_TEXT).expect("parse");
     assert!(

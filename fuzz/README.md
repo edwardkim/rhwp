@@ -174,10 +174,11 @@ Windows 호스트에서 `cmin --sanitizer none` 은 rust-lld 가 `__sanitizer_co
 
 - **CI** (`.github/workflows/proptest-roundtrip.yml`,
   `scripts/run-prop-roundtrip.mjs`): debug 프로필, 기본 8 cases. 10분 퍼지가
-  아니다. `tests/cases/prop_hwpx_roundtrip.rs`(M04-2, #5381) 와
-  `tests/cases/prop_hwp5_roundtrip.rs`(M04-3, #5387) 가 있으면 돌리고, 없으면
-  skip 한다. 배선 확인용 `tests/cases/prop_roundtrip_ci.rs` 는 항상 돈다.
-  nextest archive 정규 shard 도 같은 `tests/cases/` 원본을 자동 실행한다.
+  아니다. `prop_edit_plan`(M04-1) · `prop_hwpx_roundtrip`(M04-2, #5381) ·
+  `prop_hwp5_roundtrip`(M04-3, #5387) · `prop_m04f_*`(M04-f, #5465) 가
+  있으면 돌리고, 없으면 skip 한다. 배선 확인용 `prop_roundtrip_ci` 는 항상
+  돈다. nextest archive 정규 shard 도 같은 `tests/cases/` 원본을 자동 실행한다.
+  변형·스킵 정직 표는 `tests/fixtures/proptest_m04f/`.
 - **본체**: 작은 픽스처에 기존 `rhwp run` step 만 적용한 뒤
   parse→serialize→reparse 가
   [`diff_documents`](../src/serializer/hwpx/roundtrip.rs) IrDiff 0.

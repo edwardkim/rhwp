@@ -24,8 +24,14 @@ function withTempRoot(run) {
 test('required wiring case is prop_roundtrip_ci', () => {
   assert.deepEqual(REQUIRED_CASES, ['prop_roundtrip_ci']);
   assert.deepEqual(OPTIONAL_CASES, [
+    'prop_edit_plan',
     'prop_hwpx_roundtrip',
     'prop_hwp5_roundtrip',
+    'prop_m04f_catalog',
+    'prop_m04f_skip',
+    'prop_m04f_plans',
+    'prop_m04f_exceptions',
+    'prop_m04f_mutations',
   ]);
 });
 
@@ -46,8 +52,7 @@ test('optional cases are picked up when tests/cases sources exist', () => {
     const plan = planPropRoundtrip(root);
     assert.deepEqual(plan.run, [
       'prop_roundtrip_ci',
-      'prop_hwpx_roundtrip',
-      'prop_hwp5_roundtrip',
+      ...OPTIONAL_CASES,
     ]);
     assert.deepEqual(plan.skipped, []);
   });
@@ -59,7 +64,10 @@ test('hwpx only is picked up without requiring hwp5', () => {
     writeFileSync(caseSourcePath('prop_hwpx_roundtrip', root), '');
     const plan = planPropRoundtrip(root);
     assert.deepEqual(plan.run, ['prop_roundtrip_ci', 'prop_hwpx_roundtrip']);
-    assert.deepEqual(plan.skipped, ['prop_hwp5_roundtrip']);
+    assert.deepEqual(
+      plan.skipped,
+      OPTIONAL_CASES.filter((name) => name !== 'prop_hwpx_roundtrip'),
+    );
   });
 });
 
