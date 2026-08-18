@@ -1,0 +1,23 @@
+{
+  "id": "SE31",
+  "steps": [
+    {
+      "answer": {
+        "scopes": {
+          "cmd": [
+            "inspect",
+            "injection",
+            "{input}",
+            "--json"
+          ],
+          "path": "scanScopes",
+          "len": true,
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}
