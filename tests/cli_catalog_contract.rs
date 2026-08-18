@@ -203,6 +203,7 @@ fn document_inventory_queries_are_owned_by_the_query_module() {
         ("word-count", "word_count"),
         ("bookmarks", "bookmarks"),
         ("charts", "charts"),
+        ("fields", "show_fields"),
     ] {
         assert!(
             DOCUMENT_INVENTORY_SOURCE.contains(&format!("pub(crate) fn {handler}(")),

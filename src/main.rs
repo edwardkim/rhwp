@@ -411,7 +411,7 @@ fn main() {
         Some("core-pages") => exit_with(rhwp::diagnostics::core_pages_probe::run(&args[2..])),
         Some("bench") => exit_with(rhwp::diagnostics::bench::run(&args[2..])),
         Some("thumbnail") => exit_with(extract_thumbnail(&args[2..])),
-        Some("fields") => exit_with(show_fields(&args[2..])),
+        Some("fields") => exit_with(cli::queries::document_inventory::show_fields(&args[2..])),
         Some("explain") => exit_with(explain_document(&args[2..])),
         Some("explore") => exit_with(explore_document(&args[2..])),
         Some("edit") => exit_with(run_edit(&args[2..])),
@@ -20594,8 +20594,6 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
         .collect()
 }
 
-/// `fields` — 누름틀/필드 조사 (읽기 전용).
-///
 /// `edit` — 문서 편집 명령군 (로드맵 #2659 Stage 3).
 ///
 /// 공통 규약: `--dry-run`(변경 요약만 출력, 파일 무변경), 결과 리포트 JSON,
@@ -37431,71 +37429,6 @@ fn edit_ungroup_shape(args: &[String]) -> i32 {
         &format!("도형 묶음 풀기 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
         &format!("도형 묶음 풀기 완료: {file_path}"),
     )
-}
-
-/// rhwp 는 이미 필드에 값을 **쓸 수** 있는데(`set_field_value_by_name`) 조회 API 는
-/// WASM/스튜디오 경로에만 있어, 브라우저 밖 에이전트는 "이 서식이 무엇을 요구하는지"
-/// 알 방법이 없었다. 기존 `collect_all_fields()` 를 그대로 노출한다(라이브러리 무변경).
-fn show_fields(args: &[String]) -> i32 {
-    let mut file_path: Option<&str> = None;
-    let mut json_mode = false;
-    for a in args {
-        match a.as_str() {
-            "--json" => json_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => file_path = Some(other),
-        }
-    }
-
-    let Some(file_path) = file_path else {
-        eprintln!("사용법: rhwp fields <파일.hwp|파일.hwpx> [--json]");
-        return EXIT_USAGE;
-    };
-
-    let data = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let doc = match load_document(&data) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-
-    let fields = collect_field_records(&doc);
-
-    if json_mode {
-        let envelope = fields_json_value(file_path, &fields);
-        println!("{envelope}");
-        return EXIT_OK;
-    }
-
-    println!("문서 로드: {} (필드 {}개)", file_path, fields.len());
-    for f in &fields {
-        let name = f["name"].as_str().unwrap_or("");
-        let label = if name.is_empty() {
-            "(이름 없음)"
-        } else {
-            name
-        };
-        println!(
-            "  [{}] {} = {:?}{}",
-            f["fieldType"].as_str().unwrap_or("?"),
-            label,
-            f["value"].as_str().unwrap_or(""),
-            if f["editableInForm"] == true {
-                ""
-            } else {
-                " (서식 편집 불가)"
-            }
-        );
-    }
-    EXIT_OK
 }
 
 /// [#3828] `explain --json` 봉투의 표 항목 — `export-tables` 격자에서 텍스트를 빼고
