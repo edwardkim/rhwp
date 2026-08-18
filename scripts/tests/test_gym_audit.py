@@ -87,6 +87,7 @@ def _task(task_id, **overrides):
         "instructions": "i",
         "submit": {"kind": "answer"},
         "checks": [{
+            "name": "쪽수",
             "op": "answer_eq",
             "answer": "p",
             "cmd": ["info", "{input}", "--json"],
