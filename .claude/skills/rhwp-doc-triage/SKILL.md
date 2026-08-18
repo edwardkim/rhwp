@@ -15,7 +15,7 @@ description: rhwp CLI 로 처음 보는 HWP/HWPX 문서를 컨텍스트를 아�
 
 ```bash
 cargo build --release
-./target/release/rhwp <명령> [옵션]
+./target/release/rhwp info <파일> --json
 ```
 
 네이티브는 로컬 cargo. Docker 는 WASM 전용.
