@@ -53,7 +53,39 @@ from gym.core import checks as check_registry  # noqa: E402
 ROOT = runner.ROOT
 
 #: 봉투를 부르지 않는 파일 연산자 — 관측이 아니라 존재/동일성이라 raw 대조 제외.
+#: files_differ 도 두 산출 파일의 동일성이라 CLI 봉투를 부르지 않는다.
 FILE_OPS = {"file_exists", "same_hash", "differs_from_input", "files_differ"}
+
+
+def classify(surface_changed, diffs):
+    """오검출 관문: 표면이 바뀌면 diffs 가 있어도 surface-changed.
+
+    이 도구는 무엇이 바뀌었는지 가리킬 뿐 어느 쪽이 옳은지 판정하지 않는다.
+    표면이 다른 릴리스의 관측 분기는 의도된 변경일 수 있어 사람 몫이다.
+    """
+    if surface_changed:
+        return "surface-changed"
+    return "regression" if diffs else "stable"
+
+
+def exit_code(classification):
+    """stable=0, regression=3(회귀), surface-changed=2(사람 판정 필요)."""
+    return {"stable": 0, "regression": 3, "surface-changed": 2}[classification]
+
+
+def build_report(old_bin, new_bin, old_dig, new_dig, surface_changed,
+                 tasks_seen, checks_seen, diffs):
+    """kind=gymReleaseDiff schemaVersion=1.0 봉투. 시험이 main 없이 키를 고정한다."""
+    classification = classify(surface_changed, diffs)
+    return {
+        "kind": "gymReleaseDiff", "schemaVersion": "1.0",
+        "old": {"bin": os.path.basename(old_bin), "capabilitiesSha256": old_dig},
+        "new": {"bin": os.path.basename(new_bin), "capabilitiesSha256": new_dig},
+        "surfaceChanged": surface_changed,
+        "tasksCompared": tasks_seen, "observationsCompared": checks_seen,
+        "divergences": len(diffs), "classification": classification,
+        "diffs": diffs,
+    }
 
 
 def capabilities_digest(bin_path):
@@ -133,17 +165,11 @@ def main():
                 row["pack"] = pack_id
                 diffs.append(row)
 
-    classification = ("surface-changed" if surface_changed
-                      else ("regression" if diffs else "stable"))
-    report = {
-        "kind": "gymReleaseDiff", "schemaVersion": "1.0",
-        "old": {"bin": os.path.basename(old_bin), "capabilitiesSha256": old_dig},
-        "new": {"bin": os.path.basename(new_bin), "capabilitiesSha256": new_dig},
-        "surfaceChanged": surface_changed,
-        "tasksCompared": tasks_seen, "observationsCompared": checks_seen,
-        "divergences": len(diffs), "classification": classification,
-        "diffs": diffs,
-    }
+    report = build_report(
+        old_bin, new_bin, old_dig, new_dig, surface_changed,
+        tasks_seen, checks_seen, diffs,
+    )
+    classification = report["classification"]
     out = a.out or os.path.join(runner.GYM, "release-diff.json")
     with io.open(out, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps(report, ensure_ascii=False, indent=2))
@@ -156,8 +182,7 @@ def main():
         nv = row["new"].get("value", row["new"])
         print(f"  {row['pack']}/{row['task']} · {row['check']}: {ov!r} → {nv!r}")
     print(f"→ {out}")
-    # stable=0, regression=3(회귀), surface-changed=2(사람 판정 필요)
-    return {"stable": 0, "regression": 3, "surface-changed": 2}[classification]
+    return exit_code(classification)
 
 
 if __name__ == "__main__":
