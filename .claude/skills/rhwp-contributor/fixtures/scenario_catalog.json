@@ -1,0 +1,738 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-contributor",
+  "issue": 5322,
+  "count": 81,
+  "hardGate": "cargo fmt --all -- --check",
+  "scenarios": [
+    {
+      "id": "SC001-issue-reuse",
+      "step": "issue",
+      "command": "gh",
+      "summary": "이미 #5322 가 있으면 새 이슈를 만들지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC002-issue-search-dup-pr",
+      "step": "issue",
+      "command": "gh",
+      "summary": "열린 PR 검색 없이 구현을 시작하지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC003-analyze-agents",
+      "step": "analyze",
+      "command": "read",
+      "summary": "AGENTS.md 로딩 순서를 건너뛰지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC004-analyze-contributing-fmt",
+      "step": "analyze",
+      "command": "read",
+      "summary": "CONTRIBUTING 의 fmt --all -- --check 를 인용한다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC005-analyze-local-validation",
+      "step": "analyze",
+      "command": "read",
+      "summary": "§4.3 범위별 검증표를 읽는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC006-analyze-no-doccore-design",
+      "step": "analyze",
+      "command": "read",
+      "summary": "DocumentCore 새 연산을 설계하지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC007-fetch-first",
+      "step": "branch",
+      "command": "git",
+      "summary": "fetch 없이 로컬 devel 에서 나누지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC008-base-devel",
+      "step": "branch",
+      "command": "git",
+      "summary": "base 는 devel 이지 main 이 아니다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC009-isolation-new-path",
+      "step": "branch",
+      "command": "git",
+      "summary": "빈 경로에 worktree add 한다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC010-no-steal-rhwp",
+      "step": "branch",
+      "command": "git",
+      "summary": "C:\\Users\\swsz9\\rhwp 본진에서 구현하지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC011-no-steal-desk",
+      "step": "branch",
+      "command": "git",
+      "summary": "rhwp-desk* 를 checkout 하지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC012-no-steal-handoff",
+      "step": "branch",
+      "command": "git",
+      "summary": "rhwp-handoff 를 쓰지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC013-no-steal-scaffold",
+      "step": "branch",
+      "command": "git",
+      "summary": "rhwp-scaffold-final 을 쓰지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC014-no-steal-doc-repro",
+      "step": "branch",
+      "command": "git",
+      "summary": "rhwp-doc-repro 를 쓰지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC015-no-steal-listed",
+      "step": "branch",
+      "command": "git",
+      "summary": "worktree list 의 기존 이름을 훔치지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC016-scope-skill-only",
+      "step": "implement",
+      "command": "git",
+      "summary": "이 파동은 contributor 스킬과 시험만",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC017-no-gym",
+      "step": "implement",
+      "command": "git",
+      "summary": "gym/ 을 편집하지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC018-no-other-skills",
+      "step": "implement",
+      "command": "git",
+      "summary": "다른 스킬 SKILL.md 를 고치지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC019-no-open-pr-files",
+      "step": "implement",
+      "command": "git",
+      "summary": "열린 PR 전용 파일을 가로채지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC020-no-new-cli",
+      "step": "implement",
+      "command": "git",
+      "summary": "새 rhwp 하위명령을 추가하지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC021-no-doccore-write",
+      "step": "implement",
+      "command": "git",
+      "summary": "document_core 편집 로직을 발명하지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC022-named-add",
+      "step": "implement",
+      "command": "git",
+      "summary": "git add -- <path> 만",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC023-reject-add-a",
+      "step": "implement",
+      "command": "git",
+      "summary": "git add -A 거부",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC024-reject-add-dot",
+      "step": "implement",
+      "command": "git",
+      "summary": "git add . 거부",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC025-fmt-hard-gate",
+      "step": "gate",
+      "command": "cargo",
+      "summary": "cargo fmt --all -- --check",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC026-fmt-stale-reject",
+      "step": "gate",
+      "command": "cargo",
+      "summary": "cargo fmt --check 는 게이트가 아니다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC027-fmt-then-apply",
+      "step": "gate",
+      "command": "cargo",
+      "summary": "실패 시 cargo fmt --all 후 다시 check",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC028-fmt-crates-present",
+      "step": "gate",
+      "command": "cargo",
+      "summary": "crates/ 가 있으면 반드시 통과",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC029-fmt-unix-nl",
+      "step": "gate",
+      "command": "cargo",
+      "summary": "newline_style=Unix",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC030-clippy-deny",
+      "step": "gate",
+      "command": "cargo",
+      "summary": "cargo clippy -- -D warnings",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC031-related-rust-test",
+      "step": "gate",
+      "command": "cargo",
+      "summary": "agent_contributor_skill_contract",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC032-related-python-test",
+      "step": "gate",
+      "command": "python",
+      "summary": "scripts.tests.test_agent_contributor",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC033-manifest-generate",
+      "step": "gate",
+      "command": "node",
+      "summary": "cases 추가 시 rust-test-suite-manifest --generate",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC034-visual-when-layout",
+      "step": "gate",
+      "command": "rhwp",
+      "summary": "레이아웃 변경은 SVG 전후",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC035-visual-na-docs",
+      "step": "gate",
+      "command": "read",
+      "summary": "스킬만 바꾸면 시각 N/A",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC036-receipt-pointer-replay",
+      "step": "receipt",
+      "command": "replay",
+      "summary": "rhwp replay --capsule",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC037-receipt-pointer-audit",
+      "step": "receipt",
+      "command": "audit",
+      "summary": "rhwp audit --json",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC038-receipt-pointer-lineage",
+      "step": "receipt",
+      "command": "lineage",
+      "summary": "rhwp lineage --json",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC039-receipt-no-rewrite",
+      "step": "receipt",
+      "command": "read",
+      "summary": "work-receipt 스킬을 재작성하지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC040-working-doc-issue",
+      "step": "working",
+      "command": "read",
+      "summary": "working 문서에 #5322",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC041-working-doc-gate",
+      "step": "working",
+      "command": "read",
+      "summary": "working 문서에 HARD GATE",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC042-pr-body-file",
+      "step": "pr",
+      "command": "gh",
+      "summary": "--body-file UTF-8 without BOM",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC043-pr-korean",
+      "step": "pr",
+      "command": "gh",
+      "summary": "제목·본문 한국어",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC044-pr-closes",
+      "step": "pr",
+      "command": "gh",
+      "summary": "closes #5322",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC045-pr-first-checkbox",
+      "step": "pr",
+      "command": "gh",
+      "summary": "첫 칸 = fmt 게이트",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC046-pr-after-fmt",
+      "step": "pr",
+      "command": "gh",
+      "summary": "fmt 실패면 pr create 금지",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC047-sparse-add-crates",
+      "step": "exception",
+      "command": "git",
+      "summary": "sparse-checkout add crates",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC048-autocrlf-false",
+      "step": "exception",
+      "command": "git",
+      "summary": "core.autocrlf=false",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC049-noci-not-failure",
+      "step": "exception",
+      "command": "gh",
+      "summary": "noci ≠ FAILURE",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC050-failure-not-noci",
+      "step": "exception",
+      "command": "gh",
+      "summary": "빨간 Lint 를 문서로 무시하지 않는다",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC051-dup-pr-stop",
+      "step": "exception",
+      "command": "gh",
+      "summary": "열린 중복 PR 이면 중지",
+      "hardGate": "cargo fmt --all -- --check",
+      "staleFmtRejected": true,
+      "issue": 5322
+    },
+    {
+      "id": "SC052-pitfall-01",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "이슈 본문에 금지 목록을 적지 않고 구현을 시작한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC053-pitfall-02",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "분석 없이 형제 PR 파일을 복사한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC054-pitfall-03",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "origin/devel 을 upstream/devel 로 착각한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC055-pitfall-04",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "worktree add 대상이 이미 존재하는데 덮어쓴다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC056-pitfall-05",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "sparse 본진 설정을 새 워크트리에 남긴 채 crates 없이 fmt 했다고 쓴다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC057-pitfall-06",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "PowerShell 에서 gh --body-file - 로 한글을 파이프한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC058-pitfall-07",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "PR 템플릿의 cargo test 칸을 첫 칸으로 두고 fmt 를 빼먹는다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC059-pitfall-08",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "시각 근거 없이 페이지 수 핀을 바꾼다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC060-pitfall-09",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "관련 시험 이름을 본문에 적지 않는다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC061-pitfall-10",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "clippy 경고를 allow 로 숨긴다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC062-pitfall-11",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "fmt 와 clippy 를 같은 checkout 에서 동시에 돌린다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC063-pitfall-12",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "영수증을 남긴다고 새 prove 명령을 스케치한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC064-pitfall-13",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "lineage 계약을 이 스킬 레퍼런스에 복제한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC065-pitfall-14",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "gym pack 으로 기여 절차를 채점한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC066-pitfall-15",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "메인터너 mydocs/pr 기록을 기여자가 작성한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC067-pitfall-16",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "closes 없이 PR 을 연다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC068-pitfall-17",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "base=main 으로 연다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC069-pitfall-18",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "fork head 없이 --head 를 생략한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC070-pitfall-19",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "BOM 이 있는 body-file 을 올린다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC071-pitfall-20",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "CI noci 안내를 소스 변경 PR 에 적용한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC072-pitfall-21",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "FAILURE 로그를 읽지 않고 재실행만 반복한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC073-pitfall-22",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "다른 기여자 커밋을 rebase 로 지운다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC074-pitfall-23",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "리뷰 판단을 에이전트가 대신 승인한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC075-pitfall-24",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "미병합 브랜치 명령을 정본처럼 인용한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC076-pitfall-25",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "rustfmt.toml 의 newline_style 을 이 파동에서 바꾼다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC077-pitfall-26",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "toolchain 을 이 파동에서 바꾼다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC078-pitfall-27",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "Cargo.toml [[bin]] 을 추가한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC079-pitfall-28",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "tests/*.rs 최상위에 원본을 새로 둔다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC080-pitfall-29",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "generated suite 를 수기 수정한다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    },
+    {
+      "id": "SC081-pitfall-30",
+      "step": "pitfall",
+      "command": "read",
+      "summary": "문서만 바꿨는데 crates 없는 상태를 숨긴다",
+      "rejected": true,
+      "hardGate": "cargo fmt --all -- --check",
+      "issue": 5322
+    }
+  ]
+}

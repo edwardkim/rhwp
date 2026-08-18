@@ -1,0 +1,14 @@
+{
+  "needed": true,
+  "kind": "svg-before-after",
+  "hancomIsOracle": false,
+  "_skillMeta": {
+    "skill": "rhwp-contributor",
+    "issue": 5322,
+    "command": "rhwp",
+    "exit": 0,
+    "branch": "layout",
+    "hardGate": "cargo fmt --all -- --check",
+    "staleFmtRejected": true
+  }
+}

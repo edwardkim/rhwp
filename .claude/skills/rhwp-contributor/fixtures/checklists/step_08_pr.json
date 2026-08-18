@@ -1,0 +1,24 @@
+{
+  "id": "step-08-pr",
+  "step": 8,
+  "title": "한국어 PR",
+  "evidence": "gh pr create --base devel --body-file",
+  "items": [
+    "--base devel",
+    "--body-file UTF-8 without BOM",
+    "closes #5322",
+    "첫 체크박스 = fmt 게이트",
+    "한국어 제목·본문"
+  ],
+  "hardGate": "cargo fmt --all -- --check",
+  "forbids": [
+    "cargo fmt --check",
+    "git add -A",
+    "steal named worktree",
+    "invent DocumentCore edit",
+    "new rhwp CLI",
+    "edit gym/",
+    "rewrite rhwp-work-receipt"
+  ],
+  "issue": 5322
+}
