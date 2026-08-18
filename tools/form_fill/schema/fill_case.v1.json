@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rhwp.form_fill.fill_case.v1",
+  "title": "fill-fields envelope case",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "id",
+    "axis",
+    "argv",
+    "envelope"
+  ],
+  "properties": {
+    "axis": {
+      "enum": [
+        "fill-fields",
+        "이름[N]",
+        "ambiguous",
+        "notFound",
+        "dry-run",
+        "verify"
+      ]
+    },
+    "existingCliOnly": {
+      "const": true
+    },
+    "envelope": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "dryRun",
+        "filledCount",
+        "filled",
+        "notFound",
+        "ambiguous"
+      ]
+    }
+  }
+}

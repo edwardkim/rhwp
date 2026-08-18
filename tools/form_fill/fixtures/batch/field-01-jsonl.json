@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.batch_row.v1",
+  "id": "field-01-batch-jsonl",
+  "axis": "batch-fill",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "field-01",
+  "title": "누름틀 11개 혼합 샘플 JSONL 메일머지",
+  "why": "행마다 단건 봉투 + row. 실패 행도 스트림에 남긴다.",
+  "sample": "samples/field-01.hwp",
+  "relatedIssue": "#3719",
+  "argv": [
+    "batch",
+    "fill",
+    "--form",
+    "samples/field-01.hwp",
+    "--data",
+    "data/field-01.jsonl",
+    "--out-dir",
+    "out/field-01",
+    "--json"
+  ],
+  "dataFormat": "jsonl",
+  "dataText": "{\"회사명\": \"주식회사 검증\", \"작성자\": \"김가온-홍길동\"}\n{\"회사명\": \"주식회사 검증\", \"작성자\": \"김가온-김가온\"}\n{\"회사명\": \"주식회사 검증\", \"작성자\": \"김가온-이도윤\"}\n",
+  "records": [
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/field-01.hwp",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "회사명",
+          "occurrence": 0,
+          "value": "주식회사 검증"
+        },
+        {
+          "name": "작성자",
+          "occurrence": 0,
+          "value": "김가온-홍길동"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/field-01/0001.hwp",
+      "outputFormat": "hwp5",
+      "row": 0
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/field-01.hwp",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "회사명",
+          "occurrence": 0,
+          "value": "주식회사 검증"
+        },
+        {
+          "name": "작성자",
+          "occurrence": 0,
+          "value": "김가온-김가온"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/field-01/0002.hwp",
+      "outputFormat": "hwp5",
+      "row": 1
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/field-01.hwp",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "회사명",
+          "occurrence": 0,
+          "value": "주식회사 검증"
+        },
+        {
+          "name": "작성자",
+          "occurrence": 0,
+          "value": "김가온-이도윤"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/field-01/0003.hwp",
+      "outputFormat": "hwp5",
+      "row": 2
+    }
+  ],
+  "exit": 0,
+  "gate": true,
+  "writesFiles": true
+}

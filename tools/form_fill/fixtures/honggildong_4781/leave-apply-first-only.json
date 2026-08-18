@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.honggildong_4781.v1",
+  "id": "leave-apply-hong-first-only",
+  "axis": "honggildong-4781",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "leave-apply",
+  "title": "연가·휴가원 첫 필드만 홍길동",
+  "why": "T07/#4781. fields[0] 만 홍길동. 다른 칸에 복제하면 clone_forbidden.",
+  "sample": "fixtures/forms/휴가원.hwp",
+  "relatedIssue": "#4781",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/휴가원.hwp",
+    "--data",
+    "{\"소속\": \"홍길동\"}",
+    "-o",
+    "out/leave-apply-hong.hwp",
+    "--json"
+  ],
+  "data": {
+    "소속": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/휴가원.hwp",
+    "dryRun": false,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "소속",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/leave-apply-hong.hwp",
+    "outputFormat": "hwp5"
+  },
+  "detect": {
+    "firstFieldName": "소속",
+    "firstFieldValue": "홍길동",
+    "firstFieldOk": true,
+    "cloned": [],
+    "cloneCount": 0,
+    "verdict": "pass"
+  },
+  "afterFirst": "홍길동",
+  "otherHongCount": 0,
+  "allowedClone": false,
+  "verdict": "pass"
+}

@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "family-cert-occurrence",
+  "axis": "이름[N]",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "family-cert",
+  "title": "가족관계증명 청구 반복 필드 순번 지목",
+  "family": "민원",
+  "genre": "증명",
+  "sample": "fixtures/forms/가족관계증명청구.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "이름[N] 은 fields 목록 순서 0 기준. 지목하지 않은 칸은 그대로. 순번 없음은 ambiguous, 범위 밖은 notFound.",
+  "firstFieldName": "증명종류",
+  "fieldCount": 10,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/가족관계증명청구.hwp",
+    "--data",
+    "{\"성명[0]\": \"홍길동\", \"성명[1]\": \"홍길동-2\"}",
+    "-o",
+    "out/family-cert-occ.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "성명[0]": "홍길동",
+    "성명[1]": "홍길동-2"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/가족관계증명청구.hwp",
+    "dryRun": false,
+    "filledCount": 2,
+    "filled": [
+      {
+        "name": "성명",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "성명",
+        "occurrence": 1,
+        "value": "홍길동-2"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/family-cert-occ.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "untouchedOccurrences": {
+    "성명": []
+  },
+  "afterTargeted": {
+    "성명": [
+      "홍길동",
+      "홍길동-2"
+    ]
+  },
+  "gate": true,
+  "ambiguous": {
+    "data": {
+      "성명": "홍길동"
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/가족관계증명청구.hwp",
+      "dryRun": true,
+      "filledCount": 1,
+      "filled": [
+        {
+          "name": "성명",
+          "occurrence": 0,
+          "value": "홍길동"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [
+        {
+          "name": "성명",
+          "matched": 1,
+          "total": 2
+        }
+      ],
+      "confusable": [],
+      "verify": null
+    },
+    "incomplete": true
+  },
+  "outOfRange": {
+    "data": {
+      "성명[102]": "범위밖"
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/가족관계증명청구.hwp",
+      "dryRun": true,
+      "filledCount": 0,
+      "filled": [],
+      "notFound": [
+        "성명[102]"
+      ],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null
+    }
+  }
+}

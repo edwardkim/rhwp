@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-fields-missing",
+  "axis": "fields",
+  "title": "fields 없는 파일",
+  "why": "exit 1, stdout 비움.",
+  "argv": [
+    "fields",
+    "없는파일-fields.hwp",
+    "--json"
+  ],
+  "exit": 1,
+  "writesFile": false
+}

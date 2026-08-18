@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.batch_row.v1",
+  "id": "minwon-batch-dry-run",
+  "axis": "batch-dry-run",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "minwon",
+  "title": "민원신청서 batch --dry-run",
+  "why": "dry-run 이어도 --out-dir 는 필수. 폴더·파일을 만들지 않는다.",
+  "sample": "fixtures/forms/민원신청서.hwp",
+  "relatedIssue": "#3719",
+  "argv": [
+    "batch",
+    "fill",
+    "--form",
+    "fixtures/forms/민원신청서.hwp",
+    "--data",
+    "data/minwon.jsonl",
+    "--out-dir",
+    "out/minwon-dry",
+    "--dry-run",
+    "--json"
+  ],
+  "records": [
+    {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/민원신청서.hwp",
+      "dryRun": true,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "민원제목",
+          "occurrence": 0,
+          "value": "도로 파손 보수 요청"
+        },
+        {
+          "name": "민원내용",
+          "occurrence": 0,
+          "value": "과속 방지턱 설치-홍길동"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "row": 0
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/민원신청서.hwp",
+      "dryRun": true,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "민원제목",
+          "occurrence": 0,
+          "value": "도로 파손 보수 요청"
+        },
+        {
+          "name": "민원내용",
+          "occurrence": 0,
+          "value": "과속 방지턱 설치-김가온"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "row": 1
+    }
+  ],
+  "exit": 0,
+  "writesFiles": false,
+  "anyOutputKey": false
+}

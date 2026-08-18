@@ -1,0 +1,24 @@
+id	axis	exit	writesFile	argv
+path-fields-json	fields	0	False	fields samples/field-01.hwp --json
+path-fields-human	fields	0	False	fields samples/field-01.hwp
+path-fields-missing	fields	1	False	fields 없는파일-fields.hwp --json
+path-fields-usage	fields	2	False	fields
+path-fill-dry-run	dry-run	0	False	edit fill-fields samples/field-01.hwp --data {"회사명":"주식회사 A"} -o out/dry.hwp --dry-run --json
+path-fill-write	fill-fields	0	True	edit fill-fields samples/field-01.hwp --data {"회사명":"주식회사 검증"} -o out/write.hwp --json
+path-fill-verify	verify	0	True	edit fill-fields samples/field-01.hwp --data {"회사명":"검증사"} -o out/verify.hwp --verify --json
+path-fill-occurrence	이름[N]	0	True	edit fill-fields samples/80168_regulatory_analysis.hwp --data {"피규제집단명[0]":"가상협회 회원사","피규제집단명[2]":"가상조합 조합원"} -o out/occ.hwp --json
+path-fill-honggildong	honggildong-4781	0	True	edit fill-fields samples/field-01.hwp --data {"회사명":"홍길동"} -o filled.hwp --json
+path-fill-unknown	notFound	0	False	edit fill-fields samples/field-01.hwp --data {"회사명":"A","존재하지않는필드":"B"} --dry-run --json
+path-fill-missing-file	runtime	1	False	edit fill-fields 없는파일-edit.hwp --data {"a":"b"} -o out/missing.hwp --json
+path-fill-bad-json	usage	2	False	edit fill-fields samples/field-01.hwp --data {이건 JSON 이 아님 --dry-run
+path-fill-missing-data	usage	2	False	edit fill-fields samples/field-01.hwp
+path-fill-data-at-file	fill-fields	0	True	edit fill-fields samples/field-01.hwp --data @row.json -o out/at.hwp --json
+path-fill-hwpx-preserve	format	0	True	edit fill-fields tools/forms/일반기안문_서식.hwpx --data @tools/forms/일반기안문_예시값.json -o out/gian.hwpx --json
+path-fill-default-next-to-input	fill-fields	0	True	edit fill-fields samples/field-01.hwp --data {"회사명":"옆파일"} --json
+path-batch-jsonl	batch-fill	0	True	batch fill --form samples/field-01.hwp --data rows.jsonl --out-dir out/filled --json
+path-batch-csv	batch-fill	0	True	batch fill --form samples/field-01.hwp --data 명단.csv --out-dir out/filled --name-field 작성자 --json
+path-batch-dry-run	batch-dry-run	0	False	batch fill --form samples/field-01.hwp --data rows.jsonl --out-dir out/filled --dry-run --json
+path-batch-verify	verify	0	True	batch fill --form samples/field-01.hwp --data rows.jsonl --out-dir out/filled --verify --json
+path-batch-empty-data	usage	2	False	batch fill --form samples/field-01.hwp --data empty.csv --out-dir out/filled --json
+path-batch-threads	batch-fill	0	True	batch fill --form samples/field-01.hwp --data rows.jsonl --out-dir out/filled --threads 4 --json
+path-unknown-edit	usage	2	False	edit no-such-action

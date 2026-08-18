@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "spend-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "spend",
+  "title": "지출결의서 고유 이름 채움",
+  "family": "회계",
+  "genre": "결의",
+  "sample": "fixtures/forms/지출결의서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "결의번호",
+  "fieldCount": 19,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/지출결의서.hwp",
+    "--data",
+    "{\"결의번호\": \"지-2026-441\", \"결의일\": \"2026. 7. 15.\", \"지급처\": \"한국문서공사\"}",
+    "-o",
+    "out/spend-plain.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "결의번호": "지-2026-441",
+    "결의일": "2026. 7. 15.",
+    "지급처": "한국문서공사"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/지출결의서.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "결의번호",
+        "occurrence": 0,
+        "value": "지-2026-441"
+      },
+      {
+        "name": "결의일",
+        "occurrence": 0,
+        "value": "2026. 7. 15."
+      },
+      {
+        "name": "지급처",
+        "occurrence": 0,
+        "value": "한국문서공사"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/spend-plain.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "gate": true
+}

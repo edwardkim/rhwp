@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "field-01-memo-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "field-01-memo",
+  "title": "누름틀 11개 + HelpState 지시문 고유 이름 채움",
+  "family": "sample",
+  "genre": "지시문",
+  "sample": "samples/field-01-memo.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3281",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "회사명",
+  "fieldCount": 11,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/field-01-memo.hwp",
+    "--data",
+    "{\"회사명\": \"주식회사 검증\", \"작성자\": \"김가온\", \"부서명\": \"기획조정실\"}",
+    "-o",
+    "out/field-01-memo-plain.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "회사명": "주식회사 검증",
+    "작성자": "김가온",
+    "부서명": "기획조정실"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/field-01-memo.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "회사명",
+        "occurrence": 0,
+        "value": "주식회사 검증"
+      },
+      {
+        "name": "작성자",
+        "occurrence": 0,
+        "value": "김가온"
+      },
+      {
+        "name": "부서명",
+        "occurrence": 0,
+        "value": "기획조정실"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/field-01-memo-plain.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "gate": true
+}

@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.batch_row.v1",
+  "id": "gian-1-batch-dry-run",
+  "axis": "batch-dry-run",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "gian-1",
+  "title": "일반기안문 별지 제1호서식 batch --dry-run",
+  "why": "dry-run 이어도 --out-dir 는 필수. 폴더·파일을 만들지 않는다.",
+  "sample": "tools/forms/일반기안문_서식.hwpx",
+  "relatedIssue": "#3719",
+  "argv": [
+    "batch",
+    "fill",
+    "--form",
+    "tools/forms/일반기안문_서식.hwpx",
+    "--data",
+    "data/gian-1.jsonl",
+    "--out-dir",
+    "out/gian-1-dry",
+    "--dry-run",
+    "--json"
+  ],
+  "records": [
+    {
+      "schemaVersion": "1.0",
+      "source": "tools/forms/일반기안문_서식.hwpx",
+      "dryRun": true,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "행정기관명",
+          "occurrence": 0,
+          "value": "행정안전부"
+        },
+        {
+          "name": "수신자",
+          "occurrence": 0,
+          "value": "각 중앙행정기관의 장-홍길동"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "row": 0
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "tools/forms/일반기안문_서식.hwpx",
+      "dryRun": true,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "행정기관명",
+          "occurrence": 0,
+          "value": "행정안전부"
+        },
+        {
+          "name": "수신자",
+          "occurrence": 0,
+          "value": "각 중앙행정기관의 장-김가온"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "row": 1
+    }
+  ],
+  "exit": 0,
+  "writesFiles": false,
+  "anyOutputKey": false
+}

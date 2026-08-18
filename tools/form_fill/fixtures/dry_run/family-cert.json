@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "family-cert-dry-run",
+  "axis": "dry-run",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "family-cert",
+  "title": "가족관계증명 청구 dry-run",
+  "family": "민원",
+  "genre": "증명",
+  "sample": "fixtures/forms/가족관계증명청구.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "--dry-run 은 파일을 만들지 않는다. output/outputFormat 없음.",
+  "firstFieldName": "증명종류",
+  "fieldCount": 10,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/가족관계증명청구.hwp",
+    "--data",
+    "{\"증명종류\": \"가족관계증명서\"}",
+    "-o",
+    "out/family-cert-dry.hwp",
+    "--dry-run",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "증명종류": "가족관계증명서"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/가족관계증명청구.hwp",
+    "dryRun": true,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "증명종류",
+        "occurrence": 0,
+        "value": "가족관계증명서"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null
+  },
+  "writesFile": false,
+  "hasOutputKey": false,
+  "exit": 0
+}

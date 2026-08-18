@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.honggildong_4781.v1",
+  "id": "admin-appeal-hong-clone",
+  "axis": "honggildong-4781",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "admin-appeal",
+  "title": "행정심판 청구서 홍길동 전칸 복제 금지",
+  "why": "첫 필드 값을 모든 고유 이름에 복사하면 T07 과제 문구를 깨뜨린다.",
+  "sample": "fixtures/forms/행정심판청구서.hwp",
+  "relatedIssue": "#4781",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/행정심판청구서.hwp",
+    "--data",
+    "{\"피청구인\": \"홍길동\", \"처분내용\": \"홍길동\", \"처분일\": \"홍길동\", \"청구취지\": \"홍길동\", \"청구이유\": \"홍길동\", \"연락처\": \"홍길동\", \"청구일\": \"홍길동\"}",
+    "-o",
+    "out/admin-appeal-hong-clone.hwp",
+    "--json"
+  ],
+  "data": {
+    "피청구인": "홍길동",
+    "처분내용": "홍길동",
+    "처분일": "홍길동",
+    "청구취지": "홍길동",
+    "청구이유": "홍길동",
+    "연락처": "홍길동",
+    "청구일": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/행정심판청구서.hwp",
+    "dryRun": false,
+    "filledCount": 7,
+    "filled": [
+      {
+        "name": "피청구인",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "처분내용",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "처분일",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "청구취지",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "청구이유",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "연락처",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "청구일",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/admin-appeal-hong-clone.hwp",
+    "outputFormat": "hwp5"
+  },
+  "detect": {
+    "firstFieldName": "피청구인",
+    "firstFieldValue": "홍길동",
+    "firstFieldOk": true,
+    "cloned": [
+      {
+        "index": 1,
+        "name": "처분내용",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 2,
+        "name": "처분일",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 3,
+        "name": "청구취지",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 4,
+        "name": "청구이유",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 9,
+        "name": "연락처",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 10,
+        "name": "청구일",
+        "before": "",
+        "after": "홍길동"
+      }
+    ],
+    "cloneCount": 6,
+    "verdict": "clone_forbidden"
+  },
+  "afterFirst": "홍길동",
+  "otherHongCount": 6,
+  "allowedClone": false,
+  "verdict": "clone_forbidden"
+}

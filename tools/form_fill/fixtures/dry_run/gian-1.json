@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "gian-1-dry-run",
+  "axis": "dry-run",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "gian-1",
+  "title": "일반기안문 별지 제1호서식 dry-run",
+  "family": "공문서",
+  "genre": "기안",
+  "sample": "tools/forms/일반기안문_서식.hwpx",
+  "format": "hwpx",
+  "relatedIssue": "#3372",
+  "why": "--dry-run 은 파일을 만들지 않는다. output/outputFormat 없음.",
+  "firstFieldName": "행정기관명",
+  "fieldCount": 23,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "tools/forms/일반기안문_서식.hwpx",
+    "--data",
+    "{\"행정기관명\": \"행정안전부\"}",
+    "-o",
+    "out/gian-1-dry.hwp",
+    "--dry-run",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "행정기관명": "행정안전부"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "tools/forms/일반기안문_서식.hwpx",
+    "dryRun": true,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "행정기관명",
+        "occurrence": 0,
+        "value": "행정안전부"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null
+  },
+  "writesFile": false,
+  "hasOutputKey": false,
+  "exit": 0
+}
