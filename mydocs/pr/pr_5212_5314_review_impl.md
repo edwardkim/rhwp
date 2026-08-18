@@ -63,6 +63,8 @@ last_verified: 2026-08-18
 - `bb9ef8b46`: Windows text pipe가 Bash block의 LF를 CRLF로 바꾸지 않도록 CodeQL workflow test 보정.
 - `ea9218b52`: 새 Rust contract의 clippy manual-contains/manual-range-patterns 보정.
 - CAP-5300 권위 문서 칸: recipe 링크 3개를 서식 자동화 가이드 1개로 정규화해 capability registry의 단일 내부 Markdown 링크 규칙을 충족.
+- `b55244132f`: gym audit clean fixture가 실제 scorecard schema와 일치하도록 `name` 필드를 보정.
+- `a8489ff61`: `rhwp-doc-triage`의 placeholder CLI 표기를 실제 실행 가능한 `rhwp info <파일> --json` 예시로 보정.
 
 ## 검증 결과
 
@@ -72,8 +74,9 @@ last_verified: 2026-08-18
 4. `cargo clippy --all-targets --target-dir target/pr-review -- -D warnings` 통과.
 5. 선택 regression suite 004·006·010·014·018·021·024·026: 723 passed, 6 skipped.
 6. `cargo test --doc --target-dir target/pr-review`: 8 passed, 2 ignored.
-7. 전체 `cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 4 --no-fail-fast`는 대형 `issue2063_huge_cellbreak_table.hwp` fixture를 포함해 완료 프로세스까지 관찰했다. 실행 래퍼의 시간 제한으로 최종 stdout/exit code를 회수하지 못했으므로, 위 선택 suite의 명시적 723/723 성공으로 이번 변경 source의 직접 검증 근거를 보강했다.
+7. CI와 같은 상호배타 nextest 분할을 모두 종료코드 0으로 실행했다: 정규 3/3 2,410개(243.588초), 정규 1/3 2,334개(418.853초), 정규 2/3 2,221개(332.790초), `overflow_cell_baseline` 1개(130.567초) — 합계 6,966개 통과. 정규 shard는 `--test-threads 4`, 마지막 baseline은 16 논리 CPU 호스트에 맞춰 `--test-threads 12`를 사용했다.
+8. push 직전 `cargo fmt --all`, `cargo fmt --all -- --check`, `node scripts/rust-test-suite-manifest.mjs --prepare --check`, `node scripts/rust-unit-test-tiers.mjs --check`, `git diff --check`를 통과했다. `tests/generated/regression_suite_*`와 `tests/suites/manifest.json`은 생성·무시 대상이며 stage하지 않았다.
 
 ## 원격 후속 경계
 
-현재 원 PR들은 OPEN / MERGEABLE / BLOCKED 상태다. 통합 후보는 아직 push하지 않았으므로 BLOCKED는 원격 CI 전 상태다. 작업지시자 push 승인을 받은 뒤에만 새 head branch를 upstream에 push하고 devel 대상 통합 PR을 만들며, 최신 CI·CodeQL이 통과한 뒤 별도 merge 승인에 따라 merge·원 PR 처리·오늘할일 archive를 진행한다.
+현재 원 PR들은 OPEN / MERGEABLE / BLOCKED 상태다. 통합 PR [#5429](https://github.com/edwardkim/rhwp/pull/5429)는 draft이며, 원격 head는 `b55244132f`다. 이번 전체 회귀 결과와 `a8489ff61` 보정·이 기록을 push한 뒤 최신 CI·CodeQL을 감시하며, 통과 후 별도 merge 승인에 따라 merge·원 PR 처리·오늘할일 archive를 진행한다.
