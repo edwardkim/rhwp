@@ -2,7 +2,7 @@
 kind: decision
 status: active
 canonical: mydocs/tech/layout_anomaly_detection.md
-last_verified: 2026-08-16
+last_verified: 2026-08-18
 ---
 
 # 레이아웃 이상탐지(layout anomaly detection) — 세 번째 층
@@ -127,22 +127,19 @@ issue1549_multipositive_float_tables.hwpx`(표 3개가 서로 겹치는 표본, 
 
 ```
 rhwp layout-anomaly <파일.hwp|파일.hwpx> [-p <페이지>] [--json] [--strict]
+                     [--types <Type,...>]
+                     [--overflow-tolerance <px>] [--overlap-tolerance <px>]
+rhwp layout-anomaly --batch <폴더> [-p <페이지>] [--json] [--strict]
+                     [--types <Type,...>]
                      [--overflow-tolerance <px>] [--overlap-tolerance <px>]
 ```
 
-- `--json`: 판정 봉투 한 줄(`schemaVersion`, `pages[].overflow/overlap/emptyPage`, `hasSignal` 등).
-- `--strict`: `hasSignal`(overflow·overlap 확정 신호)이 있으면 종료 코드 3.
+- `--json`: 단건은 판정 봉투 한 줄(`schemaVersion`, `mode`, `pages[].overflow/overlap/emptyPage`, `hasSignal` 등). `--batch` 는 NDJSON.
+- `--strict`: `hasSignal`(overflow·overlap 확정 신호)이 있으면 종료 코드 3. 기본은 이상 신호가 있어도 0.
 - `-p`: 사람 모드 출력만 해당 페이지로 좁힌다(스캔 자체는 항상 전 페이지).
+- `--types`: overflow·overlap 검사 대상 노드 타입만 남긴다(예: `Table,Image`). `empty_page` 는 페이지 단위라 영향 없음. 필터에 안 걸린 컨테이너는 접지 않고 자손을 본다.
+- `--batch`: 폴더를 재귀해 `.hwp`/`.hwpx` 를 상대 경로 정렬 순으로 스캔한다. 파일별 로드·스캔 실패는 레코드의 `error` 키(DATA)로 남기고 스트림에서 빼지 않는다. 한 건이라도 측정 실패면 exit 1 이 `--strict` 의 3보다 우선한다.
 
 ## 의도적으로 미룬 것
 
-- MCP 도구 등록(`mcp-serve` 노출)과 `capabilities --mcp`/`export-agent-manifest`/
-  `export-ontology` 자기서술 확장은 이번 범위에서 뺐다. `render-diff` 도 MCP 도구
-  (`hwp_render_diff`)를 갖고 있어 대칭을 맞추면 좋지만, 사람용 CLI + `capabilities`(사람이 읽는
-  `commands[]`) 계약만으로 소비자가 이미 자동화할 수 있다.
-- `--batch`(폴더 일괄 스캔, `render-diff --batch` 와 같은 형태)도 미뤘다 — 단일 파일 계약을
-  먼저 굳힌 뒤 배치 축을 얹는 편이 안전하다.
-- overflow·overlap 판정 대상 타입을 `--types` 로 좁히는 옵션은 아직 없다. 실측에서 TextLine
-  overflow(단락이 쪽 하단 밖으로 밀린 경우)가 표·이미지 overflow보다 잦았는데, 이것도 유의미한
-  신호(내부 `LAYOUT_OVERFLOW` 로그와 일치)라 기본에서 빼지 않았다 — 표·이미지만 보고 싶은
-  소비자는 `pages[].overflow[].nodeType` 으로 후처리 필터링한다.
+- MCP 도구를 배치 전용으로 쪼개지 않는다. 기존 `hwp_layout_anomaly` 에 `batch`·`types` 선택 인자를 얹는다.

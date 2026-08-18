@@ -701,7 +701,9 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `overflowCount` | number | 전 쪽에서 확정한 overflow 신호 수 | `layout-anomaly` |
 | `overlapCount` | number | 전 쪽에서 확정한 overlap 신호 수 | `layout-anomaly` |
 | `emptyPageCount` | number | 내용이 없는 중간 쪽 가능성 신호 수 | `layout-anomaly` |
-| `hasSignal` | bool | overflow·overlap·빈 쪽 가능성 신호가 하나 이상 있는가 | `layout-anomaly` |
+| `hasSignal` | bool | overflow·overlap 확정 신호가 하나 이상 있는가(`empty_page` 제외) | `layout-anomaly` |
+| `mode` | string | 단건 `"single"` / 배치 `"batch"` | `layout-anomaly` |
+| `types` | array\|null | `--types` 로 좁힌 노드 타입. `null` = 기본 검사 대상 전부 | `layout-anomaly` |
 
 #### 쪽 자르기 (`extract-pages`)
 
@@ -1245,7 +1247,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_audit` | `audit --json` | `dir` |
 | `hwp_export_plan_schema` | `export-plan-schema --json` | (없음) |
 | `hwp_render_diff` | `render-diff --json` | `path` |
-| `hwp_layout_anomaly` | `layout-anomaly --json` | `path`,`page`,`strict`,`overflowTolerance`,`overlapTolerance` |
+| `hwp_layout_anomaly` | `layout-anomaly --json` | `path`,`page`,`strict`,`overflowTolerance`,`overlapTolerance`,`types`,`batch` |
 | `hwp_export_ir_schema` | `export-ir-schema --json` | (없음) |
 | `hwp_export_capabilities_schema` | `export-capabilities-schema --json` | (없음) |
 | `hwp_export_provenance_map` | `export-provenance-map --json` | (없음) |

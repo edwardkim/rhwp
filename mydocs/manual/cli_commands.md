@@ -1566,7 +1566,7 @@ HWP5 → IR → HWP5 roundtrip 무손실 검증(#1552). 재조립 `.rt.hwp` 와 
   `Δ Line: 4→0 (-4)  RawSvg: 1→0 (-1)`, 배치는 콘솔/`struct_delta` 컬럼에 `Line:-4;RawSvg:-1`).
   음수=라운드트립 손실, 양수=추가. 손실 노드 타입으로 직렬화 누락 원인을 즉시 좁힌다.
 
-### `layout-anomaly <파일> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--strict] [--json]`
+### `layout-anomaly <파일 | --batch 폴더> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--types <Type,...>] [--strict] [--json]`
 **렌더 한 장의 이상탐지** — `render-diff` 가 두 렌더 사이 **변위**를 재는 것과 달리, 렌더 한 장
 만으로 "정상적인 문서로 보이는가"를 판정한다. 두 렌더가 똑같이 망가져 있으면 변위는 0이라
 `render-diff` 는 못 잡는 케이스를 이 명령이 잡는다. 설계 배경:
@@ -1578,9 +1578,14 @@ HWP5 → IR → HWP5 roundtrip 무손실 검증(#1552). 재조립 `.rt.hwp` 와 
   기하만으로 구분 불가).
 - `--overflow-tolerance`(기본 1.0px) / `--overlap-tolerance`(기본 2.0px, 폭·높이 둘 다 초과해야
   잡음) 로 민감도 조절. `-p` 는 사람 모드 출력만 좁힌다(스캔 자체는 항상 전 페이지).
-- `--json` 봉투는 `pageCount`, `pageFilter`, 두 tolerance, `strict`, `overflowCount`,
-  `overlapCount`, `emptyPageCount`, `hasSignal`, 페이지별 `pages[]`를 낸다. 자동화는 사람용
-  출력이 아니라 이 필드와 종료 코드로만 판정한다.
+- `--types Table,Image` 처럼 overflow·overlap 검사 대상을 노드 타입으로 좁힌다. `empty_page` 는
+  페이지 단위 신호라 필터의 영향을 받지 않는다. 알 수 없는 타입은 사용법 오류(exit 2).
+- `--batch <폴더>` 는 `render-diff --batch` 와 같다: `.hwp`/`.hwpx` 를 재귀 수집해 상대 경로
+  정렬 순으로 보고하고, 파일별 로드·스캔 실패는 스트림에서 빼지 않고 `error` 레코드(DATA)로
+  남긴다. `--json` 배치는 NDJSON. 한 건이라도 측정 실패면 exit 1 이 `--strict` 의 3보다 우선한다.
+- `--json` 봉투는 `mode`, `pageCount`, `pageFilter`, 두 tolerance, `types`, `strict`,
+  `overflowCount`, `overlapCount`, `emptyPageCount`, `hasSignal`, 페이지별 `pages[]`를 낸다.
+  자동화는 사람용 출력이 아니라 이 필드와 종료 코드로만 판정한다.
 
 ### `bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]`
 **단계별 처리 성능 계측** — parse / layout / render / serialize 를 워밍업 1회 후 N회(기본 3)
