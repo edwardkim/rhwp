@@ -140,10 +140,9 @@ Windows 호스트에서 `cmin --sanitizer none` 은 rust-lld 가 `__sanitizer_co
   `parse_body_text_section` / `parse_doc_info` / `parse_control` / EMF 등 나머지
   임베드 포맷·컨테이너를 우회하는 내부 파서 직접 하네스
 - nightly 스모크는 위 CI 절. PR 게이트·왕복 정합성(M04)은 여기 넣지 않습니다
-- OSS-Fuzz 등재 (M10, 메인테이너 판단)
-- CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생
+- OSS-Fuzz 등재 — 계획 문서 [`oss-fuzz-onboarding.md`](oss-fuzz-onboarding.md) (M10-1).
+  `google/oss-fuzz` PR은 메인테이너 승인 후 M10-2에서 연다.
 - CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생 (왕복 정합성은 아래 M04)
-- OSS-Fuzz 등재 (메인테이너 판단)
 
 ## 왕복 정합성은 여기가 아니다 (M04)
 
