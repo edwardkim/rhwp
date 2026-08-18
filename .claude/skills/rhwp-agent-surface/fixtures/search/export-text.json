@@ -1,0 +1,23 @@
+{
+  "invocation": "rhwp capabilities --search export-text",
+  "invocation_json": "rhwp capabilities --search export-text --json",
+  "query": "export-text",
+  "keywords_and": [
+    "export-text"
+  ],
+  "match_count": 1,
+  "empty": false,
+  "layer": "cli-json",
+  "ssot": "capabilities_command_entries() name+summary+subcommands",
+  "matches": [
+    {
+      "name": "export-text",
+      "family": "export",
+      "summary": "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
+      "json": true
+    }
+  ],
+  "truncated": false,
+  "total_match_count": 1,
+  "note": "개수는 계약이 아니다. 바이너리 출력이 이긴다."
+}

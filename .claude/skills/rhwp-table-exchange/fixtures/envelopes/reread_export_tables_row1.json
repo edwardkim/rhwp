@@ -1,0 +1,37 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "export-tables",
+    "exit": 0,
+    "branch": "reread-after-write",
+    "source": "recipes/02 재독 대조"
+  },
+  "cells": [
+    {
+      "col": 0,
+      "colSpan": 1,
+      "isHeader": false,
+      "row": 1,
+      "rowSpan": 1,
+      "text": "서버 이관"
+    },
+    {
+      "col": 1,
+      "colSpan": 1,
+      "isHeader": false,
+      "row": 1,
+      "rowSpan": 1,
+      "text": "홍길동"
+    },
+    {
+      "col": 2,
+      "colSpan": 1,
+      "isHeader": false,
+      "row": 1,
+      "rowSpan": 1,
+      "text": "1차 완료"
+    }
+  ]
+}

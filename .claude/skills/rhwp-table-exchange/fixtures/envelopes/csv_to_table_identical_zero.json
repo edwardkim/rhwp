@@ -1,0 +1,31 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "csv-to-table",
+    "exit": 0,
+    "branch": "identical-writes-nothing",
+    "outputKept": true,
+    "source": "tests/table_csv_contract.rs identical_csv_writes_nothing_and_verifies"
+  },
+  "changed": [],
+  "changedCount": 0,
+  "changedPages": [
+    0
+  ],
+  "colCount": 3,
+  "csv": "table0_original.csv",
+  "dryRun": false,
+  "invalid": [],
+  "output": "same.hwp",
+  "outputFormat": "hwp5",
+  "rowCount": 4,
+  "schemaVersion": "1.0",
+  "source": "samples/hwp_table_test.hwp",
+  "table": 0,
+  "verify": {
+    "diffCount": 0,
+    "identical": true
+  }
+}

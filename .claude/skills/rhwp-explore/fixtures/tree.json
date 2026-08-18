@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5313,
+  "notGym": true,
+  "noNewCli": true,
+  "noNewEditLogic": true,
+  "firstMove": "rhwp explore <file> --json",
+  "threeAxes": [
+    "explain",
+    "capabilities",
+    "explore"
+  ],
+  "coreReuse": [
+    "document_core::queries::explore::build_menu",
+    "document_core::queries::explore::DocFacts",
+    "table_extract::extract_tables",
+    "field_query::collect_all_fields",
+    "structure::build_structure",
+    "chart_extract::collect_charts",
+    "explain::count_notes",
+    "injection_scan",
+    "hidden_text"
+  ],
+  "allowedCommands": [
+    "rhwp explore <file> --json",
+    "rhwp explain <file> --json",
+    "rhwp capabilities --json",
+    "rhwp inspect injection <file> --json",
+    "rhwp inspect hidden-text <file> --json",
+    "rhwp fields <file> --json",
+    "rhwp export-tables <file> --json",
+    "rhwp export-structure <file> --json",
+    "rhwp chart-to-csv <file> --json",
+    "rhwp digest <file> --sections --json",
+    "rhwp digest <file> --json"
+  ],
+  "inventedCommandsForbidden": [
+    "rhwp suggest",
+    "rhwp affordances",
+    "rhwp next",
+    "rhwp recommend",
+    "rhwp what-can-i-do",
+    "explore --rank",
+    "explore --only",
+    "explore --affordance",
+    "explore --menu",
+    "hwp_suggest",
+    "edit explore"
+  ]
+}

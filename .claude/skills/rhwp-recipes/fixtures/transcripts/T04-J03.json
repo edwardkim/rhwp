@@ -1,0 +1,21 @@
+{
+  "id": "T04-J03",
+  "recipe": "04",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"excerpt\":\"명령 단추\\n\\n선택 상자\\n\\n계절 선택\\n\\n라디오 단추\\n\\n\\n\\n여기에 입력\\n\\n\",\"format\":\"hwp5\",\"pageCount\":1,\"paraCount\":13,\"schemaVersion\":\"1.0\",\"source\":\"samples/form-01.hwp\",\"truncated\":false,\"nextStep\":\"더 읽으려면 export-text --json -p <쪽>, 찾으려면 search --json\"}",
+  "parsed": {
+    "excerpt": "명령 단추\n\n선택 상자\n\n계절 선택\n\n라디오 단추\n\n\n\n여기에 입력\n\n",
+    "format": "hwp5",
+    "pageCount": 1,
+    "paraCount": 13,
+    "schemaVersion": "1.0",
+    "source": "samples/form-01.hwp",
+    "truncated": false,
+    "nextStep": "더 읽으려면 export-text --json -p <쪽>, 찾으려면 search --json"
+  },
+  "parseable": true,
+  "notGym": true
+}

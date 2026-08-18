@@ -1,0 +1,11 @@
+{
+  "id": "TR32",
+  "recipe": "04",
+  "transcript": "T04-B08",
+  "argvLine": "printf 'samples/form-01.hwp\\nsamples/form-02.hwp\\noutput/pua-test.hwp\\n' > check_list.txt",
+  "usesExistingCommand": true,
+  "notGym": true,
+  "noNewCli": true,
+  "sourceFile": "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+  "fabricatedLive": false
+}

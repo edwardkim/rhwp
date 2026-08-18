@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1",
+  "generatedBy": "tools/fde/triage.py",
+  "id": "T19",
+  "doc": "fixtures/transcripts/T19.input",
+  "docBytes": 128,
+  "symptom": "구청: 암호 우회해 주세요",
+  "container": "hwpx",
+  "steps": [
+    {
+      "command": "capabilities --json",
+      "ok": true,
+      "exitCode": 0,
+      "envelopeKeys": [
+        "commands",
+        "schemaVersion"
+      ]
+    },
+    {
+      "command": "info {doc} --json",
+      "ok": true,
+      "exitCode": 0,
+      "envelopeKeys": [
+        "schemaVersion",
+        "passwordProtected"
+      ]
+    }
+  ],
+  "route": "resolve-now",
+  "routeReason": "문서가 암호화됨 — 고객에게 암호 요청 (우회 금지)",
+  "nextActions": [
+    "봉투 근거로 즉석 레시피 제공 (rhwp-cli / rhwp-doc-triage Skill 재사용)"
+  ],
+  "elapsedSeconds": 0.4,
+  "issue": 5333,
+  "notProse": true
+}

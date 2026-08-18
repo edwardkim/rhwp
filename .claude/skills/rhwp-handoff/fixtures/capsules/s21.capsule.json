@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "s20.capsule.json",
+    "sha256": "3bacdba369054d08c13e948f244b83bd93eb6f633db57eb280f7eea20bed96ea"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "output/handoff/t-ord/s20-receipt-pointer.md",
+    "output": "output/handoff/t-ord/s21-explore.json",
+    "steps": [
+      {
+        "action": "explore"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"output/handoff/t-ord/s20-receipt-pointer.md\",\"output\":\"output/handoff/t-ord/s21-explore.json\",\"steps\":[{\"action\":\"explore\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "output/handoff/t-ord/s20-receipt-pointer.md",
+    "inputSha256": "c62bfced8096dd98cf41dd123c0a3fce6419e96fb2b3cd24572b183e35508f9e",
+    "planSha256": "7d3bc3f280ecf413303954df907651551c7cd32ab7f5201d812bd60db0c625c2",
+    "outputSha256": "c63f7597bcf19c0d8491da278167ef92f2bad0299814a90e5252539f42c33bcf",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "TB37",
+  "tier": 3,
+  "title": "table-001 구분표지",
+  "input": "samples/table-001.hwp",
+  "instructions": "첫 번째 표의 (0행,0열) 을 '구분표지'으로 바꾼 class_mark.hwp 를 제출하라. 채점은 그 좌표만 대조한다. 힌트: rhwp edit set-cell.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "class_mark.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "(0,0) == 구분표지",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": "구분표지",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:class_mark.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "class_mark.hwp"
+    }
+  ]
+}

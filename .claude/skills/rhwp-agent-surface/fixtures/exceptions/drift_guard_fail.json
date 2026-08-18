@@ -1,0 +1,32 @@
+{
+  "id": "drift_guard_fail",
+  "title": "선언과 실행이 갈라졌다",
+  "layer": "mcp-stateless",
+  "guards": [
+    {
+      "name": "capabilities_mcp_covers_every_json_command",
+      "file": "tests/cli_json_contract.rs",
+      "means": "--json 명령이 MCP 도구로 안 나온다",
+      "fix": "mcp_tool_definitions() 에 한 줄 추가. 목록을 다른 곳에 베끼지 말 것"
+    },
+    {
+      "name": "tools_list_matches_capabilities_manifest",
+      "file": "tests/mcp_server_contract.rs",
+      "means": "tools/list 와 --mcp 선언이 어긋남",
+      "fix": "같은 mcp_tool_definitions() 를 쓰는지 확인"
+    },
+    {
+      "name": "capabilities_mcp_tool_definitions_contract",
+      "file": "tests/cli_json_contract.rs",
+      "means": "name/description/inputSchema/cli.command 누락",
+      "fix": "tool() helper 로 추가 — 손수 JSON 복제 금지"
+    },
+    {
+      "name": "capabilities_covers_every_help_command",
+      "file": "tests/cli_json_contract.rs",
+      "means": "help 에 있는 명령이 capabilities 에 없다",
+      "fix": "capabilities_command_entries() 에 등재"
+    }
+  ],
+  "do_not": "가드를 느슨하게 만들거나 제외 목록을 감으로 늘리지 않는다"
+}

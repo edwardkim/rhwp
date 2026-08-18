@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T07",
+  "title": "break-system-packages",
+  "stop": "F15",
+  "steps": [
+    "refuse"
+  ],
+  "tool": "tools/fidelity_compare/fidelity_compare.py"
+}

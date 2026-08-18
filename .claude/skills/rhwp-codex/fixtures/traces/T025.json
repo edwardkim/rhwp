@@ -1,0 +1,26 @@
+{
+  "id": "T025",
+  "command": "replay",
+  "chapter": "50_검증_사다리.md",
+  "cmd": "rhwp replay --plan-json '<계획 JSON 인라인>' --json",
+  "exit": 0,
+  "keys": [
+    "expectedOutputSha256",
+    "input",
+    "inputSha256",
+    "mode",
+    "outputSha256",
+    "planSha256",
+    "reproduced",
+    "schemaVersion",
+    "steps",
+    "toolVersion",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/50_검증_사다리.md",
+  "notInvented": true
+}

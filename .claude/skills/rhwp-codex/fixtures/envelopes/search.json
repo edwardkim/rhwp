@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "search",
+  "sourceChapter": "10_조회.md",
+  "cmd": "rhwp search samples/2022년 국립국어원 업무계획.hwp 국어 --json",
+  "exit": 0,
+  "envelope": {
+    "caseSensitive": true,
+    "matchCount": 321,
+    "matches": [
+      {
+        "cell": {
+          "cell": 1,
+          "control": 0,
+          "paragraph": 0
+        },
+        "charOffset": 8,
+        "context": "2022년 국립국어원 업무계획",
+        "length": 2,
+        "page": 0,
+        "paragraph": 4,
+        "section": 0,
+        "text": "2022년 국립국어원 업무계획"
+      },
+      {
+        "cell": {
+          "cell": 0,
+          "control": 0,
+          "paragraph": 12
+        },
+        "charOffset": 13,
+        "context": "    1-1. 국민의 국어능력(쓰기 등) 진단 체계 개발\t 17",
+        "length": 2,
+        "page": 1,
+        "paragraph": 20,
+        "section": 0,
+        "text": "    1-1. 국민의 국어능력(쓰기 등) 진단 체계 개발\t 17"
+      },
+      "… (321개 중 2개 표시)"
+    ],
+    "omittedCount": 0,
+    "query": "국어",
+    "schemaVersion": "1.0",
+    "source": "samples/2022년 국립국어원 업무계획.hwp",
+    "totalMatchCount": 321,
+    "truncated": false,
+    "untrustedContent": true,
+    "untrustedFields": [
+      "matches[].text",
+      "matches[].context"
+    ]
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

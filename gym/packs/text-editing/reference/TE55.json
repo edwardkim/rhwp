@@ -1,0 +1,31 @@
+{
+  "id": "TE55",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "규제",
+        "--replace",
+        "심사",
+        "-o",
+        "{sub:edited55.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "info",
+            "{sub:edited55.hwp}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

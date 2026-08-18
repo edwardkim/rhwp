@@ -1,0 +1,29 @@
+{
+  "id": "TE72",
+  "tier": 1,
+  "title": "첫 '규제' 쪽",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력에서 '규제' 의 첫 일치 쪽 번호(0 기준)를 answer.json 에 {\"page\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 '규제' 쪽 · page",
+      "op": "answer_eq",
+      "answer": "page",
+      "path": "matches[0].page",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "규제"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

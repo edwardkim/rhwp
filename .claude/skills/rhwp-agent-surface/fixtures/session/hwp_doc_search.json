@@ -1,0 +1,11 @@
+{
+  "name": "hwp_doc_search",
+  "layer": "mcp-session",
+  "in_capabilities_mcp": false,
+  "in_tools_list": true,
+  "ssot": "ALL_SESSION_TOOLS + served_tools()",
+  "handle": "docId",
+  "write_point": false,
+  "rule1": "세션 이름은 선언 매니페스트에 복제하지 않는다",
+  "closed_handle": "isError + nextCall hwp_open"
+}

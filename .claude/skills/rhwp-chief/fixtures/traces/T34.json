@@ -1,0 +1,23 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "id": "T34",
+ "kind": "T_esc",
+ "region": "부산",
+ "goal": "export-text",
+ "goalFieldPresent": true,
+ "triage": null,
+ "status": "failed",
+ "stop": "C02",
+ "steps": [
+  "path-escape"
+ ]
+}

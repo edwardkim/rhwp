@@ -1,0 +1,314 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5342,
+  "skill": "rhwp-knowledge-map",
+  "notGym": true,
+  "noNewCli": true,
+  "noNewEditLogic": true,
+  "routerOnly": true,
+  "entryPoint": true,
+  "doNotRenarrateMapRows": true,
+  "canonicalWins": true,
+  "binaryWinsOnVersionMismatch": true,
+  "fieldDictionary": "mydocs/manual/agent_knowledge_map.md#2-봉투-필드-사전--필드-이름으로-찾는-역인덱스",
+  "cards": [
+    {
+      "id": "S0",
+      "title": "0. 이 지도의 실측 기준",
+      "level": 2,
+      "line": 17,
+      "anchor": "0-이-지도의-실측-기준",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S1",
+      "title": "1. 3문 진입 — 세 가지 질문으로 필요한 문서에 도착한다",
+      "level": 2,
+      "line": 47,
+      "anchor": "1-3문-진입-세-가지-질문으로-필요한-문서에-도착한다",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S11",
+      "title": "1-1. 무엇을 하려는가 — 작업별 도구·명령 결정 표",
+      "level": 3,
+      "line": 49,
+      "anchor": "1-1-무엇을-하려는가-작업별-도구명령-결정-표",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S12",
+      "title": "1-2. 실패했는가 — 증상별 실패 사전 앵커",
+      "level": 3,
+      "line": 190,
+      "anchor": "1-2-실패했는가-증상별-실패-사전-앵커",
+      "canonical": "mydocs/manual/agent_troubleshooting_guide.md"
+    },
+    {
+      "id": "S13",
+      "title": "1-3. 추가하려는가 — 표면 플레이북",
+      "level": 3,
+      "line": 208,
+      "anchor": "1-3-추가하려는가-표면-플레이북",
+      "canonical": "mydocs/manual/agent_surface_playbook.md"
+    },
+    {
+      "id": "S131",
+      "title": "1-3-1. 끝에서 끝까지 예제를 따라 하고 싶은가 — 레시피",
+      "level": 3,
+      "line": 215,
+      "anchor": "1-3-1-끝에서-끝까지-예제를-따라-하고-싶은가-레시피",
+      "canonical": "mydocs/manual/agent_surface_playbook.md"
+    },
+    {
+      "id": "S14",
+      "title": "1-4. 다른 언어에서 쓰려는가 — 기계 스키마 사용",
+      "level": 3,
+      "line": 232,
+      "anchor": "1-4-다른-언어에서-쓰려는가-기계-스키마-사용",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S15",
+      "title": "1-5. 역할이 정해져 있는가 — 프로필 라우터",
+      "level": 3,
+      "line": 245,
+      "anchor": "1-5-역할이-정해져-있는가-프로필-라우터",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S2",
+      "title": "2. 봉투 필드 사전 — 필드 이름으로 찾는 역인덱스",
+      "level": 2,
+      "line": 269,
+      "anchor": "2-봉투-필드-사전-필드-이름으로-찾는-역인덱스",
+      "canonical": "mydocs/manual/agent_knowledge_map.md"
+    },
+    {
+      "id": "S21",
+      "title": "2-1. 어느 봉투에나 있는 것 — 공통 표지",
+      "level": 3,
+      "line": 274,
+      "anchor": "2-1-어느-봉투에나-있는-것-공통-표지",
+      "canonical": "mydocs/manual/agent_knowledge_map.md"
+    },
+    {
+      "id": "S22",
+      "title": "2-2. 전수 사전 — 329개 필드",
+      "level": 3,
+      "line": 304,
+      "anchor": "2-2-전수-사전-329개-필드",
+      "canonical": "mydocs/manual/agent_knowledge_map.md"
+    },
+    {
+      "id": "S23",
+      "title": "2-3. 중첩 원소 사전 — 배열 안쪽 모양",
+      "level": 3,
+      "line": 802,
+      "anchor": "2-3-중첩-원소-사전-배열-안쪽-모양",
+      "canonical": "mydocs/manual/agent_knowledge_map.md"
+    },
+    {
+      "id": "S24",
+      "title": "2-4. `null` 사전 — 없는 값과 \"모르겠다\"를 구별한다",
+      "level": 3,
+      "line": 958,
+      "anchor": "2-4-null-사전-없는-값과-모르겠다를-구별한다",
+      "canonical": "mydocs/manual/agent_knowledge_map.md"
+    },
+    {
+      "id": "S25",
+      "title": "2-5. `recordFields` 는 전부가 아니다",
+      "level": 3,
+      "line": 977,
+      "anchor": "2-5-recordfields-는-전부가-아니다",
+      "canonical": "mydocs/manual/agent_knowledge_map.md"
+    },
+    {
+      "id": "S3",
+      "title": "3. 주소 어휘 — 좌표계는 전 명령이 공유한다",
+      "level": 2,
+      "line": 1000,
+      "anchor": "3-주소-어휘-좌표계는-전-명령이-공유한다",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S31",
+      "title": "3-1. 좌표계 정의",
+      "level": 3,
+      "line": 1002,
+      "anchor": "3-1-좌표계-정의",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S32",
+      "title": "3-2. 명령별로 어느 주소를 받고 어느 주소를 주나",
+      "level": 3,
+      "line": 1017,
+      "anchor": "3-2-명령별로-어느-주소를-받고-어느-주소를-주나",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S33",
+      "title": "3-3. 실측한 함정 세 가지",
+      "level": 3,
+      "line": 1040,
+      "anchor": "3-3-실측한-함정-세-가지",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S4",
+      "title": "4. 판정 3층 — isError 만 보면 오독한다",
+      "level": 2,
+      "line": 1066,
+      "anchor": "4-판정-3층-iserror-만-보면-오독한다",
+      "canonical": "mydocs/manual/mcp_integration_guide.md"
+    },
+    {
+      "id": "S5",
+      "title": "5. 명령 전수 지도 — 71개를 성격으로 나눈다",
+      "level": 2,
+      "line": 1084,
+      "anchor": "5-명령-전수-지도-71개를-성격으로-나눈다",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S6",
+      "title": "6. MCP 도구 전수 지도 — 113개",
+      "level": 2,
+      "line": 1119,
+      "anchor": "6-mcp-도구-전수-지도-113개",
+      "canonical": "mydocs/manual/mcp_integration_guide.md"
+    },
+    {
+      "id": "S61",
+      "title": "6-1. 무상태 163개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)",
+      "level": 3,
+      "line": 1121,
+      "anchor": "6-1-무상태-163개-capabilities---mcp-선언-mcp-serve-제공",
+      "canonical": "mydocs/manual/mcp_integration_guide.md"
+    },
+    {
+      "id": "S62",
+      "title": "6-2. 세션 전용 18개 (`mcp-serve` 전용, `capabilities --mcp` 에는 없다)",
+      "level": 3,
+      "line": 1261,
+      "anchor": "6-2-세션-전용-18개-mcp-serve-전용-capabilities---mcp-에는-없다",
+      "canonical": "mydocs/manual/mcp_integration_guide.md"
+    },
+    {
+      "id": "S63",
+      "title": "6-3. `structuredContent` 가 없는 도구",
+      "level": 3,
+      "line": 1288,
+      "anchor": "6-3-structuredcontent-가-없는-도구",
+      "canonical": "mydocs/manual/mcp_integration_guide.md"
+    },
+    {
+      "id": "S7",
+      "title": "7. 표본 지도 — 어떤 검증에 어떤 샘플을 쓰나 (실측 2026-08-03)",
+      "level": 2,
+      "line": 1295,
+      "anchor": "7-표본-지도-어떤-검증에-어떤-샘플을-쓰나-실측-2026-08-03",
+      "canonical": "mydocs/manual/agent_knowledge_map.md"
+    },
+    {
+      "id": "S71",
+      "title": "7-1. 성격별 표본",
+      "level": 3,
+      "line": 1297,
+      "anchor": "7-1-성격별-표본",
+      "canonical": "mydocs/manual/agent_knowledge_map.md"
+    },
+    {
+      "id": "S72",
+      "title": "7-2. 보안 축 표본은 **음성 코퍼스**다",
+      "level": 3,
+      "line": 1321,
+      "anchor": "7-2-보안-축-표본은-음성-코퍼스다",
+      "canonical": "mydocs/manual/agent_knowledge_map.md"
+    },
+    {
+      "id": "S73",
+      "title": "7-3. 개인정보가 실제로 잡히는 표본",
+      "level": 3,
+      "line": 1332,
+      "anchor": "7-3-개인정보가-실제로-잡히는-표본",
+      "canonical": "mydocs/manual/agent_knowledge_map.md"
+    },
+    {
+      "id": "S8",
+      "title": "8. 계약 테스트 지도 — `tests/*_contract.rs` 가 고정하는 계약",
+      "level": 2,
+      "line": 1339,
+      "anchor": "8-계약-테스트-지도-tests_contractrs-가-고정하는-계약",
+      "canonical": "mydocs/manual/agent_knowledge_map.md"
+    },
+    {
+      "id": "S81",
+      "title": "8-1. 봉투·계약 기반",
+      "level": 3,
+      "line": 1344,
+      "anchor": "8-1-봉투계약-기반",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S82",
+      "title": "8-2. 조회 축",
+      "level": 3,
+      "line": 1357,
+      "anchor": "8-2-조회-축",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S83",
+      "title": "8-3. 편집 축",
+      "level": 3,
+      "line": 1371,
+      "anchor": "8-3-편집-축",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S84",
+      "title": "8-4. 변환·렌더 축",
+      "level": 3,
+      "line": 1390,
+      "anchor": "8-4-변환렌더-축",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S85",
+      "title": "8-5. MCP 축",
+      "level": 3,
+      "line": 1406,
+      "anchor": "8-5-mcp-축",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "S86",
+      "title": "8-6. 보안 축",
+      "level": 3,
+      "line": 1423,
+      "anchor": "8-6-보안-축",
+      "canonical": "mydocs/tech/agent_security/consumer_guide.md"
+    },
+    {
+      "id": "S9",
+      "title": "9. 문서 축 지도 — 이 지도 바깥의 권위",
+      "level": 2,
+      "line": 1433,
+      "anchor": "9-문서-축-지도-이-지도-바깥의-권위",
+      "canonical": "mydocs/manual/cli_commands.md"
+    },
+    {
+      "id": "SMAINT",
+      "title": "유지 규약",
+      "level": 2,
+      "line": 1461,
+      "anchor": "유지-규약",
+      "canonical": "mydocs/manual/cli_commands.md"
+    }
+  ],
+  "count": 37,
+  "doNotRenarrate": true
+}

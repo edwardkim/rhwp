@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "s03.capsule.json",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "output/handoff/t-ord/s03-tables.csv",
+    "output": "output/handoff/t-ord/s04-TAMPER.csv",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "2024",
+        "replace": "2026"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"output/handoff/t-ord/s03-tables.csv\",\"output\":\"output/handoff/t-ord/s04-TAMPER.csv\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"2024\",\"replace\":\"2026\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "output/handoff/t-ord/s03-tables.csv",
+    "inputSha256": "26f99c51c95ee4f317285e1f2404515633489d5fb7af7852518f4f347a6c5b82",
+    "planSha256": "c70dbd7bf2ac15ccef3f7e912c014cc505fb119fe54f4f746d6f92878451a625",
+    "outputSha256": "d8ea3e02303ae3d01d00c70f80f0d75701f6fad3cbb8a66c4b02611152691cea",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

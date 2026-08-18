@@ -1,0 +1,11 @@
+{
+  "id": "TR34",
+  "recipe": "04",
+  "transcript": "T04-B10",
+  "argvLine": "rhwp batch info --json < check_list.txt",
+  "usesExistingCommand": true,
+  "notGym": true,
+  "noNewCli": true,
+  "sourceFile": "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+  "fabricatedLive": false
+}

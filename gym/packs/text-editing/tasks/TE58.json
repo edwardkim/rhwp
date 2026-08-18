@@ -1,0 +1,46 @@
+{
+  "id": "TE58",
+  "tier": 3,
+  "title": "보험료 첫 번째만",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "입력의 '보험료' 가운데 **0 기준 0번째만** '보험금' 로 바꾼 once58.hwp 을 제출하라. 전건 치환은 통과하지 못한다 — 옛 문구가 남아 있어야 한다. 힌트: rhwp edit replace-text --occurrence 0. 전건이면 TE10 과 같아진다. 잔여 '보험료' 가 있어야 한다. 보험료가 1건뿐이면 이 과제의 전제는 깨지므로 기준풀이 실패가 맞다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "once58.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:once58.hwp}",
+        "--json",
+        "--",
+        "보험금"
+      ]
+    },
+    {
+      "name": "옛 문구 잔여(전건 치환 거부)",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:once58.hwp}",
+        "--json",
+        "--",
+        "보험료"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "once58.hwp"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "invocation": "rhwp capabilities --search batch",
+  "invocation_json": "rhwp capabilities --search batch --json",
+  "query": "batch",
+  "keywords_and": [
+    "batch"
+  ],
+  "match_count": 3,
+  "empty": false,
+  "layer": "cli-json",
+  "ssot": "capabilities_command_entries() name+summary+subcommands",
+  "matches": [
+    {
+      "name": "batch",
+      "family": "batch",
+      "summary": "stdin 파일 목록을 한 프로세스에서 파일 간 병렬 처리, NDJSON 스트림 출력 (fill 축만 stdin 대신 --form 서식 + --data 행 파일로 메일머지)",
+      "json": true
+    },
+    {
+      "name": "scan",
+      "family": "batch",
+      "summary": "디렉터리 재귀 발견·분류 — 확장자↔매직 대조(extMismatch), --probe 파싱 시도(암호·쪽수), batch stdin 목록의 원천",
+      "json": false
+    },
+    {
+      "name": "render-diff",
+      "family": "diagnostic",
+      "summary": "왕복/두 파일 렌더 기하 차이 검증 — --json 회귀 검출은 exit 3 (--batch 는 NDJSON)",
+      "json": false
+    }
+  ],
+  "truncated": false,
+  "total_match_count": 3,
+  "note": "개수는 계약이 아니다. 바이너리 출력이 이긴다."
+}

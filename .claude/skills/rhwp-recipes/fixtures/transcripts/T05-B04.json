@@ -1,0 +1,11 @@
+{
+  "id": "T05-B04",
+  "recipe": "05",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/05_mail_merge_batch_fill.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "printf 'myMsg01\\n박민수 귀하\\n최지은 귀하\\n' > rows.csv",
+  "firstLine": "printf 'myMsg01\\n박민수 귀하\\n최지은 귀하\\n' > rows.csv",
+  "notGym": true
+}

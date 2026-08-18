@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5333,
+  "signals": [
+    {
+      "id": "S01",
+      "observe": "매직 불일치",
+      "route": "invalid-input",
+      "stop": "F02"
+    },
+    {
+      "id": "S02",
+      "observe": "capabilities 비0",
+      "route": "workaround",
+      "stop": "F03"
+    },
+    {
+      "id": "S03",
+      "observe": "panicked at file.rs:N",
+      "route": "escalate-bug",
+      "stop": "F04"
+    },
+    {
+      "id": "S04",
+      "observe": "timeout",
+      "route": "escalate-bug",
+      "stop": "F04"
+    },
+    {
+      "id": "S05",
+      "observe": "abort / 고종료코드",
+      "route": "escalate-bug",
+      "stop": "F04"
+    },
+    {
+      "id": "S06",
+      "observe": "encrypted true",
+      "route": "resolve-now",
+      "stop": "F05"
+    },
+    {
+      "id": "S07",
+      "observe": "info 깨끗한 비0",
+      "route": "workaround",
+      "stop": "F06"
+    },
+    {
+      "id": "S08",
+      "observe": "export-structure 깨끗한 비0",
+      "route": "workaround",
+      "stop": "F06"
+    },
+    {
+      "id": "S09",
+      "observe": "전 단계 ok",
+      "route": "resolve-now",
+      "stop": "F07"
+    },
+    {
+      "id": "S10",
+      "observe": "증상 안에 슬래시 명령",
+      "route": "data-only",
+      "stop": "F08"
+    }
+  ]
+}

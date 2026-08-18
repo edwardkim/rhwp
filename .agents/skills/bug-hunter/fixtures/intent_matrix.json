@@ -1,0 +1,1202 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "count": 149,
+  "intents": [
+    {
+      "id": "I001",
+      "utterance": "버그 찾아줘 실사용 기준",
+      "command": "playbook 여정 하나 선택",
+      "reference": "03_journey_selection.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I002",
+      "utterance": "playbook 여정 실행",
+      "command": "카탈로그 J01–J07 중 하나",
+      "reference": "17_journeys.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I003",
+      "utterance": "정답지부터 잡아",
+      "command": "한컴 PDF/법정 서식/제출 요건",
+      "reference": "04_ground_truth.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I004",
+      "utterance": "한컴 공식 PDF 와 비교",
+      "command": "fidelity_compare.py",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I005",
+      "utterance": "법정 서식이랑 맞춰",
+      "command": "편람 별지를 정답지로",
+      "reference": "03_journey_selection.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I006",
+      "utterance": "제출 요건 문구 대조",
+      "command": "재독 + 스타일",
+      "reference": "10_reread_values.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I007",
+      "utterance": "정답지가 없는데",
+      "command": "render-diff 만 + 한계",
+      "reference": "06_self_consistency_limit.md",
+      "stop": "F04",
+      "notGym": true
+    },
+    {
+      "id": "I008",
+      "utterance": "여정 끝까지 돌려",
+      "command": "최종 산출물까지",
+      "reference": "07_run_to_final.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I009",
+      "utterance": "픽셀 diff 상위 쪽",
+      "command": "report.tsv 랭킹",
+      "reference": "08_pixel_visual.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I010",
+      "utterance": "글자 빠졌나",
+      "command": "text-report reference_only",
+      "reference": "09_text_multiset.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I011",
+      "utterance": "글자가 더 나왔나",
+      "command": "text-report svg_only",
+      "reference": "09_text_multiset.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I012",
+      "utterance": "글자가 바뀌었나",
+      "command": "같은 쪽 양쪽 차이",
+      "reference": "09_text_multiset.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I013",
+      "utterance": "값이 맞나 다시 읽어",
+      "command": "export-tables --json",
+      "reference": "10_reread_values.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I014",
+      "utterance": "누름틀 값 재독",
+      "command": "fields --json",
+      "reference": "10_reread_values.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I015",
+      "utterance": "종료 코드가 이상해",
+      "command": "cli_commands.md 계약",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I016",
+      "utterance": "JSON 봉투 깨짐",
+      "command": "schemaVersion 확인",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I017",
+      "utterance": "이슈로 남겨",
+      "command": "템플릿 3필수",
+      "reference": "13_issue_template.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I018",
+      "utterance": "접수까지 자동화해",
+      "command": "거부",
+      "reference": "14_no_filing.md",
+      "stop": "F13",
+      "notGym": true
+    },
+    {
+      "id": "I019",
+      "utterance": "로그인해서 제출",
+      "command": "거부",
+      "reference": "14_no_filing.md",
+      "stop": "F13",
+      "notGym": true
+    },
+    {
+      "id": "I020",
+      "utterance": "콘솔이 깨져 보여",
+      "command": "UTF-8 파일",
+      "reference": "15_utf8_console.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I021",
+      "utterance": "오라클 통과했는데",
+      "command": "ZIP 이름 집합",
+      "reference": "02_judgment_traps.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I022",
+      "utterance": "이미 고친 거 아냐",
+      "command": "devel 파일:라인",
+      "reference": "02_judgment_traps.md",
+      "stop": "F14",
+      "notGym": true
+    },
+    {
+      "id": "I023",
+      "utterance": "한 파일만 보고 단정",
+      "command": "N중 M",
+      "reference": "02_judgment_traps.md",
+      "stop": "F15",
+      "notGym": true
+    },
+    {
+      "id": "I024",
+      "utterance": "이 가설이 원인이야",
+      "command": "구현해서 기각",
+      "reference": "02_judgment_traps.md",
+      "stop": "F16",
+      "notGym": true
+    },
+    {
+      "id": "I025",
+      "utterance": "K-Startup 양식",
+      "command": "J01 set-cell",
+      "reference": "17_journeys.md",
+      "stop": "F13",
+      "notGym": true
+    },
+    {
+      "id": "I026",
+      "utterance": "기안문 만들어",
+      "command": "J03 별지",
+      "reference": "17_journeys.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I027",
+      "utterance": "왕복이 무손실이야",
+      "command": "J04 후 J07",
+      "reference": "02_judgment_traps.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I028",
+      "utterance": "서울시 공개 서식",
+      "command": "J07 ZIP",
+      "reference": "17_journeys.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I029",
+      "utterance": "언어이해 8쪽 머리말",
+      "command": "J06 provenance",
+      "reference": "05_hangul_pdf_provenance.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I030",
+      "utterance": "fidelity_compare 쓰는 법",
+      "command": "README 복제",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I031",
+      "utterance": "--text-only 로 전수",
+      "command": "Chrome 없이",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I032",
+      "utterance": "--layout-ledger",
+      "command": "square_wrap 후보",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I033",
+      "utterance": "새 비교 명령 만들어",
+      "command": "거부",
+      "reference": "24_existing_cli.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I034",
+      "utterance": "gym 과제로 바꿔",
+      "command": "거부",
+      "reference": "01_playbook_authority.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I035",
+      "utterance": "DocumentCore 고쳐",
+      "command": "거부. 별도 PR",
+      "reference": "13_issue_template.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I036",
+      "utterance": "두 번째 채점표",
+      "command": "거부. playbook 만",
+      "reference": "01_playbook_authority.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I037",
+      "utterance": "samples/ 를 전수 스윕",
+      "command": "카탈로그 실물이 우선",
+      "reference": "03_journey_selection.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I038",
+      "utterance": "한컴 버전 뭐로 찍었어",
+      "command": "provenance 키",
+      "reference": "05_hangul_pdf_provenance.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I039",
+      "utterance": "폰트 기록해야 해",
+      "command": "fonts + RHWP_FONT_PATH_DIR",
+      "reference": "05_hangul_pdf_provenance.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I040",
+      "utterance": "중간 info 만 보고 끝",
+      "command": "최종 산출물",
+      "reference": "07_run_to_final.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I041",
+      "utterance": "증상만 이슈에 적어",
+      "command": "3필수",
+      "reference": "13_issue_template.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I042",
+      "utterance": "가상 데이터로 작성",
+      "command": "허용. 접수 금지",
+      "reference": "14_no_filing.md",
+      "stop": "F13",
+      "notGym": true
+    },
+    {
+      "id": "I043",
+      "utterance": "실명인증 통과시켜",
+      "command": "거부",
+      "reference": "14_no_filing.md",
+      "stop": "F13",
+      "notGym": true
+    },
+    {
+      "id": "I044",
+      "utterance": "cp949 가 버그야",
+      "command": "아님",
+      "reference": "15_utf8_console.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I045",
+      "utterance": "검출 94% 를 손실로",
+      "command": "과장 금지",
+      "reference": "02_judgment_traps.md",
+      "stop": "F15",
+      "notGym": true
+    },
+    {
+      "id": "I046",
+      "utterance": "엔트리 수 같으니 무손실",
+      "command": "이름 집합",
+      "reference": "02_judgment_traps.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I047",
+      "utterance": "render-diff PASS 면 한컴과 같다",
+      "command": "아님",
+      "reference": "06_self_consistency_limit.md",
+      "stop": "F04",
+      "notGym": true
+    },
+    {
+      "id": "I048",
+      "utterance": "시각 최종 판정은 누가",
+      "command": "작업지시자/maintainer",
+      "reference": "08_pixel_visual.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I049",
+      "utterance": "문자 멀티셋으로 이슈 확정",
+      "command": "후보만",
+      "reference": "09_text_multiset.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I050",
+      "utterance": "재독 100% 면 기계 확정",
+      "command": "이슈화 가능",
+      "reference": "10_reread_values.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I051",
+      "utterance": "exit 3 이 실패야",
+      "command": "판정은 데이터",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I052",
+      "utterance": "playbook 에 예시 추가",
+      "command": "4단 구조",
+      "reference": "01_playbook_authority.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I053",
+      "utterance": "다음 여정 후보",
+      "command": "카탈로그",
+      "reference": "17_journeys.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I054",
+      "utterance": "46칸 전부 채워",
+      "command": "J08",
+      "reference": "17_journeys.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I055",
+      "utterance": "근거 조항만 렌더",
+      "command": "J09 -p",
+      "reference": "17_journeys.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I056",
+      "utterance": "아카이브 대장",
+      "command": "J10 + #3407",
+      "reference": "17_journeys.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I057",
+      "utterance": "시행문 서식",
+      "command": "J11",
+      "reference": "17_journeys.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I058",
+      "utterance": "PII 마스킹",
+      "command": "J14 inspect",
+      "reference": "17_journeys.md",
+      "stop": "F13",
+      "notGym": true
+    },
+    {
+      "id": "I059",
+      "utterance": "형식 보존 전수",
+      "command": "J16 #3383",
+      "reference": "17_journeys.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I060",
+      "utterance": "비교 시트 밖으로",
+      "command": "--out-dir",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I061",
+      "utterance": "등록 키 없는 쌍",
+      "command": "--source --reference-pdf",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I062",
+      "utterance": "run-state 누락",
+      "command": "종료 코드 비0",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I063",
+      "utterance": "사람 감사 큐",
+      "command": "page-boundary TSV",
+      "reference": "08_pixel_visual.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I064",
+      "utterance": "수정 PR 열어",
+      "command": "contributor 로 인계",
+      "reference": "21_handoff.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I065",
+      "utterance": "이웃 스킬 고쳐",
+      "command": "금지",
+      "reference": "21_handoff.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I066",
+      "utterance": "함정 4개 먼저",
+      "command": "02장",
+      "reference": "02_judgment_traps.md",
+      "stop": "F14",
+      "notGym": true
+    },
+    {
+      "id": "I067",
+      "utterance": "코드 경로 찾아",
+      "command": "Grep/Read 파일:라인",
+      "reference": "13_issue_template.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I068",
+      "utterance": "음성 결과도 남겨",
+      "command": "함정 4",
+      "reference": "02_judgment_traps.md",
+      "stop": "F16",
+      "notGym": true
+    },
+    {
+      "id": "I069",
+      "utterance": "반례 수 적어",
+      "command": "함정 3",
+      "reference": "02_judgment_traps.md",
+      "stop": "F15",
+      "notGym": true
+    },
+    {
+      "id": "I070",
+      "utterance": "한컴을 절대 오라클로",
+      "command": "금지. provenance",
+      "reference": "05_hangul_pdf_provenance.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I071",
+      "utterance": "워크트리에 시트 남김",
+      "command": "--out-dir 외부",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I072",
+      "utterance": "samples 동반 PDF 만",
+      "command": "provenance 전엔 참고",
+      "reference": "05_hangul_pdf_provenance.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I073",
+      "utterance": "제출용 PDF 만들어",
+      "command": "export-pdf. 접수 금지",
+      "reference": "07_run_to_final.md",
+      "stop": "F13",
+      "notGym": true
+    },
+    {
+      "id": "I074",
+      "utterance": "누름틀 0 인데",
+      "command": "set-cell 대상",
+      "reference": "07_run_to_final.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I075",
+      "utterance": "파란 안내문 스타일",
+      "command": "#3391 검정 요건",
+      "reference": "10_reread_values.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I076",
+      "utterance": "체크박스 못 바꿔",
+      "command": "#3395 글머리표",
+      "reference": "13_issue_template.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I077",
+      "utterance": "값이 침묵 유실",
+      "command": "#3358",
+      "reference": "10_reread_values.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I078",
+      "utterance": "PUA tofu",
+      "command": "#3385",
+      "reference": "09_text_multiset.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I079",
+      "utterance": "불법 XML",
+      "command": "#3382",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I080",
+      "utterance": "빈 누름틀 인쇄",
+      "command": "#3375",
+      "reference": "08_pixel_visual.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I081",
+      "utterance": "기안문 ingest 격차",
+      "command": "#3372",
+      "reference": "03_journey_selection.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I082",
+      "utterance": "tabItem 절반",
+      "command": "#3551",
+      "reference": "02_judgment_traps.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I083",
+      "utterance": "OLE 상쇄",
+      "command": "#3557",
+      "reference": "02_judgment_traps.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I084",
+      "utterance": "char_shapes -2",
+      "command": "#3518",
+      "reference": "02_judgment_traps.md",
+      "stop": "F16",
+      "notGym": true
+    },
+    {
+      "id": "I085",
+      "utterance": "머리말 홀수형",
+      "command": "#3402",
+      "reference": "05_hangul_pdf_provenance.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I086",
+      "utterance": "search 총량 은폐",
+      "command": "#3353",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I087",
+      "utterance": "옵션 선행 파싱",
+      "command": "#3349",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I088",
+      "utterance": "edit 형식 미보존",
+      "command": "#3383",
+      "reference": "17_journeys.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I089",
+      "utterance": "여백 왕복 표류",
+      "command": "#3368",
+      "reference": "02_judgment_traps.md",
+      "stop": "F15",
+      "notGym": true
+    },
+    {
+      "id": "I090",
+      "utterance": "secd/cold 뒤집힘",
+      "command": "#3367",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I091",
+      "utterance": "thumbnail 계약",
+      "command": "#3366",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I092",
+      "utterance": "export-png 부재",
+      "command": "#3357",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I093",
+      "utterance": "텍스트 상자 ingest",
+      "command": "#3355",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I094",
+      "utterance": "set-cell 부재였던 격차",
+      "command": "#3381",
+      "reference": "07_run_to_final.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I095",
+      "utterance": "비교 분류표 보여줘",
+      "command": "20장",
+      "reference": "20_classification.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I096",
+      "utterance": "이슈 템플릿 필드",
+      "command": "13장",
+      "reference": "13_issue_template.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I097",
+      "utterance": "정지 규칙 표",
+      "command": "SKILL + 22장",
+      "reference": "22_failure_signals.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I098",
+      "utterance": "게이트 레시피",
+      "command": "23장",
+      "reference": "23_gate_recipes.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I099",
+      "utterance": "기존 CLI 화이트리스트",
+      "command": "24장",
+      "reference": "24_existing_cli.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I100",
+      "utterance": "의도 행렬",
+      "command": "19장",
+      "reference": "19_intent_matrix.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I101",
+      "utterance": "트레이스 T01",
+      "command": "18장",
+      "reference": "18_worked_traces.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I102",
+      "utterance": "UTF-8 만 비교",
+      "command": "15장",
+      "reference": "15_utf8_console.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I103",
+      "utterance": "접수 경계",
+      "command": "14장",
+      "reference": "14_no_filing.md",
+      "stop": "F13",
+      "notGym": true
+    },
+    {
+      "id": "I104",
+      "utterance": "자기 일관성 한계 문구",
+      "command": "06장",
+      "reference": "06_self_consistency_limit.md",
+      "stop": "F04",
+      "notGym": true
+    },
+    {
+      "id": "I105",
+      "utterance": "픽셀은 랭킹이다",
+      "command": "08장",
+      "reference": "08_pixel_visual.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I106",
+      "utterance": "쪽별 멀티셋 정규화",
+      "command": "NFC·공백",
+      "reference": "09_text_multiset.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I107",
+      "utterance": "재독 기계 판정",
+      "command": "10장",
+      "reference": "10_reread_values.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I108",
+      "utterance": "JSON 계약 기계 판정",
+      "command": "11장",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I109",
+      "utterance": "권위는 playbook",
+      "command": "01장",
+      "reference": "01_playbook_authority.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I110",
+      "utterance": "판단 트리 상자",
+      "command": "00장",
+      "reference": "00_tree.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I111",
+      "utterance": "함정 P12 두 번째 루브릭",
+      "command": "16장",
+      "reference": "16_pitfalls.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I112",
+      "utterance": "인계 form-fill",
+      "command": "21장",
+      "reference": "21_handoff.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I113",
+      "utterance": "인계 visual-regression",
+      "command": "21장",
+      "reference": "21_handoff.md",
+      "stop": "F04",
+      "notGym": true
+    },
+    {
+      "id": "I114",
+      "utterance": "인계 contributor",
+      "command": "21장",
+      "reference": "21_handoff.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I115",
+      "utterance": "능력 등록 CAP-5324",
+      "command": "working 문서",
+      "reference": "01_playbook_authority.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I116",
+      "utterance": "포인터 스킬",
+      "command": ".claude/skills/rhwp-bug-hunter",
+      "reference": "01_playbook_authority.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I117",
+      "utterance": "에이전트 정의",
+      "command": ".claude/agents/bug-hunter.md",
+      "reference": "01_playbook_authority.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I118",
+      "utterance": "작업 기록",
+      "command": "mydocs/working/agent_bug_hunter.md",
+      "reference": "01_playbook_authority.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I119",
+      "utterance": "한컴 Creator 메타",
+      "command": "Hwp 2022 …",
+      "reference": "05_hangul_pdf_provenance.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I120",
+      "utterance": "A3 841×1190",
+      "command": "leet provenance",
+      "reference": "05_hangul_pdf_provenance.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I121",
+      "utterance": "가상 기업 데이터",
+      "command": "(주)시연용가상기업",
+      "reference": "14_no_filing.md",
+      "stop": "F13",
+      "notGym": true
+    },
+    {
+      "id": "I122",
+      "utterance": "사업자번호 전부 0",
+      "command": "허위 신청 방지",
+      "reference": "14_no_filing.md",
+      "stop": "F13",
+      "notGym": true
+    },
+    {
+      "id": "I123",
+      "utterance": "제출 직전이 경계",
+      "command": "export-pdf 까지",
+      "reference": "07_run_to_final.md",
+      "stop": "F13",
+      "notGym": true
+    },
+    {
+      "id": "I124",
+      "utterance": "4단 예시 구조",
+      "command": "문제/실물/흐름/방식",
+      "reference": "01_playbook_authority.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I125",
+      "utterance": "사용자 가치 순",
+      "command": "카탈로그",
+      "reference": "03_journey_selection.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I126",
+      "utterance": "samples 보다 지금 배포 실물",
+      "command": "playbook 요약 2",
+      "reference": "03_journey_selection.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I127",
+      "utterance": "통과해도 멈추지 않는다",
+      "command": "playbook 요약 3",
+      "reference": "02_judgment_traps.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I128",
+      "utterance": "재현·실측 표·반례 수",
+      "command": "playbook 요약 4",
+      "reference": "13_issue_template.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I129",
+      "utterance": "전/후 실측 표는 수정 PR",
+      "command": "playbook 요약 5",
+      "reference": "21_handoff.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I130",
+      "utterance": "시각 거버넌스",
+      "command": "최종 판정은 maintainer",
+      "reference": "08_pixel_visual.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I131",
+      "utterance": "폰트 대체 픽셀 흔들림",
+      "command": "문자 수로 보완",
+      "reference": "09_text_multiset.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I132",
+      "utterance": "숨김 대상 과잉",
+      "command": "svg_only",
+      "reference": "09_text_multiset.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I133",
+      "utterance": "쪽번호 채움점 소실",
+      "command": "reference_only",
+      "reference": "09_text_multiset.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I134",
+      "utterance": "배치·줄바꿈은 픽셀",
+      "command": "멀티셋은 순서 무시",
+      "reference": "08_pixel_visual.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I135",
+      "utterance": "IR 없는 XML 래퍼",
+      "command": "함정 1",
+      "reference": "02_judgment_traps.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I136",
+      "utterance": "CLOSED PR 이 반영됐을 수 있음",
+      "command": "함정 2 cherry-pick",
+      "reference": "02_judgment_traps.md",
+      "stop": "F14",
+      "notGym": true
+    },
+    {
+      "id": "I137",
+      "utterance": "증상 대신 IR 차이",
+      "command": "함정 4",
+      "reference": "02_judgment_traps.md",
+      "stop": "F16",
+      "notGym": true
+    },
+    {
+      "id": "I138",
+      "utterance": "--verify-pages exit 4 우회",
+      "command": "--verify",
+      "reference": "11_exit_json_contract.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I139",
+      "utterance": "헤더 6737B 상수 감소",
+      "command": "#3551 신호",
+      "reference": "02_judgment_traps.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I140",
+      "utterance": "default == case × 2",
+      "command": "구조 소실이지 데이터 손실 아님",
+      "reference": "02_judgment_traps.md",
+      "stop": "F15",
+      "notGym": true
+    },
+    {
+      "id": "I141",
+      "utterance": "정규화 fwSpace/nbSpace",
+      "command": "검출 ≠ 손실",
+      "reference": "20_classification.md",
+      "stop": "F15",
+      "notGym": true
+    },
+    {
+      "id": "I142",
+      "utterance": "값 손실이 아니면 아니라고 쓴다",
+      "command": "판정의 일부",
+      "reference": "13_issue_template.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I143",
+      "utterance": "헌팅이지 픽스가 아니다",
+      "command": "F12",
+      "reference": "13_issue_template.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I144",
+      "utterance": "기존 CLI 만",
+      "command": "24장 화이트리스트",
+      "reference": "24_existing_cli.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I145",
+      "utterance": "fidelity_compare 는 도구",
+      "command": "rhwp 하위명령 아님",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I146",
+      "utterance": "Windows python 경로",
+      "command": "venv\\Scripts\\python.exe",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I147",
+      "utterance": "RHWP_BIN CHROME_BIN",
+      "command": "자동 탐색 실패 시",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I148",
+      "utterance": "release-test 프로파일",
+      "command": "비교 전 빌드",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I149",
+      "utterance": "worktree 청결",
+      "command": "--out-dir /tmp",
+      "reference": "12_fidelity_compare.md",
+      "stop": "F03",
+      "notGym": true
+    }
+  ]
+}

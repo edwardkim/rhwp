@@ -1,0 +1,124 @@
+{
+  "journeys": [
+    {
+      "id": "J01",
+      "example": "01_export_svg_page0",
+      "command": "export-svg"
+    },
+    {
+      "id": "J02",
+      "example": "02_export_svg_overlay",
+      "command": "export-svg"
+    },
+    {
+      "id": "J03",
+      "example": "03_export_png_vlm",
+      "command": "export-png"
+    },
+    {
+      "id": "J04",
+      "example": "04_export_pdf_print",
+      "command": "export-pdf"
+    },
+    {
+      "id": "J05",
+      "example": "05_export_text_budget",
+      "command": "export-text"
+    },
+    {
+      "id": "J06",
+      "example": "06_export_markdown",
+      "command": "export-markdown"
+    },
+    {
+      "id": "J07",
+      "example": "07_dump_pages",
+      "command": "dump-pages"
+    },
+    {
+      "id": "J08",
+      "example": "08_dump_para",
+      "command": "dump"
+    },
+    {
+      "id": "J09",
+      "example": "09_dump_records",
+      "command": "dump-records"
+    },
+    {
+      "id": "J10",
+      "example": "10_diag",
+      "command": "diag"
+    },
+    {
+      "id": "J11",
+      "example": "11_info_json",
+      "command": "info"
+    },
+    {
+      "id": "J12",
+      "example": "12_render_tree",
+      "command": "export-render-tree"
+    },
+    {
+      "id": "J13",
+      "example": "13_ir_diff_json",
+      "command": "ir-diff"
+    },
+    {
+      "id": "J14",
+      "example": "14_thumbnail",
+      "command": "thumbnail"
+    },
+    {
+      "id": "J15",
+      "example": "15_convert_verify",
+      "command": "convert"
+    },
+    {
+      "id": "J16",
+      "example": "16_hwp5_inventory_diff",
+      "command": "hwp5-inventory-diff"
+    },
+    {
+      "id": "J17",
+      "example": "17_hwp5_table_probe",
+      "command": "hwp5-table-probe"
+    },
+    {
+      "id": "J18",
+      "example": "18_hwp5_anchor",
+      "command": "hwp5-anchor-trace"
+    },
+    {
+      "id": "J19",
+      "example": "19_missing_file",
+      "command": "export-svg"
+    },
+    {
+      "id": "J20",
+      "example": "20_bad_page",
+      "command": "export-svg"
+    },
+    {
+      "id": "J21",
+      "example": "21_native_skia",
+      "command": "export-png"
+    },
+    {
+      "id": "J22",
+      "example": "22_load_fail",
+      "command": "info"
+    },
+    {
+      "id": "J23",
+      "example": "23_overflow_cell",
+      "command": "export-svg"
+    },
+    {
+      "id": "J24",
+      "example": "24_debug_ladder",
+      "command": "export-svg"
+    }
+  ]
+}

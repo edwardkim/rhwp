@@ -1,0 +1,34 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "layers": [
+  {
+   "id": "chief",
+   "entry": "queue/<id>/request.json",
+   "engine": "tools/chief/service_loop.py",
+   "stop": "needs-agent"
+  },
+  {
+   "id": "fde",
+   "entry": "symptom + document",
+   "engine": "tools/fde/triage.py",
+   "stop": "escalate-bug",
+   "roleHere": "gate-only"
+  },
+  {
+   "id": "strategist",
+   "entry": "objective + corpus",
+   "engine": "tools/strategist/engagement.py",
+   "stop": "ledger-reject",
+   "roleHere": "out-of-scope"
+  }
+ ]
+}

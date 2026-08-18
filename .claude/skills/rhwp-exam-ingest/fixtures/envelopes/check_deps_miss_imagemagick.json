@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "check_deps.sh",
+  "ok": false,
+  "rhwp": "./target/release/rhwp",
+  "imagemagick": null,
+  "pythonDocx": true,
+  "missingRequired": [
+    "imagemagick"
+  ],
+  "missingOptional": [],
+  "envelopes": [
+    {
+      "code": "DEP_MISS_IMAGEMAGICK",
+      "severity": "required",
+      "tool": "magick|convert",
+      "exit": 1,
+      "hint": "brew install imagemagick 또는 apt install imagemagick",
+      "blocks": [
+        "crop_image.sh",
+        "pdf_to_pngs.sh(magick fallback)"
+      ]
+    }
+  ]
+}

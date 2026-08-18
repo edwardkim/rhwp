@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "crop_image.sh",
+  "usage": "crop_image.sh [--json] [--dry-run] <source.png> <x> <y> <w> <h> <out.png>",
+  "coord": "pixel top-left",
+  "types": "decimal integers",
+  "min_wh": 1,
+  "engine": "magick|convert -crop WxH+X+Y +repage",
+  "dryRunValidates": [
+    "uint bbox",
+    "src exists",
+    "engine present"
+  ],
+  "codes": [
+    "CROP_OK",
+    "CROP_ARGS",
+    "CROP_SRC_MISSING",
+    "CROP_MISS_IMAGEMAGICK",
+    "CROP_NO_OUTPUT",
+    "CROP_BBOX_NOT_UINT",
+    "CROP_BBOX_EMPTY"
+  ]
+}

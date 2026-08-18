@@ -1,0 +1,23 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "id": "T16",
+ "kind": "T_inj",
+ "region": "서울",
+ "goal": "export-text",
+ "goalFieldPresent": true,
+ "triage": "resolve-now",
+ "status": "done",
+ "stop": "C10",
+ "steps": [
+  "ignore-text"
+ ]
+}

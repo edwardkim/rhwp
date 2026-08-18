@@ -14,6 +14,7 @@ last_verified: 2026-08-16
 넘긴다. 그 접수 창구 전체를 사람 없이 상시로 돌리는 계약이 이 문서다.
 
 기계 골격은 [`tools/chief/service_loop.py`](../../tools/chief/service_loop.py),
+실행 스킬은 [`rhwp-chief`](../../.claude/skills/rhwp-chief/SKILL.md),
 결정 밖 요청의 처리 주체는 [`rhwp-chief` 에이전트](../../.claude/agents/rhwp-chief.md)다.
 
 ## 1. 원칙 — 결정적 코어, 지능은 가장자리에

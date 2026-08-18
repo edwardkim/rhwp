@@ -1,0 +1,21 @@
+{
+  "id": "TE15",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "규제",
+        "--replace",
+        "심사",
+        "--occurrence",
+        "1",
+        "-o",
+        "{sub:once15.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

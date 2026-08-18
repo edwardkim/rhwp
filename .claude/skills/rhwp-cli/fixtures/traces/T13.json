@@ -1,0 +1,11 @@
+{
+  "id": "T13",
+  "utterance": "몇 쪽이야",
+  "steps": [
+    {
+      "command": "info",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "--json pageCount"
+}

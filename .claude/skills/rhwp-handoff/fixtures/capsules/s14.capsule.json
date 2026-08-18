@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "s13.capsule.json",
+    "sha256": "0d4364a21e75fa7000ba4e9e9c8db0555b332f56984d32f017874888db278431"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "output/handoff/t-ord/s13-ir-diff.json",
+    "output": "output/handoff/t-ord/s14-provenance.json",
+    "steps": [
+      {
+        "action": "export_provenance_map"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"output/handoff/t-ord/s13-ir-diff.json\",\"output\":\"output/handoff/t-ord/s14-provenance.json\",\"steps\":[{\"action\":\"export_provenance_map\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "output/handoff/t-ord/s13-ir-diff.json",
+    "inputSha256": "f35abcd7631df989a0f9bb408097c52673b8d7d6883a47d3296901c423f5c776",
+    "planSha256": "6c6261ccd9b31d9e516a02e5122096946e6e55bfd8fbb2b383f67642123fe7df",
+    "outputSha256": "2d1f31543433ec646b3450b1a7b666481a6ac86a3d82451911aed081fcf7259f",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

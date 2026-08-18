@@ -1,0 +1,23 @@
+{
+  "id": "export_svg_overflow",
+  "command": "export-svg",
+  "exitCode": 0,
+  "schemaVersion": "1.0",
+  "format": "svg",
+  "pageCount": 1,
+  "renderedCount": 1,
+  "overflowCellLines": 4,
+  "pages": [
+    {
+      "page": 0,
+      "path": "output/poc/cli/svg/table_001.svg",
+      "bytes": 8000,
+      "overflowCellLines": 4
+    }
+  ],
+  "note": "overflowCellLines>0 은 성공(0)이지만 셀 소실 신호",
+  "_skillMeta": {
+    "exit": 0,
+    "issue": 5316
+  }
+}
