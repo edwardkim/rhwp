@@ -1,0 +1,9 @@
+{
+ "schemaVersion": "1",
+ "generatedBy": "tools/chief/service_loop.py",
+ "goal": "compare-hancom",
+ "route": "resolve-now",
+ "status": "needs-agent",
+ "reason": "모르는 goal: compare-hancom",
+ "stop": "C06"
+}

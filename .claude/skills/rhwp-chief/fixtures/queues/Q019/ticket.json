@@ -1,0 +1,7 @@
+{
+ "schemaVersion": "1",
+ "generatedBy": "tools/fde/triage.py",
+ "route": "resolve-now",
+ "routeReason": "예산 표 수확 (1차)",
+ "steps": []
+}

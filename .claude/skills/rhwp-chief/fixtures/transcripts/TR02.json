@@ -1,0 +1,27 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "id": "TR02",
+ "title": "이미 처리된 큐는 0건",
+ "argv": [
+  "python3",
+  "tools/chief/service_loop.py",
+  "--queue",
+  "inbox",
+  "--bin",
+  "rhwp",
+  "--once"
+ ],
+ "seen": [],
+ "processed": {},
+ "exit": 0,
+ "note": "모든 폴더에 result.json — C03"
+}
