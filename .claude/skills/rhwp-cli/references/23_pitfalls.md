@@ -81,4 +81,3 @@ NeedPassword vs WrongPassword.
 ## P20 — pdf --backend direct 부재를 2로
 
 그 경로는 1.
-

@@ -53,4 +53,3 @@
 - dump 의 `-p` 를 dump-pages 의 `-p` 로 읽으면 문단 3 을 페이지 3 으로 연다.
 - PDF 뷰어 쪽번호는 1부터. export-pdf `-p 0` 은 PDF 의 첫 쪽.
 - ir-diff `-p` 는 문단이다. 페이지를 좁히려면 먼저 dump-pages 로 문단 번호를 얻는다.
-

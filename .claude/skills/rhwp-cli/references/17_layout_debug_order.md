@@ -89,4 +89,3 @@ rhwp hwp5-inventory-diff oracle.hwp generated.hwp --focus table
 
 시각 회귀의 **숫자 게이트**(render-diff max-disp)는 `rhwp-visual-regression` 스킬.
 여기서는 그 명령을 발명하지 않고, 사람이 overlay 를 읽는 사다리만 닫는다.
-

@@ -39,4 +39,3 @@ python tools/gen_agent_codex.py --check  # 신선도 — 차이면 exit 3
 - `--check` 를 무시하고 날짜만 고치기
 - 이 스킬에서 생성기를 포크해 다른 절단 규칙을 만들기
 - 새 CLI 로 신선도를 대체하기
-

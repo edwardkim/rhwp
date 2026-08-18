@@ -16,4 +16,3 @@
 
 유지 규약(지도 말미): 새 표면은 행만 추가. 수치는 실행해서 갱신.
 링크 검사: `py scripts/check_markdown_links.py mydocs/manual/agent_knowledge_map.md`.
-

@@ -18,4 +18,3 @@
 이 스킬 자신의 계약은 `scripts/tests/test_agent_knowledge_map.py`
 와 `tests/cases/agent_knowledge_map_skill_contract.rs` 다.
 바이너리를 부르지 않는다.
-

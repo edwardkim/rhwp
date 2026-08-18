@@ -26,4 +26,3 @@ rhwp capabilities --search 은닉
 
 `fixtures/search_fallback.json` 의 각 항목은 실제 인자 배열
 `["capabilities", "--search", "<키워드>"]` 이다.
-

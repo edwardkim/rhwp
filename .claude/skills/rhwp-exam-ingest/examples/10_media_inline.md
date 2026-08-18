@@ -33,4 +33,3 @@ rhwp dump "$OUT" > "$TMP/dump.txt"
 ## 한계
 
 Picture #182, 수식 이미지, 표 Picture. 새 CLI / exam_paper 수정 없음.
-

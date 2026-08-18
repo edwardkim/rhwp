@@ -46,4 +46,3 @@ rhwp hwp5-char-shape-audit oracle.hwp generated.hwp --source-hwpx source.hwpx --
 
 `hwp5-roundtrip generated.hwp` 가 통과해도 oracle 과 다를 수 있다.
 자기 닫힘과 한컴 계약은 다른 명제다. [19_roundtrip_vs_hangul.md](19_roundtrip_vs_hangul.md).
-

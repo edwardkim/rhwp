@@ -88,4 +88,3 @@
 | 두 파일이 같나 | ir-diff --json | identical |
 | 한컴이 안 연다 | hwp5-inventory-diff | 축 힌트 |
 | PNG 가 거절 | native-skia 봉투 | 재빌드 안내 |
-

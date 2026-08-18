@@ -13,4 +13,3 @@ NDJSON 도구는 `structuredContent` 가 null 이다 (§6-3).
 호스트 부착 절차는 `rhwp-mcp-session` + MCP 가이드.
 
 재측정 JSON-RPC 순서는 지도 §0 코드 블록.
-

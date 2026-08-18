@@ -67,4 +67,3 @@
 | Q057 | 지식지도 하위명령 추가 | S13 | R11 |
 
 행 수 57. 기계 가독은 `fixtures/request_map.json`.
-

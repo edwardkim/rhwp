@@ -28,4 +28,3 @@
 | [22_scan_quality.md](22_scan_quality.md) | 흐린 스캔 (`F10`) |
 | [23_header_footer_form.md](23_header_footer_form.md) | 머리말·홀수형 (`valid_header_footer`) |
 | [24_verify_export_text.md](24_verify_export_text.md) | export-text 게이트 (`T09`) |
-

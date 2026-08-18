@@ -43,4 +43,3 @@
 | 33_canonical_cli_manual.md | CLI 매뉴얼로 |
 | 34_three_questions_add.md | 추가하려는가 |
 | 35_stop_and_jump.md | 읽고 멈추기 |
-

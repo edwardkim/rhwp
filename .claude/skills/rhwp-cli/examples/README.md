@@ -28,4 +28,3 @@
 | [22_load_fail.md](22_load_fail.md) | `info` — 파싱 실패 |
 | [23_overflow_cell.md](23_overflow_cell.md) | `export-svg` — 셀 소실 |
 | [24_debug_ladder.md](24_debug_ladder.md) | `export-svg` — 6단 사다리 |
-

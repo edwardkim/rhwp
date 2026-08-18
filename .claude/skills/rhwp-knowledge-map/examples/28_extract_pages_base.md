@@ -34,4 +34,3 @@ rhwp mcp-serve   # initialize → tools/list
 
 정본: `llms.txt`, `mydocs/manual/agent_knowledge_map.md`.
 지도 행 재서술 금지. 필드 이름 발명 금지. gym 아님.
-

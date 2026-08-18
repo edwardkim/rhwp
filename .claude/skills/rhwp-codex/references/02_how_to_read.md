@@ -52,4 +52,3 @@ generated: tools/gen_agent_codex.py — 수기 수정 금지, 재생성으로 �
 이 스킬의 `fixtures/envelopes/*.json` 은 생성 장에서 **추출**한 전사본이다.
 정본은 여전히 생성 장과 생성기다. 전사가 어긋나면 생성 장을 고치지 말고
 `tools/gen_skill_pack.py` 를 다시 돌려 전사를 갱신한다.
-
