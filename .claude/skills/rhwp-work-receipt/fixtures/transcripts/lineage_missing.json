@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "rhwp",
+    "lineage",
+    "missing.capsule.json",
+    "--json"
+  ],
+  "exit": 1,
+  "stdoutBytes": 0
+}
