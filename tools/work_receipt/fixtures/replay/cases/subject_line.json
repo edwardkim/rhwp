@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "subject_line",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "제목",
+  "title": "제목: 협조 요청→제목: 자료 제출 요청",
+  "why": "제목 줄만 바꾼다. 본문 연도 치환과 분리.",
+  "notes": "제목 축",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/subject-line.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/subject-line.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "제목: 협조 요청",
+        "replace": "제목: 자료 제출 요청"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/subject-line.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"제목: 협조 요청\",\"replace\":\"제목: 자료 제출 요청\"}]}",
+  "planSha256": "e27be0e09d6957721cb02eceee2f1234a82e9bc6720bef9302c022c0f8b9da93",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "f31862a5ef098174032e2d36bd7cf7cc23aa107b14fe73a5927d5bd18905037a",
+    "planSha256": "e27be0e09d6957721cb02eceee2f1234a82e9bc6720bef9302c022c0f8b9da93",
+    "outputSha256": "32e01ec5c8ceacd6de721b65d164edc07fb948a50c1a1ed1d299015984519e2a",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "32e01ec5c8ceacd6de721b65d164edc07fb948a50c1a1ed1d299015984519e2a"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

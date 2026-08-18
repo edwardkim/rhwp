@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptAuditLayout",
+  "ident": "rate-3-of-4",
+  "title": "3/4",
+  "why": "재현 3, 실패 1. rate=0.75.",
+  "notes": "한 건이 전체를 3으로",
+  "members": [
+    "notice_year",
+    "org_rename",
+    "dept_rename",
+    "tamper_output"
+  ],
+  "ignored": [],
+  "recursive": false,
+  "exit": 3,
+  "required": [
+    "schemaVersion",
+    "root",
+    "total",
+    "reproduced",
+    "failed",
+    "reproducedRate"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "root": "fixtures/audit-layouts/rate-3-of-4",
+    "total": 4,
+    "reproduced": 3,
+    "failed": [
+      {
+        "capsule": "tamper_output.capsule.json",
+        "kind": "outputSha256"
+      }
+    ],
+    "reproducedRate": 0.75
+  },
+  "command": [
+    "audit",
+    "fixtures/audit-layouts/rate-3-of-4",
+    "--json"
+  ],
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

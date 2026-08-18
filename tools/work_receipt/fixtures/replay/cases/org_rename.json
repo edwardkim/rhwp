@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "org_rename",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "기관개칭",
+  "title": "안전행정부→행정안전부 전건 치환",
+  "why": "정부조직 개칭은 본문·직인 캡션·수신처에 동시에 남는다. occurrence 생략 = 전건. 영수증은 치환 횟수가 아니라 step 수다.",
+  "notes": "find≠replace — 산출 해시가 입력과 달라질 수 있다",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/org-rename.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/org-rename.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "안전행정부",
+        "replace": "행정안전부"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/org-rename.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"안전행정부\",\"replace\":\"행정안전부\"}]}",
+  "planSha256": "0de336da92b68347933c4da49fa9fbe37e7fc04c0bdcda8ed5f581590c4e520f",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "def825de2eeeb9699c5993cd20cc7beb19454058b1eccdaba9b91b0fa51ab535",
+    "planSha256": "0de336da92b68347933c4da49fa9fbe37e7fc04c0bdcda8ed5f581590c4e520f",
+    "outputSha256": "c99757771473b8b9b71994cbd5bba197b7b06984085af4e91432c58440115e1f",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "c99757771473b8b9b71994cbd5bba197b7b06984085af4e91432c58440115e1f"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

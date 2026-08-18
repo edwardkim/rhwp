@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/header-org.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "머릿글 안전행정부",
+        "replace": "머릿글 행정안전부"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/header-org.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"머릿글 안전행정부\",\"replace\":\"머릿글 행정안전부\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "9455ab6e79ee1822aa06787c24d81241ced542741ea68db2c2151a64e370baa8",
+    "planSha256": "5eb7335dff0b978629708fa74c290cc1e4854c29130c51ed1e5970ea8e9ad231",
+    "outputSha256": "6e788e9df4ef029933eab606b9d30c03b77b6dc065ce13c78e770a9b0c0b086e",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "notice_year",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "연도갱신",
+  "title": "시행문 본문 연도 2025→2026",
+  "why": "연말 공문은 문서번호 체계를 유지한 채 본문 연도만 바꾼다. 1-step replace_text 는 영수증 steps=1 과 1:1 이다.",
+  "notes": "contract tests 결정론 표본과 같은 1-step 형태",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/notice-2026.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/notice-2026.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "2025",
+        "replace": "2026"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/notice-2026.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"2025\",\"replace\":\"2026\"}]}",
+  "planSha256": "624876b4113450ab15d9c1e559c0ad5056e405a394ca455340bf0a11ff138583",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "03a8860dd6fd494d83e403f7246cc4da37c8dc383163310f2a04f04e9e529cc0",
+    "planSha256": "624876b4113450ab15d9c1e559c0ad5056e405a394ca455340bf0a11ff138583",
+    "outputSha256": "0dbc2e87923d18a8a164615456550e80c34c20d43982994891a1f3d3d77e0eee",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "0dbc2e87923d18a8a164615456550e80c34c20d43982994891a1f3d3d77e0eee"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

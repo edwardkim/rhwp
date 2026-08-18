@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/gazette-date.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "고시일자 2026-03-30",
+        "replace": "고시일자 2026-03-31"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/gazette-date.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"고시일자 2026-03-30\",\"replace\":\"고시일자 2026-03-31\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "c9d1168ace6a2c0724caa4ecbf1513573f11d0822f9f32c5d53acf18ccb0b4ce",
+    "planSha256": "7807b3d9a719eefa7a34f778951fdd22cd819d7d81f63cfa8596e6a3b99c3307",
+    "outputSha256": "9f9922f0a30b431da71fb0a9ad296e400e4ddadeaa67fcc60bee8e835dcab633",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}
