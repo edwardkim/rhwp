@@ -3519,7 +3519,7 @@
       "id": "src/serializer/hwpx/context.rs::tests#1",
       "file": "src/serializer/hwpx/context.rs",
       "sourcePath": "src/serializer/hwpx/context.rs",
-      "line": 556,
+      "line": 592,
       "module": "tests",
       "testAttributes": 22,
       "tier": "white_box",
