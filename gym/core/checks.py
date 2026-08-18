@@ -290,6 +290,190 @@ def op_text_line_eq(ctx):
     return {"expected": expected, "actual": actual, "ok": actual == expected}
 
 
+def _require_nonneg_int(name, value):
+    """좌표 정수를 받는다. bool 은 int 의 하위형이라 명시적으로 거절한다."""
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TypeError(f"{name}은 정수여야 함")
+    if value < 0:
+        raise IndexError(f"{name}은 음수일 수 없음")
+    return value
+
+
+def json_type_name(value):
+    """JSON 값의 타입 이름. bool 은 number 가 아니다."""
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, (int, float)):
+        return "number"
+    if isinstance(value, str):
+        return "string"
+    if isinstance(value, list):
+        return "array"
+    if isinstance(value, dict):
+        return "object"
+    return type(value).__name__
+
+
+def _require_str_list(name, value):
+    if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+        raise TypeError(f"{name}는 문자열 목록이어야 함")
+    return value
+
+
+def _csv_row_at(path, row_index):
+    _require_nonneg_int("row", row_index)
+    with open(path, encoding="utf-8-sig", newline="") as fh:
+        for index, row in enumerate(csv.reader(fh)):
+            if index == row_index:
+                return row
+    raise IndexError(f"행 {row_index} 없음")
+
+
+def _ndjson_record_at(path, row_index):
+    _require_nonneg_int("row", row_index)
+    for index, line in enumerate(iter_ndjson_lines(path)):
+        if index == row_index:
+            return json.loads(line)
+    raise IndexError(f"행 {row_index} 없음")
+
+
+def _text_line_at(path, line_index):
+    _require_nonneg_int("line", line_index)
+    with open(path, encoding="utf-8") as fh:
+        for index, line in enumerate(fh):
+            if index == line_index:
+                return line.rstrip("\r\n")
+    raise IndexError(f"줄 {line_index} 없음")
+
+
+def op_json_type_eq(ctx):
+    """제출 JSON의 지목된 값 타입(array/object/string/number/boolean/null)을 확인한다."""
+    expected = ctx.check["value"]
+    try:
+        if not isinstance(expected, str):
+            raise TypeError("value는 타입 이름 문자열이어야 함")
+        actual = json_type_name(_load_json_at(ctx))
+    except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"JSON 타입 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": actual == expected}
+
+
+def op_json_len_ge(ctx):
+    """제출 JSON의 지목된 배열/객체 길이가 `value` 이상인지 확인한다."""
+    expected = ctx.check["value"]
+    try:
+        got = _load_json_at(ctx)
+        if not isinstance(got, (list, dict)):
+            raise TypeError(f"배열/객체가 아님: {type(got).__name__}")
+        actual = len(got)
+        ok = float(actual) >= float(expected)
+    except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+        return {"expected": f">={expected}", "actual": f"JSON 길이 하한 확인 실패: {exc}",
+                "ok": False}
+    return {"expected": f">={expected}", "actual": actual, "ok": ok}
+
+
+def op_json_array_item_eq(ctx):
+    """제출 JSON 배열의 0부터 세는 `index` 항목이 `value` 와 같은지 확인한다."""
+    expected = ctx.check["value"]
+    try:
+        index = _require_nonneg_int("index", ctx.check["index"])
+        got = _load_json_at(ctx)
+        if not isinstance(got, list):
+            raise TypeError(f"배열이 아님: {type(got).__name__}")
+        actual = got[index]
+    except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"JSON 배열 항목 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": norm(actual) == norm(expected)}
+
+
+def op_csv_col_count_eq(ctx):
+    """제출 CSV의 지목 행 열 수가 `value` 인지 확인한다."""
+    expected = ctx.check["value"]
+    try:
+        actual = len(_csv_row_at(ctx.sub_path(ctx.check["file"]), ctx.check["row"]))
+    except (OSError, UnicodeError, csv.Error, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"CSV 열수 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": norm(actual) == norm(expected)}
+
+
+def op_csv_header_eq(ctx):
+    """제출 CSV 첫 행(헤더)이 `values` 와 같은지 확인한다."""
+    expected = ctx.check["values"]
+    try:
+        _require_str_list("values", expected)
+        actual = _csv_row_at(ctx.sub_path(ctx.check["file"]), 0)
+    except (OSError, UnicodeError, csv.Error, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"CSV 헤더 확인 실패: {exc}", "ok": False}
+    return {"expected": list(expected), "actual": actual, "ok": actual == list(expected)}
+
+
+def op_csv_row_eq(ctx):
+    """제출 CSV의 지목 행 전체가 `values` 와 같은지 확인한다."""
+    expected = ctx.check["values"]
+    try:
+        _require_str_list("values", expected)
+        actual = _csv_row_at(ctx.sub_path(ctx.check["file"]), ctx.check["row"])
+    except (OSError, UnicodeError, csv.Error, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"CSV 행 확인 실패: {exc}", "ok": False}
+    return {"expected": list(expected), "actual": actual, "ok": actual == list(expected)}
+
+
+def op_ndjson_keys_contain(ctx):
+    """제출 NDJSON의 지목 행 객체가 `keys` 를 모두 갖는지 확인한다."""
+    required = ctx.check["keys"]
+    try:
+        _require_str_list("keys", required)
+        got = dig(_ndjson_record_at(ctx.sub_path(ctx.check["file"]), ctx.check["row"]),
+                  ctx.check.get("path", ""))
+        if not isinstance(got, dict):
+            raise TypeError(f"객체가 아님: {type(got).__name__}")
+        actual = sorted(got)
+        missing = [key for key in required if key not in got]
+    except (OSError, UnicodeError, ValueError, KeyError, IndexError, TypeError) as exc:
+        return {"expected": required, "actual": f"NDJSON 키 확인 실패: {exc}", "ok": False}
+    return {"expected": list(required), "actual": actual, "ok": not missing}
+
+
+def op_ndjson_len_eq(ctx):
+    """제출 NDJSON의 지목 행에서 배열/객체 길이가 `value` 인지 확인한다."""
+    expected = ctx.check["value"]
+    try:
+        got = dig(_ndjson_record_at(ctx.sub_path(ctx.check["file"]), ctx.check["row"]),
+                  ctx.check.get("path", ""))
+        if not isinstance(got, (list, dict)):
+            raise TypeError(f"배열/객체가 아님: {type(got).__name__}")
+        actual = len(got)
+    except (OSError, UnicodeError, ValueError, KeyError, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"NDJSON 길이 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": norm(actual) == norm(expected)}
+
+
+def op_text_line_count_eq(ctx):
+    """제출 텍스트의 줄 수가 `value` 인지 확인한다. 마지막 개행만 있는 빈 줄도 센다."""
+    expected = ctx.check["value"]
+    try:
+        with open(ctx.sub_path(ctx.check["file"]), encoding="utf-8") as fh:
+            actual = sum(1 for _ in fh)
+    except (OSError, UnicodeError) as exc:
+        return {"expected": expected, "actual": f"텍스트 줄수 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": norm(actual) == norm(expected)}
+
+
+def op_text_line_contains(ctx):
+    """제출 텍스트의 지목 줄이 `value` 부분 문자열을 갖는지 확인한다."""
+    expected = ctx.check["value"]
+    try:
+        if not isinstance(expected, str):
+            raise TypeError("value는 문자열이어야 함")
+        actual = _text_line_at(ctx.sub_path(ctx.check["file"]), ctx.check["line"])
+    except (OSError, UnicodeError, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"텍스트 줄 포함 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": expected in actual}
+
+
 # --- 봉투 연산자 — CLI 봉투의 지목된 자리를 본다 ---
 
 
@@ -374,6 +558,16 @@ REGISTRY = {
     "ndjson_field_eq": (op_ndjson_field_eq, False),
     "json_keys_contain": (op_json_keys_contain, False),
     "text_line_eq": (op_text_line_eq, False),
+    "json_type_eq": (op_json_type_eq, False),
+    "json_len_ge": (op_json_len_ge, False),
+    "json_array_item_eq": (op_json_array_item_eq, False),
+    "csv_col_count_eq": (op_csv_col_count_eq, False),
+    "csv_header_eq": (op_csv_header_eq, False),
+    "csv_row_eq": (op_csv_row_eq, False),
+    "ndjson_keys_contain": (op_ndjson_keys_contain, False),
+    "ndjson_len_eq": (op_ndjson_len_eq, False),
+    "text_line_count_eq": (op_text_line_count_eq, False),
+    "text_line_contains": (op_text_line_contains, False),
     # 봉투 연산자(CLI 호출)
     "answer_eq": (op_answer_eq, True),
     "len_answer_eq": (op_len_answer_eq, True),
