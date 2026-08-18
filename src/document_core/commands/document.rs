@@ -180,6 +180,7 @@ impl DocumentCore {
             clip_enabled: true,
             debug_overlay: false,
             respect_vpos_reset: false,
+            hangul2024_compat: false,
             measured_tables: Vec::new(),
             dirty_sections: vec![true; sec_count],
             measured_sections: Vec::new(),

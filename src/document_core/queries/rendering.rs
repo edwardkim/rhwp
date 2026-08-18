@@ -3795,7 +3795,7 @@ impl DocumentCore {
                 }
             },
         };
-        let profile = self.document.layout_profile();
+        let profile = self.effective_layout_profile();
         let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
@@ -4126,7 +4126,8 @@ impl DocumentCore {
         let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
         // [#2403] 소스분기 파생 일원화 — HWPX 시멘틱/HWP5→HWPX 마커/HWP3 변환본
         // 판단은 Document::layout_profile 이 단일 소유 (Issue #1770 규칙 승계).
-        let profile = self.document.layout_profile();
+        // 세션 호환 모드(hangul2024)는 effective_layout_profile 이 합성한다.
+        let profile = self.effective_layout_profile();
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
             .with_native_hwp5(profile.native_hwp5_layout())
@@ -6307,7 +6308,7 @@ impl DocumentCore {
         // 단일 소유 (Issue #1770 규칙 승계). set_layout_profile 의 결합 부수효과
         // (variant → flow spacing_before)는 다음 줄이 종전 순서대로 덮어쓴다.
         self.layout_engine
-            .set_layout_profile(self.document.layout_profile());
+            .set_layout_profile(self.effective_layout_profile());
         self.layout_engine.set_hwp3_origin_flow_spacing_before(
             uses_hwp3_origin_flow_spacing_before(&self.document),
         );
