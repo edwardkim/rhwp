@@ -1,0 +1,39 @@
+{
+  "schema": "oracle_public.failure_report/v1",
+  "generated_at": "2026-08-18T00:15:00Z",
+  "source": "visual_sweep",
+  "rhwp_bin": "target/release/rhwp",
+  "dpi": 144,
+  "pixel_diff_threshold": 8,
+  "threshold": {
+    "metric": "diff_ratio",
+    "op": ">",
+    "value": 0.01
+  },
+  "documents": [
+    {
+      "id": "bunjang",
+      "hwp": "samples/21868765.hwp",
+      "pdf": "samples/21868765.pdf",
+      "pages": 2,
+      "metrics": {
+        "diff_ratio": 0.0425,
+        "diff_pixels": 8500,
+        "total_pixels": 200000,
+        "worst_pages": [2]
+      }
+    },
+    {
+      "id": "tiny_noise",
+      "hwp": "samples/blank2010.hwp",
+      "pdf": "pdf/blank2010-2022.pdf",
+      "pages": 1,
+      "metrics": {
+        "diff_ratio": 0.0004,
+        "diff_pixels": 80,
+        "total_pixels": 200000,
+        "worst_pages": [1]
+      }
+    }
+  ]
+}

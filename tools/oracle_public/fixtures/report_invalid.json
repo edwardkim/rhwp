@@ -1,0 +1,15 @@
+{
+  "schema": "oracle_public.failure_report/v1",
+  "threshold": {
+    "metric": "worst_pixel_match_percent",
+    "op": "<",
+    "value": 99.0
+  },
+  "documents": [
+    {
+      "id": "",
+      "hwp": "samples/missing.hwp",
+      "metrics": {}
+    }
+  ]
+}
