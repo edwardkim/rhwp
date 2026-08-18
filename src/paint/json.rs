@@ -2689,7 +2689,7 @@ fn write_gradient(buf: &mut String, gradient: &GradientFillInfo) {
 fn write_line_style(buf: &mut String, style: &LineStyle) {
     let _ = write!(
         buf,
-        "{{\"color\":{},\"width\":{:.3},\"dash\":{},\"lineType\":{},\"startArrow\":{},\"endArrow\":{},\"startArrowSize\":{},\"endArrowSize\":{}}}",
+        "{{\"color\":{},\"width\":{:.3},\"dash\":{},\"lineType\":{},\"startArrow\":{},\"endArrow\":{},\"startArrowSize\":{},\"endArrowSize\":{}",
         json_escape(&color_ref_to_css(style.color)),
         style.width,
         json_escape(stroke_dash_str(style.dash)),
@@ -2699,6 +2699,11 @@ fn write_line_style(buf: &mut String, style: &LineStyle) {
         style.start_arrow_size,
         style.end_arrow_size,
     );
+    if let Some(shadow) = &style.shadow {
+        buf.push_str(",\"shadow\":");
+        write_shadow_style(buf, shadow);
+    }
+    buf.push('}');
 }
 
 fn write_transform(buf: &mut String, transform: ShapeTransform) {

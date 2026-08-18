@@ -30,10 +30,13 @@ basic form objects, root `TextRun` compatibility payloads, horizontal text
 special visuals, and the currently supported `GlyphOutline` color-layer subset.
 The standard solid, dash, dot, dash-dot, and dash-dot-dot stroke patterns are
 direct for line, shape, and path primitives and retain bounded native-effect
-lifetime.
-Root `TextRun` replay includes producer-positioned vertical text, vertical
-presentation punctuation, ratio scaling, shade, shadow, outline, emboss, and
-engrave for the nominal-glyph-safe subset. Several image effects, page-background fills,
+lifetime. M07-pack also keeps `lineArrow`, `compoundLine`, `shapeShadow`,
+`lineShadow`, `patternFill`, and `footnoteMarker` on the Direct path: the
+serialized paint JSON already carries those fields and CanvasKit now replays
+them without pinning the document revision to Canvas2D. Unknown tab-leader
+fill types and decoration shapes stay local no-ops instead of document-wide
+overlay blockers. `visualItemLimitExceeded` remains fail-closed at the shared
+4096-item bound. Several image effects, page-background image fills,
 vertical or rotated special visual ops, and document-object families remain
 fallback or diagnostic work until their payload contract is strict enough for
 direct replay.
@@ -92,6 +95,8 @@ changes:
 - `rhwp-studio/src/view/glyph-outline-payload-status.ts`
 - `rhwp-studio/e2e/renderer-contract.test.mjs`
 - `.github/workflows/render-diff.yml`
+- `docs/canvaskit-m07-pack-fallback-matrix.md`
+- `tests/fixtures/m07_pack/reason-matrix.jsonl`
 
 The contract test keeps this list alive so a future rename or split has to
 update the plan at the same time.
