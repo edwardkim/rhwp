@@ -1047,7 +1047,28 @@ fn emit_field_end_at(splitter: &mut RunSplitter, para: &Paragraph, fr: &FieldRan
 }
 
 /// 고아(다단락) fieldEnd 를 `<hp:ctrl><hp:fieldEnd .../></hp:ctrl>` 로 방출 (Task #1556).
+///
+/// [#5252] **여는 짝을 찾지 못한 종료 마커는 내지 않는다.** `link_orphan_field_ends` 가
+/// 섹션을 훑고도 `begin_id_ref` 를 채우지 못했다면 그 문서 어디에도 짝 `fieldBegin` 이
+/// 없다는 뜻이다(원본 HWP5 자체가 그렇게 만들어진 문서가 있다). 한글은 **열려 있지 않은
+/// 필드를 닫는 `fieldEnd` 를 참조 값과 무관하게 버리므로**, 그대로 내면 한글이 세는 문단
+/// 축만 8유닛 짧아진다. 그런데 `linesegarray` 는 원본 축을 담고 있어 줄이 축을 넘고,
+/// 한글이 **그 문단부터 본문을 통째로 폐기한다**.
+///
+/// 한글 2022 주입 검정(07276 h2x): 이 마커만 빼면 137쪽 → 224쪽, 본문 +100,393자.
+/// `beginIDRef` 를 실제 id 로 바꾸는 것으로는 해결되지 않는다 — 그 필드는 이미 자기
+/// 종료로 닫혀 있어 여전히 이중 닫기다(같은 검정에서 변화 0).
+/// `02899` 는 이 마커 2개를 빼면 한글 추출 텍스트가 원본과 **해시까지 일치**한다.
+///
+/// 위치 부기(`expected_utf16_pos += 8`)는 호출부에서 그대로 둔다 — IR 축은 슬롯을 세고
+/// 있고 `char_shapes`·`linesegarray` 도 그 축 위에 있으므로, 방출만 막는 것이 검정에서
+/// 통과한 모양이다.
+///
+/// 앞 문단에 진짜 `fieldBegin` 이 있는 정상 다단락 고아는 종전대로 방출한다.
 fn emit_orphan_field_end(out: &mut String, ofe: &OrphanFieldEnd) {
+    if ofe.begin_id_ref == 0 {
+        return;
+    }
     if let Ok(xml) = writer_to_string(|w| write_field_end_full(w, ofe.begin_id_ref, ofe.field_id)) {
         out.push_str("<hp:ctrl>");
         out.push_str(&xml);
@@ -5418,6 +5439,11 @@ mod tests {
     /// 파싱을 포기하고 이후 본문·개체를 통째로 버린다 — 실측 19쪽 35,205자 → 2쪽 7,838자,
     /// 개체 45→1. `beginIDRef` 값을 유효한 id 로 고쳐도 복원되지 않고, 순서를 바로잡으면
     /// 100% 복원된다.
+    ///
+    /// [#5252] 그 순서 계약은 **여는 짝이 있는** 고아에만 해당한다. `link_orphan_field_ends`
+    /// 가 섹션을 훑고도 `begin_id_ref` 를 못 채웠다면 문서 어디에도 짝이 없다는 뜻이라
+    /// 아예 방출하지 않는다 — 순서로는 막을 수 없는 경우다(07276 h2x 223→137쪽).
+    /// 한 시험에서 두 계약을 함께 지킨다.
     #[test]
     fn issue4902_field_begin_precedes_orphan_field_end_at_same_slot() {
         use crate::model::control::{Field, FieldType};
@@ -5445,21 +5471,41 @@ mod tests {
             end_field_id: 1_867_945_538,
             inner_slot_count: 0,
         }];
+        // ① 여는 짝이 **있는** 고아 — 종전 계약대로 방출하되 begin 이 먼저다.
+        para.orphan_field_ends = vec![OrphanFieldEnd {
+            char_idx: 0,
+            begin_id_ref: 1_867_945_539,
+            field_id: 0,
+            begin_ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+        }];
+
+        let runs = runs_of(&para);
+        let begin = runs.find("<hp:fieldBegin").expect("fieldBegin 방출");
+        let orphan = runs
+            .find(r#"<hp:fieldEnd beginIDRef="1867945539""#)
+            .expect("여는 짝이 있는 고아 fieldEnd 는 방출되어야 한다");
+        assert!(
+            begin < orphan,
+            "고아 fieldEnd 가 짝 fieldBegin 보다 앞서면 한글이 본문을 버린다:\n{runs}"
+        );
+
+        // ② [#5252] 여는 짝을 **못 찾은** 고아는 방출하지 않는다. 한글은 열려 있지 않은
+        //    필드를 닫는 fieldEnd 를 버리고, 그러면 문단 축만 8유닛 짧아져 원본
+        //    linesegarray 가 축을 넘겨 그 문단부터 본문이 통째로 폐기된다.
         para.orphan_field_ends = vec![OrphanFieldEnd {
             char_idx: 0,
             begin_id_ref: 0,
             field_id: 0,
             begin_ctrl_id: 0,
         }];
-
         let runs = runs_of(&para);
-        let begin = runs.find("<hp:fieldBegin").expect("fieldBegin 방출");
-        let orphan = runs
-            .find(r#"<hp:fieldEnd beginIDRef="0""#)
-            .expect("고아 fieldEnd 방출");
         assert!(
-            begin < orphan,
-            "고아 fieldEnd 가 짝 fieldBegin 보다 앞서면 한글이 본문을 버린다:\n{runs}"
+            !runs.contains(r#"<hp:fieldEnd beginIDRef="0""#),
+            "짝을 못 찾은 고아 fieldEnd 는 내보내면 안 된다:\n{runs}"
+        );
+        assert!(
+            runs.contains("<hp:fieldBegin"),
+            "짝 있는 필드는 그대로 방출되어야 한다:\n{runs}"
         );
     }
 
