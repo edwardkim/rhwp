@@ -2065,13 +2065,8 @@ fn text_run_transition_detail(
             0x1100..=0x11ff | 0xa960..=0xa97f | 0xd7b0..=0xd7ff
         )
     });
-    let has_boxed_pua = run
-        .display_or_text()
-        .chars()
-        .any(|ch| matches!(ch as u32, 0xf02b1..=0xf02c4));
-    if text_requires_complex_shaping(&display_text)
-        || (has_paint_effects && (has_old_hangul || has_boxed_pua))
-    {
+    // Boxed-PUA + 장평/effects already replay as a vector box; old Hangul does not.
+    if text_requires_complex_shaping(&display_text) || (has_paint_effects && has_old_hangul) {
         return Some("scriptTextRequiresShaping");
     }
     None
@@ -3157,7 +3152,7 @@ mod tests {
             );
         }
 
-        for text in ["\u{1112}\u{119e}\u{11ab}", "\u{f02b1}"] {
+        for text in ["\u{1112}\u{119e}\u{11ab}"] {
             let mut effected = text_run(text);
             effected.style.shadow_type = 1;
             let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), effected)]);
@@ -3169,6 +3164,14 @@ mod tests {
                 "text={text:?}"
             );
         }
+
+        let mut boxed_pua_ratio = text_run("\u{f02b1}");
+        boxed_pua_ratio.style.shadow_type = 1;
+        boxed_pua_ratio.style.ratio = 0.8;
+        let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), boxed_pua_ratio)]);
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert_eq!(plan.items[0].status, CanvasKitReplayStatus::Direct);
+        assert_eq!(plan.items[0].detail, None);
 
         let mut positioned_effect = text_run("가");
         positioned_effect.style.superscript = true;
