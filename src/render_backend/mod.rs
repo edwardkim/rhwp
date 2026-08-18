@@ -21,7 +21,9 @@
 //!
 //! 이 모듈은 그 공통 계약을 **기존 백엔드를 고치지 않고** 신설한다.
 //! 어댑터는 기존 코드를 호출만 하며, `src/renderer/**` 는 이 PR 에서 바뀌지 않는다.
-//! 구체 어댑터는 `SvgBackend` 와 `PngBackend` 둘이다. native-skia 어댑터는 여기 없다.
+//! 구체 어댑터는 `SvgBackend`, `PngBackend`, `SkiaBackend` 이다. PNG 바이트열
+//! 어댑터는 `SkiaLayerRenderer::render_png`를 사용하고, native-Skia adapter는
+//! 래스터 문서의 치수와 바이트열을 함께 노출한다.
 //!
 //! # 기존 trait 들과의 관계
 //!
@@ -69,6 +71,7 @@
 pub mod backends;
 pub mod caps;
 pub mod png_adapter;
+pub mod skia_adapter;
 pub mod svg_adapter;
 pub mod traits;
 pub mod util;
@@ -76,6 +79,7 @@ pub mod util;
 pub use backends::{DrawStats, NullBackend, TraceBackend};
 pub use caps::{BackendCapabilities, BackendFeature};
 pub use png_adapter::PngBackend;
+pub use skia_adapter::SkiaBackend;
 pub use svg_adapter::SvgBackend;
 pub use traits::{PageSize, RenderBackend, RenderBackendError};
 pub use util::{paint_op_kind, replay_page, PageState};
@@ -182,6 +186,11 @@ mod tests {
             png.draw(&rect_op(0.0, 0.0)).unwrap_err(),
             RenderBackendError::NoOpenPage { call: "draw" }
         );
+        let mut skia = SkiaBackend::new();
+        assert_eq!(
+            skia.draw(&rect_op(0.0, 0.0)).unwrap_err(),
+            RenderBackendError::NoOpenPage { call: "draw" }
+        );
     }
 
     // 3. 페이지 경계 위반 — 중복 열기, 안 연 채 닫기, 안 닫고 끝내기.
@@ -283,9 +292,7 @@ mod tests {
         assert!(!null.supports(BackendFeature::VectorText));
         assert!(null.supports(BackendFeature::Deterministic));
 
-        // PNG 어댑터는 실제로 지원하는 능력만 선언한다 (210b3ee37 정직성 보정과 같은 결).
-        // 얇은 어댑터는 클립·다중 페이지를 보존하지 못하고, native-skia 가 없으면
-        // 이미지·그라디언트도 산출물에 남지 않는다. M06-3 이 전 백엔드 정직성 스윕이다.
+        // PNG adapter는 native-Skia 가용성만 능력으로 광고한다.
         let png = PngBackend::new().capabilities();
         assert_eq!(png.name, "png");
         assert!(png.raster_only);
@@ -297,6 +304,20 @@ mod tests {
         let live = PngBackend::raster_available();
         assert_eq!(png.supports(BackendFeature::Images), live);
         assert_eq!(png.supports(BackendFeature::Gradients), live);
+
+        // Skia adapter도 같은 런타임 가용성만 능력으로 광고한다.
+        let skia = SkiaBackend::new().capabilities();
+        assert_eq!(skia.name, "skia");
+        assert!(skia.raster_only);
+        assert!(!skia.supports(BackendFeature::VectorText));
+        assert!(!skia.supports(BackendFeature::EmbeddedFonts));
+        assert!(!skia.supports(BackendFeature::Clipping));
+        assert!(!skia.supports(BackendFeature::MultiPage));
+        assert!(!skia.supports(BackendFeature::Deterministic));
+        let skia_live = SkiaBackend::raster_available();
+        assert_eq!(skia.supports(BackendFeature::Images), skia_live);
+        assert_eq!(skia.supports(BackendFeature::Gradients), skia_live);
+        assert_eq!(live, skia_live);
         assert_eq!(
             live,
             cfg!(all(not(target_arch = "wasm32"), feature = "native-skia"))
@@ -307,6 +328,7 @@ mod tests {
             svg,
             null,
             png,
+            skia,
             TraceBackend::new().capabilities(),
             BackendCapabilities::raster("skia"),
         ] {
@@ -367,6 +389,27 @@ mod tests {
         } else {
             assert!(png.is_empty());
         }
+
+        // Skia 어댑터: native-skia 가 있으면 래스터 문서, 없으면 빈 문서.
+        let mut skia_backend = SkiaBackend::new();
+        replay_page(&mut skia_backend, &sample_tree()).unwrap();
+        assert_eq!(skia_backend.pages().len(), 1);
+        let raster = skia_backend.finish().unwrap();
+        if SkiaBackend::raster_available() {
+            assert!(raster.width > 0, "width={}", raster.width);
+            assert!(raster.height > 0, "height={}", raster.height);
+            assert!(
+                raster
+                    .bytes
+                    .starts_with(&[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]),
+                "expected raster document payload, got {} bytes",
+                raster.bytes.len()
+            );
+        } else {
+            assert!(raster.bytes.is_empty());
+            assert_eq!(raster.width, 0);
+            assert_eq!(raster.height, 0);
+        }
     }
 
     // 10. 페이지별 SVG 문서를 이어 붙여 유효하지 않은 단일 SVG를 만들지 않는다.
@@ -387,6 +430,14 @@ mod tests {
         assert_eq!(
             png.begin_page(PageSize::new(400.0, 300.0)).unwrap_err(),
             RenderBackendError::MultiplePagesUnsupported { backend: "png" }
+        );
+
+        let mut skia = SkiaBackend::new();
+        skia.begin_page(PageSize::new(400.0, 300.0)).unwrap();
+        skia.end_page().unwrap();
+        assert_eq!(
+            skia.begin_page(PageSize::new(400.0, 300.0)).unwrap_err(),
+            RenderBackendError::MultiplePagesUnsupported { backend: "skia" }
         );
     }
 
