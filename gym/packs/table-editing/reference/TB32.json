@@ -1,0 +1,23 @@
+{
+  "id": "TB32",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "0",
+        "--text",
+        "머리표지",
+        "-o",
+        "{sub:head_mark.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}
