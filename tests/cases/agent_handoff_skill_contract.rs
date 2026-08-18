@@ -319,7 +319,7 @@ fn envelope_exits_are_only_known_codes() {
         let env: Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
         let code = env["_skillMeta"]["exit"].as_i64().expect("exit");
         assert!(
-            matches!(code, 0 | 1 | 2 | 3 | 4),
+            matches!(code, 0..=4),
             "{} 알 수 없는 exit {code}",
             path.display()
         );
