@@ -81,7 +81,7 @@ anchor와 줄바꿈을 render-tree 테스트와 함께 판정한다.
 
 1. 최신 `upstream/devel`을 fetch하고 branch divergence를 확인한다.
 2. 충돌이 있으면 사용자 변경을 보존하며 최신 기준으로 재검증한다.
-3. 별도 승인 후 renderer 범위의 전체 release·Clippy·WASM gate를 실행한다.
+3. 별도 승인 후 renderer 범위의 전체 release·Clippy·WASM gate를 실행한다. (완료)
 4. 최종보고서 수치와 오늘할일 상태를 갱신한다.
 5. 단계별 커밋을 만든다.
-6. 별도 승인 후 push하고 `devel` 대상 PR을 생성한다.
+6. 별도 승인을 받아 push하고 한국어 제목·본문의 `devel` 대상 PR을 생성한다. (진행 중)
