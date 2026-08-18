@@ -4078,10 +4078,10 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
         ),
         tool_with_optional_args(
             "hwp_layout_anomaly",
-            "렌더 한 장의 기하에서 overflow·overlap·중간 빈 쪽 이상 신호를 찾는다. render-diff가 두 렌더 사이의 변위를 재는 것과 달리, 이 도구는 단일 렌더 자체가 정상적인지 판정한다. 기본은 발견 결과를 데이터로 보고 성공하며, strict를 주면 overflow·overlap 확정 신호가 있을 때 종료 코드 3을 반환한다(빈 쪽은 가능성 신호라 strict에서도 실패시키지 않는다).",
+            "렌더 한 장의 기하에서 overflow·overlap·text-overlap·중간 빈 쪽 이상 신호를 찾는다. render-diff가 두 렌더 사이의 변위를 재는 것과 달리, 이 도구는 단일 렌더 자체가 정상적인지 판정한다. text-overlap 은 텍스트 런 bbox 교차(글자끼리)만 보며 표·이미지 겹침과 다르다. 기본은 발견 결과를 데이터로 보고 성공하며, strict를 주면 overflow·overlap·text-overlap 확정 신호가 있을 때 종료 코드 3을 반환한다(빈 쪽은 가능성 신호라 strict에서도 실패시키지 않는다).",
             path_schema(serde_json::json!({
                 "page": { "type": "integer", "minimum": 0, "description": "특정 페이지만 검사하는 0 기준 번호. 생략하면 전체 문서" },
-                "strict": { "type": "boolean", "description": "참이면 overflow 또는 overlap이 발견될 때 검증 실패(exit 3)로 처리. 빈 쪽 신호는 실패시키지 않음" },
+                "strict": { "type": "boolean", "description": "참이면 overflow·overlap·text-overlap 확정 신호가 발견될 때 검증 실패(exit 3)로 처리. 빈 쪽 신호는 실패시키지 않음" },
                 "overflowTolerance": { "type": "number", "minimum": 0, "description": "본문 여백 밖으로 벗어난 요소를 overflow로 볼 최소 거리(px). 기본 1.0" },
                 "overlapTolerance": { "type": "number", "minimum": 0, "description": "두 요소를 overlap으로 볼 최소 겹침 폭과 높이(px). 기본 2.0" },
                 "types": { "type": "string", "description": "overflow/overlap 검사 대상 노드 타입. 쉼표 구분(예: Table,Image,TextLine). 생략하면 기본 검사 대상 전부. empty_page 는 영향 없음" },
@@ -4099,7 +4099,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             ]),
             &[
                 "schemaVersion", "mode", "source", "pageCount", "pageFilter", "overflowTolerancePx",
-                "overlapTolerancePx", "types", "strict", "overflowCount", "overlapCount",
+                "overlapTolerancePx", "types", "strict", "overflowCount", "overlapCount", "textOverlapCount",
                 "emptyPageCount", "hasSignal", "pages",
             ],
         ),
@@ -6494,7 +6494,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "layout-anomaly",
             "diagnostic",
-            "렌더 한 장의 기하 이상탐지(overflow/overlap/empty_page) — render-diff(변위)와 다른 질문. 기본 exit 0, --strict 만 확정 신호를 exit 3. --batch 는 NDJSON",
+            "렌더 한 장의 기하 이상탐지(overflow/overlap/text-overlap/empty_page) — render-diff(변위)와 다른 질문. 기본 exit 0, --strict 만 확정 신호를 exit 3. --batch 는 NDJSON",
             false,
             &[
                 "--json",
@@ -6517,6 +6517,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "strict",
                 "overflowCount",
                 "overlapCount",
+                "textOverlapCount",
                 "emptyPageCount",
                 "hasSignal",
                 "pages",
@@ -6805,7 +6806,7 @@ fn capabilities_value() -> serde_json::Value {
             "0": "성공",
             "1": "런타임 실패 (읽기·파싱·렌더·쓰기)",
             "2": "사용법 오류 (인자 없음, 알 수 없는 옵션/명령, 페이지 범위 초과)",
-            "3": "검증 단언 실패 — convert/export-hwpx --verify IR 차이, edit 3종 --verify 저장본 불일치, run 계획 assertions 미충족, render-diff --json 시각 회귀 검출(사람 모드는 종전대로 1), layout-anomaly --strict 확정 신호 검출(기본은 0)",
+            "3": "검증 단언 실패 — convert/export-hwpx --verify IR 차이, edit 3종 --verify 저장본 불일치, run 계획 assertions 미충족, render-diff --json 시각 회귀 검출(사람 모드는 종전대로 1), layout-anomaly --strict 확정 신호(overflow·overlap·text-overlap) 검출(기본은 0)",
             "4": "--verify-pages 페이지 수 불일치 (convert/export-hwpx)",
         },
         "jsonContract": {
@@ -7371,10 +7372,11 @@ fn print_help() {
     println!(
         "  layout-anomaly --batch <폴더> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--types <Type,...>] [--strict] [--json]"
     );
-    println!("      렌더 한 장의 기하만으로 이상 신호 3종 탐지 — render-diff(변위)와 다른 질문");
+    println!("      렌더 한 장의 기하만으로 이상 신호 4종 탐지 — render-diff(변위)와 다른 질문");
     println!(
-        "      overflow: 요소 bbox가 본문 여백을 벗어남 / overlap: 겹치면 안 되는 요소끼리 겹침"
+        "      overflow: 요소 bbox가 본문 여백을 벗어남 / overlap: 겹치면 안 되는 흐름 요소끼리 겹침"
     );
+    println!("      text-overlap: 텍스트 런 bbox 교차(글자끼리, 표·이미지 겹침 아님) — --strict 확정 신호");
     println!("      empty_page: 콘텐츠 없는 중간 쪽(첫/끝 제외) — 항상 가능성 신호, --strict 로도 실패 안 함");
     println!("      --types: overflow/overlap 검사 대상 노드 타입만 (예: Table,Image). empty_page 는 영향 없음");
     println!("      --batch: 폴더를 재귀해 .hwp/.hwpx 를 정렬 순으로 스캔. 파일별 오류는 error 레코드(DATA)");

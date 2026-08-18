@@ -30,7 +30,7 @@ CLI `rhwp layout-anomaly`, 코어 `src/diagnostics/layout_anomaly.rs`.
 ```
 render_geom_diff  (두 렌더 사이 비교)         layout_anomaly  (렌더 한 장 안의 판정)
   ─ "A 와 B 가 같은가"                          ─ "이 렌더가 정상적인 문서로 보이는가"
-  ─ maxDisp, structureMismatch                  ─ overflow / overlap / empty_page
+  ─ maxDisp, structureMismatch                  ─ overflow / overlap / text-overlap / empty_page
   ─ 라운드트립·두 파일 비교 전용                  ─ 임의의 단일 문서에 바로 적용
 ```
 
@@ -54,7 +54,7 @@ render_geom_diff  (두 렌더 사이 비교)         layout_anomaly  (렌더 한
 을 판정한다. 페이지네이션 내부 상태에 접근하지 않고, 보안 판정도 아니다 — 순수하게 "이 결과물이
 사람이 보기에 정상적인 문서 레이아웃인가"만 본다.
 
-## 판정 3종
+## 판정 4종
 
 입력은 `DocumentCore::build_page_render_tree` 가 페이지마다 만들어 내는 `RenderNode` 트리
 하나뿐이다(`render_geom_diff::diff_render_geometry` 와 같은 배선). 렌더러·레이아웃 엔진 코드는
@@ -94,6 +94,20 @@ render_geom_diff  (두 렌더 사이 비교)         layout_anomaly  (렌더 한
 나란히 배치된다. 두 요소의 겹침 폭·높이가 **둘 다** 허용치(기본 2.0px)를 넘어야 보고한다 —
 모서리가 살짝 스치는 것(안티앨리어싱·반올림)은 정상 조판에서도 흔하다.
 
+### text-overlap
+
+일반 overlap 이 표·이미지·문단 줄처럼 **흐름 요소**의 겹침이라면, `text-overlap` 은
+**텍스트끼리**만 본다. 표와 그림이 겹쳐도 여기엔 안 잡히고, 표 셀 안에서 글자 bbox 가
+서로 교차하면 일반 overlap 은 표 컨테이너에서 접히므로 이 신호만 난다.
+
+렌더 트리에 글자 단위 글리프 bbox 는 없다. 레이아웃이 이미 나눠 둔 `TextRun` 노드 bbox 를
+글리프 묶음으로 쓴다. 한컴 글자겹침(`char_overlap`) 런은 의도된 겹침이라 후보에서 뺀다.
+짝짓기 허용치는 overlap 과 같은 `--overlap-tolerance`(기본 2.0px)다.
+
+`text-overlap` 은 확정 신호다. 글자 bbox 교차는 BehindText 그림처럼 의도된 wrap 이 아니고,
+빈 쪽처럼 기하만으로 애매하지도 않다 — 그래서 `--strict` 에 포함한다. 기본 종료 코드는
+여전히 0(판정=데이터)이다.
+
 ### empty_page
 
 콘텐츠(보이는 텍스트, 또는 표·이미지·도형류)가 전혀 없는 페이지가 **문서 중간**(첫 쪽도 마지막
@@ -107,9 +121,9 @@ render_geom_diff  (두 렌더 사이 비교)         layout_anomaly  (렌더 한
 이 저장소의 다른 진단 명령(`render-diff`, `inspect hidden-text` 등)과 같은 철학이다. 탐지
 건수가 0이 아니어도 기본 종료 코드는 0이다 — anomaly 발견은 도구의 정상 동작이지 실패가 아니다.
 `--json` 은 항상 전체 판정을 봉투로 낸다. 소비자가 실패로 취급하고 싶으면 `--strict` 를 명시
-한다 — 이때도 `overflow`·`overlap`(확정 신호)만 종료 코드 3(`render-diff` 의 `EXIT_REGRESSION`
-과 같은 값·같은 의미론)을 유발하고, `empty_page`(가능성 신호)는 `--strict` 로도 절대 실패를
-유발하지 않는다.
+한다 — 이때도 `overflow`·`overlap`·`text-overlap`(확정 신호)만 종료 코드 3(`render-diff` 의
+`EXIT_REGRESSION` 과 같은 값·같은 의미론)을 유발하고, `empty_page`(가능성 신호)는 `--strict`
+로도 절대 실패를 유발하지 않는다.
 
 ## 실측 — 380쪽 실제 문서에서의 신호 품질
 
@@ -134,8 +148,8 @@ rhwp layout-anomaly --batch <폴더> [-p <페이지>] [--json] [--strict]
                      [--overflow-tolerance <px>] [--overlap-tolerance <px>]
 ```
 
-- `--json`: 단건은 판정 봉투 한 줄(`schemaVersion`, `mode`, `pages[].overflow/overlap/emptyPage`, `hasSignal` 등). `--batch` 는 NDJSON.
-- `--strict`: `hasSignal`(overflow·overlap 확정 신호)이 있으면 종료 코드 3. 기본은 이상 신호가 있어도 0.
+- `--json`: 단건은 판정 봉투 한 줄(`schemaVersion`, `mode`, `pages[].overflow/overlap/textOverlap/emptyPage`, `textOverlapCount`, `hasSignal` 등). `--batch` 는 NDJSON.
+- `--strict`: `hasSignal`(overflow·overlap·text-overlap 확정 신호)이 있으면 종료 코드 3. 기본은 이상 신호가 있어도 0.
 - `-p`: 사람 모드 출력만 해당 페이지로 좁힌다(스캔 자체는 항상 전 페이지).
 - `--types`: overflow·overlap 검사 대상 노드 타입만 남긴다(예: `Table,Image`). `empty_page` 는 페이지 단위라 영향 없음. 필터에 안 걸린 컨테이너는 접지 않고 자손을 본다.
 - `--batch`: 폴더를 재귀해 `.hwp`/`.hwpx` 를 상대 경로 정렬 순으로 스캔한다. 파일별 로드·스캔 실패는 레코드의 `error` 키(DATA)로 남기고 스트림에서 빼지 않는다. 한 건이라도 측정 실패면 exit 1 이 `--strict` 의 3보다 우선한다.
