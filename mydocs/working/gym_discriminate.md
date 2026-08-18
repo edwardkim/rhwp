@@ -223,4 +223,3 @@ PR 본문은 한글, base 는 `devel`, `closes #5255`, `--body-file` 로
 이상.
 
 (이 기록은 작업 메모다. 규약 정본은 `gym/docs/discriminate.md`.)
-

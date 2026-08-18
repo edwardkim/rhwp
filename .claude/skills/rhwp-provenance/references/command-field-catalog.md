@@ -3085,4 +3085,3 @@ kind·severity·location·rationale·findingCount·clean·scanScopes·format 은
 2. 필드 목록을 손수 복제해 권위로 삼지 않는다. 권위는 `export-provenance-map` 이다.
 3. 이 장의 절 제목은 `## N. \`명령\`` 형식이다. 계약 테스트가 이 형식을 긁는다.
 4. gym 시나리오·온보딩·MCP 세션·safe-edit·doc-triage 스킬을 이 장에서 고치지 않는다.
-

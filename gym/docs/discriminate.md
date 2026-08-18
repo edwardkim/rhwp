@@ -501,4 +501,3 @@ garbage artifact 다. pair 는 `wrong-answer` 만 돈다. 산출 쌍에
 
 `expected_control_count(task)` 는 `len(controls_for(task))` 다.
 artifact 는 2, 그 외는 1. 보고의 `controlCount` 는 전 과제 합이다.
-

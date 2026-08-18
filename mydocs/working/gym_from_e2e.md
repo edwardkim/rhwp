@@ -286,5 +286,3 @@ pack 을 부풀리지 않았다. 과제 복제는 정직 게이트와 반대로 
 - 예외·정직 시험 포함 215 passed
 - `python gym/tools/audit.py` — 18 pack 전부 통과, 위반 0
 - 라이브 rhwp / cargo fmt --all 은 이 보강에서 실행하지 않음
-
-
