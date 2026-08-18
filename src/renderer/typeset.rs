@@ -929,6 +929,15 @@ struct TypesetState {
     /// 렌더러(layout)와 한글은 이 성분을 가산하므로, footer(발신명의) fit 판정의
     /// 렌더-정합 좌표 복원용. 단 advance 시 0.
     flow_underrun: f64,
+    /// [compat 2024] 이번 단에서 자리차지 표 앵커 문단의 선행 앵커 줄 세그를
+    /// 흐름에서 회수한 양(px 누계). hangul2024_layout 에서만 쌓이며, 저장 vpos
+    /// 되감김 쪽-경계 신호를 재적합으로 덮을 자격 판정에 쓴다 — 회수가 없던
+    /// 쪽에서는 되감김 신호를 그대로 존중해 여타 문서 동작을 바꾸지 않는다.
+    hangul2024_reclaimed: f64,
+    /// [compat 2024] 저장 리셋/되감김 신호를 덮은 빈 문단의 인덱스 — 그 문단만
+    /// place 적합을 우회해 쪽 하단 여백으로 흘린다(이웃 빈 문단까지 흘리면
+    /// 2024 보다 한 문단 과적재, idx22 실측).
+    hangul2024_spill_para: Option<usize>,
     /// [#2279 pi78] 이 문서에서 저장 ladder 의 host spacing 누락 서명(OMIT)이
     /// 검출됐는가 — 기계생성 압축 ladder 문서군 판별(문서 단위, 리셋 없음).
     /// 분할 진입 첫 줄 full-advance 요구는 이 문서군에만 적용한다.
@@ -4029,6 +4038,8 @@ impl TypesetState {
             current_endnote_flow: false,
             prev_body_bottom_vpos: None,
             flow_underrun: 0.0,
+            hangul2024_reclaimed: 0.0,
+            hangul2024_spill_para: None,
             stored_ladder_spacing_omitted: false,
             omit_fresh_recalc_doc: false,
             current_column: 0,
@@ -4503,6 +4514,9 @@ impl TypesetState {
         self.prev_body_bottom_vpos = None;
         // [#2279] flow 과소 누계도 단 단위 — 리셋.
         self.flow_underrun = 0.0;
+        // [compat 2024] hangul2024_reclaimed 는 여기서 리셋하지 않는다 —
+        // flush_column 은 Square 밴드 마감 등 쪽/단 전환 없이도 불리므로,
+        // 리셋은 실제 전환 지점(advance_column_or_new_page/reset_for_new_page)에서.
     }
 
     /// deferred Square picture는 layout의 z/order상 이 column의 첫 item이어야 하지만,
@@ -4585,6 +4599,14 @@ impl TypesetState {
             self.current_height = self.pending_body_wide_top_reserve;
             self.current_start_height = self.current_height;
             self.current_endnote_flow = false;
+            // [compat 2024] 앵커 줄 회수 누계는 단 단위 — 새 단에서 리셋.
+            if self.hangul2024_reclaimed > 0.0 && std::env::var("RHWP_DIAG_COMPAT24").is_ok() {
+                eprintln!(
+                    "DIAG_COMPAT24 clear@column-advance reclaimed={:.1}",
+                    self.hangul2024_reclaimed
+                );
+            }
+            self.hangul2024_reclaimed = 0.0;
             self.reset_vpos_cursor();
         } else {
             self.push_new_page();
@@ -4652,6 +4674,14 @@ impl TypesetState {
         self.current_column = 0;
         self.current_height = 0.0;
         self.current_start_height = 0.0;
+        // [compat 2024] 앵커 줄 회수 누계는 쪽 단위 — 새 쪽에서 리셋.
+        if self.hangul2024_reclaimed > 0.0 && std::env::var("RHWP_DIAG_COMPAT24").is_ok() {
+            eprintln!(
+                "DIAG_COMPAT24 clear@new-page reclaimed={:.1}",
+                self.hangul2024_reclaimed
+            );
+        }
+        self.hangul2024_reclaimed = 0.0;
         self.current_endnote_flow = false;
         self.current_footnote_height = 0.0;
         self.current_bottom_fixed_exclusion = 0.0;
@@ -6842,7 +6872,53 @@ impl TypesetEngine {
                                 .and_then(|idx| paragraphs.get(idx))
                                 .is_some_and(|p| p.controls.is_empty() && p.text.trim().is_empty())
                         });
-                    let trigger = trigger && !omit_pushed_empty_page;
+                    // [compat 2024] (Δ1) 이번 단에서 자리차지 표 앵커 줄을 회수
+                    // 했거나 앞선 경계를 이미 덮어 저장 경계가 한 발씩 어긋난
+                    // 상태이고, 이 문단의 **첫 줄**이 잔여 공간에 들어가면 저장
+                    // vpos 리셋(=2022 조판의 쪽 경계)을 존중하지 않는다 — 문단이
+                    // 통째로 못 들어가면 일반 분할 경로가 첫 줄부터 채운다(한글
+                    // 2024 의 fresh 흐름과 같은 결정). 회수도 선행 덮음도 없는
+                    // 문서/쪽에서는 종전 동작 그대로.
+                    let hangul2024_refit =
+                        st.profile.hangul2024_layout() && st.hangul2024_reclaimed > 0.0 && {
+                            // 빈 문단(텍스트·컨트롤 없음)은 한글이 쪽 하단
+                            // 여백으로 흘려도 되는 존재라 need=0, 실문단은 첫 줄
+                            // (통째로 못 들어가면 일반 분할이 첫 줄부터 채운다 —
+                            // 한글 2024 fresh 와 같은 결정). 회귀를 만들던 것은
+                            // 이 완화가 아니라 sticky 연쇄였음(라운드 B/C 회귀값
+                            // 동일로 판별).
+                            let need: f64 =
+                                if !para_has_visible_text(para) && para.controls.is_empty() {
+                                    0.0
+                                } else {
+                                    para.line_segs
+                                        .first()
+                                        .map(|s| {
+                                            hwpunit_to_px(
+                                                s.line_height.saturating_add(s.line_spacing),
+                                                self.dpi,
+                                            )
+                                        })
+                                        .unwrap_or(0.0)
+                                };
+                            st.current_height + need
+                                <= st.available_height() + st.hangul2024_reclaimed
+                        };
+                    if std::env::var("RHWP_DIAG_COMPAT24").is_ok() && trigger {
+                        eprintln!(
+                            "DIAG_COMPAT24 reset-trigger pi={para_idx} refit={hangul2024_refit} \
+                             cur={:.1} reclaimed={:.1}",
+                            st.current_height, st.hangul2024_reclaimed,
+                        );
+                    }
+                    if trigger
+                        && hangul2024_refit
+                        && !para_has_visible_text(para)
+                        && para.controls.is_empty()
+                    {
+                        st.hangul2024_spill_para = Some(para_idx);
+                    }
+                    let trigger = trigger && !omit_pushed_empty_page && !hangul2024_refit;
                     if trigger {
                         // [Task #724] wrap_around active 시 강제 종료 — anchor cs=0
                         // (HWP5 변환본 caption-style) 한정. 일반 wrap_around (anchor cs>0)
@@ -16028,9 +16104,54 @@ impl TypesetEngine {
                 .any(|it| page_item_para_index(it) == Some(para_idx))
             && st.current_height >= available * STORED_VPOS_REWIND_MIN_FILL
             && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para);
+        // [compat 2024] 앵커 줄 회수분이 있거나 앞선 경계를 이미 덮은 상태에서
+        // 이 문단의 첫 줄이 (회수 보너스 포함) 들어가면 저장 되감김(=2022 조판의
+        // 쪽 경계)을 덮는다. 회수도 선행 덮음도 없으면 종전 동작 그대로.
+        let hangul2024_rewind_override = stored_vpos_rewind_break
+            && st.profile.hangul2024_layout()
+            && st.hangul2024_reclaimed > 0.0
+            && {
+                // 빈 문단 need=0 / 실문단 첫 줄 (위 reset-trigger 와 같은 규칙).
+                let need: f64 = if !para_has_visible_text(para) && para.controls.is_empty() {
+                    0.0
+                } else {
+                    para.line_segs
+                        .first()
+                        .map(|s| {
+                            hwpunit_to_px(s.line_height.saturating_add(s.line_spacing), self.dpi)
+                        })
+                        .unwrap_or(page_end_fit_height)
+                        .min(page_end_fit_height)
+                };
+                st.current_height + need <= available + st.hangul2024_reclaimed
+            };
+        let stored_vpos_rewind_break = stored_vpos_rewind_break && !hangul2024_rewind_override;
+        if std::env::var("RHWP_DIAG_COMPAT24").is_ok()
+            && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para)
+        {
+            eprintln!(
+                "DIAG_COMPAT24 rewind-site pi={para_idx} break={stored_vpos_rewind_break} \
+                 cur={:.1} fit_h={page_end_fit_height:.1} avail={available:.1} \
+                 reclaimed={:.1} items={} forced={:?}",
+                st.current_height,
+                st.hangul2024_reclaimed,
+                st.current_items.len(),
+                forced_page_break_line,
+            );
+        }
+        // [compat 2024] 저장 신호를 덮은 그 빈 문단만 한글 2024 처럼 쪽 하단
+        // 여백으로 흘린다(place 적합 우회). 이웃 빈 문단까지 흘리면 2024 보다
+        // 한 문단 과적재된다(idx22 실측). 되감김 덮음도 같은 자격을 준다.
+        if hangul2024_rewind_override && !para_has_visible_text(para) && para.controls.is_empty() {
+            st.hangul2024_spill_para = Some(para_idx);
+        }
+        let hangul2024_blank_spill = st.profile.hangul2024_layout()
+            && st.hangul2024_spill_para == Some(para_idx)
+            && !st.current_items.is_empty();
         if forced_page_break_line.is_none()
             && !stored_vpos_rewind_break
-            && (st.current_height + page_end_fit_height <= available
+            && (hangul2024_blank_spill
+                || st.current_height + page_end_fit_height <= available
                 || saved_single_line_bottom_fits
                 || saved_list_tail_body_vpos_fits)
         {
@@ -16318,7 +16439,24 @@ impl TypesetEngine {
                 .last()
                 .map(|s| s.vertical_pos.saturating_add(s.line_height) > 60_000)
                 .unwrap_or(false);
-        if (st.current_height >= available || remaining < first_line_h || stored_whole_para_reset)
+        // [compat 2024] near-top 저장 리셋(stored_whole_para_reset)도 2022 쪽
+        // 경계 신호다 — 앵커 줄 회수가 있고 첫 줄(빈 문단은 0)이 회수 보너스로
+        // 들어가면 덮는다 (reset-trigger/되감김과 같은 규칙, 제3의 경계 지점).
+        let hangul2024_split_refit = st.profile.hangul2024_layout()
+            && st.hangul2024_reclaimed > 0.0
+            && stored_whole_para_reset
+            && st.current_height < available
+            && {
+                let blank = !para_has_visible_text(para) && para.controls.is_empty();
+                let need = if blank { 0.0 } else { first_line_h };
+                st.current_height + need <= available + st.hangul2024_reclaimed
+            };
+        if hangul2024_split_refit && !para_has_visible_text(para) && para.controls.is_empty() {
+            st.hangul2024_spill_para = Some(para_idx);
+        }
+        if (st.current_height >= available
+            || remaining < first_line_h
+            || (stored_whole_para_reset && !hangul2024_split_refit))
             && !st.current_items.is_empty()
             && !hwp_first_line_before_reset_fits
         {
@@ -18376,6 +18514,28 @@ impl TypesetEngine {
             // 줄(매핑 lineseg)부터만 계상한다. 문단 전체 height_for_fit 을
             // 쓰면 이전 쪽에 남은 선행 줄(전면 tac 그림 등)의 높이가 새 쪽에
             // 유령 계상되어 후속 문단을 한 쪽 더 밀어낸다 (156744475 4쪽→3쪽).
+            (tac_seg_idx..fmt.line_heights.len())
+                .map(|li| fmt.line_advance(li))
+                .sum::<f64>()
+        } else if st.profile.hangul2024_layout()
+            && tac_seg_idx > 0
+            && tac_seg_idx < fmt.line_heights.len()
+        {
+            // [compat 2024] 한글 2024 는 자리차지 표 앵커 문단의 선행 앵커 줄
+            // 세그먼트를 흐름에 계상하지 않는다 — 2022 재저장본은 앵커 문단
+            // lineseg 2개(선행 줄 + 표 밴드), 2024 재저장본은 밴드 1개
+            // (output/poc/hangul_version_compat_phase0_20260818 Phase 1, Δ1).
+            // 표 밴드 세그부터만 계상해 표와 후속 흐름을 그만큼 당기고, 회수량은
+            // 저장 vpos 되감김 경계의 재적합 자격으로 적립한다.
+            let reclaimed = (0..tac_seg_idx).map(|li| fmt.line_advance(li)).sum::<f64>();
+            st.hangul2024_reclaimed += reclaimed;
+            if std::env::var("RHWP_DIAG_COMPAT24").is_ok() {
+                eprintln!(
+                    "DIAG_COMPAT24 pi={para_idx} ci={ctrl_idx} anchor_reclaim={reclaimed:.1} \
+                     tac_seg_idx={tac_seg_idx} total_reclaimed={:.1}",
+                    st.hangul2024_reclaimed
+                );
+            }
             (tac_seg_idx..fmt.line_heights.len())
                 .map(|li| fmt.line_advance(li))
                 .sum::<f64>()
