@@ -1,0 +1,17 @@
+{
+  "id": "SD61",
+  "steps": [
+    {
+      "answer": {
+        "commands": {
+          "cmd": [
+            "export-agent-manifest",
+            "--json"
+          ],
+          "path": "capabilities.commands",
+          "len": true
+        }
+      }
+    }
+  ]
+}

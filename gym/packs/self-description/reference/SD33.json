@@ -1,0 +1,15 @@
+{
+  "id": "SD33",
+  "steps": [
+    {
+      "answer": {
+        "policy": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "jsonContract.textSecurity.policy"
+        }
+      }
+    }
+  ]
+}

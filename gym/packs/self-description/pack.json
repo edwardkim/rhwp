@@ -9,6 +9,8 @@
     "commands": [
       "capabilities",
       "export-agent-manifest",
+      "export-capabilities-schema",
+      "export-ir-schema",
       "export-ontology",
       "export-plan-schema",
       "export-provenance-map"

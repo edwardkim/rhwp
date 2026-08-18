@@ -1,0 +1,28 @@
+{
+  "id": "SD45",
+  "tier": 2,
+  "title": "도움 검색 질의 메아리",
+  "input": "samples/table-001.hwp",
+  "instructions": "capabilities --search schema --json 이 봉투에 메아리치는 search 문자열을 answer.json 에 {\"search\": S} 으로 제출하라. 힌트: 검색 봉투의 search.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "도움 검색 질의 메아리",
+      "op": "answer_eq",
+      "answer": "search",
+      "path": "search",
+      "cmd": [
+        "capabilities",
+        "--search",
+        "schema",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

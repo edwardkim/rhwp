@@ -1,0 +1,17 @@
+{
+  "id": "SD48",
+  "steps": [
+    {
+      "answer": {
+        "profiles": {
+          "cmd": [
+            "capabilities",
+            "--mcp"
+          ],
+          "path": "profiles",
+          "len": true
+        }
+      }
+    }
+  ]
+}

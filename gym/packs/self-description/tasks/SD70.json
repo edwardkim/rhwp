@@ -1,0 +1,26 @@
+{
+  "id": "SD70",
+  "tier": 3,
+  "title": "출처 지도 도구 이름",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-provenance-map 가 싣는 tool 이름을 answer.json 에 {\"tool\": S} 으로 제출하라. 힌트: rhwp export-provenance-map --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "출처 지도 도구 이름",
+      "op": "answer_eq",
+      "answer": "tool",
+      "path": "tool",
+      "cmd": [
+        "export-provenance-map",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

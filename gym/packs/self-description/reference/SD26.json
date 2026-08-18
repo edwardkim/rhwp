@@ -1,0 +1,15 @@
+{
+  "id": "SD26",
+  "steps": [
+    {
+      "answer": {
+        "stdout": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "jsonContract.stdout"
+        }
+      }
+    }
+  ]
+}

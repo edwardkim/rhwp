@@ -1,0 +1,17 @@
+{
+  "id": "SD50",
+  "steps": [
+    {
+      "answer": {
+        "stdinTools": {
+          "cmd": [
+            "capabilities",
+            "--mcp"
+          ],
+          "path": "invocation.stdinTools",
+          "len": true
+        }
+      }
+    }
+  ]
+}
