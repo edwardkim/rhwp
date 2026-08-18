@@ -87,7 +87,6 @@ fn catalog_lists_only_devel_axes_and_kinds() {
     assert_eq!(uni, allowed_unicode());
 }
 
-#[test]
 fn load_index() -> Vec<(String, String)> {
     let text = fs::read_to_string(fixture("matrices/catalog.tsv")).expect("catalog.tsv");
     let mut rows = Vec::new();
@@ -177,7 +176,21 @@ fn injection_envelopes_mark_matched_as_data() {
                 rec["id"]
             );
         }
-        if rec["envelope"]["clean"] == false {
+        if rec["consume"]["branch"] == "minConfidence" {
+            let kept: Vec<_> = rec["consume"]["kept"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|kind| kind.as_str().unwrap())
+                .collect();
+            let observed: Vec<_> = rec["envelope"]["injectionSignals"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|signal| signal["kind"].as_str().unwrap())
+                .collect();
+            assert_eq!(kept, observed, "{}", rec["id"]);
+        } else if rec["envelope"]["clean"] == false {
             assert_eq!(rec["consume"]["matchedIs"], "DATA", "{}", rec["id"]);
             assert_eq!(rec["consume"]["doNotExecuteMatched"], true, "{}", rec["id"]);
         }
