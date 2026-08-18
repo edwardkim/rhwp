@@ -4772,33 +4772,50 @@ fn cli_wiring_has_flag(cli: &serde_json::Value, flag: &str) -> bool {
 /// `--help`(사람용)와 본 목록(기계용)은 함께 현행화한다 — help 에만 추가된 명령은
 /// `tests/cli_json_contract.rs::capabilities_covers_every_help_command` 가 잡는다.
 // [#3694] capabilities 명령 목록의 단일 출처 — 자기서술과 did-you-mean 이 공유한다.
-fn cmd(name: &str, category: &str, summary: &str) -> serde_json::Value {
-    serde_json::json!({ "name": name, "category": category, "summary": summary })
+fn capability_spec(name: &str) -> &'static cli::catalog::CommandSpec {
+    let spec = cli::catalog::find(name)
+        .unwrap_or_else(|| panic!("capabilities 명령이 catalog에 없습니다: {name}"));
+    assert!(
+        spec.in_capabilities(),
+        "dispatch-only 명령을 capabilities에 노출할 수 없습니다: {name}"
+    );
+    spec
+}
+
+fn cmd(name: &str, summary: &str) -> serde_json::Value {
+    let spec = capability_spec(name);
+    assert!(!spec.json_contract, "{name}: cmd_json을 사용해야 합니다");
+    serde_json::json!({
+        "name": name,
+        "category": spec.category.as_str(),
+        "summary": summary,
+    })
 }
 
 fn cmd_json(
     name: &str,
-    category: &str,
     summary: &str,
-    batch: bool,
     flags: &[&str],
     record_fields: &[&str],
 ) -> serde_json::Value {
+    let spec = capability_spec(name);
+    assert!(
+        spec.json_contract,
+        "{name}: catalog JSON 계약이 false입니다"
+    );
     serde_json::json!({
-        "name": name, "category": category, "summary": summary,
-        "json": true, "batch": batch, "flags": flags, "recordFields": record_fields,
+        "name": name, "category": spec.category.as_str(), "summary": summary,
+        "json": true, "batch": spec.batch, "flags": flags, "recordFields": record_fields,
     })
 }
 
-fn cmd_gated(
-    name: &str,
-    category: &str,
-    summary: &str,
-    requires_feature: &str,
-    available: bool,
-) -> serde_json::Value {
+fn cmd_gated(name: &str, summary: &str, available: bool) -> serde_json::Value {
+    let spec = capability_spec(name);
+    let requires_feature = spec
+        .requires_feature
+        .unwrap_or_else(|| panic!("{name}: catalog feature 계약이 없습니다"));
     serde_json::json!({
-        "name": name, "category": category, "summary": summary,
+        "name": name, "category": spec.category.as_str(), "summary": summary,
         "requiresFeature": requires_feature, "available": available,
     })
 }
@@ -5166,9 +5183,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // ── 기계 계약(--json) 명령 ──
         cmd_json(
             "info",
-            "query",
             "문서 메타(포맷·버전·페이지/문단 수·폰트·제목) 표시",
-            true,
             &["--json"],
             &[
                 "schemaVersion",
@@ -5186,9 +5201,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "word-count",
-            "query",
             "문서 분량(구역·문단·글자·어절·쪽 수) — IR 본문만 센다",
-            true,
             &["--json"],
             &[
                 "schemaVersion",
@@ -5202,9 +5215,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "bookmarks",
-            "query",
             "문서 책갈피 목록 — 코어 get_bookmarks_native",
-            true,
             &["--json"],
             &[
                 "schemaVersion",
@@ -5215,9 +5226,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "header-footer",
-            "query",
             "구역 머리말/꼬리말 한 건 조회 — 코어 get_header_footer_native",
-            true,
             &["--json"],
             &[
                 "schemaVersion",
@@ -5230,9 +5239,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "headers-footers",
-            "query",
             "문서 머리말/꼬리말 목록 — 코어 get_header_footer_list_native",
-            true,
             &["--json"],
             &[
                 "schemaVersion",
@@ -5243,9 +5250,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "charts",
-            "query",
             "문서 차트 목록 — 코어 list_charts_native",
-            true,
             &["--json"],
             &[
                 "schemaVersion",
@@ -5256,9 +5261,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "form-value",
-            "query",
             "양식 개체 값 조회 — 코어 get_form_value_native",
-            true,
             &["--section", "--para", "--ctrl", "--json"],
             &[
                 "schemaVersion",
@@ -5277,9 +5280,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "export-text",
-            "export",
             "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
-            true,
             &["-o", "-p", "--max-chars", "--json"],
             &[
                 "schemaVersion",
@@ -5292,9 +5293,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "export-structure",
-            "export",
             "문서 개요/조문 계층을 JSON 트리로 추출",
-            true,
             &["--mode", "-o", "--json"],
             &["schemaVersion", "source", "mode", "nodeCount", "structure"],
         ),
@@ -5302,9 +5301,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // [#3633 후속] v2: --sections(주소 보존 절 청크)·--pages(범위 발췌) 추가.
         cmd_json(
             "digest",
-            "query",
             "문서 요약 봉투(메타·개요·발췌·nextStep)를 한 번 호출로 출력",
-            false,
             &["--sections", "--pages", "--max-chars", "--json"],
             &[
                 "schemaVersion",
@@ -5321,20 +5318,16 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "export-ir-schema",
-            "export",
             "공개 IR 의 JSON Schema 산출 — 외부 바인딩 코드 생성의 단일 출처 (#3762)",
-            false,
             &["--json", "--bare", "-o"],
             &["schemaVersion", "irSchemaVersion", "dialect", "definitionCount", "schema"],
         ),
         cmd_json(
             "run",
-            "edit",
             "선언적 편집 계획 실행 — 정적 선검증·원자 실행·저널 (#3703). 선택 필드 \
              preconditions.inputSha256 을 실으면 실행 입구에서 입력 지문을 대조해 낡은 기준을 \
              거부한다 — 실행 0·디스크 무변경·preconditionFailed+nextCall·exit 3, --dry-run 도 \
              같은 판정 (#4378 R22)",
-            false,
             &["--json", "--plan-json", "--dry-run"],
             &[
                 "schemaVersion",
@@ -5355,9 +5348,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // 않는다(임시 산출만). attest = 영수증 발급, --expect-output-sha256 = 검증.
         cmd_json(
             "replay",
-            "query",
             "계획을 임시 산출로 재실행해 작업 영수증(입력·계획·산출 SHA-256)을 발급하고, --expect-output-sha256 로 타인의 작업 주장을 재현 검증한다 — 불일치는 exit 3 (#4391)",
-            false,
             &["--json", "--plan-json", "--expect-output-sha256", "--capsule", "--parent", "--sign-key"],
             &[
                 "schemaVersion",
@@ -5374,9 +5365,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "lineage",
-            "query",
             "작업 캡슐 해시 체인을 거슬러 연대기를 검증 — 부모 파일 무결·계보 불변식(부모 산출=자식 입력)·(--deep) 링크별 재현·(--keyring) 링크별 서명 귀속. 깨진 체인은 exit 3, brokenAt 명세 (#4401·#4509)",
-            false,
             &["--json", "--deep", "--keyring", "--anchor-log"],
             &[
                 "schemaVersion",
@@ -5389,17 +5378,13 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "keygen",
-            "export",
             "Ed25519 서명키 파일 발급 — 캡슐 귀속(4년 축)의 시작점. 비밀키가 담기므로 기존 파일 덮어쓰기 금지, 보관 책임은 소유자 (#4509)",
-            false,
             &["--json", "--key-id", "--out"],
             &["schemaVersion", "keyId", "publicKey", "keyFile"],
         ),
         cmd_json(
             "verify-signature",
-            "query",
             "캡슐 분리 서명(<캡슐>.sig.json)을 파일 바이트·키 등록부와 대조 — verdict(valid|invalid|unknownKey|revoked|malformed)는 봉투 데이터, 유효 아님 = exit 3 (#4509)",
-            false,
             &["--json", "--sig", "--keyring"],
             &[
                 "schemaVersion",
@@ -5416,9 +5401,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "harness",
-            "edit",
             "검증 루프의 쓰는 쪽 — init(작업장 규약)·wrap(실산출+영수증+캡슐+자동 부모 연결+서명 한 방). 판정은 harness-status (#4537)",
-            false,
             &["--json", "--plan", "--dir", "--sign-key", "--key-id"],
             &[
                 "schemaVersion",
@@ -5431,9 +5414,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "harness-status",
-            "diagnostic",
             "작업장 통합 판정 — 캡슐 체인 무결·(--keyring) 서명 집계·(--deep) 전수 재현을 한 봉투로. 깨짐 exit 3, brokenAt 이 원인 캡슐 (#4537)",
-            false,
             &["--json", "--keyring", "--deep"],
             &[
                 "schemaVersion",
@@ -5448,9 +5429,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "anchor",
-            "query",
             "투명성 로그(T7 방어) — add(append-only 등재, 깨진 로그 거부)·checkpoint(머클 루트)·verify(등재·자기 무결·머클 경로 판정, 아님 exit 3). 공표는 운영 절차 (#4543)",
-            false,
             &["--json", "--log", "--checkpoint", "-o"],
             &[
                 "schemaVersion",
@@ -5468,9 +5447,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "gate",
-            "query",
             "반입 정책 기계 판정 — admissionPolicy(연산자 eq·in·gte·lte 4종 고정, deny 기본, 미지 키 로드 거부)를 캡슐에 적용. 재료는 자기 신고가 아니라 재계산(계보·서명·앵커·--deep 재실행), 거부는 exit 3 + violations[] (#4545)",
-            false,
             &["--json", "--policy", "--keyring", "--anchor-log", "--policy-keyring", "--deep"],
             &[
                 "schemaVersion",
@@ -5486,9 +5463,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "bundle",
-            "query",
             "연합 교환 — export(계보 폐쇄집합+서명+머클 증명을 zip 하나로)·verify(컨테이너·폐쇄집합·계보·서명[도메인 키링만, 동봉 불신]·앵커 5단 오프라인 판정, 깨짐 exit 3) (#4549)",
-            false,
             &["--json", "-o", "--anchor-log", "--checkpoint", "--domain", "--trust-domain"],
             &[
                 "schemaVersion",
@@ -5509,9 +5484,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "disclose",
-            "query",
             "선택적 공개 — redact(plan 문자열 잎을 salt 커밋으로 치환한 가림 캡슐+비밀 개봉 파일)·verify(부분 개봉 필드 대조, 불일치 exit 3)·restore(전체 개봉으로 바이트 완전 복원 — 원본 서명 그대로 valid) (#4551)",
-            false,
             &["--json", "-o", "--opening-out", "--opening"],
             &[
                 "schemaVersion",
@@ -5531,9 +5504,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "settle",
-            "query",
             "정산 증빙 — propose(명세서·캡슐·게이트 봉투 3해시 고정 청구 발급, 4년 서명 선택)·verify(3해시 대조+게이트 verdict 재확인+서명·이중청구 opt-in 축, 실패 exit 3)·record(원장 append-only 기입, 이중 청구 전역 검사 exit 3) — 돈은 움직이지 않는다, 산출물은 제3자 검증 가능한 지불 근거뿐 (#4553)",
-            false,
             &[
                 "--json",
                 "--workorder",
@@ -5570,9 +5541,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "audit-report",
-            "query",
             "감사 보고 표준 — 캡슐 폴더의 재현(--deep)·계보·귀속(--keyring)·앵커(--anchor-log)·게이트(--policy) 수치를 기존 축 검증의 기계 합산으로 산출하고(kind agentLaborAuditReport) 보고서 자체를 4년 사이드카로 서명(--sign-key)한다 — \"감사 보고서를 감사할 수 있다\"가 표준의 요건 (#4558)",
-            false,
             &["--json", "--deep", "--keyring", "--anchor-log", "--policy", "--sign-key", "-o"],
             &[
                 "schemaVersion",
@@ -5589,9 +5558,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "recall-scope",
-            "query",
             "오염 리콜 범위 — 오염 캡슐(경로 또는 sha256)의 후손 폐쇄집합을 계보 걷기로 계산해 영향/미영향을 가르고, --ledger 를 주면 영향 캡슐의 정산 청구 좌표까지 짚는다(리콜의 회계 연결) (#4558)",
-            false,
             &["--json", "--contaminated", "--among", "--ledger"],
             &[
                 "schemaVersion",
@@ -5603,9 +5570,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "conformance",
-            "query",
             "적합성 자가진단 L1~L5 — 영수증(1년)→감사가능+계보(2·3년)→귀속+앵커(4·5년)→게이트(6년)→원장(9년) 누적 요건을 기존 판정기 재사용으로 검사(신규 판정기 발명 0), 미달은 exit 3 이고 항목별 판정은 checks 가 말한다 (#4558)",
-            false,
             &["--json", "--level", "--deep", "--keyring", "--anchor-log", "--policy", "--ledger"],
             &[
                 "schemaVersion",
@@ -5618,9 +5583,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "audit",
-            "query",
             "작업 캡슐(*.capsule.json) 폴더 전수 재실행·대조 — 에이전트 노동의 재현율 회계. 불일치 1건이라도 있으면 exit 3 (#4393)",
-            false,
             &["--json"],
             &[
                 "schemaVersion",
@@ -5636,9 +5599,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // 하나를 보고 다른 하나를 놓치지 않는다.
         cmd_json(
             "export-plan-schema",
-            "export",
             "계획서(run) 문법의 JSON Schema 산출 — 계획 생성의 단일 출처 (#3719 §6-4)",
-            false,
             &["--json", "--bare", "-o"],
             &[
                 "schemaVersion",
@@ -5650,9 +5611,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "capabilities",
-            "query",
             "본 자기서술 JSON 출력",
-            false,
             &["--search"],
             &[
                 "schemaVersion",
@@ -5667,9 +5626,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // [#3787 S1] 봉투 출처 지도 — 어느 필드가 문서(= 공격자 통제 가능)에서 오는지.
         cmd_json(
             "export-provenance-map",
-            "query",
             "명령별 문서 파생(신뢰 불가) 봉투 필드 지도 — 봉투의 untrustedContent/untrustedFields 표지의 원천",
-            false,
             &["--json"],
             &[
                 "schemaVersion",
@@ -5685,23 +5642,18 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // 를 한 봉투로 묶는다 — 처음 붙는 에이전트의 왕복 4회를 1회로.
         cmd_json(
             "export-agent-manifest",
-            "query",
             "capabilities+irSchema+provenanceMap+planSchema 를 한 번의 호출로 조립 — 누락 축이 생기면 missingAxes 로 명시 (#3828 B2)",
-            false,
             &["--json", "--bare"],
             &["schemaVersion", "capabilities", "irSchema", "provenanceMap", "planSchema", "missingAxes"],
         ),
         cmd(
             "mcp-serve",
-            "serve",
             "MCP 서버 (stdio JSON-RPC) — capabilities --mcp 도구 전부 + 세션 도구 실행 (#3140)",
         ),
         // ── 내보내기/변환 ──
         cmd_json(
             "export-svg",
-            "export",
             "문서를 페이지별 SVG로 렌더하고 --json 매니페스트 출력",
-            false,
             &["-o", "-p", "--json"],
             &[
                 "schemaVersion",
@@ -5715,30 +5667,22 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_gated(
             "export-png",
-            "export",
             "문서를 페이지별 PNG로 렌더 (native-skia)",
-            "native-skia",
             cfg!(feature = "native-skia"),
         ),
         cmd_gated(
             "export-png-gpu",
-            "export",
             "SVG를 GPU(vello/wgpu)로 래스터화해 페이지별 PNG로 렌더 (--benchmark 로 CPU 대비 실측)",
-            "gpu",
             cfg!(feature = "gpu"),
         ),
         cmd_gated(
             "gpu-info",
-            "export",
             "사용 가능한 GPU 어댑터 열거 (export-png-gpu 가 쓸 백엔드 확인)",
-            "gpu",
             cfg!(feature = "gpu"),
         ),
         cmd_json(
             "export-pdf",
-            "export",
             "문서를 PDF로 렌더 (svg|direct backend, --json 매니페스트)",
-            false,
             &["-o", "-p", "--backend", "--profile", "--font-path", "--json"],
             &[
                 "schemaVersion",
@@ -5753,9 +5697,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "export-markdown",
-            "export",
             "페이지별 텍스트를 Markdown으로 추출 (--json 매니페스트)",
-            false,
             &["-o", "-p", "--json"],
             &[
                 "schemaVersion",
@@ -5770,9 +5712,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "export-hwpx",
-            "export",
             "HWP→HWPX 변환 저장 (--verify 게이트 exit 3/4, --json 봉투)",
-            false,
             &["--verify", "--verify-pages", "--json"],
             &[
                 "schemaVersion",
@@ -5786,17 +5726,13 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "export-hml",
-            "export",
             "HML 원본을 HWPML 2.91 XML로 저장 (--json 봉투)",
-            false,
             &["-o", "--json"],
             &["schemaVersion", "source", "output", "format", "bytes"],
         ),
         cmd_json(
             "export-doclang",
-            "export",
             "문서를 DocLang v0.6 XML로 내보내기 (--json 봉투)",
-            false,
             &["-o", "--assets-dir", "--json"],
             &[
                 "schemaVersion",
@@ -5812,9 +5748,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "export-capabilities-schema",
-            "export",
             "capabilities 자기서술 자체의 JSON Schema 산출 — 명령 표면 코드 생성의 단일 출처 (#3776)",
-            false,
             &["--json", "--bare", "-o"],
             &[
                 "schemaVersion",
@@ -5829,9 +5763,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // 실행 시점에 기계 유도하는 JSON-LD 온톨로지 — 손 나열 상수 0.
         cmd_json(
             "export-ontology",
-            "export",
             "자기서술에서 기계 유도한 JSON-LD 온톨로지 산출 — IR 클래스·속성, 명령/MCP 행위, 신뢰 술어 (#3907 O1)",
-            false,
             &["--json", "--bare", "-o"],
             &[
                 "schemaVersion",
@@ -5843,18 +5775,14 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "export-tables",
-            "export",
             "표를 병합·중첩 구조를 보존한 격자 JSON으로 추출",
-            false,
             &["-o", "--json"],
             &["schemaVersion", "source", "tableCount", "tables"],
         ),
         // [#3719 §6-7] 데이터 보고서 자동화의 입출구 — 표 ↔ CSV.
         cmd_json(
             "table-to-csv",
-            "export",
             "본문 최상위 표를 병합 격자를 채운 RFC 4180 CSV 로 내보내기",
-            false,
             &["--table", "-o", "--bom", "--json"],
             &[
                 "schemaVersion",
@@ -5868,9 +5796,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "csv-to-table",
-            "edit",
             "CSV 로 기존 표 N 의 셀 덮어쓰기 — 표 크기 불변, 행·열 불일치는 invalid+exit 2",
-            false,
             &["--csv", "--table", "-o", "--dry-run", "--verify", "--json"],
             &[
                 "schemaVersion",
@@ -5892,9 +5818,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // [#4100 B1] 차트 숫자 데이터의 입출구 — 표 CSV 와 같은 왕복 규약.
         cmd_json(
             "chart-to-csv",
-            "export",
             "차트 숫자 데이터를 RFC 4180 CSV 로 내보내기 (행=카테고리·분산형 X, 열=계열)",
-            false,
             &["--chart", "-o", "--bom", "--json"],
             &[
                 "schemaVersion",
@@ -5908,10 +5832,8 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "csv-to-chart",
-            "edit",
             "CSV 로 기존 차트 N 의 값 덮어쓰기 — 계열·값 개수 불변, 불일치는 invalid+exit 2. \
              편집은 OOXML 두 표현(zip 파트·중첩 CFB)에 함께 쓴다",
-            false,
             &["--csv", "--chart", "-o", "--dry-run", "--verify", "--json"],
             &[
                 "schemaVersion",
@@ -5931,9 +5853,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "extract-pages",
-            "export",
             "쪽 범위만 남겨 저장 (--json 봉투; 발췌·부분 제출·결함 이분법)",
-            false,
             &["--from", "--to", "--json"],
             &[
                 "schemaVersion",
@@ -5949,9 +5869,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "search",
-            "query",
             "문서 검색 결과를 구역·문단·페이지·문자 오프셋 주소와 함께 출력",
-            false,
             &[
                 "--json",
                 "--ignore-case",
@@ -5974,9 +5892,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // [#3719 §6-10] 행정문서 구조화의 공통 프리미티브 — 값과 주소를 한 몸으로 낸다.
         cmd_json(
             "extract-data",
-            "query",
             "날짜·금액·수량을 구역·문단·페이지·문자 오프셋 주소와 함께 추출",
-            false,
             &["--json", "--kind", "--limit"],
             &[
                 "schemaVersion",
@@ -5991,9 +5907,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "fields",
-            "query",
             "누름틀/필드를 이름·안내문·현재값·위치와 함께 조사",
-            false,
             &["--json"],
             &["schemaVersion", "source", "fieldCount", "fields"],
         ),
@@ -6001,9 +5915,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // 조합 — 처음 보는 문서를 사람/에이전트가 한 번에 파악하는 결정론적 요약.
         cmd_json(
             "explain",
-            "query",
             "문서를 결정론적 규칙 문장으로 요약(형식·쪽수·문단·표·누름틀·각주/미주·암호 여부)",
-            false,
             &["--json"],
             &[
                 "schemaVersion",
@@ -6023,9 +5935,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // 구별되는 세 번째 축: 이 문서로 무엇을 할 수 있는지. 기존 조회 개수에서 유도.
         cmd_json(
             "explore",
-            "query",
             "이 문서로 할 수 있는 rhwp 행동을 순위 매긴 메뉴로 라우팅(표·누름틀·구조·차트·보안·요약)",
-            false,
             &["--json"],
             &[
                 "schemaVersion",
@@ -6042,9 +5952,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // 봉투 필드는 합집합으로 광고해 capabilities 자체가 어느 축도 숨기지 않게 한다.
         cmd_json(
             "inspect",
-            "query",
             "은닉 텍스트·프롬프트 주입·유니코드 기만을 조사하는 읽기 전용 보안 검사 명령군",
-            false,
             &[
                 "--json",
                 "--threshold-pt",
@@ -6081,9 +5989,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // 어떤 문서든 본문을 프롬프트에 안전하게 넣을 수 있는 형태로 낸다.
         cmd_json(
             "armor",
-            "query",
             "문서 본문을 nonce 격벽으로 감싸고 주입 신호를 신고한다 — LLM 에 넣기 전 프롬프트 주입 방패",
-            false,
             &["--json"],
             &[
                 "schemaVersion",
@@ -6101,14 +6007,11 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd(
             "export-render-tree",
-            "export",
             "페이지별 render tree bbox JSON 덤프",
         ),
         cmd_json(
             "convert",
-            "export",
             "HWPX/배포용→편집 가능 HWP5 변환 (--verify 게이트 exit 3/4, --json 봉투)",
-            false,
             &["--verify", "--verify-pages", "--json"],
             &[
                 "schemaVersion",
@@ -6123,9 +6026,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "build-from-ingest",
-            "export",
             "ingest JSON에서 HWPX 생성 (--json 봉투)",
-            false,
             &["-o", "--media-dir", "--json"],
             &[
                 "schemaVersion",
@@ -6139,9 +6040,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "scaffold",
-            "export",
             "구조화된 명세(JSON)에서 유효한 HWPX 문서 생성 — 문서를 *만드는* 생성 축 (--json 봉투)",
-            false,
             &["-o", "--output", "--format", "--json"],
             &[
                 "schemaVersion",
@@ -6156,9 +6055,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "thumbnail",
-            "export",
             "내장 썸네일(PrvImage) 추출 (--json 봉투)",
-            false,
             &["-o", "--base64", "--data-uri", "--json"],
             &[
                 "schemaVersion",
@@ -6174,9 +6071,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // ── 편집 (#3329 Stage 3) ──
         cmd_json(
             "edit",
-            "edit",
             "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / delete-text-in-cell: 표 셀 문단 삭제 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-table: 본문 표 생성 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / split-table: 표 나누기 / fit-table: 표 폭 맞춤 / resize-table: 표 크기 조절 / merge-table: 다음 표와 붙이기 / merge-paragraph-in-cell: 표 셀 문단 병합 / set-column-widths: 표 열 폭 설정 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / insert-header-footer-text: 머리말/꼬리말 텍스트 삽입 / set-header-footer-text: 머리말/꼬리말 문단 텍스트 교체 / delete-hf-text: 머리말/꼬리말 텍스트 삭제 / split-paragraph-in-hf: 머리말/꼬리말 문단 분할 / merge-paragraph-in-hf: 머리말/꼬리말 문단 병합 / split-paragraph-in-cell: 표 셀 문단 분할 / delete-control: 컨트롤 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
-            false,
             &[
                 "--data",
                 "--find",
@@ -6330,9 +6225,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // ── 배치 ──
         cmd_json(
             "batch",
-            "batch",
             "stdin 파일 목록을 한 프로세스에서 파일 간 병렬 처리, NDJSON 스트림 출력 (fill 축만 stdin 대신 --form 서식 + --data 행 파일로 메일머지)",
-            true,
             // --query 는 search 축의 필수 인자다(없으면 exit 2). --out-dir 는 convert·fill
             // 공용, --verify-pages 는 convert 전용, --form·--name-field·--dry-run 은 fill
             // 전용이다. 모두 같은 top-level batch 명령의 인자이므로 축 단위 batch.flags 와
@@ -6368,18 +6261,14 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // [#3918 승격 3호] 코퍼스 발견 — batch 가 전제하는 "경로 목록"의 원천.
         cmd_json(
             "scan",
-            "batch",
             "디렉터리 재귀 발견·분류 — 확장자↔매직 대조(extMismatch), --probe 파싱 시도(암호·쪽수), batch stdin 목록의 원천",
-            false,
             &["--probe", "--max-depth", "--limit", "--json"],
             &["schemaVersion", "roots", "files", "summary"],
         ),
         // 무기화 문서 구조 위협 탐지 — 읽기 전용 안전 에어락(컨테이너·레코드 구조 층).
         cmd_json(
             "threat-scan",
-            "query",
             "무기화 문서 구조 위협 탐지 — 파싱 전에 컨테이너·레코드 구조를 훑어 실행체 내장·OLE 패키지·손상 레코드·매크로/스크립트·원격 외부참조 신호를 열거한다. 휴리스틱 판정이며 안티바이러스가 아니다(신호이지 증거·보증이 아님). rhwp 의 실질 방어는 메모리 안전+DoS 하드닝이고 이 스캔은 그 위의 가시성이다.",
-            false,
             &["--json"],
             &[
                 "schemaVersion",
@@ -6395,12 +6284,10 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             ],
         ),
         // ── 진단 ──
-        cmd("dump", "diagnostic", "문서 조판부호 구조 덤프"),
+        cmd("dump", "문서 조판부호 구조 덤프"),
         cmd_json(
             "dump-pages",
-            "diagnostic",
             "페이지네이션 항목 덤프 (--json: 조판 진단 기계 계약)",
-            false,
             &["-p", "--respect-vpos-reset", "--json"],
             &[
                 "schemaVersion",
@@ -6413,18 +6300,15 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd(
             "dump-extents",
-            "diagnostic",
             "레이아웃 트리 항목별 실제 extent 덤프 (쪽 밖 배치 조사용)",
         ),
-        cmd("dump-note-shape", "diagnostic", "각주/미주 모양 덤프"),
-        cmd("dump-endnote-lines", "diagnostic", "미주 줄 배치 덤프"),
-        cmd("dump-records", "diagnostic", "저수준 레코드 스트림 덤프"),
-        cmd("diag", "diagnostic", "문서 구조 진단(번호/글머리표/개요)"),
+        cmd("dump-note-shape", "각주/미주 모양 덤프"),
+        cmd("dump-endnote-lines", "미주 줄 배치 덤프"),
+        cmd("dump-records", "저수준 레코드 스트림 덤프"),
+        cmd("diag", "문서 구조 진단(번호/글머리표/개요)"),
         cmd_json(
             "ir-diff",
-            "diagnostic",
             "두 문서의 IR 차이를 JSON으로 비교",
-            false,
             &["-s", "-p", "--json"],
             // 실제 봉투는 a/b 다 (ir-diff 방출부, cli_commands.md 의 문서화된 모양도 동일).
             // 자기서술만 sourceA/sourceB 로 어긋나 있었다 — 매니페스트로 파서를 만드는
@@ -6441,9 +6325,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         // [#4113 / #3918 승격 2호] 독립 사후검증 게이트 — 기대 조건 집합 대조.
         cmd_json(
             "verify",
-            "diagnostic",
             "기대 조건(--expect-pages/min-pages/max-pages/min-chars/min-tables/table-count/contains/not-contains/field/format) 대조 — 전부 만족 exit 0, 불일치는 봉투 후 exit 3",
-            false,
             &[
                 "--expect-pages",
                 "--expect-min-pages",
@@ -6468,9 +6350,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "render-diff",
-            "diagnostic",
             "왕복/두 파일 렌더 기하 차이 검증 — --json 회귀 검출은 exit 3 (--batch 는 NDJSON)",
-            false,
             &["--json", "--batch", "--via", "-p", "--max-disp", "-o"],
             &[
                 "schemaVersion",
@@ -6495,9 +6375,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         ),
         cmd_json(
             "layout-anomaly",
-            "diagnostic",
             "렌더 한 장의 기하 이상탐지(overflow/off-canvas/overlap/text-overlap/empty_page) — render-diff(변위)와 다른 질문. overflow=본문 여백, off-canvas=페이지 상자·y<0, text-overlap=텍스트 런 bbox 교차. 기본 exit 0, --strict 만 확정 신호를 exit 3. --batch 는 NDJSON",
-            false,
             &[
                 "--json",
                 "--batch",
@@ -6526,45 +6404,41 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "pages",
             ],
         ),
-        cmd("hwpx-roundtrip", "diagnostic", "HWPX 왕복 무손실 게이트"),
-        cmd("hwp5-roundtrip", "diagnostic", "HWP5 왕복 무손실 게이트"),
-        cmd("measure-width", "diagnostic", "텍스트 폭 측정 프로브"),
-        cmd("core-pages", "diagnostic", "코어 페이지 수 프로브"),
-        cmd("bench", "diagnostic", "성능 벤치마크"),
-        cmd("hwp5-inventory", "diagnostic", "HWP5 레코드 인벤토리"),
-        cmd("hwp5-inventory-diff", "diagnostic", "HWP5 인벤토리 비교"),
+        cmd("hwpx-roundtrip", "HWPX 왕복 무손실 게이트"),
+        cmd("hwp5-roundtrip", "HWP5 왕복 무손실 게이트"),
+        cmd("measure-width", "텍스트 폭 측정 프로브"),
+        cmd("core-pages", "코어 페이지 수 프로브"),
+        cmd("bench", "성능 벤치마크"),
+        cmd("hwp5-inventory", "HWP5 레코드 인벤토리"),
+        cmd("hwp5-inventory-diff", "HWP5 인벤토리 비교"),
         cmd(
             "hwp5-contract-analyze",
-            "diagnostic",
             "HWPX→HWP5 저장 계약 분석",
         ),
-        cmd("hwp5-contract-probe", "diagnostic", "HWP5 저장 계약 프로브"),
-        cmd("hwp5-ctrl-data-trace", "diagnostic", "CTRL_DATA 추적"),
-        cmd("hwp5-table-probe", "diagnostic", "표 저장 프로브"),
+        cmd("hwp5-contract-probe", "HWP5 저장 계약 프로브"),
+        cmd("hwp5-ctrl-data-trace", "CTRL_DATA 추적"),
+        cmd("hwp5-table-probe", "표 저장 프로브"),
         cmd(
             "hwp5-mel-personnel-probe",
-            "diagnostic",
             "특정 샘플 재현 프로브",
         ),
         cmd(
             "hwp5-borderfill-diagonal-probe",
-            "diagnostic",
             "테두리 대각선 프로브",
         ),
         cmd(
             "hwp5-first-para-control-probe",
-            "diagnostic",
             "첫 문단 컨트롤 프로브",
         ),
-        cmd("hwp5-anchor-trace", "diagnostic", "앵커 추적"),
-        cmd("hwp5-char-shape-audit", "diagnostic", "CHAR_SHAPE provenance audit"),
-        cmd("hwp5-cell-header-probe", "diagnostic", "셀 헤더 프로브"),
+        cmd("hwp5-anchor-trace", "앵커 추적"),
+        cmd("hwp5-char-shape-audit", "CHAR_SHAPE provenance audit"),
+        cmd("hwp5-cell-header-probe", "셀 헤더 프로브"),
         // ── 내부 개발용 ──
-        cmd("test-shape", "internal", "도형 왕복 테스트"),
-        cmd("test-caption", "internal", "캡션 테스트"),
-        cmd("test-field", "internal", "누름틀 왕복 테스트"),
-        cmd("gen-table", "internal", "표 샘플 생성"),
-        cmd("gen-pua", "internal", "PUA 샘플 생성"),
+        cmd("test-shape", "도형 왕복 테스트"),
+        cmd("test-caption", "캡션 테스트"),
+        cmd("test-field", "누름틀 왕복 테스트"),
+        cmd("gen-table", "표 샘플 생성"),
+        cmd("gen-pua", "PUA 샘플 생성"),
     ];
     attach_subcommands(&mut commands);
     commands

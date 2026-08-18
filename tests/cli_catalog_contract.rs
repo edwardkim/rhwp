@@ -105,10 +105,18 @@ fn capabilities_order_and_metadata_match_catalog() {
         .map(|command| command["name"].as_str().expect("name"))
         .collect();
     let expected_names: Vec<&str> = expected.iter().map(|command| command.name).collect();
-    assert_eq!(live_names, expected_names, "이름 또는 did-you-mean 순서 drift");
+    assert_eq!(
+        live_names, expected_names,
+        "이름 또는 did-you-mean 순서 drift"
+    );
 
     for (actual, declared) in live.iter().zip(expected) {
-        assert_eq!(actual["category"], declared.category.as_str(), "{}", declared.name);
+        assert_eq!(
+            actual["category"],
+            declared.category.as_str(),
+            "{}",
+            declared.name
+        );
         assert_eq!(
             actual["json"].as_bool().unwrap_or(false),
             declared.json_contract,
@@ -166,7 +174,11 @@ fn exceptional_visibility_is_small_explicit_and_explained() {
                 hidden.insert(command.name, reason);
             }
             Visibility::DispatchOnly(reason) => {
-                assert!(!reason.trim().is_empty(), "{} dispatch-only 사유", command.name);
+                assert!(
+                    !reason.trim().is_empty(),
+                    "{} dispatch-only 사유",
+                    command.name
+                );
                 dispatch_only.insert(command.name, reason);
             }
         }
