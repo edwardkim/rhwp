@@ -1,0 +1,19 @@
+{
+  "id": "OP14",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "search",
+            "{input}",
+            "국어",
+            "--json"
+          ],
+          "path": "matches",
+          "len": true
+        }
+      }
+    }
+  ]
+}

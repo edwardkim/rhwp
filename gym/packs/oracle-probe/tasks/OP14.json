@@ -1,0 +1,28 @@
+{
+  "id": "OP14",
+  "tier": 2,
+  "title": "국어원 문서 '국어' 검색 건수",
+  "input": "samples/2022년 국립국어원 업무계획.hwp",
+  "axis": "검증",
+  "instructions": "국립국어원 업무계획에서 '국어' 가 몇 번 나오는지 answer.json 에 {\"hits\": N} 으로 제출하라. 채점기가 search 를 다시 돌려 matches 길이를 잰다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "국어 매치 수",
+      "op": "len_answer_eq",
+      "answer": "hits",
+      "cmd": [
+        "search",
+        "{input}",
+        "국어",
+        "--json"
+      ],
+      "path": "matches"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "OP42",
+  "tier": 3,
+  "title": "이중 오라클 — 검색과 쪽수 (국어원)",
+  "input": "samples/2022년 국립국어원 업무계획.hwp",
+  "axis": "검증",
+  "instructions": "국어원 문서의 '국어' 검색 건수(배열 길이)와 쪽수를 answer.json 에 {\"hits\": N, \"pages\": M} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "검색 건수",
+      "op": "len_answer_eq",
+      "answer": "hits",
+      "cmd": [
+        "search",
+        "{input}",
+        "국어",
+        "--json"
+      ],
+      "path": "matches"
+    },
+    {
+      "name": "쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "OP37",
+  "steps": [
+    {
+      "answer": {
+        "format": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "format"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "OP26",
+  "tier": 1,
+  "title": "쪽수 라이브 재계산 (form-02)",
+  "input": "samples/form-02.hwp",
+  "axis": "검증",
+  "instructions": "form-02 의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "form-02 쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}
