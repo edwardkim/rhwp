@@ -5,114 +5,176 @@ description: PDF/이미지/MD/DOCX 형태의 시험문제 자료를 HWPX 시험�
 
 # rhwp-exam-ingest — 시험지 → HWPX 변환 Skill
 
-## 목적
+사용자가 PDF/이미지/MD/DOCX 로 준 시험문제를 한컴에서 편집 가능한 HWPX 로 만든다.
+이 스킬은 **실 에이전트 경로**다. gym 이 아니고, 새 CLI 를 발명하지 않으며,
+`DocumentCore` 의 `exam_paper` 빌더 로직을 이 작업에서 바꾸지 않는다.
 
-사용자가 PDF/이미지/MD/DOCX 형태로 제공하는 시험문제 자료(수능, 모의고사, EBS, 학원 자체 시험지, 자체 출제 자료 등)를 한컴오피스에서 편집 가능한 HWPX 파일로 변환합니다. **OCR/Vision/레이아웃 분석은 Claude 본인의 멀티모달 능력으로 직접 수행**하며, Anthropic API 별도 호출은 하지 않습니다.
+코어는 이미 있다.
+
+- 입력 정규화: `helpers/pdf_to_pngs.sh` · `helpers/extract_docx.py` · 이미지 패스스루 · MD `![alt](path)`
+- 중간 표현: `tools/rhwp-ingest/schema/ingest_schema_v1.json` (`version: "1"`)
+- 자르기: `helpers/crop_image.sh` (bbox 픽셀 계약)
+- 조립: `rhwp build-from-ingest <ingest.json> --media-dir <dir> -o <out.hwpx>`
+- 의존성: `helpers/check_deps.sh [--json]`
+
+에이전트가 필요한 것은 새 구현이 아니라 **언제 어느 helper 를 치고,
+어느 스키마 필드를 채우고, 어느 실패 봉투에서 멈추는가** 이다.
+
+상세는 `references/` 를 단계별로 연다. SKILL.md 는 인덱스와 정지 규칙만 담는다.
 
 ## 작동 원리
 
 ```
 [입력: PDF/PNG/JPG/MD/DOCX]
         │
-        ▼ helpers/ 스크립트로 입력 정규화
-        │  (PDF→페이지 PNG, DOCX→텍스트+이미지 추출, MD→직접, IMG→그대로)
+        ▼ helpers/ 로 입력 정규화
+        │  (PDF→페이지 PNG, DOCX→텍스트+이미지, MD→텍스트+이미지 ref, IMG→그대로)
         │
-        ▼ Claude가 Read tool로 페이지 PNG 1장씩 검토
-        │  → 시험문제 구조 인식 (자연어 분석):
-        │     - 문제 번호 ("1.", "2.", ...)
-        │     - 지문 (stem) — 주관식 문장 또는 글
-        │     - 선택지 ① ② ③ ④ ⑤
-        │     - 이미지/도형/그래프 영역 (bbox 좌표 포함)
-        │     - 이미지의 의미적 위치 (지문과 선택지 사이? 지문 아래? 인라인?)
+        ▼ Read tool 로 페이지 PNG 1장씩 Vision 분석
+        │  문제 번호 · 지문 · 선택지 · bbox · placement
         │
-        ▼ Write tool로 ingest.json 작성 (ingest_schema_v1 준수)
+        ▼ Write 로 ingest.json (ingest_schema_v1, deny_unknown_fields)
         │
-        ▼ Bash로 helpers/crop_image.sh 호출
-        │  → bbox로 PNG 자르기
+        ▼ helpers/crop_image.sh 로 bbox crop
         │
-        ▼ Bash로 rhwp build-from-ingest 호출
-        │  → HWPX 파일 생성
+        ▼ rhwp build-from-ingest --media-dir -o
+        │
+        ▼ rhwp dump / export-text / unzip -l 로 게이트
         │
         ▼ [출력: out.hwpx]
 ```
 
-**중요**: Claude(이 모델)가 직접 시험지 이미지를 보고 분석합니다. 외부 OCR 엔진(PaddleOCR, Tesseract 등)을 호출하지 않습니다. 이는 다음 장점을 제공합니다:
-- 한국어 시험지 layout을 자연어로 이해 (지문 vs 선택지 의미 분석)
-- 이미지의 의미적 배치 위치 결정 (between/above/below/inline)
-- 별도 API 키나 네트워크 호출 불필요
+**중요**: Claude 가 직접 시험지 이미지를 본다. 외부 OCR(PaddleOCR, Tesseract) 을
+호출하지 않는다. Anthropic API 별도 호출도 하지 않는다.
+
+- 한국어 시험지 layout 을 자연어로 이해 (지문 vs 선택지)
+- 이미지 의미 배치 (`between` / `above` / `below` / `inline`)
+- 별도 API 키·네트워크 불필요
 - 사용자 환경에 OCR 모델 설치 불필요
 
-## 사용자 트리거 예시
+## 사다리 (강제 순회 아님)
 
-자연어로 호출:
-- "이 시험지 PDF를 HWPX로 변환해줘 — samples/2010-exam_kor.pdf"
-- "/rhwp-exam-ingest <input> [-o <output>]"
-- "수능 영어 모의고사 30문제를 한컴 시험지로 만들고 싶어"
+`check_deps → 입력 정규화 → Vision → ingest.json → crop → build-from-ingest → dump/export-text`
 
-## 입력 형식별 처리
+질문이 이미 답이면 다음 단으로 내려가지 않는다. 각 단의 정지 조건은
+[14_failure_envelopes.md](references/14_failure_envelopes.md) 와 아래 정지 표.
 
-### 1. PDF 시험지
+```
+check_deps.sh [--json]
+  ├─ DEP_MISS_RHWP ──▶ 중단 (F01)
+  ├─ DEP_MISS_IMAGEMAGICK ──▶ crop 불가. 텍스트만이면 진행 가능 (F02)
+  └─ poppler/python-docx 누락은 입력 종류에 따라 (F03/F04)
+       │
+       ▼ 입력 종류
+            ├─ PDF ──▶ pdf_to_pngs.sh (F05)
+            ├─ PNG/JPG ──▶ 패스스루. crop 만 (F06)
+            ├─ MD ──▶ 본문 + ![alt](path) (F07)
+            └─ DOCX ──▶ extract_docx.py (F08)
+                 │
+                 ▼ Vision / 구조 인식
+                      ├─ 페이지 30+ 문항 빽빽 ──▶ 사분면 분할 (F09)
+                      ├─ 스캔 흐림 ──▶ 원본 재요청 (F10)
+                      └─ ingest.json 작성
+                           ├─ deny_unknown_fields 거부 ──▶ 오타 수정 (F11)
+                           ├─ boxed 에 text 필드 ──▶ blocks[] 로 (F12)
+                           ├─ stem 에 번호 이미 있음 ──▶ auto_number:false (F13)
+                           └─ crop_image.sh
+                                ├─ bbox 비정수/0 ──▶ exit 4 (F14)
+                                └─ build-from-ingest --media-dir -o (F15)
+```
+
+## 요청 → 명령
+
+| 사용자 요청 | 무엇 | 레퍼런스 |
+| --- | --- | --- |
+| 이 PDF 를 HWPX 로 | `pdf_to_pngs.sh` → Vision → ingest → `build-from-ingest` | 02_pdf_to_pngs.md |
+| 이 스캔 PNG 한 장 | 패스스루 → Vision → crop → build | 04_image_passthrough.md |
+| 이 MD + 그림 | `![alt](path)` 를 media 로 | 05_md_image_refs.md |
+| 이 DOCX 시험지 | `extract_docx.py` | 03_extract_docx.md |
+| 공유 지문 [1~3] | `passages[]` + `passage_ref` | 07_passages_questions.md |
+| `<보기>` 박스 | `stem_blocks` `type:boxed` | 08_stem_blocks_boxed.md |
+| 그림이 지문과 선택지 사이 | `placement: between` | 09_media_placement.md |
+| 번호가 지문에 이미 있음 | `auto_number: false` | 10_auto_number.md |
+| 그래프만 잘라서 넣어 | `crop_image.sh x y w h` | 11_crop_bbox.md |
+| 의존성 있니? | `check_deps.sh --json` | 13_check_deps.md |
+| 수식/표가 많아 | 이미지로 캡처. 한계 고지 | 15_known_limits.md |
+
+살아 있는 동사는 `pdf_to_pngs.sh` → `extract_docx.py` → `crop_image.sh` →
+`rhwp build-from-ingest` → `rhwp dump` / `rhwp export-text` 뿐이다.
+`rhwp exam-from-pdf`, `rhwp ingest-exam`, `hwp_doc_exam` 같은 명령은 **없다**.
+
+## 정지 규칙
+
+| ID | 언제 | 행동 |
+| --- | --- | --- |
+| F01 | `DEP_MISS_RHWP` | 중단. `cargo build --release` 안내 |
+| F02 | `DEP_MISS_IMAGEMAGICK` 그리고 media 가 필요 | 중단. 텍스트만이면 crop 생략 후 진행 |
+| F03 | PDF 입력인데 pdftoppm·magick 둘 다 없음 | `PDF_MISS_TOOLS` / `DEP_MISS_POPPLER`. poppler 설치 안내 |
+| F04 | DOCX 입력인데 python3 없음 | `DEP_MISS_PYTHON3`. `DEP_MISS_PYTHON_DOCX` 만이면 fallback |
+| F05 | `pdf_to_pngs.sh` 입력 파일 없음 | `PDF_SRC_MISSING` exit 1 |
+| F06 | 이미지가 한 페이지 분량 | 패스스루. 분할하지 않는다 |
+| F07 | MD 의 `![alt](path)` 가 깨진 경로 | 사용자에게 경로 확인. 추측으로 media id 만들지 않음 |
+| F08 | `extract_docx.py` 입력 없음 | `DOCX_SRC_MISSING` exit 1 |
+| F09 | 한 페이지 30+ 문항 | 절반/사분면으로 나눠 Vision. 한 장에 몰아 추측 금지 |
+| F10 | 스캔이 흐려 번호가 안 읽힘 | 선명한 원본 또는 PDF 재요청 |
+| F11 | `build-from-ingest` 가 unknown field 거부 | 스키마 필드만 사용. 새 키 발명 금지 |
+| F12 | boxed 블록에 `text` 를 직접 넣음 | #3358. `blocks:[{type:text,text:...}]` |
+| F13 | stem 첫 텍스트가 `"2. …"` 로 시작 | `auto_number: false`. 아니면 `"2. 2. …"` |
+| F14 | bbox 가 소수·음수·0 | `CROP_BBOX_*` exit 4. 다시 추정 |
+| F15 | `-o` 누락 | CLI 가 사용법 오류. `-o` 는 필수 |
+| F16 | 수식을 LaTeX 로 ingest 에 넣으려 함 | 이미지로 crop. Equation IR 은 후속 |
+| F17 | 복잡한 표를 table IR 로 만들려 함 | 그림으로 crop. Table IR 은 후속 |
+| F18 | Picture 직렬화 한계 (#182) | 텍스트 위주가 안전. 사용자에게 고지 |
+| F19 | 사용자 질문이 이미 답변 가능 | 다음 단으로 내려가지 않는다 |
+
+**금지 기본값**
+
+- 새 CLI (`exam-from-pdf`, `ingest-exam`, `build-exam`) 발명
+- `src/document_core/builders/exam_paper.rs` 수정
+- gym pack / gym 과제 작성
+- 외부 OCR 엔진 호출
+- `deny_unknown_fields` 를 피하려고 스키마에 없는 키를 넣기
+- `auto_number` 기본을 무시하고 stem 에 `"1. "` 를 중복
+- 원본 PDF 를 `--in-place` 로 덮어쓰기 (이 명령은 애초에 원본을 쓰지 않음)
+- 이 스킬 안에서 onboarding / form-fill / table-exchange / safe-edit 를 재작성
+
+## 입력 형식별 한 줄
+
+### PDF
 
 ```bash
 bash .claude/skills/rhwp-exam-ingest/helpers/pdf_to_pngs.sh <input.pdf> <out_dir>
+bash .claude/skills/rhwp-exam-ingest/helpers/pdf_to_pngs.sh --json --dry-run <input.pdf> <out_dir>
 ```
 
-각 페이지를 PNG로 변환 (300 DPI 기본). `out_dir/page_001.png`, `page_002.png`, ...
+`out_dir/page_001.png` … . 텍스트 layer 가 있으면 `pdftotext` 가 `text.txt` 를 보조로 남긴다.
+상세: [02_pdf_to_pngs.md](references/02_pdf_to_pngs.md)
 
-PDF가 텍스트 layer를 가지면 **Vision 분석 보조**로 사용 (OCR 부담 감소). `pdftotext`로 텍스트 추출 후 Claude의 Vision 분석 결과와 교차 검증.
+### 이미지 (PNG/JPG)
 
-### 2. 이미지 (PNG/JPG)
+Read tool 로 직접 본다. 한 페이지 분량은 그대로. crop 만 `crop_image.sh`.
+상세: [04_image_passthrough.md](references/04_image_passthrough.md)
 
-직접 Read tool로 시험지 이미지를 보고 분석. 큰 이미지는 사전에 분할이 필요할 수 있으나 보통 한 페이지 분량은 그대로 처리 가능.
+### Markdown
 
-### 3. Markdown (MD)
+파일을 읽고 `![alt](path)` 를 `media[].id` 로 옮긴다. `# 1.` / `## 1.` 로 문제 번호를 추론한다.
+상세: [05_md_image_refs.md](references/05_md_image_refs.md)
 
-```bash
-# MD 파일 직접 읽기 — 텍스트 + 이미지 ref만 있으므로 단순.
-```
-
-`![alt](path)` 패턴의 이미지를 media 항목에 추가. 텍스트는 `# 1.`, `## 1.` 등 마크다운 패턴으로 문제 번호 추론 또는 사용자 입력대로 그룹핑.
-
-### 4. DOCX
+### DOCX
 
 ```bash
 python3 .claude/skills/rhwp-exam-ingest/helpers/extract_docx.py <input.docx> <out_dir>
 ```
 
-`out_dir/text.txt` (본문) + `out_dir/img/*.png` (임베디드 이미지) 출력.
+`out_dir/text.txt` + `out_dir/img/*`. python-docx 없으면 zip 정규식 fallback.
+상세: [03_extract_docx.md](references/03_extract_docx.md)
 
-## Claude의 분석 작업 (단계별 instructions)
+## ingest.json 핵심
 
-사용자가 시험지를 제공하면 다음 순서로 작업합니다:
+스키마: `tools/rhwp-ingest/schema/ingest_schema_v1.json`.
+샘플: `sample_minimal.json` · `sample_structured.json`.
+Rust 모델: `src/parser/ingest/schema.rs` (`#[serde(deny_unknown_fields)]`).
 
-### Step 1: 입력 정규화
-
-사용자 입력에 따라 helpers/ 스크립트를 호출하여 페이지 PNG들과 임베디드 텍스트(있으면)를 임시 디렉토리에 생성합니다.
-
-```bash
-TMP=$(mktemp -d /tmp/rhwp-ingest.XXXXXX)
-bash .claude/skills/rhwp-exam-ingest/helpers/pdf_to_pngs.sh user_input.pdf "$TMP"
-```
-
-### Step 2: Vision 분석 — 페이지별 시험문제 구조 인식
-
-각 `page_NNN.png` 를 Read tool로 읽고 다음을 자연어로 분석한 뒤 자료구조에 정리합니다:
-
-- **문제 번호**: "1.", "2.", "1)", "①" 등을 stem 시작 마커로 인식.
-- **지문(stem)**: 문제 번호 다음에 오는 본문. 글 한 단락 또는 지시문 + 본문 ("다음 글의 주제로 가장 적절한 것은?" + 글).
-- **선택지(choices)**: ①, ②, ③, ④, ⑤로 시작하는 줄. 보통 5개. label은 그대로 포함.
-- **이미지/도형 영역**: 시험지 안에 포함된 그래프/일러스트/표/도형. 각 이미지마다 `bbox=[x, y, w, h]`(픽셀 단위) 추정.
-- **이미지의 의미적 placement**:
-  - `between`: 지문과 선택지 사이 (가장 흔함 — 그래프/그림 보고 답하는 문제)
-  - `below`: 선택지 다음 (드물지만 연관 자료가 뒤에 올 때)
-  - `above`: 지문 앞 (지시문 위에 그림이 먼저 오는 경우)
-  - `inline`: 지문 텍스트 안에 그림이 끼어들 때 (지시문 일부)
-
-### Step 3: ingest.json 작성
-
-스키마는 `tools/rhwp-ingest/schema/ingest_schema_v1.json` 준수. 샘플은 `tools/rhwp-ingest/schema/sample_minimal.json`.
-
-핵심 구조:
 ```jsonc
 {
   "version": "1",
@@ -141,9 +203,7 @@ bash .claude/skills/rhwp-exam-ingest/helpers/pdf_to_pngs.sh user_input.pdf "$TMP
         {
           "type": "boxed",
           "title": "<보기>",
-          "blocks": [
-            {"type": "text", "text": "보기 본문..."}
-          ]
+          "blocks": [{"type": "text", "text": "보기 본문..."}]
         },
         {"type": "image", "ref": "img/q1_passage.png", "placement": "between"}
       ],
@@ -163,102 +223,117 @@ bash .claude/skills/rhwp-exam-ingest/helpers/pdf_to_pngs.sh user_input.pdf "$TMP
 }
 ```
 
-`media[].id`는 `--media-dir` 기준 상대 경로. Claude가 Step 4에서 자르기 결과 PNG를 그 경로에 저장.
+`media[].id` 는 `--media-dir` 기준 상대 경로.
 
-#### 공유 지문과 보기 박스
+### auto_number
 
-- 여러 문제가 같은 지문을 공유하면 top-level `passages[]` 에 지문을 한 번 작성하고,
-  각 문제에서 `passage_ref` 로 참조한다.
-- builder는 같은 `passage_ref` 를 처음 만나는 위치에 공유 지문을 한 번만 출력한다.
-- `<보기>`/`[보기]`처럼 테두리와 배경이 있는 보조 자료는 `stem_blocks` 안에
-  `{"type":"boxed","title":"<보기>","blocks":[...]}` 로 작성한다.
-- `header_text`, `footer_text`, `form_label` 은 시험지 반복 머리말/꼬리말 정보를 구조적으로
-  전달하는 필드다.
+빌더는 첫 stem 텍스트 앞에 `{number}. ` 를 붙인다. stem 에 번호를 이미 썼으면
+`auto_number: false`. 공유 지문 지시문 `[1~3] …` 은 `passages[]` 에 둔다.
+상세: [10_auto_number.md](references/10_auto_number.md)
 
-#### `auto_number` 필드 사용법 (v2 정책 — Task #660 후속)
+### placement
 
-빌더는 첫 stem 텍스트 앞에 `{number}. ` prefix를 자동으로 붙인다. 다만 사용자가 stem 텍스트 자체에 번호를 명시적으로 작성한 경우에는 `auto_number: false`를 함께 설정해 빌더의 자동 prefix를 끈다.
+`between` (기본, 지문↔선택지) · `above` (지문 위) · `below` (선택지 다음) · `inline`.
+상세: [09_media_placement.md](references/09_media_placement.md)
 
-| 상황 | `auto_number` | stem_blocks 첫 텍스트 예시 |
-|------|---------------|----------------------------|
-| 일반 문제 (default) | `true` 또는 미지정 | `"다음 글의 주제는?"` → 빌더가 `"1. 다음 글의 주제는?"` 생성 |
-| **공유 지문 그룹 지시문** | `passages[]` 사용 권장 | `passages[].blocks` 에 `"[1~3] 다음 글을 읽고 물음에 답하시오."` 작성 |
-| **사용자가 명시적으로 prefix 작성** | `false` | `"2. ㉠에 해당하는 내용으로 가장 적절한 것은?"` → 그대로 출력 |
-| **`<보기>` / `[보기]` 본문** | `true` | `"[보기]를 참고하여…"` → 빌더가 `"12. [보기]를 참고하여…"` 생성 |
-
-**권장**: 가능하면 `auto_number: true`(default) + stem 텍스트는 prefix 없이 작성하는 것이 깔끔하다. 공유 지문은 `passages[]`/`passage_ref` 로 분리하고, 사용자가 문제 번호까지 명시적으로 작성한 경우에만 `false`로 끈다.
-
-### Step 4: 이미지 자르기
-
-각 `media[]` 항목에 대해:
+## crop · build
 
 ```bash
 bash .claude/skills/rhwp-exam-ingest/helpers/crop_image.sh \
-    "$TMP/page_001.png" \
-    "<x>" "<y>" "<w>" "<h>" \
-    "$MEDIA_DIR/img/q1_passage.png"
-```
+    "$TMP/page_001.png" "<x>" "<y>" "<w>" "<h>" "$MEDIA_DIR/img/q1_passage.png"
 
-bbox 좌표는 Step 2에서 분석한 것을 사용. ImageMagick `magick` 명령어 기반.
-
-### Step 5: HWPX 빌드
-
-```bash
 rhwp build-from-ingest "$TMP/ingest.json" --media-dir "$MEDIA_DIR" -o "$OUT_HWPX"
 ```
 
-성공 시 사용자에게 결과 파일 경로 + 통계(문제 수, 문단 수, 바이트 크기) 보고.
+bbox 는 픽셀, 좌상단, 10진 정수, `w>=1`, `h>=1`. dry-run:
 
-## 한계 및 주의사항
-
-### 현재 알려진 한계
-
-- **이미지 직렬화**: rhwp의 HWPX writer가 Picture inline 직렬화 분기를 #182에서 추가 중입니다. #182 완료 전에는 이미지가 HWPX에 포함되어도 한컴이 표시 못 할 수 있습니다. 현재는 텍스트 위주 변환이 안전.
-- **수식**: 복잡 수식(LaTeX 수준)은 이미지로 캡처하여 Picture로 삽입하는 것이 안전합니다. HWP Equation IR 매핑은 후속 마일스톤.
-- **표/정밀 박스**: 단순 표는 Picture로 캡처. Table/Frame IR 빌드는 후속 작업.
-
-### Vision 분석 정확도 향상 팁
-
-- 시험지가 스캔본이라 흐릿하면 사용자에게 더 선명한 원본 또는 PDF 제공을 요청.
-- 한 페이지에 30+ 문제가 빽빽하면 페이지를 절반/사분면으로 나누어 분석.
-- 문제 번호 매김이 일관되지 않으면 사용자에게 그룹핑 명시 요청.
-
-### 검증
-
-생성된 HWPX는 다음으로 확인:
 ```bash
-rhwp dump <out.hwpx>      # IR 구조 확인
-unzip -l <out.hwpx>       # ZIP 구조 확인 (BinData/ 이미지 포함 여부)
+bash .claude/skills/rhwp-exam-ingest/helpers/crop_image.sh \
+    --json --dry-run "$TMP/page_001.png" 120 400 640 360 "$MEDIA_DIR/img/q1.png"
+```
+
+`-o` 는 필수. `--media-dir` 은 이미지가 있으면 필수에 가깝다.
+상세: [11_crop_bbox.md](references/11_crop_bbox.md) ·
+[12_build_from_ingest.md](references/12_build_from_ingest.md)
+
+## 검증
+
+```bash
+rhwp dump <out.hwpx>          # IR 구조
+rhwp export-text <out.hwpx> -o <dir>   # 지문/선택지 텍스트 대조
+unzip -l <out.hwpx>           # BinData/ 이미지 포함 여부
 ```
 
 한컴오피스 2024 또는 LibreOffice + hwpx 플러그인으로 시각 확인 권장.
+원본 PDF 와 픽셀 일치는 이 스킬의 게이트가 아니다.
+
+## 알려진 한계
+
+- **이미지 직렬화**: Picture inline 직렬화는 #182 계열. 완료 전에는 이미지가
+  HWPX 에 들어 있어도 한컴이 표시하지 못할 수 있다. 텍스트 위주가 안전.
+- **수식**: 복잡 수식은 이미지로 캡처. HWP Equation IR 은 후속.
+- **표/정밀 박스**: 단순 표는 Picture 로 캡처. Table/Frame IR 은 후속.
+
+상세: [15_known_limits.md](references/15_known_limits.md)
 
 ## 의존성
 
-### 필수
-- `rhwp` 바이너리 빌드됨 (`cargo build --release` 후 `target/release/rhwp` 또는 `cargo run --bin rhwp` 사용)
-
-### PDF 입력 시
-- `pdftoppm` (poppler-utils) 또는 `magick` (ImageMagick)
-- 선택: `pdftotext` (텍스트 layer 추출)
-
-### DOCX 입력 시
-- `python3` + `python-docx`: `pip install python-docx`
-
-### 이미지 자르기
-- `magick` (ImageMagick 7) 또는 `convert` (ImageMagick 6)
-
-설치 확인 helper:
 ```bash
-bash .claude/skills/rhwp-exam-ingest/helpers/check_deps.sh
+bash .claude/skills/rhwp-exam-ingest/helpers/check_deps.sh --json
 ```
 
-## 참조
+| 도구 | 언제 | 없으면 |
+| --- | --- | --- |
+| `rhwp` | 항상 | F01. 빌드 안내 |
+| `magick`/`convert` | crop, PDF fallback | F02. `DEP_MISS_IMAGEMAGICK` |
+| `pdftoppm` | PDF 권장 | magick fallback. 둘 다 없으면 F03 |
+| `pdftotext` | PDF 보조 | Vision 만으로 진행 |
+| `python3` | DOCX | F04 |
+| `python-docx` | DOCX 정밀 | zip 정규식 fallback. 실패 아님 |
 
-- 전체 계획서: `~/.claude/plans/pdf-md-docx-optimized-neumann.md`
-- spike 결과: `mydocs/tech/m100_neumann_spike.md`
-- JSON 스키마: `tools/rhwp-ingest/schema/ingest_schema_v1.json`
-- 샘플 입력: `tools/rhwp-ingest/schema/sample_minimal.json`
-- 확장 샘플 입력: `tools/rhwp-ingest/schema/sample_structured.json`
-- 빌더 본체: `src/document_core/builders/exam_paper.rs`
-- 관련 이슈: #660 (본 작업 1단계 완료), #182 (Picture 직렬화), #654 (사전 검증 spike)
+실패 봉투: [13_check_deps.md](references/13_check_deps.md)
+
+## 인계
+
+- 누름틀 서식 채우기 → `rhwp-form-fill` (이 스킬을 재작성하지 않음)
+- 표 CSV 왕복 → `rhwp-table-exchange`
+- 배포 전 점검 → `rhwp-security-sweep`
+- 미지 문서 파악만 → `rhwp-doc-triage` (읽기, 시험지를 만들지 않음)
+
+이 스킬은 **새 시험지를 생성**한다. 기존 HWP 를 편집하지 않는다.
+
+## 레퍼런스 목차
+
+1. [00_tree.md](references/00_tree.md) — 판단 트리
+2. [01_input_normalize.md](references/01_input_normalize.md) — 입력 정규화
+3. [02_pdf_to_pngs.md](references/02_pdf_to_pngs.md) — PDF → PNG
+4. [03_extract_docx.md](references/03_extract_docx.md) — DOCX 추출
+5. [04_image_passthrough.md](references/04_image_passthrough.md) — 이미지 패스스루
+6. [05_md_image_refs.md](references/05_md_image_refs.md) — MD 이미지 ref
+7. [06_ingest_schema_v1.md](references/06_ingest_schema_v1.md) — 스키마
+8. [07_passages_questions.md](references/07_passages_questions.md) — 지문·문항
+9. [08_stem_blocks_boxed.md](references/08_stem_blocks_boxed.md) — stem_blocks·보기
+10. [09_media_placement.md](references/09_media_placement.md) — 배치
+11. [10_auto_number.md](references/10_auto_number.md) — auto_number 정책
+12. [11_crop_bbox.md](references/11_crop_bbox.md) — bbox 계약
+13. [12_build_from_ingest.md](references/12_build_from_ingest.md) — 빌드 게이트
+14. [13_check_deps.md](references/13_check_deps.md) — 의존성 봉투
+15. [14_failure_envelopes.md](references/14_failure_envelopes.md) — 실패 봉투
+16. [15_known_limits.md](references/15_known_limits.md) — 한계
+17. [16_pitfalls.md](references/16_pitfalls.md) — 함정
+18. [17_sample_transcripts.md](references/17_sample_transcripts.md) — 트랜스크립트
+19. [18_verify_gate.md](references/18_verify_gate.md) — dump/export-text 게이트
+20. [19_intent_matrix.md](references/19_intent_matrix.md) — 발화 → 동작
+21. [20_exit_codes.md](references/20_exit_codes.md) — 종료 코드
+
+예제: `examples/`. 기계 가독 픽스처: `fixtures/` · `fixtures/catalog.json`.
+
+## 권위
+
+- [`tools/rhwp-ingest/schema/ingest_schema_v1.json`](../../../tools/rhwp-ingest/schema/ingest_schema_v1.json)
+- [`src/parser/ingest/schema.rs`](../../../src/parser/ingest/schema.rs)
+- [`mydocs/manual/cli_commands.md`](../../../mydocs/manual/cli_commands.md) §`build-from-ingest`
+- 처리 결과: [`mydocs/working/agent_exam_ingest.md`](../../../mydocs/working/agent_exam_ingest.md)
+
+관련 이슈: #5319 (본 스킬 고도화), #660 (스키마+빌더), #667 (passages/boxed),
+#3358 (deny_unknown_fields), #182 (Picture 직렬화).

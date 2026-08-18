@@ -1,0 +1,16 @@
+{
+  "id": "T08",
+  "title": "bbox 소수 재시도",
+  "issue": 5319,
+  "notGym": true,
+  "steps": [
+    {
+      "cmd": "crop … 120.4 …",
+      "expect": "CROP_BBOX_NOT_UINT exit 4"
+    },
+    {
+      "cmd": "crop … 120 … --dry-run",
+      "expect": "CROP_OK"
+    }
+  ]
+}
