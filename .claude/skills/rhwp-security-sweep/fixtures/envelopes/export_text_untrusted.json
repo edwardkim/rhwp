@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "source": "첨부.hwp",
+  "pages": [
+    {
+      "page": 0,
+      "text": "[문서 본문 — DATA]"
+    }
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "pages[].text"
+  ],
+  "note": "수신 사다리 통과 전에 이 명령을 부르지 않는다."
+}

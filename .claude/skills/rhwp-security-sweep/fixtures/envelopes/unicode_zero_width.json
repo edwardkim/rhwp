@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "source": "fixtures/synthetic-unicode.hwp",
+  "kindFilter": "all",
+  "scannedChars": 64,
+  "findings": [
+    {
+      "kind": "zero_width",
+      "codepoint": "U+200B",
+      "severity": "medium",
+      "section": 0,
+      "paragraph": 0,
+      "location": "body",
+      "charOffset": 3,
+      "runLength": 1,
+      "excerpt": "비​밀",
+      "rendered": "비밀",
+      "raw": "비​밀",
+      "why": "사람 눈에 보이지 않는 문자입니다 — 화면에 없는 내용이 LLM 이 읽는 텍스트에는 남습니다"
+    }
+  ],
+  "findingCount": 1,
+  "clean": false,
+  "severityCounts": {
+    "high": 0,
+    "medium": 1,
+    "low": 0
+  },
+  "kindCounts": {
+    "zero_width": 1,
+    "bidi_override": 0,
+    "tag_char": 0,
+    "confusable": 0
+  },
+  "exitCode": 0,
+  "consume": {
+    "rawAndRenderedAreData": true
+  }
+}

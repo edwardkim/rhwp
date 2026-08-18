@@ -1,0 +1,338 @@
+{
+  "cases": [
+    {
+      "id": "ssn-pass-recipe3",
+      "kind": "ssn",
+      "sample": "900101-1234568",
+      "detect": true,
+      "reason": "mod 11 통과 가공값(레시피 3)",
+      "rule": "ssn-mod11",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "ssn-bait-recipe3",
+      "kind": "ssn",
+      "sample": "900101-1234567",
+      "detect": false,
+      "reason": "형태 동일, 검증 숫자 실패 — 미끼",
+      "rule": "ssn-mod11",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "ssn-no-hyphen",
+      "kind": "ssn",
+      "sample": "9001011234568",
+      "detect": false,
+      "reason": "하이픈 없는 13자열은 v1 제외",
+      "rule": "ssn-form",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "ssn-bad-month",
+      "kind": "ssn",
+      "sample": "901301-1234567",
+      "detect": false,
+      "reason": "생월 13 — 실재하지 않는 일자",
+      "rule": "ssn-date",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "ssn-bad-day",
+      "kind": "ssn",
+      "sample": "900230-1234567",
+      "detect": false,
+      "reason": "2월 30일 — 실재하지 않는 일자",
+      "rule": "ssn-date",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "ssn-leap-ok",
+      "kind": "ssn",
+      "sample": "000229-1234567",
+      "detect": false,
+      "reason": "윤년 2/29 형태는 일자 검증 대상(체크섬 별개)",
+      "rule": "ssn-date",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "ssn-gender-0",
+      "kind": "ssn",
+      "sample": "900101-0234567",
+      "detect": false,
+      "reason": "성별/세기 코드 0 은 1~8 밖",
+      "rule": "ssn-gender",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "ssn-gender-9",
+      "kind": "ssn",
+      "sample": "900101-9234567",
+      "detect": false,
+      "reason": "성별/세기 코드 9 는 1~8 밖",
+      "rule": "ssn-gender",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "ssn-gender-1",
+      "kind": "ssn",
+      "sample": "900101-1234568",
+      "detect": true,
+      "reason": "성별/세기 코드 1 (국내 1900년대 남)",
+      "rule": "ssn-gender",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "card-visa-test",
+      "kind": "card",
+      "sample": "4111-1111-1111-1111",
+      "detect": true,
+      "reason": "공개 시험용, Luhn 통과(레시피 3)",
+      "rule": "card-luhn",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "card-luhn-fail",
+      "kind": "card",
+      "sample": "1234-5678-9012-3456",
+      "detect": false,
+      "reason": "Luhn 실패 — 미끼",
+      "rule": "card-luhn",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "card-spaces",
+      "kind": "card",
+      "sample": "4111 1111 1111 1111",
+      "detect": true,
+      "reason": "공백 구분 4-4-4-4 도 형태",
+      "rule": "card-form",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "card-amex-form",
+      "kind": "card",
+      "sample": "3782-822463-10005",
+      "detect": true,
+      "reason": "Amex 4-6-5 형태 + Luhn 공개시험",
+      "rule": "card-amex",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "card-cont-16",
+      "kind": "card",
+      "sample": "4111111111111111",
+      "detect": true,
+      "reason": "연속 16자리 + Luhn",
+      "rule": "card-cont",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "card-13-oos",
+      "kind": "card",
+      "sample": "1234567890123",
+      "detect": false,
+      "reason": "13자리 카드는 v1 범위 밖",
+      "rule": "card-oos",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "card-14-oos",
+      "kind": "card",
+      "sample": "12345678901234",
+      "detect": false,
+      "reason": "14자리 카드는 v1 범위 밖",
+      "rule": "card-oos",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "card-19-oos",
+      "kind": "card",
+      "sample": "1234567890123456789",
+      "detect": false,
+      "reason": "19자리 카드는 v1 범위 밖",
+      "rule": "card-oos",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "card-inside-account",
+      "kind": "card",
+      "sample": "00123456789012345678",
+      "detect": false,
+      "reason": "더 긴 숫자열의 16자리 부분열은 버린다",
+      "rule": "card-boundary",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "phone-010",
+      "kind": "phone",
+      "sample": "010-1234-5678",
+      "detect": true,
+      "reason": "01[016789] + 하이픈(레시피 3)",
+      "rule": "phone-mobile",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "phone-011",
+      "kind": "phone",
+      "sample": "011-123-4567",
+      "detect": true,
+      "reason": "011 3-3-4 또는 3-4-4",
+      "rule": "phone-mobile",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "phone-016",
+      "kind": "phone",
+      "sample": "016-1234-5678",
+      "detect": true,
+      "reason": "016",
+      "rule": "phone-mobile",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "phone-017",
+      "kind": "phone",
+      "sample": "017-1234-5678",
+      "detect": true,
+      "reason": "017",
+      "rule": "phone-mobile",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "phone-018",
+      "kind": "phone",
+      "sample": "018-1234-5678",
+      "detect": true,
+      "reason": "018",
+      "rule": "phone-mobile",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "phone-019",
+      "kind": "phone",
+      "sample": "019-1234-5678",
+      "detect": true,
+      "reason": "019",
+      "rule": "phone-mobile",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "phone-02",
+      "kind": "phone",
+      "sample": "02-1234-5678",
+      "detect": true,
+      "reason": "02 지역번호 + 하이픈",
+      "rule": "phone-seoul",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "phone-no-hyphen",
+      "kind": "phone",
+      "sample": "01012345678",
+      "detect": false,
+      "reason": "하이픈 필수",
+      "rule": "phone-hyphen",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "phone-031-oos",
+      "kind": "phone",
+      "sample": "031-123-4567",
+      "detect": false,
+      "reason": "02 외 지역번호는 v1 범위 밖",
+      "rule": "phone-oos",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "phone-051-oos",
+      "kind": "phone",
+      "sample": "051-123-4567",
+      "detect": false,
+      "reason": "02 외 지역번호는 v1 범위 밖",
+      "rule": "phone-oos",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "email-recipe3",
+      "kind": "email",
+      "sample": "hong@example.com",
+      "detect": true,
+      "reason": "라벨 2개 + TLD 영문 2자+",
+      "rule": "email-form",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "email-one-label",
+      "kind": "email",
+      "sample": "hong@localhost",
+      "detect": false,
+      "reason": "라벨 1개 — 거부",
+      "rule": "email-labels",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "email-tld1",
+      "kind": "email",
+      "sample": "hong@example.c",
+      "detect": false,
+      "reason": "TLD 1자는 거부",
+      "rule": "email-tld",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "email-sub",
+      "kind": "email",
+      "sample": "a.b@dept.example.co.kr",
+      "detect": true,
+      "reason": "라벨 2개 이상",
+      "rule": "email-form",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "name-oos",
+      "kind": "name",
+      "sample": "홍길동",
+      "detect": false,
+      "reason": "이름은 형태만으로 보수 판정 불가",
+      "rule": "oos",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "addr-oos",
+      "kind": "address",
+      "sample": "서울특별시 중구 세종대로 110",
+      "detect": false,
+      "reason": "주소는 v1 범위 밖",
+      "rule": "oos",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "acct-oos",
+      "kind": "account",
+      "sample": "110-123-456789",
+      "detect": false,
+      "reason": "계좌번호는 체크섬 없어 제외",
+      "rule": "oos",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "passport-oos",
+      "kind": "passport",
+      "sample": "M12345678",
+      "detect": false,
+      "reason": "여권번호는 v1 범위 밖",
+      "rule": "oos",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    },
+    {
+      "id": "empno-oos",
+      "kind": "employee",
+      "sample": "2024-00421",
+      "detect": false,
+      "reason": "사번·문서번호와 구별 불가",
+      "rule": "oos",
+      "authority": "cli_commands.md §edit redact + recipes/03_redact_before_sharing.md"
+    }
+  ],
+  "count": 37
+}
