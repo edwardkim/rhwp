@@ -1,0 +1,28 @@
+{
+  "id": "playbook_table001_mismatch",
+  "sample": "samples/table-001.hwp",
+  "source": "mydocs/manual/agent_surface_playbook.md §10-5",
+  "turns": [
+    {
+      "argv": [
+        "rhwp",
+        "csv-to-table",
+        "samples/table-001.hwp",
+        "--csv",
+        "out/bad.csv",
+        "--table",
+        "0",
+        "--dry-run",
+        "--json"
+      ],
+      "exit": 2,
+      "changedCount": 0,
+      "rowCount": 19,
+      "colCount": 9,
+      "invalidReasons": [
+        "rowCountMismatch",
+        "colCountMismatch"
+      ]
+    }
+  ]
+}

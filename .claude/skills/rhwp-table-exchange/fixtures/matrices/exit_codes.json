@@ -1,0 +1,58 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-table-exchange",
+  "issue": 5306,
+  "authority": "#2707",
+  "codes": [
+    {
+      "exit": 0,
+      "kind": "success",
+      "isException": false,
+      "commands": [
+        "export-tables",
+        "table-to-csv",
+        "csv-to-table",
+        "edit set-cell"
+      ],
+      "readAnyway": [
+        "invalid",
+        "changedCount",
+        "verify",
+        "untrustedContent"
+      ]
+    },
+    {
+      "exit": 1,
+      "kind": "runtime",
+      "isException": false,
+      "meaning": "파일 없음·알 수 없는 표·저장 실패. 원본 불변. 단건 실패는 stdout 0바이트.",
+      "examples": [
+        "없는파일",
+        "--table 99999"
+      ]
+    },
+    {
+      "exit": 2,
+      "kind": "usage-or-contract",
+      "isException": false,
+      "meaning": "사용법 또는 치수/덮인칸/제어문자. csv-to-table 은 봉투를 낸다. edit set-cell 덮인칸은 stderr + 0바이트.",
+      "reasons": [
+        "rowCountMismatch",
+        "colCountMismatch",
+        "coveredCellNotEmpty",
+        "controlCharacter",
+        "csvParse"
+      ]
+    },
+    {
+      "exit": 3,
+      "kind": "verify-judgment",
+      "isException": false,
+      "meaning": "--verify IR 차이. 고장이 아니라 판정 데이터. 1층은 산출물 유지.",
+      "read": [
+        "verify.identical",
+        "verify.diffCount"
+      ]
+    }
+  ]
+}

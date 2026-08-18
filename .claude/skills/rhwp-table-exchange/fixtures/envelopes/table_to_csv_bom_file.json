@@ -1,0 +1,37 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "table-to-csv",
+    "sample": "samples/hwp_table_test.hwp",
+    "exit": 0,
+    "branch": "bom-file-not-envelope",
+    "source": "tests/table_csv_contract.rs bom_flag_only_affects_the_file_not_the_envelope"
+  },
+  "bom": true,
+  "output": "table0_bom.csv",
+  "outputFormat": "csv",
+  "schemaVersion": "1.0",
+  "source": "samples/hwp_table_test.hwp",
+  "tableCount": 1,
+  "tables": [
+    {
+      "colCount": 3,
+      "csv": "제목,담당자,세부 내용\r\n,,\r\n,,\r\n,,\r\n",
+      "index": 0,
+      "output": "table0_bom.csv",
+      "rowCount": 4
+    }
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "tables[].csv"
+  ],
+  "_filePrefix": [
+    239,
+    187,
+    191
+  ],
+  "_envelopeCsvStartsWithBom": false
+}

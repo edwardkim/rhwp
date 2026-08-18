@@ -1,0 +1,35 @@
+{
+  "id": "codex20_issue2007",
+  "sample": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "source": "mydocs/manual/agent_codex/20_표와_데이터.md",
+  "turns": [
+    {
+      "argv": [
+        "rhwp",
+        "export-tables",
+        "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "tableCount": 5,
+      "firstCaptionLike": "Ⅰ. 규제 심사(안) 개요"
+    },
+    {
+      "argv": [
+        "rhwp",
+        "table-to-csv",
+        "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "--table",
+        "1",
+        "-o",
+        "<tmp>/t1.csv",
+        "--json"
+      ],
+      "exit": 0,
+      "index": 1,
+      "rowCount": 2,
+      "colCount": 3,
+      "bom": false
+    }
+  ]
+}

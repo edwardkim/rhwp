@@ -1,0 +1,22 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "edit set-cell",
+    "exit": 0,
+    "branch": "set-cell-dry-run",
+    "outputKept": false,
+    "source": "cli_commands.md §edit set-cell --dry-run"
+  },
+  "schemaVersion": "1.0",
+  "source": "samples/hwp_table_test.hwp",
+  "table": 0,
+  "row": 1,
+  "col": 0,
+  "oldText": "",
+  "newText": "서버 이관",
+  "dryRun": true,
+  "keepStyle": false,
+  "overflow": []
+}

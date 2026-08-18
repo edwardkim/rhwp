@@ -1,0 +1,29 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-table-exchange",
+  "issue": 5306,
+  "rules": [
+    {
+      "id": "default-utf8",
+      "bom": false,
+      "where": "file and envelope",
+      "note": "기본은 BOM 없는 UTF-8."
+    },
+    {
+      "id": "flag-file-only",
+      "bom": true,
+      "where": "file prefix EF BB BF",
+      "envelopeCsv": "no U+FEFF",
+      "note": "JSON 소비자가 첫 셀을 BOM 으로 오독하지 않게."
+    },
+    {
+      "id": "excel-ko-windows",
+      "symptom": "한글 깨짐",
+      "fix": "table-to-csv --bom"
+    },
+    {
+      "id": "do-not-hand-prefix",
+      "note": "CSV 라이브러리가 아니라 손으로 EF BB BF 를 붙이지 마라. 명령이 한다."
+    }
+  ]
+}
