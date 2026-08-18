@@ -1,0 +1,19 @@
+{
+  "id": "TE72",
+  "steps": [
+    {
+      "answer": {
+        "page": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "규제"
+          ],
+          "path": "matches[0].page"
+        }
+      }
+    }
+  ]
+}

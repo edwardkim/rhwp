@@ -1,0 +1,27 @@
+{
+  "id": "TE68",
+  "tier": 1,
+  "title": "실문서 형식",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "입력의 형식 표기를 answer.json 에 {\"fmt\": \"...\"} 으로 제출하라. 힌트: info format. 보통 hwp5 다. 추측하지 말고 봉투를 읽어라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "실문서 형식 · fmt",
+      "op": "answer_eq",
+      "answer": "fmt",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

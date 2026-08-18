@@ -1,0 +1,19 @@
+{
+  "id": "TE63",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "유니코드"
+          ],
+          "path": "matchCount"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "TE77",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "sanitize",
+        "{input}",
+        "-o",
+        "{sub:cleaned77.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "id": "TE56",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "규제",
+        "--replace",
+        "점검",
+        "--occurrence",
+        "0",
+        "-o",
+        "{sub:once56.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "para": {
+          "cmd": [
+            "search",
+            "{sub:once56.hwp}",
+            "--json",
+            "--",
+            "점검"
+          ],
+          "path": "matches[0].paragraph"
+        }
+      }
+    }
+  ]
+}

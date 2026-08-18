@@ -1,0 +1,17 @@
+{
+  "id": "TE69",
+  "steps": [
+    {
+      "answer": {
+        "nodes": {
+          "cmd": [
+            "export-structure",
+            "{input}",
+            "--json"
+          ],
+          "path": "nodeCount"
+        }
+      }
+    }
+  ]
+}

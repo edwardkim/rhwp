@@ -1,0 +1,21 @@
+{
+  "id": "TE57",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "의",
+        "--replace",
+        "◎",
+        "--occurrence",
+        "3",
+        "-o",
+        "{sub:once57.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "TE74",
+  "tier": 1,
+  "title": "가로 문서 쪽수",
+  "input": "samples/landscape-001.hwp",
+  "instructions": "입력의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "가로 문서 쪽수 · pages",
+      "op": "answer_eq",
+      "answer": "pages",
+      "path": "pageCount",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}
