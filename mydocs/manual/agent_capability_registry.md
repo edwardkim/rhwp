@@ -46,6 +46,7 @@ last_verified: 2026-07-26
 | `CAP-5313` | `rhwp-explore` | 실 에이전트가 처음 보는 HWP/HWPX 에서 `rhwp explore --json` 메뉴로 다음 명령·스킬을 고른다. gym·새 CLI·편집 로직·이웃 스킬 재작성은 책임 밖 | [CLI explore](cli_commands.md) | [Skill](../../.claude/skills/rhwp-explore/SKILL.md) | — | active · rhwp maintainers |
 | `CAP-5331` | `rhwp-recipes` | 실 에이전트가 요청을 mydocs/manual/recipes/ 여덟 장(01·02·03·04·05·06·09·10) 중 한 장으로 고른다. 07·08 결번 정직 표지. gym·새 CLI·이웃 스킬(form-fill/table-exchange/security-sweep/bulk-pipeline/visual-regression) 재작성은 책임 밖 | [레시피 01](recipes/01_fill_form_and_submit.md) · [레시피 09](recipes/09_bulk_extract_convert.md) | [Skill](../../.claude/skills/rhwp-recipes/SKILL.md) | — | active · rhwp maintainers |
 | `CAP-5293` | `rhwp-mcp-session` | 실 에이전트 호스트에 rhwp mcp-serve 를 붙이고 세션(hwp_open→hwp_doc_*→hwp_close)과 무상태 도구를 고른다. 도구 정의의 단일 출처는 capabilities --mcp 와 tools/list. gym 트레이스·온보딩 닥터·안전 편집·출처 표지·문서 트리아지·새 CLI/도구 발명은 책임 밖 | [MCP 통합 가이드](mcp_integration_guide.md) | [Skill](../../.claude/skills/rhwp-mcp-session/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5295` | `rhwp-provenance` | 봉투 출처 표지(untrustedContent/untrustedFields)와 export-provenance-map 을 읽어 문서 파생 값을 데이터로 격리. 금지 프롬프트 자리·주입 경계(B1~B5) 적용. 새 CLI 추가·문서 검열·gym 시나리오·온보딩/MCP/safe-edit/doc-triage 스킬 변경은 책임 밖 | [봉투 출처 계약](../tech/envelope_provenance.md) | [Skill](../../.claude/skills/rhwp-provenance/SKILL.md) | — | active · rhwp maintainers |
 
 `—`는 해당 런타임용 어댑터가 아직 없다는 뜻이며, capability 자체가 없다는 뜻은 아니다.
 
