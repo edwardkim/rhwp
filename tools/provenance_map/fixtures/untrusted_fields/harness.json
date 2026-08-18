@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "harness",
+  "mapIndex": 31,
+  "family": "receipt",
+  "familyTitle": "영수증·감사",
+  "opensDocument": false,
+  "cli": "rhwp harness wrap --json",
+  "risk": "none",
+  "whyRisk": "문서 문자열은 wrap 실행 내부.",
+  "note": "하네스 봉투는 경로 에코(dir·capsule·output)·해시·연번뿐이다 — 캡슐·키링은 호출자 산출물이고, 문서 문자열은 wrap 실행 내부에 머문다.",
+  "consumerRule": "매니페스트만 소비.",
+  "trap": "산출 파일을 다시 읽어 프롬프트에 넣으면 그 순간 D.",
+  "untrusted": [],
+  "origins": {},
+  "engineFields": [
+    [
+      "seq",
+      "연번"
+    ]
+  ],
+  "callerFields": [
+    [
+      "dir",
+      "경로 에코"
+    ],
+    [
+      "capsule",
+      "경로 에코"
+    ],
+    [
+      "output",
+      "경로 에코"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "default",
+      "flags": [
+        "--json"
+      ],
+      "present": [],
+      "why": "경로·해시·연번",
+      "sampleKind": "typical",
+      "untrustedContent": false
+    }
+  ],
+  "fields": [],
+  "forbiddenSlots": [
+    "permission_judgment",
+    "policy_exception"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

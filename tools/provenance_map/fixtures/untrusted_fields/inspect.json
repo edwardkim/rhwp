@@ -1,0 +1,207 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "inspect",
+  "mapIndex": 22,
+  "family": "security",
+  "familyTitle": "보안 스윕",
+  "opensDocument": true,
+  "cli": "rhwp inspect <축> <파일> --json",
+  "risk": "critical",
+  "whyRisk": "탐지 결과의 excerpt/matched 가 곧 공격문이다. 시스템 프롬프트에 붙이면 승격.",
+  "note": "hiddenText·injectionSignals·findings의 문장·표시 문자열만 문서 파생이며, 종류·주소·근거·집계는 엔진 판정값이다.",
+  "consumerRule": "신호는 흐름을 바꾼다(B5). 발췌는 화면·격벽. 도구 인자에 넣지 않는다.",
+  "trap": "samples/ 음성 코퍼스가 clean:true 인 것은 정상. 탐지기 고장이 아니다.",
+  "untrusted": [
+    "hiddenText[].excerpt",
+    "injectionSignals[].excerpt",
+    "injectionSignals[].matched",
+    "findings[].excerpt",
+    "findings[].rendered",
+    "findings[].raw",
+    "findings[].hidden"
+  ],
+  "origins": {
+    "hiddenText[].excerpt": "queries::hidden_text::detect_hidden_text — 조판상 은닉으로 판정한 문서 문자열의 제한 발췌",
+    "injectionSignals[].excerpt": "queries::injection_scan::make_excerpt — 주입 신호가 발견된 문서 문맥의 제한 발췌",
+    "injectionSignals[].matched": "queries::injection_scan::scan_text_in — 문서에서 실제 매치된 신호 조각",
+    "findings[].excerpt": "text_security::scan_deception — 유니코드 기만이 발견된 문서 문맥의 제한 발췌",
+    "findings[].rendered": "text_security::scan_deception — 문서 문자열을 사람이 보는 표시 순서로 재현한 값",
+    "findings[].raw": "text_security::scan_deception — 제어문자를 표기한 실제 문서 코드포인트 순서",
+    "findings[].hidden": "text_security::scan_deception — 태그 문자로 숨겨진 문서 문자열의 복원값"
+  },
+  "engineFields": [
+    [
+      "clean",
+      "엔진 판정"
+    ],
+    [
+      "signalCount",
+      "건수"
+    ],
+    [
+      "findingCount",
+      "건수"
+    ],
+    [
+      "hiddenCharCount",
+      "건수"
+    ],
+    [
+      "highestConfidence",
+      "최고 신뢰도"
+    ],
+    [
+      "scanScopes",
+      "검사 범위 — 훑지 않은 영역은 검사 안 함"
+    ]
+  ],
+  "callerFields": [
+    [
+      "source",
+      "입력 경로"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "hidden-text",
+      "flags": [
+        "inspect",
+        "hidden-text",
+        "--json"
+      ],
+      "present": [
+        "hiddenText[].excerpt"
+      ],
+      "why": "은닉 발췌",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "injection",
+      "flags": [
+        "inspect",
+        "injection",
+        "--json"
+      ],
+      "present": [
+        "injectionSignals[].excerpt",
+        "injectionSignals[].matched"
+      ],
+      "why": "주입 신호 발췌·매치 조각",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "unicode",
+      "flags": [
+        "inspect",
+        "unicode",
+        "--json"
+      ],
+      "present": [
+        "findings[].excerpt",
+        "findings[].rendered",
+        "findings[].raw",
+        "findings[].hidden"
+      ],
+      "why": "유니코드 기만 네 문자열",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "clean",
+      "flags": [
+        "inspect",
+        "injection",
+        "--json"
+      ],
+      "present": [],
+      "why": "0건이면 표지 false. clean 은 검사한 축만",
+      "sampleKind": "typical",
+      "untrustedContent": false
+    }
+  ],
+  "fields": [
+    {
+      "path": "hiddenText[].excerpt",
+      "origin": "queries::hidden_text::detect_hidden_text — 조판상 은닉으로 판정한 문서 문자열의 제한 발췌",
+      "hint": "은닉 발췌 — 공격문일 수 있다.",
+      "presentInModes": [
+        "hidden-text"
+      ]
+    },
+    {
+      "path": "injectionSignals[].excerpt",
+      "origin": "queries::injection_scan::make_excerpt — 주입 신호가 발견된 문서 문맥의 제한 발췌",
+      "hint": "주입 문맥. 승격 금지.",
+      "presentInModes": [
+        "injection"
+      ]
+    },
+    {
+      "path": "injectionSignals[].matched",
+      "origin": "queries::injection_scan::scan_text_in — 문서에서 실제 매치된 신호 조각",
+      "hint": "매치 조각. 승격 금지.",
+      "presentInModes": [
+        "injection"
+      ]
+    },
+    {
+      "path": "findings[].excerpt",
+      "origin": "text_security::scan_deception — 유니코드 기만이 발견된 문서 문맥의 제한 발췌",
+      "hint": "기만 문맥.",
+      "presentInModes": [
+        "unicode"
+      ]
+    },
+    {
+      "path": "findings[].rendered",
+      "origin": "text_security::scan_deception — 문서 문자열을 사람이 보는 표시 순서로 재현한 값",
+      "hint": "표시 순서 재현.",
+      "presentInModes": [
+        "unicode"
+      ]
+    },
+    {
+      "path": "findings[].raw",
+      "origin": "text_security::scan_deception — 제어문자를 표기한 실제 문서 코드포인트 순서",
+      "hint": "원문 코드포인트 또는 개인정보.",
+      "presentInModes": [
+        "unicode"
+      ]
+    },
+    {
+      "path": "findings[].hidden",
+      "origin": "text_security::scan_deception — 태그 문자로 숨겨진 문서 문자열의 복원값",
+      "hint": "숨겨진 복원값.",
+      "presentInModes": [
+        "unicode"
+      ]
+    }
+  ],
+  "forbiddenSlots": [
+    "system_prompt",
+    "tool_name",
+    "shell_command",
+    "url_destination",
+    "http_request_body",
+    "permission_judgment",
+    "source_label",
+    "log_filename",
+    "policy_exception"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

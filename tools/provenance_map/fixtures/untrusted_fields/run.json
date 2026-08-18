@@ -1,0 +1,137 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "run",
+  "mapIndex": 25,
+  "family": "edit",
+  "familyTitle": "편집·계획",
+  "opensDocument": true,
+  "cli": "rhwp run --plan-json <계획> --json [--dry-run]",
+  "risk": "critical",
+  "whyRisk": "저널이 step 단위. 최상위만 보면 lookalikes 를 놓친다.",
+  "note": "input·output·steps[].find 는 계획서(호출자)가 준 값이다.",
+  "consumerRule": "판정은 steps[] 순회. 계획 뼈대는 코드(B4).",
+  "trap": "문서 내용으로 계획을 생성하지 않는다.",
+  "untrusted": [
+    "steps[].oldText",
+    "steps[].confusable[].lookalikes"
+  ],
+  "origins": {
+    "steps[].oldText": "set_cell step 이 덮기 전의 셀 텍스트",
+    "steps[].confusable[].lookalikes": "fill_fields step 이 경고한 문서의 유사 필드 이름들"
+  },
+  "engineFields": [
+    [
+      "planVersion",
+      "계획서 버전"
+    ],
+    [
+      "verify",
+      "엔진 판정"
+    ],
+    [
+      "changedPages",
+      "변경 쪽"
+    ]
+  ],
+  "callerFields": [
+    [
+      "input",
+      "계획서 입력 경로"
+    ],
+    [
+      "output",
+      "계획서 산출 경로"
+    ],
+    [
+      "steps[].find",
+      "계획서 값"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "set-cell",
+      "flags": [
+        "run",
+        "--json"
+      ],
+      "present": [
+        "steps[].oldText"
+      ],
+      "why": "실행 모드 set_cell 저널",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "fill-fields",
+      "flags": [
+        "run",
+        "--json"
+      ],
+      "present": [
+        "steps[].confusable[].lookalikes"
+      ],
+      "why": "fill_fields 의 유사 이름",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "dry-run",
+      "flags": [
+        "run",
+        "--json",
+        "--dry-run"
+      ],
+      "present": [],
+      "why": "dry-run 은 표지가 빠지거나 false 인 실측이 있었다. 키 존재를 먼저 본다",
+      "sampleKind": "typical",
+      "untrustedContent": false
+    }
+  ],
+  "fields": [
+    {
+      "path": "steps[].oldText",
+      "origin": "set_cell step 이 덮기 전의 셀 텍스트",
+      "hint": "run 저널의 옛 셀 텍스트.",
+      "presentInModes": [
+        "set-cell"
+      ]
+    },
+    {
+      "path": "steps[].confusable[].lookalikes",
+      "origin": "fill_fields step 이 경고한 문서의 유사 필드 이름들",
+      "hint": "run 저널의 유사 이름.",
+      "presentInModes": [
+        "fill-fields"
+      ]
+    }
+  ],
+  "forbiddenSlots": [
+    "system_prompt",
+    "tool_name",
+    "tool_arg_path",
+    "tool_arg_output",
+    "http_request_body",
+    "run_plan_json",
+    "source_label",
+    "log_filename",
+    "email_recipient",
+    "email_subject",
+    "next_cli_subcommand",
+    "verify_expected",
+    "scheduler_payload"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

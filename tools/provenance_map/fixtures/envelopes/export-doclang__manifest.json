@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "export-doclang__manifest",
+  "command": "export-doclang",
+  "family": "export",
+  "mode": "manifest",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp export-doclang <파일> --json ",
+  "whyThisMode": "경로·개수",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "저장 봉투는 경로·바이트·자산 개수·손실 개수뿐이다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "source": "C",
+    "bytes": "R",
+    "assetCount": "R",
+    "lossCount": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "개수로 분기. 손실 원문은 이 봉투에 없다.",
+  "trap": "손실 목록 파일이 따로 있으면 그 파일의 계약을 따른다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [
+    "tool_arg_path",
+    "tool_arg_output",
+    "filename_from_title"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "<repo>/samples/fixture-export-doclang.hwp",
+    "bytes": 0,
+    "assetCount": 0,
+    "lossCount": 0,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

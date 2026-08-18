@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "harness-status__default",
+  "command": "harness-status",
+  "family": "receipt",
+  "mode": "default",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp harness-status --json ",
+  "whyThisMode": "판정·집계",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "판정 봉투는 경로 에코(dir)·개수 회계(capsules)·판정 불리언 (chainValid·verdict)·서명/재현 집계·깨진 캡슐 파일 이름(brokenAt)뿐이다 — 캡슐은 호출자 산출물이고, 문서 문자열은 --deep 재실행 내부에 머문다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "dir": "C",
+    "chainValid": "R",
+    "verdict": "R",
+    "capsules": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "판정만 읽는다.",
+  "trap": "파일 이름을 문서 제목으로 쓰지 않는다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "dir": "caller:harness-status:dir",
+    "chainValid": "engine:harness-status:chainValid",
+    "verdict": "engine:harness-status:verdict",
+    "capsules": "engine:harness-status:capsules",
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

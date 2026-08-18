@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "table-to-csv__file-only",
+  "command": "table-to-csv",
+  "family": "table",
+  "mode": "file-only",
+  "flags": [
+    "--json",
+    "-o"
+  ],
+  "cli": "rhwp table-to-csv <파일> --json [--table N] -o",
+  "whyThisMode": "-o 만 쓰면 본문은 파일 쪽. 봉투는 경로·크기",
+  "sampleKind": "typical",
+  "risk": "critical",
+  "note": "표 주소·격자 크기·BOM·산출 경로는 엔진 또는 호출자 값이고, CSV 본문만 문서 파생이다.",
+  "declaredUntrusted": [
+    "tables[].csv"
+  ],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "source": "C",
+    "output": "C",
+    "table": "R",
+    "rows": "R",
+    "cols": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "CSV 를 셸 리다이렉트 인자로 붙이지 않는다. 파일로 저장한 뒤 도구가 읽는다.",
+  "trap": "RFC 4180 이스케이프가 있어도 수식 인젝션(=cmd|)은 스프레드시트 쪽 문제다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [
+    "system_prompt",
+    "tool_arg_path",
+    "shell_command",
+    "url_destination",
+    "run_plan_json",
+    "email_recipient"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "<repo>/samples/fixture-table-to-csv.hwp",
+    "output": "caller:table-to-csv:output",
+    "table": "engine:table-to-csv:table",
+    "rows": "engine:table-to-csv:rows",
+    "cols": "engine:table-to-csv:cols",
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

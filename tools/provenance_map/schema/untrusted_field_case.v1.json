@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "rhwp.provenance.untrusted_fields.v1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "command",
+    "untrusted",
+    "origins",
+    "fields"
+  ]
+}

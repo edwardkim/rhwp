@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "csv-to-table",
+  "mapIndex": 18,
+  "family": "table",
+  "familyTitle": "표 교환",
+  "opensDocument": true,
+  "cli": "rhwp csv-to-table <파일> --csv <csv> --json",
+  "risk": "high",
+  "whyRisk": "oldText 는 문서 원문. 변경 전 개인정보가 저널에 남는다.",
+  "note": "csv·newText는 호출자가 준 입력이고, 변경 전 셀 값(oldText)만 문서에서 왔다.",
+  "consumerRule": "oldText 를 로그 파일 이름·이슈 본문에 옮기지 않는다.",
+  "trap": "csv/newText 는 호출자 입력. 문서에서 읽은 CSV 를 그대로 넣으면 그때부터 D.",
+  "untrusted": [
+    "changed[].oldText"
+  ],
+  "origins": {
+    "changed[].oldText": "resolve_table_cell — CSV를 적용하기 전 표 앵커 셀에 있던 문서 텍스트"
+  },
+  "engineFields": [
+    [
+      "changedCount",
+      "변경 칸 수"
+    ],
+    [
+      "verify",
+      "엔진 판정"
+    ]
+  ],
+  "callerFields": [
+    [
+      "source",
+      "입력 경로"
+    ],
+    [
+      "csv",
+      "호출자가 준 CSV"
+    ],
+    [
+      "newText",
+      "호출자가 넣는 값"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "changed",
+      "flags": [
+        "--json"
+      ],
+      "present": [
+        "changed[].oldText"
+      ],
+      "why": "덮기 전 셀 원문이 저널에 남는다",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "dry-run",
+      "flags": [
+        "--json",
+        "--dry-run"
+      ],
+      "present": [
+        "changed[].oldText"
+      ],
+      "why": "dry-run 도 oldText 는 실린다",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    }
+  ],
+  "fields": [
+    {
+      "path": "changed[].oldText",
+      "origin": "resolve_table_cell — CSV를 적용하기 전 표 앵커 셀에 있던 문서 텍스트",
+      "hint": "덮기 전 셀 원문.",
+      "presentInModes": [
+        "changed",
+        "dry-run"
+      ]
+    }
+  ],
+  "forbiddenSlots": [
+    "system_prompt",
+    "tool_arg_path",
+    "shell_command",
+    "url_destination",
+    "run_plan_json",
+    "source_label",
+    "email_recipient",
+    "env_variable"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

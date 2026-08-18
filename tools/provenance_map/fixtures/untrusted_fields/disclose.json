@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "disclose",
+  "mapIndex": 36,
+  "family": "receipt",
+  "familyTitle": "영수증·감사",
+  "opensDocument": false,
+  "cli": "rhwp disclose --json",
+  "risk": "none",
+  "whyRisk": "원문을 봉투에 싣지 않는 것이 이 축의 존재 이유.",
+  "note": "공개 봉투는 경로 에코·커밋 수·포인터 목록·해시·판정뿐이다 — 값 원문은 비밀 개봉 파일에만 있고 봉투에 싣지 않는다(그것이 이 축의 존재 이유).",
+  "consumerRule": "개봉 파일은 별도 권한. 봉투만 보고 원문이 없다고 안심.",
+  "trap": "개봉 파일을 프롬프트에 붙이면 disclose 계약을 깨는 것.",
+  "untrusted": [],
+  "origins": {},
+  "engineFields": [
+    [
+      "commitCount",
+      "커밋 수"
+    ],
+    [
+      "verdict",
+      "판정"
+    ]
+  ],
+  "callerFields": [
+    [
+      "source",
+      "경로 에코"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "default",
+      "flags": [
+        "--json"
+      ],
+      "present": [],
+      "why": "값 원문은 비밀 개봉 파일에만",
+      "sampleKind": "typical",
+      "untrustedContent": false
+    }
+  ],
+  "fields": [],
+  "forbiddenSlots": [
+    "permission_judgment",
+    "policy_exception"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}
