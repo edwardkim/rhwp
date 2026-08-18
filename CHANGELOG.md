@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### HWPX 저장
+
+- `hp:ole` 의 shape-component 자식(`offset`·`orgSz`·`curSz`·`flip`·
+  `rotationInfo`·`renderingInfo`·`lineShape`)과 `id`/`instid` 를 원문
+  보존한다. `curSz=0` 은 was_zero 센티널로 되돌리고, 음수 offset 은
+  u32 wraparound 로 방출한다 (#4669, #5450).
+
 ## [0.8.4] — 2026-08-12
 
 ### 배포 채널 복원

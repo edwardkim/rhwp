@@ -1,0 +1,87 @@
+{
+  "schema": "rhwp.issue4669.ole-shape-component.v1",
+  "issue": 4669,
+  "tracker": 5450,
+  "fixture_id": "040_asymmetric_zero_h",
+  "family": "cursz-orgsz",
+  "contract": "width 1 / height 0",
+  "source": "synthetic / #2017 OLE 센티널",
+  "oles": [
+    {
+      "index": 0,
+      "id": 2141242094,
+      "instid": 1067500271,
+      "hwpx_ole_id": 2141242094,
+      "instance_id": 1067500271,
+      "save_id": 2141242094,
+      "offset": [
+        0,
+        0
+      ],
+      "offset_u32": [
+        0,
+        0
+      ],
+      "orgSz": [
+        9000,
+        3000
+      ],
+      "curSz": [
+        1,
+        0
+      ],
+      "was_zero": [
+        false,
+        true
+      ],
+      "flip": [
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        14999,
+        2025,
+        1
+      ],
+      "trans": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "sca": [
+        0.714245,
+        0,
+        0,
+        0,
+        0.300052,
+        0
+      ],
+      "line": {
+        "color": "#000000",
+        "width": 0,
+        "style": "NONE",
+        "endCap": "ROUND"
+      },
+      "expect_xml": [
+        "id=\"2141242094\"",
+        "instid=\"1067500271\"",
+        "<hp:offset x=\"0\" y=\"0\"/>",
+        "<hp:orgSz width=\"9000\" height=\"3000\"/>",
+        "<hp:curSz width=\"1\" height=\"0\"/>",
+        "<hp:flip horizontal=\"0\" vertical=\"0\"/>",
+        "angle=\"0\"",
+        "centerX=\"14999\"",
+        "centerY=\"2025\"",
+        "rotateimage=\"1\"",
+        "style=\"NONE\"",
+        "width=\"0\""
+      ],
+      "forbid_xml": [],
+      "forbid_id_zero": true
+    }
+  ]
+}
