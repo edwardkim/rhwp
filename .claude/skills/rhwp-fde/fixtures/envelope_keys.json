@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5333,
+  "commands": {
+    "capabilities": {
+      "keys": [
+        "commands"
+      ],
+      "required": [
+        "commands"
+      ]
+    },
+    "info": {
+      "keys": [
+        "schemaVersion",
+        "source",
+        "format",
+        "pageCount"
+      ],
+      "required": [
+        "schemaVersion"
+      ]
+    },
+    "explain": {
+      "keys": [
+        "schemaVersion",
+        "source",
+        "summary"
+      ],
+      "required": [
+        "schemaVersion"
+      ]
+    },
+    "export-structure": {
+      "keys": [
+        "schemaVersion",
+        "source",
+        "sections"
+      ],
+      "required": [
+        "schemaVersion"
+      ]
+    },
+    "digest": {
+      "keys": [
+        "schemaVersion",
+        "source",
+        "excerpts"
+      ],
+      "required": [
+        "schemaVersion"
+      ]
+    }
+  },
+  "encryptedKeys": [
+    "encrypted",
+    "isEncrypted",
+    "passwordProtected"
+  ],
+  "exitCodes": {
+    "0": "티켓 생성됨 (escalate-bug 여도 0)",
+    "1": "엔진 자체 실패",
+    "2": "입력 오류 (문서 없음, 바이너리 없음)"
+  }
+}
