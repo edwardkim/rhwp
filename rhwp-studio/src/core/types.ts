@@ -1093,6 +1093,7 @@ export interface LayerPageBackgroundOp {
   backgroundColor?: string;
   borderColor?: string;
   borderWidth?: number;
+  gradient?: LayerGradientFill;
 }
 
 export interface LayerTextStyle {
@@ -1204,6 +1205,16 @@ export interface LayerShapeStyle {
   opacity?: number;
 }
 
+/** HWP 도형/페이지 배경 그라데이션. paint JSON `gradient` 필드와 동일. */
+export interface LayerGradientFill {
+  gradientType?: number;
+  angle?: number;
+  centerX?: number;
+  centerY?: number;
+  colors?: string[];
+  positions?: number[];
+}
+
 export interface LayerLineOp {
   type: 'line';
   bbox: LayerBounds;
@@ -1219,12 +1230,14 @@ export interface LayerRectangleOp {
   bbox: LayerBounds;
   cornerRadius?: number;
   style?: LayerShapeStyle;
+  gradient?: LayerGradientFill;
 }
 
 export interface LayerEllipseOp {
   type: 'ellipse';
   bbox: LayerBounds;
   style?: LayerShapeStyle;
+  gradient?: LayerGradientFill;
 }
 
 export type LayerPathCommand =
@@ -1256,6 +1269,7 @@ export interface LayerPathOp {
   style?: LayerShapeStyle;
   lineStyle?: LayerLineStyle;
   transform?: LayerPathTransform;
+  gradient?: LayerGradientFill;
 }
 
 export interface LayerImageOp {
