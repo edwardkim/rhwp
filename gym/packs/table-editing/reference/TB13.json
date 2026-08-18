@@ -1,0 +1,23 @@
+{
+  "id": "TB13",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "0",
+        "--text",
+        "좌상",
+        "-o",
+        "{sub:left_top.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

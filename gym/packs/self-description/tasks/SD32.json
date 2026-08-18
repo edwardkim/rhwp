@@ -1,0 +1,25 @@
+{
+  "id": "SD32",
+  "tier": 2,
+  "title": "textSecurity 상태 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "jsonContract.textSecurity.status 의 원소 수를 answer.json 에 {\"status\": N} 으로 제출하라. 힌트: capabilities 의 jsonContract.textSecurity.status.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "textSecurity 상태 수",
+      "op": "len_answer_eq",
+      "answer": "status",
+      "path": "jsonContract.textSecurity.status",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

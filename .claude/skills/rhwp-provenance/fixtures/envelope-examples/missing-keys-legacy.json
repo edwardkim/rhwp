@@ -1,0 +1,16 @@
+{
+  "comment": "미표기. 키 부재를 false 로 접지 않는다. 봉투 전체를 D 로 취급한다.",
+  "schemaVersion": "1.0",
+  "source": "legacy-binary-output",
+  "pages": [
+    {
+      "page": 0,
+      "text": "<표지 없이 실릴 수 있는 본문>"
+    }
+  ],
+  "consume": {
+    "state": "unmarked",
+    "treatEntireEnvelopeAs": "document-derived",
+    "never": ["interpret-missing-as-false"]
+  }
+}

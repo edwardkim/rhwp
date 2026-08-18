@@ -1,0 +1,27 @@
+{
+  "id": "OP10",
+  "tier": 2,
+  "title": "누름틀 배열 길이 이중 계산",
+  "input": "samples/field-01.hwp",
+  "axis": "검증",
+  "instructions": "fields 배열의 길이를 answer.json 에 {\"fieldLen\": N} 으로 제출하라. fieldCount 스칼라가 아니라 배열 길이를 라이브로 잰다 (len_answer_eq). 두 경로가 같아야 오라클이 정합하다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "필드 배열 길이",
+      "op": "len_answer_eq",
+      "answer": "fieldLen",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ],
+      "path": "fields"
+    }
+  ]
+}

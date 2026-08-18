@@ -1,0 +1,44 @@
+{
+  "id": "FJ19",
+  "tier": 3,
+  "title": "form-01 채움 후 본문 재검색",
+  "input": "samples/form-01.hwp",
+  "instructions": "form-01 의 myMsg01 에 '제출검토값' 을 넣은 review.hwp 를 제출하라. FJ05 의 '배포전값' 과 다른 문자열이다. 채점은 필드 재독과 본문 재검색을 함께 본다. sanitize 는 이 과제의 일이 아니다. 힌트: fill-fields 후 rhwp search review.hwp --json -- 제출검토값 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "review.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "myMsg01 값",
+      "op": "value_eq",
+      "value": "제출검토값",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:review.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "본문에 제출검토값",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:review.hwp}",
+        "--json",
+        "--",
+        "제출검토값"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "review.hwp"
+    }
+  ]
+}

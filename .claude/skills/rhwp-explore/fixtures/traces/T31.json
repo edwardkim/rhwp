@@ -1,0 +1,25 @@
+{
+  "id": "T31",
+  "title": "암호 서식",
+  "scenario": "S18",
+  "argv": [
+    "explore",
+    "secret/form.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S18.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": true,
+    "menuIds": [
+      "form-fill",
+      "triage-overview"
+    ],
+    "first": "form-fill",
+    "firstCommand": "rhwp fields <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X04",
+  "notGym": true,
+  "usesExistingCommand": true
+}

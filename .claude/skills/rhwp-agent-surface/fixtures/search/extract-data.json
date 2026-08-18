@@ -1,0 +1,23 @@
+{
+  "invocation": "rhwp capabilities --search extract-data",
+  "invocation_json": "rhwp capabilities --search extract-data --json",
+  "query": "extract-data",
+  "keywords_and": [
+    "extract-data"
+  ],
+  "match_count": 1,
+  "empty": false,
+  "layer": "cli-json",
+  "ssot": "capabilities_command_entries() name+summary+subcommands",
+  "matches": [
+    {
+      "name": "extract-data",
+      "family": "query",
+      "summary": "날짜·금액·수량을 구역·문단·페이지·문자 오프셋 주소와 함께 추출",
+      "json": false
+    }
+  ],
+  "truncated": false,
+  "total_match_count": 1,
+  "note": "개수는 계약이 아니다. 바이너리 출력이 이긴다."
+}

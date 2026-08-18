@@ -1,0 +1,16 @@
+{
+  "id": "SD67",
+  "steps": [
+    {
+      "answer": {
+        "ref": {
+          "cmd": [
+            "export-capabilities-schema",
+            "--json"
+          ],
+          "path": "schema.$ref"
+        }
+      }
+    }
+  ]
+}

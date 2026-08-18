@@ -1,0 +1,48 @@
+{
+  "id": "SD74",
+  "tier": 3,
+  "title": "IR 스키마 버전 표지",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-ir-schema 봉투를 ir-schema.json 으로 받아 제출하라. SD07 이 dialect 만 묻는다면 이 과제는 irSchemaVersion 과 $ref 를 함께 고정한다. 힌트: rhwp export-ir-schema -o ir-schema.json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "ir-schema.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "스키마 산출",
+      "op": "file_exists",
+      "file": "ir-schema.json",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "ir-schema.json"
+    },
+    {
+      "name": "IR dialect",
+      "op": "json_value_eq",
+      "file": "ir-schema.json",
+      "path": "dialect",
+      "value": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "name": "irSchemaVersion",
+      "op": "json_value_eq",
+      "file": "ir-schema.json",
+      "path": "irSchemaVersion",
+      "value": "1.0"
+    },
+    {
+      "name": "schema $ref",
+      "op": "json_value_eq",
+      "file": "ir-schema.json",
+      "path": "schema.$ref",
+      "value": "#/$defs/Document"
+    }
+  ],
+  "axis": "조사"
+}

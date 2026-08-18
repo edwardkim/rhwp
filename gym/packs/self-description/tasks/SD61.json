@@ -1,0 +1,26 @@
+{
+  "id": "SD61",
+  "tier": 3,
+  "title": "매니페스트 명령 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-agent-manifest 가 조립한 capabilities.commands 수를 answer.json 에 {\"commands\": N} 으로 제출하라. 힌트: rhwp export-agent-manifest --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "매니페스트 명령 수",
+      "op": "len_answer_eq",
+      "answer": "commands",
+      "path": "capabilities.commands",
+      "cmd": [
+        "export-agent-manifest",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

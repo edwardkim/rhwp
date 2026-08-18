@@ -1,0 +1,41 @@
+{
+  "id": "TB18",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "0",
+        "--text",
+        "갑",
+        "-o",
+        "{sub:step1.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{sub:step1.hwp}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "1",
+        "--text",
+        "을",
+        "-o",
+        "{sub:row_pair.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

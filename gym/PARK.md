@@ -67,6 +67,49 @@ python gym/score.py --agent 내이름        # 표 발권(admission.json)
 지도만 보면 막막하다. 휴게실에서 첫 놀이기구를 함께 타 본다.
 
 > **→ [gym/tutorial/README.md](tutorial/README.md)** — 5분 첫 방문 안내.
+>
+> 휴게실이 한 장이 되었다. 표를 끊는 법, 입문존 네 놀이기구, 일곱
+> 프로파일, casual 바깥 `starter` 길, 전당과 초대, Windows 번역까지
+> 같은 폴더에 있다. 규약 정본은 [docs/tutorial.md](docs/tutorial.md).
+
+### 첫 방문 동선 (이 지도에서)
+
+1. 표를 끊는다 — `--profile family` ([tutorial/01-admission.md](tutorial/01-admission.md))
+2. 회전목마 CR01 — `rhwp info samples/table-001.hwp --json` 의 `pageCount`
+   ([tutorial/02-cr01-carousel.md](tutorial/02-cr01-carousel.md))
+3. 관람차·서커스·링던지기 — 같은 문서, 다른 창문
+   ([tutorial/03-cr02-ferris.md](tutorial/03-cr02-ferris.md) ·
+   [tutorial/04-cr03-circus.md](tutorial/04-cr03-circus.md) ·
+   [tutorial/05-cr04-ringtoss.md](tutorial/05-cr04-ringtoss.md))
+4. 이름이 필요하면 전당 — `leaderboard.py attest` /
+   `verify` ([tutorial/12-leaderboard.md](tutorial/12-leaderboard.md))
+5. 담력이 붙으면 `starter` 로 casual 바깥
+   ([tutorial/07-starter-path.md](tutorial/07-starter-path.md))
+
+이 동선은 안내다. 입장 조건이 아니다. `boss` 부터 타도 표는 끊긴다.
+
+### 일곱 프로파일 (기계가 읽는 이름)
+
+존 이름은 은유다. 채점기가 읽는 묶음은 `gym/profiles/<id>.json` 의
+`id` 다. 철자가 다르면 파일이 없다.
+
+| id | 묶는 pack | 가까운 존 |
+|---|---|---|
+| `family` | `casual-rides` | 🎠 입문존 |
+| `starter` | `core-cli`, `self-description` | 휴게실 다음 |
+| `editor` | `core-cli`, `text-editing`, `table-editing`, `objects-media` | ✏️ 편집존 |
+| `publisher` | `serialization`, `layout-rendering`, `security` | 📖+🔐 |
+| `operator` | `corpus-diagnostics`, `automation` | ⚙️ 사다리 |
+| `boss` | `expert-challenges` | 🐉 보스존 |
+| `maintainer` | 전 pack | 공원 전체 |
+
+자세히 → [tutorial/06-profiles.md](tutorial/06-profiles.md).
+
+### 제출 자리 (한 줄)
+
+`gym/submissions/<이름>/<pack>/<과제id>/`. pack 폴더가 없으면 평면
+배치는 하위 호환으로만 찾는다. 새로 탈 때는 pack 아래다.
+[tutorial/14-submissions.md](tutorial/14-submissions.md).
 
 ---
 
@@ -203,3 +246,50 @@ python gym/tools/leaderboard.py invite --agent 친구이름   # 초대장 발급
 
 놀이공원이라 부르는 이유는 사람을 부르기 위해서지, 판정을 무르게 하기 위해서가
 아니다.
+
+휴게실 문서와 `gym/docs/tutorial.md` 도 이 조항을 반복한다. 장식이
+늘어난다고 연산자 등록부(`gym/core/checks.py` 의 `REGISTRY`)가
+늘어나지 않는다. 입문 안내가 pack 과제 JSON 을 고쳐서 점수를 쉽게
+만들지도 않는다.
+
+---
+
+## 존별 첫 놀이기구 (기존 과제만)
+
+새 과제를 이 지도가 등재하지 않는다. 이미 있는 1번 과제만 가리킨다.
+지시서 정본은 각 `packs/<id>/tasks/*.json` 이다.
+
+| 존 | 첫 과제 | 한 줄 | 휴게실 |
+|---|---|---|---|
+| 🎠 입문 | CR01 | `info` → `pages` | [tutorial/02-cr01-carousel.md](tutorial/02-cr01-carousel.md) |
+| 입문 다음 | T01 / SD01 | 다른 문서의 쪽수 / 명령 수 | [tutorial/07-starter-path.md](tutorial/07-starter-path.md) |
+| ✏️ 편집 | TE01 · TB01 · OM01 | 치환 · 표 모양 · 누름틀 수 | [tutorial/08-editor-path.md](tutorial/08-editor-path.md) |
+| 📖+🔐 배포 | SR01 · LR01 · SE01 | HWPX · 쪽수 · PII 건수 | [tutorial/09-publisher-path.md](tutorial/09-publisher-path.md) |
+| ⚙️ 사다리 | CD01 · AU01 | 폴더 스윕 · 계획 실행 | [tutorial/10-operator-path.md](tutorial/10-operator-path.md) |
+| 🐉 보스 | XC01 | L5 완주 | [tutorial/11-boss-path.md](tutorial/11-boss-path.md) |
+
+`batch-ops` · `extraction` · `render-tree` · `studio-e2e` ·
+`table-csv` 는 저장소에 있다. `maintainer` 가 전부 고른다. 위 표의
+프로파일에 없는 pack 은 `--pack` 으로 따로 탄다. 이 지도가 프로파일
+JSON 에 몰래 넣지 않는다.
+
+## 막혔을 때 (지도에서)
+
+| 증상 | 먼저 볼 곳 |
+|---|---|
+| `rhwp` 없음 | [tutorial/18-troubleshooting.md](tutorial/18-troubleshooting.md) §1 |
+| 프로파일 파일 없음 | [tutorial/06-profiles.md](tutorial/06-profiles.md) |
+| `unavailable` | [tutorial/16-unavailable.md](tutorial/16-unavailable.md) |
+| 제출 없음 | [tutorial/14-submissions.md](tutorial/14-submissions.md) |
+| bash 가 안 됨 | [tutorial/19-windows.md](tutorial/19-windows.md) |
+| 첫날 한 장 | [tutorial/20-checklist.md](tutorial/20-checklist.md) |
+
+## 이 지도가 바꾸지 않는 것
+
+- `gym/core/checks.py` 의 연산자 정의와 `REGISTRY`
+- `gym/core/runner.py` 의 점수 합산 · unavailable 규칙
+- `gym/score.py` 의 `verdict: allow` 조건 (`packsScored >= 1`)
+- 다른 열린 PR 이 만지는 pack 과제 JSON
+- 리더보드 원장·앵커 바이트 (초대·등재 명령이 그 일을 한다)
+
+장식은 사람을 부른다. 판정은 그대로다.

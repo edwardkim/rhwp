@@ -224,6 +224,7 @@ impl CellComposedStore {
         cell: &crate::model::table::Cell,
         inner_width: f64,
         styles: &ResolvedStyleSet,
+        restore_indented_tracking: bool,
     ) -> &ComposedParagraph {
         match self {
             CellComposedStore::Eager(v) => &v[cpi],
@@ -231,12 +232,21 @@ impl CellComposedStore {
                 if slots[cpi].is_none() {
                     let para = &cell.paragraphs[cpi];
                     let mut comp = compose_paragraph(para);
-                    crate::renderer::composer::recompose_for_cell_width(
-                        &mut comp,
-                        para,
-                        inner_width,
-                        styles,
-                    );
+                    if restore_indented_tracking {
+                        crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
+                            &mut comp,
+                            para,
+                            inner_width,
+                            styles,
+                        );
+                    } else {
+                        crate::renderer::composer::recompose_for_cell_width(
+                            &mut comp,
+                            para,
+                            inner_width,
+                            styles,
+                        );
+                    }
                     if cell.text_direction == 0 {
                         crate::renderer::composer::recompose_stored_single_line_if_overflowing(
                             &mut comp,
@@ -258,11 +268,15 @@ impl CellComposedStore {
         cell: &crate::model::table::Cell,
         inner_width: f64,
         styles: &ResolvedStyleSet,
+        restore_indented_tracking: bool,
     ) {
         if matches!(self, CellComposedStore::Lazy(_)) {
             let mut v = Vec::with_capacity(cell.paragraphs.len());
             for cpi in 0..cell.paragraphs.len() {
-                v.push(self.get(cpi, cell, inner_width, styles).clone());
+                v.push(
+                    self.get(cpi, cell, inner_width, styles, restore_indented_tracking)
+                        .clone(),
+                );
             }
             *self = CellComposedStore::Eager(v);
         }
@@ -901,6 +915,8 @@ impl LayoutEngine {
             // 셀 패딩
             let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
                 self.resolve_cell_padding(cell, table);
+            let restore_indented_tracking =
+                self.long_indented_tracking_uses_table_content_box(table, styles);
 
             // [#4149] windowed 프로브면 창 문단만 lazy compose. 그 외에는 종전과
             // 동일한 순서로 전량 compose → shrink → recompose.
@@ -937,12 +953,21 @@ impl LayoutEngine {
                 // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
                 for (cpi, para) in cell.paragraphs.iter().enumerate() {
                     if let Some(comp) = composed_paras.get_mut(cpi) {
-                        crate::renderer::composer::recompose_for_cell_width(
-                            comp,
-                            para,
-                            inner_width_for_recompose,
-                            styles,
-                        );
+                        if restore_indented_tracking {
+                            crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
+                                comp,
+                                para,
+                                inner_width_for_recompose,
+                                styles,
+                            );
+                        } else {
+                            crate::renderer::composer::recompose_for_cell_width(
+                                comp,
+                                para,
+                                inner_width_for_recompose,
+                                styles,
+                            );
+                        }
                         // [#2291] 부실 저장(ls==1·실폭 초과) 재분할 — 가로쓰기 셀 한정.
                         if cell.text_direction == 0 {
                             crate::renderer::composer::recompose_stored_single_line_if_overflowing(
@@ -1245,7 +1270,7 @@ impl LayoutEngine {
             if cell.text_direction != 0 {
                 // [#4149] 프로브가 세로쓰기 셀을 대상으로 삼는 일은 게이트로 막지만,
                 // 방어적으로 전량 구성 후 동일 경로를 태운다 (좌표 동일).
-                composed_store.materialize(cell, inner_width, styles);
+                composed_store.materialize(cell, inner_width, styles, restore_indented_tracking);
                 let vert_inner_area = LayoutRect {
                     x: inner_x,
                     y: cell_y + pad_top,
@@ -1389,7 +1414,7 @@ impl LayoutEngine {
                     (
                         0,
                         composed_store
-                            .get(cp_idx, cell, inner_width, styles)
+                            .get(cp_idx, cell, inner_width, styles, restore_indented_tracking)
                             .lines
                             .len(),
                     )
@@ -1449,7 +1474,13 @@ impl LayoutEngine {
                 }
 
                 // [#4149] 가시 문단만 여기 도달 — lazy 슬롯은 이 시점에 compose 된다.
-                let composed = composed_store.get(cp_idx, cell, inner_width, styles);
+                let composed = composed_store.get(
+                    cp_idx,
+                    cell,
+                    inner_width,
+                    styles,
+                    restore_indented_tracking,
+                );
 
                 if preserve_linear_single_cell_vpos {
                     let target_seg = para
@@ -3153,7 +3184,7 @@ impl LayoutEngine {
         }
 
         // 행별 열 위치 계산 (셀별 독립 너비 지원)
-        let row_col_x = build_row_col_x(
+        let row_col_x = match build_row_col_x(
             table,
             &col_widths,
             col_count,
@@ -3161,7 +3192,10 @@ impl LayoutEngine {
             cell_spacing,
             self.dpi,
             self.render_table_width_scale(table),
-        );
+        ) {
+            Ok(grid) => grid,
+            Err(_) => return y_start,
+        };
 
         let table_width = row_col_x
             .iter()

@@ -1,0 +1,8 @@
+{
+  "command": "info",
+  "required": [
+    "format",
+    "pageCount"
+  ],
+  "note": "닥터 INFO_REQUIRED_KEYS 와 동일. 본문 키를 요구하지 않는다."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "SD53",
+  "tier": 2,
+  "title": "계획 스키마 dialect",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-plan-schema 의 dialect 를 answer.json 에 {\"dialect\": S} 으로 제출하라. 힌트: rhwp export-plan-schema --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "계획 스키마 dialect",
+      "op": "answer_eq",
+      "answer": "dialect",
+      "path": "dialect",
+      "cmd": [
+        "export-plan-schema",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

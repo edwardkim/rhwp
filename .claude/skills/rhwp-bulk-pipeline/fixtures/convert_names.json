@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "rule": "<out-dir>/<stem>.hwp",
+  "reserveBeforeWrite": true,
+  "caseCollisionIsError": true,
+  "partialWrite": false,
+  "exitOnCollision": 2,
+  "mcpExcluded": true,
+  "cases": [
+    {
+      "inputs": [
+        "A.hwp",
+        "B.hwpx"
+      ],
+      "ok": true
+    },
+    {
+      "inputs": [
+        "A.hwp",
+        "A.hwpx"
+      ],
+      "ok": false,
+      "reason": "same stem"
+    },
+    {
+      "inputs": [
+        "Report.HWP",
+        "report.hwp"
+      ],
+      "ok": false,
+      "reason": "case"
+    },
+    {
+      "inputs": [
+        "dir1/x.hwp",
+        "dir2/x.hwp"
+      ],
+      "ok": false,
+      "reason": "stem only"
+    }
+  ]
+}

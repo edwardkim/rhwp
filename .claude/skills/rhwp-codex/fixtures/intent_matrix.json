@@ -1,0 +1,907 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "count": 90,
+  "intents": [
+    {
+      "id": "I001",
+      "utterance": "이 문서 뭐야",
+      "branch": "파악",
+      "command": "info",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I002",
+      "utterance": "파일 형식과 쪽수 알려줘",
+      "branch": "파악",
+      "command": "info",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I003",
+      "utterance": "제목이 뭐로 들어 있어",
+      "branch": "파악",
+      "command": "info",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I004",
+      "utterance": "recap 한 줄로",
+      "branch": "파악",
+      "command": "explain",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I005",
+      "utterance": "한 봉투로 요약해",
+      "branch": "파악",
+      "command": "explain",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I006",
+      "utterance": "표랑 누름틀 있어?",
+      "branch": "파악",
+      "command": "explain",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I007",
+      "utterance": "암호 걸려 있어?",
+      "branch": "파악",
+      "command": "explain",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I008",
+      "utterance": "목차만 보여줘",
+      "branch": "파악",
+      "command": "export-structure",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I009",
+      "utterance": "조문 구조 뽑아",
+      "branch": "파악",
+      "command": "export-structure",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I010",
+      "utterance": "개요 계층",
+      "branch": "파악",
+      "command": "export-structure",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I011",
+      "utterance": "긴 문서 발췌만",
+      "branch": "파악",
+      "command": "digest",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I012",
+      "utterance": "RAG 청킹해 줘",
+      "branch": "파악",
+      "command": "digest",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I013",
+      "utterance": "이 단어가 어디에 있어",
+      "branch": "파악",
+      "command": "search",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I014",
+      "utterance": "국어 라는 말 찾아",
+      "branch": "파악",
+      "command": "search",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I015",
+      "utterance": "본문 원문 0쪽만",
+      "branch": "파악",
+      "command": "export-text",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I016",
+      "utterance": "전문 말고 한 쪽만 텍스트",
+      "branch": "파악",
+      "command": "export-text",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I017",
+      "utterance": "누름틀 이름이 뭐야",
+      "branch": "파악",
+      "command": "fields",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I018",
+      "utterance": "서식이야 일반 문서야",
+      "branch": "파악",
+      "command": "fields",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I019",
+      "utterance": "fields 조사만",
+      "branch": "파악",
+      "command": "fields",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I020",
+      "utterance": "페이지 몇 장이야",
+      "branch": "파악",
+      "command": "info",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I021",
+      "utterance": "글꼴 목록",
+      "branch": "파악",
+      "command": "info",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I022",
+      "utterance": "이 HWP 신상",
+      "branch": "파악",
+      "command": "info",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I023",
+      "utterance": "explain 돌려",
+      "branch": "파악",
+      "command": "explain",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I024",
+      "utterance": "digest 로 줄여 읽어",
+      "branch": "파악",
+      "command": "digest",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I025",
+      "utterance": "search 주소 포함해서",
+      "branch": "파악",
+      "command": "search",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I026",
+      "utterance": "export-structure 목차",
+      "branch": "파악",
+      "command": "export-structure",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I027",
+      "utterance": "처음 보는 공문 파악",
+      "branch": "파악",
+      "command": "info",
+      "chapter": "10_조회.md",
+      "stop": "X10",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I028",
+      "utterance": "문맥 아끼며 읽어",
+      "branch": "파악",
+      "command": "info",
+      "chapter": "10_조회.md",
+      "stop": "X10",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I029",
+      "utterance": "덤프 하지 말고 좁혀",
+      "branch": "파악",
+      "command": "info",
+      "chapter": "10_조회.md",
+      "stop": "X10",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I030",
+      "utterance": "쪽 주소로 찾아",
+      "branch": "파악",
+      "command": "search",
+      "chapter": "10_조회.md",
+      "stop": "X01",
+      "note": "모르는 문서는 ①부터",
+      "notGym": true
+    },
+    {
+      "id": "I031",
+      "utterance": "표 뽑아 줘",
+      "branch": "수확",
+      "command": "export-tables",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I032",
+      "utterance": "엑셀로 보고 싶어",
+      "branch": "수확",
+      "command": "table-to-csv",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I033",
+      "utterance": "CSV 로 추출",
+      "branch": "수확",
+      "command": "table-to-csv",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I034",
+      "utterance": "병합 칸 유지해서",
+      "branch": "수확",
+      "command": "export-tables",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I035",
+      "utterance": "표 좌표 먼저",
+      "branch": "수확",
+      "command": "export-tables",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I036",
+      "utterance": "고친 CSV 다시 넣어",
+      "branch": "수확",
+      "command": "csv-to-table",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I037",
+      "utterance": "치수 계약 확인해",
+      "branch": "수확",
+      "command": "csv-to-table",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I038",
+      "utterance": "날짜랑 금액 추출",
+      "branch": "수확",
+      "command": "extract-data",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I039",
+      "utterance": "수량만 모아",
+      "branch": "수확",
+      "command": "extract-data",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I040",
+      "utterance": "폴더에서 hwp 찾아",
+      "branch": "수확",
+      "command": "scan",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I041",
+      "utterance": "확장자 안 맞는 파일",
+      "branch": "수확",
+      "command": "scan",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I042",
+      "utterance": "차트 숫자를 CSV 로",
+      "branch": "수확",
+      "command": "chart-to-csv",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I043",
+      "utterance": "차트에 CSV 되넣기",
+      "branch": "수확",
+      "command": "csv-to-chart",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I044",
+      "utterance": "table-to-csv --table 1",
+      "branch": "수확",
+      "command": "table-to-csv",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I045",
+      "utterance": "export-tables 전량",
+      "branch": "수확",
+      "command": "export-tables",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I046",
+      "utterance": "extract-data 주소 포함",
+      "branch": "수확",
+      "command": "extract-data",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I047",
+      "utterance": "scan 으로 발견",
+      "branch": "수확",
+      "command": "scan",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I048",
+      "utterance": "pandas 에 넣을 표",
+      "branch": "수확",
+      "command": "table-to-csv",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I049",
+      "utterance": "표 몇 개야",
+      "branch": "수확",
+      "command": "export-tables",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I050",
+      "utterance": "중첩 표 구조",
+      "branch": "수확",
+      "command": "export-tables",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I051",
+      "utterance": "캡션 있는 표만",
+      "branch": "수확",
+      "command": "export-tables",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I052",
+      "utterance": "무역 통계 숫자",
+      "branch": "수확",
+      "command": "extract-data",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I053",
+      "utterance": "업무계획 표",
+      "branch": "수확",
+      "command": "export-tables",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I054",
+      "utterance": "셀 텍스트 원문",
+      "branch": "수확",
+      "command": "export-tables",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I055",
+      "utterance": "수확 후 편집은 별도",
+      "branch": "수확",
+      "command": "export-tables",
+      "chapter": "20_표와_데이터.md",
+      "stop": "X13",
+      "note": "깊이 있는 왕복은 rhwp-table-exchange",
+      "notGym": true
+    },
+    {
+      "id": "I056",
+      "utterance": "이 문구 바꿔",
+      "branch": "편집",
+      "command": "edit replace-text",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I057",
+      "utterance": "규제 를 다른 말로",
+      "branch": "편집",
+      "command": "edit replace-text",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I058",
+      "utterance": "replace-text",
+      "branch": "편집",
+      "command": "edit replace-text",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I059",
+      "utterance": "표 칸 값 고쳐",
+      "branch": "편집",
+      "command": "edit set-cell",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I060",
+      "utterance": "set-cell 1행 1열",
+      "branch": "편집",
+      "command": "edit set-cell",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I061",
+      "utterance": "스타일 유지해서 칸",
+      "branch": "편집",
+      "command": "edit set-cell",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I062",
+      "utterance": "서식 채워",
+      "branch": "편집",
+      "command": "edit fill-fields",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I063",
+      "utterance": "누름틀에 회사명",
+      "branch": "편집",
+      "command": "edit fill-fields",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I064",
+      "utterance": "fill-fields dry-run",
+      "branch": "편집",
+      "command": "edit fill-fields",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I065",
+      "utterance": "도장 찍어",
+      "branch": "편집",
+      "command": "edit insert-image",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I066",
+      "utterance": "서명 이미지",
+      "branch": "편집",
+      "command": "edit insert-image",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I067",
+      "utterance": "개인정보 가려",
+      "branch": "편집",
+      "command": "edit redact",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I068",
+      "utterance": "redact 먼저 탐지",
+      "branch": "편집",
+      "command": "edit redact",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I069",
+      "utterance": "작성자 지워",
+      "branch": "편집",
+      "command": "edit sanitize",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I070",
+      "utterance": "sanitize 제출용",
+      "branch": "편집",
+      "command": "edit sanitize",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I071",
+      "utterance": "여러 단계 한 번에",
+      "branch": "편집",
+      "command": "run",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I072",
+      "utterance": "run 계획서",
+      "branch": "편집",
+      "command": "run",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I073",
+      "utterance": "원자로 실행",
+      "branch": "편집",
+      "command": "run",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I074",
+      "utterance": "--dry-run 만",
+      "branch": "편집",
+      "command": "run",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I075",
+      "utterance": "원본은 그대로",
+      "branch": "편집",
+      "command": "edit replace-text",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X11",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I076",
+      "utterance": "-o 로 저장",
+      "branch": "편집",
+      "command": "edit replace-text",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X11",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I077",
+      "utterance": "덮어쓰지 마",
+      "branch": "편집",
+      "command": "edit replace-text",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X11",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I078",
+      "utterance": "조건부 치환",
+      "branch": "편집",
+      "command": "edit replace-text",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I079",
+      "utterance": "occurrence 두 번째만",
+      "branch": "편집",
+      "command": "edit replace-text",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I080",
+      "utterance": "keep-style",
+      "branch": "편집",
+      "command": "edit set-cell",
+      "chapter": "30_편집과_계획.md",
+      "stop": "X13",
+      "note": "C4: -o 와 --dry-run",
+      "notGym": true
+    },
+    {
+      "id": "I081",
+      "utterance": "HWP 를 HWPX 로",
+      "branch": "변환",
+      "command": "export-hwpx",
+      "chapter": "40_변환과_렌더.md",
+      "stop": "X13",
+      "note": "verify 차이는 고장 아님",
+      "notGym": true
+    },
+    {
+      "id": "I082",
+      "utterance": "배포용을 편집 가능하게",
+      "branch": "변환",
+      "command": "convert",
+      "chapter": "40_변환과_렌더.md",
+      "stop": "X13",
+      "note": "verify 차이는 고장 아님",
+      "notGym": true
+    },
+    {
+      "id": "I083",
+      "utterance": "convert --verify",
+      "branch": "변환",
+      "command": "convert",
+      "chapter": "40_변환과_렌더.md",
+      "stop": "X13",
+      "note": "verify 차이는 고장 아님",
+      "notGym": true
+    },
+    {
+      "id": "I084",
+      "utterance": "PDF 로 발행",
+      "branch": "변환",
+      "command": "export-pdf",
+      "chapter": "40_변환과_렌더.md",
+      "stop": "X13",
+      "note": "verify 차이는 고장 아님",
+      "notGym": true
+    },
+    {
+      "id": "I085",
+      "utterance": "마크다운으로",
+      "branch": "변환",
+      "command": "export-markdown",
+      "chapter": "40_변환과_렌더.md",
+      "stop": "X13",
+      "note": "verify 차이는 고장 아님",
+      "notGym": true
+    },
+    {
+      "id": "I086",
+      "utterance": "웹에서 읽게",
+      "branch": "변환",
+      "command": "export-markdown",
+      "chapter": "40_변환과_렌더.md",
+      "stop": "X13",
+      "note": "verify 차이는 고장 아님",
+      "notGym": true
+    },
+    {
+      "id": "I087",
+      "utterance": "SVG 로 렌더",
+      "branch": "변환",
+      "command": "export-svg",
+      "chapter": "40_변환과_렌더.md",
+      "stop": "X13",
+      "note": "verify 차이는 고장 아님",
+      "notGym": true
+    },
+    {
+      "id": "I088",
+      "utterance": "쪽마다 그림",
+      "branch": "변환",
+      "command": "export-svg",
+      "chapter": "40_변환과_렌더.md",
+      "stop": "X13",
+      "note": "verify 차이는 고장 아님",
+      "notGym": true
+    },
+    {
+      "id": "I089",
+      "utterance": "썸네일 뽑기",
+      "branch": "변환",
+      "command": "thumbnail",
+      "chapter": "40_변환과_렌더.md",
+      "stop": "X13",
+      "note": "verify 차이는 고장 아님",
+      "notGym": true
+    },
+    {
+      "id": "I090",
+      "utterance": "전후 레이아웃 비교",
+      "branch": "변환",
+      "command": "render-diff",
+      "chapter": "40_변환과_렌더.md",
+      "stop": "X13",
+      "note": "verify 차이는 고장 아님",
+      "notGym": true
+    }
+  ]
+}

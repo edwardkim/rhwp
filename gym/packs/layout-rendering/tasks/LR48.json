@@ -1,0 +1,33 @@
+{
+  "id": "LR48",
+  "tier": 2,
+  "title": "표 문서 과대 쪽수 통과 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력이 **100쪽 이상**이라는 (틀린) 기대를 검증했을 때의 통과 기대 수를 answer.json 에 {\"passed\": N} 으로 제출하라. LR06 은 verdict, 이 과제는 passCount 다. 힌트: rhwp verify --expect-min-pages 100.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "통과 기대 수",
+      "op": "answer_eq",
+      "answer": "passed",
+      "path": "passCount",
+      "cmd": [
+        "verify",
+        "{input}",
+        "--expect-min-pages",
+        "100",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "검증"
+}

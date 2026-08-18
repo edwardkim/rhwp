@@ -1,0 +1,23 @@
+{
+  "id": "dirty_named_worktree",
+  "halt": true,
+  "signal": "이름 붙은 트리가 dirty 하다",
+  "forbidden": [
+    "git reset --hard 금지",
+    "그 트리 checkout 금지"
+  ],
+  "next": "빈 경로에 새 isolation 을 만든다",
+  "_skillMeta": {
+    "exit": 2,
+    "command": "read",
+    "trigger": null,
+    "exception": "dirty_named_worktree",
+    "stdoutSilentOnFail": false,
+    "hardGate": "cargo fmt --all -- --check",
+    "staleFmtRejected": true,
+    "neverGitAddA": true,
+    "neverStealNamedWorktrees": true,
+    "neverInventDocumentCore": true,
+    "noNewCli": true
+  }
+}

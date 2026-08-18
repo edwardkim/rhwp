@@ -1,0 +1,11 @@
+{
+  "id": "T40",
+  "title": "본문 export-text 동일",
+  "steps": [
+    {
+      "note": "기존 CLI 표면만. 새 플래그 없음",
+      "usesExistingCommand": true
+    }
+  ],
+  "notGym": true
+}

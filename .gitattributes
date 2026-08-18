@@ -10,9 +10,18 @@ tests/golden_svg/**/*.svg text eol=lf
 # Lawful HML corpus — preserve provenance bytes (BOM/CRLF/trailing spaces) and verify by SHA
 samples/hml/*.hml -text -diff
 
+# Fuzz seeds are raw parser inputs. CRLF/smudge would change coverage hashes.
+fuzz/corpus/** -text -diff
+
 # POC TSV는 마지막 빈 열을 tab으로 표현한다. 이 필드는 데이터 스키마의 일부이므로
 # trailing-whitespace 오류로 취급하지 않는다.
 output/poc/**/*.tsv -whitespace
+
+# Agent skill fixture TSV/CSV는 끝 빈 열 또는 CRLF 입력 자체가 계약이다.
+.claude/skills/rhwp-fde/fixtures/tsv/*.tsv -whitespace
+.claude/skills/rhwp-table-exchange/fixtures/csv/table0_control_lf.csv -whitespace
+.claude/skills/rhwp-visual-regression/fixtures/tsv/*.tsv -whitespace
+.claude/skills/rhwp-visual-regression/references/_gen_pack.py -whitespace
 
 # 이 파일은 재현용 unified diff 자체다. 내부 hunk의 공백 문맥은 패치 문법이므로
 # Git의 일반 source-whitespace 검사를 적용하지 않는다.

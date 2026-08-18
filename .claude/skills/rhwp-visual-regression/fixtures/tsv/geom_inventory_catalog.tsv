@@ -1,0 +1,31 @@
+sample	status	pages_a	pages_b	max_disp	worst_page	struct_pages	over_pages	elapsed_ms	error	struct_delta
+form-01-000.hwp	PASS	1	1	0.000	-	0	0	4		
+form-02-001.hwp	PASS	2	2	0.000	-	0	0	5		
+field-01-002.hwp	PASS	3	3	0.000	-	0	0	6		
+hwp3-sample-003.hwp	WARN_TEXTRUN	4	4	0.400	3	0	0	7		TextRun:+1
+blank-004.hwp	OVER	5	5	16.500	4	0	1	8		
+letter-005.hwpx	STRUCT_MISMATCH	1	1	17.500	0	1	0	9		TextRun:-2
+notice-006.hwpx	PAGE_MISMATCH	2	3	0.000	-	0	0	10		
+table-01-007.hwp	LOAD_FAIL	3	3	0.000	-	0	0	11	parse failed	
+table-02-008.hwp	PASS	4	4	0.000	-	0	0	12		
+memo-009.hwp	PASS	5	5	0.000	-	0	0	13		
+form-01-010.hwp	PASS	1	1	0.000	-	0	0	14		
+form-02-011.hwp	WARN_TEXTRUN	2	2	0.400	1	0	0	15		TextRun:+1
+field-01-012.hwp	OVER	3	3	24.500	0	0	1	16		
+hwp3-sample-013.hwp	STRUCT_MISMATCH	4	4	25.500	1	1	0	17		TextRun:-2
+blank-014.hwp	PAGE_MISMATCH	5	6	0.000	-	0	0	18		
+letter-015.hwpx	LOAD_FAIL	1	1	0.000	-	0	0	19	parse failed	
+notice-016.hwpx	PASS	2	2	0.000	-	0	0	20		
+table-01-017.hwp	PASS	3	3	0.000	-	0	0	21		
+table-02-018.hwp	PASS	4	4	0.000	-	0	0	22		
+memo-019.hwp	WARN_TEXTRUN	5	5	0.400	4	0	0	23		TextRun:+1
+form-01-020.hwp	OVER	1	1	32.500	0	0	1	24		
+form-02-021.hwp	STRUCT_MISMATCH	2	2	33.500	1	1	0	25		TextRun:-2
+field-01-022.hwp	PAGE_MISMATCH	3	4	0.000	-	0	0	26		
+hwp3-sample-023.hwp	LOAD_FAIL	4	4	0.000	-	0	0	27	parse failed	
+blank-024.hwp	PASS	5	5	0.000	-	0	0	28		
+letter-025.hwpx	PASS	1	1	0.000	-	0	0	29		
+notice-026.hwpx	PASS	2	2	0.000	-	0	0	30		
+table-01-027.hwp	WARN_TEXTRUN	3	3	0.400	0	0	0	31		TextRun:+1
+table-02-028.hwp	OVER	4	4	40.500	0	0	1	32		
+memo-029.hwp	STRUCT_MISMATCH	5	5	41.500	4	1	0	33		TextRun:-2

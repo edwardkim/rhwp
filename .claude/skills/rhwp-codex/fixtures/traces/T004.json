@@ -1,0 +1,20 @@
+{
+  "id": "T004",
+  "command": "headers-footers",
+  "chapter": "10_조회.md",
+  "cmd": "rhwp headers-footers samples/field-01.hwp --json",
+  "exit": 0,
+  "keys": [
+    "count",
+    "headersFooters",
+    "schemaVersion",
+    "source",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/10_조회.md",
+  "notInvented": true
+}

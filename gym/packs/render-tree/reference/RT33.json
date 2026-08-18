@@ -1,0 +1,28 @@
+{
+  "id": "RT33",
+  "steps": [
+    {
+      "run": [
+        "export-render-tree",
+        "{input}",
+        "-p",
+        "0",
+        "-o",
+        "{sub:_rt}",
+        "--show-para-marks"
+      ]
+    },
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

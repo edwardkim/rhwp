@@ -1,0 +1,23 @@
+{
+  "id": "T38",
+  "tier": 2,
+  "title": "다중 표 표본 표 개수",
+  "input": "samples/multi-table-001.hwp",
+  "instructions": "T38 은 입문·코어 온램프를 두껍게 하는 과제다. 표가 여러 개인 문서의 표 수를 센다. table-001 과 같다고 쓰지 마라. 표본은 `samples/multi-table-001.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: export-tables <문서> --json. 제출은 answer.json 에 {\"tableCount\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. 라이브 오라클이다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "다중 표 표본 표 개수",
+      "op": "len_answer_eq",
+      "answer": "tableCount",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ],
+      "path": "tables"
+    }
+  ]
+}

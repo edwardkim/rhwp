@@ -1,0 +1,64 @@
+{
+  "id": "FJ08",
+  "tier": 2,
+  "title": "이름 지목 채움 (이메일)",
+  "input": "samples/field-01.hwp",
+  "instructions": "이름이 '이메일' 인 칸에만 'journey@example.go.kr' 을 넣은 mail.hwp 를 제출하라. 회사명과 전화번호는 비운다. FJ01 이 고른 전화번호(fields[3])가 아니라 fields[4] 다. T07 복제(첫 칸 홍길동)는 즉시 실패다. 힌트: rhwp edit fill-fields <문서> --data '{\"이메일\": \"journey@example.go.kr\"}' -o mail.hwp --json",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "mail.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "이메일 칸 이름",
+      "op": "value_eq",
+      "value": "이메일",
+      "path": "fields[4].name",
+      "cmd": [
+        "fields",
+        "{file:mail.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "이메일 값",
+      "op": "value_eq",
+      "value": "journey@example.go.kr",
+      "path": "fields[4].value",
+      "cmd": [
+        "fields",
+        "{file:mail.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:mail.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "전화번호 공란 값",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[3].value",
+      "cmd": [
+        "fields",
+        "{file:mail.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "mail.hwp"
+    }
+  ]
+}

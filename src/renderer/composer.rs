@@ -1430,6 +1430,28 @@ fn estimate_regenerated_line_text_width(
             * (regenerated_space_width - stored_space_width)
 }
 
+/// literal-space 들여쓰기 재조판에서 사용할 반각 공백 advance.
+///
+/// 한컴 PDF의 #3128 문단은 글꼴 고유 U+0020 폭이 반각보다 넓어도
+/// (한양중고딕 550/1024em) 선행 들여쓰기와 재조판된 내부 공백을 모두
+/// 0.5em 칸으로 측정한다. 이 함수는 둘 이상의 literal 선행 공백과 동일
+/// 글꼴 metric/구간별 자간을 확인한 좁은 fallback 경로에서만 사용한다.
+fn regenerated_half_space_width(style: &TextStyle) -> f64 {
+    let font_size = style.font_size.max(0.0);
+    let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
+    let base = font_size * 0.5 * ratio;
+    let tracking = if font_size > 0.0 {
+        style.letter_spacing * (base / font_size)
+    } else {
+        style.letter_spacing
+    };
+    let mut width = base + tracking + style.extra_char_spacing + style.extra_word_spacing;
+    if style.letter_spacing + style.extra_char_spacing < 0.0 {
+        width = width.max(base * 0.5);
+    }
+    width
+}
+
 /// [#2146] 저장 LINE_SEG 이 전혀 없고(NO_LS) 모든 문단이 1줄이며 각 줄이 셀
 /// 폭을 여유 있게 쓰는 코너-라벨 셀 중, 선언 셀높이를 신뢰할 수 있는 두 경우:
 ///
@@ -1839,6 +1861,28 @@ pub fn recompose_for_cell_width(
     cell_inner_width_px: f64,
     styles: &ResolvedStyleSet,
 ) {
+    recompose_for_cell_width_impl(composed, para, cell_inner_width_px, styles, false);
+}
+
+/// #3128의 literal-space 들여쓰기/동일 metric tracking 신호가 있는
+/// native HWP5 장문 child에서만 사용하는 opt-in 재조판 경로.
+/// 일반 셀은 기존 `recompose_for_cell_width` 계약을 유지한다.
+pub(crate) fn recompose_for_cell_width_with_indented_tracking(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    cell_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) {
+    recompose_for_cell_width_impl(composed, para, cell_inner_width_px, styles, true);
+}
+
+fn recompose_for_cell_width_impl(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    cell_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+    allow_indented_tracking_restore: bool,
+) {
     let has_synthetic_line_segs = !para.line_segs.is_empty()
         && para
             .line_segs
@@ -1860,6 +1904,19 @@ pub fn recompose_for_cell_width(
     if cell_inner_width_px <= 0.0 {
         return;
     }
+    let regenerated_line_space_metric =
+        missing_lineseg_legacy_bullet_requires_regenerated_space_metric(para, composed, styles);
+    // Legacy bullet paragraphs already have a dedicated Hancom space-metric path.
+    // Applying the generic CharShape tracking recovery on top would move the
+    // p81→p82 owner boundary from `… 사고` / `를 예방…` to
+    // `… 사고를` / `예방…` (76076), so the two recovery contracts
+    // must remain mutually exclusive.
+    let restored_uniform_tracking = allow_indented_tracking_restore
+        && !regenerated_line_space_metric
+        && missing_lineseg_indented_cell_has_uniform_metrics_with_tracking(para, styles);
+    if restored_uniform_tracking {
+        restyle_fallback_runs_by_char_shapes(composed, para);
+    }
     // [#2070] lineSeg 부재 fallback 도 문단 여백/들여쓰기 반영 폭을 쓰되,
     // 내어쓰기(intent<0)의 본질대로 **첫 줄 폭과 연속 줄 폭을 분리**한다.
     // 종전 전체 폭 단일 사용은 조문 문단(80168 pi=362, ps intent=-3120)에서
@@ -1869,8 +1926,6 @@ pub fn recompose_for_cell_width(
     // [#2070 정밀화] 이중 폭은 검증 영역(내어쓰기 intent<0, 80168 계열 사다리·오라클)
     // 에 한정한다. intent>=0 의 no-lineseg 폴백과 HWP3-origin legacy bullet
     // (LINE_SEG 부재의 legacy bullet)은 저장된 들여쓰기가 없으므로 전체 폭을 유지한다.
-    let regenerated_line_space_metric =
-        missing_lineseg_legacy_bullet_requires_regenerated_space_metric(para, composed, styles);
     let hwp3_legacy_bullet = styles.hwp3_variant || regenerated_line_space_metric;
     let (first_width_px, cont_width_px) = styles
         .para_styles
@@ -2005,6 +2060,12 @@ pub fn recompose_for_cell_width(
                 char_break,
                 space_condense,
                 regenerated_line_space_metric,
+                // Embedded-font advances are integer pixels while Hancom's
+                // tracked line fill retains sub-pixel HWPUNIT precision.  The
+                // scoped recovery path therefore accepts at most one pixel of
+                // accumulated rounding at the wrap edge (#3128 line 1: 0.78px).
+                if restored_uniform_tracking { 1.0 } else { 0.0 },
+                restored_uniform_tracking,
             );
             // 분할 결과의 공백-단독 조각도 hanging — 직전 조각에 흡수한다.
             let mut folded: Vec<ComposedLine> = Vec::with_capacity(frags.len());
@@ -2079,7 +2140,7 @@ pub fn recompose_for_cell_width(
     if let Ok(pat) = std::env::var("RHWP_DIAG_RECOMP") {
         if para.text.contains(&pat) {
             eprintln!(
-                "DIAG_RECOMP width={:.2} first={:.2} cont={:.2} lines={} align={:?} kbu={} condense={} char_break={} text={:?}",
+                "DIAG_RECOMP width={:.2} first={:.2} cont={:.2} lines={} align={:?} kbu={} condense={} char_break={} tracking_restore={} regenerated_space={} char_shapes={} text={:?}",
                 cell_inner_width_px,
                 first_width_px,
                 cont_width_px,
@@ -2100,6 +2161,9 @@ pub fn recompose_for_cell_width(
                     .map(|ps| ps.condense_min_space)
                     .unwrap_or(0),
                 char_break,
+                restored_uniform_tracking,
+                regenerated_line_space_metric,
+                para.char_shapes.len(),
                 para.text.chars().take(20).collect::<String>(),
             );
             for (line_idx, line) in composed.lines.iter().enumerate() {
@@ -2127,6 +2191,58 @@ pub fn recompose_for_cell_width(
             }
         }
     }
+}
+
+/// 저장 `LINE_SEG`가 없는 들여쓴 셀 문단의 구간별 자간을 안전하게
+/// 복원할 수 있는지 판정한다.
+///
+/// 셀 fallback은 역사적으로 첫 글자모양 하나로 재조판한다. 서로 다른 글꼴 크기까지
+/// 일괄 복원하면 검증된 legacy pagination이 바뀌므로, 폭을 결정하는 글꼴·크기·장평은
+/// 같고 자간만 달라지는 문단에 한해 실제 `CharShapeRef` 경계를 사용한다.
+///
+/// 추가로 문단 머리가 둘 이상의 literal ASCII 공백인 경우로 한정한다.
+/// 이 형식은 한컴이 반각 들여쓰기 칸과 구간별 음수 자간을 줄 채움에
+/// 함께 반영하는 native HWP5 장문 셀이다(#3128). 반면 글머리 문자로
+/// 시작하는 짧은 child는 기존 owner-content-box 폭 계약을 계속 사용한다
+/// (76076 p81→p82 `사고` / `를 예방…`).
+pub(crate) fn missing_lineseg_indented_cell_has_uniform_metrics_with_tracking(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    if !para.line_segs.is_empty()
+        || para.char_shapes.len() < 2
+        || para.text.chars().take_while(|value| *value == ' ').count() < 2
+    {
+        return false;
+    }
+
+    let mut resolved = para
+        .char_shapes
+        .iter()
+        .filter_map(|char_shape| styles.char_styles.get(char_shape.char_shape_id as usize));
+    let Some(first) = resolved.next() else {
+        return false;
+    };
+    let first_tracking = &first.letter_spacings;
+    let mut tracking_differs = false;
+
+    for style in resolved {
+        if style.font_family != first.font_family
+            || style.font_families != first.font_families
+            || (style.font_size - first.font_size).abs() > f64::EPSILON
+            || style.bold != first.bold
+            || style.italic != first.italic
+            || (style.ratio - first.ratio).abs() > f64::EPSILON
+            || style.ratios != first.ratios
+            || style.kerning != first.kerning
+        {
+            return false;
+        }
+        tracking_differs |= (style.letter_spacing - first.letter_spacing).abs() > f64::EPSILON
+            || style.letter_spacings.as_slice() != first_tracking.as_slice();
+    }
+
+    tracking_differs
 }
 
 /// [#2279 axis B] 셀 텍스트 오버플로 시 좌우 패딩 축소 — 렌더/측정 공용 코어.
@@ -2254,6 +2370,8 @@ fn split_composed_line_by_width(
     char_break: bool,
     space_condense: f64,
     regenerated_line_space_metric: bool,
+    fit_tolerance_px: f64,
+    regenerate_half_spaces: bool,
 ) -> Vec<ComposedLine> {
     let mut result: Vec<ComposedLine> = Vec::new();
     // [#2070] 내어쓰기(intent<0) 이중 폭: 첫 출력 줄은 first_width, 이후 연속
@@ -2277,7 +2395,17 @@ fn split_composed_line_by_width(
     let mut current_run_text = String::new();
     let mut current_run_template: Option<ComposedTextRun> = None;
     let text_width = |text: &str, style: &TextStyle| {
-        estimate_regenerated_line_text_width(text, style, regenerated_line_space_metric)
+        let measured =
+            estimate_regenerated_line_text_width(text, style, regenerated_line_space_metric);
+        if !regenerate_half_spaces {
+            return measured;
+        }
+        let spaces = text.chars().filter(|value| *value == ' ').count();
+        if spaces == 0 {
+            return measured;
+        }
+        let stored = estimate_regenerated_line_text_width(" ", style, false);
+        measured + spaces as f64 * (regenerated_half_space_width(style) - stored)
     };
 
     let flush_run =
@@ -2357,7 +2485,7 @@ fn split_composed_line_by_width(
                     );
                 }
                 let eff = current_width - space_w * space_condense;
-                let over = eff + ch_width > limit(&result) && chars_in_line > 0;
+                let over = eff + ch_width > limit(&result) + fit_tolerance_px && chars_in_line > 0;
                 if over && ch == ' ' && !hung {
                     // 줄끝 초과 공백 1개 hang — 줄바꿈 없이 현재 줄에 계상.
                     hung = true;
@@ -2421,7 +2549,8 @@ fn split_composed_line_by_width(
             if ch == ' ' || ch == '\t' {
                 let word_width = text_width(&word, &ts);
                 // 현재 단어가 추가되면 max_width 초과하는지 검사
-                if current_width - space_w * space_condense + word_width > limit(&result)
+                if current_width - space_w * space_condense + word_width
+                    > limit(&result) + fit_tolerance_px
                     && (chars_in_line > 0 || !current_run_text.is_empty())
                 {
                     // 현재 줄을 flush 후 새 줄 시작

@@ -1,0 +1,25 @@
+{
+  "id": "SD30",
+  "tier": 2,
+  "title": "출처 지도 조회 방법",
+  "input": "samples/table-001.hwp",
+  "instructions": "jsonContract.provenance.map 이 가리키는 조회 명령을 answer.json 에 {\"map\": S} 으로 제출하라. 힌트: capabilities 의 jsonContract.provenance.map.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "출처 지도 조회 방법",
+      "op": "answer_eq",
+      "answer": "map",
+      "path": "jsonContract.provenance.map",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

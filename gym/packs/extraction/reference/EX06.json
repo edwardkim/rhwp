@@ -1,0 +1,19 @@
+{
+  "id": "EX06",
+  "steps": [
+    {
+      "answer": {
+        "numbers": {
+          "cmd": [
+            "extract-data",
+            "{input}",
+            "--kind",
+            "number",
+            "--json"
+          ],
+          "path": "itemCount"
+        }
+      }
+    }
+  ]
+}

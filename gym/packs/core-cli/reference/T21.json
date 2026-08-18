@@ -1,0 +1,19 @@
+{
+  "id": "T21",
+  "steps": [
+    {
+      "answer": {
+        "matchCount": {
+          "cmd": [
+            "search",
+            "{input}",
+            "표",
+            "--json"
+          ],
+          "path": "matches",
+          "len": true
+        }
+      }
+    }
+  ]
+}

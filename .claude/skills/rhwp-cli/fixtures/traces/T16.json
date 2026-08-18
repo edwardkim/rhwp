@@ -1,0 +1,11 @@
+{
+  "id": "T16",
+  "utterance": "썸네일만",
+  "steps": [
+    {
+      "command": "thumbnail",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "PrvImage, 렌더 아님"
+}

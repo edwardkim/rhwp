@@ -1,0 +1,19 @@
+{
+  "id": "LR28",
+  "steps": [
+    {
+      "answer": {
+        "width": {
+          "cmd": [
+            "thumbnail",
+            "{input}",
+            "-o",
+            "{sub:t.png}",
+            "--json"
+          ],
+          "path": "width"
+        }
+      }
+    }
+  ]
+}

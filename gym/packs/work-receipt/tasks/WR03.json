@@ -1,0 +1,67 @@
+{
+  "id": "WR03",
+  "tier": 3,
+  "title": "어제 산출이 오늘 입력이다",
+  "input": "samples/field-01.hwp",
+  "instructions": "어제 작업 캡슐과 오늘 작업 캡슐을 receipts/ 에 이어 제출하라. 오늘의 입력은 어제 계획의 **실산출**이어야 하고, replay --parent 로 어제 캡슐을 지목한다. 채점은 머리에서 본 부모 링크의 lineageOk(부모 산출=자식 입력)·parentOk(부모 파일 무결) 와 brokenAt=null 이다 — AU12 의 depth==2 나 XC04 의 3세대가 아니다. 힌트: run 으로 yesterday.hwp 를 만든 뒤 replay --capsule receipts/yesterday.capsule.json, 이어서 input=yesterday.hwp 인 오늘 계획을 replay --parent receipts/yesterday.capsule.json --capsule receipts/today.capsule.json",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "receipts/yesterday.capsule.json",
+      "receipts/today.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "오늘 캡슐 존재",
+      "op": "file_exists",
+      "file": "receipts/today.capsule.json",
+      "minBytes": 64
+    },
+    {
+      "name": "부모 링크 lineageOk — 어제 산출이 오늘 입력",
+      "op": "value_eq",
+      "value": true,
+      "path": "links[1].lineageOk",
+      "cmd": [
+        "lineage",
+        "{file:receipts/today.capsule.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "부모 링크 parentOk — 어제 파일이 발급 당시 그대로",
+      "op": "value_eq",
+      "value": true,
+      "path": "links[1].parentOk",
+      "cmd": [
+        "lineage",
+        "{file:receipts/today.capsule.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "깨진 지점 없음",
+      "op": "value_eq",
+      "value": null,
+      "path": "brokenAt",
+      "cmd": [
+        "lineage",
+        "{file:receipts/today.capsule.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

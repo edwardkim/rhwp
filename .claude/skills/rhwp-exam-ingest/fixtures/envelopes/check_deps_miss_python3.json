@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "check_deps.sh",
+  "ok": true,
+  "rhwp": "./target/release/rhwp",
+  "imagemagick": "magick",
+  "pythonDocx": false,
+  "missingRequired": [],
+  "missingOptional": [
+    "python3",
+    "python-docx"
+  ],
+  "envelopes": [
+    {
+      "code": "DEP_MISS_PYTHON3",
+      "severity": "docx_input",
+      "tool": "python3",
+      "exit": 0,
+      "hint": "DOCX 입력이면 python3 필요",
+      "blocks": [
+        "extract_docx.py"
+      ]
+    }
+  ]
+}

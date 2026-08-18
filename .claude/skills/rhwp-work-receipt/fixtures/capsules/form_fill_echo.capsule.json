@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/form_fill_echo.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "신청인",
+        "replace": "신청인"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/form_fill_echo.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"신청인\",\"replace\":\"신청인\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "47416d5e6c4135013bd10571c3ed57c845eaa1efd5237f08ce107476984b0f5d",
+    "planSha256": "71e5da230c3843f0824081f70973c3441c5cd946e0b057e95c394115d2bcb8f2",
+    "outputSha256": "191e12bc40ec8a7e2a615f493c8b51dcc753ac07ce7b16ceb8c74f1d6f83b5e2",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

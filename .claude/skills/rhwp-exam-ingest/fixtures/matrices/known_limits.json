@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5319,
+  "limits": [
+    {
+      "id": "L-picture",
+      "title": "Picture 직렬화",
+      "issue": 182,
+      "action": "텍스트 우선, 고지",
+      "not": "writer 수정"
+    },
+    {
+      "id": "L-equation",
+      "title": "수식은 이미지",
+      "action": "crop → image 블록",
+      "not": "latex 필드 발명"
+    },
+    {
+      "id": "L-table",
+      "title": "표는 그림",
+      "action": "표 bbox crop",
+      "not": "Table IR 발명"
+    }
+  ]
+}

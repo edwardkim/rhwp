@@ -1,0 +1,28 @@
+{
+  "id": "TC08",
+  "tier": 2,
+  "title": "선확인 — csv-to-table --dry-run 변경 칸 수 (재정표)",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "gym/packs/table-csv/assets/TC01-edit.csv 를 표 0 에 적용하면 몇 칸이 바뀌는지 파일을 쓰지 않고 보고하라. 답 형식: {\"changed\": <수>}. 힌트: rhwp csv-to-table <문서> --table 0 --csv gym/packs/table-csv/assets/TC01-edit.csv --dry-run --json 의 changedCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "변경 칸 수 일치",
+      "op": "answer_eq",
+      "answer": "changed",
+      "cmd": [
+        "csv-to-table",
+        "{input}",
+        "--table",
+        "0",
+        "--csv",
+        "gym/packs/table-csv/assets/TC01-edit.csv",
+        "--dry-run",
+        "--json"
+      ],
+      "path": "changedCount"
+    }
+  ]
+}

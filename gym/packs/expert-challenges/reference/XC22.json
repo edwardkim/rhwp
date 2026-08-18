@@ -1,0 +1,82 @@
+{
+  "id": "XC22",
+  "steps": [
+    {
+      "run": [
+        "keygen",
+        "--key-id",
+        "gym-xc22-pair",
+        "--out",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-004.hwp\", \"output\": \"{sub:op.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"쌍갑-XC22\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-004.hwp\", \"output\": \"{sub:op.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"쌍갑-XC22\"}]}",
+        "--capsule",
+        "{sub:pair/p.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-004.hwp\", \"output\": \"{sub:oq.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 1, \"text\": \"쌍을-XC22\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-004.hwp\", \"output\": \"{sub:oq.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 1, \"text\": \"쌍을-XC22\"}]}",
+        "--capsule",
+        "{sub:pair/q.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "keyring_from": {
+        "key": "{sub:agent.key.json}",
+        "out": "{sub:keyring.json}",
+        "keyId": "gym-xc22-pair"
+      }
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:pair/p.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:pair/q.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    }
+  ]
+}

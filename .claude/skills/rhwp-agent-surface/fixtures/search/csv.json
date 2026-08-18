@@ -1,0 +1,41 @@
+{
+  "invocation": "rhwp capabilities --search csv",
+  "invocation_json": "rhwp capabilities --search csv --json",
+  "query": "csv",
+  "keywords_and": [
+    "csv"
+  ],
+  "match_count": 4,
+  "empty": false,
+  "layer": "cli-json",
+  "ssot": "capabilities_command_entries() name+summary+subcommands",
+  "matches": [
+    {
+      "name": "table-to-csv",
+      "family": "export",
+      "summary": "본문 최상위 표를 병합 격자를 채운 RFC 4180 CSV 로 내보내기",
+      "json": false
+    },
+    {
+      "name": "csv-to-table",
+      "family": "edit",
+      "summary": "CSV 로 기존 표 N 의 셀 덮어쓰기 — 표 크기 불변, 행·열 불일치는 invalid+exit 2",
+      "json": false
+    },
+    {
+      "name": "chart-to-csv",
+      "family": "export",
+      "summary": "차트 숫자 데이터를 RFC 4180 CSV 로 내보내기 (행=카테고리·분산형 X, 열=계열)",
+      "json": false
+    },
+    {
+      "name": "csv-to-chart",
+      "family": "edit",
+      "summary": "CSV 로 기존 차트 N 의 값 덮어쓰기 — 계열·값 개수 불변, 불일치는 invalid+exit 2. \\\n             편집은 OOXML 두 표현(zip 파트·중첩 CFB)에 함께 쓴다",
+      "json": false
+    }
+  ],
+  "truncated": false,
+  "total_match_count": 4,
+  "note": "개수는 계약이 아니다. 바이너리 출력이 이긴다."
+}

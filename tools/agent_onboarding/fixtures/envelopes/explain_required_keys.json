@@ -1,0 +1,9 @@
+{
+  "command": "explain",
+  "required": [
+    "format",
+    "pageCount",
+    "summary"
+  ],
+  "note": "paragraphCount 는 있으면 읽지만 구버전 SKIP 을 위해 필수는 닥터 쪽 비임계."
+}

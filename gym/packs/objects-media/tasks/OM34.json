@@ -1,0 +1,26 @@
+{
+  "id": "OM34",
+  "tier": 3,
+  "title": "HWPX 서식 단일 필드 채움",
+  "input": "samples/hwpx/form-01.hwpx",
+  "instructions": "form-01.hwpx 의 누름틀을 조사해 myMsg01 에 '점검메시지' 를 넣은 formout.hwpx 를 제출하라. 산출 확장자는 .hwpx 다. 힌트: rhwp edit fill-fields.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "formout.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 필드 == 점검메시지",
+      "op": "value_eq",
+      "value": "점검메시지",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:formout.hwpx}",
+        "--json"
+      ]
+    }
+  ]
+}

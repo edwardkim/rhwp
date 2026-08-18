@@ -1,0 +1,41 @@
+{
+  "id": "FJ02",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "myMsg01": "김가온 귀하"
+        }
+      }
+    },
+    {
+      "answer": {
+        "dryRun": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "@{sub:data.json}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "dryRun"
+        },
+        "filledCount": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "@{sub:data.json}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "filledCount"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/field-01.hwp",
+  "output": "out/plan_result.hwp",
+  "steps": [
+    {
+      "action": "fill_fields",
+      "data": {
+        "비고": "해당없음"
+      },
+      "if": {
+        "fieldEquals": {
+          "name": "회사명",
+          "value": ""
+        }
+      }
+    }
+  ]
+}

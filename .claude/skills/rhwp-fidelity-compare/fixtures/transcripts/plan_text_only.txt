@@ -1,0 +1,7 @@
+$ venv/bin/python tools/fidelity_compare/fidelity_compare.py plan 0 34 --text-only --out-dir /tmp/rhwp-fidelity-plan
+기준 PDF: /repo/pdf/2022-업무계획-2022.pdf
+등급: 기준 PDF: pdf/ 보존 한컴 2022 출력
+요청: 35쪽, 완료: 35쪽, 누락: 0쪽
+pixel report: /tmp/rhwp-fidelity-plan/report.tsv
+text report: /tmp/rhwp-fidelity-plan/text-report.tsv
+run state: /tmp/rhwp-fidelity-plan/run-state.tsv

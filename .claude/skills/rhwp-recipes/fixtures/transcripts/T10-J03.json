@@ -1,0 +1,12 @@
+{
+  "id": "T10-J03",
+  "recipe": "10",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/10_security_sweep_before_share.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"redactedCount\":3,\"output\":\"output/share-redacted.hwp\",\"verify\":{\"diffCount\":0,\"identical\":true},\"noRaw\":true, …}\n{\"removedCount\":10,\"output\":\"output/share-final.hwp\", …}",
+  "parsed": null,
+  "parseable": false,
+  "notGym": true
+}

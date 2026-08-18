@@ -1,0 +1,26 @@
+{
+  "id": "FJ40",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "부서명": "여정검증팀"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:verified.hwp}",
+        "--verify",
+        "--json"
+      ]
+    }
+  ]
+}

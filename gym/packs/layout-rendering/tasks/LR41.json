@@ -1,0 +1,29 @@
+{
+  "id": "LR41",
+  "tier": 2,
+  "title": "가로 문서 썸네일 가로",
+  "input": "samples/landscape-001.hwp",
+  "instructions": "가로 표본 썸네일의 **가로 픽셀**을 answer.json 에 {\"width\": N} 으로 제출하라. 방향이 바뀌면 가로·세로가 뒤집힐 수 있다. 힌트: rhwp thumbnail 의 width.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "가로 픽셀",
+      "op": "answer_eq",
+      "answer": "width",
+      "path": "width",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

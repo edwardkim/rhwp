@@ -1,0 +1,32 @@
+{
+  "id": "SR38",
+  "tier": 3,
+  "title": "표 문서와 시험지 IR 불일치",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력과 다른 문서(samples/exam-kor-2p.hwp) 를 ir-diff 해 IR 동일 여부를 answer.json 에 {\"identical\": true|false} 로 적어라. 다른 문서면 보통 차이가 나고 exit 3 이다. 힌트: rhwp ir-diff --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 동일 판정",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "samples/exam-kor-2p.hwp",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "변환"
+}

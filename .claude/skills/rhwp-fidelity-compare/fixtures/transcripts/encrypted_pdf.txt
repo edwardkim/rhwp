@@ -1,0 +1,4 @@
+$ venv/bin/python tools/fidelity_compare/fidelity_compare.py 0 0 \
+    --source samples/secret.hwp --reference-pdf samples/secret.pdf --label secret-enc --text-only
+# pypdf.errors.FileNotDecryptedError / password required
+# F13 — 정지. 암호 제거 CLI 를 발명하지 않는다. 잠금 해제된 공식 PDF 를 다시 받는다.

@@ -1,0 +1,7 @@
+{
+ "schemaVersion": "1",
+ "generatedBy": "tools/fde/triage.py",
+ "route": "resolve-now",
+ "routeReason": "모르는 goal: mail-merge-all",
+ "steps": []
+}

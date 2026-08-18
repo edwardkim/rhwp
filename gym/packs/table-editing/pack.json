@@ -7,6 +7,7 @@
   "description": "표를 좌표로 다룬다 — 셀 지목 교정과 CSV 왕복. 판정은 언제나 (표, 행, 열).",
   "requires": {
     "commands": [
+      "edit",
       "export-tables"
     ]
   },

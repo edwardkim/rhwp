@@ -1,0 +1,29 @@
+{
+  "id": "OM38",
+  "tier": 2,
+  "title": "2쪽 시험지 썸네일 세로",
+  "input": "samples/exam-kor-2p.hwp",
+  "instructions": "2쪽 시험지 썸네일의 **세로 픽셀**을 answer.json 에 {\"height\": N} 으로 제출하라. 힌트: rhwp thumbnail 의 height.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "세로 픽셀",
+      "op": "answer_eq",
+      "answer": "height",
+      "path": "height",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "OP03",
+  "tier": 1,
+  "title": "표 수 라이브 재계산 (table-001)",
+  "input": "samples/table-001.hwp",
+  "axis": "검증",
+  "instructions": "입력 문서의 표 개수를 answer.json 에 {\"tables\": N} 으로 제출하라. 채점기가 export-tables --json 의 tableCount 를 라이브로 다시 센다. 힌트: rhwp export-tables {input} --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "표 수 라이브 대조",
+      "op": "answer_eq",
+      "answer": "tables",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ],
+      "path": "tableCount"
+    }
+  ]
+}

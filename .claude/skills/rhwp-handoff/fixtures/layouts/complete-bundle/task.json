@@ -1,0 +1,18 @@
+{
+  "handoffVersion": "1.0",
+  "taskId": "t-ord",
+  "objective": "조례 HWPX 사본을 샌드박스에서 변환한다",
+  "inputs": [
+    "samples/forms/ordinance_2024.hwpx"
+  ],
+  "allowedTools": [
+    "rhwp export-hwpx"
+  ],
+  "timeoutSec": 30,
+  "expectedOutputs": [
+    {
+      "path": "converted.hwpx",
+      "mustParse": true
+    }
+  ]
+}

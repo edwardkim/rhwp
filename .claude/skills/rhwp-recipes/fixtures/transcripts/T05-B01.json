@@ -1,0 +1,11 @@
+{
+  "id": "T05-B01",
+  "recipe": "05",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/05_mail_merge_batch_fill.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp fields --json samples/form-01.hwp",
+  "firstLine": "rhwp fields --json samples/form-01.hwp",
+  "notGym": true
+}

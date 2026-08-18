@@ -1,0 +1,25 @@
+{
+  "id": "T08",
+  "title": "둘 다 → injection 명령",
+  "scenario": "S15",
+  "argv": [
+    "explore",
+    "untrusted/both.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S15.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "security-sweep",
+      "triage-overview"
+    ],
+    "first": "security-sweep",
+    "firstCommand": "rhwp inspect injection <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X03",
+  "notGym": true,
+  "usesExistingCommand": true
+}

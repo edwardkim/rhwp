@@ -1,0 +1,19 @@
+{
+  "id": "SR32",
+  "steps": [
+    {
+      "answer": {
+        "format": {
+          "cmd": [
+            "export-pdf",
+            "{input}",
+            "-o",
+            "{sub:out.pdf}",
+            "--json"
+          ],
+          "path": "format"
+        }
+      }
+    }
+  ]
+}

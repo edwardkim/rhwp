@@ -1,0 +1,16 @@
+{
+  "id": "SD49",
+  "steps": [
+    {
+      "answer": {
+        "transport": {
+          "cmd": [
+            "capabilities",
+            "--mcp"
+          ],
+          "path": "invocation.transport"
+        }
+      }
+    }
+  ]
+}

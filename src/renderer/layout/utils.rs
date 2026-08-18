@@ -61,6 +61,21 @@ pub(crate) fn find_bin_data_bytes(
     })
 }
 
+/// 그림 자리에 **아무것도 그릴 수 없는** 상태인가 — "그림 미지정" 판정.
+///
+/// bin 참조 실패·빈 데이터뿐 아니라 **어느 백엔드도 디코드하지 못하는 바이트**도 같은
+/// 상태로 본다(프리뷰 없는 텍스트 EPS/AI 등). 지금까지 후자는 소리 없이 빈 공간이 됐지만,
+/// 한글은 둘을 구별하지 않고 편집 화면에 점선 테두리 + 그림-없음 아이콘을 그린다
+/// (인쇄 등가 출력에서는 둘 다 미출력). 형식 판정의 단일 권위는 `image_resolver` 다.
+pub(crate) fn picture_data_is_unusable(data: Option<&[u8]>) -> bool {
+    match data {
+        None => true,
+        Some(bytes) => {
+            bytes.is_empty() || !crate::renderer::image_resolver::is_displayable_image_data(bytes)
+        }
+    }
+}
+
 /// Picture의 렌더 표시 크기(HWPUNIT)를 반환한다.
 ///
 /// 일부 HWP5 그림은 `CommonObjAttr.width/height`보다

@@ -1,0 +1,28 @@
+{
+  "kinds": [
+    {
+      "id": "zero_width",
+      "filter": "zero-width",
+      "codepointExample": "U+200B",
+      "why": "사람 눈에 보이지 않는 문자입니다 — 화면에 없는 내용이 LLM 이 읽는 텍스트에는 남습니다"
+    },
+    {
+      "id": "bidi_override",
+      "filter": "bidi",
+      "codepointExample": "U+202E",
+      "why": "표시 순서를 뒤집는 제어문자입니다 — 화면에 보이는 순서와 실제 문자 순서가 다릅니다"
+    },
+    {
+      "id": "tag_char",
+      "filter": "tag",
+      "codepointExample": "U+E0061",
+      "why": "렌더링되지 않는 태그 문자입니다 — 화면에 흔적 없이 지시를 실어 나르는 채널입니다"
+    },
+    {
+      "id": "confusable",
+      "filter": "confusable",
+      "codepointExample": "U+0430",
+      "why": "라틴 낱말에 다른 스크립트의 동형자가 섞였습니다 — 화면상 구별되지 않습니다"
+    }
+  ]
+}

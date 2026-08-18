@@ -1,0 +1,41 @@
+{
+  "name": "hwp_doc_fields",
+  "kind": "session",
+  "in_capabilities_mcp": false,
+  "in_tools_list": true,
+  "family": "query",
+  "required": [
+    "docId"
+  ],
+  "optional": [],
+  "envelope_fields": [
+    "fieldCount",
+    "fields",
+    "textSecurity"
+  ],
+  "writes_ir": false,
+  "writes_disk": false,
+  "idempotentHint": true,
+  "destructiveHint": false,
+  "stateless_twin": "hwp_fields",
+  "when": "hwp_doc_fill_fields 전에 이름·반복 순번을 조사할 때.",
+  "when_not": "서식 한 번 조사 후 프로세스 종료면 hwp_fields.",
+  "recovery": "nextCall 로 hwp_open.",
+  "sample_call": {
+    "method": "tools/call",
+    "params": {
+      "name": "hwp_doc_fields",
+      "arguments": {
+        "docId": "<docId>"
+      }
+    }
+  },
+  "closed_handle_signal": {
+    "isError": true,
+    "needle": "열려 있지 않은 핸들",
+    "nextCall": {
+      "name": "hwp_open"
+    }
+  },
+  "source_const": "ALL_SESSION_TOOLS"
+}

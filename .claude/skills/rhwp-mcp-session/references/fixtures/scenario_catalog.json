@@ -1,0 +1,2855 @@
+{
+  "issue": 5293,
+  "items": [
+    {
+      "id": "cat-001",
+      "sample": "samples/field-01.hwp",
+      "task": "파일 하나 쪽수·형식만",
+      "choice": "stateless",
+      "first_tool": "hwp_info",
+      "why": "세션 오버헤드가 이득을 넘는다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_info"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-002",
+      "sample": "samples/field-01.hwp",
+      "task": "파일 하나에서 검색어 위치 1회",
+      "choice": "stateless",
+      "first_tool": "hwp_search",
+      "why": "호출 하나 = 작업 하나.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_search"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-003",
+      "sample": "samples/field-01.hwp",
+      "task": "서식 하나 채우고 끝",
+      "choice": "stateless",
+      "first_tool": "hwp_fill_fields",
+      "why": "단건 채움은 CLI 계약 그대로.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_fill_fields"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-004",
+      "sample": "samples/field-01.hwp",
+      "task": "표 하나를 CSV 로",
+      "choice": "stateless",
+      "first_tool": "hwp_table_to_csv",
+      "why": "세션 짝이 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_table_to_csv"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-005",
+      "sample": "samples/field-01.hwp",
+      "task": "법령 목차 1회",
+      "choice": "stateless",
+      "first_tool": "hwp_export_structure",
+      "why": "한 번이면 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_structure"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-006",
+      "sample": "samples/field-01.hwp",
+      "task": "날짜·금액 1회 수확",
+      "choice": "stateless",
+      "first_tool": "hwp_extract_data",
+      "why": "한 번이면 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_extract_data"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-007",
+      "sample": "samples/field-01.hwp",
+      "task": "문서 전체 SVG",
+      "choice": "stateless",
+      "first_tool": "hwp_export_svg",
+      "why": "전 쪽 렌더는 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_svg"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-008",
+      "sample": "samples/field-01.hwp",
+      "task": "제출용 PDF",
+      "choice": "stateless",
+      "first_tool": "hwp_export_pdf",
+      "why": "세션에 PDF 도구가 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_pdf"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-009",
+      "sample": "samples/field-01.hwp",
+      "task": "두 파일 IR 비교",
+      "choice": "stateless",
+      "first_tool": "hwp_ir_diff",
+      "why": "세션 밖 두 경로 비교.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ir_diff"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-010",
+      "sample": "samples/field-01.hwp",
+      "task": "저장본 사후검증",
+      "choice": "stateless",
+      "first_tool": "hwp_verify",
+      "why": "세션 밖 파일 게이트.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_verify"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-011",
+      "sample": "samples/field-01.hwp",
+      "task": "폴더 메타 스윕",
+      "choice": "stateless",
+      "first_tool": "hwp_batch",
+      "why": "stdin 경로 목록.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-012",
+      "sample": "samples/field-01.hwp",
+      "task": "폴더 전수 검색",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_search",
+      "why": "NDJSON 스트림.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_search"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-013",
+      "sample": "samples/field-01.hwp",
+      "task": "폴더 날짜·금액",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_extract_data",
+      "why": "문서마다 limit.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_extract_data"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-014",
+      "sample": "samples/field-01.hwp",
+      "task": "서식1 + 데이터N",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_fill",
+      "why": "메일머지.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_fill"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-015",
+      "sample": "samples/field-01.hwp",
+      "task": "폴더에서 문서 발견",
+      "choice": "stateless",
+      "first_tool": "hwp_scan",
+      "why": "세션 전 인벤토리.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_scan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-016",
+      "sample": "samples/field-01.hwp",
+      "task": "미신뢰 문서 선검사",
+      "choice": "stateless",
+      "first_tool": "hwp_threat_scan",
+      "why": "열기 전 컨테이너 위협.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_threat_scan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-017",
+      "sample": "samples/field-01.hwp",
+      "task": "프롬프트 주입 신호",
+      "choice": "stateless",
+      "first_tool": "hwp_inspect_injection",
+      "why": "세션 편집 전 선별.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_inspect_injection"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-018",
+      "sample": "samples/field-01.hwp",
+      "task": "배포 전 마스킹",
+      "choice": "stateless",
+      "first_tool": "hwp_redact",
+      "why": "세션에 redact 가 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_redact"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-019",
+      "sample": "samples/field-01.hwp",
+      "task": "여러 편집을 원자적으로",
+      "choice": "stateless",
+      "first_tool": "hwp_run_plan",
+      "why": "선검증 후 한 번 저장.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_run_plan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-020",
+      "sample": "samples/field-01.hwp",
+      "task": "387쪽 문서 검색 3회",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "재파싱 비용이 이긴다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-021",
+      "sample": "samples/field-01.hwp",
+      "task": "같은 문서 여러 쪽 읽기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "page 창을 잇는다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-022",
+      "sample": "samples/field-01.hwp",
+      "task": "채우고 고치고 눈검증",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "changedPages 쪽만 렌더.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-023",
+      "sample": "samples/field-01.hwp",
+      "task": "대형 규정 조문 인용",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "structure+text 반복.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-024",
+      "sample": "samples/field-01.hwp",
+      "task": "대형 문서 금액 반복 좁히기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "extract_data+search.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-025",
+      "sample": "samples/field-01.hwp",
+      "task": "워크스페이스 코퍼스",
+      "choice": "session",
+      "first_tool": "hwp_ws_list",
+      "why": "--workspace 전제.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_ws_list",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ws_list"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-026",
+      "sample": "samples/field-01.hwp",
+      "task": "변이 자기검증",
+      "choice": "session",
+      "first_tool": "hwp_ws_journal",
+      "why": "전/후 digest.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_ws_journal",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ws_journal"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-027",
+      "sample": "samples/field-01.hwp",
+      "task": "검색→치환→저장",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "한 핸들 누적.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-028",
+      "sample": "samples/field-01.hwp",
+      "task": "채움 후 쪽수 추적",
+      "choice": "session",
+      "first_tool": "hwp_doc_info",
+      "why": "재조판 확인.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_doc_info"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-029",
+      "sample": "samples/field-01.hwp",
+      "task": "칸 수정 후 눈검증",
+      "choice": "session",
+      "first_tool": "hwp_doc_set_cell",
+      "why": "changedPages.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_set_cell",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_doc_set_cell"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-030",
+      "sample": "samples/field-01.hwp",
+      "task": "미리보기만 하고 폐기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "save 없이 close.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-031",
+      "sample": "samples/table-001.hwp",
+      "task": "파일 하나 쪽수·형식만",
+      "choice": "stateless",
+      "first_tool": "hwp_info",
+      "why": "세션 오버헤드가 이득을 넘는다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_info"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-032",
+      "sample": "samples/table-001.hwp",
+      "task": "파일 하나에서 검색어 위치 1회",
+      "choice": "stateless",
+      "first_tool": "hwp_search",
+      "why": "호출 하나 = 작업 하나.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_search"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-033",
+      "sample": "samples/table-001.hwp",
+      "task": "서식 하나 채우고 끝",
+      "choice": "stateless",
+      "first_tool": "hwp_fill_fields",
+      "why": "단건 채움은 CLI 계약 그대로.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_fill_fields"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-034",
+      "sample": "samples/table-001.hwp",
+      "task": "표 하나를 CSV 로",
+      "choice": "stateless",
+      "first_tool": "hwp_table_to_csv",
+      "why": "세션 짝이 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_table_to_csv"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-035",
+      "sample": "samples/table-001.hwp",
+      "task": "법령 목차 1회",
+      "choice": "stateless",
+      "first_tool": "hwp_export_structure",
+      "why": "한 번이면 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_structure"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-036",
+      "sample": "samples/table-001.hwp",
+      "task": "날짜·금액 1회 수확",
+      "choice": "stateless",
+      "first_tool": "hwp_extract_data",
+      "why": "한 번이면 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_extract_data"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-037",
+      "sample": "samples/table-001.hwp",
+      "task": "문서 전체 SVG",
+      "choice": "stateless",
+      "first_tool": "hwp_export_svg",
+      "why": "전 쪽 렌더는 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_svg"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-038",
+      "sample": "samples/table-001.hwp",
+      "task": "제출용 PDF",
+      "choice": "stateless",
+      "first_tool": "hwp_export_pdf",
+      "why": "세션에 PDF 도구가 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_pdf"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-039",
+      "sample": "samples/table-001.hwp",
+      "task": "두 파일 IR 비교",
+      "choice": "stateless",
+      "first_tool": "hwp_ir_diff",
+      "why": "세션 밖 두 경로 비교.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ir_diff"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-040",
+      "sample": "samples/table-001.hwp",
+      "task": "저장본 사후검증",
+      "choice": "stateless",
+      "first_tool": "hwp_verify",
+      "why": "세션 밖 파일 게이트.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_verify"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-041",
+      "sample": "samples/table-001.hwp",
+      "task": "폴더 메타 스윕",
+      "choice": "stateless",
+      "first_tool": "hwp_batch",
+      "why": "stdin 경로 목록.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-042",
+      "sample": "samples/table-001.hwp",
+      "task": "폴더 전수 검색",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_search",
+      "why": "NDJSON 스트림.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_search"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-043",
+      "sample": "samples/table-001.hwp",
+      "task": "폴더 날짜·금액",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_extract_data",
+      "why": "문서마다 limit.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_extract_data"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-044",
+      "sample": "samples/table-001.hwp",
+      "task": "서식1 + 데이터N",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_fill",
+      "why": "메일머지.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_fill"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-045",
+      "sample": "samples/table-001.hwp",
+      "task": "폴더에서 문서 발견",
+      "choice": "stateless",
+      "first_tool": "hwp_scan",
+      "why": "세션 전 인벤토리.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_scan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-046",
+      "sample": "samples/table-001.hwp",
+      "task": "미신뢰 문서 선검사",
+      "choice": "stateless",
+      "first_tool": "hwp_threat_scan",
+      "why": "열기 전 컨테이너 위협.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_threat_scan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-047",
+      "sample": "samples/table-001.hwp",
+      "task": "프롬프트 주입 신호",
+      "choice": "stateless",
+      "first_tool": "hwp_inspect_injection",
+      "why": "세션 편집 전 선별.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_inspect_injection"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-048",
+      "sample": "samples/table-001.hwp",
+      "task": "배포 전 마스킹",
+      "choice": "stateless",
+      "first_tool": "hwp_redact",
+      "why": "세션에 redact 가 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_redact"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-049",
+      "sample": "samples/table-001.hwp",
+      "task": "여러 편집을 원자적으로",
+      "choice": "stateless",
+      "first_tool": "hwp_run_plan",
+      "why": "선검증 후 한 번 저장.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_run_plan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-050",
+      "sample": "samples/table-001.hwp",
+      "task": "387쪽 문서 검색 3회",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "재파싱 비용이 이긴다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-051",
+      "sample": "samples/table-001.hwp",
+      "task": "같은 문서 여러 쪽 읽기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "page 창을 잇는다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-052",
+      "sample": "samples/table-001.hwp",
+      "task": "채우고 고치고 눈검증",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "changedPages 쪽만 렌더.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-053",
+      "sample": "samples/table-001.hwp",
+      "task": "대형 규정 조문 인용",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "structure+text 반복.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-054",
+      "sample": "samples/table-001.hwp",
+      "task": "대형 문서 금액 반복 좁히기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "extract_data+search.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-055",
+      "sample": "samples/table-001.hwp",
+      "task": "워크스페이스 코퍼스",
+      "choice": "session",
+      "first_tool": "hwp_ws_list",
+      "why": "--workspace 전제.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_ws_list",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ws_list"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-056",
+      "sample": "samples/table-001.hwp",
+      "task": "변이 자기검증",
+      "choice": "session",
+      "first_tool": "hwp_ws_journal",
+      "why": "전/후 digest.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_ws_journal",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ws_journal"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-057",
+      "sample": "samples/table-001.hwp",
+      "task": "검색→치환→저장",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "한 핸들 누적.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-058",
+      "sample": "samples/table-001.hwp",
+      "task": "채움 후 쪽수 추적",
+      "choice": "session",
+      "first_tool": "hwp_doc_info",
+      "why": "재조판 확인.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_doc_info"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-059",
+      "sample": "samples/table-001.hwp",
+      "task": "칸 수정 후 눈검증",
+      "choice": "session",
+      "first_tool": "hwp_doc_set_cell",
+      "why": "changedPages.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_set_cell",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_doc_set_cell"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-060",
+      "sample": "samples/table-001.hwp",
+      "task": "미리보기만 하고 폐기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "save 없이 close.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-061",
+      "sample": "samples/복학원서.hwp",
+      "task": "파일 하나 쪽수·형식만",
+      "choice": "stateless",
+      "first_tool": "hwp_info",
+      "why": "세션 오버헤드가 이득을 넘는다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_info"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-062",
+      "sample": "samples/복학원서.hwp",
+      "task": "파일 하나에서 검색어 위치 1회",
+      "choice": "stateless",
+      "first_tool": "hwp_search",
+      "why": "호출 하나 = 작업 하나.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_search"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-063",
+      "sample": "samples/복학원서.hwp",
+      "task": "서식 하나 채우고 끝",
+      "choice": "stateless",
+      "first_tool": "hwp_fill_fields",
+      "why": "단건 채움은 CLI 계약 그대로.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_fill_fields"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-064",
+      "sample": "samples/복학원서.hwp",
+      "task": "표 하나를 CSV 로",
+      "choice": "stateless",
+      "first_tool": "hwp_table_to_csv",
+      "why": "세션 짝이 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_table_to_csv"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-065",
+      "sample": "samples/복학원서.hwp",
+      "task": "법령 목차 1회",
+      "choice": "stateless",
+      "first_tool": "hwp_export_structure",
+      "why": "한 번이면 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_structure"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-066",
+      "sample": "samples/복학원서.hwp",
+      "task": "날짜·금액 1회 수확",
+      "choice": "stateless",
+      "first_tool": "hwp_extract_data",
+      "why": "한 번이면 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_extract_data"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-067",
+      "sample": "samples/복학원서.hwp",
+      "task": "문서 전체 SVG",
+      "choice": "stateless",
+      "first_tool": "hwp_export_svg",
+      "why": "전 쪽 렌더는 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_svg"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-068",
+      "sample": "samples/복학원서.hwp",
+      "task": "제출용 PDF",
+      "choice": "stateless",
+      "first_tool": "hwp_export_pdf",
+      "why": "세션에 PDF 도구가 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_pdf"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-069",
+      "sample": "samples/복학원서.hwp",
+      "task": "두 파일 IR 비교",
+      "choice": "stateless",
+      "first_tool": "hwp_ir_diff",
+      "why": "세션 밖 두 경로 비교.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ir_diff"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-070",
+      "sample": "samples/복학원서.hwp",
+      "task": "저장본 사후검증",
+      "choice": "stateless",
+      "first_tool": "hwp_verify",
+      "why": "세션 밖 파일 게이트.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_verify"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-071",
+      "sample": "samples/복학원서.hwp",
+      "task": "폴더 메타 스윕",
+      "choice": "stateless",
+      "first_tool": "hwp_batch",
+      "why": "stdin 경로 목록.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-072",
+      "sample": "samples/복학원서.hwp",
+      "task": "폴더 전수 검색",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_search",
+      "why": "NDJSON 스트림.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_search"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-073",
+      "sample": "samples/복학원서.hwp",
+      "task": "폴더 날짜·금액",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_extract_data",
+      "why": "문서마다 limit.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_extract_data"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-074",
+      "sample": "samples/복학원서.hwp",
+      "task": "서식1 + 데이터N",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_fill",
+      "why": "메일머지.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_fill"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-075",
+      "sample": "samples/복학원서.hwp",
+      "task": "폴더에서 문서 발견",
+      "choice": "stateless",
+      "first_tool": "hwp_scan",
+      "why": "세션 전 인벤토리.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_scan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-076",
+      "sample": "samples/복학원서.hwp",
+      "task": "미신뢰 문서 선검사",
+      "choice": "stateless",
+      "first_tool": "hwp_threat_scan",
+      "why": "열기 전 컨테이너 위협.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_threat_scan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-077",
+      "sample": "samples/복학원서.hwp",
+      "task": "프롬프트 주입 신호",
+      "choice": "stateless",
+      "first_tool": "hwp_inspect_injection",
+      "why": "세션 편집 전 선별.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_inspect_injection"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-078",
+      "sample": "samples/복학원서.hwp",
+      "task": "배포 전 마스킹",
+      "choice": "stateless",
+      "first_tool": "hwp_redact",
+      "why": "세션에 redact 가 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_redact"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-079",
+      "sample": "samples/복학원서.hwp",
+      "task": "여러 편집을 원자적으로",
+      "choice": "stateless",
+      "first_tool": "hwp_run_plan",
+      "why": "선검증 후 한 번 저장.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_run_plan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-080",
+      "sample": "samples/복학원서.hwp",
+      "task": "387쪽 문서 검색 3회",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "재파싱 비용이 이긴다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-081",
+      "sample": "samples/복학원서.hwp",
+      "task": "같은 문서 여러 쪽 읽기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "page 창을 잇는다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-082",
+      "sample": "samples/복학원서.hwp",
+      "task": "채우고 고치고 눈검증",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "changedPages 쪽만 렌더.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-083",
+      "sample": "samples/복학원서.hwp",
+      "task": "대형 규정 조문 인용",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "structure+text 반복.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-084",
+      "sample": "samples/복학원서.hwp",
+      "task": "대형 문서 금액 반복 좁히기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "extract_data+search.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-085",
+      "sample": "samples/복학원서.hwp",
+      "task": "워크스페이스 코퍼스",
+      "choice": "session",
+      "first_tool": "hwp_ws_list",
+      "why": "--workspace 전제.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_ws_list",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ws_list"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-086",
+      "sample": "samples/복학원서.hwp",
+      "task": "변이 자기검증",
+      "choice": "session",
+      "first_tool": "hwp_ws_journal",
+      "why": "전/후 digest.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_ws_journal",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ws_journal"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-087",
+      "sample": "samples/복학원서.hwp",
+      "task": "검색→치환→저장",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "한 핸들 누적.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-088",
+      "sample": "samples/복학원서.hwp",
+      "task": "채움 후 쪽수 추적",
+      "choice": "session",
+      "first_tool": "hwp_doc_info",
+      "why": "재조판 확인.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_doc_info"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-089",
+      "sample": "samples/복학원서.hwp",
+      "task": "칸 수정 후 눈검증",
+      "choice": "session",
+      "first_tool": "hwp_doc_set_cell",
+      "why": "changedPages.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_set_cell",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_doc_set_cell"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-090",
+      "sample": "samples/복학원서.hwp",
+      "task": "미리보기만 하고 폐기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "save 없이 close.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-091",
+      "sample": "samples/추진일정.hwp",
+      "task": "파일 하나 쪽수·형식만",
+      "choice": "stateless",
+      "first_tool": "hwp_info",
+      "why": "세션 오버헤드가 이득을 넘는다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_info"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-092",
+      "sample": "samples/추진일정.hwp",
+      "task": "파일 하나에서 검색어 위치 1회",
+      "choice": "stateless",
+      "first_tool": "hwp_search",
+      "why": "호출 하나 = 작업 하나.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_search"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-093",
+      "sample": "samples/추진일정.hwp",
+      "task": "서식 하나 채우고 끝",
+      "choice": "stateless",
+      "first_tool": "hwp_fill_fields",
+      "why": "단건 채움은 CLI 계약 그대로.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_fill_fields"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-094",
+      "sample": "samples/추진일정.hwp",
+      "task": "표 하나를 CSV 로",
+      "choice": "stateless",
+      "first_tool": "hwp_table_to_csv",
+      "why": "세션 짝이 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_table_to_csv"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-095",
+      "sample": "samples/추진일정.hwp",
+      "task": "법령 목차 1회",
+      "choice": "stateless",
+      "first_tool": "hwp_export_structure",
+      "why": "한 번이면 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_structure"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-096",
+      "sample": "samples/추진일정.hwp",
+      "task": "날짜·금액 1회 수확",
+      "choice": "stateless",
+      "first_tool": "hwp_extract_data",
+      "why": "한 번이면 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_extract_data"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-097",
+      "sample": "samples/추진일정.hwp",
+      "task": "문서 전체 SVG",
+      "choice": "stateless",
+      "first_tool": "hwp_export_svg",
+      "why": "전 쪽 렌더는 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_svg"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-098",
+      "sample": "samples/추진일정.hwp",
+      "task": "제출용 PDF",
+      "choice": "stateless",
+      "first_tool": "hwp_export_pdf",
+      "why": "세션에 PDF 도구가 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_pdf"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-099",
+      "sample": "samples/추진일정.hwp",
+      "task": "두 파일 IR 비교",
+      "choice": "stateless",
+      "first_tool": "hwp_ir_diff",
+      "why": "세션 밖 두 경로 비교.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ir_diff"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-100",
+      "sample": "samples/추진일정.hwp",
+      "task": "저장본 사후검증",
+      "choice": "stateless",
+      "first_tool": "hwp_verify",
+      "why": "세션 밖 파일 게이트.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_verify"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-101",
+      "sample": "samples/추진일정.hwp",
+      "task": "폴더 메타 스윕",
+      "choice": "stateless",
+      "first_tool": "hwp_batch",
+      "why": "stdin 경로 목록.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-102",
+      "sample": "samples/추진일정.hwp",
+      "task": "폴더 전수 검색",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_search",
+      "why": "NDJSON 스트림.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_search"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-103",
+      "sample": "samples/추진일정.hwp",
+      "task": "폴더 날짜·금액",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_extract_data",
+      "why": "문서마다 limit.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_extract_data"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-104",
+      "sample": "samples/추진일정.hwp",
+      "task": "서식1 + 데이터N",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_fill",
+      "why": "메일머지.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_fill"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-105",
+      "sample": "samples/추진일정.hwp",
+      "task": "폴더에서 문서 발견",
+      "choice": "stateless",
+      "first_tool": "hwp_scan",
+      "why": "세션 전 인벤토리.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_scan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-106",
+      "sample": "samples/추진일정.hwp",
+      "task": "미신뢰 문서 선검사",
+      "choice": "stateless",
+      "first_tool": "hwp_threat_scan",
+      "why": "열기 전 컨테이너 위협.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_threat_scan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-107",
+      "sample": "samples/추진일정.hwp",
+      "task": "프롬프트 주입 신호",
+      "choice": "stateless",
+      "first_tool": "hwp_inspect_injection",
+      "why": "세션 편집 전 선별.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_inspect_injection"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-108",
+      "sample": "samples/추진일정.hwp",
+      "task": "배포 전 마스킹",
+      "choice": "stateless",
+      "first_tool": "hwp_redact",
+      "why": "세션에 redact 가 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_redact"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-109",
+      "sample": "samples/추진일정.hwp",
+      "task": "여러 편집을 원자적으로",
+      "choice": "stateless",
+      "first_tool": "hwp_run_plan",
+      "why": "선검증 후 한 번 저장.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_run_plan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-110",
+      "sample": "samples/추진일정.hwp",
+      "task": "387쪽 문서 검색 3회",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "재파싱 비용이 이긴다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-111",
+      "sample": "samples/추진일정.hwp",
+      "task": "같은 문서 여러 쪽 읽기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "page 창을 잇는다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-112",
+      "sample": "samples/추진일정.hwp",
+      "task": "채우고 고치고 눈검증",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "changedPages 쪽만 렌더.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-113",
+      "sample": "samples/추진일정.hwp",
+      "task": "대형 규정 조문 인용",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "structure+text 반복.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-114",
+      "sample": "samples/추진일정.hwp",
+      "task": "대형 문서 금액 반복 좁히기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "extract_data+search.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-115",
+      "sample": "samples/추진일정.hwp",
+      "task": "워크스페이스 코퍼스",
+      "choice": "session",
+      "first_tool": "hwp_ws_list",
+      "why": "--workspace 전제.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_ws_list",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ws_list"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-116",
+      "sample": "samples/추진일정.hwp",
+      "task": "변이 자기검증",
+      "choice": "session",
+      "first_tool": "hwp_ws_journal",
+      "why": "전/후 digest.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_ws_journal",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ws_journal"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-117",
+      "sample": "samples/추진일정.hwp",
+      "task": "검색→치환→저장",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "한 핸들 누적.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-118",
+      "sample": "samples/추진일정.hwp",
+      "task": "채움 후 쪽수 추적",
+      "choice": "session",
+      "first_tool": "hwp_doc_info",
+      "why": "재조판 확인.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_doc_info"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-119",
+      "sample": "samples/추진일정.hwp",
+      "task": "칸 수정 후 눈검증",
+      "choice": "session",
+      "first_tool": "hwp_doc_set_cell",
+      "why": "changedPages.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_set_cell",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_doc_set_cell"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-120",
+      "sample": "samples/추진일정.hwp",
+      "task": "미리보기만 하고 폐기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "save 없이 close.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-121",
+      "sample": "samples/form-01.hwp",
+      "task": "파일 하나 쪽수·형식만",
+      "choice": "stateless",
+      "first_tool": "hwp_info",
+      "why": "세션 오버헤드가 이득을 넘는다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_info"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-122",
+      "sample": "samples/form-01.hwp",
+      "task": "파일 하나에서 검색어 위치 1회",
+      "choice": "stateless",
+      "first_tool": "hwp_search",
+      "why": "호출 하나 = 작업 하나.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_search"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-123",
+      "sample": "samples/form-01.hwp",
+      "task": "서식 하나 채우고 끝",
+      "choice": "stateless",
+      "first_tool": "hwp_fill_fields",
+      "why": "단건 채움은 CLI 계약 그대로.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_fill_fields"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-124",
+      "sample": "samples/form-01.hwp",
+      "task": "표 하나를 CSV 로",
+      "choice": "stateless",
+      "first_tool": "hwp_table_to_csv",
+      "why": "세션 짝이 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_table_to_csv"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-125",
+      "sample": "samples/form-01.hwp",
+      "task": "법령 목차 1회",
+      "choice": "stateless",
+      "first_tool": "hwp_export_structure",
+      "why": "한 번이면 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_structure"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-126",
+      "sample": "samples/form-01.hwp",
+      "task": "날짜·금액 1회 수확",
+      "choice": "stateless",
+      "first_tool": "hwp_extract_data",
+      "why": "한 번이면 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_extract_data"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-127",
+      "sample": "samples/form-01.hwp",
+      "task": "문서 전체 SVG",
+      "choice": "stateless",
+      "first_tool": "hwp_export_svg",
+      "why": "전 쪽 렌더는 무상태.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_svg"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-128",
+      "sample": "samples/form-01.hwp",
+      "task": "제출용 PDF",
+      "choice": "stateless",
+      "first_tool": "hwp_export_pdf",
+      "why": "세션에 PDF 도구가 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_export_pdf"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-129",
+      "sample": "samples/form-01.hwp",
+      "task": "두 파일 IR 비교",
+      "choice": "stateless",
+      "first_tool": "hwp_ir_diff",
+      "why": "세션 밖 두 경로 비교.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ir_diff"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-130",
+      "sample": "samples/form-01.hwp",
+      "task": "저장본 사후검증",
+      "choice": "stateless",
+      "first_tool": "hwp_verify",
+      "why": "세션 밖 파일 게이트.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_verify"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-131",
+      "sample": "samples/form-01.hwp",
+      "task": "폴더 메타 스윕",
+      "choice": "stateless",
+      "first_tool": "hwp_batch",
+      "why": "stdin 경로 목록.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-132",
+      "sample": "samples/form-01.hwp",
+      "task": "폴더 전수 검색",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_search",
+      "why": "NDJSON 스트림.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_search"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-133",
+      "sample": "samples/form-01.hwp",
+      "task": "폴더 날짜·금액",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_extract_data",
+      "why": "문서마다 limit.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_extract_data"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-134",
+      "sample": "samples/form-01.hwp",
+      "task": "서식1 + 데이터N",
+      "choice": "stateless",
+      "first_tool": "hwp_batch_fill",
+      "why": "메일머지.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_batch_fill"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-135",
+      "sample": "samples/form-01.hwp",
+      "task": "폴더에서 문서 발견",
+      "choice": "stateless",
+      "first_tool": "hwp_scan",
+      "why": "세션 전 인벤토리.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_scan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-136",
+      "sample": "samples/form-01.hwp",
+      "task": "미신뢰 문서 선검사",
+      "choice": "stateless",
+      "first_tool": "hwp_threat_scan",
+      "why": "열기 전 컨테이너 위협.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_threat_scan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-137",
+      "sample": "samples/form-01.hwp",
+      "task": "프롬프트 주입 신호",
+      "choice": "stateless",
+      "first_tool": "hwp_inspect_injection",
+      "why": "세션 편집 전 선별.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_inspect_injection"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-138",
+      "sample": "samples/form-01.hwp",
+      "task": "배포 전 마스킹",
+      "choice": "stateless",
+      "first_tool": "hwp_redact",
+      "why": "세션에 redact 가 없다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_redact"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-139",
+      "sample": "samples/form-01.hwp",
+      "task": "여러 편집을 원자적으로",
+      "choice": "stateless",
+      "first_tool": "hwp_run_plan",
+      "why": "선검증 후 한 번 저장.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_run_plan"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-140",
+      "sample": "samples/form-01.hwp",
+      "task": "387쪽 문서 검색 3회",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "재파싱 비용이 이긴다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-141",
+      "sample": "samples/form-01.hwp",
+      "task": "같은 문서 여러 쪽 읽기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "page 창을 잇는다.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-142",
+      "sample": "samples/form-01.hwp",
+      "task": "채우고 고치고 눈검증",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "changedPages 쪽만 렌더.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-143",
+      "sample": "samples/form-01.hwp",
+      "task": "대형 규정 조문 인용",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "structure+text 반복.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-144",
+      "sample": "samples/form-01.hwp",
+      "task": "대형 문서 금액 반복 좁히기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "extract_data+search.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-145",
+      "sample": "samples/form-01.hwp",
+      "task": "워크스페이스 코퍼스",
+      "choice": "session",
+      "first_tool": "hwp_ws_list",
+      "why": "--workspace 전제.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_ws_list",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ws_list"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-146",
+      "sample": "samples/form-01.hwp",
+      "task": "변이 자기검증",
+      "choice": "session",
+      "first_tool": "hwp_ws_journal",
+      "why": "전/후 digest.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_ws_journal",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_ws_journal"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-147",
+      "sample": "samples/form-01.hwp",
+      "task": "검색→치환→저장",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "한 핸들 누적.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-148",
+      "sample": "samples/form-01.hwp",
+      "task": "채움 후 쪽수 추적",
+      "choice": "session",
+      "first_tool": "hwp_doc_info",
+      "why": "재조판 확인.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_info",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_doc_info"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-149",
+      "sample": "samples/form-01.hwp",
+      "task": "칸 수정 후 눈검증",
+      "choice": "session",
+      "first_tool": "hwp_doc_set_cell",
+      "why": "changedPages.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_doc_set_cell",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_doc_set_cell"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    },
+    {
+      "id": "cat-150",
+      "sample": "samples/form-01.hwp",
+      "task": "미리보기만 하고 폐기",
+      "choice": "session",
+      "first_tool": "hwp_open",
+      "why": "save 없이 close.",
+      "path_rule": "MCP 로는 저장소 루트 기준이 아니라 절대 경로",
+      "if_session": [
+        "hwp_open",
+        "hwp_open",
+        "hwp_close"
+      ],
+      "if_stateless": [
+        "hwp_open"
+      ],
+      "error_if_relative": "서버 cwd 기준 오탐",
+      "ssot": "capabilities --mcp + tools/list"
+    }
+  ]
+}

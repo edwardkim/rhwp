@@ -1,0 +1,22 @@
+{
+  "id": "SR36",
+  "steps": [
+    {
+      "answer": {
+        "identical": {
+          "cmd": [
+            "ir-diff",
+            "{input}",
+            "{input}",
+            "--json"
+          ],
+          "path": "identical",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

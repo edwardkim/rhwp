@@ -1,0 +1,22 @@
+{
+  "id": "SE30",
+  "steps": [
+    {
+      "answer": {
+        "highest": {
+          "cmd": [
+            "inspect",
+            "injection",
+            "{input}",
+            "--json"
+          ],
+          "path": "highestConfidence",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

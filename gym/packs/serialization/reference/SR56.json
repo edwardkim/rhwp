@@ -1,0 +1,23 @@
+{
+  "id": "SR56",
+  "steps": [
+    {
+      "answer": {
+        "identical": {
+          "cmd": [
+            "convert",
+            "{input}",
+            "{sub:conv.hwp}",
+            "--verify-pages",
+            "--json"
+          ],
+          "path": "verifyPages.identical",
+          "allowExits": [
+            0,
+            4
+          ]
+        }
+      }
+    }
+  ]
+}

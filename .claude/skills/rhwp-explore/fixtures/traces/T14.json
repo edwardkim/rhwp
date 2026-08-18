@@ -1,0 +1,31 @@
+{
+  "id": "T14",
+  "title": "8개 전부",
+  "scenario": "S26",
+  "argv": [
+    "explore",
+    "samples/kitchen-sink.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S26.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "security-sweep",
+      "form-fill",
+      "table-extract",
+      "structure-outline",
+      "chart-extract",
+      "note-structure",
+      "long-doc-digest",
+      "triage-overview"
+    ],
+    "first": "security-sweep",
+    "firstCommand": "rhwp inspect injection <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X03",
+  "notGym": true,
+  "usesExistingCommand": true
+}

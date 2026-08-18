@@ -246,6 +246,8 @@ pub const FIELD_TOC: u32 = ctrl_id(b"%toc");
 pub const FIELD_UNKNOWN: u32 = ctrl_id(b"%unk");
 /// 필드: 교정부호(삭제)
 pub const FIELD_PROOFREADING_DELETE: u32 = ctrl_id(b"%%*d");
+/// 필드: 교정부호(단순 변경)
+pub const FIELD_PROOFREADING_SIMPLECHANGE: u32 = ctrl_id(b"%%*c");
 
 /// [#4896] IR `FieldType` 이 모델링하지 않는 필드 종류의 **정체성 보존표**.
 ///
@@ -256,8 +258,18 @@ pub const FIELD_PROOFREADING_DELETE: u32 = ctrl_id(b"%%*d");
 /// **실측으로만 채운다.** 10k 코퍼스 실측(hwpx 원본 1,853문서):
 /// 열거 밖 값은 `PROOFREADING_MARKS_DELETE` 하나뿐이었고(12회/7문서), 같은 문서에서
 /// 한글이 세는 컨트롤 `%%*d` 와 개수까지 일치했다.
-pub const OWPML_EXTRA_FIELD_TYPES: &[(&str, u32)] =
-    &[("PROOFREADING_MARKS_DELETE", FIELD_PROOFREADING_DELETE)];
+///
+/// [#5171] `PROOFREADING_MARKS_SIMPLECHANGE` 는 코퍼스의 hwpx **원본에는 없지만** 한글 2022 가
+/// 같은 문서를 SaveAs 하면 쓴다(03787: `$RevisionSimpleChange?…` 3개 → 그 값). 원본 컨트롤
+/// 인구조사도 `%%*c:3` 이고, rhwp 산출의 type 만 이 값으로 바꿔 재측정하면 인구조사가
+/// **원본과 완전히 일치**한다(`%%*c:3,%%*d:1,%clk:34,…`). 종전에는 `CROSSREF` 로 굳었다.
+pub const OWPML_EXTRA_FIELD_TYPES: &[(&str, u32)] = &[
+    ("PROOFREADING_MARKS_DELETE", FIELD_PROOFREADING_DELETE),
+    (
+        "PROOFREADING_MARKS_SIMPLECHANGE",
+        FIELD_PROOFREADING_SIMPLECHANGE,
+    ),
+];
 
 /// [#4896] HWP5 는 이 종류의 정체성을 **ctrl_id 가 아니라 command 문자열**로 들고 있다.
 ///
@@ -265,8 +277,69 @@ pub const OWPML_EXTRA_FIELD_TYPES: &[(&str, u32)] =
 /// `$RevisionDelete;` 다. 같은 command 를 hwpx 원본도 그대로 싣고(type 은
 /// `PROOFREADING_MARKS_DELETE`), 두 포맷 모두에서 한글은 컨트롤을 `%%*d` 로 센다
 /// — 03430(6개)·01838(4개) 등에서 개수까지 일치한다.
-pub const OWPML_FIELD_TYPE_BY_COMMAND: &[(&str, &str)] =
-    &[("$RevisionDelete", "PROOFREADING_MARKS_DELETE")];
+pub const OWPML_FIELD_TYPE_BY_COMMAND: &[(&str, &str)] = &[
+    ("$RevisionDelete", "PROOFREADING_MARKS_DELETE"),
+    // [#5171] 같은 계열의 단순 변경. hwp 원본에서 ctrl_id 는 `%unk`, command 는
+    // `$RevisionSimpleChange?<본문>;` 이고 한글은 컨트롤을 `%%*c` 로 센다(03787: 3개).
+    ("$RevisionSimpleChange", "PROOFREADING_MARKS_SIMPLECHANGE"),
+];
+
+/// [#5140] 한컴 사용자 정의 기호의 **두 포맷 간 사상**.
+///
+/// 같은 글자를 HWP5 는 BMP 단일 유닛 `0xA000 | X` 로, HWPX 는 평면 15 보충 PUA
+/// `U+F0000 | X` 로 싣는다. 한글은 두 표기를 서로 사상하지만 rhwp 는 값을 그대로 옮겨
+/// h2x 산출에서 글자가 Yi 음절(U+A8xx 등)로 깨졌다.
+///
+/// **IR 정본은 HWP5 쪽 사영(`0xA000 | X`)이다.** 그래야 HWP5 파서·직렬화기가 무변경이고
+/// (코퍼스 다수) HWPX 파서·직렬화기만 대칭으로 사상하면 h2x·x2h 가 함께 닫힌다.
+///
+/// **범위가 아니라 실측 값 집합인 이유**: `0xA000..=0xABFF` 는 유니코드에서 Yi·Lisu·
+/// Syloti Nagri 가 쓰는 실제 블록이고, 한글도 이 구간을 무조건 사상하지 않는다.
+/// 반례 실측 — `08103` 의 `0xA813` 은 영어 단어 중간(`spectro?scopy`)에 있고 글자모양의
+/// 글꼴이 `맑은 고딕`(한컴 사설 영역이 없는 글꼴)인데, 한글은 이 글자를 평면 15 로 옮기지
+/// 않고 `U+A813` 그대로 낸다. 범위로 밀면 그 글자가 깨진다.
+///
+/// 10k 코퍼스 실측(HWP5 원본 6,432개): `0xA000..=0xABFF` 단일 유닛을 쓰는 문서 73건 중
+/// 아래 값들이 한글 출력에서 평면 15 로 확인됐다. 두 경로에서 모았다 —
+///
+/// - **본문 텍스트**(`PARA_TEXT` → `hp:t`): 23개 값이 2,857 / 2,863 = 99.8% 를 덮는다.
+///   나머지는 컨트롤 인라인 payload 오독(한글 출력 없음)이거나 위 `0xA813` 반례다.
+/// - **글자겹침**(`tcps` → `hp:compose/@composeText`): 06190·06638·08403·08396 을 한글
+///   SaveAs HWPX 로 떠서 대조했더니 29개 값이 **107/107 전량** 평면 15 로 갔다(BMP 유지 0).
+///
+/// **새 값은 한글 실측으로만 추가한다.**
+pub const HANCOM_SYMBOL_BMP_TO_PLANE15: &[u16] = &[
+    0xA0E1, 0xA12B, //
+    // 글자겹침 실측 — 06190 · 08403
+    0xA289, 0xA28A, 0xA292, 0xA293, 0xA294, 0xA295, 0xA296, 0xA297, 0xA298, 0xA299, 0xA29A,
+    0xA29B, //
+    // 본문 실측
+    0xA2B1, 0xA2B2, 0xA2B3, 0xA2B4, 0xA2B5, 0xA2B6, 0xA2B7, 0xA2B8, 0xA2B9, //
+    // 글자겹침 실측 — 06638 (0xA2C1·0xA2C2 는 코퍼스에 없어 넣지 않았다)
+    0xA2BA, 0xA2BB, 0xA2BC, 0xA2BD, 0xA2BE, 0xA2BF, 0xA2C0, 0xA2C3, 0xA2C4, 0xA2C5, 0xA2C6, 0xA2C7,
+    0xA2C8, 0xA2C9, 0xA2CA, 0xA2CB, 0xA2CC, //
+    // 본문 실측
+    0xA2FC, 0xA3C5, 0xA80A, 0xA80E, 0xA80F, 0xA810, 0xA81A, 0xA832, 0xA852, 0xA853, 0xA854, 0xA855,
+];
+
+/// 평면 15 보충 PUA 의 시작 — `0xA000 | X` 의 대응 코드포인트는 `PLANE15_BASE | X` 다.
+const PLANE15_BASE: u32 = 0x0F_0000;
+
+/// HWP5 사용자 정의 기호(`0xA000 | X`) → HWPX 평면 15 코드포인트. 표에 없으면 `None`.
+pub fn hancom_symbol_to_plane15(unit: u16) -> Option<u32> {
+    HANCOM_SYMBOL_BMP_TO_PLANE15
+        .contains(&unit)
+        .then(|| PLANE15_BASE | u32::from(unit & 0x0FFF))
+}
+
+/// HWPX 평면 15 코드포인트 → HWP5 사용자 정의 기호(`0xA000 | X`). 표에 없으면 `None`.
+pub fn plane15_to_hancom_symbol(cp: u32) -> Option<u16> {
+    if cp & 0xFF_F000 != PLANE15_BASE {
+        return None;
+    }
+    let unit = 0xA000u16 | u16::try_from(cp & 0x0FFF).ok()?;
+    HANCOM_SYMBOL_BMP_TO_PLANE15.contains(&unit).then_some(unit)
+}
 
 /// 필드 command → OWPML `type` 문자열 (표에 없으면 `None`).
 pub fn owpml_field_type_by_command(command: &str) -> Option<&'static str> {
@@ -421,4 +494,8 @@ mod tests {
         assert_eq!(ctrl_name(CTRL_GEN_SHAPE), "GenShape");
         assert_eq!(ctrl_name(0), "Unknown");
     }
+
+    // [#5140] 사용자 정의 기호 ↔ 평면 15 사상 계약은
+    // `tests/cases/issue_5140_hancom_symbol_plane15.rs` 에 있다. 검사 대상이 모두 공개
+    // 항목이라 제품 소스의 단위시험을 늘리지 않고 통합 테스트로 뒀다.
 }

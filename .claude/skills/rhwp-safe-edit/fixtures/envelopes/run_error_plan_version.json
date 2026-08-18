@@ -1,0 +1,9 @@
+{
+  "error": "planVersion \"1.0\" 이 필요합니다",
+  "schemaVersion": "1.0",
+  "_skillMeta": {
+    "exit": 2,
+    "branch": "FixPlanKeys",
+    "layer": "run"
+  }
+}

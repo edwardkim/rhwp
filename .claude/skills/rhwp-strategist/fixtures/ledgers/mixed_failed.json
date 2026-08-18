@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "1",
+  "generatedBy": "tools/strategist/engagement.py",
+  "corpus": "corpus/mixed-cipher",
+  "entryCount": 8,
+  "truncatedSearches": [],
+  "failures": [
+    {
+      "phase": "search",
+      "file": "암호_내부.hwp",
+      "keyword": "마감",
+      "reason": "exit 1"
+    },
+    {
+      "phase": "search",
+      "file": "손상_백업.hwpx",
+      "keyword": "마감",
+      "reason": "exit 1"
+    },
+    {
+      "phase": "search",
+      "file": "암호_내부.hwp",
+      "keyword": "가점",
+      "reason": "exit 1"
+    },
+    {
+      "phase": "search",
+      "file": "손상_백업.hwpx",
+      "keyword": "가점",
+      "reason": "exit 1"
+    }
+  ],
+  "entries": [
+    {
+      "id": "EV-1",
+      "kind": "search",
+      "question": "Q1",
+      "keyword": "마감",
+      "file": "공개_공고.hwpx",
+      "section": 0,
+      "paragraph": 4,
+      "charOffset": 8,
+      "length": 7,
+      "quote": "본 사업의 핵심은 도시 데이터 플랫폼 구축이다.",
+      "context": "…본 사업의 핵심은 도시 데이터 플랫폼 구축이다.…",
+      "command": "rhwp search corpus/mixed-cipher/공개_공고.hwpx --json -- 마감",
+      "page": 1,
+      "textbox": "tb-cover-1"
+    },
+    {
+      "id": "EV-2",
+      "kind": "search",
+      "question": "Q1",
+      "keyword": "제출기한",
+      "file": "공개_공고.hwpx",
+      "section": 0,
+      "paragraph": 7,
+      "charOffset": 55,
+      "length": 11,
+      "quote": "총사업비는 3,180백만원(부가세 별도)으로 한다.",
+      "context": "…총사업비는 3,180백만원(부가세 별도)으로 한다.…",
+      "command": "rhwp search corpus/mixed-cipher/공개_공고.hwpx --json -- 제출기한",
+      "page": 0,
+      "textbox": "tb-cover-1"
+    },
+    {
+      "id": "EV-3",
+      "kind": "search",
+      "question": "Q1",
+      "keyword": "마감",
+      "file": "평가기준.hwp",
+      "section": 0,
+      "paragraph": 22,
+      "charOffset": 0,
+      "length": 4,
+      "quote": "기술평가 80점, 가격평가 20점으로 합산한다.",
+      "context": "…기술평가 80점, 가격평가 20점으로 합산한다.…",
+      "command": "rhwp search corpus/mixed-cipher/평가기준.hwp --json -- 마감",
+      "page": 5
+    },
+    {
+      "id": "EV-4",
+      "kind": "search",
+      "question": "Q1",
+      "keyword": "제출기한",
+      "file": "평가기준.hwp",
+      "section": 0,
+      "paragraph": 23,
+      "charOffset": 18,
+      "length": 2,
+      "quote": "정성 평가 배점표는 별첨 2와 같다.",
+      "context": "…정성 평가 배점표는 별첨 2와 같다.…",
+      "command": "rhwp search corpus/mixed-cipher/평가기준.hwp --json -- 제출기한",
+      "page": 5
+    },
+    {
+      "id": "EV-5",
+      "kind": "search",
+      "question": "Q2",
+      "keyword": "가점",
+      "file": "공개_공고.hwpx",
+      "section": 0,
+      "paragraph": 3,
+      "charOffset": 14,
+      "length": 3,
+      "quote": "2분기 공공 클라우드 수주액은 42억원이다.",
+      "context": "…2분기 공공 클라우드 수주액은 42억원이다.…",
+      "command": "rhwp search corpus/mixed-cipher/공개_공고.hwpx --json -- 가점",
+      "page": 1
+    },
+    {
+      "id": "EV-6",
+      "kind": "search",
+      "question": "Q2",
+      "keyword": "실적",
+      "file": "공개_공고.hwpx",
+      "section": 0,
+      "paragraph": 5,
+      "charOffset": 0,
+      "length": 5,
+      "quote": "잔여파이프 61억원 중 28억원이 3분기 확정 예정이다.",
+      "context": "…잔여파이프 61억원 중 28억원이 3분기 확정 예정이다.…",
+      "command": "rhwp search corpus/mixed-cipher/공개_공고.hwpx --json -- 실적",
+      "page": 1
+    },
+    {
+      "id": "EV-7",
+      "kind": "search",
+      "question": "Q2",
+      "keyword": "가점",
+      "file": "평가기준.hwp",
+      "section": 0,
+      "paragraph": 10,
+      "charOffset": 0,
+      "length": 4,
+      "quote": "투입인력은 아키텍트 2, 개발 6, 운영 2 명이다.",
+      "context": "…투입인력은 아키텍트 2, 개발 6, 운영 2 명이다.…",
+      "command": "rhwp search corpus/mixed-cipher/평가기준.hwp --json -- 가점",
+      "page": 2
+    },
+    {
+      "id": "EV-8",
+      "kind": "search",
+      "question": "Q2",
+      "keyword": "실적",
+      "file": "평가기준.hwp",
+      "section": 0,
+      "paragraph": 15,
+      "charOffset": 0,
+      "length": 3,
+      "quote": "일정지연 리스크는 고(High)로 등록되어 있다.",
+      "context": "…일정지연 리스크는 고(High)로 등록되어 있다.…",
+      "command": "rhwp search corpus/mixed-cipher/평가기준.hwp --json -- 실적",
+      "page": 4
+    }
+  ],
+  "_skillMeta": {
+    "id": "mixed_failed",
+    "issue": 5335
+  }
+}

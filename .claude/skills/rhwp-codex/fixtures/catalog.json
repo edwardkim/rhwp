@@ -1,0 +1,901 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "notGym": true,
+  "noNewCli": true,
+  "noNewEditLogic": true,
+  "doNotHandEditGenerated": true,
+  "chapter85DeveloperOnly": true,
+  "fieldDictionary": "mydocs/manual/agent_knowledge_map.md#2-2",
+  "regen": {
+    "generate": "python tools/gen_agent_codex.py",
+    "check": "python tools/gen_agent_codex.py --check",
+    "staleExit": 3,
+    "staleMeans": "DATA"
+  },
+  "searchFallback": [
+    "capabilities",
+    "--search",
+    "<키워드>"
+  ],
+  "handwrittenChapters": [
+    "README.md",
+    "00_서문.md",
+    "01_판단트리.md"
+  ],
+  "generatedMarker": "generated:",
+  "commands": [
+    {
+      "name": "info",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "파악",
+      "developerOnly": false
+    },
+    {
+      "name": "word-count",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "bookmarks",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "form-value",
+      "chapter": "10_조회.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "headers-footers",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "header-footer",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "charts",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "explain",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "파악",
+      "developerOnly": false
+    },
+    {
+      "name": "explore",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "digest",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "파악",
+      "developerOnly": false
+    },
+    {
+      "name": "search",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "파악",
+      "developerOnly": false
+    },
+    {
+      "name": "export-text",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "파악",
+      "developerOnly": false
+    },
+    {
+      "name": "export-structure",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "파악",
+      "developerOnly": false
+    },
+    {
+      "name": "fields",
+      "chapter": "10_조회.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "파악",
+      "developerOnly": false
+    },
+    {
+      "name": "dump-pages",
+      "chapter": "10_조회.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "extract-pages",
+      "chapter": "10_조회.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "export-tables",
+      "chapter": "20_표와_데이터.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "수확",
+      "developerOnly": false
+    },
+    {
+      "name": "table-to-csv",
+      "chapter": "20_표와_데이터.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "수확",
+      "developerOnly": false
+    },
+    {
+      "name": "csv-to-table",
+      "chapter": "20_표와_데이터.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "수확",
+      "developerOnly": false
+    },
+    {
+      "name": "extract-data",
+      "chapter": "20_표와_데이터.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "수확",
+      "developerOnly": false
+    },
+    {
+      "name": "scan",
+      "chapter": "20_표와_데이터.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "수확",
+      "developerOnly": false
+    },
+    {
+      "name": "chart-to-csv",
+      "chapter": "20_표와_데이터.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "수확",
+      "developerOnly": false
+    },
+    {
+      "name": "csv-to-chart",
+      "chapter": "20_표와_데이터.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "수확",
+      "developerOnly": false
+    },
+    {
+      "name": "edit",
+      "chapter": "30_편집과_계획.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "편집",
+      "developerOnly": false
+    },
+    {
+      "name": "edit replace-text",
+      "chapter": "30_편집과_계획.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "편집",
+      "developerOnly": false
+    },
+    {
+      "name": "edit set-cell",
+      "chapter": "30_편집과_계획.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "편집",
+      "developerOnly": false
+    },
+    {
+      "name": "edit fill-fields",
+      "chapter": "30_편집과_계획.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "편집",
+      "developerOnly": false
+    },
+    {
+      "name": "edit insert-image",
+      "chapter": "30_편집과_계획.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "편집",
+      "developerOnly": false
+    },
+    {
+      "name": "edit redact",
+      "chapter": "30_편집과_계획.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "편집",
+      "developerOnly": false
+    },
+    {
+      "name": "edit sanitize",
+      "chapter": "30_편집과_계획.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "편집",
+      "developerOnly": false
+    },
+    {
+      "name": "run",
+      "chapter": "30_편집과_계획.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "편집",
+      "developerOnly": false
+    },
+    {
+      "name": "convert",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "변환",
+      "developerOnly": false
+    },
+    {
+      "name": "export-hwpx",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "변환",
+      "developerOnly": false
+    },
+    {
+      "name": "export-hml",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "export-markdown",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "변환",
+      "developerOnly": false
+    },
+    {
+      "name": "export-doclang",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "export-pdf",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "변환",
+      "developerOnly": false
+    },
+    {
+      "name": "export-svg",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": false,
+      "hasLiveSample": false,
+      "branch": "변환",
+      "developerOnly": false
+    },
+    {
+      "name": "thumbnail",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "변환",
+      "developerOnly": false
+    },
+    {
+      "name": "render-diff",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "변환",
+      "developerOnly": false
+    },
+    {
+      "name": "build-from-ingest",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "scaffold",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "export-png-gpu",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "gpu-info",
+      "chapter": "40_변환과_렌더.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "verify",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "검증",
+      "developerOnly": false
+    },
+    {
+      "name": "ir-diff",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "검증",
+      "developerOnly": false
+    },
+    {
+      "name": "replay",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "검증",
+      "developerOnly": false
+    },
+    {
+      "name": "audit",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "검증",
+      "developerOnly": false
+    },
+    {
+      "name": "lineage",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "검증",
+      "developerOnly": false
+    },
+    {
+      "name": "hwpx-roundtrip",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "layout-anomaly",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "keygen",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "verify-signature",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "harness",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "harness init",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "harness wrap",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "harness-status",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "anchor",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "gate",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "bundle",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "disclose",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "settle",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "audit-report",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "recall-scope",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "conformance",
+      "chapter": "50_검증_사다리.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "inspect",
+      "chapter": "60_보안.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "보안",
+      "developerOnly": false
+    },
+    {
+      "name": "inspect injection",
+      "chapter": "60_보안.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "보안",
+      "developerOnly": false
+    },
+    {
+      "name": "inspect hidden-text",
+      "chapter": "60_보안.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "보안",
+      "developerOnly": false
+    },
+    {
+      "name": "inspect unicode",
+      "chapter": "60_보안.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": "보안",
+      "developerOnly": false
+    },
+    {
+      "name": "armor",
+      "chapter": "60_보안.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "보안",
+      "developerOnly": false
+    },
+    {
+      "name": "threat-scan",
+      "chapter": "60_보안.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "보안",
+      "developerOnly": false
+    },
+    {
+      "name": "capabilities",
+      "chapter": "70_자기서술.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "export-provenance-map",
+      "chapter": "70_자기서술.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "export-ir-schema",
+      "chapter": "70_자기서술.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "export-plan-schema",
+      "chapter": "70_자기서술.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "export-capabilities-schema",
+      "chapter": "70_자기서술.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "export-agent-manifest",
+      "chapter": "70_자기서술.md",
+      "contractOnly": false,
+      "hasLiveSample": true,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "export-ontology",
+      "chapter": "70_자기서술.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": false
+    },
+    {
+      "name": "batch",
+      "chapter": "80_대량과_상주.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "대량",
+      "developerOnly": false
+    },
+    {
+      "name": "mcp-serve",
+      "chapter": "80_대량과_상주.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": "대량",
+      "developerOnly": false
+    },
+    {
+      "name": "bench",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "core-pages",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "diag",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "dump",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "dump-endnote-lines",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "dump-extents",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "dump-note-shape",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "dump-records",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "export-png",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "export-render-tree",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "gen-pua",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "gen-table",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-anchor-trace",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-borderfill-diagonal-probe",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-cell-header-probe",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-char-shape-audit",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-contract-analyze",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-contract-probe",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-ctrl-data-trace",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-first-para-control-probe",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-inventory",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-inventory-diff",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-mel-personnel-probe",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-roundtrip",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "hwp5-table-probe",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "measure-width",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "test-caption",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "test-field",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    },
+    {
+      "name": "test-shape",
+      "chapter": "85_진단_프로브.md",
+      "contractOnly": true,
+      "hasLiveSample": false,
+      "branch": null,
+      "developerOnly": true
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "OM43",
+  "tier": 1,
+  "title": "요청 서식 누름틀 전수",
+  "input": "samples/basic/request.hwp",
+  "instructions": "basic/request.hwp 서식의 누름틀 개수를 answer.json 에 {\"fields\": N} 으로 제출하라. 힌트: rhwp fields 의 fieldCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "필드 수",
+      "op": "answer_eq",
+      "answer": "fields",
+      "path": "fieldCount",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

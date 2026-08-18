@@ -1,0 +1,25 @@
+{
+  "id": "SD14",
+  "tier": 2,
+  "title": "봉투 schemaVersion",
+  "input": "samples/table-001.hwp",
+  "instructions": "capabilities 최상위 schemaVersion 을 answer.json 에 {\"schemaVersion\": S} 으로 제출하라. 힌트: capabilities 의 schemaVersion.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "봉투 schemaVersion",
+      "op": "answer_eq",
+      "answer": "schemaVersion",
+      "path": "schemaVersion",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

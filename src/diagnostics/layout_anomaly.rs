@@ -9,10 +9,13 @@
 //! 문서) 변위는 0인데 결과물은 여전히 깨져 있다.
 //!
 //! 이 모듈은 렌더 **한 장**만 입력받아 그 자체의 기하가 말이 되는지 본다:
-//! 요소가 페이지 여백을 벗어났는가(overflow), 겹치면 안 되는 요소끼리 겹쳤는가
-//! (overlap), 콘텐츠 없는 페이지가 문서 중간에 있는가(empty_page). `render-diff`가
-//! "달라졌는가"를 묻는다면 이 모듈은 "이상해 보이는가"를 묻는다 — 같은 렌더 기하
-//! 축 위의 서로 다른 질문이라 한쪽이 다른 쪽을 대신하지 않는다.
+//! 요소가 본문 여백을 벗어났는가(overflow), 페이지 상자 밖(또는 y<0)에 놓였는가
+//! (off-canvas), 겹치면 안 되는 흐름 요소끼리 겹쳤는가(overlap), 보이는 텍스트 런
+//! bbox 가 서로 교차하는가(text-overlap), 콘텐츠 없는 페이지가 문서 중간에 있는가
+//! (empty_page). overflow 와 off-canvas 는 기준 상자가 다르다 — 본문만 넘치고 쪽 안에
+//! 남아 있으면 overflow 만, 쪽 상자(또는 음수 y)를 넘으면 off-canvas. `render-diff`가
+//! "달라졌는가"를 묻는다면 이 모듈은 "이상해 보이는가"를 묻는다 — 같은 렌더 기하 축 위의
+//! 서로 다른 질문이라 한쪽이 다른 쪽을 대신하지 않는다.
 //!
 //! # 설계 원칙 — 판정은 데이터, 차단은 소비자 몫
 //!
@@ -21,8 +24,9 @@
 //! 도구의 정상 동작이지 실패가 아니다. 소비자가 실패로 취급하고 싶으면 명시적으로
 //! `--strict` 를 준다. `empty_page` 는 특히 오탐 여지가 크다(의도된 표지·구분지
 //! 빈 쪽과 회귀를 기하만으로 구분할 수 없다) — 그래서 `--strict` 로도 절대 실패를
-//! 유발하지 않는 "가능성 신호"로만 분리해 낸다. 자세한 배경은
-//! `mydocs/tech/layout_anomaly_detection.md`.
+//! 유발하지 않는 "가능성 신호"로만 분리해 낸다. `off-canvas` 는 페이지 상자·음수 y,
+//! `text-overlap` 은 글자끼리의 bbox 교차라 일반 overlap(표·이미지)과 다른 확정 기하다.
+//! 둘 다 `--strict` 에 포함한다. 자세한 배경은 `mydocs/tech/layout_anomaly_detection.md`.
 //!
 //! # 입력 경계
 //!
@@ -42,7 +46,7 @@ use crate::HwpError;
 // ─────────────────────────────────────────────────────────────────────────
 
 /// 스캔 임계값. 둘 다 렌더 트리와 같은 단위(px)다.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct AnomalyOptions {
     /// 요소 bbox가 본문 영역을 이 값(px) 넘게 벗어나야 overflow로 잡는다.
     /// 하위 픽셀 반올림 노이즈를 거르는 목적 — `render-diff` 의 기본 변위
@@ -51,6 +55,9 @@ pub struct AnomalyOptions {
     /// 두 요소의 겹침 폭·높이가 **둘 다** 이 값(px)을 넘어야 overlap으로 잡는다.
     /// 모서리가 살짝 스치는 것(안티앨리어싱·반올림)은 정상 조판에서도 흔하다.
     pub overlap_tolerance_px: f64,
+    /// overflow·overlap 검사 대상 노드 타입. `None` 이면 기본 검사 대상 전부.
+    /// `empty_page` 는 페이지 단위 신호라 이 필터의 영향을 받지 않는다.
+    pub type_filter: Option<Vec<&'static str>>,
 }
 
 /// 기본 overflow 허용치(px). `render_geom_diff::DEFAULT_MAX_DISP` 와 같은 자릿수.
@@ -63,6 +70,7 @@ impl Default for AnomalyOptions {
         Self {
             overflow_tolerance_px: DEFAULT_OVERFLOW_TOLERANCE_PX,
             overlap_tolerance_px: DEFAULT_OVERLAP_TOLERANCE_PX,
+            type_filter: None,
         }
     }
 }
@@ -94,6 +102,16 @@ impl OverflowAnomaly {
     }
 }
 
+/// 요소 하나가 페이지 상자 밖(또는 y<0)에 놓인 사건.
+///
+/// overflow 는 본문 여백(Body bbox)을 넘은 것이고, off-canvas 는 페이지
+/// 상자(Page bbox)를 넘었거나 `y < 0` 인 것이다. 본문만 넘치고 쪽 안에
+/// 남아 있으면 overflow 만 난다. `y < 0` 은 표 조각을 표 전체 원점으로
+/// 그려 앞 행이 쪽 위로 소실되는 축(#4889)을 잡기 위한 명시 조건이다.
+/// `boundary` 는 페이지 상자이고, 허용치는 overflow 와 같은
+/// [`AnomalyOptions::overflow_tolerance_px`] 를 쓴다.
+pub type OffCanvasAnomaly = OverflowAnomaly;
+
 /// 겹치면 안 되는 두 요소의 bbox가 겹친 사건.
 #[derive(Debug, Clone)]
 pub struct OverlapAnomaly {
@@ -113,6 +131,15 @@ impl OverlapAnomaly {
     }
 }
 
+/// 보이는 텍스트 런(글리프 묶음) bbox 가 서로 교차한 사건.
+///
+/// 일반 [`OverlapAnomaly`] 는 표·이미지·문단 줄처럼 **흐름 요소**의 겹침이다.
+/// 이쪽은 텍스트끼리만 본다 — 표와 그림이 겹쳐도 여기엔 안 잡힌다. 렌더 트리에
+/// 글자 단위 글리프 bbox 는 없으므로, 레이아웃이 이미 나눠 둔 `TextRun` 노드
+/// bbox 를 글리프 묶음으로 쓴다. 한컴 글자겹침(`char_overlap`) 런은 의도된
+/// 겹침이라 후보에서 뺀다.
+pub type TextOverlapAnomaly = OverlapAnomaly;
+
 /// 문서 중간에서 콘텐츠 없는 페이지를 만난 사건. 의도된 빈 페이지(표지 뒷면,
 /// 장 구분지 등)와 기하만으로 구분할 수 없으므로 이 자체가 곧 "가능성 신호"다
 /// (별도 severity 플래그를 두지 않는다 — 존재 자체가 이미 낮은 신뢰도를 뜻한다).
@@ -126,19 +153,30 @@ pub struct EmptyPageAnomaly {
 pub struct PageAnomalies {
     pub page: u32,
     pub overflow: Vec<OverflowAnomaly>,
+    pub off_canvas: Vec<OffCanvasAnomaly>,
     pub overlap: Vec<OverlapAnomaly>,
+    pub text_overlap: Vec<TextOverlapAnomaly>,
     pub empty_page: Option<EmptyPageAnomaly>,
 }
 
 impl PageAnomalies {
     pub fn is_empty(&self) -> bool {
-        self.overflow.is_empty() && self.overlap.is_empty() && self.empty_page.is_none()
+        self.overflow.is_empty()
+            && self.off_canvas.is_empty()
+            && self.overlap.is_empty()
+            && self.text_overlap.is_empty()
+            && self.empty_page.is_none()
     }
 
-    /// `--strict` 가 실패로 셀 만한 확정 신호(overflow·overlap)가 있는가.
-    /// `empty_page` 는 가능성 신호일 뿐이라 제외한다.
+    /// `--strict` 가 실패로 셀 만한 확정 신호가 있는가.
+    /// overflow·off-canvas·overlap·text-overlap 은 확정 신호. `empty_page` 는 가능성
+    /// 신호일 뿐이라 제외한다. off-canvas 는 페이지 상자 밖·음수 y, text-overlap 은
+    /// 글자 bbox 교차라 빈 쪽처럼 기하만으로 애매하지 않다.
     pub fn has_signal(&self) -> bool {
-        !self.overflow.is_empty() || !self.overlap.is_empty()
+        !self.overflow.is_empty()
+            || !self.off_canvas.is_empty()
+            || !self.overlap.is_empty()
+            || !self.text_overlap.is_empty()
     }
 }
 
@@ -156,8 +194,16 @@ impl DocAnomalies {
         self.pages.iter().map(|p| p.overflow.len()).sum()
     }
 
+    pub fn off_canvas_count(&self) -> usize {
+        self.pages.iter().map(|p| p.off_canvas.len()).sum()
+    }
+
     pub fn overlap_count(&self) -> usize {
         self.pages.iter().map(|p| p.overlap.len()).sum()
+    }
+
+    pub fn text_overlap_count(&self) -> usize {
+        self.pages.iter().map(|p| p.text_overlap.len()).sum()
     }
 
     pub fn empty_page_count(&self) -> usize {
@@ -231,6 +277,30 @@ fn is_checkable(t: &RenderNodeType) -> bool {
     )
 }
 
+/// overflow·overlap 기본 검사 대상의 안정 라벨 (`--types` 가 받는 이름).
+const CHECKABLE_TYPE_LABELS: &[&str] = &[
+    "Table",
+    "Image",
+    "TextBox",
+    "Equation",
+    "Group",
+    "Form",
+    "Placeholder",
+    "RawSvg",
+    "Line",
+    "Rect",
+    "Ellipse",
+    "Path",
+    "TextLine",
+];
+
+fn type_allowed(label: &str, opts: &AnomalyOptions) -> bool {
+    match &opts.type_filter {
+        None => true,
+        Some(allowed) => allowed.contains(&label),
+    }
+}
+
 /// 이 노드가 "겹치면 안 되는" overlap 후보인가. `node` 는 TextLine의 자식(TextRun)
 /// 검사에 쓴다.
 ///
@@ -265,6 +335,21 @@ fn is_overlap_candidate(node: &RenderNode) -> bool {
 
 fn has_visible_text(s: &str) -> bool {
     s.chars().any(|c| !c.is_whitespace())
+}
+
+/// text-overlap 후보 — 보이는 글자가 있는 `TextRun` 이고, 한컴 글자겹침
+/// 컨트롤이 아니며, 면적이 있는 bbox 를 가진다. 표·이미지·도형은 여기
+/// 들어오지 않는다(그건 일반 overlap).
+fn is_text_overlap_candidate(node: &RenderNode) -> bool {
+    match &node.node_type {
+        RenderNodeType::TextRun(tr) => {
+            tr.char_overlap.is_none()
+                && has_visible_text(tr.display_or_text())
+                && node.bbox.width > 0.0
+                && node.bbox.height > 0.0
+        }
+        _ => false,
+    }
 }
 
 /// 페이지 트리에서 첫 `Body` 노드를 찾는다(전위 순회).
@@ -314,6 +399,47 @@ fn check_overflow(
     }
 }
 
+/// 페이지 상자 밖이거나 y<0 이면 off-canvas. overflow 와 같은 허용치를 쓰되
+/// 기준 상자는 Page bbox 이다. `y < 0` 은 page.y 가 0 이 아니어도 쪽 위로
+/// 소실된 노드를 놓치지 않기 위한 명시 조건이다.
+fn check_off_canvas(
+    bbox: &BoundingBox,
+    path: &str,
+    node_type: &'static str,
+    page: &BoundingBox,
+    opts: &AnomalyOptions,
+    out: &mut Vec<OffCanvasAnomaly>,
+) {
+    let over_left = (page.x - bbox.x).max(0.0);
+    let over_top = (page.y - bbox.y).max(0.0).max((-bbox.y).max(0.0));
+    let over_right = (bbox.x + bbox.width - (page.x + page.width)).max(0.0);
+    let over_bottom = (bbox.y + bbox.height - (page.y + page.height)).max(0.0);
+    let max_over = over_left.max(over_top).max(over_right).max(over_bottom);
+    if max_over > opts.overflow_tolerance_px {
+        out.push(OffCanvasAnomaly {
+            path: path.to_string(),
+            node_type,
+            bbox: *bbox,
+            boundary: *page,
+            over_left,
+            over_top,
+            over_right,
+            over_bottom,
+        });
+    }
+}
+
+/// 페이지 루트의 쪽 상자. Page 노드 bbox 가 비어 있으면 PageNode 치수로
+/// (0,0,w,h) 를 쓴다.
+fn page_box(root: &RenderNode) -> BoundingBox {
+    match &root.node_type {
+        RenderNodeType::Page(p) if root.bbox.width <= 0.0 || root.bbox.height <= 0.0 => {
+            BoundingBox::new(0.0, 0.0, p.width, p.height)
+        }
+        _ => root.bbox,
+    }
+}
+
 /// overlap 후보 — 겹침 판정을 같은 단(column) 안에서만 짝짓기 위해 열 인덱스를
 /// 함께 들고 다닌다. 서로 다른 단은 애초에 x축이 나뉘어 있어 정상 조판에서도
 /// 나란히 배치되므로 후보 짝짓기에서 제외한다.
@@ -330,10 +456,14 @@ fn walk(
     path: String,
     column: Option<u16>,
     suppress: bool,
+    off_canvas_suppress: bool,
     boundary: &BoundingBox,
+    page: &BoundingBox,
     opts: &AnomalyOptions,
     overflow_out: &mut Vec<OverflowAnomaly>,
+    off_canvas_out: &mut Vec<OffCanvasAnomaly>,
     flow_out: &mut Vec<FlowCandidate>,
+    text_out: &mut Vec<FlowCandidate>,
     has_content: &mut bool,
 ) {
     if !node.visible || node.editor_only {
@@ -363,19 +493,39 @@ fn walk(
         column
     };
 
+    // 표·글상자 안으로도 내려가 런 bbox 를 모은다. 일반 overlap 의 suppress 와
+    // 무관 — 표 안의 글자가 서로 겹치는 것은 표-표 겹침이 아니다.
+    if is_text_overlap_candidate(node) {
+        text_out.push(FlowCandidate {
+            path: path.clone(),
+            node_type: "TextRun",
+            bbox: node.bbox,
+            column,
+        });
+    }
+
     let mut next_suppress = suppress;
-    if !suppress && is_checkable(&node.node_type) {
+    let mut next_off_canvas_suppress = off_canvas_suppress;
+    if is_checkable(&node.node_type) {
         let label = node_type_label(&node.node_type);
-        check_overflow(&node.bbox, &path, label, boundary, opts, overflow_out);
-        if is_overlap_candidate(node) {
-            flow_out.push(FlowCandidate {
-                path: path.clone(),
-                node_type: label,
-                bbox: node.bbox,
-                column,
-            });
+        if !off_canvas_suppress {
+            check_off_canvas(&node.bbox, &path, label, page, opts, off_canvas_out);
+            next_off_canvas_suppress = true;
         }
-        next_suppress = true;
+        if !suppress && type_allowed(label, opts) {
+            check_overflow(&node.bbox, &path, label, boundary, opts, overflow_out);
+            if is_overlap_candidate(node) {
+                flow_out.push(FlowCandidate {
+                    path: path.clone(),
+                    node_type: label,
+                    bbox: node.bbox,
+                    column,
+                });
+            }
+            // 필터에 걸린 컨테이너만 자손을 접는다. `--types TextLine` 은 표 안의
+            // 줄까지 내려가야 하므로, 제외된 Table 은 suppress 하지 않는다.
+            next_suppress = true;
+        }
     }
 
     for (i, child) in node.children.iter().enumerate() {
@@ -385,10 +535,14 @@ fn walk(
             child_path,
             column,
             next_suppress,
+            next_off_canvas_suppress,
             boundary,
+            page,
             opts,
             overflow_out,
+            off_canvas_out,
             flow_out,
+            text_out,
             has_content,
         );
     }
@@ -431,8 +585,11 @@ pub fn scan_page(
     opts: &AnomalyOptions,
 ) -> PageAnomalies {
     let mut overflow = Vec::new();
+    let mut off_canvas = Vec::new();
     let mut flow = Vec::new();
+    let mut text = Vec::new();
     let mut has_content = false;
+    let page_boundary = page_box(root);
 
     if let Some(body) = find_body(root) {
         let boundary = body.bbox;
@@ -441,15 +598,20 @@ pub fn scan_page(
             "Page/Body".to_string(),
             None,
             false,
+            false,
             &boundary,
+            &page_boundary,
             opts,
             &mut overflow,
+            &mut off_canvas,
             &mut flow,
+            &mut text,
             &mut has_content,
         );
     }
 
     let overlap = find_overlaps(&flow, opts);
+    let text_overlap = find_overlaps(&text, opts);
 
     // 문서 중간(첫·마지막 제외)이고 콘텐츠가 전혀 없을 때만 "가능성 신호"로 남긴다.
     let empty_page = if page_count >= 3 && page > 0 && page < page_count - 1 && !has_content {
@@ -461,7 +623,9 @@ pub fn scan_page(
     PageAnomalies {
         page,
         overflow,
+        off_canvas,
         overlap,
+        text_overlap,
         empty_page,
     }
 }
@@ -485,26 +649,71 @@ pub fn scan_document(core: &DocumentCore, opts: &AnomalyOptions) -> Result<DocAn
 // CLI: `rhwp layout-anomaly`
 // ─────────────────────────────────────────────────────────────────────────
 
+use std::path::{Path, PathBuf};
+use std::time::Instant;
+
 use crate::schema_registry::ENVELOPE_SCHEMA_VERSION as SCHEMA_VERSION;
 
 const EXIT_OK: i32 = 0;
 const EXIT_RUNTIME: i32 = 1;
 const EXIT_USAGE: i32 = 2;
-/// `--strict` 가 확정 신호(overflow·overlap)를 하나라도 찾았을 때 내는 코드.
-/// `render_geom_diff::EXIT_REGRESSION` 과 같은 값 — "검출은 도구의 정상 동작"
-/// 이라는 같은 계약이다.
+/// `--strict` 가 확정 신호(overflow·off-canvas·overlap·text-overlap)를 하나라도
+/// 찾았을 때 내는 코드. `render_geom_diff::EXIT_REGRESSION` 과 같은 값 — "검출은
+/// 도구의 정상 동작"이라는 같은 계약이다. off-canvas 와 text-overlap 을 확정에 포함하는
+/// 선택은 모듈 머리말·`PageAnomalies::has_signal` 주석과 같다.
 const EXIT_ANOMALY: i32 = 3;
 
+fn usage() -> String {
+    "사용법: rhwp layout-anomaly <파일.hwp|파일.hwpx> [-p N] [--json] [--strict] \
+     [--types Type,...] [--overflow-tolerance PX] [--overlap-tolerance PX]\n         \
+     rhwp layout-anomaly --batch <폴더> [-p N] [--json] [--strict] \
+     [--types Type,...] [--overflow-tolerance PX] [--overlap-tolerance PX]"
+        .to_string()
+}
+
 struct CliOptions {
-    path: std::path::PathBuf,
+    path: PathBuf,
+    batch: bool,
     page: Option<u32>,
     json: bool,
     strict: bool,
     anomaly_opts: AnomalyOptions,
 }
 
+fn parse_type_filter(raw: &str) -> Result<Vec<&'static str>, String> {
+    let mut out = Vec::new();
+    for part in raw.split(',') {
+        let part = part.trim();
+        if part.is_empty() {
+            continue;
+        }
+        let found = CHECKABLE_TYPE_LABELS
+            .iter()
+            .copied()
+            .find(|label| label.eq_ignore_ascii_case(part));
+        match found {
+            Some(label) => {
+                if !out.contains(&label) {
+                    out.push(label);
+                }
+            }
+            None => {
+                return Err(format!(
+                    "--types 알 수 없는 노드 타입: {part} (허용: {})",
+                    CHECKABLE_TYPE_LABELS.join(", ")
+                ));
+            }
+        }
+    }
+    if out.is_empty() {
+        return Err("--types 뒤에 Table,Image 같은 타입 목록이 필요합니다".into());
+    }
+    Ok(out)
+}
+
 fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
-    let mut path: Option<std::path::PathBuf> = None;
+    let mut path: Option<PathBuf> = None;
+    let mut batch = false;
     let mut page = None;
     let mut json = false;
     let mut strict = false;
@@ -515,6 +724,7 @@ fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
         match args[i].as_str() {
             "--json" => json = true,
             "--strict" => strict = true,
+            "--batch" => batch = true,
             "-p" | "--page" => {
                 i += 1;
                 let v = args.get(i).ok_or("-p 다음에 페이지 번호 필요")?;
@@ -539,23 +749,29 @@ fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
                     .parse()
                     .map_err(|_| format!("--overlap-tolerance 파싱 실패: {v}"))?;
             }
+            "--types" => {
+                i += 1;
+                let v = args.get(i).ok_or("--types 다음에 타입 목록 필요")?;
+                anomaly_opts.type_filter = Some(parse_type_filter(v)?);
+            }
             other if other.starts_with('-') => return Err(format!("알 수 없는 옵션: {other}")),
             other => {
-                if path.replace(std::path::PathBuf::from(other)).is_some() {
-                    return Err("입력 파일은 하나만 지정할 수 있습니다".into());
+                if path.replace(PathBuf::from(other)).is_some() {
+                    return Err(if batch {
+                        "--batch 는 폴더 1개만 지정".into()
+                    } else {
+                        "입력 파일은 하나만 지정할 수 있습니다".into()
+                    });
                 }
             }
         }
         i += 1;
     }
 
-    let path = path.ok_or_else(|| {
-        "사용법: rhwp layout-anomaly <파일.hwp|파일.hwpx> [-p N] [--json] [--strict] \
-         [--overflow-tolerance PX] [--overlap-tolerance PX]"
-            .to_string()
-    })?;
+    let path = path.ok_or_else(usage)?;
     Ok(CliOptions {
         path,
+        batch,
         page,
         json,
         strict,
@@ -599,9 +815,18 @@ fn page_json(p: &PageAnomalies) -> Value {
     json!({
         "page": p.page,
         "overflow": p.overflow.iter().map(overflow_json).collect::<Vec<_>>(),
+        "offCanvas": p.off_canvas.iter().map(overflow_json).collect::<Vec<_>>(),
         "overlap": p.overlap.iter().map(overlap_json).collect::<Vec<_>>(),
+        "textOverlap": p.text_overlap.iter().map(overlap_json).collect::<Vec<_>>(),
         "emptyPage": p.empty_page.is_some(),
     })
+}
+
+fn types_json(opts: &CliOptions) -> Value {
+    match &opts.anomaly_opts.type_filter {
+        Some(types) => json!(types),
+        None => Value::Null,
+    }
 }
 
 fn envelope(source: &str, doc: &DocAnomalies, opts: &CliOptions) -> Value {
@@ -614,14 +839,18 @@ fn envelope(source: &str, doc: &DocAnomalies, opts: &CliOptions) -> Value {
     crate::provenance::marked(
         json!({
             "schemaVersion": SCHEMA_VERSION,
+            "mode": if opts.batch { "batch" } else { "single" },
             "source": source,
             "pageCount": doc.page_count,
             "pageFilter": opts.page,
             "overflowTolerancePx": opts.anomaly_opts.overflow_tolerance_px,
             "overlapTolerancePx": opts.anomaly_opts.overlap_tolerance_px,
+            "types": types_json(opts),
             "strict": opts.strict,
             "overflowCount": doc.overflow_count(),
+            "offCanvasCount": doc.off_canvas_count(),
             "overlapCount": doc.overlap_count(),
+            "textOverlapCount": doc.text_overlap_count(),
             "emptyPageCount": doc.empty_page_count(),
             "hasSignal": doc.has_signal(),
             "pages": pages,
@@ -630,25 +859,44 @@ fn envelope(source: &str, doc: &DocAnomalies, opts: &CliOptions) -> Value {
     )
 }
 
+fn error_envelope(source: &str, error: &str, opts: &CliOptions, elapsed_ms: u128) -> Value {
+    let mut rec = crate::provenance::marked(
+        json!({
+            "schemaVersion": SCHEMA_VERSION,
+            "mode": "batch",
+            "source": source,
+            "pageCount": 0,
+            "pageFilter": opts.page,
+            "overflowTolerancePx": opts.anomaly_opts.overflow_tolerance_px,
+            "overlapTolerancePx": opts.anomaly_opts.overlap_tolerance_px,
+            "types": types_json(opts),
+            "strict": opts.strict,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [],
+            "elapsedMs": elapsed_ms as u64,
+        }),
+        "layout-anomaly",
+    );
+    rec["error"] = json!(error);
+    rec
+}
+
+fn load_and_scan(path: &Path, opts: &AnomalyOptions) -> Result<DocAnomalies, String> {
+    let data =
+        std::fs::read(path).map_err(|e| format!("파일 읽기 실패 {}: {e}", path.display()))?;
+    let core = DocumentCore::from_bytes(&data)
+        .map_err(|e| format!("문서 로드 실패 {}: {e:?}", path.display()))?;
+    scan_document(&core, opts).map_err(|e| format!("렌더 트리 생성 실패 - {e:?}"))
+}
+
 fn run_single(opts: &CliOptions) -> i32 {
-    let data = match std::fs::read(&opts.path) {
+    let doc = match load_and_scan(&opts.path, &opts.anomaly_opts) {
         Ok(d) => d,
         Err(e) => {
-            eprintln!("오류: 파일 읽기 실패 {}: {e}", opts.path.display());
-            return EXIT_RUNTIME;
-        }
-    };
-    let core = match DocumentCore::from_bytes(&data) {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("오류: 문서 로드 실패 {}: {e:?}", opts.path.display());
-            return EXIT_RUNTIME;
-        }
-    };
-    let doc = match scan_document(&core, &opts.anomaly_opts) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 렌더 트리 생성 실패 - {e:?}");
+            eprintln!("오류: {e}");
             return EXIT_RUNTIME;
         }
     };
@@ -679,10 +927,12 @@ fn run_single(opts: &CliOptions) -> i32 {
         .collect();
 
     println!(
-        "쪽 수: {}  overflow: {}  overlap: {}  empty_page(가능성): {}",
+        "쪽 수: {}  overflow: {}  off-canvas: {}  overlap: {}  text-overlap: {}  empty_page(가능성): {}",
         doc.page_count,
         doc.overflow_count(),
+        doc.off_canvas_count(),
         doc.overlap_count(),
+        doc.text_overlap_count(),
         doc.empty_page_count()
     );
     if shown.is_empty() {
@@ -698,9 +948,24 @@ fn run_single(opts: &CliOptions) -> i32 {
                 o.node_type
             );
         }
+        for o in &p.off_canvas {
+            println!(
+                "  [OFF-CANVAS] page {:>3}  {:>7.2}px  {} ({})",
+                p.page,
+                o.max_over(),
+                o.path,
+                o.node_type
+            );
+        }
         for o in &p.overlap {
             println!(
                 "  [OVERLAP]  page {:>3}  {:.2}x{:.2}px  {} ({}) x {} ({})",
+                p.page, o.overlap_w, o.overlap_h, o.path_a, o.type_a, o.path_b, o.type_b
+            );
+        }
+        for o in &p.text_overlap {
+            println!(
+                "  [TEXT-OVERLAP] page {:>3}  {:.2}x{:.2}px  {} ({}) x {} ({})",
                 p.page, o.overlap_w, o.overlap_h, o.path_a, o.type_a, o.path_b, o.type_b
             );
         }
@@ -723,6 +988,168 @@ fn run_single(opts: &CliOptions) -> i32 {
     }
 }
 
+/// `.hwp`/`.hwpx` 파일을 재귀 수집한 뒤 상대 경로(슬래시) 기준으로 정렬한다.
+/// 정렬 키가 안정적이어야 같은 폴더를 다시 돌려도 보고서 순서가 같다.
+fn collect_doc_files(root: &Path) -> Result<Vec<PathBuf>, String> {
+    if !root.is_dir() {
+        return Err(format!(
+            "--batch 는 폴더만 지정할 수 있습니다: {}",
+            root.display()
+        ));
+    }
+    let mut files = Vec::new();
+    let mut stack = vec![root.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        let entries = std::fs::read_dir(&dir)
+            .map_err(|e| format!("폴더 읽기 실패 {}: {e}", dir.display()))?;
+        for entry in entries {
+            let path = entry.map_err(|e| format!("항목 읽기 실패: {e}"))?.path();
+            if path.is_dir() {
+                stack.push(path);
+            } else if path.extension().is_some_and(|ext| {
+                ext.eq_ignore_ascii_case("hwp") || ext.eq_ignore_ascii_case("hwpx")
+            }) {
+                files.push(path);
+            }
+        }
+    }
+    files.sort_by_key(|a| rel_slash(root, a));
+    Ok(files)
+}
+
+fn rel_slash(root: &Path, path: &Path) -> String {
+    path.strip_prefix(root)
+        .unwrap_or(path)
+        .to_string_lossy()
+        .replace('\\', "/")
+}
+
+struct BatchRow {
+    rel_path: String,
+    status: String,
+    overflow: usize,
+    overlap: usize,
+    empty_page: usize,
+    has_signal: bool,
+    elapsed_ms: u128,
+    error: String,
+    envelope: Option<Value>,
+}
+
+fn batch_record(opts: &CliOptions, row: &BatchRow) -> Value {
+    if let Some(env) = &row.envelope {
+        let mut rec = env.clone();
+        rec["elapsedMs"] = json!(row.elapsed_ms as u64);
+        rec
+    } else {
+        error_envelope(&row.rel_path, &row.error, opts, row.elapsed_ms)
+    }
+}
+
+fn print_batch_summary(rows: &[BatchRow], json: bool) {
+    let count = |s: &str| rows.iter().filter(|r| r.status == s).count();
+    let text = format!(
+        "\n=== layout-anomaly 요약 ===\n  총 파일         : {}\n  CLEAN           : {}\n  ANOMALY         : {}\n  LOAD_FAIL       : {}\n",
+        rows.len(),
+        count("CLEAN"),
+        count("ANOMALY"),
+        count("LOAD_FAIL"),
+    );
+    if json {
+        eprint!("{text}");
+    } else {
+        print!("{text}");
+    }
+}
+
+fn run_batch(opts: &CliOptions) -> i32 {
+    let files = match collect_doc_files(&opts.path) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("오류: {e}");
+            return EXIT_USAGE;
+        }
+    };
+    if files.is_empty() {
+        eprintln!(
+            "오류: 처리할 .hwp/.hwpx 파일이 없습니다: {}",
+            opts.path.display()
+        );
+        return EXIT_USAGE;
+    }
+
+    let mut rows = Vec::with_capacity(files.len());
+    for path in &files {
+        let rel = rel_slash(&opts.path, path);
+        let started = Instant::now();
+        let mut row = BatchRow {
+            rel_path: rel.clone(),
+            status: "LOAD_FAIL".into(),
+            overflow: 0,
+            overlap: 0,
+            empty_page: 0,
+            has_signal: false,
+            elapsed_ms: 0,
+            error: String::new(),
+            envelope: None,
+        };
+        match load_and_scan(path, &opts.anomaly_opts) {
+            Ok(doc) => {
+                if let Some(want) = opts.page {
+                    if want >= doc.page_count {
+                        row.error =
+                            format!("-p {want} 는 문서 범위 밖입니다 (쪽 0..{})", doc.page_count);
+                    } else {
+                        fill_ok_row(&mut row, &doc, opts);
+                    }
+                } else {
+                    fill_ok_row(&mut row, &doc, opts);
+                }
+            }
+            Err(e) => row.error = e,
+        }
+        row.elapsed_ms = started.elapsed().as_millis();
+        if opts.json {
+            println!("{}", batch_record(opts, &row));
+        } else {
+            println!(
+                "[{:>15}] overflow={:<4} overlap={:<4} empty={:<3} {:>6}ms  {}",
+                row.status, row.overflow, row.overlap, row.empty_page, row.elapsed_ms, row.rel_path
+            );
+            if !row.error.is_empty() {
+                println!("                  └ {}", row.error);
+            }
+        }
+        rows.push(row);
+    }
+
+    print_batch_summary(&rows, opts.json);
+
+    // 로드 실패는 측정 실패(1)다. 전건을 재봤다고 말할 수 없으면 --strict
+    // 이상 검출(3)보다 런타임 실패가 우선한다. 기본은 이상 신호가 있어도 0.
+    if rows.iter().any(|r| !r.error.is_empty()) {
+        return EXIT_RUNTIME;
+    }
+    if opts.strict && rows.iter().any(|r| r.has_signal) {
+        EXIT_ANOMALY
+    } else {
+        EXIT_OK
+    }
+}
+
+fn fill_ok_row(row: &mut BatchRow, doc: &DocAnomalies, opts: &CliOptions) {
+    row.overflow = doc.overflow_count();
+    row.overlap = doc.overlap_count();
+    row.empty_page = doc.empty_page_count();
+    row.has_signal = doc.has_signal();
+    row.status = if row.has_signal {
+        "ANOMALY".into()
+    } else {
+        "CLEAN".into()
+    };
+    row.envelope = Some(envelope(&row.rel_path, doc, opts));
+}
+
 /// `rhwp layout-anomaly` 진입점.
 pub fn run(args: &[String]) -> i32 {
     let opts = match parse_cli(args) {
@@ -732,7 +1159,11 @@ pub fn run(args: &[String]) -> i32 {
             return EXIT_USAGE;
         }
     };
-    run_single(&opts)
+    if opts.batch {
+        run_batch(&opts)
+    } else {
+        run_single(&opts)
+    }
 }
 
 #[cfg(test)]
@@ -799,6 +1230,12 @@ mod tests {
         )
     }
 
+    fn text_run_at(text: &str, x: f64, y: f64, w: f64, h: f64) -> RenderNode {
+        let mut n = text_run(text);
+        n.bbox = BoundingBox::new(x, y, w, h);
+        n
+    }
+
     fn table(x: f64, y: f64, w: f64, h: f64, children: Vec<RenderNode>) -> RenderNode {
         let mut n = RenderNode::new(
             2,
@@ -842,13 +1279,20 @@ mod tests {
     #[test]
     fn table_wider_than_body_is_flagged_overflow() {
         // 좁은 본문(폭 100) 안에 폭 200짜리 표 — 명백한 스캐폴딩 케이스.
+        // 쪽 폭은 300 이라 본문만 넘치고 페이지 상자 안에는 남는다 → overflow
+        // 만, off-canvas 는 아님.
         let t = table(0.0, 0.0, 200.0, 50.0, vec![]);
         let body = body_node(BoundingBox::new(0.0, 0.0, 100.0, 300.0), vec![t]);
-        let root = page_root(100.0, 300.0, body);
+        let root = page_root(300.0, 300.0, body);
         let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
         assert_eq!(pa.overflow.len(), 1);
         assert_eq!(pa.overflow[0].node_type, "Table");
         assert!((pa.overflow[0].over_right - 100.0).abs() < 1e-9);
+        assert!(
+            pa.off_canvas.is_empty(),
+            "본문만 넘치고 쪽 안에 있으면 off-canvas 가 아니다: {:?}",
+            pa.off_canvas
+        );
         assert!(pa.has_signal());
     }
 
@@ -883,19 +1327,24 @@ mod tests {
         cell.children.push(cell_line);
         let t = table(0.0, 0.0, 200.0, 50.0, vec![cell]);
         let body = body_node(BoundingBox::new(0.0, 0.0, 100.0, 300.0), vec![t]);
-        let root = page_root(100.0, 300.0, body);
+        let root = page_root(300.0, 300.0, body);
         let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
         // 표 자신만 한 번 보고 — 내부 줄이 별도로 다시 잡히지 않는다.
         assert_eq!(pa.overflow.len(), 1);
         assert_eq!(pa.overflow[0].node_type, "Table");
+        assert!(pa.off_canvas.is_empty());
     }
 
     #[test]
     fn two_overlapping_lines_are_flagged() {
         let mut line_a = text_line(10.0, 10.0, 50.0, 12.0);
-        line_a.children.push(text_run("a"));
+        line_a
+            .children
+            .push(text_run_at("a", 10.0, 10.0, 50.0, 12.0));
         let mut line_b = text_line(15.0, 12.0, 50.0, 12.0); // line_a 와 상당 부분 겹침
-        line_b.children.push(text_run("b"));
+        line_b
+            .children
+            .push(text_run_at("b", 15.0, 12.0, 50.0, 12.0));
         let body = body_node(
             BoundingBox::new(0.0, 0.0, 200.0, 300.0),
             vec![line_a, line_b],
@@ -903,15 +1352,22 @@ mod tests {
         let root = page_root(200.0, 300.0, body);
         let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
         assert_eq!(pa.overlap.len(), 1);
+        assert_eq!(pa.text_overlap.len(), 1);
+        assert_eq!(pa.text_overlap[0].type_a, "TextRun");
+        assert_eq!(pa.text_overlap[0].type_b, "TextRun");
         assert!(pa.has_signal());
     }
 
     #[test]
     fn adjacent_non_overlapping_lines_are_clean() {
         let mut line_a = text_line(10.0, 10.0, 50.0, 12.0);
-        line_a.children.push(text_run("a"));
+        line_a
+            .children
+            .push(text_run_at("a", 10.0, 10.0, 50.0, 12.0));
         let mut line_b = text_line(10.0, 22.0, 50.0, 12.0); // 바로 아래로 이어짐, 안 겹침
-        line_b.children.push(text_run("b"));
+        line_b
+            .children
+            .push(text_run_at("b", 10.0, 22.0, 50.0, 12.0));
         let body = body_node(
             BoundingBox::new(0.0, 0.0, 200.0, 300.0),
             vec![line_a, line_b],
@@ -919,6 +1375,7 @@ mod tests {
         let root = page_root(200.0, 300.0, body);
         let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
         assert!(pa.overlap.is_empty());
+        assert!(pa.text_overlap.is_empty());
     }
 
     #[test]
@@ -961,6 +1418,11 @@ mod tests {
         let root = page_root(200.0, 300.0, body);
         let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
         assert_eq!(pa.overlap.len(), 1);
+        assert!(
+            pa.text_overlap.is_empty(),
+            "도형끼리 겹침은 일반 overlap 이지 text-overlap 이 아니다: {:?}",
+            pa.text_overlap
+        );
     }
 
     #[test]

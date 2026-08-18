@@ -1158,7 +1158,9 @@ impl WebCanvasRenderer {
             if !self.render_profile.shows_editor_visuals() {
                 return;
             }
-            self.set_line_dash(&StrokeDash::Dash);
+            // 한글 편집 화면의 테두리는 굵은 파선이 아니라 잔 점선이다 — 오라클 화면
+            // 실측(2px on / 2px off)에 맞춘다. `svg.rs` 의 stroke-dasharray 와 같은 값.
+            self.set_line_dash(&StrokeDash::Dot);
             self.ctx.set_stroke_style_str("#999999");
             self.ctx.set_line_width(1.0);
             self.ctx

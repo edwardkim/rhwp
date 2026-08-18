@@ -5,6 +5,7 @@ function git(root, args) {
     return execFileSync('git', args, {
       cwd: root,
       encoding: 'utf8',
+      maxBuffer: 32 * 1024 * 1024,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
   } catch (error) {
@@ -45,6 +46,16 @@ export function readJsonAtRef(
     }
     throw error;
   }
+}
+
+export function filesAtRef(root, ref, pathspecs) {
+  return git(root, ['ls-tree', '-r', '--name-only', ref, '--', ...pathspecs])
+    .split('\n')
+    .filter((relativePath) => relativePath.length > 0);
+}
+
+export function readTextAtRef(root, ref, relativePath) {
+  return git(root, ['show', `${ref}:${relativePath}`]);
 }
 
 export function renamedFilesSince(root, ref, pathspecs) {

@@ -1,0 +1,73 @@
+{
+  "id": "BO14",
+  "tier": 3,
+  "title": "메일머지 — 데이터 4행 순번 이름",
+  "input": "samples/hwpx/form-01.hwpx",
+  "instructions": "CSV 데이터 4행을 병합해 out/0001.hwpx … out/0004.hwpx 를 만들어라. 4부 모두 있어야 하고 1부와 4부의 값이 달라야 한다. 힌트: rhwp batch fill --form samples/hwpx/form-01.hwpx --data gym/packs/batch-ops/assets/BO14-data.csv --out-dir out --json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out/0001.hwpx",
+      "out/0002.hwpx",
+      "out/0003.hwpx",
+      "out/0004.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "1부 산출 존재",
+      "op": "file_exists",
+      "file": "out/0001.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "2부 산출 존재",
+      "op": "file_exists",
+      "file": "out/0002.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "3부 산출 존재",
+      "op": "file_exists",
+      "file": "out/0003.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "마지막 산출 존재 (단건이 아니라 대량)",
+      "op": "file_exists",
+      "file": "out/0004.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "원본 서식과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "out/0001.hwpx"
+    },
+    {
+      "name": "1행 값이 1부에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/0001.hwpx}",
+        "--json",
+        "--",
+        "QuadMergeOne"
+      ]
+    },
+    {
+      "name": "4행 값이 4부에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/0004.hwpx}",
+        "--json",
+        "--",
+        "QuadMergeFour"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "id": "FJ03",
+  "tier": 3,
+  "title": "반복 필드 순번 지목 (목차1[2])",
+  "input": "samples/field-01.hwp",
+  "instructions": "이 서식에는 같은 이름 '목차1' 이 다섯 번 나온다. 순번 없이 채우면 첫 칸만 바뀌고 ambiguous 가 남는다. 세 번째 목차1(0 기준 [2]) 에만 '세번째목차여정' 을 넣은 repeat.hwp 를 제출하라. 회사명·작성자·부서명은 비워 두고, 첫 번째 목차1([0]) 도 비워야 한다. 힌트: rhwp edit fill-fields <문서> --data '{\"목차1[2]\": \"세번째목차여정\"}' -o repeat.hwp --json",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "repeat.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 목차1 칸 이름",
+      "op": "value_eq",
+      "value": "목차1",
+      "path": "fields[5].name",
+      "cmd": [
+        "fields",
+        "{file:repeat.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "첫 목차1([0]) 은 비어 있음",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[5].value",
+      "cmd": [
+        "fields",
+        "{file:repeat.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "세 번째 목차1 칸 이름",
+      "op": "value_eq",
+      "value": "목차1",
+      "path": "fields[7].name",
+      "cmd": [
+        "fields",
+        "{file:repeat.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "목차1[2] 값이 세번째목차여정",
+      "op": "value_eq",
+      "value": "세번째목차여정",
+      "path": "fields[7].value",
+      "cmd": [
+        "fields",
+        "{file:repeat.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:repeat.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "repeat.hwp"
+    }
+  ]
+}

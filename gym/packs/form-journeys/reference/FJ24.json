@@ -1,0 +1,21 @@
+{
+  "id": "FJ24",
+  "steps": [
+    {
+      "answer": {
+        "total": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "{\"목차1\": \"모호값\"}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "ambiguous[0].total"
+        }
+      }
+    }
+  ]
+}

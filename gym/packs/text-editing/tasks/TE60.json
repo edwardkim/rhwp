@@ -1,0 +1,52 @@
+{
+  "id": "TE60",
+  "tier": 2,
+  "title": "보험료 전건 + 산출 존재",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "입력 문서의 '보험료' 를 모두 '보험금' 로 바꾼 산출물을 edited60.hwp 로 제출하라. 채점은 옛 문구가 0건이 되었는지와 새 문구가 실재하는지를 각각 확인한다. 힌트: rhwp edit replace-text (occurrence 없이 전건). 파일 존재와 바이트 차이도 함께 본다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "edited60.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 완전 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited60.hwp}",
+        "--json",
+        "--",
+        "보험료"
+      ]
+    },
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited60.hwp}",
+        "--json",
+        "--",
+        "보험금"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "edited60.hwp"
+    },
+    {
+      "name": "산출 존재",
+      "op": "file_exists",
+      "file": "edited60.hwp",
+      "minBytes": 64
+    }
+  ]
+}

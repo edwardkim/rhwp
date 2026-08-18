@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "ir-diff",
+  "sourceChapter": "50_검증_사다리.md",
+  "cmd": "rhwp ir-diff samples/field-01.hwp samples/field-01.hwp --json",
+  "exit": 0,
+  "envelope": {
+    "a": "samples/field-01.hwp",
+    "b": "samples/field-01.hwp",
+    "categories": {},
+    "diffCount": 0,
+    "identical": true,
+    "schemaVersion": "1.0",
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

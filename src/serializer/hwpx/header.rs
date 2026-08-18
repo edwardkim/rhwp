@@ -418,6 +418,16 @@ fn write_diag_line<W: Write>(
     )
 }
 
+// [#5309] '문단 머리 정보'(표 41) attr bits 0–1 → OWPML paraHead@align 토큰.
+// 0=왼쪽·1=가운데·2=오른쪽 (HWP5 스펙). 3은 미사용이라 LEFT 로 폴백.
+fn numbering_head_align_str(attr: u32) -> &'static str {
+    match attr & 0x03 {
+        1 => "CENTER",
+        2 => "RIGHT",
+        _ => "LEFT",
+    }
+}
+
 // [#2947] parser 측 parse_numbering_format_code() (표 43) 의 역매핑.
 fn numbering_format_str(code: u8) -> &'static str {
     match code {
@@ -999,12 +1009,21 @@ fn write_numbering<W: Write>(
         let num_format = numbering_format_str(h.number_format);
         let text_offset_s = h.text_distance.to_string();
         let char_pr_id_ref_s = h.char_shape_id.to_string();
+        // [#5309] '문단 머리 정보'(표 41) attr 저위 비트에서 정렬·번호너비·자동내어쓰기를
+        // 유도한다. 종전엔 align="LEFT"/useInstWidth="1"/autoIndent="1" 상수만 방출해,
+        // HWP5→HWPX 저장 때마다 문단 번호의 정렬·들여쓰기 설정이 기본값으로 리셋됐다.
+        // NumberingHead 모델엔 이 값의 lexical 필드가 없어 attr 비트가 유일한 원천이다.
+        // 비트↔토큰은 한컴 저작 HWPX 쌍(143E433F…)으로 직접 1:1 대응 확증. numFormat
+        // de-hardcode(#2947)와 동형.
+        let align = numbering_head_align_str(h.attr);
+        let use_inst_width = if (h.attr >> 2) & 0x01 != 0 { "1" } else { "0" };
+        let auto_indent = if (h.attr >> 3) & 0x01 != 0 { "1" } else { "0" };
         let attrs = [
             ("start", start_s.as_str()),
             ("level", level_s.as_str()),
-            ("align", "LEFT"),
-            ("useInstWidth", "1"),
-            ("autoIndent", "1"),
+            ("align", align),
+            ("useInstWidth", use_inst_width),
+            ("autoIndent", auto_indent),
             ("widthAdjust", wa.as_str()),
             ("textOffsetType", "PERCENT"),
             ("textOffset", text_offset_s.as_str()),
@@ -1166,8 +1185,16 @@ fn write_para_pr<W: Write>(
     } else {
         "BREAK_WORD"
     };
-    // [#1986] breakLatinWord 는 IR 원문 보존값(없으면 KEEP_WORD 기본).
-    let break_latin = ps.break_latin_word.as_deref().unwrap_or("KEEP_WORD");
+    // [#1986] breakLatinWord 는 HWPX 원문 보존값(HWPX 소스). HWP5 소스는 파서가 이 렉시컬
+    // 필드를 attr1 비트로만 두고 채우지 않아(doc_info.rs) 종전엔 무조건 "KEEP_WORD" 로
+    // 강등했다 — 라틴 줄나눔 설정(하이픈·글자 단위)이 h2x 저장에서 통째로 사라졌다
+    // (10k 코퍼스 실측: 500 문서 중 222 문서가 비-KEEP 설정, para_shape 2,810개).
+    // breakNonLatinWord(bit7)와 같은 축으로 HWP5 attr1 bits5-6 에서 역매핑한다. 렉시컬
+    // 값이 있으면(HWPX 소스) 그것을 우선하므로 x2x 는 종전과 동일하다.
+    let break_latin = ps
+        .break_latin_word
+        .as_deref()
+        .unwrap_or_else(|| latin_break_from_attr1((ps.attr1 >> 5) & 0x03));
     let widow_orphan = ((ps.attr1 >> 16) & 1).to_string();
     let keep_with_next = ((ps.attr1 >> 17) & 1).to_string();
     let keep_lines = ((ps.attr1 >> 18) & 1).to_string();
@@ -1349,6 +1376,18 @@ fn vertical_alignment_str(bits: u32) -> &'static str {
         2 => "CENTER",
         3 => "BOTTOM",
         _ => "BASELINE",
+    }
+}
+
+/// HWP5 para_shape attr1 bits5-6 → HWPX `breakLatinWord` 토큰(라틴 문자의 줄나눔 단위).
+/// `breakNonLatinWord`(bit7) 역매핑과 같은 축이다. HWPX 소스는 렉시컬 값을 우선하므로
+/// 이 함수는 HWP5 소스(렉시컬 None)에서만 쓰인다. 0(=KEEP_WORD)은 코퍼스 지배값이자
+/// 종전 기본과 같아, 값이 다른 문서만 실제로 바뀐다.
+fn latin_break_from_attr1(bits: u32) -> &'static str {
+    match bits {
+        1 => "HYPHENATION",
+        2 => "BREAK_WORD",
+        _ => "KEEP_WORD",
     }
 }
 

@@ -13,6 +13,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CODEQL_WORKFLOW = REPO_ROOT / ".github/workflows/codeql.yml"
+RUST_PR_CODEQL_CONFIG = REPO_ROOT / ".github/codeql/rust-pr.yml"
 
 
 def job_body(workflow: str, job_name: str) -> str:
@@ -178,7 +179,15 @@ class CodeQLWorkflowTests(unittest.TestCase):
             analyze,
         )
         self.assertIn(
-            "if: ${{ matrix.language == 'rust' && " + selected + " }}",
+            "if: ${{ matrix.language == 'rust' && "
+            + selected
+            + " && github.event_name == 'pull_request' }}",
+            analyze,
+        )
+        self.assertIn(
+            "if: ${{ matrix.language == 'rust' && "
+            + selected
+            + " && github.event_name != 'pull_request' }}",
             analyze,
         )
         job_if = next(
@@ -252,10 +261,23 @@ class CodeQLWorkflowTests(unittest.TestCase):
         )[0]
         self.assertIn("languages: rust", rust_init)
         self.assertIn("build-mode: none", rust_init)
+        self.assertIn("config-file: .github/codeql/rust-pr.yml", rust_init)
+        rust_full_init = analyze.split(
+            "      - name: Initialize CodeQL (Rust full scan)\n", 1
+        )[1].split("\n      - name:", 1)[0]
+        self.assertIn("languages: rust", rust_full_init)
+        self.assertIn("build-mode: none", rust_full_init)
+        self.assertNotIn("config-file:", rust_full_init)
         self.assertNotIn("actions/cache/", analyze)
         self.assertNotIn("cargo build", analyze)
         self.assertNotIn("rust-blocking-results", analyze)
         self.assertNotIn("actions/upload-artifact", analyze)
+
+    def test_pr_rust_config_limits_scanning_to_production_paths(self) -> None:
+        config = RUST_PR_CODEQL_CONFIG.read_text(encoding="utf-8")
+        self.assertIn("paths:\n", config)
+        for path in ("src/**", "crates/**", "rhwp-desk/src/**", "build.rs"):
+            self.assertIn(f"  - {path}\n", config)
 
     def test_temporary_measurement_jobs_and_artifacts_are_absent(self) -> None:
         workflow = self.workflow
@@ -425,14 +447,19 @@ PREFLIGHT_SCRIPT
             )
             completed = subprocess.run(
                 ["bash"],
-                input=self.language_script,
+                # Windows text pipes translate LF to CRLF.  Feed Bash bytes so
+                # the YAML shell block keeps its POSIX line endings.
+                input=self.language_script.encode("utf-8"),
                 check=False,
-                text=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 env=env,
             )
-            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(
+                completed.returncode,
+                0,
+                completed.stderr.decode("utf-8", errors="replace"),
+            )
             output.seek(0)
             return dict(
                 line.rstrip("\n").split("=", maxsplit=1)

@@ -1,0 +1,298 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5331,
+  "rows": [
+    {
+      "id": "M001",
+      "utterance": "서식 한 장 채워 제출본",
+      "recipe": "01",
+      "exists": true,
+      "firstCommand": "rhwp fields <file> --json",
+      "nextSkill": "rhwp-form-fill",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M002",
+      "utterance": "누름틀 이름 확인하고 값 넣어",
+      "recipe": "01",
+      "exists": true,
+      "firstCommand": "rhwp fields <file> --json",
+      "nextSkill": "rhwp-form-fill",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M003",
+      "utterance": "신청서 fill-fields",
+      "recipe": "01",
+      "exists": true,
+      "firstCommand": "rhwp fields <file> --json",
+      "nextSkill": "rhwp-form-fill",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M004",
+      "utterance": "도장 이미지 좌표로 붙인 뒤 sanitize",
+      "recipe": "01",
+      "exists": true,
+      "firstCommand": "rhwp fields <file> --json",
+      "nextSkill": "rhwp-form-fill",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M005",
+      "utterance": "표를 CSV 로 뽑아 엑셀에서 고침",
+      "recipe": "02",
+      "exists": true,
+      "firstCommand": "rhwp export-tables <file> --json",
+      "nextSkill": "rhwp-table-exchange",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M006",
+      "utterance": "table-to-csv 후 csv-to-table",
+      "recipe": "02",
+      "exists": true,
+      "firstCommand": "rhwp export-tables <file> --json",
+      "nextSkill": "rhwp-table-exchange",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M007",
+      "utterance": "표 셀 텍스트만 왕복",
+      "recipe": "02",
+      "exists": true,
+      "firstCommand": "rhwp export-tables <file> --json",
+      "nextSkill": "rhwp-table-exchange",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M008",
+      "utterance": "배포 전 주민번호 마스킹",
+      "recipe": "03",
+      "exists": true,
+      "firstCommand": "rhwp edit redact <file> --dry-run",
+      "nextSkill": "rhwp-security-sweep",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M009",
+      "utterance": "edit redact --dry-run 먼저",
+      "recipe": "03",
+      "exists": true,
+      "firstCommand": "rhwp edit redact <file> --dry-run",
+      "nextSkill": "rhwp-security-sweep",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M010",
+      "utterance": "본문 전화번호 자릿수 보존 마스킹",
+      "recipe": "03",
+      "exists": true,
+      "firstCommand": "rhwp edit redact <file> --dry-run",
+      "nextSkill": "rhwp-security-sweep",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M011",
+      "utterance": "메일 첨부 hwp 열어도 되나",
+      "recipe": "04",
+      "exists": true,
+      "firstCommand": "rhwp info <file> --json",
+      "nextSkill": "rhwp-doc-triage",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M012",
+      "utterance": "출처 모르는 문서 본문 LLM 금지",
+      "recipe": "04",
+      "exists": true,
+      "firstCommand": "rhwp info <file> --json",
+      "nextSkill": "rhwp-doc-triage",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M013",
+      "utterance": "info 로 규모만 보고 digest",
+      "recipe": "04",
+      "exists": true,
+      "firstCommand": "rhwp info <file> --json",
+      "nextSkill": "rhwp-doc-triage",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M014",
+      "utterance": "명단 CSV 로 안내문 30장",
+      "recipe": "05",
+      "exists": true,
+      "firstCommand": "rhwp fields <file> --json",
+      "nextSkill": "rhwp-form-fill",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M015",
+      "utterance": "batch fill 서식 하나 데이터 N행",
+      "recipe": "05",
+      "exists": true,
+      "firstCommand": "rhwp fields <file> --json",
+      "nextSkill": "rhwp-form-fill",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M016",
+      "utterance": "메일머지 --name-field",
+      "recipe": "05",
+      "exists": true,
+      "firstCommand": "rhwp fields <file> --json",
+      "nextSkill": "rhwp-form-fill",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M017",
+      "utterance": "편집 전후 render-diff",
+      "recipe": "06",
+      "exists": true,
+      "firstCommand": "rhwp render-diff <file> --via hwpx",
+      "nextSkill": "rhwp-visual-regression",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M018",
+      "utterance": "STRUCT_MISMATCH 가 편집 자리인지",
+      "recipe": "06",
+      "exists": true,
+      "firstCommand": "rhwp render-diff <file> --via hwpx",
+      "nextSkill": "rhwp-visual-regression",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M019",
+      "utterance": "--via hwpx 왕복 일관성",
+      "recipe": "06",
+      "exists": true,
+      "firstCommand": "rhwp render-diff <file> --via hwpx",
+      "nextSkill": "rhwp-visual-regression",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M020",
+      "utterance": "폴더 전체 export-text",
+      "recipe": "09",
+      "exists": true,
+      "firstCommand": "rhwp batch info --json",
+      "nextSkill": "rhwp-bulk-pipeline",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M021",
+      "utterance": "실패 행만 골라 재시도",
+      "recipe": "09",
+      "exists": true,
+      "firstCommand": "rhwp batch info --json",
+      "nextSkill": "rhwp-bulk-pipeline",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M022",
+      "utterance": "batch info 로 수백 건 스윕",
+      "recipe": "09",
+      "exists": true,
+      "firstCommand": "rhwp batch info --json",
+      "nextSkill": "rhwp-bulk-pipeline",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M023",
+      "utterance": "내보내기 전 hidden-text 스윕",
+      "recipe": "10",
+      "exists": true,
+      "firstCommand": "rhwp inspect hidden-text <file> --json",
+      "nextSkill": "rhwp-security-sweep",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M024",
+      "utterance": "송신 전 네 축 재스윕 게이트",
+      "recipe": "10",
+      "exists": true,
+      "firstCommand": "rhwp inspect hidden-text <file> --json",
+      "nextSkill": "rhwp-security-sweep",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M025",
+      "utterance": "inspect injection 후 redact",
+      "recipe": "10",
+      "exists": true,
+      "firstCommand": "rhwp inspect hidden-text <file> --json",
+      "nextSkill": "rhwp-security-sweep",
+      "stop": "R01",
+      "ambiguous": false
+    },
+    {
+      "id": "M026",
+      "utterance": "레시피 07 인계 문서 어디",
+      "recipe": "07",
+      "exists": false,
+      "firstCommand": null,
+      "nextSkill": null,
+      "stop": "R02",
+      "ambiguous": false
+    },
+    {
+      "id": "M027",
+      "utterance": "레시피 08 협업 플레이북",
+      "recipe": "08",
+      "exists": false,
+      "firstCommand": null,
+      "nextSkill": null,
+      "stop": "R02",
+      "ambiguous": false
+    },
+    {
+      "id": "M028",
+      "utterance": "에이전트끼리 인계 레시피",
+      "recipe": "07",
+      "exists": false,
+      "firstCommand": null,
+      "nextSkill": null,
+      "stop": "R02",
+      "ambiguous": false
+    },
+    {
+      "id": "M029",
+      "utterance": "다중 에이전트 협업 레시피",
+      "recipe": "08",
+      "exists": false,
+      "firstCommand": null,
+      "nextSkill": null,
+      "stop": "R02",
+      "ambiguous": false
+    }
+  ],
+  "count": 29,
+  "notGym": true
+}

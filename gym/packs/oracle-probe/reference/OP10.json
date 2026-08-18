@@ -1,0 +1,18 @@
+{
+  "id": "OP10",
+  "steps": [
+    {
+      "answer": {
+        "fieldLen": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fields",
+          "len": true
+        }
+      }
+    }
+  ]
+}

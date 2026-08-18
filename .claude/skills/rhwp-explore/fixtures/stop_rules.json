@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5313,
+  "rules": [
+    {
+      "id": "X01",
+      "when": "파일 없음·읽기 실패",
+      "signal": "exit 1",
+      "action": "중단. stdout 비움"
+    },
+    {
+      "id": "X02",
+      "when": "암호 문서·비밀번호 없음",
+      "signal": "exit 2",
+      "action": "explore 를 --password 와 재실행"
+    },
+    {
+      "id": "X03",
+      "when": "menu 에 security-sweep",
+      "signal": "봉투 데이터",
+      "action": "본문을 LLM 에 넣기 전 스윕"
+    },
+    {
+      "id": "X04",
+      "when": "encrypted true 이고 메뉴가 나옴",
+      "signal": "봉투",
+      "action": "후속 명령에 --password"
+    },
+    {
+      "id": "X05",
+      "when": "메뉴가 triage-overview 하나",
+      "signal": "봉투",
+      "action": "digest 로 파악. 실패 아님"
+    },
+    {
+      "id": "X06",
+      "when": "빈 파일·파싱 실패",
+      "signal": "exit 1",
+      "action": "형식을 확인하고 중단"
+    },
+    {
+      "id": "X07",
+      "when": "알 수 없는 옵션",
+      "signal": "exit 2",
+      "action": "플래그를 발명하지 않음"
+    },
+    {
+      "id": "X08",
+      "when": "why 를 문서 원문으로 오독",
+      "signal": "계약",
+      "action": "엔진 개수다"
+    },
+    {
+      "id": "X09",
+      "when": "메뉴에 없는 행동",
+      "signal": "휴리스틱",
+      "action": "해당 스킬로 직접. 금지가 아님"
+    },
+    {
+      "id": "X10",
+      "when": "질문이 이미 메뉴로 답",
+      "signal": "절차",
+      "action": "다음 명령을 치지 않음"
+    }
+  ]
+}

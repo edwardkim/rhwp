@@ -1,0 +1,56 @@
+{
+  "rule": 2,
+  "items": [
+    {
+      "surface": "hwp_fill_fields / hwp_doc_fill_fields",
+      "core": "set_field_value_by_name_at / collect_field_records",
+      "envelope": "fill_fields_json_value"
+    },
+    {
+      "surface": "hwp_replace_text / hwp_doc_replace_text",
+      "core": "replace_all_native",
+      "envelope": "replace_text_json_value"
+    },
+    {
+      "surface": "hwp_search / hwp_doc_search",
+      "core": "grep",
+      "envelope": "search_json_value"
+    },
+    {
+      "surface": "hwp_export_tables / hwp_doc_tables",
+      "core": "extract_tables",
+      "envelope": "export_tables_json_value"
+    },
+    {
+      "surface": "hwp_set_cell / hwp_doc_set_cell",
+      "core": "set_cell + overflow probe",
+      "envelope": "set_cell_json_value"
+    },
+    {
+      "surface": "edit * -o / hwp_doc_save",
+      "core": "edit_serialize",
+      "envelope": "save/verify envelope"
+    },
+    {
+      "surface": "hwp_fields / hwp_doc_fields",
+      "core": "collect_field_records",
+      "envelope": "fields_json_value"
+    },
+    {
+      "surface": "hwp_extract_data / hwp_doc_extract_data",
+      "core": "extract_data",
+      "envelope": "extract_data_json_value"
+    },
+    {
+      "surface": "hwp_export_structure / hwp_doc_structure",
+      "core": "export_structure",
+      "envelope": "export_structure_json_value"
+    },
+    {
+      "surface": "hwp_ir_diff",
+      "core": "ir_diff",
+      "envelope": "ir_diff_json_value"
+    }
+  ],
+  "do_not": "서버 전용 경로 신설"
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/footer.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "대외비",
+        "replace": "공개"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/footer.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"대외비\",\"replace\":\"공개\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "1dc3fb56bb3257ca6d137a7459838e77740f3a20f79df12c104460af6396ab6a",
+    "planSha256": "26da66ee2686f3f48fce59950cef6001a4422fef81ca857ae241ce814e396228",
+    "outputSha256": "8587d38110c426b73e161deceb6f277ffbc0c4bb47fc87d047605a39e92c1963",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

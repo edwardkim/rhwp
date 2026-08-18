@@ -1,0 +1,11 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/x.hwp",
+  "steps": [
+    {
+      "action": "insert_image",
+      "image": "x.png"
+    }
+  ]
+}

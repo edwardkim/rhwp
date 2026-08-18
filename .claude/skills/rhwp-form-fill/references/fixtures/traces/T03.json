@@ -1,0 +1,27 @@
+{
+  "id": "T03",
+  "title": "form-01 채움 실측",
+  "sample": "samples/form-01.hwp",
+  "steps": [
+    {
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/form-01.hwp",
+        "--data",
+        "{\"myMsg01\":\"홍길동 귀하\"}",
+        "-o",
+        "form-01_filled.hwp",
+        "--json"
+      ],
+      "expect": {
+        "filledCount": 1,
+        "notFound": [],
+        "ambiguous": [],
+        "outputFormat": "hwp5"
+      }
+    }
+  ],
+  "stop": "F07",
+  "measuredIn": "recipes/01"
+}

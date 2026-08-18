@@ -1,0 +1,24 @@
+{
+  "id": "CR42",
+  "tier": 1,
+  "title": "중첩표 다쪽 문서는 표가 몇 개?",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "스탬프대 — CR42 는 키 제한 없는 입문 놀이기구다. 쪽수가 아니라 표 개수다. 중첩이 있어도 tableCount 를 읽는다. 문서는 `samples/basic/issue2007_nested_cell_pagination_42065.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: export-tables {입력} --json. answer.json 에는 {\"tables\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. export-tables tableCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "중첩표 다쪽 문서는 표가 몇 개?",
+      "op": "answer_eq",
+      "answer": "tables",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ],
+      "path": "tableCount"
+    }
+  ],
+  "axis": "입문"
+}

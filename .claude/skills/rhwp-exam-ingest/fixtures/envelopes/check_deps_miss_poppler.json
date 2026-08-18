@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "check_deps.sh",
+  "ok": true,
+  "rhwp": "./target/release/rhwp",
+  "imagemagick": "magick",
+  "pythonDocx": true,
+  "missingRequired": [],
+  "missingOptional": [
+    "pdftoppm"
+  ],
+  "envelopes": [
+    {
+      "code": "DEP_MISS_POPPLER",
+      "severity": "pdf_input",
+      "tool": "pdftoppm",
+      "exit": 0,
+      "hint": "brew install poppler 또는 apt install poppler-utils. magick fallback 가능",
+      "blocks": [
+        "pdf_to_pngs.sh (preferred)"
+      ]
+    }
+  ]
+}

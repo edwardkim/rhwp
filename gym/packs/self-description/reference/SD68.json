@@ -1,0 +1,16 @@
+{
+  "id": "SD68",
+  "steps": [
+    {
+      "answer": {
+        "ref": {
+          "cmd": [
+            "export-capabilities-schema",
+            "--json"
+          ],
+          "path": "mcpSchema.$ref"
+        }
+      }
+    }
+  ]
+}

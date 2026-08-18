@@ -1,0 +1,35 @@
+{
+  "id": "AU66",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/multi-table-001.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"리콜다중1\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/multi-table-001.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"리콜다중1\"}]}",
+        "--capsule",
+        "{sub:chain/a.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o1.hwp}\", \"output\": \"{sub:o2.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"리콜다중2\"}]}",
+        "--capsule",
+        "{sub:chain/b.capsule.json}",
+        "--parent",
+        "{sub:chain/a.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

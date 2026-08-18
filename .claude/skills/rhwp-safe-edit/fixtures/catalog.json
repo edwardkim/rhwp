@@ -1,0 +1,92 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-safe-edit",
+  "issue": 5294,
+  "note": "새 편집 로직이 아니라 기존 edit/run 계약을 표본으로 고정한다.",
+  "actions": [
+    "fill_fields",
+    "replace_text",
+    "set_cell",
+    "set_checkbox"
+  ],
+  "plans": {
+    "valid": [
+      "valid_fill_fields.json",
+      "valid_replace_text.json",
+      "valid_set_cell.json",
+      "valid_set_checkbox.json",
+      "valid_multi_step.json",
+      "valid_conditional_field_exists.json",
+      "valid_conditional_field_equals.json",
+      "valid_conditional_text_found.json",
+      "valid_assertions_verify.json",
+      "valid_preconditions.json",
+      "valid_dry_run_flag.json",
+      "valid_replace_occurrence.json"
+    ],
+    "invalid": [
+      "invalid_missing_plan_version.json",
+      "invalid_wrong_keys_source_op.json",
+      "invalid_empty_steps.json",
+      "invalid_unknown_action.json",
+      "invalid_camel_action.json",
+      "invalid_replace_empty_find.json",
+      "invalid_set_cell_newline.json",
+      "invalid_two_conditions.json",
+      "invalid_numeric_plan_version.json"
+    ]
+  },
+  "envelopes": [
+    "fill_ok.json",
+    "fill_notfound_exit0.json",
+    "fill_ambiguous_exit0.json",
+    "verify_null.json",
+    "edit_verify_ok.json",
+    "edit_verify_diff.json",
+    "replace_zero.json",
+    "set_cell_overflow.json",
+    "redact_missing_output.json",
+    "run_dry_run_preview.json",
+    "run_invalid_replace_zero.json",
+    "run_invalid_collected.json",
+    "run_error_plan_version.json",
+    "run_precondition_failed.json",
+    "run_verify_fail_no_output.json",
+    "csv_to_table_invalid.json",
+    "batch_row_notfound.json",
+    "insert_image_overflow.json",
+    "sanitize_second_run_zero.json"
+  ],
+  "loops": [
+    "layer1_fill.json",
+    "layer1_replace.json",
+    "layer1_set_cell.json",
+    "layer3_run.json",
+    "verify_null_vs_object.json",
+    "changed_pages_null.json"
+  ],
+  "examples": [
+    "01_fill_fields_single.md",
+    "02_replace_text_single.md",
+    "03_set_cell_single.md",
+    "04_insert_image_single.md",
+    "05_redact_single.md",
+    "06_sanitize_single.md",
+    "07_run_atomic_fill_replace.md",
+    "08_run_conditional.md",
+    "09_run_invalid_collected.md",
+    "10_verify_exit3.md",
+    "11_overflow_data.md",
+    "12_ambiguous_not_complete.md",
+    "13_csv_to_table_gate.md",
+    "14_batch_fill_row_judgment.md",
+    "15_original_untouched.md",
+    "16_precondition_cas.md"
+  ],
+  "references": [
+    "single_edit.md",
+    "run_plans.md",
+    "verify_loops.md",
+    "failure_envelopes.md"
+  ]
+}

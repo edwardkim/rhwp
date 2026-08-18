@@ -1,0 +1,29 @@
+{
+  "kinds": [
+    {
+      "id": "same_as_background",
+      "cliLabel": "배경색과 같은 글자색",
+      "meaning": "글자색이 글자 음영·문단/셀 채우기·쪽 바탕과 같다",
+      "defaultOn": true
+    },
+    {
+      "id": "near_invisible",
+      "cliLabel": "극소 글자",
+      "meaning": "실효 글자 크기가 --threshold-pt 미만",
+      "defaultOn": true
+    },
+    {
+      "id": "zero_size",
+      "cliLabel": "0pt 글자",
+      "meaning": "실효 글자 크기가 0",
+      "defaultOn": true
+    },
+    {
+      "id": "off_page",
+      "cliLabel": "쪽 밖 배치",
+      "meaning": "조판 결과 쪽 경계 완전히 밖. --include-offpage 일 때만",
+      "defaultOn": false
+    }
+  ],
+  "serde": "snake_case"
+}

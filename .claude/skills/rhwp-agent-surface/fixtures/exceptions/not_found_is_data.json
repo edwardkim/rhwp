@@ -1,0 +1,10 @@
+{
+  "id": "not_found_is_data",
+  "title": "notFound 가 찬 exit 0",
+  "layer": "cli-json",
+  "cli_exit": 0,
+  "mcp_is_error": false,
+  "field": "notFound",
+  "done_when": "notFound == [] && ambiguous == []",
+  "fix": "filledCount 를 완료 조건으로 쓰지 않는다"
+}

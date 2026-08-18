@@ -1,0 +1,15 @@
+{
+  "id": "WR23",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"cap-mode.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"캡슐모드\"}]}",
+        "--capsule",
+        "{sub:receipts/mode.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

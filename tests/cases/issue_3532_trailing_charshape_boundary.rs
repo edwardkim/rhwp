@@ -18,12 +18,23 @@ fn issue3532_trailing_boundary_survives_hwpx_roundtrip() {
     let original = parse_document(&bytes).expect("parse hwp3");
 
     // 샘플 전제: 본문 끝 zero-width 경계 + 말미 컨트롤이 공존하는 문단(26).
+    //
+    // [#4957] 경계 좌표는 **글자 수가 아니라 UTF-16 코드유닛 축**이다. 종전에는 이 문단의
+    // 마커(새번호·쪽번호 위치)가 1유닛만 차지해 두 축이 우연히 같았고, 그래서 글자 수로
+    // 비교해도 통과했다. 마커를 확장 컨트롤 8유닛으로 바로잡자 두 축이 갈라진다
+    // (문단 26: 글자 50 · 축 64). 시험이 지키는 계약은 **왕복 뒤 경계가 밀리지 않는가**
+    // 이므로, 전제는 축 끝으로 표현한다.
     let p26 = &original.sections[0].paragraphs[26];
-    let text_units = p26.text.chars().count() as u32;
+    let text_axis_end = p26
+        .char_offsets
+        .last()
+        .zip(p26.text.chars().last())
+        .map(|(offset, last)| offset + last.len_utf16() as u32)
+        .expect("샘플 전제: 문단 26 은 본문이 있다");
     assert!(
         p26.char_shapes
             .last()
-            .is_some_and(|cs| cs.start_pos == text_units),
+            .is_some_and(|cs| cs.start_pos == text_axis_end),
         "샘플 전제: 마지막 경계가 본문 끝(zero-width)이어야 한다"
     );
     assert!(!p26.controls.is_empty(), "샘플 전제: 말미 컨트롤");

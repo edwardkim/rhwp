@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "recipes": [
+    {
+      "id": "Q01",
+      "name": "실패 경로",
+      "jq": "jq -r 'select(.error) | .source'"
+    },
+    {
+      "id": "Q02",
+      "name": "성공 경로+쪽",
+      "jq": "jq -r 'select(.error|not) | \"\\(.source)\\t\\(.pageCount)쪽\"'"
+    },
+    {
+      "id": "Q03",
+      "name": "성공 수",
+      "jq": "jq -s '[.[]|select(.error|not)]|length'"
+    },
+    {
+      "id": "Q04",
+      "name": "실패 수",
+      "jq": "jq -s '[.[]|select(.error)]|length'"
+    },
+    {
+      "id": "Q05",
+      "name": "검색 히트만",
+      "jq": "jq -c 'select(.matchCount > 0) | {source, pages:[.matches[].page]}'"
+    },
+    {
+      "id": "Q06",
+      "name": "서식만",
+      "jq": "jq -c 'select(.fieldCount>0) | {source, fieldCount}'"
+    },
+    {
+      "id": "Q07",
+      "name": "표만",
+      "jq": "jq -c 'select(.tableCount>0) | {source, tableCount}'"
+    },
+    {
+      "id": "Q08",
+      "name": "10쪽 이상",
+      "jq": "jq -r 'select(.pageCount >= 10) | .source'"
+    },
+    {
+      "id": "Q09",
+      "name": "절단된 extract",
+      "jq": "jq -c 'select(.truncated==true) | {source, itemCount, totalItemCount}'"
+    },
+    {
+      "id": "Q10",
+      "name": "fill 실패 행",
+      "jq": "jq -c 'select((.notFound|length>0) or (.ambiguous|length>0) or .error)'"
+    },
+    {
+      "id": "Q11",
+      "name": "verify 불일치",
+      "jq": "jq -c 'select(.verify != null and .verify.identical==false)'"
+    },
+    {
+      "id": "Q12",
+      "name": "exitClass",
+      "jq": "jq -r 'select(.error) | [.source, .exitClass, .error] | @tsv'"
+    }
+  ]
+}

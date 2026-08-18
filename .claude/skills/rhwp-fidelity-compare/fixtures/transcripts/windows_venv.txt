@@ -1,0 +1,8 @@
+PS> venv\Scripts\python.exe tools\fidelity_compare\fidelity_compare.py plan 0 9 --out-dir $env:TEMP\rhwp-fidelity-plan
+기준 PDF: C:\repo\pdf\2022-plan-2022.pdf
+등급: 기준 PDF: pdf/ 보존 한컴 2022 출력
+요청: 10쪽, 완료: 10쪽, 누락: 0쪽
+diff 랭킹(top 8):
+  p3: 2.40%
+  p1: 1.10%
+# F15 — pip install --break-system-packages 를 쓰지 않았다.

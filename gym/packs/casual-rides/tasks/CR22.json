@@ -1,0 +1,24 @@
+{
+  "id": "CR22",
+  "tier": 1,
+  "title": "계산 셀 문서는 표가 몇 개?",
+  "input": "samples/calc-cell.hwp",
+  "instructions": "솜사탕가게 — CR22 는 키 제한 없는 입문 놀이기구다. 계산 셀이 있어도 질문은 표 개수다. 문서는 `samples/calc-cell.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: export-tables {입력} --json. answer.json 에는 {\"tables\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. export-tables tableCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "계산 셀 문서는 표가 몇 개?",
+      "op": "answer_eq",
+      "answer": "tables",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ],
+      "path": "tableCount"
+    }
+  ],
+  "axis": "입문"
+}

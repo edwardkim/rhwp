@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5333,
+  "engineSchemaVersion": "1",
+  "generatedBy": "tools/fde/triage.py",
+  "requiredKeys": [
+    "schemaVersion",
+    "generatedBy",
+    "doc",
+    "docBytes",
+    "symptom",
+    "container",
+    "steps",
+    "route",
+    "routeReason",
+    "nextActions",
+    "elapsedSeconds"
+  ],
+  "stepKeysOk": [
+    "command",
+    "ok",
+    "exitCode",
+    "envelopeKeys"
+  ],
+  "stepKeysCrash": [
+    "command",
+    "ok",
+    "failureSignature"
+  ],
+  "stepKeysFail": [
+    "command",
+    "ok",
+    "exitCode",
+    "stderrHead"
+  ],
+  "forbiddenProse": [
+    "it worked",
+    "됐습니다",
+    "열어 보니 정상"
+  ],
+  "symptomFieldIsData": true,
+  "stripEnvelopeKeepKeys": true
+}

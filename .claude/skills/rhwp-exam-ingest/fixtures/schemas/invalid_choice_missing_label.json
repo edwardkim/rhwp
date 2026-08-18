@@ -1,0 +1,14 @@
+{
+  "version": "1",
+  "questions": [
+    {
+      "number": 1,
+      "stem": "라벨 없음",
+      "choices": [
+        {
+          "text": "만 있음"
+        }
+      ]
+    }
+  ]
+}

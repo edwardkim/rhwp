@@ -1,0 +1,25 @@
+{
+  "id": "TC15",
+  "tier": 2,
+  "title": "표 CSV — table-004 행 수",
+  "input": "samples/table-004.hwp",
+  "instructions": "table-to-csv --table 0 --json 으로 표 0 의 rowCount 를 보고하라. 답 형식: {\"rows\": <수>}.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "행 수 일치",
+      "op": "answer_eq",
+      "answer": "rows",
+      "cmd": [
+        "table-to-csv",
+        "{input}",
+        "--table",
+        "0",
+        "--json"
+      ],
+      "path": "tables[0].rowCount"
+    }
+  ]
+}

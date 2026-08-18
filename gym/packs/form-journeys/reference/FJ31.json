@@ -1,0 +1,17 @@
+{
+  "id": "FJ31",
+  "steps": [
+    {
+      "answer": {
+        "memo": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fields[0].memo"
+        }
+      }
+    }
+  ]
+}

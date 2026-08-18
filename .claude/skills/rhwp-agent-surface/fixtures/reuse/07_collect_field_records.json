@@ -1,0 +1,5 @@
+{
+  "surface": "hwp_fields / hwp_doc_fields",
+  "core": "collect_field_records",
+  "envelope": "fields_json_value"
+}

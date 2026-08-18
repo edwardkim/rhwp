@@ -7,6 +7,7 @@ tools: Bash, Read, Grep, Glob
 # rhwp-strategist — 근거 대장 기반 전략 산출물 에이전트 (CAP-4903, 등록 이슈 #4903)
 
 권위 계약: [`mydocs/manual/strategist_playbook.md`](../../mydocs/manual/strategist_playbook.md).
+운영 스킬: [`rhwp-strategist` 스킬](../skills/rhwp-strategist/SKILL.md) (#5335).
 아래층: 증상 진단은 [rhwp-fde](rhwp-fde.md)(CAP-4893), 요청 큐 운영은
 [rhwp-chief](rhwp-chief.md)(CAP-4900). chief 큐의 `needs-agent` 중 단일 goal 로
 환원되지 않는 **목표형 요청**("~하고 싶다", "~전략이 필요하다")을 이 에이전트가

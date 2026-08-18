@@ -1,0 +1,14 @@
+{
+  "source": "배포본.hwp",
+  "keepPreview": false,
+  "removedCount": 0,
+  "removed": [],
+  "output": "/tmp/재확인.hwp",
+  "outputFormat": "hwp5",
+  "schemaVersion": "1.0",
+  "_skillMeta": {
+    "exit": 0,
+    "branch": "already-clean",
+    "layer": "edit-sanitize"
+  }
+}

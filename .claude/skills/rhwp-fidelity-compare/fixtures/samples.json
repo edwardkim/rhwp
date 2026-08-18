@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "optionalLive": [
+    "samples/form-01.hwp",
+    "samples/exam_math.hwp",
+    "samples/exam_eng.hwp"
+  ],
+  "liveCompareNotRequiredForContract": true,
+  "reason": "공식 PDF 와 Chrome 은 CI 에 없을 수 있다. 계약은 파일 존재·스키마."
+}

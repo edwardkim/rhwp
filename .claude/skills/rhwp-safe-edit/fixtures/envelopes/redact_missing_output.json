@@ -1,0 +1,13 @@
+{
+  "_skillMeta": {
+    "exit": 2,
+    "branch": "FixArgv",
+    "stdoutBytes": 0,
+    "layer": "edit-redact"
+  },
+  "stderrContains": "마스킹은 되돌릴 수 없습니다",
+  "requires": [
+    "-o",
+    "--in-place"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "id": "SR30",
+  "tier": 3,
+  "title": "4쪽 문서에서 첫 쪽만 남긴 뒤 지운 문단 수",
+  "input": "samples/exam-kor-4p.hwp",
+  "instructions": "4쪽 표본의 첫 쪽만 남겨 slice.hwp 로 저장하고, 지운 문단 수를 answer.json 에 {\"paragraphsRemoved\": N} 으로 제출하라. extract-pages 는 쪽 단위로 자르되 문단 단위로 지운다. 힌트: rhwp extract-pages --from 1 --to 1 --json 의 paragraphsRemoved.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "slice.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "추출물 실재",
+      "op": "file_exists",
+      "file": "slice.hwp",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "slice.hwp"
+    },
+    {
+      "name": "지운 문단 수",
+      "op": "answer_eq",
+      "answer": "paragraphsRemoved",
+      "path": "paragraphsRemoved",
+      "cmd": [
+        "extract-pages",
+        "{input}",
+        "{file:slice.hwp}",
+        "--from",
+        "1",
+        "--to",
+        "1",
+        "--json"
+      ]
+    }
+  ]
+}

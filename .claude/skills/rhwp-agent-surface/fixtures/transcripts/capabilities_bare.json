@@ -1,0 +1,51 @@
+{
+  "invocation": "rhwp capabilities",
+  "always_json": true,
+  "do_not_pass_json_flag": true,
+  "read": [
+    "version",
+    "commands",
+    "formats",
+    "exitCodes",
+    "jsonContract",
+    "batch",
+    "schemaRegistry"
+  ],
+  "first_call": true,
+  "help_is_not_contract": true,
+  "command_count_not_contract": true,
+  "sample_keys": {
+    "schemaVersion": "1.0",
+    "tool": "rhwp",
+    "formats.read": [
+      "hwp5",
+      "hwpx",
+      "hwp3",
+      "hml"
+    ],
+    "formats.write": [
+      "hwp5",
+      "hwpx",
+      "hml",
+      "pdf",
+      "svg",
+      "png",
+      "txt",
+      "md",
+      "doclang"
+    ],
+    "exitCodes.0": "성공",
+    "exitCodes.1": "런타임 실패 (읽기·파싱·렌더·쓰기)",
+    "exitCodes.2": "사용법 오류",
+    "exitCodes.3": "검증 단언 실패",
+    "exitCodes.4": "--verify-pages 페이지 수 불일치"
+  },
+  "families": [
+    "batch",
+    "diagnostic",
+    "edit",
+    "export",
+    "internal",
+    "query"
+  ]
+}

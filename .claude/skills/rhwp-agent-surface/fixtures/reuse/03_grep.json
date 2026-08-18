@@ -1,0 +1,5 @@
+{
+  "surface": "hwp_search / hwp_doc_search",
+  "core": "grep",
+  "envelope": "search_json_value"
+}

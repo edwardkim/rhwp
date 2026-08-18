@@ -420,7 +420,12 @@ fn compute_control_mask(para: &Paragraph) -> u32 {
     }
     // 묶음 빈칸 (0x001E, NBSP): serialize_para_text 가 U+00A0 마다 코드 0x1E 를 방출하므로
     // (#1793) control_mask 비트 30 도 세워 PARA_HEADER 를 PARA_TEXT 와 일치시킨다.
-    if para.text.contains('\u{00A0}') {
+    //
+    // [#5174] 단, 하이픈 비트 24 와 같이 **출처가 제어 표기였을 때만** 세운다.
+    // serialize_para_text 가 같은 조건으로만 코드 0x1E 를 방출하므로 둘이 함께 움직인다.
+    // 리터럴 원본(한컴 실측 111문서·2,131문단: PARA_TEXT `a0 00`, 비트 30 없음)에 비트를
+    // 세우면 PARA_HEADER 가 있지도 않은 제어문자를 주장해 헤더/텍스트가 어긋난다.
+    if para.text.contains('\u{00A0}') && para.control_mask & (1u32 << 0x001E) != 0 {
         mask |= 1u32 << 0x001E;
     }
     // [#4895] 하이픈 (0x0018) 비트는 **출처가 제어 표기였을 때만** 유지한다.
@@ -675,13 +680,23 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         } else {
             // trailing FIELD_END: control_idx가 남은 컨트롤에 포함되는지 판별은
             // 메인 루프 후에 수행 (ctrl_idx 확정 후)
+            //
+            // [#5162] 텍스트 없이 표·그림만 감싼 0길이 누름틀(`start==end==text_len`)은
+            // 이 갈래로 온다. FIELD_END 를 자기 FIELD_BEGIN 직후(`control_idx`)에 닫으면
+            // 감싼 개체가 필드 **밖**으로 밀려 빈 누름틀이 되고, 한글이 그 자리에 안내문
+            // ("이곳을 마우스로 누르고 …")을 본문으로 찍는다. 파서가 채운 `inner_slot_count`
+            // 만큼 슬롯을 지나 `control_idx + inner_slot_count` 뒤에서 닫아야 개체가 필드
+            // 안에 남는다 — HWPX 직렬화기의 `control_idx + inner_slot_count == emitted_ctrl_idx`
+            // (serializer/hwpx/section.rs)와 동형이다. `inner_slot_count == 0`(순수 텍스트·빈
+            // 필드)이면 키가 `control_idx` 그대로라 종전과 동일하다.
+            let end_after = fr.control_idx + fr.inner_slot_count;
             trailing_end_after_ctrl
-                .entry(fr.control_idx)
+                .entry(end_after)
                 .or_default()
                 .push(marker);
             if let Some(residue) = residue {
                 trailing_residues
-                    .entry(fr.control_idx)
+                    .entry(end_after)
                     .or_default()
                     .push(residue);
             }
@@ -744,18 +759,47 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         // 컨트롤이 자동번호인데 공백이 마지막이면 그 공백이 곧 placeholder 다 — 진짜
         // 공백이었다면 그 뒤에 placeholder 가 하나 더 붙어 마지막이 아니게 된다.
         let is_last_text_char = i + 1 == text_chars.len();
-        let is_autonum_placeholder = *ch == ' '
-            && offset == prev_end
-            && ctrl_idx < para.controls.len()
-            // [#3495] 0x0012(자동번호)만 placeholder 공백을 만든다. 두 파서 모두
-            // 그렇다 — parser/body_text.rs 는 ch == 0x0012 일 때만, HWPX section.rs 는
-            // 0x0012 파트일 때만 text 에 공백을 push 한다. 각주·미주(0x0011)는
-            // placeholder 를 만들지 않으므로, 여기 포함하면 미주 앞의 진짜 공백을
-            // placeholder 로 오인해 컨트롤로 덮어쓴다 (SO-SUEOP.hwp 문단 238:
-            // 공백 12개 -> 11개, 뒤 텍스트가 한 칸 당겨짐).
-            && matches!(control_char_code_and_id(&para.controls[ctrl_idx]).0, 0x0012)
-            && next_offset.map_or(is_last_text_char, |n| n >= offset + 8);
-        if is_autonum_placeholder {
+        // 자리표시자 판정 — 종류별 근거는 아래 `match` 팔에 적는다.
+        //
+        // 판정이 `prev_end`·`ctrl_idx` 에 걸려 있어 **갭을 채우기 전과 후에 각각** 묻는다.
+        // 문단 선두에 예약된 갭(구역·단 정의 자리)이 있으면 첫 물음에서는 `prev_end` 가
+        // 아직 0 이라 판정이 실패한다 — 그 자리를 채운 뒤 다시 물어야 자리표시자를 알아본다
+        // (#4957: `secd`·`cold` 를 앞세운 HWP3 첫 문단).
+        //
+        // 두 번째 물음은 `object_only` 로 **U+FFFC 만** 받는다. 공백 자리표시자는 판별자가
+        // 글자가 아니라 `controls[ctrl_idx]` 의 코드(0x0012)뿐인데, 갭을 채우고 나면
+        // `ctrl_idx` 가 다른 컨트롤을 가리킨다 — 그때 다시 물으면 미주 앞의 **진짜 공백**이
+        // 자동번호로 오인돼 먹힌다(#3495 SO-SUEOP 문단 238). `U+FFFC` 는 글자 자체가
+        // 판별자라 이 위험이 없다.
+        let is_placeholder = |prev_end: u32, ctrl_idx: usize, object_only: bool| -> bool {
+            if offset != prev_end
+                || ctrl_idx >= para.controls.len()
+                || !next_offset.map_or(is_last_text_char, |n| n >= offset + 8)
+            {
+                return false;
+            }
+            match *ch {
+                // [#4957] HWP3 가시 개체의 자리표시자는 `U+FFFC` 다. 파서가 그 자리에
+                // **글자 하나 + 8유닛 슬롯**을 두므로(암호 HWP3 경로가 쓰던 계약을 전
+                // 경로로 넓힘) 자동번호 공백과 같은 모양이다 — 여기서 리터럴 대신 컨트롤을
+                // 써야 저장본에 원본에 없던 개체 문자가 남지 않는다(10k 전수 HWP3 28문서
+                // 56경로). 공백과 달리 컨트롤 종류를 가리지 않는다. `U+FFFC` 는 한컴
+                // 원본이 본문에 한 번도 쓰지 않는 글자라(hwp 0/6,579 · hwpx 0/3,418)
+                // 진짜 본문과 헷갈릴 여지가 없다.
+                '\u{FFFC}' => true,
+                // [#3495] 0x0012(자동번호)만 placeholder 공백을 만든다. 두 파서 모두
+                // 그렇다 — parser/body_text.rs 는 ch == 0x0012 일 때만, HWPX section.rs 는
+                // 0x0012 파트일 때만 text 에 공백을 push 한다. 각주·미주(0x0011)는
+                // placeholder 를 만들지 않으므로, 여기 포함하면 미주 앞의 진짜 공백을
+                // placeholder 로 오인해 컨트롤로 덮어쓴다 (SO-SUEOP.hwp 문단 238:
+                // 공백 12개 -> 11개, 뒤 텍스트가 한 칸 당겨짐).
+                ' ' if !object_only => {
+                    matches!(control_char_code_and_id(&para.controls[ctrl_idx]).0, 0x0012)
+                }
+                _ => false,
+            }
+        };
+        if is_placeholder(prev_end, ctrl_idx, false) {
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             ctrl_idx += 1;
@@ -813,6 +857,17 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             ctrl_idx += 1;
         }
 
+        // ③-b 갭을 채우고 나서 자리표시자를 다시 묻는다 — 위 첫 물음은 선두 예약 갭
+        //     때문에 실패했을 수 있다. 여기서 걸리면 `ctrl_idx` 가 갭을 채운 만큼 앞으로
+        //     가 있어, 자리표시자가 **자기 컨트롤**과 짝지어진다(#4957).
+        if is_placeholder(prev_end, ctrl_idx, true) {
+            let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
+            push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+            ctrl_idx += 1;
+            prev_end = offset + 8;
+            continue;
+        }
+
         // ④ 빈 필드(시작==끝)의 FIELD_END — 자기 BEGIN 직후.
         // [#4402] 안내문 잔재는 자기 FIELD_END 바로 앞에 되살린다 (HWPX
         // `emit_field_end_at` 과 동일 순서 — BEGIN 뒤, END 앞).
@@ -850,7 +905,17 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 code_units.push(0x000A);
                 prev_end = offset + 1;
             }
-            '\u{00A0}' => {
+            // [#5174] 묶음 빈칸(U+00A0)은 소프트 하이픈과 같이 **원본 표기를 따라간다.**
+            // #1793 은 늘 코드 30(0x1E)으로 되돌렸지만, 한컴이 만든 문서는 두 표기를 다 쓴다
+            // (10k 코퍼스 실측: 제어 표기 151문서·3,422문단 · 리터럴 111문서·2,131문단,
+            // 한 문단이 둘을 섞는 경우는 0건).
+            //
+            // 한글은 제어코드를 텍스트 추출에 싣지 않고 리터럴은 싣는다. 그래서 리터럴
+            // 원본을 제어코드로 바꾸면 저장본에서 글자가 사라진다(#4895 하이픈에서 실측된
+            // 것과 같은 파손). 출처 신호는 PARA_HEADER `control_mask` 비트 30 이다 —
+            // HWP5 원본에서 이 비트는 제어코드 존재와 5,553/5,553(100%) 일치하고,
+            // HWPX 원본은 파서가 `<hp:nbSpace/>` 를 만났을 때 세운다.
+            '\u{00A0}' if para.control_mask & (1u32 << 0x001E) != 0 => {
                 // 묶음 빈칸 (HWP 5.0 표 7: 코드 30). 코드 24(0x18)는 하이픈이므로
                 // 여기 쓰면 안 된다 (#1793).
                 code_units.push(0x001E);
@@ -1204,12 +1269,12 @@ fn should_serialize_figure_space_as_hwp_fixed_blank(para: &Paragraph) -> bool {
 /// HWP 5.0 제어 문자 분류 (표 6):
 ///   0x0002: 구역/단 정의 (secd, cold)
 ///   0x000B: 표/그림/도형 (tbl, gso)
-///   0x000F: 숨은 설명 (tcmt)
 ///   0x0010: 머리말/꼬리말 (head, foot)
 ///   0x0011: 각주/미주 (fn, en)
 ///   0x0012: 자동번호 (atno)
 ///   0x0015: 페이지 컨트롤/새 번호 (pgnp, pghi, nwno)
 ///   0x0016: 책갈피 (bokm)
+///   0x0017: 덧말·글자겹침·숨은 설명 (tdut, tcps, tcmt) — [#5154] 실측
 /// 이 컨트롤이 CTRL_HEADER 레코드를 만드는가.
 ///
 /// [#4424] `serialize_control` 의 catch-all arm(`Hyperlink | Ruby | Unknown`)은
@@ -1241,7 +1306,13 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
         Control::Table(_) => (0x000B, tags::CTRL_TABLE),
         Control::Shape(_) => (0x000B, tags::CTRL_GEN_SHAPE),
         Control::Picture(_) => (0x000B, tags::CTRL_GEN_SHAPE),
-        Control::HiddenComment(_) => (0x000F, tags::CTRL_HIDDEN_COMMENT),
+        // [#5154] 숨은 설명은 한컴 원본에서 코드 **0x0017** 로 나간다. 0x000F 를 쓰면 한글이
+        // 숨은 설명으로 인식하지 못해 텍스트 내보내기에서 `[숨은설명:시작]`/`[숨은설명:끝]`
+        // 마커가 통째로 사라진다(`tcmt` CTRL_HEADER 개수는 그대로라 컨트롤 인구조사로는
+        // 안 잡힌다). 한컴 정품 실측: `0x17` 출현 = `tcmt` CTRL_HEADER 수 × 2
+        // (00464 1→2 · 03383 4→8 · 07505 2→4 · 08383 5→10 · 08382 36→72).
+        // 확장 제어는 `[코드, id 2유닛, 예약 4유닛, 코드]` 라 코드가 두 번 나온다.
+        Control::HiddenComment(_) => (0x0017, tags::CTRL_HIDDEN_COMMENT),
         Control::Header(_) => (0x0010, tags::CTRL_HEADER),
         Control::Footer(_) => (0x0010, tags::CTRL_FOOTER),
         Control::Footnote(_) => (0x0011, tags::CTRL_FOOTNOTE),
@@ -2031,20 +2102,25 @@ mod tests {
         assert_ne!(compute_control_mask(&para) & (1u32 << 0x001f), 0);
     }
 
-    /// [#1793] 묶음 빈칸(NBSP, U+00A0)은 코드 30(0x1E)으로 직렬화되어야 한다.
-    /// 코드 24(0x18)는 하이픈이라 재파싱 시 '-' 로 손상된다.
+    /// [#1793] 묶음 빈칸(NBSP, U+00A0)의 **제어 표기 출처**는 코드 30(0x1E)으로
+    /// 직렬화되어야 한다. 코드 24(0x18)는 하이픈이라 재파싱 시 '-' 로 손상된다.
+    ///
+    /// [#5174] 출처 신호(`control_mask` 비트 30)가 조건으로 붙었다 — 종전에는 무조건
+    /// 코드 30 이었고, 그래서 리터럴 원본(111문서·2,131문단)이 제어로 승격됐다.
     #[test]
-    fn test_nbsp_serializes_as_code_30() {
+    fn test_nbsp_from_control_origin_serializes_as_code_30() {
         let para = Paragraph {
             char_count: 4,
             text: "가\u{00A0}나".to_string(),
             char_offsets: vec![0, 1, 2],
+            control_mask: 1u32 << 0x001E,
             ..Default::default()
         };
 
         let bytes = test_serialize_para_text(&para);
 
         assert_eq!(&bytes[2..4], &0x001E_u16.to_le_bytes());
+        assert_ne!(compute_control_mask(&para) & (1u32 << 0x001E), 0);
     }
 
     /// [#4895] 소프트 하이픈(U+00AD)은 코드 24(0x18)가 아니라 **리터럴 문자**로 나간다.
@@ -2099,21 +2175,34 @@ mod tests {
         assert_ne!(compute_control_mask(&para) & (1u32 << 0x0018), 0);
     }
 
-    /// [NBSP mask] U+00A0 은 PARA_TEXT 에 코드 0x1E 로 방출되므로 PARA_HEADER control_mask
-    /// 비트 30 도 서야 한다(안 서면 한컴에서 헤더/텍스트 불일치).
+    /// [NBSP mask] PARA_HEADER `control_mask` 비트 30 과 PARA_TEXT 는 **항상 함께 움직인다.**
+    ///
+    /// [#5174] 종전에는 U+00A0 만 있으면 비트를 세웠는데, 출처가 리터럴이면 PARA_TEXT 에
+    /// 제어코드가 없으므로 헤더가 있지도 않은 제어문자를 주장하게 된다. 이제 두 출처
+    /// 모두에서 짝이 맞는지 본다 — 한컴 원본 실측에서도 비트 30 은 제어코드 존재와
+    /// 5,553/5,553(100%) 일치했다.
     #[test]
-    fn test_nbsp_sets_control_mask_bit_30() {
-        let para = Paragraph {
-            char_count: 4,
-            text: "가\u{00A0}나".to_string(),
-            char_offsets: vec![0, 1, 2],
-            ..Default::default()
-        };
-        assert_ne!(
-            compute_control_mask(&para) & (1u32 << 0x001E),
-            0,
-            "U+00A0 포함 시 control_mask 비트 30 이 서야 PARA_TEXT(0x1E)와 일치한다"
-        );
+    fn test_nbsp_control_mask_bit_30_tracks_para_text() {
+        for origin_is_control in [false, true] {
+            let para = Paragraph {
+                char_count: 4,
+                text: "가\u{00A0}나".to_string(),
+                char_offsets: vec![0, 1, 2],
+                control_mask: if origin_is_control { 1u32 << 0x001E } else { 0 },
+                ..Default::default()
+            };
+            let bytes = test_serialize_para_text(&para);
+            let emitted_control = bytes[2..4] == 0x001E_u16.to_le_bytes();
+            let mask_set = compute_control_mask(&para) & (1u32 << 0x001E) != 0;
+            assert_eq!(
+                emitted_control, origin_is_control,
+                "PARA_TEXT 표기가 출처를 따라가야 한다"
+            );
+            assert_eq!(
+                mask_set, emitted_control,
+                "control_mask 비트 30 과 PARA_TEXT 제어코드는 함께 움직여야 한다"
+            );
+        }
     }
 
     /// 컨트롤 문자 코드 매핑 테스트

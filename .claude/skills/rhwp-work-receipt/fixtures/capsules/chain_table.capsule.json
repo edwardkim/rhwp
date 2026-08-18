@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "amount.capsule.json",
+    "sha256": "1b8484f31e2a18552be082d971e45221e54553fb2b6793158bb3e121b5f17cb4"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "out/amount.hwp",
+    "output": "out/chain_table.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "산출내역",
+        "replace": "산출 명세"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"out/amount.hwp\",\"output\":\"out/chain_table.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"산출내역\",\"replace\":\"산출 명세\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "out/amount.hwp",
+    "inputSha256": "97ff17c0ffba202f977838bdec6656f8f9651f11d6eb57816d1e8a444eaffb0f",
+    "planSha256": "1fced9bf07e27594af90d16f25adefe6a00811813e655e6b4f8a021b34244d6e",
+    "outputSha256": "2d79e3ef32c0a73c955b02219c2a252bb52c3d283d50a0cba4da621080f2520e",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "T01-B07",
+  "recipe": "01",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/01_fill_form_and_submit.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp edit insert-image form-01_filled.hwp \\\n  --image seal.png \\\n  --page 0 --x 28346 --y 28346 --width 8504 --height 8504 \\\n  -o form-01_sealed.hwp --json",
+  "firstLine": "rhwp edit insert-image form-01_filled.hwp \\",
+  "notGym": true
+}

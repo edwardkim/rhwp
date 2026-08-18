@@ -1,0 +1,15 @@
+{
+  "id": "SD28",
+  "steps": [
+    {
+      "answer": {
+        "failure": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "jsonContract.failure"
+        }
+      }
+    }
+  ]
+}
