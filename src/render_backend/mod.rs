@@ -21,6 +21,8 @@
 //!
 //! 이 모듈은 그 공통 계약을 **기존 백엔드를 고치지 않고** 신설한다.
 //! 어댑터는 기존 코드를 호출만 하며, `src/renderer/**` 는 이 PR 에서 바뀌지 않는다.
+//! 구체 어댑터는 `SvgBackend` 와 `SkiaBackend` 이다. PNG 바이트열 어댑터
+//! (`PngBackend` / `SkiaLayerRenderer::render_png`) 는 M06-1 범위이며 여기 없다.
 //!
 //! # 기존 trait 들과의 관계
 //!
@@ -67,12 +69,14 @@
 
 pub mod backends;
 pub mod caps;
+pub mod skia_adapter;
 pub mod svg_adapter;
 pub mod traits;
 pub mod util;
 
 pub use backends::{DrawStats, NullBackend, TraceBackend};
 pub use caps::{BackendCapabilities, BackendFeature};
+pub use skia_adapter::SkiaBackend;
 pub use svg_adapter::SvgBackend;
 pub use traits::{PageSize, RenderBackend, RenderBackendError};
 pub use util::{paint_op_kind, replay_page, PageState};
@@ -172,6 +176,11 @@ mod tests {
         let mut svg = SvgBackend::new();
         assert_eq!(
             svg.draw(&rect_op(0.0, 0.0)).unwrap_err(),
+            RenderBackendError::NoOpenPage { call: "draw" }
+        );
+        let mut skia = SkiaBackend::new();
+        assert_eq!(
+            skia.draw(&rect_op(0.0, 0.0)).unwrap_err(),
             RenderBackendError::NoOpenPage { call: "draw" }
         );
     }
@@ -275,10 +284,30 @@ mod tests {
         assert!(!null.supports(BackendFeature::VectorText));
         assert!(null.supports(BackendFeature::Deterministic));
 
+        // Skia 어댑터는 실제로 지원하는 능력만 선언한다 (210b3ee37 정직성 보정과 같은 결).
+        // 얇은 어댑터는 클립·다중 페이지를 보존하지 못하고, native-skia 가 없으면
+        // 이미지·그라디언트도 산출물에 남지 않는다. M06-3 이 전 백엔드 정직성 스윕이다.
+        let skia = SkiaBackend::new().capabilities();
+        assert_eq!(skia.name, "skia");
+        assert!(skia.raster_only);
+        assert!(!skia.supports(BackendFeature::VectorText));
+        assert!(!skia.supports(BackendFeature::EmbeddedFonts));
+        assert!(!skia.supports(BackendFeature::Clipping));
+        assert!(!skia.supports(BackendFeature::MultiPage));
+        assert!(!skia.supports(BackendFeature::Deterministic));
+        let live = SkiaBackend::raster_available();
+        assert_eq!(skia.supports(BackendFeature::Images), live);
+        assert_eq!(skia.supports(BackendFeature::Gradients), live);
+        assert_eq!(
+            live,
+            cfg!(all(not(target_arch = "wasm32"), feature = "native-skia"))
+        );
+
         // 자기모순 선언(래스터 전용인데 벡터 텍스트)은 불변식 위반이다.
         for caps in [
             svg,
             null,
+            skia,
             TraceBackend::new().capabilities(),
             BackendCapabilities::raster("skia"),
         ] {
@@ -324,6 +353,27 @@ mod tests {
         assert!(svg.starts_with("<svg"), "{svg}");
         assert!(svg.contains("viewBox=\"0 0 400 300\""), "{svg}");
         assert!(svg.trim_end().ends_with("</svg>"), "{svg}");
+
+        // Skia 어댑터: native-skia 가 있으면 래스터 문서, 없으면 빈 문서.
+        let mut skia_backend = SkiaBackend::new();
+        replay_page(&mut skia_backend, &sample_tree()).unwrap();
+        assert_eq!(skia_backend.pages().len(), 1);
+        let raster = skia_backend.finish().unwrap();
+        if SkiaBackend::raster_available() {
+            assert!(raster.width > 0, "width={}", raster.width);
+            assert!(raster.height > 0, "height={}", raster.height);
+            assert!(
+                raster
+                    .bytes
+                    .starts_with(&[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]),
+                "expected raster document payload, got {} bytes",
+                raster.bytes.len()
+            );
+        } else {
+            assert!(raster.bytes.is_empty());
+            assert_eq!(raster.width, 0);
+            assert_eq!(raster.height, 0);
+        }
     }
 
     // 10. 페이지별 SVG 문서를 이어 붙여 유효하지 않은 단일 SVG를 만들지 않는다.
@@ -336,6 +386,14 @@ mod tests {
         assert_eq!(
             backend.begin_page(PageSize::new(400.0, 300.0)).unwrap_err(),
             RenderBackendError::MultiplePagesUnsupported { backend: "svg" }
+        );
+
+        let mut skia = SkiaBackend::new();
+        skia.begin_page(PageSize::new(400.0, 300.0)).unwrap();
+        skia.end_page().unwrap();
+        assert_eq!(
+            skia.begin_page(PageSize::new(400.0, 300.0)).unwrap_err(),
+            RenderBackendError::MultiplePagesUnsupported { backend: "skia" }
         );
     }
 
