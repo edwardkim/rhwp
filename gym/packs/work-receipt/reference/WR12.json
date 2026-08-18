@@ -1,0 +1,36 @@
+{
+  "id": "WR12",
+  "steps": [
+    {
+      "answer": {
+        "inputSha256": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/basic/issue2007_nested_cell_pagination_42065.hwp\", \"output\": \"reg-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"규제\", \"replace\": \"점검장\"}]}",
+            "--json"
+          ],
+          "path": "inputSha256"
+        },
+        "planSha256": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/basic/issue2007_nested_cell_pagination_42065.hwp\", \"output\": \"reg-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"규제\", \"replace\": \"점검장\"}]}",
+            "--json"
+          ],
+          "path": "planSha256"
+        },
+        "outputSha256": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/basic/issue2007_nested_cell_pagination_42065.hwp\", \"output\": \"reg-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"규제\", \"replace\": \"점검장\"}]}",
+            "--json"
+          ],
+          "path": "outputSha256"
+        }
+      }
+    }
+  ]
+}
