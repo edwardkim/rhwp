@@ -32,3 +32,8 @@ source_pr: 5517
 ## 권고
 
 **메인터너 호환 보정 반영, 검증 대기.**
+## 후속 메인터너 보정
+
+- 통합 PR #5540의 `Check workspace members`가 Rust 1.93의 `clippy::manual_contains`로 실패했다.
+- `criteria_decomp/src/field.rs`의 두 상수 배열 검색을 `iter().any(...)`에서 동등한 `contains(&name)`으로 보정했다.
+- 이 보정은 검색 구현만 개선하며 허용·발명 field 판정의 의미와 원본 기여 커밋은 변경하지 않는다.

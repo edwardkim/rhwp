@@ -102,7 +102,7 @@ impl EnvelopeField {
 }
 
 pub fn is_allowed_envelope_field(name: &str) -> bool {
-    ALLOWED_ENVELOPE_FIELDS.iter().any(|k| *k == name)
+    ALLOWED_ENVELOPE_FIELDS.contains(&name)
 }
 
 pub fn parse_envelope_field(name: &str) -> Option<EnvelopeField> {
@@ -114,7 +114,7 @@ pub fn parse_envelope_field(name: &str) -> Option<EnvelopeField> {
 }
 
 pub fn is_invented_field(name: &str) -> bool {
-    INVENTED_FIELDS.iter().any(|k| *k == name)
+    INVENTED_FIELDS.contains(&name)
 }
 
 #[cfg(test)]
