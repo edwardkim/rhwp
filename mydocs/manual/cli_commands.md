@@ -1571,16 +1571,20 @@ HWP5 → IR → HWP5 roundtrip 무손실 검증(#1552). 재조립 `.rt.hwp` 와 
 만으로 "정상적인 문서로 보이는가"를 판정한다. 두 렌더가 똑같이 망가져 있으면 변위는 0이라
 `render-diff` 는 못 잡는 케이스를 이 명령이 잡는다. 설계 배경:
 [layout_anomaly_detection.md](../tech/layout_anomaly_detection.md).
-- 판정 3종: `overflow`(요소 bbox가 본문 여백 초과) · `overlap`(겹치면 안 되는 요소끼리 겹침) ·
+- 판정 4종: `overflow`(요소 bbox가 본문 여백 초과) · `overlap`(겹치면 안 되는 흐름 요소끼리 겹침) ·
+  `text-overlap`(텍스트 런 bbox 교차 — 글자끼리, 표·이미지 겹침 아님) ·
   `empty_page`(콘텐츠 없는 중간 쪽 — 항상 "가능성 신호").
-- 기본 종료 코드는 0(판정=데이터, 도구 실패 아님). `--strict` 만 확정 신호(overflow·overlap)를
-  종료 코드 3으로 낸다 — `empty_page` 는 `--strict` 로도 실패를 유발하지 않는다(의도된 빈 쪽과
-  기하만으로 구분 불가).
+- 기본 종료 코드는 0(판정=데이터, 도구 실패 아님). `--strict` 만 확정 신호
+  (overflow·overlap·text-overlap)를 종료 코드 3으로 낸다 — `empty_page` 는 `--strict` 로도
+  실패를 유발하지 않는다(의도된 빈 쪽과 기하만으로 구분 불가). `text-overlap` 을 확정에 넣는
+  이유: 글자 bbox 교차는 의도된 wrap 이 아니고 빈 쪽처럼 애매하지도 않다.
 - `--overflow-tolerance`(기본 1.0px) / `--overlap-tolerance`(기본 2.0px, 폭·높이 둘 다 초과해야
-  잡음) 로 민감도 조절. `-p` 는 사람 모드 출력만 좁힌다(스캔 자체는 항상 전 페이지).
+  잡음; text-overlap 도 같은 허용치) 로 민감도 조절. `-p` 는 사람 모드 출력만 좁힌다(스캔 자체는
+  항상 전 페이지).
 - `--json` 봉투는 `pageCount`, `pageFilter`, 두 tolerance, `strict`, `overflowCount`,
-  `overlapCount`, `emptyPageCount`, `hasSignal`, 페이지별 `pages[]`를 낸다. 자동화는 사람용
-  출력이 아니라 이 필드와 종료 코드로만 판정한다.
+  `overlapCount`, `textOverlapCount`, `emptyPageCount`, `hasSignal`, 페이지별
+  `pages[]`(각 `textOverlap`)를 낸다. 자동화는 사람용 출력이 아니라 이 필드와 종료 코드로만
+  판정한다.
 
 ### `bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]`
 **단계별 처리 성능 계측** — parse / layout / render / serialize 를 워밍업 1회 후 N회(기본 3)

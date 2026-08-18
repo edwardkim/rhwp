@@ -9,8 +9,9 @@
 //! 문서) 변위는 0인데 결과물은 여전히 깨져 있다.
 //!
 //! 이 모듈은 렌더 **한 장**만 입력받아 그 자체의 기하가 말이 되는지 본다:
-//! 요소가 페이지 여백을 벗어났는가(overflow), 겹치면 안 되는 요소끼리 겹쳤는가
-//! (overlap), 콘텐츠 없는 페이지가 문서 중간에 있는가(empty_page). `render-diff`가
+//! 요소가 페이지 여백을 벗어났는가(overflow), 겹치면 안 되는 흐름 요소끼리
+//! 겹쳤는가(overlap), 보이는 텍스트 런 bbox 가 서로 교차하는가(text-overlap),
+//! 콘텐츠 없는 페이지가 문서 중간에 있는가(empty_page). `render-diff`가
 //! "달라졌는가"를 묻는다면 이 모듈은 "이상해 보이는가"를 묻는다 — 같은 렌더 기하
 //! 축 위의 서로 다른 질문이라 한쪽이 다른 쪽을 대신하지 않는다.
 //!
@@ -21,8 +22,9 @@
 //! 도구의 정상 동작이지 실패가 아니다. 소비자가 실패로 취급하고 싶으면 명시적으로
 //! `--strict` 를 준다. `empty_page` 는 특히 오탐 여지가 크다(의도된 표지·구분지
 //! 빈 쪽과 회귀를 기하만으로 구분할 수 없다) — 그래서 `--strict` 로도 절대 실패를
-//! 유발하지 않는 "가능성 신호"로만 분리해 낸다. 자세한 배경은
-//! `mydocs/tech/layout_anomaly_detection.md`.
+//! 유발하지 않는 "가능성 신호"로만 분리해 낸다. `text-overlap` 은 글자끼리의
+//! bbox 교차라 일반 overlap(표·이미지)과 다른 확정 신호로 세고, `--strict` 에
+//! 포함한다. 자세한 배경은 `mydocs/tech/layout_anomaly_detection.md`.
 //!
 //! # 입력 경계
 //!
@@ -113,6 +115,15 @@ impl OverlapAnomaly {
     }
 }
 
+/// 보이는 텍스트 런(글리프 묶음) bbox 가 서로 교차한 사건.
+///
+/// 일반 [`OverlapAnomaly`] 는 표·이미지·문단 줄처럼 **흐름 요소**의 겹침이다.
+/// 이쪽은 텍스트끼리만 본다 — 표와 그림이 겹쳐도 여기엔 안 잡힌다. 렌더 트리에
+/// 글자 단위 글리프 bbox 는 없으므로, 레이아웃이 이미 나눠 둔 `TextRun` 노드
+/// bbox 를 글리프 묶음으로 쓴다. 한컴 글자겹침(`char_overlap`) 런은 의도된
+/// 겹침이라 후보에서 뺀다.
+pub type TextOverlapAnomaly = OverlapAnomaly;
+
 /// 문서 중간에서 콘텐츠 없는 페이지를 만난 사건. 의도된 빈 페이지(표지 뒷면,
 /// 장 구분지 등)와 기하만으로 구분할 수 없으므로 이 자체가 곧 "가능성 신호"다
 /// (별도 severity 플래그를 두지 않는다 — 존재 자체가 이미 낮은 신뢰도를 뜻한다).
@@ -127,18 +138,25 @@ pub struct PageAnomalies {
     pub page: u32,
     pub overflow: Vec<OverflowAnomaly>,
     pub overlap: Vec<OverlapAnomaly>,
+    pub text_overlap: Vec<TextOverlapAnomaly>,
     pub empty_page: Option<EmptyPageAnomaly>,
 }
 
 impl PageAnomalies {
     pub fn is_empty(&self) -> bool {
-        self.overflow.is_empty() && self.overlap.is_empty() && self.empty_page.is_none()
+        self.overflow.is_empty()
+            && self.overlap.is_empty()
+            && self.text_overlap.is_empty()
+            && self.empty_page.is_none()
     }
 
-    /// `--strict` 가 실패로 셀 만한 확정 신호(overflow·overlap)가 있는가.
-    /// `empty_page` 는 가능성 신호일 뿐이라 제외한다.
+    /// `--strict` 가 실패로 셀 만한 확정 신호가 있는가.
+    /// overflow·overlap·text-overlap 은 확정 신호. `empty_page` 는 가능성
+    /// 신호일 뿐이라 제외한다. text-overlap 을 확정에 넣는 이유: 글자 bbox
+    /// 교차는 의도된 wrap(BehindText 그림)이 아니고, 빈 쪽처럼 기하만으로
+    /// 애매하지도 않다.
     pub fn has_signal(&self) -> bool {
-        !self.overflow.is_empty() || !self.overlap.is_empty()
+        !self.overflow.is_empty() || !self.overlap.is_empty() || !self.text_overlap.is_empty()
     }
 }
 
@@ -158,6 +176,10 @@ impl DocAnomalies {
 
     pub fn overlap_count(&self) -> usize {
         self.pages.iter().map(|p| p.overlap.len()).sum()
+    }
+
+    pub fn text_overlap_count(&self) -> usize {
+        self.pages.iter().map(|p| p.text_overlap.len()).sum()
     }
 
     pub fn empty_page_count(&self) -> usize {
@@ -267,6 +289,21 @@ fn has_visible_text(s: &str) -> bool {
     s.chars().any(|c| !c.is_whitespace())
 }
 
+/// text-overlap 후보 — 보이는 글자가 있는 `TextRun` 이고, 한컴 글자겹침
+/// 컨트롤이 아니며, 면적이 있는 bbox 를 가진다. 표·이미지·도형은 여기
+/// 들어오지 않는다(그건 일반 overlap).
+fn is_text_overlap_candidate(node: &RenderNode) -> bool {
+    match &node.node_type {
+        RenderNodeType::TextRun(tr) => {
+            tr.char_overlap.is_none()
+                && has_visible_text(tr.display_or_text())
+                && node.bbox.width > 0.0
+                && node.bbox.height > 0.0
+        }
+        _ => false,
+    }
+}
+
 /// 페이지 트리에서 첫 `Body` 노드를 찾는다(전위 순회).
 fn find_body(node: &RenderNode) -> Option<&RenderNode> {
     if matches!(node.node_type, RenderNodeType::Body { .. }) {
@@ -334,6 +371,7 @@ fn walk(
     opts: &AnomalyOptions,
     overflow_out: &mut Vec<OverflowAnomaly>,
     flow_out: &mut Vec<FlowCandidate>,
+    text_out: &mut Vec<FlowCandidate>,
     has_content: &mut bool,
 ) {
     if !node.visible || node.editor_only {
@@ -363,6 +401,17 @@ fn walk(
         column
     };
 
+    // 표·글상자 안으로도 내려가 런 bbox 를 모은다. 일반 overlap 의 suppress 와
+    // 무관 — 표 안의 글자가 서로 겹치는 것은 표-표 겹침이 아니다.
+    if is_text_overlap_candidate(node) {
+        text_out.push(FlowCandidate {
+            path: path.clone(),
+            node_type: "TextRun",
+            bbox: node.bbox,
+            column,
+        });
+    }
+
     let mut next_suppress = suppress;
     if !suppress && is_checkable(&node.node_type) {
         let label = node_type_label(&node.node_type);
@@ -389,6 +438,7 @@ fn walk(
             opts,
             overflow_out,
             flow_out,
+            text_out,
             has_content,
         );
     }
@@ -432,6 +482,7 @@ pub fn scan_page(
 ) -> PageAnomalies {
     let mut overflow = Vec::new();
     let mut flow = Vec::new();
+    let mut text = Vec::new();
     let mut has_content = false;
 
     if let Some(body) = find_body(root) {
@@ -445,11 +496,13 @@ pub fn scan_page(
             opts,
             &mut overflow,
             &mut flow,
+            &mut text,
             &mut has_content,
         );
     }
 
     let overlap = find_overlaps(&flow, opts);
+    let text_overlap = find_overlaps(&text, opts);
 
     // 문서 중간(첫·마지막 제외)이고 콘텐츠가 전혀 없을 때만 "가능성 신호"로 남긴다.
     let empty_page = if page_count >= 3 && page > 0 && page < page_count - 1 && !has_content {
@@ -462,6 +515,7 @@ pub fn scan_page(
         page,
         overflow,
         overlap,
+        text_overlap,
         empty_page,
     }
 }
@@ -490,9 +544,10 @@ use crate::schema_registry::ENVELOPE_SCHEMA_VERSION as SCHEMA_VERSION;
 const EXIT_OK: i32 = 0;
 const EXIT_RUNTIME: i32 = 1;
 const EXIT_USAGE: i32 = 2;
-/// `--strict` 가 확정 신호(overflow·overlap)를 하나라도 찾았을 때 내는 코드.
-/// `render_geom_diff::EXIT_REGRESSION` 과 같은 값 — "검출은 도구의 정상 동작"
-/// 이라는 같은 계약이다.
+/// `--strict` 가 확정 신호(overflow·overlap·text-overlap)를 하나라도 찾았을
+/// 때 내는 코드. `render_geom_diff::EXIT_REGRESSION` 과 같은 값 — "검출은
+/// 도구의 정상 동작"이라는 같은 계약이다. text-overlap 을 확정에 포함하는
+/// 선택은 모듈 머리말·`PageAnomalies::has_signal` 주석과 같다.
 const EXIT_ANOMALY: i32 = 3;
 
 struct CliOptions {
@@ -551,7 +606,9 @@ fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
 
     let path = path.ok_or_else(|| {
         "사용법: rhwp layout-anomaly <파일.hwp|파일.hwpx> [-p N] [--json] [--strict] \
-         [--overflow-tolerance PX] [--overlap-tolerance PX]"
+         [--overflow-tolerance PX] [--overlap-tolerance PX]\n\
+         판정: overflow / overlap(표·이미지·흐름 줄) / text-overlap(텍스트 런 bbox 교차) / empty_page\n\
+         기본 exit 0. --strict 는 overflow·overlap·text-overlap 확정 신호만 3 (empty_page 제외)"
             .to_string()
     })?;
     Ok(CliOptions {
@@ -600,6 +657,7 @@ fn page_json(p: &PageAnomalies) -> Value {
         "page": p.page,
         "overflow": p.overflow.iter().map(overflow_json).collect::<Vec<_>>(),
         "overlap": p.overlap.iter().map(overlap_json).collect::<Vec<_>>(),
+        "textOverlap": p.text_overlap.iter().map(overlap_json).collect::<Vec<_>>(),
         "emptyPage": p.empty_page.is_some(),
     })
 }
@@ -622,6 +680,7 @@ fn envelope(source: &str, doc: &DocAnomalies, opts: &CliOptions) -> Value {
             "strict": opts.strict,
             "overflowCount": doc.overflow_count(),
             "overlapCount": doc.overlap_count(),
+            "textOverlapCount": doc.text_overlap_count(),
             "emptyPageCount": doc.empty_page_count(),
             "hasSignal": doc.has_signal(),
             "pages": pages,
@@ -679,10 +738,11 @@ fn run_single(opts: &CliOptions) -> i32 {
         .collect();
 
     println!(
-        "쪽 수: {}  overflow: {}  overlap: {}  empty_page(가능성): {}",
+        "쪽 수: {}  overflow: {}  overlap: {}  text-overlap: {}  empty_page(가능성): {}",
         doc.page_count,
         doc.overflow_count(),
         doc.overlap_count(),
+        doc.text_overlap_count(),
         doc.empty_page_count()
     );
     if shown.is_empty() {
@@ -701,6 +761,12 @@ fn run_single(opts: &CliOptions) -> i32 {
         for o in &p.overlap {
             println!(
                 "  [OVERLAP]  page {:>3}  {:.2}x{:.2}px  {} ({}) x {} ({})",
+                p.page, o.overlap_w, o.overlap_h, o.path_a, o.type_a, o.path_b, o.type_b
+            );
+        }
+        for o in &p.text_overlap {
+            println!(
+                "  [TEXT-OVERLAP] page {:>3}  {:.2}x{:.2}px  {} ({}) x {} ({})",
                 p.page, o.overlap_w, o.overlap_h, o.path_a, o.type_a, o.path_b, o.type_b
             );
         }
@@ -799,6 +865,12 @@ mod tests {
         )
     }
 
+    fn text_run_at(text: &str, x: f64, y: f64, w: f64, h: f64) -> RenderNode {
+        let mut n = text_run(text);
+        n.bbox = BoundingBox::new(x, y, w, h);
+        n
+    }
+
     fn table(x: f64, y: f64, w: f64, h: f64, children: Vec<RenderNode>) -> RenderNode {
         let mut n = RenderNode::new(
             2,
@@ -893,9 +965,13 @@ mod tests {
     #[test]
     fn two_overlapping_lines_are_flagged() {
         let mut line_a = text_line(10.0, 10.0, 50.0, 12.0);
-        line_a.children.push(text_run("a"));
+        line_a
+            .children
+            .push(text_run_at("a", 10.0, 10.0, 50.0, 12.0));
         let mut line_b = text_line(15.0, 12.0, 50.0, 12.0); // line_a 와 상당 부분 겹침
-        line_b.children.push(text_run("b"));
+        line_b
+            .children
+            .push(text_run_at("b", 15.0, 12.0, 50.0, 12.0));
         let body = body_node(
             BoundingBox::new(0.0, 0.0, 200.0, 300.0),
             vec![line_a, line_b],
@@ -903,15 +979,22 @@ mod tests {
         let root = page_root(200.0, 300.0, body);
         let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
         assert_eq!(pa.overlap.len(), 1);
+        assert_eq!(pa.text_overlap.len(), 1);
+        assert_eq!(pa.text_overlap[0].type_a, "TextRun");
+        assert_eq!(pa.text_overlap[0].type_b, "TextRun");
         assert!(pa.has_signal());
     }
 
     #[test]
     fn adjacent_non_overlapping_lines_are_clean() {
         let mut line_a = text_line(10.0, 10.0, 50.0, 12.0);
-        line_a.children.push(text_run("a"));
+        line_a
+            .children
+            .push(text_run_at("a", 10.0, 10.0, 50.0, 12.0));
         let mut line_b = text_line(10.0, 22.0, 50.0, 12.0); // 바로 아래로 이어짐, 안 겹침
-        line_b.children.push(text_run("b"));
+        line_b
+            .children
+            .push(text_run_at("b", 10.0, 22.0, 50.0, 12.0));
         let body = body_node(
             BoundingBox::new(0.0, 0.0, 200.0, 300.0),
             vec![line_a, line_b],
@@ -919,6 +1002,7 @@ mod tests {
         let root = page_root(200.0, 300.0, body);
         let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
         assert!(pa.overlap.is_empty());
+        assert!(pa.text_overlap.is_empty());
     }
 
     #[test]
@@ -961,6 +1045,11 @@ mod tests {
         let root = page_root(200.0, 300.0, body);
         let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
         assert_eq!(pa.overlap.len(), 1);
+        assert!(
+            pa.text_overlap.is_empty(),
+            "도형끼리 겹침은 일반 overlap 이지 text-overlap 이 아니다: {:?}",
+            pa.text_overlap
+        );
     }
 
     #[test]
