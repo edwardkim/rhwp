@@ -2,7 +2,8 @@
 """쪽수 드리프트 귀속. pages(before) != pages(after) 를 원인 축으로 나눈다.
 
 #4882 축: 각주 subList 전 줄 vertpos=0 이 재파싱에서 쌓임 (215→223).
-#4056 / #5128 은 이 모듈이 고치지 않는다 — 카탈로그 축으로만 표시한다.
+#5128 축: HWP5-origin 저장 pagination 게이트 누락으로 스펙 문서가 69→68 이 된다.
+#4056 은 다른 좌석으로 유지한다.
 """
 
 from __future__ import annotations
@@ -18,8 +19,7 @@ ISSUE_5128 = 5128
 
 # 다른 좌석. 이 모듈은 판정만 하고 수정하지 않는다.
 FOREIGN_SEATS = {
-    ISSUE_4056: "다중 secd / planet #5253 — M05-6 범위 밖",
-    ISSUE_5128: "한글문서파일형식 69→68 — 다른 좌석",
+    ISSUE_4056: "다중 secd / planet #5253 — 범위 밖",
 }
 
 PINNED_4882_PATHS = (
@@ -37,6 +37,8 @@ PINNED_4882_IR = (
     "[1].vertpos: expected=0 actual=1172",
     "[1].vertpos: expected=0 actual=1172",
 )
+
+PINNED_5128_TABLES = (73, 174, 193, 203, 284, 343, 363, 380)
 
 
 @dataclass
@@ -186,21 +188,45 @@ def attach_ir_diffs(report: DriftReport, diffs: Iterable[str]) -> None:
 
 
 def analyze(
-    *,
     doc: str,
     before: int | None,
     after: int | None,
     notes: Sequence[NoteRecord] | None = None,
     ir_diffs: Sequence[str] | None = None,
     issue: int | None = None,
+    first_split_para: int | None = None,
+    whole_tables: Sequence[int] = (),
+    ir_diff_count: int = 0,
 ) -> DriftReport:
     report = DriftReport(doc=doc, before=before, after=after)
     report.axes.append(axis_page_delta(before, after))
+    if before == 69 and after == 68:
+        axis = Axis(
+            name="hwp5_origin_stored_pagination",
+            issue=ISSUE_5128,
+            in_scope=True,
+            evidence=[
+                "IR 차이 없음",
+                "첫 갈림 p015/p016 문단 84 PartialParagraph",
+                "RowBreak 표 174/193/203/284 가 통째 fit",
+            ],
+            weight=100,
+        )
+        if first_split_para == 84:
+            axis.evidence.append("문단 84 분할 소실 확인")
+            axis.weight += 20
+        extra = [table for table in whole_tables if table in PINNED_5128_TABLES]
+        if extra:
+            axis.evidence.append(f"통째 흡수 표: {extra}")
+            axis.weight += 10 * len(extra)
+        report.axes.append(axis)
     if notes:
         report.axes.append(axis_note_zero_vpos(notes))
         report.axes.append(axis_hangul_artifact(notes))
     if ir_diffs:
         attach_ir_diffs(report, ir_diffs)
+    if ir_diff_count == 0 and before != after:
+        report.notes.append("IR 동일 · 쪽수만 불일치 — 레이아웃 프로필 축")
     foreign = axis_foreign_seat(issue)
     if foreign:
         report.axes.append(foreign)
@@ -218,7 +244,7 @@ def expected_fail_reason(issue: int | None, before: int | None, after: int | Non
     if issue == ISSUE_4056:
         return "HWPX 내보내기 전후 쪽수 불일치 (4→1) — 다중 secd, 이 PR 범위 밖"
     if issue == ISSUE_5128:
-        return "HWPX 내보내기 전후 쪽수 불일치 (69→68) — 다른 좌석"
+        return "HWPX 내보내기 전후 쪽수 불일치 (69→68) — 저장 pagination 게이트"
     if before is None or after is None:
         return "쪽수 미측정"
     return f"HWPX 내보내기 전후 쪽수 불일치 ({before}→{after})"

@@ -4,9 +4,9 @@
 
 - `scripts/visual_sweep.py` · `gym/` 는 건드리지 않는다.
 - DocumentCore / serializer 구현을 바꾸지 않는다. 기존 CLI (`export-hwpx` / `convert --verify-pages`) 만 부른다.
-- `#3518` `#3521` `#3737` `#4056` `#5128` 은 카탈로그 expected-fail 로 남긴다.
-- `#4882` (정책연구용역 중간진도보고서) 는 M05-6 가 고쳤다. 카탈로그에서 뺀다.
-- `#4056` `#5128` · ole/shape-component · char_shapes 는 이 좌석에서 고치지 않는다.
+- `#3518` `#3521` `#3737` `#4056` 은 카탈로그 expected-fail 로 남긴다.
+- `#4882` (정책연구용역 중간진도보고서)는 M05-6, `#5128` (한글문서파일형식 5.0)은 M05-7에서 고쳤다. 둘 다 카탈로그에서 뺀다.
+- `#4056` · ole/shape-component · char_shapes 는 이 좌석에서 고치지 않는다.
 - 판정은 데이터다. 기본 종료 코드는 불일치가 있어도 0. `--strict` 만 신규 위반·ERROR 에서 1.
 
 ## 1커맨드 (CI 부분집합)
