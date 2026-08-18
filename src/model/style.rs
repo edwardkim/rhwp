@@ -184,11 +184,20 @@ pub struct CharShape {
 /// HWP5 바이너리 파서는 이미 100 을 폴백한다(`parser/doc_info.rs:542-545`) — 파생 Default 의
 /// 0 은 그 폴백과도 불일치였다.
 ///
-/// # 왜 `ratios`·`base_size` 는 그대로 두는가
+/// # 장평 `ratios` (#4161)
 ///
-/// 렌더러가 소비하는 필드다(`renderer/style_resolver.rs:341`,`:355`). 기본값을 바꾸면 렌더
-/// 회귀 검증 lane 이 필요해지므로 별도 이슈로 분리한다. `relative_sizes` 는 렌더 경로에서
-/// 참조가 0건이라(`document_core/queries/hidden_text.rs:267-287`) 이 변경의 렌더 영향은 없다.
+/// OWPML `ratio` 는 default="100", `xs:positiveInteger` [50,200] 이라 파생값 0 은 타입
+/// 수준에서 불법이고, HWP5 파서 폴백(`parser/doc_info.rs:528-532`)도 100 이다. 렌더러
+/// 폭 경로는 전부 `ratio > 0.0` 폴백이라 0→100 전환의 자체 렌더 산출은 동일하며,
+/// 저장 축(HWP5·HWPX·HML)의 스키마 불법값 방출만 사라진다.
+///
+/// # 왜 `base_size` 는 그대로 두는가
+///
+/// OWPML `height` 는 `xs:integer`(제약 없음, default=1000)라 0 이 스키마 합법이고,
+/// 실표본에서 기본값 base_size 가 소비되는 사례가 없다(#4161 stage1 §5). 반면 1000 으로
+/// 바꾸면 `doclang/adapter/inline.rs` 의 "폰트 정보 없음" sentinel, hidden-text 은닉
+/// 판정(0pt→10pt), 무가드 레이아웃 소비(`renderer/style_resolver.rs:341`) 세 축의 계약이
+/// 움직인다. "기본값 유래" 프로버넌스 설계가 필요한 별도 이슈로 남긴다.
 ///
 /// # 음영색 sentinel (#4155)
 ///
@@ -210,7 +219,8 @@ impl Default for CharShape {
         Self {
             raw_data: None,
             font_ids: [0; 7],
-            ratios: [0; 7],
+            // ↓ 파생값 0 은 OWPML 유효범위 50~200 밖 — positiveInteger 라 타입 수준 불법 (#4161)
+            ratios: [100; 7],
             spacings: [0; 7],
             // ↓ 이 한 줄만 파생값과 다르다 (파생값 0 은 OWPML 유효범위 10~250 밖)
             relative_sizes: [100; 7],
@@ -1144,18 +1154,18 @@ mod tests {
         assert_eq!(cs.underline_type, UnderlineType::None);
     }
 
-    /// `Default` 수동 구현이 파생값과 어긋나는 필드는 `relative_sizes`(#4141)와
-    /// `shade_color`(#4155) **둘뿐**임을 고정한다.
+    /// `Default` 수동 구현이 파생값과 어긋나는 필드는 `relative_sizes`(#4141),
+    /// `shade_color`(#4155), `ratios`(#4161) **셋뿐**임을 고정한다.
     ///
-    /// 이 비대칭은 의도된 것이다. 두 필드는 파생값이 각각 스펙 위반(relSz 유효범위 밖)과
-    /// 실제 색(검정)이라 저장 바이트에서 한컴을 깨뜨렸다. 반면 `ratios`·`base_size` 는
-    /// 렌더러가 소비하므로(`renderer/style_resolver.rs:341`,`:355`) 같이 고치면 렌더 회귀
-    /// 검증이 필요해진다. 그래서 별도 이슈로 남겼다 — 이 테스트가 그 경계를 읽히게 한다.
+    /// 이 비대칭은 의도된 것이다. 세 필드는 파생값이 각각 스펙 위반(relSz·ratio 유효범위
+    /// 밖)과 실제 색(검정)이라 저장 바이트에서 소비자를 깨뜨렸다. 반면 `base_size` 는
+    /// 파생값 0 이 스키마 합법(`height` 는 xs:integer)이고 손실 보고·은닉 판정·레이아웃
+    /// 계약이 그 값에 걸려 있어 남겼다 — 이 테스트가 그 경계를 읽히게 한다.
     #[test]
-    fn char_shape_default_matches_spec_only_for_relative_sizes_and_shade() {
+    fn char_shape_default_matches_spec_except_base_size() {
         let cs = CharShape::default();
 
-        // 이번에 고친 것 — OWPML relSz default="100", 유효범위 10~250
+        // #4141 — OWPML relSz default="100", 유효범위 10~250
         // (mydocs/manual/OWPML SCHEMA/Header XML schema.xml:716-728)
         assert_eq!(
             cs.relative_sizes, [100; 7],
@@ -1163,15 +1173,22 @@ mod tests {
              `크기 × 상대크기%` 로 해석해 전 본문을 0.1pt 로 그린다 (#4141)"
         );
 
-        // 의도적으로 고치지 않은 것 — 렌더러가 소비하므로 별도 이슈
+        // #4161 — OWPML ratio default="100", positiveInteger 유효범위 50~200
+        // (mydocs/manual/OWPML SCHEMA/Header XML schema.xml:590-611)
         assert_eq!(
-            cs.ratios, [0; 7],
-            "장평 기본값을 바꾸려면 렌더 회귀 검증(Native Skia·시각 증적)이 필요하다. \
-             #4141 범위 밖이며 별도 이슈로 다룬다 — 무심코 바꾸지 마라"
+            cs.ratios, [100; 7],
+            "장평 기본값은 OWPML 기본값 100 이어야 한다. 0 은 positiveInteger [50,200] \
+             밖의 스키마 불법값이고, 이 값을 신뢰하는 소비자는 장평 0 = 글자 폭 0 을 \
+             받는다 (#4161)"
         );
+
+        // 의도적으로 고치지 않은 것 — 0 이 스키마 합법(xs:integer)이고, 1000 으로 바꾸면
+        // doclang 손실 보고 sentinel(`doclang/adapter/inline.rs`)·hidden-text 은닉
+        // 판정(0pt→10pt)·무가드 레이아웃 소비 세 축의 계약이 움직인다 (#4161 stage1 §5).
         assert_eq!(
             cs.base_size, 0,
-            "기준 크기도 렌더러가 소비한다 — 위와 같은 이유"
+            "기준 크기 기본값을 바꾸려면 '기본값 유래' 프로버넌스 설계가 먼저다 — \
+             #4161 범위 밖이며 별도 이슈로 다룬다. 무심코 바꾸지 마라"
         );
 
         // 0 이 스펙상 유효값이라 손대지 않는 것

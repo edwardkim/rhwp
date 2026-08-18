@@ -1790,7 +1790,7 @@
       "id": "src/model/style.rs::tests#1",
       "file": "src/model/style.rs",
       "sourcePath": "src/model/style.rs",
-      "line": 1108,
+      "line": 1118,
       "module": "tests",
       "testAttributes": 6,
       "tier": "white_box",
