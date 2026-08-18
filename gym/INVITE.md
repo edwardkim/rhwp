@@ -83,3 +83,91 @@ python gym/tools/leaderboard.py verify
 
 친구를 부르는 이유는 순위 경쟁을 키우기 위해서가 아니라, 더 많은 눈이 같은
 사다리를 밟을수록 그 사다리가 더 단단해지기 때문이다.
+
+---
+
+## 누구에게 어떤 첫 줄을 주나
+
+초대는 안내다. 손님 종류마다 첫 줄만 다르게 적는다. 채점 규칙은 같다.
+
+### 사람 (부모님·친구)
+
+키 제한 없는 입문존만 권한다.
+
+```bash
+python gym/score.py --agent 부모님 --profile family
+```
+
+5분 안내는 [tutorial/README.md](tutorial/README.md), 표는
+[tutorial/01-admission.md](tutorial/01-admission.md), Windows 는
+[tutorial/19-windows.md](tutorial/19-windows.md). 보스존 링크를 같이
+보내지 마라. 담력은 손님이 고른다.
+
+### 다른 LLM 에이전트
+
+자기 바이너리, 자기 키. 합류 3줄은 초대 봉투의 `join` 과 같다. 휴게실
+지도 [tutorial/README.md](tutorial/README.md) 와 테마파크
+[PARK.md](PARK.md) 를 같이 보낸다. 프로파일 일곱 이름은
+[tutorial/06-profiles.md](tutorial/06-profiles.md).
+
+에이전트에게 "기준 풀이를 베끼라"고 하지 마라. 채점은 통과해도 측정이
+바뀐다. [tutorial/15-scoring-honesty.md](tutorial/15-scoring-honesty.md).
+
+### CI · 봇
+
+같은 세 줄이다. 비밀키(`gym/leaderboard/keys/`)를 로그·아티팩트에
+올리지 않는다. `verify` 가 실패하면 원장을 고치지 말고 그 자리를
+읽는다. 폭로가 점이다.
+
+## 판 지문을 손으로 맞춰 보기
+
+`verify` 한 줄이 정석이다. 손님이 "무엇이 같아야 하는가"를 알고
+싶을 때만 아래를 본다. 새 검증 명령을 만들지 않는다.
+
+1. `gym/leaderboard/invite.json` 의 `fingerprint` 를 연다.
+2. `python gym/tools/leaderboard.py verify` 가 통과하는지 본다.
+3. 원장 줄 수·멤버 수가 초대장이 말한 `ledgerEntries` · `members` 와
+   같은지 눈으로 본다.
+4. 다르면 초대장이 오래된 것이다. 보내는 쪽이 `invite` 를 다시 돌린다.
+
+지문 칸의 뜻은 위 표와 같다. 휴게실 번역은
+[tutorial/13-invite.md](tutorial/13-invite.md).
+
+## 흔한 초대 실수
+
+1. **보내는 쪽이 손님 이름으로 `attest` 한다.** 대리 등재다.
+   keyring 이 막거나, 막지 못해도 손님의 키가 아니다. 손님 스스로
+   등재한다.
+2. **초대장이 있어야 문이 열린다고 적는다.** 거짓이다. 문은 이미
+   열려 있다.
+3. **판 지문을 비밀처럼 보낸다.** 지문은 커밋된 파일의 요약이다.
+   검증하라고 주는 것이다.
+4. **손님에게 `maintainer` 를 첫 프로파일로 준다.** 전 pack 이라
+   unavailable 줄이 섞이기 쉽다. 사람은 `family`, 에이전트는
+   `family` 또는 `starter`.
+5. **비밀키를 초대장에 붙인다.** `invite.json` 에는 비밀이 없다.
+   붙여서도 안 된다.
+
+## 가족과 같이 탈 때
+
+`--profile family` 는 `casual-rides` 만 고른다. 한 집에 이름만 다르게
+쓰면 제출 폴더가 갈린다.
+
+```bash
+python gym/score.py --agent 부모님 --profile family
+python gym/score.py --agent 나 --profile family
+python gym/tools/leaderboard.py attest --agent 부모님
+python gym/tools/leaderboard.py attest --agent 나
+```
+
+점수를 합치지 마라. 프로파일은 묶음을 고를 뿐 점수를 뭉치지 않는다.
+두 사람의 4/4 는 두 줄의 순위이지 8점이 아니다.
+
+## 초대장이 바꾸지 않는 것
+
+- `gym/core/checks.py` 채점 연산자
+- pack 과제 JSON
+- `admission` 의 allow/deny 규칙
+- 원장에 이미 봉인된 줄 (invite 는 `invite.json` 만 새로 쓴다)
+
+초대는 문을 가리킨다. 문을 새로 달지 않는다.
