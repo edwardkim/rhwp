@@ -166,6 +166,21 @@ impl From<RenderBackendError> for HwpError {
 /// 출력물(문자열·바이트열)의 소유권을 넘기기 위해서다. 대신 trait object 로는
 /// `finish` 를 부를 수 없으므로, `Box<dyn RenderBackend<..>>` 를 위해
 /// [`RenderBackend::finish_boxed`] 를 함께 둔다.
+///
+/// # 새 어댑터를 붙일 때
+///
+/// 네 번째 구체 어댑터(직접 PDF 등)를 쓰는 절차의 정본은
+/// `mydocs/manual/render_backend_adapter_guide.md` 다. 이 trait 만으로
+/// 요약하면:
+///
+/// 1. `src/renderer/**` 는 고치지 않고 기존 공개 API 를 호출만 한다.
+/// 2. [`super::PageState`] 로 생명주기를 판정한다. 백엔드마다 다른 오류를 내지 않는다.
+/// 3. [`BackendCapabilities`] 가 광고한 능력만 최종 산출물에 남긴다 (M06-3).
+///    얇게 `LayerNode::leaf` 로 평탄화하면 `clipping` 을 켜지 않는다.
+/// 4. 선택 피처가 꺼져도 이 타입은 컴파일되고 생명주기는 지키며, 능력 선언이
+///    빈 산출물을 숨기지 않는다.
+/// 5. 정직성 대조는 기존 `render_backend` 단위 시험에 접고, 상호 diff 는
+///    M06-4 하네스에 이름을 등재한다.
 pub trait RenderBackend {
     /// 이 백엔드가 최종적으로 내놓는 산출물 타입(예: SVG `String`, PDF `Vec<u8>`).
     type Output;

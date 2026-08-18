@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/tech/render_backend.md
-last_verified: 2026-08-16
+last_verified: 2026-08-18
 ---
 
 # 출력 백엔드 공통 계약 — `RenderBackend`
@@ -202,6 +202,11 @@ pub struct BackendCapabilities {
 | `SvgBackend` (`svg_adapter.rs`) | `String` | **레퍼런스 어댑터.** 기존 `SvgLayerRenderer` 를 호출만 해서 진짜 SVG 문서를 낸다. 계약이 실제 백엔드를 감쌀 수 있음을 증명한다. |
 | `TraceBackend` (`backends.rs`) | `String` | op 시퀀스를 결정적 문자열로 기록. **백엔드 간 정합 시험의 기준선.** |
 | `NullBackend` (`backends.rs`) | `DrawStats` | 그린 op 를 종류별로 세는 계측기. 그리기 비용 없이 조판 산출량을 잰다. |
+| `PngBackend` (`png_adapter.rs`) | `Vec<u8>` | M06-1. 기존 PNG 래스터 경로를 감싼다. devel 에는 없을 수 있다. |
+| `SkiaBackend` (`skia_adapter.rs`) | `RasterRenderOutput` | M06-2. 기존 레이어 래스터 경로를 감싼다. devel 에는 없을 수 있다. |
+
+네 번째 구체 어댑터(직접 PDF 등)를 붙이는 절차·능력 정직성·피처 게이트·
+시험(M06-3/M06-4)은 [어댑터 작성 가이드](../manual/render_backend_adapter_guide.md) 다.
 
 ### 4.1 `TraceBackend` 가 왜 그 자체로 값이 있나
 
@@ -305,7 +310,9 @@ let png: RasterRenderOutput = backend.finish()?;
 
 기존 코드를 읽을 필요 없이 `RenderBackend` 만 구현하고 `replay_page` 로 구동한다.
 `NullBackend` 로 생명주기부터 확인하고, `TraceBackend` 기준선으로 입력이 같음을
-고정한 뒤 산출물을 검증하는 것이 권장 순서다.
+고정한 뒤 산출물을 검증하는 것이 권장 순서다. 파일 배치·능력 정직성·피처
+게이트·M06-3/M06-4 시험 훅의 체크리스트는
+[어댑터 작성 가이드](../manual/render_backend_adapter_guide.md) 다.
 
 ## 6. 비범위
 
