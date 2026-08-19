@@ -4,7 +4,7 @@
 - 작성자: `kevin9327`
 - base: `devel`
 - 원 head: `4e8c179106cba1e5dda79a75e064a64392eb2a4a`
-- 원본 적용 SHA: `0016c736a13f832e7a1f7f19e988bf141711d431`
+- 원본 적용 SHA: `2afd526a6dbbb687c95ad2a9f01b4002b7143189`
 - 누적 검토 branch: `review/kevin9327-q-cli-round2-20260819`
 
 ## 결론

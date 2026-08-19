@@ -4,7 +4,7 @@
 - 작성자: `kevin9327`
 - base: `devel`
 - 원 head: `8002d658969cdbc65847f954ac36a2de77b42098`
-- 원본 적용 SHA: `62d2c046b76d46e6dbe98d7e9099c89e0b682899`
+- 원본 적용 SHA: `b1ce8f6973dd8687802fa9255a6445fec231d5d3`
 - 누적 검토 branch: `review/kevin9327-q-cli-round2-20260819`
 
 ## 결론
@@ -14,7 +14,7 @@
 ## 검토 범위
 
 - `rhwp-q-section-starts`의 JSON 봉투, 구역 시작 문단 배열, 잘못된 플래그의 사용법 종료 코드 계약을 `tests/cases` integration contract로 확인했다.
-- 최신 `upstream/devel@14e4d01af` 위에 원 작성자 커밋을 `-x`로 적용해 계보를 보존했다.
+- 최신 `upstream/devel@c2a36398d` 위에 원 작성자 커밋을 `-x`로 적용해 계보를 보존했다.
 
 ## 검증
 

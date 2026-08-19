@@ -4,7 +4,7 @@
 - 작성자: `kevin9327`
 - base: `devel`
 - 원 head: `020b784749a305ac91cc040982dabb24a115391c`
-- 원본 적용 SHA: `cda599d6dba7e41fa2c622fdef491ba854d5a75a`
+- 원본 적용 SHA: `730ef07b05b5e6827987243bb89cc4e2a90f0904`
 - 누적 검토 branch: `review/kevin9327-q-cli-round2-20260819`
 
 ## 결론
@@ -14,7 +14,7 @@
 ## 검토 범위
 
 - `cycle` 배열과 `cycleCount` 봉투, 알 수 없는 플래그의 종료 코드 2, 뮤테이터 비호출 계약을 integration test로 확인했다.
-- 최신 `upstream/devel@14e4d01af` 위에 원 작성자 커밋을 `-x`로 적용해 계보를 보존했다.
+- 최신 `upstream/devel@c2a36398d` 위에 원 작성자 커밋을 `-x`로 적용해 계보를 보존했다.
 
 ## 검증
 

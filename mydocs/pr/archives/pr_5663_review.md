@@ -4,7 +4,7 @@
 - 작성자: `kevin9327`
 - base: `devel`
 - 원 head: `6314db096bc11fa1b3f6c67428de059bdfe932be`
-- 원본 적용 SHA: `883137cf911418076b5c541e4f117a1724e7cb86`
+- 원본 적용 SHA: `12ab7afcbcd0cff92dd33b8caddf7f7d77b6d8a6`
 - 누적 검토 branch: `review/kevin9327-q-cli-round2-20260819`
 
 ## 결론
@@ -14,7 +14,7 @@
 ## 검토 범위
 
 - `--list`와 `--para` 입력, `paraShape` JSON 봉투, 빈 결과와 사용법 오류의 종료 코드 계약을 `tests/cases`에서 확인했다.
-- 최신 `upstream/devel@14e4d01af` 위에 원 작성자 커밋을 `-x`로 적용해 계보를 보존했다.
+- 최신 `upstream/devel@c2a36398d` 위에 원 작성자 커밋을 `-x`로 적용해 계보를 보존했다.
 
 ## 검증
 

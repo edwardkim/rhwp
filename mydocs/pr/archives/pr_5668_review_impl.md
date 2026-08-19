@@ -8,7 +8,7 @@ source-prs: [5659, 5662, 5663, 5664, 5668]
 
 ## 적용 순서
 
-1. 최신 `upstream/devel@14e4d01af`에서 `review/kevin9327-q-cli-round2-20260819`를 만들었다.
+1. 최신 `upstream/devel@c2a36398d`에서 `review/kevin9327-q-cli-round2-20260819`를 만들었다.
 2. #5659, #5662, #5663, #5664, #5668 head를 순서대로 `git cherry-pick -x`로 적용했다.
 3. 원 작성자·원본 SHA가 남은 누적 커밋 위에서 q-kit 하위 명령 help 계약을 메인터너 보정으로 추가했다.
 
