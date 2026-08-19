@@ -17,6 +17,10 @@ pr: 5617
 
 저장소 정책은 새 source-side `#[cfg(test)]`를 금지한다. titleMark의 serializer 의미를 약화하지 않고, 공용 integration harness에서 run 경계의 소유·비소유 두 경우를 검증하도록 바꿨다.
 
+## CI preflight 보정
+
+통합 PR의 `agent_preflight`가 `core-pages`, `dump-extents`, `measure-width`가 capabilities에는 있으나 top-level `rhwp --help`에는 없음을 감지했다. 세 명령은 이미 dispatch와 capabilities에 등록돼 있었으므로, `print_help()`에 사용법과 설명만 추가했다. 전용 review binary로 다시 실행한 preflight에서 capabilities/help 98개 명령의 상호 커버가 통과했다.
+
 ## 산출물 정책
 
 `rust-test-suite-manifest --prepare`가 만든 generated suite와 manifest는 review worktree 검증 산출물이며 PR에 stage하지 않았다.
