@@ -171,6 +171,17 @@ fn decode_hwp3_ksc_hanja(ch: u16) -> Option<char> {
 /// 하드코딩 표를 **먼저** 본 뒤 규칙(기호·한자 완성형 좌표)을 적용한다. 순서가 중요하다 —
 /// 예컨대 회사명 graphic 0x37C0..0x37C5 는 기호 규칙으로는 가타카나가 되어 버린다.
 fn decode_hwp3_extra(ch: u16) -> Option<char> {
+    // [#5555] 라틴 확장(Latin-1 Supplement) — HWP3 은 이 구간 문자를 유니코드 값
+    // 그대로(0x00A0..=0x00FF) hchar 에 담는다. 07615 원시 실측: ü(0x00FC)·ä(0x00E4)·
+    // ö(0x00F6)·ß(0x00DF)·Ö(0x00D6)이 "Tübingen"·"Europäischer"·"Götz"·
+    // "ausschließliche"·"DÖV" 문맥에서 원시값으로 확인되고, 한글 SaveAs 정답지의
+    // 8문자 분포(ü·ö·ä·ß·Ö·Ü·Ä·é)와 정합한다 — 실측 8코드 전부 항등이라 구간
+    // 항등 통과가 근거를 갖는다. 매핑이 없으면 '?' → 파서가 조용히 버려
+    // "für"→"fr" 처럼 글자가 삭제된다. 사적 따옴표(0x0081/0x0082)는 구간 밖이라
+    // 아래 하드코딩이 그대로 담당한다.
+    if (0x00A0..=0x00FF).contains(&ch) {
+        return char::from_u32(ch as u32);
+    }
     // [Task #877 Stage 3] 로마숫자 대문자 Ⅰ~Ⅹ: 0x3590~0x3599 → U+2160~U+2169.
     // sample16 (hwp3-sample16.hwp) 의 cross-ref 로 도출. 한컴 HWP5 변환본의
     // paragraph 26/31/36/44 ("Ⅰ. 사업개요", "Ⅱ. 제안 일반사항", "Ⅲ ...", "Ⅳ ...") 정합.
