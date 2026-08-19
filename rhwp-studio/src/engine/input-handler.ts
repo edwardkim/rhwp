@@ -60,6 +60,21 @@ const DOCUMENT_PAGINATION_INITIAL_START_DELAY_MS = 100;
 const DOCUMENT_PAGINATION_RESTART_COALESCE_DELAY_MS = 200;
 // 첫 fragment 하나 뒤 다음 입력과 후속 step이 겹치지 않게 하는 짧은 settle gap.
 const DOCUMENT_PAGINATION_POST_FIRST_STEP_DELAY_MS = 25;
+
+export class DocumentAgentRenderCommitError extends Error {
+  readonly code = 'RENDER_FAILED';
+  readonly recovered: boolean;
+  override readonly cause: unknown;
+
+  constructor(cause: unknown, recovered: boolean) {
+    super(recovered
+      ? 'document-agent render 실패 후 snapshot을 복구했습니다.'
+      : 'document-agent render 실패 후 snapshot 복구도 실패했습니다.');
+    this.name = 'DocumentAgentRenderCommitError';
+    this.recovered = recovered;
+    this.cause = cause;
+  }
+}
 /**
  * [#3412] idle 자동 flush 대상 문서 크기 상한.
  *
@@ -2704,6 +2719,72 @@ export class InputHandler {
     }
   }
 
+  /**
+   * document-agent 전용 two-phase snapshot 경로.
+   *
+   * 기존 executeOperation은 history commit 직후 document event로 비동기 render를 예약한다.
+   * exact command는 host 응답 전에 실제 visible page render가 성공해야 하므로, snapshot을
+   * history에 올린 뒤 strict render를 먼저 기다리고 성공할 때만 mutation event를 commit한다.
+   */
+  async executeDocumentAgentOperation(
+    desc: Extract<OperationDescriptor, { kind: 'snapshot' }>,
+    render: () => Promise<void>,
+  ): Promise<void> {
+    if (!this.isOperationAllowedInEditMode(desc)) {
+      throw new Error('현재 편집 모드에서는 document-agent snapshot을 실행할 수 없습니다.');
+    }
+    const cursorBefore = this.cursor.getPosition();
+    const command = new SnapshotCommand(
+      desc.operationType,
+      cursorBefore,
+      cursorBefore,
+      desc.operation,
+    );
+    const newPos = this.history.execute(command, this.wasm);
+    if (command.isNoOp()) {
+      throw new Error('document-agent snapshot이 mutation 없이 종료되었습니다.');
+    }
+    this.cursor.moveTo(newPos);
+    this.cursor.resetPreferredX();
+    this.pendingFocusedPagePatch = null;
+    this.lastCellKey = null;
+    this.protectedCellHitCache = null;
+    this.clearTableResizeRuntimeCache();
+
+    try {
+      await render();
+      this.updateCaret();
+    } catch (renderError) {
+      try {
+        const restored = this.history.rollbackUncommittedSnapshot(command.type, this.wasm);
+        if (!restored) throw new Error('복구할 최신 snapshot을 찾을 수 없습니다.');
+        this.cursor.moveTo(restored);
+        this.cursor.resetPreferredX();
+        await render();
+        this.updateCaret();
+      } catch (rollbackError) {
+        throw new DocumentAgentRenderCommitError(
+          new AggregateError([renderError, rollbackError]),
+          false,
+        );
+      }
+      throw new DocumentAgentRenderCommitError(renderError, true);
+    }
+
+    // commit 통지는 strict render 뒤에만 낸다. EventBus는 모든 subscriber를 실행한 뒤 첫
+    // 예외를 되던지므로, 개별 observer 실패가 이미 성공한 문서 transaction을 뒤집지 않게 한다.
+    try {
+      this.eventBus.emit('document-mutated', 'document-agent');
+    } catch (error) {
+      console.error('[InputHandler] document-agent mutation observer 실패:', error);
+    }
+    try {
+      this.eventBus.emit('document-changed', 'document-agent-rendered');
+    } catch (error) {
+      console.error('[InputHandler] document-agent change observer 실패:', error);
+    }
+  }
+
   /** Backspace 처리 */
   private handleBackspace(pos: DocumentPosition, inCell: boolean): void {
     _text.handleBackspace.call(this, pos, inCell);
@@ -4037,6 +4118,45 @@ export class InputHandler {
     }
     this.focusTextarea();
     return false;
+  }
+
+  /**
+   * 문서 에이전트의 exact body paragraph target을 선택하고 해당 쪽을 뷰포트 중앙에 둔다.
+   * 문서를 바꾸지 않는 navigation 전용 경계이며 셀·각주·머리말 좌표는 받지 않는다.
+   */
+  focusBodyParagraph(section: number, paragraph: number, length: number): boolean {
+    if (!Number.isSafeInteger(section) || section < 0
+        || !Number.isSafeInteger(paragraph) || paragraph < 0
+        || !Number.isSafeInteger(length) || length < 0) return false;
+    try {
+      if (this.wasm.getParagraphLength(section, paragraph) !== length) return false;
+      this.wasm.getCursorRect(section, paragraph, 0);
+      this.wasm.getCursorRect(section, paragraph, length);
+
+      this.exitFootnoteModeForBodyNavigation();
+      this.cursor.clearSelection();
+      this.cursor.moveTo({ sectionIndex: section, paragraphIndex: paragraph, charOffset: 0 });
+      this.cursor.setAnchor();
+      this.cursor.moveTo({ sectionIndex: section, paragraphIndex: paragraph, charOffset: length });
+      this.cursor.resetPreferredX();
+      this.active = true;
+      this.updateCaret(true);
+      this.focusTextarea();
+
+      const rect = this.cursor.getRect();
+      if (rect) {
+        const zoom = this.viewportManager.getZoom();
+        const centerY = this.virtualScroll.getPageOffset(rect.pageIndex) + rect.y * zoom;
+        const maxScrollTop = Math.max(0, this.container.scrollHeight - this.container.clientHeight);
+        this.container.scrollTop = Math.max(
+          0,
+          Math.min(maxScrollTop, centerY - this.container.clientHeight / 2),
+        );
+      }
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /** 현재 커서 위치의 누름틀 필드와 내용을 제거한다. */

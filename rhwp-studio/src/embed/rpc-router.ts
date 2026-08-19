@@ -1,5 +1,20 @@
 import type { HmlSaveState } from '../core/hml-save-capability.ts';
 import type { EmbedFontDecisionTraceV1 } from '../core/font-decision-trace.ts';
+import {
+  assertEmptyParams,
+  assertOnlyParam,
+  parseApplyTextCommand,
+  parseBodyParagraphTarget,
+  parseRevertTextCommand,
+} from '../document-agent/contract.ts';
+import type {
+  RhwpApplyTextCommandV1,
+  RhwpBodyParagraphTargetV1,
+  RhwpDocumentStateV1,
+  RhwpRevertTextCommandV1,
+  RhwpSelectionContextV1,
+  RhwpTextCommandReceiptV1,
+} from '../document-agent/types.ts';
 import type {
   CanvasKitRenderModeRequest,
   CanvasKitSurfaceRequest,
@@ -31,6 +46,11 @@ export interface EmbedRpcHandlers {
   getHmlSaveState(): Promise<HmlSaveState>;
   exportHwpVerify(): Promise<unknown>;
   notifySaved(fileName?: string): Promise<EmbedNotifySavedResult>;
+  getDocumentState(): Promise<RhwpDocumentStateV1>;
+  getSelectionContext(): Promise<RhwpSelectionContextV1>;
+  applyTextCommand(command: RhwpApplyTextCommandV1): Promise<RhwpTextCommandReceiptV1>;
+  revertTextCommand(command: RhwpRevertTextCommandV1): Promise<RhwpTextCommandReceiptV1>;
+  focusTarget(target: RhwpBodyParagraphTargetV1): Promise<{ focused: boolean; page: number }>;
 
   // ── 브리지 확장 (P4) ────────────────────────────────────
   // 자동화·플러그인·창 제어. 부모는 **구조화 복제 가능한 값만** 보낼 수 있으므로 함수를 받는
@@ -150,6 +170,21 @@ export async function routeEmbedRequest(
         ? params.fileName
         : undefined,
     );
+    case 'getDocumentState':
+      assertEmptyParams(params, 'getDocumentState params');
+      return handlers.getDocumentState();
+    case 'getSelectionContext':
+      assertEmptyParams(params, 'getSelectionContext params');
+      return handlers.getSelectionContext();
+    case 'applyTextCommand': return handlers.applyTextCommand(parseApplyTextCommand(
+      assertOnlyParam(params, 'command', 'applyTextCommand params'),
+    ));
+    case 'revertTextCommand': return handlers.revertTextCommand(parseRevertTextCommand(
+      assertOnlyParam(params, 'command', 'revertTextCommand params'),
+    ));
+    case 'focusTarget': return handlers.focusTarget(parseBodyParagraphTarget(
+      assertOnlyParam(params, 'target', 'focusTarget params'),
+    ));
     // ── 브리지 확장 (P4) ──────────────────────────────────
     case 'automation.list': return handlers.automationList();
     case 'automation.menuModel': return handlers.automationMenuModel();

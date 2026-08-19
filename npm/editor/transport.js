@@ -5,6 +5,11 @@ const CAPABILITIES = [
   'renderer-diagnostics-v1',
   'font-decision-trace-v1',
   'notify-saved-v1',
+  'document-state-v1',
+  'selection-context-v1',
+  'document-agent-command-v1',
+  'target-navigation-v1',
+  'document-change-events-v1',
 ];
 const LONG_RUNNING_METHODS = new Set([
   'loadFile', 'getFontDecisionTrace', 'exportHwp', 'exportHwpVerify', 'exportHwpx', 'exportHml',
@@ -46,8 +51,17 @@ function isResponseEnvelope(message, legacy, sessionId) {
   const hasResult = Object.prototype.hasOwnProperty.call(message, 'result');
   const hasError = Object.prototype.hasOwnProperty.call(message, 'error');
   if (hasResult === hasError) return false;
-  return !hasError || (typeof message.error?.code === 'string'
-    && typeof message.error?.message === 'string');
+  const expectedEnvelopeKeys = ['id', hasError ? 'error' : 'result', 'sessionId', 'type', 'version'].sort();
+  const envelopeKeys = Object.keys(message).sort();
+  if (envelopeKeys.length !== expectedEnvelopeKeys.length
+      || envelopeKeys.some((key, index) => key !== expectedEnvelopeKeys[index])) return false;
+  if (!hasError) return true;
+  if (typeof message.error?.code !== 'string' || typeof message.error?.message !== 'string'
+      || (message.error.recovered !== undefined && typeof message.error.recovered !== 'boolean')) {
+    return false;
+  }
+  const allowedErrorKeys = ['code', 'message', 'recovered', 'supportedVersions'];
+  return Object.keys(message.error).every(key => allowedErrorKeys.includes(key));
 }
 
 export class EditorTransport {
@@ -64,6 +78,7 @@ export class EditorTransport {
     this._sessionId = sessionId();
     this._nextId = 0;
     this._pending = new Map();
+    this._listeners = new Map();
     this._port = null;
     this._peerCapabilities = new Set();
     this._legacy = false;
@@ -115,6 +130,16 @@ export class EditorTransport {
     return this._peerCapabilities.has(capability);
   }
 
+  on(event, listener) {
+    if (this._destroyed) throw new Error('Editor destroyed');
+    if (typeof event !== 'string' || typeof listener !== 'function') {
+      throw new TypeError('event and listener are required');
+    }
+    if (!this._listeners.has(event)) this._listeners.set(event, new Set());
+    this._listeners.get(event).add(listener);
+    return () => this._listeners.get(event)?.delete(listener);
+  }
+
   destroy() {
     if (this._destroyed) return;
     this._destroyed = true;
@@ -128,6 +153,7 @@ export class EditorTransport {
       pending.reject(new Error('Editor destroyed'));
     }
     this._pending.clear();
+    this._listeners.clear();
   }
 
   _send(message, transfer) {
@@ -150,6 +176,20 @@ export class EditorTransport {
       this._connectResolve = null;
       this._connectReject = null;
       resolve?.();
+      return;
+    }
+    if (message?.type === 'rhwp-event') {
+      const keys = Object.keys(message).sort();
+      const expectedKeys = ['event', 'payload', 'sessionId', 'type', 'version'];
+      if (message.version !== PROTOCOL_VERSION
+          || message.sessionId !== this._sessionId
+          || !this._peerCapabilities.has('document-change-events-v1')
+          || keys.length !== expectedKeys.length
+          || keys.some((key, index) => key !== expectedKeys[index])
+          || typeof message.event !== 'string') return;
+      for (const listener of this._listeners.get(message.event) || []) {
+        try { listener(message.payload); } catch { /* 한 listener가 다른 listener를 막지 않는다. */ }
+      }
       return;
     }
     if (message?.type === 'rhwp-connect-error'
@@ -197,6 +237,7 @@ export class EditorTransport {
     if (message.error) {
       const error = new Error(message.error.message || message.error);
       if (message.error.code) error.code = message.error.code;
+      if (typeof message.error.recovered === 'boolean') error.recovered = message.error.recovered;
       pending.reject(error);
     }
     else pending.resolve(message.result);

@@ -10,6 +10,17 @@
  */
 
 import { EditorTransport } from './transport.js';
+import {
+  assertCapability,
+  validateApplyTextCommand,
+  validateBodyParagraphTarget,
+  validateDocumentState,
+  validateDocumentChangedEvent,
+  validateFocusTargetResult,
+  validateRevertTextCommand,
+  validateSelectionContext,
+  validateTextCommandReceipt,
+} from './document-agent-contract.js';
 
 const DEFAULT_STUDIO_URL = 'https://edwardkim.github.io/rhwp/';
 
@@ -87,6 +98,10 @@ export class RhwpEditor {
   constructor(iframe, transport) {
     this._iframe = iframe;
     this._transport = transport;
+    this._documentChangedListeners = new Set();
+    this._offDocumentChanged = null;
+    this._lastDocumentEpoch = null;
+    this._lastDocumentChangeSeq = null;
   }
 
   /**
@@ -132,12 +147,15 @@ export class RhwpEditor {
    * ```
    */
   async loadFile(data, fileName = 'document.hwp', options = {}) {
-    return this._request('loadFile', {
+    const result = await this._request('loadFile', {
       data,
       fileName,
       skipUnsavedGuard: options.skipUnsavedGuard === true,
       suppressDialogs: options.suppressDialogs === undefined || options.suppressDialogs === true,
     });
+    this._lastDocumentEpoch = null;
+    this._lastDocumentChangeSeq = null;
+    return result;
   }
 
   /**
@@ -259,6 +277,100 @@ export class RhwpEditor {
     return this._request('notifySaved', params);
   }
 
+  /** 현재 문서의 에이전트 명령 fence와 SHA-256 상태를 반환합니다. */
+  async getDocumentState() {
+    assertCapability(this._transport, 'document-state-v1');
+    const state = validateDocumentState(await this._request('getDocumentState'));
+    this._rememberDocumentVersion(state.documentEpoch, state.changeSeq);
+    return state;
+  }
+
+  /** 현재 캐럿/선택을 body paragraph exact target으로 정규화해 반환합니다. */
+  async getSelectionContext() {
+    assertCapability(this._transport, 'selection-context-v1');
+    const selection = validateSelectionContext(await this._request('getSelectionContext'));
+    this._rememberDocumentVersion(selection.documentEpoch, selection.changeSeq);
+    return selection;
+  }
+
+  /** exact preimage fence를 검증하고 한 Studio 트랜잭션으로 문단 전체를 교체합니다. */
+  async applyTextCommand(command) {
+    assertCapability(this._transport, 'document-agent-command-v1');
+    const validCommand = validateApplyTextCommand(command);
+    const receipt = validateTextCommandReceipt(await this._request('applyTextCommand', {
+      command: validCommand,
+    }));
+    this._rememberDocumentVersion(receipt.documentEpoch, receipt.afterChangeSeq);
+    return receipt;
+  }
+
+  /** 가장 최근에 성공한 exact command를 한 Studio 트랜잭션으로 되돌립니다. */
+  async revertTextCommand(command) {
+    assertCapability(this._transport, 'document-agent-command-v1');
+    const validCommand = validateRevertTextCommand(command);
+    const receipt = validateTextCommandReceipt(await this._request('revertTextCommand', {
+      command: validCommand,
+    }));
+    this._rememberDocumentVersion(receipt.documentEpoch, receipt.afterChangeSeq);
+    return receipt;
+  }
+
+  /** exact body paragraph target으로 캐럿과 뷰포트를 이동합니다. */
+  async focusTarget(target) {
+    assertCapability(this._transport, 'target-navigation-v1');
+    const validTarget = validateBodyParagraphTarget(target);
+    return validateFocusTargetResult(await this._request('focusTarget', {
+      target: validTarget,
+    }));
+  }
+
+  /** agent apply/revert가 commit된 뒤 strict v1 변경 이벤트를 구독합니다. */
+  onDocumentChanged(listener) {
+    assertCapability(this._transport, 'document-change-events-v1');
+    if (typeof listener !== 'function') throw new TypeError('listener must be a function');
+    this._documentChangedListeners.add(listener);
+    if (!this._offDocumentChanged) {
+      this._offDocumentChanged = this._transport.on('documentChanged', (payload) => {
+        let event;
+        try {
+          event = validateDocumentChangedEvent(payload);
+        } catch {
+          return;
+        }
+        if (!this._isFreshDocumentEvent(event.documentEpoch, event.changeSeq)) return;
+        this._rememberDocumentVersion(event.documentEpoch, event.changeSeq);
+        for (const subscriber of this._documentChangedListeners) {
+          try { subscriber(event); } catch { /* 한 listener가 다른 listener를 막지 않는다. */ }
+        }
+      });
+    }
+    return () => {
+      this._documentChangedListeners.delete(listener);
+      if (this._documentChangedListeners.size === 0) {
+        this._offDocumentChanged?.();
+        this._offDocumentChanged = null;
+      }
+    };
+  }
+
+  _isFreshDocumentEvent(epoch, changeSeq) {
+    if (this._lastDocumentEpoch === null) return true;
+    if (epoch !== this._lastDocumentEpoch) return epoch > this._lastDocumentEpoch;
+    return this._lastDocumentChangeSeq === null || changeSeq > this._lastDocumentChangeSeq;
+  }
+
+  _rememberDocumentVersion(epoch, changeSeq) {
+    if (this._lastDocumentEpoch === null || epoch > this._lastDocumentEpoch) {
+      this._lastDocumentEpoch = epoch;
+      this._lastDocumentChangeSeq = changeSeq;
+      return;
+    }
+    if (epoch === this._lastDocumentEpoch
+        && (this._lastDocumentChangeSeq === null || changeSeq > this._lastDocumentChangeSeq)) {
+      this._lastDocumentChangeSeq = changeSeq;
+    }
+  }
+
   /**
    * iframe 엘리먼트를 반환합니다.
    */
@@ -348,6 +460,9 @@ export class RhwpEditor {
    * iframe 을 DOM 이동시키면 브라우저가 문서를 재로드해 편집 상태가 사라집니다.
    */
   destroy() {
+    this._offDocumentChanged?.();
+    this._offDocumentChanged = null;
+    this._documentChangedListeners.clear();
     this._transport.destroy();
     this._iframe.remove();
   }

@@ -123,6 +123,25 @@ export class CommandHistory {
     return cursorAfter;
   }
 
+  /**
+   * 아직 외부 commit event를 내보내지 않은 최신 snapshot 실행만 폐기한다.
+   * document-agent의 strict render gate 실패 복구 전용이며 redo에는 남기지 않는다.
+   */
+  rollbackUncommittedSnapshot(
+    expectedType: string,
+    wasm: WasmBridge,
+  ): DocumentPosition | null {
+    this.lastExecutionEffects = NO_TEXT_MUTATION_EFFECTS;
+    const command = this.undoStack[this.undoStack.length - 1];
+    if (!command || command.type !== expectedType || command.snapshotResourceCount?.() !== 2) {
+      return null;
+    }
+    const cursorAfter = command.undo(wasm);
+    this.undoStack.pop();
+    command.discard?.(wasm);
+    return cursorAfter;
+  }
+
   /** Undo — 성공 시 커서 위치 반환, 스택 비었으면 null */
   undo(wasm: WasmBridge): DocumentPosition | null {
     this.lastExecutionEffects = NO_TEXT_MUTATION_EFFECTS;

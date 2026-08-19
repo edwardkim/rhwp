@@ -89,7 +89,10 @@ export class CanvasView {
       eventBus.on('document-page-invalidated', (payload) => {
         void this.refreshInvalidatedPageForMutation(payload);
       }),
-      eventBus.on('document-changed', () => {
+      eventBus.on('document-changed', (reason) => {
+        // document-agent는 host 응답 전 strict render를 이미 완료한다. 나머지 observer에는
+        // commit event를 전달하되 CanvasView만 같은 revision을 두 번 그리지 않는다.
+        if (reason === 'document-agent-rendered') return;
         void this.refreshPagesForMutation();
       }),
       eventBus.on('document-view-changed', () => {
@@ -181,6 +184,22 @@ export class CanvasView {
     const selected = await this.selectMutationRevision();
     if (!selected || !this.rendererSession.isCurrent(selected.selection)) return;
     this.refreshPages();
+  }
+
+  /** document-agent RPC 응답 전에 현재 visible page가 실제 canvas로 그려졌는지 확인한다. */
+  async refreshDocumentAgentMutation(): Promise<void> {
+    const selected = await this.selectMutationRevision();
+    if (!selected || !this.rendererSession.isCurrent(selected.selection)) {
+      throw new Error('document-agent renderer revision을 선택하지 못했습니다.');
+    }
+    this.refreshPages();
+    const scrollY = this.viewportManager.getScrollY();
+    const viewport = this.viewportManager.getViewportSize();
+    const visiblePages = this.virtualScroll.getVisiblePages(scrollY, viewport.height);
+    const failed = visiblePages.filter(pageIndex => !this.canvasPool.has(pageIndex));
+    if (visiblePages.length === 0 || failed.length > 0) {
+      throw new Error(`document-agent visible page render 실패: ${failed.join(',') || 'none'}`);
+    }
   }
 
   private async refreshInvalidatedPageForMutation(payload: unknown): Promise<void> {

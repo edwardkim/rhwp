@@ -80,6 +80,7 @@ import { calculateFitPageZoom, calculateFitWidthZoom } from '@/view/zoom-fit';
 import { installEmbedRuntime } from '@/embed/runtime';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
+import { DocumentAgentController } from '@/document-agent/controller';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
@@ -134,6 +135,7 @@ if (import.meta.env.DEV) {
 }
 let canvasView: CanvasView | null = null;
 let inputHandler: InputHandler | null = null;
+let documentAgent: DocumentAgentController | null = null;
 let toolbar: Toolbar | null = null;
 let ruler: Ruler | null = null;
 let rendererSession: RendererSession | null = null;
@@ -571,6 +573,14 @@ async function initialize(): Promise<void> {
       canvasView.getViewportManager(),
     );
     inputHandler.setEditMode(editMode);
+    documentAgent?.dispose();
+    documentAgent = new DocumentAgentController({
+      wasm,
+      input: inputHandler,
+      eventBus,
+      isDirty: () => documentState.isDirty(),
+      render: () => canvasView!.refreshDocumentAgentMutation(),
+    });
 
     // 눈금자 핀 드래그 커밋 — 종류(문단 서식/쪽 여백)에 따라 InputHandler 호출은 다르지만
     // 진입점은 하나다. 콜백 두 개로 나뉘어 있었을 때 한쪽만 executeOperation 커밋 경로를
@@ -1683,6 +1693,7 @@ const initPromise = initialize();
 installEmbedRuntime({
   hostWindow: window,
   parentWindow: window.parent,
+  subscribeDocumentChanged: (listener) => eventBus.on('document-agent-changed', listener),
   handlers: {
     async ready() {
       await initPromise;
@@ -1754,6 +1765,31 @@ installEmbedRuntime({
     async notifySaved(fileName) {
       await initPromise;
       return completeHostSave(fileName);
+    },
+    async getDocumentState() {
+      await initPromise;
+      if (!documentAgent) throw new Error('Document agent is not initialized');
+      return documentAgent.getDocumentState();
+    },
+    async getSelectionContext() {
+      await initPromise;
+      if (!documentAgent) throw new Error('Document agent is not initialized');
+      return documentAgent.getSelectionContext();
+    },
+    async applyTextCommand(command) {
+      await initPromise;
+      if (!documentAgent) throw new Error('Document agent is not initialized');
+      return documentAgent.applyTextCommand(command);
+    },
+    async revertTextCommand(command) {
+      await initPromise;
+      if (!documentAgent) throw new Error('Document agent is not initialized');
+      return documentAgent.revertTextCommand(command);
+    },
+    async focusTarget(target) {
+      await initPromise;
+      if (!documentAgent) throw new Error('Document agent is not initialized');
+      return documentAgent.focusTarget(target);
     },
 
     // ── 브리지 확장 (P4) — 자동화·플러그인·창 제어 ─────────

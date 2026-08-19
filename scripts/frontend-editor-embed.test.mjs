@@ -24,6 +24,11 @@ test('@rhwp/editor public API uses exact-origin MessageChannel v1 binary transpo
       'renderer-diagnostics-v1',
       'font-decision-trace-v1',
       'notify-saved-v1',
+      'document-state-v1',
+      'selection-context-v1',
+      'document-agent-command-v1',
+      'target-navigation-v1',
+      'document-change-events-v1',
     ]);
     assert.equal(transfer.length, 1);
     sessionId = message.sessionId;
@@ -46,6 +51,11 @@ test('@rhwp/editor public API uses exact-origin MessageChannel v1 binary transpo
         'renderer-diagnostics-v1',
         'font-decision-trace-v1',
         'notify-saved-v1',
+        'document-state-v1',
+        'selection-context-v1',
+        'document-agent-command-v1',
+        'target-navigation-v1',
+        'document-change-events-v1',
       ],
     });
   });
