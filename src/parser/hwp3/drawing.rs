@@ -14,7 +14,6 @@ pub struct Hwp3DrawingObjectFrameHeader {
     pub object_count: u32,
     pub bounds: [i32; 4], // shunit32 (x, y, 너비, 높이)
 }
-
 impl Hwp3DrawingObjectFrameHeader {
     pub fn read<R: Read>(mut reader: R) -> Result<Self, io::Error> {
         let header_length = reader.read_u32::<LittleEndian>()?;
@@ -219,6 +218,10 @@ pub struct Hwp3DrawingObjectCommonHeader {
     pub rotation_attr: Option<Hwp3DrawingObjectRotationAttr>,
     pub gradient_attr: Option<Hwp3DrawingObjectGradientAttr>,
     pub bitmap_pattern_attr: Option<Hwp3DrawingObjectBitmapPatternAttr>,
+    /// [#5558] 공통 헤더 뒤 글상자 정보(스펙 11.3 optional 블록, 표 78 형식)로 실려 온
+    /// 내부 문단 리스트. 사각형 등 비-글상자 개체도 "글상자로 만들기"면 이 블록을 갖고,
+    /// 이 빈티지 코퍼스는 그 전체 길이를 header_length 로 선언한다.
+    pub textbox_paragraph_list: Option<Vec<u8>>,
 }
 
 impl Hwp3DrawingObjectCommonHeader {
@@ -277,6 +280,7 @@ impl Hwp3DrawingObjectCommonHeader {
             rotation_attr,
             gradient_attr,
             bitmap_pattern_attr,
+            textbox_paragraph_list: None,
         })
     }
 }
@@ -474,9 +478,53 @@ impl Hwp3DrawingExtendedPolygon {
     }
 }
 
+/// 공통 헤더의 선언 길이(header_length)와 플래그 유도 소비량이 어긋날 때 전진을
+/// 허용하는 상한. 정상 헤더는 커야 400여 바이트이므로 이를 훨씬 넘는 선언은
+/// 손상된 값으로 보고 종전대로 플래그 유도 위치를 유지한다.
+const MAX_HEADER_SKIP: u64 = 64 * 1024;
+
 impl Hwp3DrawingObject {
     pub fn read<R: Read + Seek>(mut reader: R) -> Result<Self, io::Error> {
-        let header = Hwp3DrawingObjectCommonHeader::read(&mut reader)?;
+        let header_start = reader.stream_position()?;
+        let mut header = Hwp3DrawingObjectCommonHeader::read(&mut reader)?;
+
+        // [#5141] 빈티지 파일의 공통 헤더에는 이 파서가 모르는 확장 필드가 붙을 수
+        // 있고, 전체 길이는 header_length(자기 4바이트 제외)로 선언된다. 플래그
+        // 유도로 읽은 소비량이 선언에 못 미치면 선언 끝까지 전진해야 뒤따르는
+        // 세부 정보·형제·자식 스트림이 어긋나지 않는다. 선언이 스트림 밖이거나
+        // 상한을 넘으면 손상 값으로 보고 종전 위치를 유지한다.
+        //
+        // [#5558] 그 잉여 구간의 실체는 스펙 11.3 의 optional 글상자 정보인 경우가
+        // 대부분이다(표 78 형식: [정보1 길이][정보2 길이][문단 리스트]). 잉여 길이가
+        // 표 78 과 정확히 맞아떨어지면 내부 문단 리스트를 회수하고, 아니면 종전대로
+        // 건너뛴다(07615 실측: 잉여 보유 137개 중 136개 정합·1개는 3바이트 슬랙).
+        // 글상자(type 6)는 세부 정보 경로가 같은 구조를 읽으므로 제외한다.
+        let consumed_end = reader.stream_position()?;
+        let declared_end = header_start + 4 + header.header_length as u64;
+        if declared_end > consumed_end && declared_end - consumed_end <= MAX_HEADER_SKIP {
+            let stream_len = reader.seek(SeekFrom::End(0))?;
+            reader.seek(SeekFrom::Start(consumed_end))?;
+            if declared_end <= stream_len {
+                let surplus = declared_end - consumed_end;
+                let mut recovered = false;
+                if header.object_type != 6 && surplus >= 8 {
+                    let info1_len = reader.read_u32::<LittleEndian>()?;
+                    let info2_len = reader.read_u32::<LittleEndian>()?;
+                    if u64::from(info1_len) + u64::from(info2_len) == surplus - 8 && info2_len > 0 {
+                        if info1_len > 0 {
+                            reader.seek(SeekFrom::Current(i64::from(info1_len)))?;
+                        }
+                        let mut list = super::alloc_record_buf(info2_len as usize)?;
+                        reader.read_exact(&mut list)?;
+                        header.textbox_paragraph_list = Some(list);
+                        recovered = true;
+                    }
+                }
+                if !recovered {
+                    reader.seek(SeekFrom::Start(declared_end))?;
+                }
+            }
+        }
 
         // 글상자(6)인 경우, 공통 헤더 바로 뒤에 글상자 정보가 위치함.
         // 테이블 78 "글상자 세부 정보"에 따라 info1_len, info2_len, 문단 리스트가 존재함.
@@ -484,7 +532,12 @@ impl Hwp3DrawingObject {
 
         match header.object_type {
             0 => {
-                // 컨테이너: 추가 세부 길이 정보 없음
+                // [#5141] 컨테이너도 사각형/타원처럼 세부 정보 길이 8바이트
+                // (info1_len=0, info2_len=0)를 가진다. 이를 읽지 않으면 자식 파싱이
+                // 8바이트 어긋나 첫 자식이 hdr_len=0·conn=0 인 가짜 컨테이너로 읽히고
+                // 묶음 자식 전체가 소실된다.
+                let _info1_len = reader.read_u32::<LittleEndian>()?;
+                let _info2_len = reader.read_u32::<LittleEndian>()?;
                 Ok(Hwp3DrawingObject::Container(header))
             }
             1 => {
@@ -823,6 +876,30 @@ fn map_to_shape_object(
 
     let connection_info = header.connection_info;
     let mut final_shape = shape;
+
+    // [#5558] 공통 헤더 뒤 글상자 정보로 실려 온 내부 문단 리스트(사각형 등
+    // 비-글상자 개체의 라벨 텍스트). 글상자(type 6)와 같은 계약으로 파싱해
+    // 아래 text_box 조립에 태운다. 손상된 리스트는 텍스트만 포기하고 도형은
+    // 유지한다(종전 동작과 동일).
+    if parsed_paragraphs.is_empty() {
+        if let Some(data) = header.textbox_paragraph_list.as_deref() {
+            let mut text_cursor = std::io::Cursor::new(data);
+            if let Ok(paras) = crate::parser::hwp3::parse_paragraph_list(
+                &mut text_cursor,
+                doc_char_shapes,
+                doc_para_shapes,
+                doc_border_fills,
+                doc_tab_defs,
+                pic_name_to_id,
+                0,            // body_left_hu: 드로잉 내부 텍스트, wrap zone 불필요
+                i32::MAX / 2, // column_width_hu
+                0,            // body_height_hu: 도형 내부 텍스트는 본문 페이지 분할 제외
+                false,        // 복호화 원본의 본문 Square-wrap 계약은 적용하지 않음
+            ) {
+                parsed_paragraphs = paras;
+            }
+        }
+    }
 
     let common = CommonObjAttr {
         width: header.object_size[0].saturating_mul(HWP3_UNIT_SCALE as u32),
@@ -1192,10 +1269,11 @@ mod drawing_object_recursion_depth_tests {
     use std::io::Cursor;
 
     /// object_type=0(Container)에 connection_info=0x0002(has_child, no
-    /// sibling)만 실은 최소 92바이트 공통 헤더를 만든다.
+    /// sibling)만 실은 최소 공통 헤더(92바이트, header_length=88) + 세부 정보
+    /// 길이 8바이트(#5141 계약)를 만든다.
     fn container_block() -> Vec<u8> {
         let mut buf = Vec::new();
-        buf.extend_from_slice(&0u32.to_le_bytes()); // header_length
+        buf.extend_from_slice(&88u32.to_le_bytes()); // header_length (자기 4바이트 제외)
         buf.extend_from_slice(&0u16.to_le_bytes()); // object_type = 0 (Container)
         buf.extend_from_slice(&0x0002u16.to_le_bytes()); // connection_info: has_child, !has_sibling
         buf.extend_from_slice(&[0u8; 8]); // relative_pos
@@ -1205,6 +1283,7 @@ mod drawing_object_recursion_depth_tests {
         buf.extend_from_slice(&[0u8; 32]); // basic_attr: line_style..pattern_color
         buf.extend_from_slice(&[0u8; 8]); // basic_attr: textbox_margin
         buf.extend_from_slice(&0u32.to_le_bytes()); // basic_attr: options
+        buf.extend_from_slice(&[0u8; 8]); // 세부 정보 길이 (info1_len=0, info2_len=0)
         buf
     }
 

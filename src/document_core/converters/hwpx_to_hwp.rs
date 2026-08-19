@@ -2258,11 +2258,9 @@ fn adapt_table_with_context(
     }
 
     // 셀별 보강 + 내부 문단 재귀 (중첩 표 대응)
-    let use_cell_width_ref = table_requires_cell_width_ref_contract(table);
-    let table_padding = table.padding;
     for cell in &mut table.cells {
         adapt_cell_list_attr(cell, report);
-        materialize_cell_list_header_contract(cell, use_cell_width_ref, &table_padding, report);
+        materialize_cell_list_header_contract(cell, report);
         for cpara in &mut cell.paragraphs {
             adapt_paragraph_with_context(cpara, report, context);
         }
@@ -2275,35 +2273,16 @@ fn adapt_table_with_context(
     }
 }
 
-fn table_requires_cell_width_ref_contract(table: &Table) -> bool {
-    // HWPX 조직도류 표는 많은 논리 열로 셀 폭을 쪼개어 만든 micro-grid 형태다.
-    // 이 계열은 LIST_HEADER width_ref bit가 없으면 한컴이 셀 내부 줄나눔 폭을 너무 좁게 잡는다.
-    //
-    // 반대로 mel-001의 8x12 인원 현황 표는 같은 bit를 세우면 한컴이 병합 셀 높이를 과도하게
-    // 계산했다. 따라서 raw_list_extra는 모든 셀에 materialize하되 width_ref bit는
-    // 고열 수 micro-grid 표에만 적용한다.
-    table.col_count >= 30
-}
-
-fn materialize_cell_list_header_contract(
-    cell: &mut Cell,
-    use_width_ref: bool,
-    table_padding: &crate::model::Padding,
-    report: &mut AdapterReport,
-) {
+fn materialize_cell_list_header_contract(cell: &mut Cell, report: &mut AdapterReport) {
     let before_width_ref = cell.list_header_width_ref;
     let before_extra_len = cell.raw_list_extra.len();
 
-    // [#1809] micro-grid 계약으로 width_ref bit0(=aim)을 켤 때, aim=false 셀의
-    // 유효 안 여백(effective_padding — 표 기본 폴백 포함)을 셀 padding 에 물질화한다.
-    // 재파싱 시 aim=true 가 되면 측정/레이아웃의 aim=true 원값 존중 경로(#493 시멘틱)가
-    // raw cell padding 을 그대로 쓰므로, 물질화 없이는 padding 0 셀의 행높이가
-    // 원본(HWPX, 표 기본 여백)과 어긋난다 (admrul_0296 행 32.37→31.60, 표 3.87px).
-    if use_width_ref && !cell.apply_inner_margin {
-        cell.padding = cell.effective_padding(table_padding);
-    }
-
-    if use_width_ref || cell.apply_inner_margin {
+    // [#4898] width_ref bit0(=aim, 자기 여백 사용)은 셀 자신의 `apply_inner_margin` 만 따른다.
+    // 예전에는 `col_count >= 30` micro-grid 휴리스틱이 aim=false 셀에도 이 비트를 세우고
+    // 표 기본 여백을 셀 padding 으로 물질화했는데, 한글이 그만큼 행 높이를 키워 1쪽 서식이
+    // 2쪽이 됐다. 한글 2022 오라클 10k 전수(x2h): 휴리스틱을 끄면 쪽수 결함 58건이 원본
+    // 쪽수로 복귀하고 새로 깨지는 문서는 0건이다(영향 문서 1,239건 전수 측정).
+    if cell.apply_inner_margin {
         cell.list_header_width_ref |= 0x0001;
     } else {
         cell.list_header_width_ref &= !0x0001;
@@ -3298,20 +3277,17 @@ mod tests {
 
     #[test]
     fn cell_list_header_contract_materializes_width_ref_and_extra() {
+        // [#4898] bit0 는 셀 자신의 안 여백 사용 여부만 따른다.
         let mut cell = Cell {
             width: 2266,
             list_header_width_ref: 0,
             raw_list_extra: Vec::new(),
+            apply_inner_margin: true,
             ..Default::default()
         };
         let mut report = AdapterReport::new();
 
-        materialize_cell_list_header_contract(
-            &mut cell,
-            true,
-            &crate::model::Padding::default(),
-            &mut report,
-        );
+        materialize_cell_list_header_contract(&mut cell, &mut report);
 
         assert_eq!(cell.list_header_width_ref & 0x0001, 0x0001);
         assert_eq!(cell.raw_list_extra.len(), 13);
@@ -3322,12 +3298,7 @@ mod tests {
         assert!(cell.raw_list_extra[4..].iter().all(|&byte| byte == 0));
         assert_eq!(report.cells_list_header_contract_materialized, 1);
 
-        materialize_cell_list_header_contract(
-            &mut cell,
-            true,
-            &crate::model::Padding::default(),
-            &mut report,
-        );
+        materialize_cell_list_header_contract(&mut cell, &mut report);
         assert_eq!(report.cells_list_header_contract_materialized, 1);
     }
 
@@ -3341,12 +3312,7 @@ mod tests {
         };
         let mut report = AdapterReport::new();
 
-        materialize_cell_list_header_contract(
-            &mut cell,
-            false,
-            &crate::model::Padding::default(),
-            &mut report,
-        );
+        materialize_cell_list_header_contract(&mut cell, &mut report);
 
         assert_eq!(cell.list_header_width_ref & 0x0001, 0);
         assert_eq!(cell.raw_list_extra.len(), 13);
