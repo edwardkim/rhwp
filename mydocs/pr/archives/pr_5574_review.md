@@ -20,6 +20,7 @@ HWPX/HWP5 저장기에 공통인 `line_segs_within_text_axis` 계약을 HWPX 저
 
 ## 판정
 
-원 PR의 안전 목적과 보정 방향은 타당하다. 다만 보정 뒤 선택 nextest가 완료 요약 없이 종료되어
-새 #1893 회귀의 PASS를 확정하지 못했다. 재실행 금지 지시에 따라 최종 수용과 merge는 **보류**한다.
-최신 후보에서 이 선택 회귀와 corpus ratchet 실패의 원인을 확인하고 CI가 통과할 때만 수용으로 전환한다.
+원 PR의 안전 목적과 보정 방향은 타당하다. 보정 뒤 공식 #1893 회귀
+`issue_1893_clickhere_form_roundtrip_render_is_self_consistent`를 단독 실행해 `1 passed`를 확인했다.
+다만 `field_slots_extend_the_serialized_axis` 추가 회귀와 corpus ratchet 실패는 이 지시에서 제외했다.
+두 항목 및 최신 CI가 통과할 때 최종 수용으로 전환한다.

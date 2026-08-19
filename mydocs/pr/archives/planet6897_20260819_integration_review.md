@@ -43,11 +43,12 @@
 - 누적 후보의 전체 `cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 4 --no-fail-fast`는 보정 전 7,743건 중 7,726건 통과, 17건 실패로 종료했다. 실패에는 Windows CRLF 환경의 skill frontmatter 13건과 baseline에서도 재현된 WMF/EMF golden 2건이 포함됐다. #1893, corpus ratchet partition 1은 이 배치에서 별도 판단이 필요했다.
 - `upstream/devel` baseline에서 선택 확인한 결과 #1893과 corpus ratchet partition 1은 통과했고, frontmatter·WMF/EMF golden 실패는 동일하게 재현됐다.
 - #5574 후속 보정 뒤의 #1893/#5563 선택 nextest는 링크 단계에서 완료 요약 없이 종료됐다. 작업지시자의 재실행 금지 지시에 따라 PASS로 기록하지 않는다.
+- 이후 작업지시자가 지정한 공식 #1893 회귀만 최신 후보에서 다시 실행했다. `cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 6 --no-fail-fast -E 'test(issue_1893_clickhere_form_roundtrip_render_is_self_consistent)'`는 `1 passed, 7781 skipped`로 종료 코드 0을 반환했다.
 - LF 전용 검토 worktree에서 최종 후보 `f9c34fbc8`에 `cargo fmt --all` 및 `cargo fmt --all -- --check`를 실행해 통과했다. 원 Windows worktree의 전역 CRLF 변환은 포맷 판정에 사용하지 않았다.
 
 ## 공통 병합 조건
 
-1. #5574 후속 보정의 선택 회귀 및 원인 미확정 corpus ratchet 실패를 최신 후보에서 판정한다.
+1. #5574의 추가 field-slot 회귀와 원인 미확정 corpus ratchet 실패를 최신 후보에서 판정한다. 공식 #1893 회귀는 통과했다.
 2. #5544와 #5577의 renderer/layout 영향은 기준 PDF 또는 동등한 시각 증적을 남긴다.
 3. 통합 PR의 최신 head에서 GitHub required checks를 다시 확인한다.
 4. 작업지시자의 원격 push·PR 생성 및 최종 merge 승인을 각각 받는다.
