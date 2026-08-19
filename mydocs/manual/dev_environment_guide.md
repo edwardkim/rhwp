@@ -90,7 +90,7 @@ cargo test --release --lib
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --no-fail-fast
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ```
 
 새 Rust integration test는 `tests/cases/`에 원본 `.rs` 파일만 추가하고 suite를 직접 선택하지 않는다.

@@ -43,7 +43,7 @@ host의 논리 CPU·메모리·동시 작업을 확인한 뒤에만 `--test-thre
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --no-fail-fast
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ~~~
 
 ### integration test source 추가와 자동 sharding
@@ -122,7 +122,7 @@ RHWP_BIN=target/pr-review/release-test/rhwp \
 
 `cargo build`는 **컴파일 전용 준비 단계**이며 테스트를 실행하지 않는다. 시각 보정 중에는 이 명령으로
 빠르게 최신 SVG를 확인하되, code head가 바뀐 뒤 PR 검증을 완료하려면 위의 전체 `cargo nextest run
-... --tests --no-fail-fast`를 다시 성공시켜야 한다. 하네스 옵션과 기준 PDF provenance는
+... --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast`를 다시 성공시켜야 한다. 하네스 옵션과 기준 PDF provenance는
 [`tools/fidelity_compare/README.md`](../../../tools/fidelity_compare/README.md)를 따른다.
 
 2026-08-09 Linux 검증 호스트(`ubuntu-ted`, Intel Xeon E5640 16 vCPU, RAM 15 GiB)에서 이 명령의 fixed
@@ -148,7 +148,7 @@ Set-Location 'C:\\Users\\admin\\Desktop\\rhwp\\rhwp'
 cargo nextest run `
   --cargo-profile release-test `
   --target-dir target/pr-review `
-  --tests --no-fail-fast
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ~~~
 
 PowerShell의 `target/pr-review`는 Windows에서 정상 경로로 해석된다. WSL 경로와 Windows 경로, 또는 서로
@@ -286,7 +286,7 @@ merge 판단에서는 다음 경계를 적용한다.
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --no-fail-fast
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 cargo fmt --all -- --check
 cargo clippy --all-targets -- -D warnings
 ~~~
@@ -382,7 +382,7 @@ cargo test --release --target-dir target/pr-review --lib
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --no-fail-fast
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 cargo test --profile release-test --target-dir target/pr-review --features native-skia --lib
 node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
   --cargo-profile release-test --target-dir target/pr-review --features native-skia

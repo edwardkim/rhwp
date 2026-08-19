@@ -162,7 +162,7 @@ node scripts/rust-unit-test-tiers.mjs --check
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --no-fail-fast                          # 통합 테스트 포함 전체
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast                          # 통합 테스트 포함 전체
 cargo clippy --all-targets --target-dir target/pr-review -- -D warnings # 린트 경고 0건
 ```
 
@@ -193,7 +193,7 @@ cargo build --profile release-test --target-dir target/pr-review
 ```
 
 이 명령은 `rhwp` 바이너리를 만들어 시각 대조를 준비할 뿐, 테스트를 실행하지 않습니다. **PR 전 검증을
-대체하지 않으므로**, 코드 변경 뒤에는 위의 전체 `cargo nextest run ... --tests --no-fail-fast`를 반드시
+대체하지 않으므로**, 코드 변경 뒤에는 위의 전체 `cargo nextest run ... --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast`를 반드시
 완료하세요. 상세 절차는 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따릅니다.
 
 ### 프런트엔드 변경 검증

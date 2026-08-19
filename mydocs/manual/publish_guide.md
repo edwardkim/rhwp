@@ -315,7 +315,7 @@ cargo build
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --no-fail-fast
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 wasm-pack build --target web --out-dir pkg
 
 # release 시 devel → main PR 생성
