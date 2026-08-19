@@ -20,6 +20,7 @@ const DIGEST_SOURCE: &str = include_str!("../src/cli/queries/digest.rs");
 const DOCUMENT_INVENTORY_SOURCE: &str = include_str!("../src/cli/queries/document_inventory.rs");
 const EXPLAIN_SOURCE: &str = include_str!("../src/cli/queries/explain.rs");
 const EXPLORE_SOURCE: &str = include_str!("../src/cli/queries/explore.rs");
+const SECURITY_INSPECTION_SOURCE: &str = include_str!("../src/cli/queries/security_inspection.rs");
 const STRUCTURED_OBJECTS_SOURCE: &str = include_str!("../src/cli/queries/structured_objects.rs");
 
 fn rhwp_bin() -> String {
@@ -338,6 +339,28 @@ fn explore_query_is_owned_by_the_query_module() {
             "Some(\"explore\")=>exit_with(cli::queries::explore::explore_document(&args[2..]))"
         ),
         "explore dispatch가 query 모듈 API를 사용해야 한다"
+    );
+}
+
+#[test]
+fn hidden_text_query_is_owned_by_the_security_inspection_module() {
+    assert!(
+        SECURITY_INSPECTION_SOURCE.contains("pub(crate) fn inspect_hidden_text("),
+        "inspect_hidden_text 구현이 security_inspection 모듈에 있어야 한다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn inspect_hidden_text("),
+        "inspect_hidden_text 구현이 main.rs로 되돌아가면 안 된다"
+    );
+    let compact_main: String = MAIN_SOURCE
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    assert!(
+        compact_main.contains(
+            "Some(\"hidden-text\")=>cli::queries::security_inspection::inspect_hidden_text(&args[1..])"
+        ),
+        "inspect hidden-text dispatch가 security query 모듈 API를 사용해야 한다"
     );
 }
 

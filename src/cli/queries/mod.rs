@@ -7,4 +7,5 @@ pub(crate) mod document_inventory;
 pub(crate) mod explain;
 pub(crate) mod explore;
 pub(crate) mod search;
+pub(crate) mod security_inspection;
 pub(crate) mod structured_objects;
