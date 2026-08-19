@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Q1·Q2·Q3·Q4 완료, Q5 진입 승인 대기
+- 상태: 실행 승인 — Q1·Q2·Q3·Q4 완료, Q5 실행 중
 
 ## 1. 전환 이유
 
@@ -109,6 +109,12 @@ query/write 책임 경계, 기존 92개 인접 계약, scan characterization 공
 기록했다. 승인된 A안에 따라 scan의 사람 출력·symlink 비추적 계약을 먼저 고정하고, `cmd_scan`을
 CC 25 이하로 분해한 뒤 scan query, ordered runtime, batch query, fill·convert command를 분리했다.
 세부 증거는 [`task_m100_5511_stage2_batch_q4.md`](../working/task_m100_5511_stage2_batch_q4.md)에
+기록했다.
+
+Q5는 최신 `devel` `52d8bf8eb3`에서 시작했다. `show_info` CC 34와 `dump_controls` CC 68을
+재현했고, 기존 1,096줄 `diagnostics.rs`에 합치지 않는 책임별 모듈 경계를 확정했다. 사람용
+성공 stdout의 byte-level characterization과 분해 기준은
+[`task_m100_5511_stage2_batch_q5_inventory.md`](../working/task_m100_5511_stage2_batch_q5_inventory.md)에
 기록했다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
