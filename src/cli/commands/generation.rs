@@ -8,6 +8,10 @@ use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 
+/// `rhwp build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>`
+///
+/// Claude Code Skill (`rhwp-exam-ingest`)이 생성한 JSON 중간 표현을 HWPX로 변환한다.
+/// Task #660 (Neumann 본 작업 1단계).
 pub(crate) fn build_from_ingest(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("사용법: rhwp build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>");
