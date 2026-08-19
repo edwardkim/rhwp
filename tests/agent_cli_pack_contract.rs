@@ -85,6 +85,16 @@ fn capabilities_lists_new_commands() {
         "explain",
         "notes",
         "field-diff",
+        "bookmarks",
+        "charts",
+        "digest",
+        "page-hashes",
+        "empty-fields",
+        "merged-tables",
+        "encrypted",
+        "armor",
+        "stego-scan",
+        "sweep",
     ] {
         assert!(names.contains(&need), "missing {need} in {names:?}");
     }
@@ -509,4 +519,237 @@ fn field_diff_form_vs_hwp3_and_self() {
     assert_eq!(v["equal"], true, "{v}");
     assert!(v["onlyInA"].as_array().unwrap().is_empty(), "{v}");
     assert!(v["onlyInB"].as_array().unwrap().is_empty(), "{v}");
+}
+
+#[test]
+fn digest_pages_hwp3_sample() {
+    let path = sample(SAMPLE);
+    let out = run(&[
+        "digest",
+        "--json",
+        "--max-chars",
+        "80",
+        path.to_str().unwrap(),
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "digest");
+    assert!(v["untrustedContent"].as_bool().unwrap(), "{v}");
+    assert!(v["pageCount"].as_u64().unwrap() >= 1, "{v}");
+    let page0 = &v["pages"][0];
+    assert!(
+        page0["excerpt"].as_str().unwrap().chars().count() <= 80,
+        "{page0}"
+    );
+    assert!(
+        page0["firstLine"].as_str().unwrap().contains("Linux")
+            || page0["excerpt"].as_str().unwrap().contains("Linux"),
+        "{page0}"
+    );
+}
+
+#[test]
+fn page_hashes_stable_on_hwp3() {
+    let path = sample(SAMPLE);
+    let a = run(&["page-hashes", "--json", path.to_str().unwrap()]);
+    let b = run(&["page-hashes", "--json", path.to_str().unwrap()]);
+    assert_eq!(a.status.code(), Some(0));
+    assert_eq!(b.status.code(), Some(0));
+    let va = stdout_json(&a);
+    let vb = stdout_json(&b);
+    assert_envelope(&va, "page-hashes");
+    assert_eq!(va["pages"], vb["pages"], "{va} vs {vb}");
+    assert_eq!(
+        va["pages"].as_array().unwrap().len() as u64,
+        va["pageCount"].as_u64().unwrap()
+    );
+}
+
+#[test]
+fn bookmarks_and_charts_are_counts() {
+    for rel in ["samples/form-01.hwp", "samples/hwp3-sample.hwp"] {
+        let path = sample(rel);
+        let out = run(&["bookmarks", "--json", path.to_str().unwrap()]);
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "{rel} stderr {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let v = stdout_json(&out);
+        assert_envelope(&v, "bookmarks");
+        assert!(v["bookmarkCount"].is_number(), "{rel} {v}");
+
+        let out = run(&["charts", "--json", path.to_str().unwrap()]);
+        assert_eq!(out.status.code(), Some(0), "{rel}");
+        let v = stdout_json(&out);
+        assert_envelope(&v, "charts");
+        assert_eq!(
+            v["chartCount"],
+            v["charts"].as_array().unwrap().len() as u64,
+            "{rel} {v}"
+        );
+    }
+}
+
+#[test]
+fn empty_fields_on_form_sample() {
+    let path = sample("samples/form-01.hwp");
+    let out = run(&["empty-fields", "--json", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "empty-fields");
+    assert!(v["fieldCount"].as_u64().unwrap() >= 1, "{v}");
+    assert!(v["emptyCount"].as_u64().unwrap() >= 1, "{v}");
+    let names: Vec<&str> = v["empty"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|n| n["name"].as_str())
+        .collect();
+    assert!(
+        names.iter().any(|n| n.contains("myMsg")),
+        "expected empty myMsg, got {names:?}"
+    );
+}
+
+#[test]
+fn merged_tables_on_table_sample() {
+    let path = sample("samples/hwp_table_test.hwp");
+    let out = run(&["merged-tables", "--json", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "merged-tables");
+    assert_eq!(v["tableCount"], 10, "{v}");
+    assert!(v["mergedCount"].is_number(), "{v}");
+}
+
+#[test]
+fn encrypted_plain_samples_exit_ok() {
+    for rel in ["samples/form-01.hwp", "samples/hwp3-sample.hwp"] {
+        let path = sample(rel);
+        let out = run(&["encrypted", "--json", path.to_str().unwrap()]);
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "{rel} stderr {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let v = stdout_json(&out);
+        assert_envelope(&v, "encrypted");
+        assert_eq!(v["encrypted"], false, "{rel} {v}");
+    }
+}
+
+#[test]
+fn armor_fences_hwp3_body() {
+    let path = sample(SAMPLE);
+    let out = run(&[
+        "armor",
+        "--json",
+        "--max-chars",
+        "400",
+        path.to_str().unwrap(),
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "armor");
+    let nonce = v["nonce"].as_str().unwrap();
+    assert_eq!(nonce.len(), 32, "{v}");
+    let text = v["armoredText"].as_str().unwrap();
+    assert!(text.contains(&format!("⟦UNTRUSTED:{nonce}⟧")), "{text}");
+    assert!(text.contains(&format!("⟦/UNTRUSTED:{nonce}⟧")), "{text}");
+    assert!(text.contains("Linux"), "{text}");
+    assert!(v["untrustedContent"].as_bool().unwrap(), "{v}");
+}
+
+#[test]
+fn stego_scan_clean_on_real_samples() {
+    let form = sample("samples/form-01.hwp");
+    let out = run(&["stego-scan", "--json", form.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "form-01 stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "stego-scan");
+    assert_eq!(v["clean"], true, "{v}");
+    assert_eq!(v["findingCount"], 0, "{v}");
+    assert!(v["scannedChars"].is_number(), "{v}");
+
+    let hwp3 = sample(SAMPLE);
+    let out = run(&["stego-scan", "--json", hwp3.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "hwp3 stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "stego-scan");
+    assert_eq!(v["clean"], true, "{v}");
+    assert_eq!(v["findingCount"], 0, "{v}");
+    assert!(v["scannedChars"].as_u64().unwrap() > 0, "{v}");
+}
+
+#[test]
+fn sweep_on_form_and_hwp3() {
+    for rel in ["samples/form-01.hwp", "samples/hwp3-sample.hwp"] {
+        let path = sample(rel);
+        let out = run(&["sweep", "--json", path.to_str().unwrap()]);
+        assert!(
+            matches!(out.status.code(), Some(0) | Some(3)),
+            "{rel} code {:?} stderr {}",
+            out.status.code(),
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let v = stdout_json(&out);
+        assert_envelope(&v, "sweep");
+        assert!(v["threat"]["clean"].is_boolean(), "{rel} {v}");
+        assert!(v["injection"]["clean"].is_boolean(), "{rel} {v}");
+        assert!(v["hiddenText"]["clean"].is_boolean(), "{rel} {v}");
+        assert!(v["unicode"]["clean"].is_boolean(), "{rel} {v}");
+        assert!(v["stego"]["clean"].is_boolean(), "{rel} {v}");
+        let expected = v["threat"]["clean"].as_bool().unwrap()
+            && v["injection"]["clean"].as_bool().unwrap()
+            && v["hiddenText"]["clean"].as_bool().unwrap()
+            && v["unicode"]["clean"].as_bool().unwrap()
+            && v["stego"]["clean"].as_bool().unwrap();
+        assert_eq!(v["clean"], expected, "{rel} {v}");
+        assert_eq!(
+            out.status.code(),
+            Some(if expected { 0 } else { 3 }),
+            "{rel} {v}"
+        );
+    }
+}
+
+#[test]
+fn digest_unknown_flag_is_usage() {
+    let path = sample(SAMPLE);
+    let out = run(&["digest", path.to_str().unwrap(), "--nope"]);
+    assert_eq!(out.status.code(), Some(2));
+    assert!(out.stdout.is_empty());
 }
