@@ -3,7 +3,8 @@
 //! 구조 스캐너·최소 diff 패처(Stage 1), 중첩 CFB 스트림 교체(Stage 2), 주소→①② 슬롯
 //! 해석과 `get_chart_data_native`(Stage 3), `set_chart_data_native` 의 ①② 동시
 //! 기록(Stage 4), 그리고 실사용 문서 회귀(Stage 5)를 검증한다. CLI 계약은
-//! `tests/chart_csv_contract.rs` 에 있다.
+//! `tests/chart_csv_contract.rs` 에 있다. [#5447] B2 구조 변종 스파이크(행·열·라벨
+//! 바이트 수술과 한컴 판정 번들)는 Stage 7 이다.
 //!
 //! 스캐너를 따로 만드는 이유는 `src/ooxml_chart/parser.rs` 가 **손실 파서**이기
 //! 때문이다 — `c:pt idx`·`c:f`·`c:externalData`·`extLst` 를 읽지 않아 파싱→재방출로
@@ -1702,4 +1703,746 @@ fn generate_hancom_judgment_bundle() {
     println!("\n  판정 번들: {}", out_dir.display());
     println!("  파일 {written}개 + 판정표 PANJEONG.md");
     assert_eq!(written, 22, "7종 × 3 + 변환본 1");
+}
+
+// ---------------------------------------------------------------------------
+// Stage 7 — B2 구조 변종 스파이크 (#5447)
+// ---------------------------------------------------------------------------
+//
+// B1 은 개수를 바꾸지 않아 `set_chart_data_native` 로 변종을 만들 수 있었지만,
+// B2(행·열·라벨)는 c:pt/c:ser 를 넣고 빼므로 그 경로의 fail-closed 검증
+// (seriesCountMismatch·valueCountMismatch·categoryMismatch)을 지나갈 수 없다.
+// 그래서 스파이크는 코퍼스 XML 을 **바이트 문자열 수술**로 가공해
+// `replace_chart_representations`(HWPX ①②) / `replace_chart_nested_only`(HWP5 ②)로
+// 직접 주입한다. 코퍼스 XML 은 한컴이 단일 라인으로 기계 생성한 균일 구조라(28종
+// 실측) 문자열 수술이 안전하고, 산출마다 스캔 게이트 재통과를 자가확인한다.
+//
+// 수술은 #5447 의 정책 3종을 그대로 구현한다 — `c:f` 무갱신(원본 바이트 그대로) /
+// `c:ptCount` 항상 재계산 / `c:pt idx` 0..n-1 전수 재번호. ③(레거시 Contents)와
+// ④(프리뷰)도 B1 과 같은 불변 유지다.
+
+/// `open`…`close` 블록들의 (시작, 닫는 태그 끝) 오프셋. 중첩 없음 전제(코퍼스 실측).
+fn b2_block_ranges(xml: &str, open: &str, close: &str) -> Vec<(usize, usize)> {
+    let mut out = Vec::new();
+    let mut from = 0usize;
+    while let Some(s) = xml[from..].find(open).map(|o| from + o) {
+        let e = xml[s..]
+            .find(close)
+            .map(|o| s + o + close.len())
+            .unwrap_or_else(|| panic!("{open} 블록이 닫히지 않는다"));
+        out.push((s, e));
+        from = e;
+    }
+    out
+}
+
+/// 블록 안 유일한 `<c:ptCount val="…"/>` 를 `delta` 만큼 조정한다 (#5447 §3-2).
+fn b2_bump_pt_count(block: &str, delta: i64) -> String {
+    const PAT: &str = "<c:ptCount val=\"";
+    let s = block.find(PAT).expect("ptCount") + PAT.len();
+    let e = s + block[s..].find('"').expect("ptCount 닫는 따옴표");
+    assert!(
+        !block[e..].contains(PAT),
+        "ptCount 가 블록에 두 번 있다 — 래퍼 경계가 틀렸다"
+    );
+    let n: i64 = block[s..e].parse().expect("ptCount 수치");
+    format!("{}{}{}", &block[..s], n + delta, &block[e..])
+}
+
+/// 블록 안 모든 `<c:pt idx="…">` 를 등장 순서대로 0..n-1 로 다시 매긴다 (#5447 §3-3).
+fn b2_renumber_pt_idx(block: &str) -> String {
+    const PAT: &str = "<c:pt idx=\"";
+    let mut out = String::with_capacity(block.len());
+    let mut rest = block;
+    let mut next = 0usize;
+    while let Some(p) = rest.find(PAT) {
+        out.push_str(&rest[..p + PAT.len()]);
+        rest = &rest[p + PAT.len()..];
+        let q = rest.find('"').expect("idx 닫는 따옴표");
+        out.push_str(&next.to_string());
+        next += 1;
+        rest = &rest[q..];
+    }
+    out.push_str(rest);
+    out
+}
+
+/// 캐시 래퍼(`c:cat`/`c:val`/`c:xVal`/`c:yVal`) 블록마다 점 1개를 끝에 추가한다.
+///
+/// `texts[i]` 는 i번째 블록(문서 순서 = 계열 순서)의 새 텍스트. `ptCount` 는 +1 로
+/// 재계산하고 새 점의 idx 는 기존 개수를 이어받는다. `c:f` 는 손대지 않는다(§3-1).
+fn b2_add_point(xml: &str, tag: &str, texts: &[&str]) -> String {
+    let ranges = b2_block_ranges(xml, &format!("<{tag}>"), &format!("</{tag}>"));
+    assert_eq!(ranges.len(), texts.len(), "{tag}: 블록 수 ≠ 텍스트 수");
+    let mut out = xml.to_string();
+    for i in (0..ranges.len()).rev() {
+        let (s, e) = ranges[i];
+        let block = &out[s..e];
+        const PAT: &str = "<c:ptCount val=\"";
+        let ps = block.find(PAT).expect("ptCount") + PAT.len();
+        let pe = ps + block[ps..].find('"').expect("따옴표");
+        let count: usize = block[ps..pe].parse().expect("ptCount 수치");
+
+        let bumped = b2_bump_pt_count(block, 1);
+        let anchor = [
+            "</c:strCache>",
+            "</c:numCache>",
+            "</c:numLit>",
+            "</c:strLit>",
+        ]
+        .iter()
+        .find_map(|t| bumped.find(t))
+        .expect("캐시 닫는 태그");
+        let point = format!("<c:pt idx=\"{count}\"><c:v>{}</c:v></c:pt>", texts[i]);
+        let block_new = format!("{}{}{}", &bumped[..anchor], point, &bumped[anchor..]);
+        out.replace_range(s..e, &block_new);
+    }
+    out
+}
+
+/// 캐시 래퍼 블록마다 idx == `remove` 점을 지우고 0..n-1 재번호 + `ptCount` -1.
+fn b2_remove_point(xml: &str, tag: &str, remove: usize) -> String {
+    let ranges = b2_block_ranges(xml, &format!("<{tag}>"), &format!("</{tag}>"));
+    assert!(!ranges.is_empty(), "{tag}: 블록 없음");
+    let mut out = xml.to_string();
+    for &(s, e) in ranges.iter().rev() {
+        let block = &out[s..e];
+        let pt_open = format!("<c:pt idx=\"{remove}\">");
+        let ps = block
+            .find(&pt_open)
+            .unwrap_or_else(|| panic!("{tag}: idx {remove} 점이 없다"));
+        let pe = ps + block[ps..].find("</c:pt>").expect("점 닫는 태그") + "</c:pt>".len();
+        let removed = format!("{}{}", &block[..ps], &block[pe..]);
+        let block_new = b2_bump_pt_count(&b2_renumber_pt_idx(&removed), -1);
+        out.replace_range(s..e, &block_new);
+    }
+    out
+}
+
+/// `<c:ser>` 블록 범위 목록.
+fn b2_ser_ranges(xml: &str) -> Vec<(usize, usize)> {
+    b2_block_ranges(xml, "<c:ser>", "</c:ser>")
+}
+
+/// 블록 안 첫 `<c:v>…</c:v>` 텍스트를 바꾼다.
+fn b2_replace_first_v(block: &str, new_text: &str) -> String {
+    let s = block.find("<c:v>").expect("<c:v>") + "<c:v>".len();
+    let e = s + block[s..].find("</c:v>").expect("</c:v>");
+    format!("{}{}{}", &block[..s], new_text, &block[e..])
+}
+
+/// n번째 계열의 이름(`c:tx` 캐시 텍스트)을 바꾼다. `c:f` 는 그대로다.
+fn b2_rename_series(xml: &str, nth: usize, new_name: &str) -> String {
+    let (s, e) = b2_ser_ranges(xml)[nth];
+    let block = &xml[s..e];
+    let (ts, te) = b2_block_ranges(block, "<c:tx>", "</c:tx>")[0];
+    let tx_new = b2_replace_first_v(&block[ts..te], new_name);
+    let mut out = xml.to_string();
+    out.replace_range(s + ts..s + te, &tx_new);
+    out
+}
+
+/// 모든 계열의 카테고리 라벨(`c:cat`) idx 위치 텍스트를 같은 값으로 바꾼다 —
+/// 스캐너의 sharedCategoryRequired 를 지키려면 전 계열 동기 수정이 필수다.
+fn b2_relabel_category(xml: &str, idx: usize, new_label: &str) -> String {
+    let ranges = b2_block_ranges(xml, "<c:cat>", "</c:cat>");
+    assert!(!ranges.is_empty(), "c:cat 블록 없음");
+    let mut out = xml.to_string();
+    for &(s, e) in ranges.iter().rev() {
+        let block = &out[s..e];
+        let pt_open = format!("<c:pt idx=\"{idx}\">");
+        let ps = block.find(&pt_open).expect("라벨 점");
+        let pe = ps + block[ps..].find("</c:pt>").expect("닫는 태그") + "</c:pt>".len();
+        let pt_new = b2_replace_first_v(&block[ps..pe], new_label);
+        out.replace_range(s + ps..s + pe, &pt_new);
+    }
+    out
+}
+
+/// 마지막 계열을 복제해 뒤에 붙인다 — `c:idx`/`c:order` 채번, 이름·값 교체.
+///
+/// 복제된 `c:f` 참조는 **일부러 원본 그대로** 둔다 — 같은 열을 두 계열이 가리키는
+/// 낡은 범위를 한컴이 어떻게 다루는지가 §3-1 실험의 일부다.
+fn b2_clone_last_series(xml: &str, new_name: &str, new_values: &[&str]) -> String {
+    let ranges = b2_ser_ranges(xml);
+    let n = ranges.len();
+    let (s, e) = *ranges.last().expect("계열");
+    let mut clone = xml[s..e].to_string();
+
+    for tag in ["<c:idx val=\"", "<c:order val=\""] {
+        let ps = clone.find(tag).expect("idx/order") + tag.len();
+        let pe = ps + clone[ps..].find('"').expect("따옴표");
+        clone.replace_range(ps..pe, &n.to_string());
+    }
+
+    let (ts, te) = b2_block_ranges(&clone, "<c:tx>", "</c:tx>")[0];
+    let tx_new = b2_replace_first_v(&clone[ts..te], new_name);
+    clone.replace_range(ts..te, &tx_new);
+
+    let (vs, ve) = b2_block_ranges(&clone, "<c:val>", "</c:val>")[0];
+    let mut val_block = clone[vs..ve].to_string();
+    assert_eq!(
+        val_block.matches("<c:pt idx=").count(),
+        new_values.len(),
+        "값 점 수 ≠ 새 값 수"
+    );
+    for (i, text) in new_values.iter().enumerate() {
+        let pt_open = format!("<c:pt idx=\"{i}\">");
+        let ps = val_block.find(&pt_open).expect("값 점");
+        let pe = ps + val_block[ps..].find("</c:pt>").expect("닫는 태그") + "</c:pt>".len();
+        let pt_new = b2_replace_first_v(&val_block[ps..pe], text);
+        val_block.replace_range(ps..pe, &pt_new);
+    }
+    clone.replace_range(vs..ve, &val_block);
+
+    let mut out = xml.to_string();
+    out.insert_str(e, &clone);
+    out
+}
+
+/// n번째 계열을 지우고 잔여 `c:idx`/`c:order` 를 0..n-1 로 재번호한다.
+fn b2_remove_series(xml: &str, nth: usize) -> String {
+    let (s, e) = b2_ser_ranges(xml)[nth];
+    let mut out = xml.to_string();
+    out.replace_range(s..e, "");
+    let remaining = b2_ser_ranges(&out);
+    for i in (0..remaining.len()).rev() {
+        let (rs, re) = remaining[i];
+        let mut block = out[rs..re].to_string();
+        for tag in ["<c:idx val=\"", "<c:order val=\""] {
+            let ps = block.find(tag).expect("idx/order") + tag.len();
+            let pe = ps + block[ps..].find('"').expect("따옴표");
+            block.replace_range(ps..pe, &i.to_string());
+        }
+        out.replace_range(rs..re, &block);
+    }
+    out
+}
+
+/// HWP5 문서(①없음)의 ②만 교체한다 — `replace_chart_representations` 의 HWP5 판.
+fn replace_chart_nested_only(core: &mut DocumentCore, nested_xml: &[u8]) {
+    let chart = collect_charts(core.document())[0].clone();
+    assert!(chart.zip_part.is_none(), "HWP5 전용 경로다");
+    let nested_idx = chart.nested_copy.expect("②");
+    let nested_original = core.document().bin_data_content[nested_idx].data.load();
+    let nested_new =
+        replace_ole_stream(&nested_original, OOXML_STREAM, nested_xml).expect("② 교체");
+    core.document_mut().bin_data_content[nested_idx].data = nested_new.into();
+}
+
+fn b2_envelope(core: &DocumentCore) -> serde_json::Value {
+    serde_json::from_str(&core.get_chart_data_by_index_native(0).expect("읽기")).expect("JSON")
+}
+
+fn b2_series_names(env: &serde_json::Value) -> Vec<String> {
+    env["series"]
+        .as_array()
+        .expect("series")
+        .iter()
+        .map(|s| s["name"].as_str().expect("name").to_string())
+        .collect()
+}
+
+fn b2_labels(env: &serde_json::Value) -> Vec<String> {
+    env["labels"]
+        .as_array()
+        .expect("labels")
+        .iter()
+        .map(|v| v.as_str().expect("라벨").to_string())
+        .collect()
+}
+
+fn b2_values(env: &serde_json::Value, si: usize) -> Vec<String> {
+    env["series"][si]["values"]
+        .as_array()
+        .expect("values")
+        .iter()
+        .map(|v| v.as_str().expect("값").to_string())
+        .collect()
+}
+
+/// 막대·라인·3D 공통(3계열 × 4카테고리) 행추가 — 새 그룹 「추가항목」에 45/44/43.
+///
+/// 원본 최대값이 5 라 축을 뚫고 솟는다(#4055 센티널 철학 — 값을 읽지 않고 모양으로 판정).
+fn b2_bar_like_row_add(xml: &str) -> String {
+    let with_cat = b2_add_point(xml, "c:cat", &["추가항목", "추가항목", "추가항목"]);
+    b2_add_point(&with_cat, "c:val", &["45", "44", "43"])
+}
+
+fn b2_check_row_add(env: &serde_json::Value, ctx: &str) {
+    let labels = b2_labels(env);
+    assert_eq!(labels.len(), 5, "{ctx}: 라벨 수");
+    assert_eq!(labels.last().map(String::as_str), Some("추가항목"), "{ctx}");
+    let values = b2_values(env, 0);
+    assert_eq!(values.len(), 5, "{ctx}: 값 수");
+    assert_eq!(values.last().map(String::as_str), Some("45"), "{ctx}");
+}
+
+/// **B2 수술 왕복** — 행추가·행삭제가 스캔 게이트(비순차 idx·표현 일치)를 지나
+/// 저장·재개방되고, 렌더에 실제로 반영된다. #5447 스파이크 하네스의 자기 회귀다.
+#[test]
+fn b2_category_row_surgery_roundtrips_and_renders() {
+    let src = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    let src_bytes = std::fs::read(&src).expect("샘플");
+    let (_legacy, ooxml) = chart_streams(&src_bytes).expect("차트 스트림");
+    let xml = String::from_utf8(ooxml).expect("UTF-8");
+
+    // 행추가 — 라벨·값이 늘고, 새 카테고리 라벨이 실제로 그려진다.
+    let added = b2_bar_like_row_add(&xml);
+    let mut core = core_of(&src);
+    replace_chart_representations(&mut core, added.as_bytes(), added.as_bytes());
+    let reread =
+        DocumentCore::from_bytes(&core.export_hwpx_native().expect("저장")).expect("재개방");
+    let env = b2_envelope(&reread);
+    assert_eq!(env["ok"], true, "{env}");
+    b2_check_row_add(&env, "행추가");
+    let svg = reread.render_page_svg_layer_native(0).expect("렌더");
+    assert!(svg.contains("추가항목"), "행추가: 새 라벨이 렌더에 없다");
+
+    // 행삭제 — idx 재번호·ptCount 재계산을 거쳐 스캐너를 통과하고, 지운 라벨이
+    // 렌더에서 사라진다.
+    let removed = b2_remove_point(&b2_remove_point(&xml, "c:cat", 1), "c:val", 1);
+    let mut core = core_of(&src);
+    replace_chart_representations(&mut core, removed.as_bytes(), removed.as_bytes());
+    let reread =
+        DocumentCore::from_bytes(&core.export_hwpx_native().expect("저장")).expect("재개방");
+    let env = b2_envelope(&reread);
+    assert_eq!(env["ok"], true, "{env}");
+    assert_eq!(b2_labels(&env), ["항목 1", "항목 3", "항목 4"]);
+    assert_eq!(b2_values(&env, 0), ["4.3", "3.5", "4.5"]);
+    let svg = reread.render_page_svg_layer_native(0).expect("렌더");
+    assert!(
+        !svg.contains("항목 2"),
+        "행삭제: 지운 라벨이 여전히 그려진다"
+    );
+    assert!(svg.contains("항목 3"), "행삭제: 남은 라벨이 렌더에 없다");
+}
+
+/// **B2 계열 수술** — 추가는 `c:idx`/`c:order` 채번, 삭제는 전수 재번호를 거쳐
+/// 양 포맷에서 재개방된다.
+#[test]
+fn b2_series_surgery_renumbers_and_reopens() {
+    let base = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    for path in [base.with_extension("hwpx"), base.with_extension("hwp")] {
+        let bytes = std::fs::read(&path).expect("샘플");
+        let (_legacy, ooxml) = chart_streams(&bytes).expect("차트 스트림");
+        let xml = String::from_utf8(ooxml).expect("UTF-8");
+        let is_hwpx = path.extension().is_some_and(|e| e == "hwpx");
+
+        let cloned = b2_clone_last_series(&xml, "추가계열", &["6", "6", "6", "6"]);
+        assert!(cloned.contains(r#"<c:idx val="3"/>"#), "채번이 안 됐다");
+        let shrunk = b2_remove_series(&xml, 1);
+        assert!(!shrunk.contains(r#"<c:idx val="2"/>"#), "재번호가 안 됐다");
+
+        for (surgery, expect_names) in [
+            (cloned, vec!["계열 1", "계열 2", "계열 3", "추가계열"]),
+            (shrunk, vec!["계열 1", "계열 3"]),
+        ] {
+            let mut core = core_of(&path);
+            let out = if is_hwpx {
+                replace_chart_representations(&mut core, surgery.as_bytes(), surgery.as_bytes());
+                core.export_hwpx_native().expect("저장")
+            } else {
+                replace_chart_nested_only(&mut core, surgery.as_bytes());
+                core.export_hwp_native().expect("저장")
+            };
+            let env = b2_envelope(&DocumentCore::from_bytes(&out).expect("재개방"));
+            assert_eq!(env["ok"], true, "{}: {env}", path.display());
+            assert_eq!(b2_series_names(&env), expect_names, "{}", path.display());
+        }
+    }
+}
+
+/// B2 판정 변종 1건 — 어느 문서에 어떤 수술을 하고, 재독에서 무엇을 확인하는가.
+struct B2Variant {
+    folder: &'static str,
+    stem: &'static str,
+    /// 파일명 접미 (예: 행추가 → `묶은세로막대형-행추가.hwpx`).
+    label: &'static str,
+    what: &'static str,
+    expect_shape: &'static str,
+    /// 일부러 낡게 남긴 것 — 판정표에 기록해 한컴 반응의 원인을 가릴 수 있게 한다.
+    stale: &'static str,
+    surgery: Box<dyn Fn(&str) -> String>,
+    check: Box<dyn Fn(&serde_json::Value, &str)>,
+}
+
+/// #5447 §5 변종 카탈로그 — 본선 6종(기준 문서) + 경계 2종 + 종류 커버리지 6종.
+fn b2_variants() -> Vec<B2Variant> {
+    let row_del_check = |env: &serde_json::Value, ctx: &str| {
+        assert_eq!(b2_labels(env), ["항목 1", "항목 3", "항목 4"], "{ctx}");
+        assert_eq!(b2_values(env, 0), ["4.3", "3.5", "4.5"], "{ctx}");
+    };
+    vec![
+        // -- 본선: 기준 문서 묶은세로막대형 --------------------------------
+        B2Variant {
+            folder: "세로막대형",
+            stem: "묶은세로막대형",
+            label: "행추가",
+            what: "카테고리 1행 추가 — 전 계열 cat/val 에 c:pt + ptCount 재계산, c:f 그대로",
+            expect_shape: "그룹 4→5, 「추가항목」 그룹 막대 3개(45/44/43)가 축을 뚫고 솟음",
+            stale: "c:f(4행 범위)·③·④",
+            surgery: Box::new(b2_bar_like_row_add),
+            check: Box::new(b2_check_row_add),
+        },
+        B2Variant {
+            folder: "세로막대형",
+            stem: "묶은세로막대형",
+            label: "행삭제",
+            what: "카테고리 「항목 2」 삭제 — c:pt 제거 + idx 재번호 + ptCount 재계산",
+            expect_shape: "그룹 4→3, 「항목 2」 가 사라짐",
+            stale: "c:f(4행 범위)·③·④",
+            surgery: Box::new(|xml| b2_remove_point(&b2_remove_point(xml, "c:cat", 1), "c:val", 1)),
+            check: Box::new(row_del_check),
+        },
+        B2Variant {
+            folder: "세로막대형",
+            stem: "묶은세로막대형",
+            label: "계열추가",
+            what: "계열 1개 신설 — c:ser 복제 + c:idx/c:order 채번, 이름·값 교체",
+            expect_shape: "색 3→4, 새 계열 「추가계열」 이 전 그룹에서 같은 높이(6)",
+            stale: "복제 계열의 c:f(원본 열 참조 그대로)·③·④",
+            surgery: Box::new(|xml| b2_clone_last_series(xml, "추가계열", &["6", "6", "6", "6"])),
+            check: Box::new(|env, ctx| {
+                assert_eq!(
+                    b2_series_names(env),
+                    ["계열 1", "계열 2", "계열 3", "추가계열"],
+                    "{ctx}"
+                );
+                assert_eq!(b2_values(env, 3), ["6", "6", "6", "6"], "{ctx}");
+            }),
+        },
+        B2Variant {
+            folder: "세로막대형",
+            stem: "묶은세로막대형",
+            label: "계열삭제",
+            what: "계열 「계열 2」 삭제 + 잔여 c:idx/c:order 재번호",
+            expect_shape: "색 3→2, 두 번째 색 막대가 사라짐",
+            stale: "잔여 c:f·③·④",
+            surgery: Box::new(|xml| b2_remove_series(xml, 1)),
+            check: Box::new(|env, ctx| {
+                assert_eq!(b2_series_names(env), ["계열 1", "계열 3"], "{ctx}");
+            }),
+        },
+        B2Variant {
+            folder: "세로막대형",
+            stem: "묶은세로막대형",
+            label: "계열명변경",
+            what: "계열명 변경 — c:tx 캐시(strCache c:v)만 교체",
+            expect_shape: "막대는 그대로, 범례 첫 항목이 「이름바뀐계열」 (글자를 읽어 주세요)",
+            stale: "c:f(이름 참조 $B$1)·③·④",
+            surgery: Box::new(|xml| b2_rename_series(xml, 0, "이름바뀐계열")),
+            check: Box::new(|env, ctx| {
+                assert_eq!(
+                    b2_series_names(env),
+                    ["이름바뀐계열", "계열 2", "계열 3"],
+                    "{ctx}"
+                );
+            }),
+        },
+        B2Variant {
+            folder: "세로막대형",
+            stem: "묶은세로막대형",
+            label: "라벨변경",
+            what: "카테고리 라벨 변경 — 전 계열 c:cat 캐시 동기 교체",
+            expect_shape: "막대는 그대로, 첫 축 라벨이 「바뀐항목」 (글자를 읽어 주세요)",
+            stale: "c:f(라벨 참조 $A$2:$A$5)·③·④",
+            surgery: Box::new(|xml| b2_relabel_category(xml, 0, "바뀐항목")),
+            check: Box::new(|env, ctx| {
+                assert_eq!(b2_labels(env)[0], "바뀐항목", "{ctx}");
+            }),
+        },
+        // -- 경계: B2 가 거부하려는 편집의 실측 -----------------------------
+        B2Variant {
+            folder: "원형",
+            stem: "원형대원형",
+            label: "계열추가",
+            what: "(경계) 1계열 고정인 원형에 2번째 계열 신설",
+            expect_shape: "한컴이 어떻게 다루는지 자체가 답 — 깨져도 그대로 기록",
+            stale: "복제 계열의 c:f·③·④",
+            surgery: Box::new(|xml| {
+                b2_clone_last_series(xml, "추가계열", &["10", "20", "30", "40"])
+            }),
+            check: Box::new(|env, ctx| {
+                assert_eq!(b2_series_names(env).len(), 2, "{ctx}");
+            }),
+        },
+        B2Variant {
+            folder: "기타",
+            stem: "시가고가저가종가",
+            label: "계열삭제",
+            what: "(경계) 주식형 4계열에서 「시가」 삭제 → 3계열 + 재번호",
+            expect_shape: "시가고가저가종가가 고·저·종 3계열이 되는가 — 깨져도 그대로 기록",
+            stale: "잔여 c:f·③·④",
+            surgery: Box::new(|xml| b2_remove_series(xml, 0)),
+            check: Box::new(|env, ctx| {
+                assert_eq!(b2_series_names(env), ["고가", "저가", "종가"], "{ctx}");
+            }),
+        },
+        // -- 종류 커버리지: 본선 처치(행추가)를 나머지 판정 대상에 ----------
+        B2Variant {
+            folder: "가로막대형",
+            stem: "묶은가로막대형",
+            label: "행추가",
+            what: "카테고리 1행 추가 (본선과 동일 처치)",
+            expect_shape: "그룹 4→5, 「추가항목」 그룹이 가로로 축을 뚫음",
+            stale: "c:f(4행 범위)·③·④",
+            surgery: Box::new(b2_bar_like_row_add),
+            check: Box::new(b2_check_row_add),
+        },
+        B2Variant {
+            folder: "라인",
+            stem: "표식이있는꺽은선형",
+            label: "행추가",
+            what: "카테고리 1행 추가 (본선과 동일 처치)",
+            expect_shape: "점 4→5, 마지막에서 세 선이 모두 급등",
+            stale: "c:f(4행 범위)·③·④",
+            surgery: Box::new(b2_bar_like_row_add),
+            check: Box::new(b2_check_row_add),
+        },
+        B2Variant {
+            folder: "분산형",
+            stem: "직선및표식이있는분산형",
+            label: "점추가",
+            what: "점 1개 추가 — c:cat 없는 축이라 xVal/yVal 에 동기 추가",
+            expect_shape: "점 3→4, 오른쪽 위 (9, 27)·(9, 10) 새 점",
+            stale: "c:f(3점 범위, ser0 은 한컴이 쓴 깨진 범위 $B$2:$A$4)·③·④",
+            surgery: Box::new(|xml| {
+                let with_x = b2_add_point(xml, "c:xVal", &["9", "9"]);
+                b2_add_point(&with_x, "c:yVal", &["27", "10"])
+            }),
+            check: Box::new(|env, ctx| {
+                assert_eq!(b2_series_names(env).len(), 2, "{ctx}");
+                let v0 = b2_values(env, 0);
+                assert_eq!(v0.len(), 4, "{ctx}: 값 수");
+                assert_eq!(v0.last().map(String::as_str), Some("27"), "{ctx}");
+            }),
+        },
+        B2Variant {
+            folder: "특이케이스",
+            stem: "가로막대형_하나만있을떄_단일시리즈제목",
+            label: "점추가",
+            what: "1계열 1점(c:numLit/strLit)에 점 1개 추가 — 삭제 하한의 역방향 경계",
+            expect_shape: "막대 1→2, 축이 43 에 맞춰 늘어남 (축 숫자를 읽어 주세요)",
+            stale: "③·④ (numLit 이라 데이터 c:f 없음)",
+            surgery: Box::new(|xml| {
+                let with_cat = b2_add_point(xml, "c:cat", &["추가항목"]);
+                b2_add_point(&with_cat, "c:val", &["43"])
+            }),
+            check: Box::new(|env, ctx| {
+                assert_eq!(b2_labels(env), ["항목 1", "추가항목"], "{ctx}");
+                assert_eq!(b2_values(env, 0), ["4.3", "43"], "{ctx}");
+            }),
+        },
+        B2Variant {
+            folder: "세로막대형",
+            stem: "누적세로막대형",
+            label: "계열삭제",
+            what: "누적형에서 「계열 2」 삭제 — 누적 합이 바뀌는 축(#5447 §5)",
+            expect_shape: "누적 기둥에서 가운데 색이 빠져 총높이가 낮아짐",
+            stale: "잔여 c:f·③·④",
+            surgery: Box::new(|xml| b2_remove_series(xml, 1)),
+            check: Box::new(|env, ctx| {
+                assert_eq!(b2_series_names(env), ["계열 1", "계열 3"], "{ctx}");
+            }),
+        },
+        B2Variant {
+            folder: "세로막대형",
+            stem: "3차원묶은세로막대형",
+            label: "행추가",
+            what: "3D(c:view3D)에서 카테고리 1행 추가 (본선과 동일 처치)",
+            expect_shape: "3D 그룹 4→5, 「추가항목」 그룹이 축을 뚫음",
+            stale: "c:f(4행 범위)·③·④",
+            surgery: Box::new(b2_bar_like_row_add),
+            check: Box::new(b2_check_row_add),
+        },
+    ]
+}
+
+/// 변종 1건을 양 포맷으로 만들어 자기검증 후 기록한다. 반환은 쓴 파일 수(2).
+fn b2_write_variant(out_dir: &std::path::Path, v: &B2Variant, sheet: &mut String) -> usize {
+    let mut written = 0usize;
+    for ext in ["hwpx", "hwp"] {
+        let src = manifest(&format!("samples/chart/{}/{}.{ext}", v.folder, v.stem));
+        let src_bytes = std::fs::read(&src).expect("샘플 읽기");
+        let (_legacy, ooxml) = chart_streams(&src_bytes).expect("차트 스트림");
+        let xml = String::from_utf8(ooxml).expect("UTF-8");
+        let name = format!("{}-{}.{ext}", v.stem, v.label);
+
+        let xml_new = (v.surgery)(&xml);
+        assert_ne!(xml, xml_new, "{name}: 수술이 아무것도 바꾸지 않았다");
+        scan_chart_values(xml_new.as_bytes())
+            .unwrap_or_else(|e| panic!("{name}: 변종이 스캐너를 통과하지 못한다 — {e:?}"));
+
+        let mut core = core_of(&src);
+        // ③④ 는 손대지 않는다 — 주입 전 바이트를 기억해 뒀다가 저장본에서 대조한다.
+        let chart = collect_charts(core.document())[0].clone();
+        let nested_before = core.document().bin_data_content[chart.nested_copy.expect("②")]
+            .data
+            .load();
+        let legacy_before = stream_of(&nested_before, LEGACY_STREAM).expect("③");
+        let emf_before = stream_of(&nested_before, EMF_STREAM).expect("④");
+
+        let bytes = if ext == "hwpx" {
+            replace_chart_representations(&mut core, xml_new.as_bytes(), xml_new.as_bytes());
+            core.export_hwpx_native().expect("HWPX 저장")
+        } else {
+            replace_chart_nested_only(&mut core, xml_new.as_bytes());
+            core.export_hwp_native().expect("HWP5 저장")
+        };
+
+        // 자기검증 1 — rhwp 재개방 + 스캔 게이트(비순차 idx·표현 일치) 통과 + 구조 확인.
+        let reread = DocumentCore::from_bytes(&bytes)
+            .unwrap_or_else(|e| panic!("{name}: rhwp 가 다시 열지 못한다 — {e:?}"));
+        let env = b2_envelope(&reread);
+        assert_eq!(env["ok"], true, "{name}: {env}");
+        (v.check)(&env, &name);
+
+        // 자기검증 2 — 의도한 표현에만 변종이 실렸고 ③④ 는 바이트 그대로다.
+        let chart_after = collect_charts(reread.document())[0].clone();
+        let nested_after = reread.document().bin_data_content[chart_after.nested_copy.expect("②")]
+            .data
+            .load();
+        assert_eq!(
+            stream_of(&nested_after, OOXML_STREAM).expect("②"),
+            xml_new.as_bytes(),
+            "{name}: ② 불일치"
+        );
+        assert_eq!(
+            stream_of(&nested_after, LEGACY_STREAM).expect("③"),
+            legacy_before,
+            "{name}: ③ 이 변했다"
+        );
+        assert_eq!(
+            stream_of(&nested_after, EMF_STREAM).expect("④"),
+            emf_before,
+            "{name}: ④ 가 변했다"
+        );
+        if ext == "hwpx" {
+            let zip_after = reread.document().bin_data_content[chart_after.zip_part.expect("①")]
+                .data
+                .load();
+            assert_eq!(zip_after, xml_new.as_bytes(), "{name}: ① 불일치");
+        }
+
+        std::fs::write(out_dir.join(&name), &bytes).expect("산출 쓰기");
+        written += 1;
+        sheet.push_str(&format!(
+            "| `{name}` | {} | {} | {} | {} |\n",
+            v.folder, v.what, v.expect_shape, v.stale
+        ));
+    }
+    written
+}
+
+/// Stage 7 — B2 구조 변종 한컴 판정 꾸러미(#5447 §5)를 만든다.
+///
+/// `output/` 에 파일을 쓰는 부작용이 있어 기본 실행에서 뺀다. 판정 직전에만 돌린다:
+///
+/// ```text
+/// cargo test --profile release-test --test issue_4100_chart_data_edit \
+///     generate_b2_structure_judgment_bundle -- --ignored --nocapture
+/// ```
+#[test]
+#[ignore = "output/ 에 파일을 쓴다 — 한컴 판정 직전에만 실행"]
+fn generate_b2_structure_judgment_bundle() {
+    let out_dir = manifest("output/issue_5447_b2_judgment");
+    std::fs::create_dir_all(&out_dir).expect("출력 디렉터리");
+
+    let mut sheet = String::new();
+    sheet.push_str("# #5447 B2 스파이크 — 한컴 판정표 (구조 변종)\n\n");
+    sheet.push_str(
+        "행(카테고리)·열(계열)·라벨을 **구조적으로** 바꾼 변종입니다. B1 과 달리 값이\n\
+         아니라 **개수와 글자**가 바뀌므로, 파일마다 「기대 모양」 칸과 대조해 주세요.\n\n\
+         `c:f` 참조 범위·③레거시 Contents·④프리뷰는 **일부러 안 고쳤습니다**\n\
+         (#5447 §3-1) — 한컴이 낡은 그것들을 어떻게 다루는지가 판정 대상입니다.\n\n",
+    );
+    sheet.push_str("## 보는 법\n\n");
+    sheet.push_str(
+        "1. `*-대조군.hwpx` 로 원본 모습을 눈에 익힙니다.\n\
+         2. 변종 파일마다 **네 가지**를 봐 주세요:\n   \
+         (a) 열 때 오류·복구 대화상자가 뜨는가\n   \
+         (b) 차트가 **기대 모양대로** 그려지는가 (틀만 나오고 속이 비면 실패입니다)\n   \
+         (c) 차트를 더블클릭하면 편집기가 열리는가\n   \
+         (d) **편집기(데이터 편집)의 행·열 수가 기대 모양과 일치하는가**\n\n\
+         (d) 가 이번 스파이크의 핵심입니다 — 예: `행추가` 파일에서 편집기가 **4행만**\n\
+         보여 주면 한컴 편집기가 낡은 `c:f` 범위를 재해석해 자른 것입니다\n\
+         (#5447 S2 — `c:f` 무갱신 정책이 뒤집힐 유일한 지점).\n\n",
+    );
+    sheet.push_str(
+        "## 경계 변종 — 깨져도 그 자체가 답입니다\n\n\
+         `원형대원형-계열추가`(원형에 2번째 계열)와 `시가고가저가종가-계열삭제`(4→3계열)는\n\
+         B2 가 **거부하려는 편집**의 실측입니다. 오류가 나면 오류대로, 이상하게 그려지면\n\
+         그 모양대로 기록해 주세요.\n\n",
+    );
+    sheet.push_str("## 산출물\n\n");
+    sheet.push_str("| 파일 | 종류 | 무엇을 바꿨나 | 기대 모양 | 낡게 남긴 것 |\n");
+    sheet.push_str("|---|---|---|---|---|\n");
+
+    let variants = b2_variants();
+    let mut written = 0usize;
+
+    // 대조군 — 변종이 쓰는 원본 문서마다 하나씩.
+    let mut controls: Vec<(&str, &str)> = Vec::new();
+    for v in &variants {
+        if !controls.contains(&(v.folder, v.stem)) {
+            controls.push((v.folder, v.stem));
+        }
+    }
+    for (folder, stem) in &controls {
+        std::fs::copy(
+            manifest(&format!("samples/chart/{folder}/{stem}.hwpx")),
+            out_dir.join(format!("{stem}-대조군.hwpx")),
+        )
+        .expect("대조군 복사");
+        written += 1;
+        sheet.push_str(&format!(
+            "| `{stem}-대조군.hwpx` | {folder} | (무편집 원본) | 원본 그대로 | — |\n"
+        ));
+    }
+
+    for v in &variants {
+        written += b2_write_variant(&out_dir, v, &mut sheet);
+    }
+
+    // 변환 축 — 행추가 변종을 HWPX 에서 만들고 HWP5 로 변환한다. ①은 변환에서
+    // 접히므로 이 파일이 보여 주는 구조는 곧 ②다(B1 변환 축과 같은 취지).
+    {
+        let src = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+        let src_bytes = std::fs::read(&src).expect("샘플");
+        let (_legacy, ooxml) = chart_streams(&src_bytes).expect("차트 스트림");
+        let xml_new = b2_bar_like_row_add(&String::from_utf8(ooxml).expect("UTF-8"));
+
+        let mut core = core_of(&src);
+        replace_chart_representations(&mut core, xml_new.as_bytes(), xml_new.as_bytes());
+        let bytes = core
+            .export_hwp_with_adapter_snapshot()
+            .expect("HWP5 변환 저장");
+        let reread = DocumentCore::from_bytes(&bytes).expect("변환본 재파스");
+        let env = b2_envelope(&reread);
+        assert_eq!(env["ok"], true, "변환본: {env}");
+        b2_check_row_add(&env, "변환본");
+
+        let name = "묶은세로막대형-행추가-HWPX에서변환.hwp";
+        std::fs::write(out_dir.join(name), &bytes).expect("변환본 쓰기");
+        written += 1;
+        sheet.push_str(&format!(
+            "| `{name}` | 세로막대형 | 행추가 후 HWPX→HWP5 변환 (구조가 ② 로 접힘) | 그룹 4→5 | c:f·③·④ |\n"
+        ));
+    }
+
+    sheet.push_str(&format!("\n총 {written} 파일.\n\n"));
+    sheet.push_str(
+        "## PDF 회신\n\n\
+         각 파일을 한컴에서 열어 **같은 폴더에 PDF 로 저장**해 주시면, 대조군과 변종의\n\
+         렌더를 144DPI 래스터 해시로 갈라 반영 여부를 데이터로 판정하겠습니다\n\
+         (#4100 §4-1 선례 — PDF 스트림 해시는 오판, 반드시 래스터).\n\n\
+         (d) 편집기 행·열 수는 해시로 잴 수 없으니 **파일별로 한 줄씩** 남겨 주세요.\n\n\
+         상세 설계는 #5447.\n",
+    );
+
+    std::fs::write(out_dir.join("PANJEONG.md"), sheet).expect("판정표 쓰기");
+    println!("\n  판정 번들: {}", out_dir.display());
+    println!("  파일 {written}개 + 판정표 PANJEONG.md");
+    assert_eq!(written, 38, "대조군 9 + 변종 14 × 2포맷 + 변환본 1");
 }
