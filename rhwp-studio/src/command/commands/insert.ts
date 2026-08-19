@@ -15,7 +15,7 @@ import type { CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { InputHandler } from '@/engine/input-handler';
 import { SetObjectPropsCommand, type RefreshPolicy } from '@/engine/command';
-import { getObjectProps, type ObjectPropsRef } from '@/engine/object-props';
+import { getObjectProps, setObjectProps, type ObjectPropsRef } from '@/engine/object-props';
 
 /** 스텁 커맨드 생성 헬퍼 */
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
@@ -454,7 +454,10 @@ export const insertCommands: CommandDef[] = [
           captionIncludeMargin: false,
         };
         let result: any;
-        result = setProps(services, ref, captionProps);
+        // [Task #3230] `setProps` 래퍼가 사라져 공유 라우팅을 직접 부른다. 이 경로는 종전부터
+        // 라우터를 거치지 않고 직접 적용하고 `document-changed` 를 스스로 emit 한다 —
+        // 회전/대칭과 달리 이번 변경 대상이 아니라 종전 동작 그대로 둔다.
+        result = setObjectProps(services.wasm, ref, captionProps);
         // "그림 N " 끝 위치를 Rust가 반환
         charOffset = result?.captionCharOffset ?? 4;
         services.eventBus.emit('document-changed');
