@@ -473,6 +473,11 @@ fn serialize_para_header_with_mask(
 
     let break_val: u8 = if para.raw_break_type != 0 {
         para.raw_break_type
+    // HWP3 파서가 쪽 경계에서 올린 Page 는 조판 힌트다. 명시적인 나눔으로
+    // HWP5에 다시 기록하면 재파싱 때 SectionDef 제어문이 생기고 문단 축이 밀린다.
+    // HWPX 직렬화와 마찬가지로 저장 형식에는 내보내지 않는다 (#5553).
+    } else if para.page_break_synthesized {
+        0x00
     } else {
         match para.column_type {
             ColumnBreakType::Section => 0x01,
