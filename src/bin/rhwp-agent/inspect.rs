@@ -405,3 +405,67 @@ pub fn run_outline(args: &[String]) -> i32 {
     }
     EXIT_OK
 }
+
+pub fn run_batch_info(args: &[String]) -> i32 {
+    let usage = "rhwp-agent batch-info <파일...> [--json]";
+    let mut json_mode = false;
+    let mut paths: Vec<String> = Vec::new();
+    for arg in args {
+        match arg.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                eprintln!("사용법: {usage}");
+                return EXIT_USAGE;
+            }
+            other => paths.push(other.to_string()),
+        }
+    }
+    if paths.is_empty() {
+        eprintln!("오류: 파일 경로가 필요합니다.");
+        eprintln!("사용법: {usage}");
+        return EXIT_USAGE;
+    }
+    let mut files = Vec::new();
+    let mut failed = 0u64;
+    for path in &paths {
+        match open(path) {
+            Ok((core, format, bytes)) => {
+                let page_count = core.page_count();
+                let table_count =
+                    rhwp::document_core::queries::table_extract::extract_tables(core.document())
+                        .len() as u64;
+                let field_count = core.collect_all_fields().len() as u64;
+                files.push(json!({
+                    "source": path,
+                    "ok": true,
+                    "format": format,
+                    "bytes": bytes,
+                    "pageCount": page_count,
+                    "tableCount": table_count,
+                    "fieldCount": field_count,
+                    "sectionCount": core.document().sections.len(),
+                }));
+            }
+            Err(_) => {
+                failed += 1;
+                files.push(json!({
+                    "source": path,
+                    "ok": false,
+                }));
+            }
+        }
+    }
+    let payload = json!({
+        "fileCount": paths.len(),
+        "okCount": paths.len() as u64 - failed,
+        "failCount": failed,
+        "files": files,
+    });
+    if json_mode {
+        print_json(&envelope("batch-info", payload, &["files[].source"]));
+    } else {
+        crate::outln!("ok={} fail={}", paths.len() as u64 - failed, failed);
+    }
+    EXIT_OK
+}

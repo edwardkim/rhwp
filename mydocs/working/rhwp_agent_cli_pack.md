@@ -84,6 +84,9 @@ issue: 3918
 | `structure` | 개요·조문 트리 | `structure::build_structure` |
 | `bookmarks` | 책갈피 이름·주소 | `get_bookmarks_native` |
 | `charts` | 차트 위치(읽기만) | `chart_extract::collect_charts` |
+| `outline-nav` | 개요 번호 문단 | `get_outline_navigation_native` |
+| `headers-footers` | 머리말·꼬리말 목록 | `get_header_footer_list_native` |
+| `batch-info` | 여러 파일 요약 | `info` 와 같은 조회를 N개 |
 
 ### 5.2 쪽·본문
 
@@ -116,12 +119,14 @@ issue: 3918
 |------|---------|--------|
 | `fields` / `field-count` | 누름틀 이름 | 1 |
 | `field-values` | 이름과 현재 값 | 1 |
+| `field-locate` | 이름·값·구역·문단·리스트 좌표 | 1 |
 | `empty-fields` | 값이 빈 누름틀 | 1 |
 | `form-ready` | 누름틀이 있으면 채움 축 | 1, exit 3 = 대상 아님 |
 | `field-diff` | 두 서식 누름틀 이름 차집합 | 개정판, exit 3 = 집합 다름 |
 | `tables` / `table-count` | 표 치수 | 2 |
 | `table-inspect` | 격자·병합·셀 텍스트 | 2 |
-| `table-csv` | 표 하나 CSV | 2 |
+| `table-csv` | 표 하나 CSV (`--all` 이면 전 표) | 2 |
+| `captions` | 표 캡션 | 2 |
 | `merged-tables` | 병합 셀이 있는 표만 | 2 |
 
 ### 5.5 수확
