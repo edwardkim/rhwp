@@ -487,13 +487,27 @@ impl HeightMeasurer {
         }
     }
 
+    /// 셀 세로 정렬 기준 콘텐츠 높이에 들어가는 비-flow 개체의 시각 bottom.
+    ///
+    /// [Issue #5593] 글 앞으로(`InFrontOfText`)·글 뒤로(`BehindText`) 개체도 포함한다.
+    /// 이 둘은 줄 흐름을 밀지 않으므로 저장 LINE_SEG 에도 흡수되지 않는다 — 종전처럼
+    /// 빼 두면 세로 가운데 정렬 셀이 **글자 줄 높이만으로** 중앙을 잡아, 줄보다 큰
+    /// 개체(바코드·도장)가 줄 위치에 그려지며 칸 아래로 밀려난다(00425: 칸 85.0px,
+    /// 줄 16.0px, 그림 77.5px → 칸 밖 27px).
+    ///
+    /// `TopAndBottom` 은 여기서 제외한 채로 둔다. 그 개체는 줄을 실제로 밀어 한컴이
+    /// 저장 vpos 에 흡수하므로(#1486 악보 셀), 여기서 다시 세면 이중 계상이 된다.
     fn cell_wrap_object_visual_bottom(&self, common: &CommonObjAttr) -> f64 {
         if common.treat_as_char {
             return 0.0;
         }
         if !matches!(
             common.text_wrap,
-            TextWrap::Square | TextWrap::Tight | TextWrap::Through
+            TextWrap::Square
+                | TextWrap::Tight
+                | TextWrap::Through
+                | TextWrap::InFrontOfText
+                | TextWrap::BehindText
         ) {
             return 0.0;
         }
