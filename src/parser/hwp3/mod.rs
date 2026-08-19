@@ -4311,6 +4311,82 @@ fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, doc_info: &Hwp3D
             fixup_hwp3_answer_column_def(&mut section.paragraphs, &para_shapes, body_width_hu);
         }
     }
+
+    // [#5542/#5532] 구역 첫 문단에 SectionDef 컨트롤을 합성하고 secd/cold 의
+    // 8유닛 슬롯을 문단 좌표계에 계상한다 — 모든 앞머리 컨트롤 합성이 끝난
+    // 뒤(위 fixup 들 포함) 한 번만.
+    for section in &mut doc.sections {
+        let section_def = section.section_def.clone();
+        account_hwp3_section_leading_control_units(&mut section.paragraphs, section_def);
+    }
+}
+
+/// [#5542] 구역 첫 문단의 IR 계약 정합 — `Control::SectionDef` 합성 + 슬롯 계상.
+///
+/// HWP5 파서(`body_text.rs`)는 구역 첫 문단 controls 에 `SectionDef`/`ColumnDef` 를
+/// 싣고, PARA_TEXT 의 확장 컨트롤 코드가 8유닛씩 위치 좌표(char_offsets·char_shapes·
+/// lineseg textpos·char_count)를 전진시킨다. HWPX 파서도 `secPr`/`colPr` 마다 같은
+/// 8유닛을 센다. HWP3 파서는 두 컨트롤을 텍스트 스트림 밖에서 합성해 왔는데
+/// (SectionDef 는 아예 미합성 — HWP5 직렬화기가 임시 사본으로 보완, #1915),
+/// 위치 계상이 빠져 h2x 저장-재파싱에서 구역 첫 문단의 char_shapes 경계가 컨트롤
+/// 몫만큼 어긋났다(hwp3-curve·hwp3-sample5 paragraph[0]: +16, --verify exit 3).
+/// 좌표만 전진시키고 SectionDef 컨트롤이 없으면, HWPX 직렬화기의 hidden-슬롯 정합
+/// (#1591 v2: slot_count == 가시 + hidden)이 증거 불일치로 mismatch 폴백에 빠져
+/// 저장 lineseg 가 억제된다 — 컨트롤 합성과 좌표 계상은 한 몸이다.
+///
+/// 직렬화기는 같은 좌표계(char_offsets)로 텍스트를 사상하므로 출력 run 구조는
+/// 불변이고, 저장 linesegarray 의 textpos 만 재파싱 좌표와 정합하게 된다.
+fn account_hwp3_section_leading_control_units(
+    paragraphs: &mut [crate::model::paragraph::Paragraph],
+    section_def: crate::model::document::SectionDef,
+) {
+    use crate::model::control::Control;
+
+    let Some(first) = paragraphs.first_mut() else {
+        return;
+    };
+    // SectionDef 존재 = 이미 이 보정을 거친(또는 좌표가 계상된 HWP5/HWPX 계열)
+    // 문단 — 재적용해도 좌표를 다시 밀지 않는다(멱등).
+    if first
+        .controls
+        .iter()
+        .any(|control| matches!(control, Control::SectionDef(_)))
+    {
+        return;
+    }
+    first
+        .controls
+        .insert(0, Control::SectionDef(Box::new(section_def)));
+    // ctrl_data_records[i] ↔ controls[i] 병렬 계약 유지 (#3214).
+    if !first.ctrl_data_records.is_empty() {
+        first.ctrl_data_records.insert(0, None);
+    }
+
+    // 재파싱이 세게 될 앞머리 슬롯(secd·cold 연쇄) 수만큼 좌표를 전진시킨다.
+    let slots = first
+        .controls
+        .iter()
+        .take_while(|control| matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)))
+        .count() as u32;
+    let shift = slots * 8;
+    if shift == 0 {
+        return;
+    }
+    for offset in &mut first.char_offsets {
+        *offset += shift;
+    }
+    for char_shape in &mut first.char_shapes {
+        // 선두 대표 글자모양(start_pos=0)은 컨트롤 슬롯까지 덮으므로 0 을 유지한다.
+        if char_shape.start_pos > 0 {
+            char_shape.start_pos += shift;
+        }
+    }
+    for line_seg in &mut first.line_segs {
+        if line_seg.text_start > 0 {
+            line_seg.text_start += shift;
+        }
+    }
+    first.char_count += shift;
 }
 
 fn ensure_hwp3_initial_body_column_def(paragraphs: &mut [crate::model::paragraph::Paragraph]) {
@@ -4330,6 +4406,11 @@ fn ensure_hwp3_initial_body_column_def(paragraphs: &mut [crate::model::paragraph
     first_paragraph
         .controls
         .insert(0, Control::ColumnDef(hwp3_default_body_column_def()));
+    // ctrl_data_records[i] ↔ controls[i] 병렬 계약 유지 (#3214) — 앞삽입이
+    // 기존 Some(data) 의 대응을 밀지 않게 한다.
+    if !first_paragraph.ctrl_data_records.is_empty() {
+        first_paragraph.ctrl_data_records.insert(0, None);
+    }
 }
 
 fn fixup_hwp3_answer_column_def(
@@ -5074,12 +5155,19 @@ mod tests {
 
         fixup_hwp3_notes(&mut doc, &Hwp3DocInfo::default());
         let controls = &doc.sections[0].paragraphs[0].controls;
+        // [#5542] 구역 첫 문단은 secd → cold 연쇄로 시작한다(HWP5 파서 IR 동형).
         assert!(
-            matches!(controls.first(), Some(Control::ColumnDef(_))),
-            "미주가 없어도 HWP3 구역 첫 문단은 cold로 시작해야 한다"
+            matches!(controls.first(), Some(Control::SectionDef(_))),
+            "HWP3 구역 첫 문단은 secd로 시작해야 한다"
         );
+        assert!(
+            matches!(controls.get(1), Some(Control::ColumnDef(_))),
+            "미주가 없어도 HWP3 구역 첫 문단은 secd 뒤 cold가 있어야 한다"
+        );
+        let char_count_after_first = doc.sections[0].paragraphs[0].char_count;
 
-        // parser fixup이 재적용되어도 이미 존재하는 cold를 중복하지 않는다.
+        // parser fixup이 재적용되어도 이미 존재하는 secd/cold를 중복하지 않고,
+        // [#5542] 슬롯 좌표 계상(char_count 전진)도 다시 밀지 않는다(멱등).
         fixup_hwp3_notes(&mut doc, &Hwp3DocInfo::default());
         assert_eq!(
             doc.sections[0].paragraphs[0]
@@ -5088,6 +5176,18 @@ mod tests {
                 .filter(|control| matches!(control, Control::ColumnDef(_)))
                 .count(),
             1
+        );
+        assert_eq!(
+            doc.sections[0].paragraphs[0]
+                .controls
+                .iter()
+                .filter(|control| matches!(control, Control::SectionDef(_)))
+                .count(),
+            1
+        );
+        assert_eq!(
+            doc.sections[0].paragraphs[0].char_count,
+            char_count_after_first
         );
     }
 

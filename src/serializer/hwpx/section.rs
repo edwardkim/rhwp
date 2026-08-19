@@ -826,6 +826,10 @@ pub(crate) struct InlineCursor<'a> {
     pub tab_idx: usize,
     /// 문단의 제목 차례 표시 전체 (문자 인덱스 오름차순)
     pub title_marks: &'a [TitleMark],
+    /// [#5537] `title_marks[i]` 가 **앞(닫히는) run 소유**인가 — char_shapes 경계
+    /// 유닛이 표시 끝 유닛과 일치하면 원본은 표시까지를 앞 run 에 뒀다는 증거다.
+    /// 비어 있으면 전부 false(종전 동작: 다음 run 머리 방출).
+    pub mark_owned_by_prev: &'a [bool],
     /// 다음에 방출할 `title_marks` 인덱스
     pub mark_idx: usize,
     /// 지금까지 방출한 문단 텍스트의 문자 수
@@ -850,6 +854,34 @@ impl InlineCursor<'_> {
             if m.char_idx > self.char_idx {
                 break;
             }
+            flush_buf(t_xml, buf);
+            t_xml.push_str(&format!(
+                r#"<hp:titleMark ignore="{}"/>"#,
+                if m.ignore { 1 } else { 0 }
+            ));
+            self.mark_idx += 1;
+        }
+    }
+
+    /// [#5537] 다음 미방출 표시가 현재 위치에 걸려 있고 **닫히는 run 소유**
+    /// (char_shapes 경계 유닛 == 표시 끝 유닛 — 원본이 표시를 앞 run 에 뒀다는
+    /// 증거)인가. 조각 말미 flush 의 발동 조건이다.
+    fn has_pending_prev_owned_mark(&self) -> bool {
+        self.title_marks
+            .get(self.mark_idx)
+            .is_some_and(|m| m.char_idx == self.char_idx)
+            && self
+                .mark_owned_by_prev
+                .get(self.mark_idx)
+                .copied()
+                .unwrap_or(false)
+    }
+
+    /// [#5537] 조각 말미에서 닫히는 run 소유의 표시만 방출한다 — 나머지는
+    /// 종전대로 다음 run 머리에서 flush 된다(한컴 실측 두 형태 공존).
+    fn flush_prev_owned_marks_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
+        while self.has_pending_prev_owned_mark() {
+            let m = &self.title_marks[self.mark_idx];
             flush_buf(t_xml, buf);
             t_xml.push_str(&format!(
                 r#"<hp:titleMark ignore="{}"/>"#,
@@ -945,6 +977,9 @@ pub(crate) fn render_hp_t_content(
             c => buf.push(hancom_symbol_for_hwpx(c)),
         }
     }
+    // [#5537] 조각 말미 — 닫히는 run 소유의 표시(경계 유닛 = 표시 끝 유닛)는 여기서
+    // 방출한다. 다음 run 머리로 넘기면 재파싱 char_shapes 경계가 8유닛 무너진다.
+    cursor.flush_prev_owned_marks_at_fragment_end(&mut t_xml, &mut buf);
     flush_buf(&mut t_xml, &mut buf);
     t_xml.push_str("</hp:t>");
     t_xml
@@ -1320,8 +1355,24 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
     // [#4677] 책갈피는 이제 위치 슬롯이라(`occupies_hwpx_slot_axis`) 슬롯 루프가 제자리에
     // 방출한다. 종전의 별도 방출(문단 시작 hoist / slot 사이 in-order, Task #1591·#1627)은
     // 슬롯 축이 책갈피를 잡지 못하던 시절의 우회였고, 그대로 두면 이중 방출이 된다.
+    // [#5537] 표시별 소유 run 판별 — 표시 끝 유닛(= 다음 문자의 char_offsets 값)에
+    // char_shapes 경계가 정확히 걸리면, 원본은 표시까지를 **앞 run** 에 뒀다
+    // (hwp3-sample10-hwp5 pi=14164: 유닛 7..15 표시 + 경계 15 = run(39) 소유.
+    // 다음 run 머리로 넘기면 재파싱 경계가 15→7 로 무너진다). 표시가 문자 갭
+    // 없이 놓인 합성 IR(char_offsets 에 8유닛 갭 없음)은 어느 경계에도 안 걸려
+    // 종전 동작(다음 run 머리) 그대로다.
+    let mark_owned_by_prev: Vec<bool> = para
+        .title_marks
+        .iter()
+        .map(|m| {
+            para.char_offsets.get(m.char_idx).is_some_and(|&end_unit| {
+                end_unit >= 8 && para.char_shapes.iter().any(|cs| cs.start_pos == end_unit)
+            })
+        })
+        .collect();
     let mut cursor = InlineCursor {
         title_marks: &para.title_marks,
+        mark_owned_by_prev: &mark_owned_by_prev,
         // [#4895] 출처가 제어 표기였던 문단만 `<hp:hyphen/>` 로 되돌린다.
         soft_hyphen_as_element: para.control_mask & (1u32 << 0x0018) != 0,
         // [#5174] 같은 계약 — 출처가 제어·요소 표기였던 문단만 `<hp:nbSpace/>` 로 되돌린다.
@@ -1914,7 +1965,10 @@ fn flush_text_fragment(
     tab_extended: &[[u16; 7]],
     cursor: &mut InlineCursor<'_>,
 ) {
-    if !text_buf.is_empty() {
+    // [#5537] 닫히는 run 소유의 제목 차례 표시(경계 유닛 = 표시 끝 유닛)가 걸려
+    // 있으면 버퍼가 비어도 조각을 방출한다 — 건너뛰면 표시가 다음 run 머리로
+    // 넘어가 재파싱 char_shapes 경계가 표시 폭(8유닛)만큼 무너진다.
+    if !text_buf.is_empty() || cursor.has_pending_prev_owned_mark() {
         out.push_str(&render_hp_t_content(text_buf, tab_extended, cursor));
         text_buf.clear();
     }

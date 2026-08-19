@@ -58,6 +58,15 @@
   background: var(--doc-paper);
 }
 
+/* 문서 교체 중 회색 작업 영역이 드러나 깜빡여 보이지 않도록 놓는 빈 쪽 자리표시자 */
+#scroll-content .page-placeholder {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 0;
+  background: var(--doc-paper);
+}
+
 #scroll-content .page-grid-overlay {
   position: absolute;
   mix-blend-mode: multiply;

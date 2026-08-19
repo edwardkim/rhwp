@@ -357,6 +357,11 @@ pub struct ParaShape {
     pub head_type: HeadType,
     /// 문단 수준 (0~6 → 1~7수준, attr1 bit 25~27)
     pub para_level: u8,
+    /// [#4898] HWPX 원본이 `hp:switch` 없이 여백·줄간격을 평문으로 적었는지 보존한다.
+    /// 한컴은 `hp:case`(HwpUnitChar) 를 우선 읽으므로, 평문 원본을 switch 형태로 되쓰면서
+    /// `case` 에 절반값을 넣으면 한글이 보는 여백이 절반이 된다(쪽수 증가). 파서가 이 표기를
+    /// 남기고 HWPX 직렬화기가 같은 표기로 되돌려 원본 조판을 지킨다.
+    pub hwpx_plain_para_margin: bool,
     /// [#1986] HWPX breakSetting@breakLatinWord 원문 보존
     /// (BREAK_WORD/KEEP_WORD/HYPHENATION). 파서 미수집 시 None → 직렬화 기본값
     /// KEEP_WORD. 값이 3가지라 attr1 비트 인코딩 대신 원문 보존으로 무손실 방출.
