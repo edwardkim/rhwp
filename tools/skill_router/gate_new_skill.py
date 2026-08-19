@@ -471,8 +471,18 @@ def check_real_commands(json_mode: bool) -> dict[str, Any]:
             "dead": [],
         }
     _say(json_mode, f"rhwp binary: {binary}")
-    caps_stdout = _run_rhwp(binary, ["capabilities"])
-    help_stdout = _run_rhwp(binary, ["--help"])
+    try:
+        caps_stdout = _run_rhwp(binary, ["capabilities"])
+        help_stdout = _run_rhwp(binary, ["--help"])
+    except FileNotFoundError:
+        _say(json_mode, "rhwp binary: skip (absent)")
+        return {
+            "present": False,
+            "ok": True,
+            "skipped": "no rhwp binary",
+            "checked": 0,
+            "dead": [],
+        }
     known = parse_known_commands(caps_stdout, help_stdout)
     groups = parse_group_subcommands(help_stdout)
     dead: list[str] = []
