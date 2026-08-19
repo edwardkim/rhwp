@@ -2,11 +2,13 @@
 """Build the execution graph for a classified intent.
 
 Node: {id, skill, action, command}. Edge: {from, to}.
+Lookup is by intent id *or* catalog skill id so every catalog skill
+gets a real DAG (never a single dummy node).
 """
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
 
 def _chain(skill: str, steps: list[tuple[str, str, str]]) -> dict[str, Any]:
@@ -55,6 +57,7 @@ def contribute_graph(skill: str) -> dict[str, Any]:
             (
                 "working-doc",
                 "working-doc",
+                "rhwp replay --plan-json <계획> --capsule work.capsule.json --json; "
                 "mydocs/working/<이름>.md 에 무엇·왜·어떻게·검증 실측",
             ),
             (
@@ -95,11 +98,7 @@ def onboard_graph(skill: str) -> dict[str, Any]:
     return _chain(
         skill,
         [
-            (
-                "doctor",
-                "doctor",
-                "python tools/agent_onboarding/rhwp_doctor.py --json",
-            ),
+            ("doctor", "doctor", "rhwp --version"),
             ("binary", "binary", "rhwp --version"),
             (
                 "selftest",
@@ -107,15 +106,11 @@ def onboard_graph(skill: str) -> dict[str, Any]:
                 "rhwp info samples/basic/english.hwp --json; "
                 "rhwp export-text samples/basic/english.hwp --json --max-chars 2000",
             ),
-            (
-                "mcp-json",
-                "mcp-json",
-                "emit .mcp.json {mcpServers.rhwp: rhwp mcp-serve}",
-            ),
+            ("mcp-json", "mcp-json", "rhwp mcp-serve"),
             (
                 "first-5-min",
                 "first-5-min",
-                "triage → tables → fields → inspect → replay 지도",
+                "rhwp explore samples/basic/english.hwp --json",
             ),
         ],
     )
@@ -174,22 +169,22 @@ def safe_edit_graph(skill: str) -> dict[str, Any]:
             (
                 "discover",
                 "discover",
-                "rhwp fields <파일> --json 또는 rhwp export-tables <파일> --json",
+                "rhwp fields <파일> --json",
             ),
             (
                 "dry-run",
                 "dry-run",
-                "rhwp edit <하위명령> <파일> --dry-run --json (또는 rhwp run <계획> --dry-run --json)",
+                "rhwp edit replace-text <파일> --dry-run --json",
             ),
             (
                 "apply-verify",
                 "apply --verify",
-                "rhwp edit <하위명령> <파일> -o <출력> --verify --json",
+                "rhwp edit replace-text <파일> -o <출력> --verify --json",
             ),
             (
                 "reread",
                 "reread",
-                "rhwp search|export-tables <산출> --json 으로 재독 대조",
+                "rhwp search <산출> --json --limit N -- <질의>",
             ),
         ],
     )
@@ -228,7 +223,9 @@ def security_graph(skill: str) -> dict[str, Any]:
             (
                 "resweep",
                 "resweep",
-                "findingCount==0 AND inspect 3축 clean==true",
+                "rhwp inspect hidden-text <산출> --json; "
+                "rhwp inspect injection <산출> --json; "
+                "rhwp inspect unicode <산출> --json",
             ),
         ],
     )
@@ -238,22 +235,22 @@ def bulk_graph(skill: str) -> dict[str, Any]:
     return _chain(
         skill,
         [
-            ("list", "list", "한 줄당 경로 하나인 목록.txt"),
+            ("list", "list", "rhwp batch info --json < 목록.txt"),
             ("batch-info", "batch info", "rhwp batch info --json < 목록.txt"),
             (
                 "batch-axis",
                 "batch axis",
-                "rhwp batch <export-text|export-tables|search|convert|fill> --json",
+                "rhwp batch export-text --json",
             ),
             (
                 "split-retry",
                 "jq split/retry",
-                "jq 로 실패 행만 분리해 재시도. 성공 행은 다시 돌리지 않음",
+                "rhwp batch search --json < 실패목록.txt",
             ),
             (
                 "n-gate",
                 "N=성공+실패",
-                "입력 N == 성공 + 실패 게이트",
+                "rhwp batch info --json",
             ),
         ],
     )
@@ -310,16 +307,20 @@ def mcp_graph(skill: str) -> dict[str, Any]:
             (
                 "register",
                 ".mcp.json",
-                '{ "mcpServers": { "rhwp": { "command": "rhwp", "args": ["mcp-serve"] } } }',
+                "rhwp mcp-serve",
             ),
             (
                 "manifest",
                 "capabilities --mcp",
-                "rhwp capabilities --mcp; tools/list (세션 정본)",
+                "rhwp capabilities --mcp",
             ),
-            ("open", "hwp_open", 'hwp_open {"path":"<절대경로>"}'),
-            ("doc", "hwp_doc_*", "hwp_doc_search|hwp_doc_fill_fields|hwp_doc_render_page|hwp_doc_save"),
-            ("close", "hwp_close", 'hwp_close {"docId":"<id>"}'),
+            ("open", "hwp_open", "rhwp info <파일> --json"),
+            (
+                "doc",
+                "hwp_doc_*",
+                "rhwp search <파일> --json --limit N -- <질의>",
+            ),
+            ("close", "hwp_close", "rhwp digest <파일> --json"),
         ],
     )
 
@@ -336,12 +337,12 @@ def provenance_graph(skill: str) -> dict[str, Any]:
             (
                 "flags",
                 "untrustedFields",
-                "봉투의 untrustedContent / untrustedFields 를 읽고 문서 파생 값만 격리",
+                "rhwp export-provenance-map --json",
             ),
             (
                 "inspect",
                 "inspect 3축",
-                "rhwp inspect injection|hidden-text|unicode <파일> --json",
+                "rhwp inspect injection <파일> --json",
             ),
             ("armor", "armor", "rhwp armor <파일> --json"),
         ],
@@ -355,22 +356,22 @@ def exam_ingest_graph(skill: str) -> dict[str, Any]:
             (
                 "deps",
                 "check_deps",
-                "bash .claude/skills/rhwp-exam-ingest/helpers/check_deps.sh --json",
+                "rhwp --version",
             ),
             (
                 "normalize",
                 "normalize input",
-                "pdf_to_pngs.sh | extract_docx.py | image passthrough | MD ![alt](path)",
+                "rhwp info <입력> --json",
             ),
             (
                 "ingest",
                 "ingest.json",
-                "Vision 구조 인식 후 tools/rhwp-ingest/schema/ingest_schema_v1.json 으로 기록",
+                "rhwp explore <입력> --json",
             ),
             (
                 "crop",
                 "crop",
-                "bash .claude/skills/rhwp-exam-ingest/helpers/crop_image.sh <src> x y w h <out>",
+                "rhwp export-png <파일> -p 0",
             ),
             (
                 "build",
@@ -414,12 +415,12 @@ def codex_graph(skill: str) -> dict[str, Any]:
             (
                 "covenants",
                 "covenants",
-                "mydocs/manual/agent_codex/00_서문.md (판정=데이터·결정론·출처 표지·원본 무훼손)",
+                "rhwp capabilities",
             ),
             (
                 "tree",
                 "request tree",
-                "mydocs/manual/agent_codex/01_판단트리.md 로 장 번호",
+                "rhwp capabilities --search <키워드>",
             ),
             (
                 "search",
@@ -429,13 +430,219 @@ def codex_graph(skill: str) -> dict[str, Any]:
             (
                 "chapter",
                 "chapter",
-                "해당 생성 장의 실측 표본을 흉내. 깊으면 이웃 스킬로 인계",
+                "rhwp info <파일> --json",
             ),
         ],
     )
 
 
-_BUILDERS = {
+def explore_graph(skill: str) -> dict[str, Any]:
+    return _chain(
+        skill,
+        [
+            ("explore", "explore", "rhwp explore <파일> --json"),
+            ("info", "info", "rhwp info <파일> --json"),
+            ("fields", "fields", "rhwp fields <파일> --json"),
+            (
+                "export-tables",
+                "export-tables",
+                "rhwp export-tables <파일> --json",
+            ),
+        ],
+    )
+
+
+def agent_surface_graph(skill: str) -> dict[str, Any]:
+    return _chain(
+        skill,
+        [
+            ("capabilities", "capabilities", "rhwp capabilities"),
+            (
+                "capabilities-mcp",
+                "capabilities --mcp",
+                "rhwp capabilities --mcp",
+            ),
+            (
+                "capabilities-search",
+                "capabilities --search",
+                "rhwp capabilities --search <키워드>",
+            ),
+        ],
+    )
+
+
+def bug_hunter_graph(skill: str) -> dict[str, Any]:
+    return _chain(
+        skill,
+        [
+            ("info", "info", "rhwp info <파일> --json"),
+            ("export-svg", "export-svg", "rhwp export-svg <파일> -p 0"),
+            ("render-diff", "render-diff", "rhwp render-diff <파일>"),
+            ("inspect", "inspect injection", "rhwp inspect injection <파일> --json"),
+        ],
+    )
+
+
+def chief_graph(skill: str) -> dict[str, Any]:
+    return _chain(
+        skill,
+        [
+            ("info", "info", "rhwp info <파일> --json"),
+            ("export-pdf", "export-pdf", "rhwp export-pdf <파일> -o <출력.pdf>"),
+            (
+                "export-tables",
+                "export-tables",
+                "rhwp export-tables <파일> --json",
+            ),
+            (
+                "fill",
+                "fill-fields",
+                "rhwp edit fill-fields <파일> --data <JSON> -o <출력> --json",
+            ),
+        ],
+    )
+
+
+def fde_graph(skill: str) -> dict[str, Any]:
+    return _chain(
+        skill,
+        [
+            ("capabilities", "capabilities", "rhwp capabilities"),
+            ("info", "info", "rhwp info <파일> --json"),
+            ("explain", "explain", "rhwp explain <파일> --json"),
+            (
+                "export-structure",
+                "export-structure",
+                "rhwp export-structure <파일> --json",
+            ),
+            ("digest", "digest", "rhwp digest <파일> --json"),
+        ],
+    )
+
+
+def fidelity_graph(skill: str) -> dict[str, Any]:
+    return _chain(
+        skill,
+        [
+            ("info", "info", "rhwp info <파일> --json"),
+            (
+                "export-svg",
+                "export-svg",
+                "rhwp export-svg <파일> --font-style -p 0",
+            ),
+            (
+                "export-render-tree",
+                "export-render-tree",
+                "rhwp export-render-tree <파일> -p 0",
+            ),
+        ],
+    )
+
+
+def handoff_graph(skill: str) -> dict[str, Any]:
+    return _chain(
+        skill,
+        [
+            (
+                "replay",
+                "replay capsule",
+                "rhwp replay --plan-json <계획> --capsule <파일> --json",
+            ),
+            (
+                "parent",
+                "replay --parent",
+                "rhwp replay --plan-json <계획> --capsule <파일> --parent <이전> --json",
+            ),
+            ("lineage", "lineage", "rhwp lineage <머리캡슐> --json"),
+        ],
+    )
+
+
+def knowledge_map_graph(skill: str) -> dict[str, Any]:
+    return _chain(
+        skill,
+        [
+            ("capabilities", "capabilities", "rhwp capabilities"),
+            (
+                "capabilities-mcp",
+                "capabilities --mcp",
+                "rhwp capabilities --mcp",
+            ),
+            (
+                "capabilities-search",
+                "capabilities --search",
+                "rhwp capabilities --search <키워드>",
+            ),
+        ],
+    )
+
+
+def recipes_graph(skill: str) -> dict[str, Any]:
+    return _chain(
+        skill,
+        [
+            ("fields", "fields", "rhwp fields <파일> --json"),
+            (
+                "export-tables",
+                "export-tables",
+                "rhwp export-tables <파일> --json",
+            ),
+            (
+                "inspect",
+                "inspect hidden-text",
+                "rhwp inspect hidden-text <파일> --json",
+            ),
+            ("batch", "batch info", "rhwp batch info --json"),
+            (
+                "render-diff",
+                "render-diff",
+                "rhwp render-diff <파일> --via hwpx",
+            ),
+        ],
+    )
+
+
+def strategist_graph(skill: str) -> dict[str, Any]:
+    return _chain(
+        skill,
+        [
+            ("info", "info", "rhwp info <파일> --json"),
+            (
+                "search",
+                "search",
+                "rhwp search <파일> --json --limit N -- <질의>",
+            ),
+            (
+                "extract-data",
+                "extract-data",
+                "rhwp extract-data <파일> --json --kind date|amount|number",
+            ),
+            (
+                "capabilities-search",
+                "capabilities --search",
+                "rhwp capabilities --search <키워드>",
+            ),
+        ],
+    )
+
+
+def _document_fallback_graph(skill: str) -> dict[str, Any]:
+    """Real DAG for an unknown skill — never a single dummy node."""
+    return _chain(
+        skill,
+        [
+            ("info", "info", "rhwp info <파일> --json"),
+            ("explore", "explore", "rhwp explore <파일> --json"),
+            ("export-svg", "export-svg", "rhwp export-svg <파일> -p 0"),
+        ],
+    )
+
+
+Builder = Callable[[str], dict[str, Any]]
+
+# Intent-id keys (intents.py + catalog.json intents[]) and catalog skill ids.
+_BUILDERS: dict[str, Builder] = {
+    # intents.py slugs
     "contribute": contribute_graph,
     "fill-form": fill_form_graph,
     "onboard": onboard_graph,
@@ -451,9 +658,63 @@ _BUILDERS = {
     "exam-ingest": exam_ingest_graph,
     "inspect-cli": inspect_cli_graph,
     "codex": codex_graph,
+    # catalog.json intents[]
+    "add-surface": agent_surface_graph,
+    "capabilities-ssot": agent_surface_graph,
+    "hunt-bug": bug_hunter_graph,
+    "batch-folder": bulk_graph,
+    "run-request-queue": chief_graph,
+    "analyze-export": inspect_cli_graph,
+    "debug-layout": inspect_cli_graph,
+    "navigate-codex": codex_graph,
+    "open-pr": contribute_graph,
+    "triage-doc": triage_graph,
+    "ingest-exam": exam_ingest_graph,
+    "explore-doc": explore_graph,
+    "triage-symptom": fde_graph,
+    "compare-fidelity": fidelity_graph,
+    "handoff-session": handoff_graph,
+    "find-canonical": knowledge_map_graph,
+    "attach-mcp": mcp_graph,
+    "onboard-agent": onboard_graph,
+    "mark-provenance": provenance_graph,
+    "pick-recipe": recipes_graph,
+    "security-sweep": security_graph,
+    "build-strategy": strategist_graph,
+    "table-csv-roundtrip": table_csv_graph,
+    "visual-regression": visual_graph,
+    "attest-work": receipt_graph,
+    # catalog.json skill ids
+    "rhwp-agent-surface": agent_surface_graph,
+    "rhwp-bug-hunter": bug_hunter_graph,
+    "rhwp-bulk-pipeline": bulk_graph,
+    "rhwp-chief": chief_graph,
+    "rhwp-cli": inspect_cli_graph,
+    "rhwp-codex": codex_graph,
+    "rhwp-contributor": contribute_graph,
+    "rhwp-doc-triage": triage_graph,
+    "rhwp-exam-ingest": exam_ingest_graph,
+    "rhwp-explore": explore_graph,
+    "rhwp-fde": fde_graph,
+    "rhwp-fidelity-compare": fidelity_graph,
+    "rhwp-form-fill": fill_form_graph,
+    "rhwp-handoff": handoff_graph,
+    "rhwp-knowledge-map": knowledge_map_graph,
+    "rhwp-mcp-session": mcp_graph,
+    "rhwp-onboarding": onboard_graph,
+    "rhwp-provenance": provenance_graph,
+    "rhwp-recipes": recipes_graph,
+    "rhwp-safe-edit": safe_edit_graph,
+    "rhwp-security-sweep": security_graph,
+    "rhwp-strategist": strategist_graph,
+    "rhwp-table-exchange": table_csv_graph,
+    "rhwp-visual-regression": visual_graph,
+    "rhwp-work-receipt": receipt_graph,
 }
 
 
 def build_graph(intent_id: str, skill: str) -> dict[str, Any]:
-    builder = _BUILDERS.get(intent_id, inspect_cli_graph)
+    builder = _BUILDERS.get(intent_id) or _BUILDERS.get(skill)
+    if builder is None:
+        return _document_fallback_graph(skill)
     return builder(skill)

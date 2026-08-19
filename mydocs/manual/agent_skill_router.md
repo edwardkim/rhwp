@@ -247,6 +247,29 @@ python -m unittest tools/skill_router/test_route.py
 스킬별 화면 증적(터미널이 아니라 `rhwp export-svg` 페이지 PNG)은
 `mydocs/report/task_m100_5706/` 에 둔다. 그 폴더는 이 문서의 소유가 아니다.
 
+## 새·변경 SKILL.md
+
+`.claude/skills/<name>/SKILL.md` 를 새로 만들거나 바꾸면 아래를 만족해야
+한다. 라우터 스킬도 예외가 아니다.
+
+1. YAML frontmatter 의 `name` 은 폴더명과 같다. `description` 은 20자 이상.
+2. 본문에 실행 가능한 `rhwp <command>` 가 **하나 이상** 있어야 한다. 명령
+   토큰은 ASCII 소문자(`[a-z0-9-]+`, 소문자로 시작). `rhwp <명령>`
+   플레이스홀더는 참조가 아니다 — CI `tests/skills_contract.rs` 의
+   `skills_have_valid_frontmatter_and_are_executable` 가 실패한다.
+
+PR 전에 저장소 루트에서 세 번 돌린다.
+
+```bash
+python tools/skill_router/gate_new_skill.py
+python -m unittest tools/skill_router/test_route.py
+cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapture
+```
+
+실패 예: PR [#5707](https://github.com/edwardkim/rhwp/pull/5707) shard 3 에서
+`rhwp-skill-router` 본문에 `rhwp <cmd>` 실참조가 없어
+`skills_have_valid_frontmatter_and_are_executable` 가 깨졌다.
+
 ## 하지 않는 것
 
 - 새 rhwp CLI 명령, 새 edit 로직, `src/` 의 `#[cfg(test)]`
