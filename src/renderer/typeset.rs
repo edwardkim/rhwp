@@ -948,6 +948,12 @@ struct TypesetState {
     /// lazy(#2383) 공유 플래그에 얹으면 저장 흐름 신뢰 문서(sample16 #2158 핀)
     /// 까지 번져 +1 회귀.
     omit_fresh_recalc_doc: bool,
+    /// [#5699 H1] 이 쪽에서 사다리-미계상 표 밴드 교정으로 확보한 흐름 바닥(px).
+    /// 후속 문단의 저장 vpos 후방 스냅이 교정분을 되돌리지 못한다. 쪽 단위 리셋.
+    ladder_band_floor: f64,
+    /// [#5699 H1] 이번 단에서 교정 판별이 발동한 표 (para, ctrl) — 단 flush 시
+    /// 소속 페이지의 `ladder_band_tables` 로 이관해 렌더러와 판정을 공유한다.
+    current_ladder_band_tables: Vec<(usize, usize)>,
     /// 현재 단 인덱스
     current_column: u16,
     /// 단 수
@@ -3767,6 +3773,26 @@ fn saved_table_bounds_fit_at_flow_tail(
 /// 저장 LineSeg에 앵커된 TAC 표는 `common.height`가 한컴이 기록한 물리 object
 /// frame이다. 행 측정 총합에는 host의 outer margin이 더해질 수 있으므로, 저장 frame
 /// fit을 판정할 때는 선언 frame을 우선하고 선언값이 없을 때만 측정 높이를 사용한다.
+/// [#5699 H1] 저장 사다리가 자리차지(TAC) 표의 밴드 높이를 계상하지 않은
+/// 자기모순 판별.
+///
+/// 저장 th 관례 기반 계상(`charged_px`)이 **선언 표높이와 실측 둘 다**의 1/4
+/// 미만이고, 선언과 실측이 서로 정합(2배 이내)일 때만 참이다. 선언·실측이
+/// 갈라지는 문서(#2237 측정-저장 발산, #2148 라벨 셀)는 정합 조건에서 빠져
+/// 종전 동작 불변. 이 서명의 문서(자치법규/기계생성 균일 사다리)는 한글 2022 가
+/// 저장 사다리를 버리고 재조판한다 — 영월군 20099369 오라클 실측: 한글 4쪽
+/// 정상 배치 vs 저장 사다리 추종 2쪽 전면 겹침(#5699 H1 코호트 40문서).
+pub(crate) fn stored_ladder_omits_tac_band(
+    charged_px: f64,
+    declared_px: f64,
+    measured_px: f64,
+) -> bool {
+    declared_px > 1.0
+        && measured_px > 1.0
+        && declared_px.max(measured_px) < declared_px.min(measured_px) * 2.0
+        && charged_px < declared_px.min(measured_px) * 0.25
+}
+
 fn stored_tac_table_frame_height(
     table: &crate::model::table::Table,
     dpi: f64,
@@ -4045,6 +4071,8 @@ impl TypesetState {
             hangul2024_spill_para: None,
             stored_ladder_spacing_omitted: false,
             omit_fresh_recalc_doc: false,
+            ladder_band_floor: 0.0,
+            current_ladder_band_tables: Vec::new(),
             current_column: 0,
             col_count,
             layout,
@@ -4513,6 +4541,15 @@ impl TypesetState {
         } else {
             self.pages.push(self.new_page_content(vec![col_content]));
         }
+        // [#5699 H1] 이번 단에서 발동한 사다리-미계상 표를 소속 쪽에 기록.
+        if !self.current_ladder_band_tables.is_empty() {
+            if let Some(page) = self.pages.last_mut() {
+                page.ladder_band_tables
+                    .append(&mut self.current_ladder_band_tables);
+            } else {
+                self.current_ladder_band_tables.clear();
+            }
+        }
         // [Task #1082] 단 flush 시 본문 last bottom vpos 리셋(미주 vpos-delta 시드 정합).
         self.prev_body_bottom_vpos = None;
         // [#2279] flow 과소 누계도 단 단위 — 리셋.
@@ -4587,6 +4624,15 @@ impl TypesetState {
         } else {
             self.pages.push(self.new_page_content(vec![col_content]));
         }
+        // [#5699 H1] 이번 단에서 발동한 사다리-미계상 표를 소속 쪽에 기록.
+        if !self.current_ladder_band_tables.is_empty() {
+            if let Some(page) = self.pages.last_mut() {
+                page.ladder_band_tables
+                    .append(&mut self.current_ladder_band_tables);
+            } else {
+                self.current_ladder_band_tables.clear();
+            }
+        }
     }
 
     /// 다음 단 또는 새 페이지
@@ -4602,6 +4648,8 @@ impl TypesetState {
             self.current_height = self.pending_body_wide_top_reserve;
             self.current_start_height = self.current_height;
             self.current_endnote_flow = false;
+            // [#5699 H1] 밴드 교정 바닥은 단 흐름 좌표 — 새 단에서 리셋.
+            self.ladder_band_floor = 0.0;
             // [compat 2024] 앵커 줄 회수 누계는 단 단위 — 새 단에서 리셋.
             if self.hangul2024_reclaimed > 0.0 && std::env::var("RHWP_DIAG_COMPAT24").is_ok() {
                 eprintln!(
@@ -4677,6 +4725,8 @@ impl TypesetState {
         self.current_column = 0;
         self.current_height = 0.0;
         self.current_start_height = 0.0;
+        // [#5699 H1] 밴드 교정 바닥은 쪽 단위.
+        self.ladder_band_floor = 0.0;
         // [compat 2024] 앵커 줄 회수 누계는 쪽 단위 — 새 쪽에서 리셋.
         if self.hangul2024_reclaimed > 0.0 && std::env::var("RHWP_DIAG_COMPAT24").is_ok() {
             eprintln!(
@@ -4760,6 +4810,7 @@ impl TypesetState {
             footnotes: Vec::new(),
             active_master_page: None,
             extra_master_pages: Vec::new(),
+            ladder_band_tables: Vec::new(),
         }
     }
 }
@@ -15151,8 +15202,14 @@ impl TypesetEngine {
             endnote_between_notes_hu: 0,
             prev_item_content_bottom_y: None,
             last_compacted_endnote_title_gap: false,
+            min_flow_floor: f64::MIN,
         };
         let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
+        // [#5699 H1] 저장 사다리가 자리차지 표 밴드를 계상하지 않은 문서: 흐름이
+        // 계상 교정으로 확보한 표 밴드 위로 저장 vpos 스냅으로 되감기지 못한다.
+        if y < st.ladder_band_floor {
+            y = st.ladder_band_floor;
+        }
         // [#2243] dirty 저장-앵커 사다리의 역스냅 금지 — 저장 lineseg 누락 문단의
         // fresh 재계산 성장분을 낡은 기계 v0 가 되돌리지 못하게 한다(전방만 허용).
         // [#2279 OMIT-sa] spacing-누락 문서군은 합성(비저장) base 사다리도 동일 —
@@ -18607,6 +18664,67 @@ impl TypesetEngine {
         } else {
             table_height
         };
+        // [#5699 H1] 위와 대칭인 과소 방향: 저장 lineseg 보유 문서인데 저장 th 관례
+        // 기반 계상이 선언·실측 표높이 둘 다의 1/4 미만이면, 생성기 사다리가 표
+        // 밴드를 계상하지 않은 자기모순이다(자치법규 서식류 균일 사다리). 실측
+        // 높이로 교정해 쪽 나눔이 실기하를 따르게 하고(한글 2022 재조판 정합 —
+        // 영월군 20099369 오라클 4쪽 실측), 후속 저장 vpos 후방 스냅이 교정분을
+        // 되돌리지 못하게 dirty 처리한다. 선언·실측 발산 문서(#2237/#2148)는
+        // 정합 조건에서 배제되어 불변.
+        // 게이트: ① HWPX 컨테이너 제외 — 기계 결재문서(36397752 하자검사조서)는
+        // 같은 서명이어도 한글 1쪽 유지(오라클 PDF 실측)라 발동 시 +1 회귀(그 축은
+        // #2279 OMIT 기계 소관). ② 직파싱 HWP3 는 tac=true "모순 조합" 표만 허용 —
+        // 영월군 20099369(HWP3 V3.00, tac=true)는 한글 2022 가 재조판(오라클 4쪽,
+        // 표 아래 깨끗한 배치)하는 반면, tac=false TopAndBottom 은 겹침이 한글
+        // 정본인 계열(#4533 하동군)이라 기존 no-reserve 규칙에 맡긴다.
+        // 밴드-앞 계상 방면: 한글 저장 사다리의 자리차지 표는 밴드가 앵커 줄 **앞**에
+        // 계상되는 형(앵커 vpos = 밴드 아래)이 있다 — 직전 문단 저장 vpos 와 앵커
+        // 사이 갭이 이미 밴드급이면 사다리는 정상이다(간장 보고서 3738 계열: 갭
+        // 음수/대형 — 오라클-잠금 계약 5종이 th-단독 술어를 반증). 갭이 양수이면서
+        // 밴드의 절반 미만일 때만 자기모순으로 본다(영월군 실측 27px vs 397px).
+        let band_min_px = hwpunit_to_px(table.common.height as i32, self.dpi).min(ft.total_height);
+        let anchor_vpos = para.line_segs.get(tac_seg_idx).map(|seg| seg.vertical_pos);
+        let anchor_gap_px = anchor_vpos
+            .zip(prev_stored_vpos)
+            .filter(|(anchor, prev)| anchor > prev)
+            .map(|(anchor, prev)| hwpunit_to_px(anchor - prev, self.dpi));
+        // 밴드-뒤 계상(관례 A: 앵커 다음 문단 vpos 가 밴드만큼 진행) 방면 —
+        // 다음 문단 갭도 함께 소형이어야 진짜 미계상이다(synam-001 pi10·간장
+        // 보고서 실측: before-갭은 정상 사다리에서도 자연히 한 줄이라 단독
+        // 판별자가 못 된다).
+        let next_gap_px = st
+            .next_para_first_stored_vpos
+            .zip(anchor_vpos)
+            .filter(|(next, anchor)| next > anchor)
+            .map(|(next, anchor)| hwpunit_to_px(next - anchor, self.dpi));
+        let ladder_omits_band = !st.profile.hwpx_container()
+            && (!st.profile.hwp3_native_layout() || table.common.treat_as_char)
+            && !para.line_segs.is_empty()
+            && anchor_gap_px.is_some_and(|gap| gap < band_min_px * 0.5)
+            && next_gap_px.is_some_and(|gap| gap < band_min_px * 0.5)
+            && stored_ladder_omits_tac_band(
+                table_height,
+                hwpunit_to_px(table.common.height as i32, self.dpi),
+                ft.total_height,
+            );
+        let table_height = if ladder_omits_band {
+            if std::env::var("RHWP_5699_DBG").is_ok() {
+                eprintln!(
+                    "DBG5699_TS pi={} ci={} th_charge={:.1} decl={:.1} meas={:.1} gap={:?}",
+                    para_idx,
+                    ctrl_idx,
+                    table_height,
+                    hwpunit_to_px(table.common.height as i32, self.dpi),
+                    ft.total_height,
+                    anchor_gap_px,
+                );
+            }
+            st.vpos_ladder_dirty = true;
+            st.current_ladder_band_tables.push((para_idx, ctrl_idx));
+            ft.total_height
+        } else {
+            table_height
+        };
 
         // TAC 표는 분할하지 않고 통째로 배치
         let available = st.available_height();
@@ -18671,6 +18789,11 @@ impl TypesetEngine {
             ft.strict_following_plain_text_fit,
             styles,
         );
+        // [#5699 H1] 교정 계상으로 확보한 표 밴드 하단을 흐름 바닥으로 고정 —
+        // 후속 문단의 저장 vpos 스냅이 밴드 위로 되감지 못한다(쪽/단 단위 리셋).
+        if ladder_omits_band {
+            st.ladder_band_floor = st.ladder_band_floor.max(st.current_height);
+        }
     }
 
     /// [#2279 TAC host] 모순 조합(treat_as_char=true + wrap=자리차지) 표의
@@ -25813,6 +25936,7 @@ mod tests {
             footnotes: Vec::new(),
             active_master_page: None,
             extra_master_pages: Vec::new(),
+            ladder_band_tables: Vec::new(),
         }
     }
 

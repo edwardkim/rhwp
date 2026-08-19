@@ -100,6 +100,7 @@ fn tac_picture_and_shape_require_partial_paragraph_page_routing() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
     let pages = vec![page(0, 0, 1), page(1, 1, 2)];
     let current_items = vec![PageItem::PartialParagraph {
