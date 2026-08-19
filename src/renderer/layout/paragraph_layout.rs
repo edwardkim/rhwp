@@ -2444,7 +2444,14 @@ impl LayoutEngine {
             }
         }
         let line_tac_width: f64 = row_tac_widths.iter().sum();
-        let align_offset = if cell_ctx.is_some() {
+        // [#5583] 본문 흐름의 수식-only 줄도 문단 정렬을 따른다 — 단 저장 LINE_SEG 가 줄 시작
+        // 위치를 담고 있으면(그 값이 권위다) 종전대로 저장 흐름을 쓴다.
+        //
+        // 종전에는 비-셀이면 무조건 0.0 이라 가운데 정렬 문단의 수식이 단 왼쪽 끝에 붙었다
+        // (3252633 국가유산수리 감리대가 기준 2·3쪽: 저장 cs=0 sw=48188 인데 수식 x=75.6 =
+        // 본문 좌측, 가운데라면 269.6). `column_start > 0` 인 줄은 한컴이 흐름 x 를 적어 둔
+        // 경우이므로 #1256/#1308 계약대로 그 값을 존중한다.
+        let align_offset = if cell_ctx.is_some() || comp_line.column_start == 0 {
             match alignment {
                 Alignment::Center | Alignment::Distribute => {
                     (available_width - line_tac_width).max(0.0) / 2.0
