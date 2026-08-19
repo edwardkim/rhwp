@@ -8,6 +8,7 @@ pub(crate) mod document_inventory;
 pub(crate) mod explain;
 pub(crate) mod explore;
 pub(crate) mod info;
+pub(crate) mod ir_comparison;
 pub(crate) mod page_dump;
 pub(crate) mod position_diagnostics;
 pub(crate) mod scan;
