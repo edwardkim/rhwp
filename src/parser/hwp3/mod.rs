@@ -674,6 +674,16 @@ fn convert_para_shape_with_layout_contract(
         _ => crate::model::style::Alignment::Justify,
     };
 
+    // [#5554] HWP3 에는 줄나눔 기준(어절/글자) 필드가 없고, 한글 2022 HWP3
+    // 임포터는 정렬에서 유도한다 — 양쪽 정렬 문단은 어절(KEEP_WORD, attr1 bit7=1),
+    // 그 외 정렬은 글자(BREAK_WORD). 한글 SaveAs HWPX 정답지 2건 6,097문단
+    // 전수에서 예외 0 으로 확인한 규칙이다(07615: JUSTIFY→KEEP 2,988·기타→BREAK
+    // 711, 교차검증 문서: 822/1,576). 배선하지 않으면 h2x 산출이 전량
+    // BREAK_WORD 로 나가 본문 줄바꿈이 정답지와 어긋난다.
+    if matches!(ps.alignment, crate::model::style::Alignment::Justify) {
+        ps.attr1 |= 1 << 7;
+    }
+
     // [#2976] 문단 테두리 연결(인접 문단끼리 테두리를 이어 그릴지) 플래그.
     // 접근자 border_connection()은 있었으나 attr1 bit 28(HWPX 직렬화기·편집
     // 커맨드가 공유하는 규약)로 배선되지 않아 항상 소실되었다.
