@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Q1·Q2·Q3·Q4·Q5 완료, Q6 실행 중
+- 상태: 실행 승인 — Q1·Q2·Q3·Q4·Q5·Q6 완료, Q7 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -15,17 +15,18 @@ Stage 2 절편 24개 중 19개가 handler 이동, 4개가 선행 계약 보강, 
 
 | 지표 | #5511 시작 | 현재 | 최종 기준 |
 |---|---:|---:|---:|
-| `src/main.rs` 줄 수 | 42,370 | 31,095 | 1,200 이하 |
-| 최상위 함수 | 351 | 253 | entrypoint 조립에 필요한 최소 함수 |
+| `src/main.rs` 줄 수 | 42,370 | 29,944 | 1,200 이하 |
+| 최상위 함수 | 351 | 241 | entrypoint 조립에 필요한 최소 함수 |
 | 새 query 경로의 최상위 명령 | 0 | 23 | 모든 query adapter 물리 분리 |
 | 새 query 경로의 `inspect` 하위 명령 | 0 | 4 | 현재 전수 |
 | 편집 handler | 92 | 92 | command 모듈로 전수 이동 |
-| `wasm_api::HwpDocument` 직접 참조 | 42 | 27 | Stage 3에서 0 |
+| `wasm_api::HwpDocument` 직접 참조 | 42 | 23 | Stage 3에서 0 |
 | `rhwp::service` 참조 | 0 | 0 | Stage 3에서 전환 |
 
-1,200줄 목표까지 37,361줄이 남았다. 지금까지의 handler 이동 평균만 기계적으로 적용하면 약
-190개 이동 절편이 더 필요하다. 이는 실제 예측이 아니라 현재 절차를 그대로 유지하면 생기는
-비효율의 크기를 보여주는 지표다. 큰 책임을 기능군으로 묶되 보호 계약과 중단 조건은 유지한다.
+1,200줄 목표까지 현재 28,744줄이 남았다. 배치 재기준화 당시에는 단일 handler 이동 평균을
+기계적으로 적용하면 약 190개 이동 절편이 더 필요한 상태였다. 이는 실제 예측이 아니라 기존
+절차를 그대로 유지하면 생기는 비효율의 크기를 보여준 지표다. 큰 책임을 기능군으로 묶되 보호
+계약과 중단 조건은 유지한다.
 
 ## 2. 배치 실행 규약
 
@@ -128,6 +129,12 @@ Q6는 최신 `devel` `980bf59e4`를 정상 merge한 뒤 시작했다. 변환·�
 characterization 없이 책임별 물리 이동으로 진행한다. 대상과 공유 seam 판정은
 [`task_m100_5511_stage2_batch_q6_inventory.md`](../working/task_m100_5511_stage2_batch_q6_inventory.md)에
 기록했다.
+
+Q6도 완료했다. 변환 command, 문서 generation, DocLang output을 세 모듈로 이동했고 모두
+1,200줄 이하이며 CC 25 초과 경고가 없다. 완료 직전 전진한 `devel`의 별도 q-pack 변경을 정상
+merge하고, 결합 HEAD에서 Q6·q-pack focused 127/127과 전체 release-test 7,999/7,999를 포함한
+정적·정책 관문을 다시 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_q6.md`](../working/task_m100_5511_stage2_batch_q6.md)에 기록했다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
