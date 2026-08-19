@@ -177,6 +177,45 @@ export class CursorState {
     }
   }
 
+  /**
+   * 선택 범위를 명시적으로 세운다 — anchor 는 `start`, 커서는 `end` (Task #3416).
+   *
+   * `setAnchor()` 는 "현재 위치에서 선택을 시작한다" 이고 이미 anchor 가 있으면 아무것도 하지
+   * 않는다. undo 뒤 복원처럼 **범위 전체를 지정해야 하는** 자리에는 쓸 수 없어 따로 둔다.
+   *
+   * **두 끝이 모두 현재 문서에서 확인될 때만 세운다.** anchor/focus 의 소유자가 여기이므로
+   * "선택은 실재하는 위치를 가리킨다"(#2339)를 지키는 것도 여기 몫이다 — 호출부의 선의에
+   * 맡기면 호출부가 하나 늘 때마다 유령 범위가 되살아난다. 세우지 못하면 아무것도 바꾸지
+   * 않고 `false` 를 돌려준다(종전 선택 상태 그대로).
+   */
+  selectRange(start: DocumentPosition, end: DocumentPosition): boolean {
+    if (!this.isVerifiedBodyPosition(start) || !this.isVerifiedBodyPosition(end)) return false;
+    this.anchor = { ...start };
+    this.position = { ...end };
+    this.updateRect();
+    return true;
+  }
+
+  /**
+   * 본문 좌표계에서 **실재가 확인된** 위치인가 (Task #3416).
+   *
+   * 셀 안 위치(`parentParaIndex`)는 `false` 다 — 확인이 중첩 셀 경로(`cellPath`)를 따라가는
+   * 별도 축이라 이 산술로는 실재를 말할 수 없다. "없다" 가 아니라 "이 판정으로는 확인할 수
+   * 없다" 는 뜻이고, 확인할 수 없는 위치를 세우지 않는 것이 #2339 의 판단과 같다.
+   */
+  private isVerifiedBodyPosition(pos: DocumentPosition): boolean {
+    if (pos.parentParaIndex !== undefined) return false;
+    try {
+      const paraCount = this.wasm.getParagraphCount(pos.sectionIndex);
+      if (pos.paragraphIndex < 0 || pos.paragraphIndex >= paraCount) return false;
+      const len = this.wasm.getParagraphLength(pos.sectionIndex, pos.paragraphIndex);
+      return pos.charOffset >= 0 && pos.charOffset <= len;
+    } catch {
+      // 조회 자체가 실패하면 그 위치를 실재한다고 말할 수 없다.
+      return false;
+    }
+  }
+
   /** 선택을 해제한다 */
   clearSelection(): void {
     this.anchor = null;
@@ -1680,17 +1719,44 @@ export class CursorState {
     return this.selectedPictureRefs.length > 1;
   }
 
+  /**
+   * 선택된 개체 **밖**(인접 문단)의 위치. 커서를 옮기지도, 선택을 풀지도 않는다 (Task #3351).
+   *
+   * `moveOutOfSelectedPicture` 가 쓰던 규칙을 그대로 꺼낸 것이다. 개체 조작을 히스토리에
+   * 기록하는 쪽은 **위치만** 필요한데, 그러자고 선택을 푸는 메서드를 부를 수는 없기 때문이다.
+   * 규칙이 갈라지면 Delete 키 경로와 메뉴 경로의 착지가 또 어긋난다.
+   *
+   * 인접 문단을 잡을 수 없으면(개체가 든 문단이 유일) `null` 이다.
+   */
+  positionOutsideSelectedPicture(): DocumentPosition | null {
+    if (!this.selectedPictureRef) return null;
+    const { sec, ppi } = this.selectedPictureRef;
+    return this.positionOutsideObject(sec, ppi);
+  }
+
+  /**
+   * `sec` 구역 `ppi` 문단에 놓인 개체 **밖**의 위치 (Task #3351).
+   *
+   * 선택 상태를 읽지 않고 ref 만 받는다 — 클릭으로 z순서를 바꾸는 경로처럼 **선택 진입 전에**
+   * 기록해야 하는 자리가 있기 때문이다. 인접 문단을 잡을 수 없으면 `null`.
+   */
+  positionOutsideObject(sec: number, ppi: number): DocumentPosition | null {
+    const paraCount = this.wasm.getParagraphCount(sec);
+    if (ppi + 1 < paraCount) {
+      return { sectionIndex: sec, paragraphIndex: ppi + 1, charOffset: 0 };
+    }
+    if (ppi > 0) {
+      const prevLen = this.wasm.getParagraphLength(sec, ppi - 1);
+      return { sectionIndex: sec, paragraphIndex: ppi - 1, charOffset: prevLen };
+    }
+    return null;
+  }
+
   /** 개체 객체 선택 상태에서 개체 밖으로 커서를 이동한다. */
   moveOutOfSelectedPicture(): void {
     if (!this.selectedPictureRef) return;
-    const { sec, ppi } = this.selectedPictureRef;
-    const paraCount = this.wasm.getParagraphCount(sec);
-    if (ppi + 1 < paraCount) {
-      this.position = { sectionIndex: sec, paragraphIndex: ppi + 1, charOffset: 0 };
-    } else if (ppi > 0) {
-      const prevLen = this.wasm.getParagraphLength(sec, ppi - 1);
-      this.position = { sectionIndex: sec, paragraphIndex: ppi - 1, charOffset: prevLen };
-    }
+    const outside = this.positionOutsideSelectedPicture();
+    if (outside) this.position = outside;
     this.exitPictureObjectSelection();
     this.updateRect();
   }

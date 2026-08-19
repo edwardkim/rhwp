@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
 
@@ -88,6 +90,46 @@ test('[#3230] 스냅샷 예산을 쓰지 않는다', () => {
     '역연산 커맨드가 예산을 쓰면 스냅샷에서 옮긴 의미가 없다',
   );
   assert.equal(cmd.discard, undefined, '해제할 WASM 스냅샷 id 가 없어야 한다');
+});
+
+test('[#3230] 달라질 것이 없으면 무변경으로 답한다', () => {
+  // 히스토리는 `command.isNoOp?.()` 로 묻고, 답이 없으면 "항상 바꾼다" 로 읽는다(#2370).
+  // 같은 값을 넣는 커맨드가 침묵하면 Ctrl+Z 한 번을 무효과로 소모하는 팬텀 엔트리가 남는다.
+  const same = new SetObjectPropsCommand(bodyImage, { rotationAngle: 90 }, { rotationAngle: 90 });
+  assert.equal(same.isNoOp(), true);
+
+  const changed = new SetObjectPropsCommand(bodyImage, { rotationAngle: 0 }, { rotationAngle: 90 });
+  assert.equal(changed.isNoOp(), false);
+
+  const flipSame = new SetObjectPropsCommand(bodyImage, { horzFlip: true }, { horzFlip: true });
+  assert.equal(flipSame.isNoOp(), true);
+
+  // `before` 에만 있는 키는 `execute` 가 적용하지 않으므로 판정에 넣지 않는다.
+  const extraBefore = new SetObjectPropsCommand(
+    bodyImage, { rotationAngle: 90, vertFlip: false }, { rotationAngle: 90 },
+  );
+  assert.equal(extraBefore.isNoOp(), true);
+
+  // 적용할 것이 아예 없는 커맨드도 무변경이다.
+  assert.equal(new SetObjectPropsCommand(bodyImage, {}, {}).isNoOp(), true);
+});
+
+test('[#3230] 양식 모드에서 setObjectProps 는 허용 목록에 없다', () => {
+  // `4c668b93` 이 kind:'record' → kind:'command' 로 옮긴 이유가 이것이다 — command 라우팅은
+  // `isOperationAllowedInEditMode` 를 거치고, 그 switch 의 default 가 막는다. 허용 목록에
+  // 'setObjectProps' 가 추가되면 양식 모드에서 개체 회전/대칭이 다시 통과한다.
+  const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
+  const src = readFileSync(join(rootDir, 'src/engine/input-handler.ts'), 'utf8');
+  const start = src.indexOf('private isOperationAllowedInEditMode');
+  assert.notEqual(start, -1, 'isOperationAllowedInEditMode 가 있어야 함');
+  const body = src.slice(start, src.indexOf('\n  }', start));
+
+  assert.doesNotMatch(
+    body,
+    /case\s*'setObjectProps'/,
+    "'setObjectProps' 를 허용하면 양식 모드 개체 편집 차단이 뚫린다",
+  );
+  assert.match(body, /default:\s*\n?\s*return false;/, 'command 는 기본적으로 막혀야 함');
 });
 
 test('[#3230] 회전 15° 를 네 번 눌러도 병합하지 않는다', () => {

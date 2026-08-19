@@ -44,6 +44,17 @@ export interface EditCommand {
    * 시 이 값을 읽어 HF/FN 모드 재진입 + 커서 위치를 복원하고 본문 moveTo 를 건너뛴다.
    */
   editContext?(): EditContext | null;
+  /**
+   * [Task #3416] 이 명령이 실행되기 **직전의 선택 범위**. undo 후 그 선택을 되살리는 데 쓴다.
+   *
+   * 한컴 2024 실측: 선택을 지운 뒤 undo 하면 지우기 전 범위가 그대로 복원되고(캐럿은 선택 끝),
+   * redo 하면 해제된다. 반면 선택 위에 타이핑해서 대체한 경우의 undo 는 복원하지 않는다.
+   * 그래서 이것은 **선택 삭제 계열만 구현한다** — 미구현이면 종전대로 해제된다.
+   *
+   * 반환값은 "그때 그랬다" 는 기록일 뿐 지금 유효하다는 보장이 아니다. 복원하는 쪽이 현재
+   * 문서에서 유효한지 반드시 확인해야 한다(#2339).
+   */
+  selectionBefore?(): { start: DocumentPosition; end: DocumentPosition } | null;
 }
 
 /**
@@ -845,8 +856,10 @@ export class DeleteSelectionCommand implements EditCommand {
    * 양식 모드 선택 삭제가 게이트에서 드롭돼 무언 폐기가 된다.
    */
   private readonly snapshot: SnapshotCommand;
+  private readonly selection: { start: DocumentPosition; end: DocumentPosition };
 
   constructor(start: DocumentPosition, end: DocumentPosition) {
+    this.selection = { start: { ...start }, end: { ...end } };
     // 삭제 후 커서는 선택 시작으로 모이고, undo 후에는 선택 끝으로 되돌아간다.
     this.snapshot = new SnapshotCommand('deleteSelection', end, start, (wasm) => {
       if (isCell(start)) {
@@ -876,6 +889,16 @@ export class DeleteSelectionCommand implements EditCommand {
   }
 
   mergeWith(): null { return null; }
+
+  /**
+   * [Task #3416] 지우기 전 선택 범위. undo 뒤 이 범위를 되살린다.
+   *
+   * undo 가 돌려주는 커서가 이미 `end`(선택 끝)라, 여기에 anchor(`start`)만 더하면 한컴과
+   * 같은 상태가 된다 — 실측에서 undo 후 선택은 `(0,0,18)~(0,0,22)`, 캐럿은 `(0,0,22)` 였다.
+   */
+  selectionBefore(): { start: DocumentPosition; end: DocumentPosition } {
+    return this.selection;
+  }
 
   snapshotResourceCount(): number {
     return this.snapshot.snapshotResourceCount();
@@ -1978,6 +2001,26 @@ export class SetObjectPropsCommand implements EditCommand {
 
   undo(wasm: WasmBridge): DocumentPosition {
     return this.apply(wasm, this.before);
+  }
+
+  /**
+   * 적용해도 달라질 것이 없으면 무변경이다 (#2370 규약).
+   *
+   * 히스토리는 커맨드에게 이 질문을 하고(`history.ts` 의 `command.isNoOp?.()`), 답하지 않으면
+   * "항상 바꾼다" 로 읽는다. before 와 after 가 같은데 침묵하면 그 자체가 거짓 응답이고,
+   * 팬텀 엔트리가 Ctrl+Z 한 번을 무효과로 소모하며 redo 스택까지 파기한다.
+   *
+   * 지금 호출부(±90° 회전·`!cur` 토글)는 항상 before ≠ after 라 이 분기를 타지 않는다. 그래도
+   * 답은 커맨드가 해야 한다 — before/after 를 아는 것은 이 객체뿐이고, 호출부마다 같은 비교를
+   * 되풀이하는 것은 판정을 소비자로 흘리는 일이다.
+   *
+   * `after` 의 키만 본다. `execute` 가 적용하는 것이 그것뿐이므로 `before` 에만 있는 키는
+   * 이 연산의 결과를 바꾸지 않는다.
+   */
+  isNoOp(): boolean {
+    const keys = Object.keys(this.after);
+    if (keys.length === 0) return true;
+    return keys.every((key) => Object.is(this.before[key], this.after[key]));
   }
 
   /**

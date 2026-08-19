@@ -7,6 +7,7 @@
 use std::io::Read;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::parser::ole_container::parse_ole_container;
 
 const CFB_MAGIC: [u8; 8] = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
 const SAMPLE: &str = "samples/hwpx/143E433F503322BD33.hwpx";
@@ -27,6 +28,38 @@ fn internal_ole_entries(zip_bytes: &[u8]) -> Vec<(String, Vec<u8>)> {
         }
     }
     entries
+}
+
+fn cfb_with_stream(name: &str, payload: &[u8]) -> Vec<u8> {
+    rhwp::serializer::mini_cfb::build_cfb(&[(name, payload)]).expect("테스트 CFB 생성")
+}
+
+/// [#5582] HWPX OLE의 u32 LE 길이 프리픽스를 parser 직접 경로도 방어적으로 해석한다.
+#[test]
+fn issue_5582_length_prefixed_cfb_is_parsed() {
+    let cfb = cfb_with_stream("Contents", b"junk-not-a-chart");
+    assert!(parse_ole_container(&cfb).is_some(), "무프리픽스 기준선");
+
+    let mut prefixed = (cfb.len() as u32).to_le_bytes().to_vec();
+    prefixed.extend_from_slice(&cfb);
+    let container = parse_ole_container(&prefixed).expect("프리픽스 CFB 파싱");
+    assert!(container.raw_contents.is_some());
+
+    // 길이가 안 맞으면 벗기지 않는다. CFB 매직이 아니므로 열지 않아야 한다.
+    let mut wrong = 7u32.to_le_bytes().to_vec();
+    wrong.extend_from_slice(&cfb);
+    assert!(parse_ole_container(&wrong).is_none());
+}
+
+/// [#5582] 한컴 변형의 대문자 `CONTENTS` 스트림도 내용으로 수집한다.
+#[test]
+fn issue_5582_uppercase_contents_stream_is_collected() {
+    let cfb = cfb_with_stream("CONTENTS", b"embedded-object");
+    let container = parse_ole_container(&cfb).expect("파싱");
+    assert_eq!(
+        container.raw_contents.as_deref(),
+        Some(b"embedded-object".as_slice())
+    );
 }
 
 #[test]

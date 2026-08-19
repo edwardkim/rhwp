@@ -14,6 +14,11 @@ declare module '@wasm/rhwp.js' {
     constructor(data: Uint8Array);
     static createEmpty(): HwpDocument;
     static openWithPassword(data: Uint8Array, password: string): HwpDocument;
+    // 인덱스 시그니처는 이름 있는 프로퍼티를 대신하지 못한다 — 구조적 할당 검사에서
+    // `exportHwp` 를 요구하는 쪽(document-agent 의 ExportableDocument)에 닿지 않는다.
+    // 생성된 `pkg/rhwp.d.ts` 와 같은 시그니처로 명시한다.
+    exportHwp(): Uint8Array;
+    exportHwpx(): Uint8Array;
     [name: string]: any;
   }
 

@@ -2444,7 +2444,14 @@ impl LayoutEngine {
             }
         }
         let line_tac_width: f64 = row_tac_widths.iter().sum();
-        let align_offset = if cell_ctx.is_some() {
+        // [#5583] 본문 흐름의 수식-only 줄도 문단 정렬을 따른다 — 단 저장 LINE_SEG 가 줄 시작
+        // 위치를 담고 있으면(그 값이 권위다) 종전대로 저장 흐름을 쓴다.
+        //
+        // 종전에는 비-셀이면 무조건 0.0 이라 가운데 정렬 문단의 수식이 단 왼쪽 끝에 붙었다
+        // (3252633 국가유산수리 감리대가 기준 2·3쪽: 저장 cs=0 sw=48188 인데 수식 x=75.6 =
+        // 본문 좌측, 가운데라면 269.6). `column_start > 0` 인 줄은 한컴이 흐름 x 를 적어 둔
+        // 경우이므로 #1256/#1308 계약대로 그 값을 존중한다.
+        let align_offset = if cell_ctx.is_some() || comp_line.column_start == 0 {
             match alignment {
                 Alignment::Center | Alignment::Distribute => {
                     (available_width - line_tac_width).max(0.0) / 2.0
@@ -3411,6 +3418,27 @@ impl LayoutEngine {
                         margin_right,
                     )
                 };
+
+            // [#5598] 내어쓰기가 줄 상자를 한 글자도 못 담을 만큼 먹으면 적용하지 않는다.
+            //
+            // 좁은 표 칸에서 문단 내어쓰기(|indent|)가 칸 안쪽 폭에 육박하면, 이어지는 줄의
+            // 상자가 몇 px 로 무너져 글자가 칸 오른쪽 밖으로 밀려 나간다(2995759 `분류처우위원회
+            // 심의ㆍ의결` 칸: 안쪽 폭 107.7px, indent −104.4px → 둘째 줄 상자 x=193.3 w=3.3,
+            // `의결` 이 칸 밖). 한글은 같은 문단의 두 줄을 모두 칸 안쪽 폭으로 조판한다
+            // (저장 LINE_SEG 두 줄 모두 cs=200 sw=8076).
+            //
+            // 첫 줄은 내어쓰기의 기준선이므로 건드리지 않고, 이어지는 줄에만 적용한다.
+            let effective_margin_left = if line_indent > 0.0 {
+                let min_line_w = max_fs.max(1.0);
+                let avail = effective_col_w - effective_margin_left - effective_margin_right;
+                if avail < min_line_w {
+                    margin_left.min(effective_margin_left)
+                } else {
+                    effective_margin_left
+                }
+            } else {
+                effective_margin_left
+            };
 
             // 인라인 Shape가 있는 줄: 텍스트 y를 Shape 하단 baseline에 맞춤
             let text_y = if has_tac_shape

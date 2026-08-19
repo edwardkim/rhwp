@@ -2523,6 +2523,9 @@ export class InputHandler {
       this.resetDerivedStateAfterHistoryJump();
       // [Task #2337] 방금 되돌린 커맨드가 HF/FN 편집이면 그 커서 모드로 복원(본문 moveTo 대신).
       this.restoreEditContextAfterHistory(this.history.peekRedoTop(), newPos);
+      // [Task #3416] 그 위에 "지우기 전 선택" 을 되살린다 — 커서 위치가 정해진 뒤라야
+      // anchor 만 더해 범위가 완성된다. redo 쪽에는 두지 않는다(한컴도 redo 는 해제).
+      this.restoreSelectionAfterUndo(this.history.peekRedoTop());
       this.afterEdit();
     }
   }
@@ -2641,6 +2644,29 @@ export class InputHandler {
     this.cellSelectionRenderer?.clear();
     // [#2339] 외부 위치-기반 파생 상태(find currentHit 등)를 구독으로 정리하는 확장점.
     this.eventBus.emit('history-jumped');
+  }
+
+  /**
+   * [Task #3416] undo 뒤 "지우기 전 선택" 을 되살린다.
+   *
+   * 한컴 2024 실측 — 선택을 지우고 undo 하면 지우기 전 범위가 그대로 복원되고(캐럿은 선택 끝),
+   * redo 하면 해제된다. 선택 위에 타이핑해 대체한 경우의 undo 는 복원하지 않는다. 그래서 이
+   * 복원은 `selectionBefore()` 를 구현한 커맨드(선택 삭제)에만 걸리고, 나머지는
+   * `resetDerivedStateAfterHistoryJump` 의 해제가 그대로 최종 상태다.
+   *
+   * **복원 전에 현재 문서에서 유효한 범위인지 반드시 확인한다.** #2339 가 해제를 넣은 이유가
+   * 유령 범위이기 때문이다 — 문서에 없는 anchor/focus 를 세우면 이후 Bold·Backspace 가 본 적
+   * 없는 범위를 만진다. 유효하지 않으면 해제된 상태로 둔다(종전 동작).
+   */
+  private restoreSelectionAfterUndo(cmd: EditCommand | null): void {
+    const range = cmd?.selectionBefore?.();
+    if (!range) return;
+    // 구역을 걸치는 범위는 되살리지 않는다 — 한컴 실측을 한 구역 안에서만 했다. 이건 실재
+    // 여부가 아니라 "어디까지 맞출지" 의 판단이라 여기 남는다.
+    if (range.start.sectionIndex !== range.end.sectionIndex) return;
+    // 범위가 현재 문서에 실재하는지는 `selectRange` 가 판정하고 거절한다(#2339 유령 범위
+    // 차단은 anchor/focus 소유자의 계약이다). 거절되면 해제된 상태 그대로 둔다.
+    this.cursor.selectRange(range.start, range.end);
   }
 
   /**
@@ -4006,6 +4032,15 @@ export class InputHandler {
 
   /** 선택된 그림/글상자 참조 반환 ([Task #825] headerFooter 동반 시 머리말/꼬리말 picture marker) */
   getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole'; cellIdx?: number; cellParaIdx?: number; outerTableControlIdx?: number; cellPath?: Array<{ controlIndex: number; cellIndex: number; cellParaIndex: number }>; noteRef?: any; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null { return this.cursor.getSelectedPictureRef(); }
+
+  /**
+   * 선택된 개체 밖(인접 문단)의 위치 — 커서를 옮기지 않는다 (Task #3351).
+   *
+   * 개체 조작을 기록하는 쪽이 "그 조작이 일어난 자리" 를 캐럿으로 남기기 위해 쓴다.
+   */
+  getPositionOutsideSelectedPicture(): DocumentPosition | null {
+    return this.cursor.positionOutsideSelectedPicture();
+  }
 
   /** 다중 선택된 개체 목록 */
   getSelectedPictureRefs(): { sec: number; ppi: number; ci: number; type: string }[] { return this.cursor.getSelectedPictureRefs(); }

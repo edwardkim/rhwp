@@ -53,8 +53,10 @@
   남으며 커밋하지 않는다.
 - **review·maintainer worktree와 CI 전용**: 새 integration source는 `tests/cases/` 원본만 PR에
   포함한다. `node scripts/rust-test-suite-manifest.mjs --prepare`와 manifest `--check`는
-  파생 suite를 준비한 review worktree와 CI에서만 수행한다. generated suite·manifest·Cargo target은
-  검증 증적일 뿐 source PR에 stage하지 않는다. 세부 절차는 `CONTRIBUTING.md`와
+  파생 suite를 준비한 review worktree와 CI에서만 수행한다. generated suite·manifest는
+  검증 증적일 뿐 source PR에 stage하지 않는다. 기본 `--prepare`는 root `Cargo.toml`을 바꾸지 않으며,
+  통합 불가 예외 target registry를 갱신하는 메인터너 전용 PR만 `--sync-cargo-targets`로 Cargo marker
+  블록을 동기화할 수 있다. 세부 절차는 `CONTRIBUTING.md`와
   `mydocs/manual/pr_review/local_validation.md`의 integration test 절을 따른다.
 - 문서 역할·생명주기·canonical 관계는 `mydocs/README.md`의 manifest를 따른다.
 - 문서 이동·정보구조 리팩토링의 링크와 메타데이터 검사는
