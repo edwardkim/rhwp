@@ -1083,6 +1083,16 @@ pub fn diff_linesegs(a: &Document, b: &Document) -> Vec<LinesegDiff> {
     out
 }
 
+/// [#5563] 비교 대상이 되는 줄 — 저장기가 실제로 파일에 실을 수 있는 접두부.
+fn axis_comparable_line_segs(
+    para: &crate::model::paragraph::Paragraph,
+) -> &[crate::model::paragraph::LineSeg] {
+    if para.char_count == 0 {
+        return &para.line_segs;
+    }
+    crate::serializer::body_text::line_segs_within_text_axis(&para.line_segs, para.char_count)
+}
+
 /// 문단 1쌍의 lineseg 비교 + 컨트롤 내부 문단 재귀 (`diff_paragraph_char_shapes` 와
 /// 동일 경로 순회).
 fn diff_paragraph_linesegs(
@@ -1095,8 +1105,12 @@ fn diff_paragraph_linesegs(
 ) {
     use crate::model::control::Control;
 
-    let la = &pa.line_segs;
-    let lb = &pb.line_segs;
+    // [#5563] 문단 축을 넘어서는 줄은 저장기가 파일에 싣지 않는다(HWPX·HWP5 공통
+    // 계약 — `line_segs_within_text_axis`). 비교에서도 같은 규칙을 먼저 걸어야
+    // "저장할 수 없는 줄"이 IR 차이로 잡히지 않는다. 축 증거가 없는 합성 IR
+    // (`char_count == 0`)은 종전대로 전부 비교한다.
+    let la = axis_comparable_line_segs(pa);
+    let lb = axis_comparable_line_segs(pb);
     if la.len() != lb.len() {
         out.push(LinesegDiff {
             section,
