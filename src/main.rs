@@ -8052,7 +8052,24 @@ fn allows_implicit_sibling_resources(format: rhwp::parser::FileFormat) -> bool {
     !matches!(format, rhwp::parser::FileFormat::Hml)
 }
 
-fn export_svg(args: &[String]) -> i32 {
+struct SvgExportArgs<'a> {
+    file_path: &'a str,
+    output_dir: String,
+    target_page: Option<u32>,
+    show_para_marks: bool,
+    show_control_codes: bool,
+    annotate_metric_font: bool,
+    debug_overlay: bool,
+    grid_mm: Option<f64>,
+    grid_origin: GridOriginOption,
+    respect_vpos_reset: bool,
+    font_embed_mode: rhwp::renderer::svg::FontEmbedMode,
+    font_paths: Vec<std::path::PathBuf>,
+    render_profile: Option<rhwp::paint::RenderProfile>,
+    json_mode: bool,
+}
+
+fn parse_export_svg_args<'a>(args: &'a [String]) -> Result<SvgExportArgs<'a>, i32> {
     // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일 —
     // 첫 비플래그 토큰이 파일이고 옵션은 위치 무관이다.
     let mut file_path: Option<&str> = None;
@@ -8079,7 +8096,7 @@ fn export_svg(args: &[String]) -> i32 {
                     i += 2;
                 } else {
                     eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--page" | "-p" => {
@@ -8088,13 +8105,13 @@ fn export_svg(args: &[String]) -> i32 {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--profile" => {
@@ -8104,12 +8121,12 @@ fn export_svg(args: &[String]) -> i32 {
                         eprintln!(
                             "오류: --profile 값이 올바르지 않습니다 (screen|print|high-quality|fast-preview)."
                         );
-                        return EXIT_USAGE;
+                        return Err(EXIT_USAGE);
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --profile 뒤에 프로필 이름이 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--show-para-marks" => {
@@ -8140,7 +8157,7 @@ fn export_svg(args: &[String]) -> i32 {
                             eprintln!(
                                 "오류: --show-grid 값이 올바르지 않습니다. 예: --show-grid=3mm"
                             );
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                 } else {
@@ -8156,13 +8173,13 @@ fn export_svg(args: &[String]) -> i32 {
                             eprintln!(
                                 "오류: --grid-origin 값이 올바르지 않습니다. 예: --grid-origin=15mm,20mm 또는 --grid-origin=auto"
                             );
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --grid-origin 뒤에 가로,세로 값이 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             arg if arg.starts_with("--grid-origin=") || arg.starts_with("--grid-paper-origin=") => {
@@ -8176,7 +8193,7 @@ fn export_svg(args: &[String]) -> i32 {
                         eprintln!(
                             "오류: --grid-origin 값이 올바르지 않습니다. 예: --grid-origin=15mm,20mm 또는 --grid-origin=auto"
                         );
-                        return EXIT_USAGE;
+                        return Err(EXIT_USAGE);
                     }
                 }
                 i += 1;
@@ -8199,7 +8216,7 @@ fn export_svg(args: &[String]) -> i32 {
                     i += 2;
                 } else {
                     eprintln!("오류: --font-path 뒤에 경로가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--json" => {
@@ -8210,12 +8227,12 @@ fn export_svg(args: &[String]) -> i32 {
             }
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
+                return Err(EXIT_USAGE);
             }
             other => {
                 if file_path.replace(other).is_some() {
                     eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
                 i += 1;
             }
@@ -8227,13 +8244,77 @@ fn export_svg(args: &[String]) -> i32 {
         eprintln!(
             "사용법: rhwp export-svg <파일.hwp|파일.hwpx|파일.hml> [옵션] (rhwp --help 참조)"
         );
-        return EXIT_USAGE;
+        return Err(EXIT_USAGE);
     };
 
     if render_profile.is_some() && font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None {
         eprintln!("오류: --profile은 --font-style/--embed-fonts와 함께 사용할 수 없습니다.");
-        return EXIT_USAGE;
+        return Err(EXIT_USAGE);
     }
+
+    Ok(SvgExportArgs {
+        file_path,
+        output_dir,
+        target_page,
+        show_para_marks,
+        show_control_codes,
+        annotate_metric_font,
+        debug_overlay,
+        grid_mm,
+        grid_origin,
+        respect_vpos_reset,
+        font_embed_mode,
+        font_paths,
+        render_profile,
+        json_mode,
+    })
+}
+
+fn configure_svg_document(
+    doc: &mut rhwp::wasm_api::HwpDocument,
+    show_para_marks: bool,
+    show_control_codes: bool,
+    annotate_metric_font: bool,
+    debug_overlay: bool,
+    respect_vpos_reset: bool,
+) {
+    if show_para_marks {
+        doc.set_show_paragraph_marks(true);
+    }
+    if show_control_codes {
+        doc.set_show_control_codes(true);
+    }
+    if annotate_metric_font {
+        doc.set_annotate_metric_font(true);
+    }
+    if debug_overlay {
+        doc.set_debug_overlay(true);
+    }
+    if respect_vpos_reset {
+        doc.set_respect_vpos_reset(true);
+    }
+}
+
+fn export_svg(args: &[String]) -> i32 {
+    let SvgExportArgs {
+        file_path,
+        output_dir,
+        target_page,
+        show_para_marks,
+        show_control_codes,
+        annotate_metric_font,
+        debug_overlay,
+        grid_mm,
+        grid_origin,
+        respect_vpos_reset,
+        font_embed_mode,
+        font_paths,
+        render_profile,
+        json_mode,
+    } = match parse_export_svg_args(args) {
+        Ok(options) => options,
+        Err(code) => return code,
+    };
 
     // 파일 읽기
     let data = match fs::read(file_path) {
@@ -8260,21 +8341,14 @@ fn export_svg(args: &[String]) -> i32 {
         }
     }
 
-    if show_para_marks {
-        doc.set_show_paragraph_marks(true);
-    }
-    if show_control_codes {
-        doc.set_show_control_codes(true);
-    }
-    if annotate_metric_font {
-        doc.set_annotate_metric_font(true);
-    }
-    if debug_overlay {
-        doc.set_debug_overlay(true);
-    }
-    if respect_vpos_reset {
-        doc.set_respect_vpos_reset(true);
-    }
+    configure_svg_document(
+        &mut doc,
+        show_para_marks,
+        show_control_codes,
+        annotate_metric_font,
+        debug_overlay,
+        respect_vpos_reset,
+    );
 
     let page_count = doc.page_count();
     if !json_mode {
@@ -8820,8 +8894,21 @@ fn export_png(_args: &[String]) -> i32 {
 }
 
 #[cfg(feature = "native-skia")]
-fn export_png(args: &[String]) -> i32 {
-    use rhwp::document_core::queries::rendering::{PngExportOptions, VlmTarget};
+struct PngExportArgs<'a> {
+    file_path: &'a str,
+    output_dir: String,
+    target_page: Option<u32>,
+    font_paths: Vec<std::path::PathBuf>,
+    scale: Option<f64>,
+    max_dimension: Option<i32>,
+    vlm_target: Option<rhwp::document_core::queries::rendering::VlmTarget>,
+    dpi: Option<f64>,
+    render_profile: rhwp::paint::RenderProfile,
+}
+
+#[cfg(feature = "native-skia")]
+fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i32> {
+    use rhwp::document_core::queries::rendering::VlmTarget;
 
     // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
     let mut file_path: Option<&str> = None;
@@ -8844,7 +8931,7 @@ fn export_png(args: &[String]) -> i32 {
                     i += 2;
                 } else {
                     eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--page" | "-p" => {
@@ -8853,13 +8940,13 @@ fn export_png(args: &[String]) -> i32 {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--profile" => {
@@ -8868,13 +8955,13 @@ fn export_png(args: &[String]) -> i32 {
                         eprintln!(
                             "오류: --profile 값이 올바르지 않습니다 (screen|print|high-quality|fast-preview)."
                         );
-                        return EXIT_USAGE;
+                        return Err(EXIT_USAGE);
                     };
                     render_profile = profile;
                     i += 2;
                 } else {
                     eprintln!("오류: --profile 뒤에 프로필 이름이 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--font-path" => {
@@ -8883,7 +8970,7 @@ fn export_png(args: &[String]) -> i32 {
                     i += 2;
                 } else {
                     eprintln!("오류: --font-path 뒤에 경로가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--scale" => {
@@ -8892,13 +8979,13 @@ fn export_png(args: &[String]) -> i32 {
                         Ok(s) if s.is_finite() && s > 0.0 => scale = Some(s),
                         _ => {
                             eprintln!("오류: --scale 값이 올바르지 않습니다 (양수 실수 필요).");
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --scale 뒤에 배율 값이 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--max-dimension" => {
@@ -8909,13 +8996,13 @@ fn export_png(args: &[String]) -> i32 {
                             eprintln!(
                                 "오류: --max-dimension 값이 올바르지 않습니다 (양수 정수 필요)."
                             );
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --max-dimension 뒤에 픽셀 값이 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--dpi" => {
@@ -8924,13 +9011,13 @@ fn export_png(args: &[String]) -> i32 {
                         Ok(d) if d.is_finite() && d > 0.0 => dpi = Some(d),
                         _ => {
                             eprintln!("오류: --dpi 값이 올바르지 않습니다 (양수 실수 필요).");
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --dpi 뒤에 DPI 값이 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--vlm-target" => {
@@ -8942,23 +9029,23 @@ fn export_png(args: &[String]) -> i32 {
                                 "오류: --vlm-target 값이 올바르지 않습니다 (지원: {}).",
                                 VlmTarget::all_names()
                             );
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --vlm-target 뒤에 프리셋 이름이 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
+                return Err(EXIT_USAGE);
             }
             other => {
                 if file_path.replace(other).is_some() {
                     eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
                 i += 1;
             }
@@ -8968,7 +9055,39 @@ fn export_png(args: &[String]) -> i32 {
     let Some(file_path) = file_path else {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
         eprintln!("사용법: rhwp export-png <파일.hwp> [옵션] (rhwp --help 참조)");
-        return EXIT_USAGE;
+        return Err(EXIT_USAGE);
+    };
+
+    Ok(PngExportArgs {
+        file_path,
+        output_dir,
+        target_page,
+        font_paths,
+        scale,
+        max_dimension,
+        vlm_target,
+        dpi,
+        render_profile,
+    })
+}
+
+#[cfg(feature = "native-skia")]
+fn export_png(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::rendering::PngExportOptions;
+
+    let PngExportArgs {
+        file_path,
+        output_dir,
+        target_page,
+        font_paths,
+        scale,
+        max_dimension,
+        vlm_target,
+        dpi,
+        render_profile,
+    } = match parse_export_png_args(args) {
+        Ok(options) => options,
+        Err(code) => return code,
     };
 
     let png_options = PngExportOptions {
@@ -9109,10 +9228,18 @@ fn export_png_gpu(_args: &[String]) -> i32 {
 }
 
 #[cfg(feature = "gpu")]
-fn export_png_gpu(args: &[String]) -> i32 {
-    use rhwp::renderer::gpu;
-    use std::time::Instant;
+struct GpuPngExportArgs<'a> {
+    file_path: &'a str,
+    output_dir: String,
+    target_page: Option<u32>,
+    scale: f64,
+    font_paths: Vec<std::path::PathBuf>,
+    benchmark: bool,
+    repeat: u32,
+}
 
+#[cfg(feature = "gpu")]
+fn parse_export_png_gpu_args<'a>(args: &'a [String]) -> Result<GpuPngExportArgs<'a>, i32> {
     let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
     let mut target_page: Option<u32> = None;
@@ -9126,7 +9253,7 @@ fn export_png_gpu(args: &[String]) -> i32 {
         match args[i].as_str() {
             "--help" | "-h" => {
                 print_export_png_gpu_usage();
-                return EXIT_OK;
+                return Err(EXIT_OK);
             }
             "--output" | "-o" => {
                 if i + 1 < args.len() {
@@ -9134,7 +9261,7 @@ fn export_png_gpu(args: &[String]) -> i32 {
                     i += 2;
                 } else {
                     eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--page" | "-p" => {
@@ -9143,13 +9270,13 @@ fn export_png_gpu(args: &[String]) -> i32 {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--scale" => {
@@ -9158,13 +9285,13 @@ fn export_png_gpu(args: &[String]) -> i32 {
                         Ok(s) if s.is_finite() && s > 0.0 => scale = s,
                         _ => {
                             eprintln!("오류: --scale 값이 올바르지 않습니다 (양수 실수 필요).");
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --scale 뒤에 배율 값이 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--font-path" => {
@@ -9173,7 +9300,7 @@ fn export_png_gpu(args: &[String]) -> i32 {
                     i += 2;
                 } else {
                     eprintln!("오류: --font-path 뒤에 경로가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--benchmark" => {
@@ -9186,23 +9313,23 @@ fn export_png_gpu(args: &[String]) -> i32 {
                         Ok(n) if n >= 1 => repeat = n,
                         _ => {
                             eprintln!("오류: --repeat 값이 올바르지 않습니다 (1 이상 정수 필요).");
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --repeat 뒤에 반복 횟수가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
+                return Err(EXIT_USAGE);
             }
             other => {
                 if file_path.replace(other).is_some() {
                     eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
                 i += 1;
             }
@@ -9212,7 +9339,82 @@ fn export_png_gpu(args: &[String]) -> i32 {
     let Some(file_path) = file_path else {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
         eprintln!("사용법: rhwp export-png-gpu <파일.hwp|파일.hwpx> [옵션] (rhwp export-png-gpu --help 참조)");
-        return EXIT_USAGE;
+        return Err(EXIT_USAGE);
+    };
+
+    Ok(GpuPngExportArgs {
+        file_path,
+        output_dir,
+        target_page,
+        scale,
+        font_paths,
+        benchmark,
+        repeat,
+    })
+}
+
+#[cfg(feature = "gpu")]
+fn create_gpu_export_context(
+    benchmark: bool,
+    repeat: u32,
+) -> Result<(rhwp::renderer::gpu::GpuContext, f64), i32> {
+    use rhwp::renderer::gpu;
+    use std::time::Instant;
+
+    let init_start = Instant::now();
+    let ctx = match gpu::GpuContext::new() {
+        Ok(context) => context,
+        Err(e) => {
+            eprintln!("오류: GPU 컨텍스트 생성 실패 - {e}");
+            eprintln!(
+                "      (헤드리스 Vulkan/DX12/Metal 어댑터가 필요합니다. `rhwp gpu-info` 로 확인하세요.)"
+            );
+            return Err(EXIT_RUNTIME);
+        }
+    };
+    let init_ms = init_start.elapsed().as_secs_f64() * 1000.0;
+    println!("GPU 어댑터: {}", ctx.adapter_summary());
+    println!("GPU 컨텍스트 초기화(일회성): {:.1} ms", init_ms);
+    if benchmark {
+        println!(
+            "벤치마크 모드: 각 페이지 래스터화를 {}회 반복해 최솟값(노이즈 최소)을 취합니다.\n",
+            repeat
+        );
+    }
+    Ok((ctx, init_ms))
+}
+
+#[cfg(feature = "gpu")]
+fn select_gpu_export_pages(target_page: Option<u32>, page_count: u32) -> Result<Vec<u32>, i32> {
+    match target_page {
+        Some(page) if page >= page_count => {
+            eprintln!(
+                "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
+                page_count - 1
+            );
+            Err(EXIT_USAGE)
+        }
+        Some(page) => Ok(vec![page]),
+        None => Ok((0..page_count).collect()),
+    }
+}
+
+#[cfg(feature = "gpu")]
+fn export_png_gpu(args: &[String]) -> i32 {
+    use rhwp::renderer::gpu;
+    use std::time::Instant;
+
+    let GpuPngExportArgs {
+        file_path,
+        output_dir,
+        target_page,
+        scale,
+        font_paths,
+        benchmark,
+        repeat,
+    } = match parse_export_png_gpu_args(args) {
+        Ok(options) => options,
+        Err(code) => return code,
     };
 
     let data = match fs::read(file_path) {
@@ -9249,18 +9451,9 @@ fn export_png_gpu(args: &[String]) -> i32 {
         }
     }
 
-    let pages: Vec<u32> = match target_page {
-        Some(p) => {
-            if p >= page_count as u32 {
-                eprintln!(
-                    "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
-                    page_count - 1
-                );
-                return EXIT_USAGE;
-            }
-            vec![p]
-        }
-        None => (0..page_count as u32).collect(),
+    let pages = match select_gpu_export_pages(target_page, page_count) {
+        Ok(pages) => pages,
+        Err(code) => return code,
     };
 
     let file_stem = Path::new(file_path)
@@ -9268,25 +9461,11 @@ fn export_png_gpu(args: &[String]) -> i32 {
         .and_then(|s| s.to_str())
         .unwrap_or("page");
 
-    // ── GPU 컨텍스트: 배치 전체에서 재사용할 단 하나. 생성 비용(일회성)을 측정해 둔다. ──
-    let init_start = Instant::now();
-    let mut ctx = match gpu::GpuContext::new() {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("오류: GPU 컨텍스트 생성 실패 - {e}");
-            eprintln!("      (헤드리스 Vulkan/DX12/Metal 어댑터가 필요합니다. `rhwp gpu-info` 로 확인하세요.)");
-            return EXIT_RUNTIME;
-        }
+    // 배치 전체에서 재사용할 단 하나의 컨텍스트와 일회성 생성 비용.
+    let (mut ctx, init_ms) = match create_gpu_export_context(benchmark, repeat) {
+        Ok(context) => context,
+        Err(code) => return code,
     };
-    let init_ms = init_start.elapsed().as_secs_f64() * 1000.0;
-    println!("GPU 어댑터: {}", ctx.adapter_summary());
-    println!("GPU 컨텍스트 초기화(일회성): {:.1} ms", init_ms);
-    if benchmark {
-        println!(
-            "벤치마크 모드: 각 페이지 래스터화를 {}회 반복해 최솟값(노이즈 최소)을 취합니다.\n",
-            repeat
-        );
-    }
 
     let total_pages = pages.len();
     let mut success = 0usize;
@@ -9572,6 +9751,291 @@ fn gpu_info(_args: &[String]) -> i32 {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+struct PdfExportArgs<'a> {
+    file_path: &'a str,
+    output_file: String,
+    target_page: Option<u32>,
+    pdf_backend: rhwp::renderer::pdf::PdfBackend,
+    pdf_options: rhwp::renderer::pdf::PdfExportOptions,
+    direct_pdf_options: rhwp::renderer::pdf::DirectPdfExportOptions,
+    render_profile: Option<rhwp::paint::RenderProfile>,
+    json_mode: bool,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn parse_export_pdf_args<'a>(args: &'a [String]) -> Result<PdfExportArgs<'a>, i32> {
+    // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
+    let mut file_path: Option<&str> = None;
+    let mut output_file = String::new();
+    let mut target_page: Option<u32> = None;
+    let mut pdf_backend = rhwp::renderer::pdf::PdfBackend::default();
+    let mut pdf_options = rhwp::renderer::pdf::PdfExportOptions::default();
+    let mut direct_pdf_options = rhwp::renderer::pdf::DirectPdfExportOptions::default();
+    let mut render_profile: Option<rhwp::paint::RenderProfile> = None;
+    let mut compatibility_only_options = Vec::new();
+    let mut direct_raster_dpi_was_set = false;
+    // [#3596] --json: 산출물 매니페스트를 stdout 순수 JSON 으로. 렌더 동작 무변경.
+    let mut json_mode = false;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => {
+                json_mode = true;
+                i += 1;
+            }
+            "--output" | "-o" => {
+                if i + 1 < args.len() {
+                    output_file = args[i + 1].clone();
+                    i += 2;
+                } else {
+                    eprintln!("오류: --output 뒤에 파일 경로가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+            }
+            "--page" | "-p" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse::<u32>() {
+                        Ok(n) => target_page = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
+                            return Err(EXIT_USAGE);
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+            }
+            "--profile" => {
+                if i + 1 < args.len() {
+                    render_profile = rhwp::paint::RenderProfile::parse(&args[i + 1]);
+                    if render_profile.is_none() {
+                        eprintln!(
+                            "오류: --profile 값이 올바르지 않습니다 (screen|print|high-quality|fast-preview)."
+                        );
+                        return Err(EXIT_USAGE);
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --profile 뒤에 프로필 이름이 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+            }
+            "--backend" => {
+                if i + 1 < args.len() {
+                    let Some(backend) = rhwp::renderer::pdf::PdfBackend::parse(&args[i + 1]) else {
+                        eprintln!("오류: --backend 값이 올바르지 않습니다 (svg|direct).");
+                        return Err(EXIT_USAGE);
+                    };
+                    pdf_backend = backend;
+                    i += 2;
+                } else {
+                    eprintln!("오류: --backend 뒤에 backend 이름이 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+            }
+            arg if arg.starts_with("--backend=") => {
+                let Some(backend) =
+                    rhwp::renderer::pdf::PdfBackend::parse(arg.trim_start_matches("--backend="))
+                else {
+                    eprintln!("오류: --backend 값이 올바르지 않습니다 (svg|direct).");
+                    return Err(EXIT_USAGE);
+                };
+                pdf_backend = backend;
+                i += 1;
+            }
+            "--raster-dpi" => {
+                if i + 1 < args.len() {
+                    let Ok(raster_dpi) = args[i + 1].parse::<f32>() else {
+                        eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
+                        return Err(EXIT_USAGE);
+                    };
+                    if !raster_dpi.is_finite() || raster_dpi <= 0.0 {
+                        eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
+                        return Err(EXIT_USAGE);
+                    }
+                    direct_pdf_options.raster_dpi = raster_dpi;
+                    direct_raster_dpi_was_set = true;
+                    i += 2;
+                } else {
+                    eprintln!("오류: --raster-dpi 뒤에 DPI 값이 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+            }
+            arg if arg.starts_with("--raster-dpi=") => {
+                let Ok(raster_dpi) = arg.trim_start_matches("--raster-dpi=").parse::<f32>() else {
+                    eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
+                    return Err(EXIT_USAGE);
+                };
+                if !raster_dpi.is_finite() || raster_dpi <= 0.0 {
+                    eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
+                    return Err(EXIT_USAGE);
+                }
+                direct_pdf_options.raster_dpi = raster_dpi;
+                direct_raster_dpi_was_set = true;
+                i += 1;
+            }
+            "--font-path" => {
+                if i + 1 < args.len() {
+                    pdf_options
+                        .font_paths
+                        .push(std::path::PathBuf::from(&args[i + 1]));
+                    i += 2;
+                } else {
+                    eprintln!("오류: --font-path 뒤에 경로가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+            }
+            "--fallback-serif" => {
+                compatibility_only_options.push("--fallback-serif");
+                if i + 1 < args.len() {
+                    pdf_options.fallback_serif = args[i + 1].clone();
+                    i += 2;
+                } else {
+                    eprintln!("오류: --fallback-serif 뒤에 폰트 family가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+            }
+            arg if arg.starts_with("--fallback-serif=") => {
+                compatibility_only_options.push("--fallback-serif");
+                pdf_options.fallback_serif =
+                    arg.trim_start_matches("--fallback-serif=").to_string();
+                i += 1;
+            }
+            "--fallback-sans" | "--fallback-sans-serif" => {
+                compatibility_only_options.push("--fallback-sans");
+                if i + 1 < args.len() {
+                    pdf_options.fallback_sans = args[i + 1].clone();
+                    i += 2;
+                } else {
+                    eprintln!("오류: --fallback-sans 뒤에 폰트 family가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+            }
+            arg if arg.starts_with("--fallback-sans=")
+                || arg.starts_with("--fallback-sans-serif=") =>
+            {
+                compatibility_only_options.push("--fallback-sans");
+                pdf_options.fallback_sans = arg
+                    .strip_prefix("--fallback-sans=")
+                    .or_else(|| arg.strip_prefix("--fallback-sans-serif="))
+                    .unwrap_or_default()
+                    .to_string();
+                i += 1;
+            }
+            "--fallback-mono" | "--fallback-monospace" => {
+                compatibility_only_options.push("--fallback-mono");
+                if i + 1 < args.len() {
+                    pdf_options.fallback_mono = args[i + 1].clone();
+                    i += 2;
+                } else {
+                    eprintln!("오류: --fallback-mono 뒤에 폰트 family가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+            }
+            arg if arg.starts_with("--fallback-mono=")
+                || arg.starts_with("--fallback-monospace=") =>
+            {
+                compatibility_only_options.push("--fallback-mono");
+                pdf_options.fallback_mono = arg
+                    .strip_prefix("--fallback-mono=")
+                    .or_else(|| arg.strip_prefix("--fallback-monospace="))
+                    .unwrap_or_default()
+                    .to_string();
+                i += 1;
+            }
+            // [Task #2264] 텍스트를 PDF 폰트로 임베드하지 않고 path 로 변환한다.
+            // 폰트 서브셋 경로를 건너뛰어 메모리를 크게 줄이는 대신,
+            // PDF 의 텍스트 선택·검색 기능을 잃는다 (시각적 출력은 동일).
+            "--text-as-paths" => {
+                compatibility_only_options.push("--text-as-paths");
+                pdf_options.embed_text = false;
+                i += 1;
+            }
+            "--equation-font" | "--equation-font-family" => {
+                compatibility_only_options.push("--equation-font");
+                if i + 1 < args.len() {
+                    pdf_options.equation_font = Some(args[i + 1].clone());
+                    i += 2;
+                } else {
+                    eprintln!("오류: --equation-font 뒤에 폰트 family가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+            }
+            arg if arg.starts_with("--equation-font=")
+                || arg.starts_with("--equation-font-family=") =>
+            {
+                compatibility_only_options.push("--equation-font");
+                pdf_options.equation_font = Some(
+                    arg.strip_prefix("--equation-font=")
+                        .or_else(|| arg.strip_prefix("--equation-font-family="))
+                        .unwrap_or_default()
+                        .to_string(),
+                );
+                i += 1;
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                print_export_pdf_usage();
+                return Err(EXIT_USAGE);
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return Err(EXIT_USAGE);
+                }
+                i += 1;
+            }
+        }
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
+        print_export_pdf_usage();
+        return Err(EXIT_USAGE);
+    };
+
+    compatibility_only_options.sort_unstable();
+    compatibility_only_options.dedup();
+    if pdf_backend == rhwp::renderer::pdf::PdfBackend::DirectLayer
+        && !compatibility_only_options.is_empty()
+    {
+        eprintln!(
+            "오류: direct PDF backend는 다음 SVG 호환 옵션을 지원하지 않습니다: {}",
+            compatibility_only_options.join(", ")
+        );
+        return Err(EXIT_USAGE);
+    }
+    if pdf_backend == rhwp::renderer::pdf::PdfBackend::CompatibilitySvg && direct_raster_dpi_was_set
+    {
+        eprintln!("오류: --raster-dpi는 direct PDF backend에서만 사용할 수 있습니다.");
+        return Err(EXIT_USAGE);
+    }
+
+    // 기본 출력 파일명
+    if output_file.is_empty() {
+        let stem = Path::new(file_path)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("output");
+        output_file = format!("output/{}.pdf", stem);
+    }
+
+    Ok(PdfExportArgs {
+        file_path,
+        output_file,
+        target_page,
+        pdf_backend,
+        pdf_options,
+        direct_pdf_options,
+        render_profile,
+        json_mode,
+    })
+}
+
 fn export_pdf(args: &[String]) -> i32 {
     if args.first().is_some_and(|a| a == "--help" || a == "-h") {
         print_export_pdf_usage();
@@ -9586,267 +10050,19 @@ fn export_pdf(args: &[String]) -> i32 {
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
-        let mut file_path: Option<&str> = None;
-        let mut output_file = String::new();
-        let mut target_page: Option<u32> = None;
-        let mut pdf_backend = rhwp::renderer::pdf::PdfBackend::default();
-        let mut pdf_options = rhwp::renderer::pdf::PdfExportOptions::default();
-        let mut direct_pdf_options = rhwp::renderer::pdf::DirectPdfExportOptions::default();
-        let mut render_profile: Option<rhwp::paint::RenderProfile> = None;
-        let mut compatibility_only_options = Vec::new();
-        let mut direct_raster_dpi_was_set = false;
-        // [#3596] --json: 산출물 매니페스트를 stdout 순수 JSON 으로. 렌더 동작 무변경.
-        let mut json_mode = false;
-
-        let mut i = 0;
-        while i < args.len() {
-            match args[i].as_str() {
-                "--json" => {
-                    json_mode = true;
-                    i += 1;
-                }
-                "--output" | "-o" => {
-                    if i + 1 < args.len() {
-                        output_file = args[i + 1].clone();
-                        i += 2;
-                    } else {
-                        eprintln!("오류: --output 뒤에 파일 경로가 필요합니다.");
-                        return 2;
-                    }
-                }
-                "--page" | "-p" => {
-                    if i + 1 < args.len() {
-                        match args[i + 1].parse::<u32>() {
-                            Ok(n) => target_page = Some(n),
-                            Err(_) => {
-                                eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                                return 2;
-                            }
-                        }
-                        i += 2;
-                    } else {
-                        eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                        return 2;
-                    }
-                }
-                "--profile" => {
-                    if i + 1 < args.len() {
-                        render_profile = rhwp::paint::RenderProfile::parse(&args[i + 1]);
-                        if render_profile.is_none() {
-                            eprintln!(
-                                "오류: --profile 값이 올바르지 않습니다 (screen|print|high-quality|fast-preview)."
-                            );
-                            return 2;
-                        }
-                        i += 2;
-                    } else {
-                        eprintln!("오류: --profile 뒤에 프로필 이름이 필요합니다.");
-                        return 2;
-                    }
-                }
-                "--backend" => {
-                    if i + 1 < args.len() {
-                        let Some(backend) = rhwp::renderer::pdf::PdfBackend::parse(&args[i + 1])
-                        else {
-                            eprintln!("오류: --backend 값이 올바르지 않습니다 (svg|direct).");
-                            return 2;
-                        };
-                        pdf_backend = backend;
-                        i += 2;
-                    } else {
-                        eprintln!("오류: --backend 뒤에 backend 이름이 필요합니다.");
-                        return 2;
-                    }
-                }
-                arg if arg.starts_with("--backend=") => {
-                    let Some(backend) = rhwp::renderer::pdf::PdfBackend::parse(
-                        arg.trim_start_matches("--backend="),
-                    ) else {
-                        eprintln!("오류: --backend 값이 올바르지 않습니다 (svg|direct).");
-                        return 2;
-                    };
-                    pdf_backend = backend;
-                    i += 1;
-                }
-                "--raster-dpi" => {
-                    if i + 1 < args.len() {
-                        let Ok(raster_dpi) = args[i + 1].parse::<f32>() else {
-                            eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
-                            return 2;
-                        };
-                        if !raster_dpi.is_finite() || raster_dpi <= 0.0 {
-                            eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
-                            return 2;
-                        }
-                        direct_pdf_options.raster_dpi = raster_dpi;
-                        direct_raster_dpi_was_set = true;
-                        i += 2;
-                    } else {
-                        eprintln!("오류: --raster-dpi 뒤에 DPI 값이 필요합니다.");
-                        return 2;
-                    }
-                }
-                arg if arg.starts_with("--raster-dpi=") => {
-                    let Ok(raster_dpi) = arg.trim_start_matches("--raster-dpi=").parse::<f32>()
-                    else {
-                        eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
-                        return 2;
-                    };
-                    if !raster_dpi.is_finite() || raster_dpi <= 0.0 {
-                        eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
-                        return 2;
-                    }
-                    direct_pdf_options.raster_dpi = raster_dpi;
-                    direct_raster_dpi_was_set = true;
-                    i += 1;
-                }
-                "--font-path" => {
-                    if i + 1 < args.len() {
-                        pdf_options
-                            .font_paths
-                            .push(std::path::PathBuf::from(&args[i + 1]));
-                        i += 2;
-                    } else {
-                        eprintln!("오류: --font-path 뒤에 경로가 필요합니다.");
-                        return 2;
-                    }
-                }
-                "--fallback-serif" => {
-                    compatibility_only_options.push("--fallback-serif");
-                    if i + 1 < args.len() {
-                        pdf_options.fallback_serif = args[i + 1].clone();
-                        i += 2;
-                    } else {
-                        eprintln!("오류: --fallback-serif 뒤에 폰트 family가 필요합니다.");
-                        return 2;
-                    }
-                }
-                arg if arg.starts_with("--fallback-serif=") => {
-                    compatibility_only_options.push("--fallback-serif");
-                    pdf_options.fallback_serif =
-                        arg.trim_start_matches("--fallback-serif=").to_string();
-                    i += 1;
-                }
-                "--fallback-sans" | "--fallback-sans-serif" => {
-                    compatibility_only_options.push("--fallback-sans");
-                    if i + 1 < args.len() {
-                        pdf_options.fallback_sans = args[i + 1].clone();
-                        i += 2;
-                    } else {
-                        eprintln!("오류: --fallback-sans 뒤에 폰트 family가 필요합니다.");
-                        return 2;
-                    }
-                }
-                arg if arg.starts_with("--fallback-sans=")
-                    || arg.starts_with("--fallback-sans-serif=") =>
-                {
-                    compatibility_only_options.push("--fallback-sans");
-                    pdf_options.fallback_sans = arg
-                        .strip_prefix("--fallback-sans=")
-                        .or_else(|| arg.strip_prefix("--fallback-sans-serif="))
-                        .unwrap_or_default()
-                        .to_string();
-                    i += 1;
-                }
-                "--fallback-mono" | "--fallback-monospace" => {
-                    compatibility_only_options.push("--fallback-mono");
-                    if i + 1 < args.len() {
-                        pdf_options.fallback_mono = args[i + 1].clone();
-                        i += 2;
-                    } else {
-                        eprintln!("오류: --fallback-mono 뒤에 폰트 family가 필요합니다.");
-                        return 2;
-                    }
-                }
-                arg if arg.starts_with("--fallback-mono=")
-                    || arg.starts_with("--fallback-monospace=") =>
-                {
-                    compatibility_only_options.push("--fallback-mono");
-                    pdf_options.fallback_mono = arg
-                        .strip_prefix("--fallback-mono=")
-                        .or_else(|| arg.strip_prefix("--fallback-monospace="))
-                        .unwrap_or_default()
-                        .to_string();
-                    i += 1;
-                }
-                // [Task #2264] 텍스트를 PDF 폰트로 임베드하지 않고 path 로 변환한다.
-                // 폰트 서브셋 경로를 건너뛰어 메모리를 크게 줄이는 대신,
-                // PDF 의 텍스트 선택·검색 기능을 잃는다 (시각적 출력은 동일).
-                "--text-as-paths" => {
-                    compatibility_only_options.push("--text-as-paths");
-                    pdf_options.embed_text = false;
-                    i += 1;
-                }
-                "--equation-font" | "--equation-font-family" => {
-                    compatibility_only_options.push("--equation-font");
-                    if i + 1 < args.len() {
-                        pdf_options.equation_font = Some(args[i + 1].clone());
-                        i += 2;
-                    } else {
-                        eprintln!("오류: --equation-font 뒤에 폰트 family가 필요합니다.");
-                        return 2;
-                    }
-                }
-                arg if arg.starts_with("--equation-font=")
-                    || arg.starts_with("--equation-font-family=") =>
-                {
-                    compatibility_only_options.push("--equation-font");
-                    pdf_options.equation_font = Some(
-                        arg.strip_prefix("--equation-font=")
-                            .or_else(|| arg.strip_prefix("--equation-font-family="))
-                            .unwrap_or_default()
-                            .to_string(),
-                    );
-                    i += 1;
-                }
-                other if other.starts_with('-') => {
-                    eprintln!("알 수 없는 옵션: {other}");
-                    print_export_pdf_usage();
-                    return 2;
-                }
-                other => {
-                    if file_path.replace(other).is_some() {
-                        eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                        return 2;
-                    }
-                    i += 1;
-                }
-            }
-        }
-
-        let Some(file_path) = file_path else {
-            eprintln!("오류: 문서 파일 경로를 지정해주세요.");
-            print_export_pdf_usage();
-            return 2;
+        let PdfExportArgs {
+            file_path,
+            output_file,
+            target_page,
+            pdf_backend,
+            pdf_options,
+            mut direct_pdf_options,
+            render_profile,
+            json_mode,
+        } = match parse_export_pdf_args(args) {
+            Ok(options) => options,
+            Err(code) => return code,
         };
-
-        compatibility_only_options.sort_unstable();
-        compatibility_only_options.dedup();
-        if pdf_backend == rhwp::renderer::pdf::PdfBackend::DirectLayer
-            && !compatibility_only_options.is_empty()
-        {
-            eprintln!(
-                "오류: direct PDF backend는 다음 SVG 호환 옵션을 지원하지 않습니다: {}",
-                compatibility_only_options.join(", ")
-            );
-            return 2;
-        }
-        if pdf_backend == rhwp::renderer::pdf::PdfBackend::CompatibilitySvg
-            && direct_raster_dpi_was_set
-        {
-            eprintln!("오류: --raster-dpi는 direct PDF backend에서만 사용할 수 있습니다.");
-            return 2;
-        }
-
-        // 기본 출력 파일명
-        if output_file.is_empty() {
-            let stem = Path::new(file_path)
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("output");
-            output_file = format!("output/{}.pdf", stem);
-        }
 
         let data = match fs::read(file_path) {
             Ok(d) => d,
