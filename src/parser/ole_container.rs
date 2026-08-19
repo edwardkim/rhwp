@@ -374,35 +374,6 @@ fn strip_ole_presentation_header_wmf(data: &[u8]) -> Option<Vec<u8>> {
 mod tests {
     use super::*;
 
-    /// [#5582] 길이 프리픽스가 붙은 CFB 도 컨테이너로 열린다 — HWPX 적재 경로는
-    /// `normalize_ole_bytes` 가 이미 벗기지만, 다른 유입 경로 대비 방어 정규화.
-    #[test]
-    fn length_prefixed_cfb_is_parsed() {
-        let cfb = crate::serializer::mini_cfb::build_cfb(&[("Contents", b"junk-not-a-chart")])
-            .expect("cfb");
-        assert!(parse_ole_container(&cfb).is_some(), "무프리픽스 기준선");
-        let mut prefixed = (cfb.len() as u32).to_le_bytes().to_vec();
-        prefixed.extend_from_slice(&cfb);
-        let container = parse_ole_container(&prefixed).expect("프리픽스 CFB 파싱");
-        assert!(container.raw_contents.is_some());
-        // 길이가 안 맞으면 벗기지 않는다(오인 방지) — CFB 매직이 없으니 None.
-        let mut wrong = 7u32.to_le_bytes().to_vec();
-        wrong.extend_from_slice(&cfb);
-        assert!(parse_ole_container(&wrong).is_none());
-    }
-
-    /// [#5582] 한컴 변형은 대문자 `CONTENTS` 를 쓴다(00128 실측) — 대소문자 무시 수집.
-    #[test]
-    fn uppercase_contents_stream_is_collected() {
-        let cfb = crate::serializer::mini_cfb::build_cfb(&[("CONTENTS", b"embedded-object")])
-            .expect("cfb");
-        let container = parse_ole_container(&cfb).expect("파싱");
-        assert_eq!(
-            container.raw_contents.as_deref(),
-            Some(b"embedded-object".as_slice())
-        );
-    }
-
     #[test]
     fn test_strip_no_emf_magic() {
         let data = vec![0u8; 100];

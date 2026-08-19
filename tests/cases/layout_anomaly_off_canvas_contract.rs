@@ -248,6 +248,39 @@ fn table_past_page_height_is_off_canvas() {
     assert!((pa.off_canvas[0].over_bottom - 30.0).abs() < 1e-9);
 }
 
+/// [#5586] 컨테이너 자기 bbox 는 쪽 안이지만 중첩 내용이 쪽 밖으로 흘러나온
+/// 형상(선언 높이 신뢰 배치의 1x1 래퍼 표)을 심층 범위로 잡는다. 종전에는
+/// suppress 설계 때문에 자기 bbox 만 보고 전량 침묵했다(00365 실측).
+#[test]
+fn nested_content_past_page_box_is_off_canvas() {
+    // 쪽 200 높이. 표 자체는 y=100 h=80 (쪽 안), 그 안의 줄이 y=230 (쪽 밖).
+    let mut spilled = text_line(10.0, 230.0, 50.0, 12.0);
+    spilled.children.push(text_run("넘친 줄"));
+    let mut tbl = table(10.0, 100.0, 80.0, 80.0);
+    tbl.children.push(spilled);
+    let body = body_node(BoundingBox::new(0.0, 0.0, 100.0, 190.0), vec![tbl]);
+    let root = page_root(100.0, 200.0, body);
+    let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
+    assert_eq!(pa.off_canvas.len(), 1, "심층 범위 off-canvas 1건: {pa:?}");
+    assert_eq!(pa.off_canvas[0].node_type, "Table");
+    // 보고 bbox 는 심층 범위(하단 242)를 담아야 근거가 된다.
+    let b = &pa.off_canvas[0].bbox;
+    assert!((b.y + b.height - 242.0).abs() < 0.01, "deep bottom: {b:?}");
+}
+
+/// 심층 범위가 전부 쪽 안이면 종전대로 무보고여야 한다.
+#[test]
+fn nested_content_inside_page_box_stays_clean() {
+    let mut inner = text_line(10.0, 150.0, 50.0, 12.0);
+    inner.children.push(text_run("정상"));
+    let mut tbl = table(10.0, 100.0, 80.0, 80.0);
+    tbl.children.push(inner);
+    let body = body_node(BoundingBox::new(0.0, 0.0, 100.0, 190.0), vec![tbl]);
+    let root = page_root(100.0, 200.0, body);
+    let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
+    assert!(pa.off_canvas.is_empty(), "{pa:?}");
+}
+
 #[test]
 fn off_canvas_within_tolerance_is_not_flagged() {
     let t = table(0.0, -0.5, 50.0, 40.0);
