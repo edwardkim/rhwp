@@ -402,6 +402,7 @@ PLACEHOLDER = re.compile(r"\{(\w+)\}")
 # 실제 가드와 다른 말을 하게 된다. 그게 정확히 이 스크립트가 없애려는 재작업이다.
 MCP_CONTRACT = Path("tests") / "mcp_server_contract.rs"
 CLI_CONTRACT = Path("tests") / "cli_json_contract.rs"
+CLI_CATALOG = Path("src") / "cli" / "catalog.rs"
 
 
 def _read(repo: Path, rel: Path) -> str:
@@ -428,6 +429,32 @@ def load_allowlist(repo: Path, rel: Path, const: str, fallback: set[str], rep: R
         return set(fallback)
     keys = {mm.group(1) for mm in re.finditer(r'\(\s*"([^"]+)"\s*,', m.group(1))}
     return keys or set(fallback)
+
+
+def load_help_hidden(repo: Path, rep: Report) -> set[str]:
+    """CLI catalog에서 사람용 help 비노출 명령을 읽는다.
+
+    #5511에서 help 가시성의 정본이 계약 테스트의 ``HELP_HIDDEN`` 상수에서
+    ``src/cli/catalog.rs``의 ``Visibility::Hidden``으로 이동했다. 선검사가 옛
+    상수를 계속 읽으면 정상적인 내부 프로브를 help 누락으로 오판하므로, 같은
+    catalog 선언을 직접 투영한다.
+    """
+    text = _read(repo, CLI_CATALOG)
+    if not text:
+        rep.skip("help hidden catalog 동기화", f"{CLI_CATALOG} 를 못 읽음")
+        return set()
+    pattern = re.compile(
+        r'spec\(\s*"([^"]+)"\s*,\s*Category::\w+\s*,\s*'
+        r'Visibility::Hidden\(\s*"[^"]+"\s*\)\s*,',
+        re.S,
+    )
+    hidden = set(pattern.findall(text))
+    if not hidden:
+        rep.skip(
+            "help hidden catalog 동기화",
+            f"{CLI_CATALOG} 에 Visibility::Hidden 명령이 없음",
+        )
+    return hidden
 
 
 def load_mcp_exclusions(repo: Path, rep: Report) -> set[str]:
@@ -864,13 +891,11 @@ def main() -> int:
             surface = load_surface(binary, rep)
             if surface:
                 caps_j, mcp_j, helptext = surface
-                # 허용목록은 전부 계약 테스트에서 읽는다 — 여기 베끼면 언젠가 어긋난다.
+                # argv 예외는 계약 테스트, help 가시성은 CLI catalog가 정본이다.
                 non_argv = load_allowlist(
                     repo, MCP_CONTRACT, "NON_ARGV_PROPERTIES", {"paths", "password"}, rep
                 )
-                help_hidden = load_allowlist(
-                    repo, CLI_CONTRACT, "HELP_HIDDEN", set(), rep
-                )
+                help_hidden = load_help_hidden(repo, rep)
                 mcp_excluded = load_mcp_exclusions(repo, rep)
                 check_mcp_input_schema(mcp_j, rep)
                 check_property_wiring(mcp_j, non_argv, rep)
