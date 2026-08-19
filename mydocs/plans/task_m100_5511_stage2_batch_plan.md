@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Q1·Q2 완료, Q3 복잡도 분해안 승인 대기
+- 상태: 실행 승인 — Q1·Q2·Q3 완료, Q4 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -96,6 +96,12 @@ SVG·PNG·GPU·PDF handler를 parser와 준비 helper로 분해한 뒤 vector·r
 모듈로 이동했다. 세 모듈은 모두 1,200줄 이하이고 renderer 알고리즘과 관찰 가능한 출력은
 바뀌지 않았다. 세부 증거는
 [`task_m100_5511_stage2_batch_q2.md`](../working/task_m100_5511_stage2_batch_q2.md)에 기록했다.
+
+Q3도 완료했다. Markdown 이미지 상대 링크와 자산 바이트를 먼저 고정하고, CC 25를 넘던
+`csv_to_table`과 `export_markdown`을 parser·검증·fallback helper로 분해했다. 읽기 전용
+text·tabular output과 상태 변경 CSV import를 서로 다른 CQRS 모듈로 이동했으며, 세 구현
+모듈은 모두 1,200줄 이하이다. 세부 증거는
+[`task_m100_5511_stage2_batch_q3.md`](../working/task_m100_5511_stage2_batch_q3.md)에 기록했다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
