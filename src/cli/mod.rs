@@ -4,6 +4,7 @@
 //! 고정한다. 하위 모듈은 application/service 계층이 아니며 도메인 로직을 소유하지
 //! 않는다.
 
+pub(crate) mod batch;
 pub(crate) mod catalog;
 pub(crate) mod commands;
 pub(crate) mod outputs;
