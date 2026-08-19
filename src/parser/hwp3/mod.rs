@@ -3467,6 +3467,10 @@ pub(crate) fn parse_paragraph_list(
             let is_empty_no_ctrl = para.text.is_empty() && para.controls.is_empty();
             if !is_empty_no_ctrl {
                 para.column_type = crate::model::paragraph::ColumnBreakType::Page;
+                // pgy/break_flag 승격은 저장 당시 자연 쪽 경계일 뿐 사용자의 명시적
+                // 쪽나눔이 아니다. 합성 표시를 남겨 저장 포맷 방출에서 제외한다
+                // (명시 flags bit1 나눔만 실제 pageBreak 로 저장).
+                para.page_break_synthesized = !prev_para_had_flags_break;
             } else {
                 force_vpos_reset = true;
             }

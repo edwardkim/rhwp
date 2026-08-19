@@ -18,6 +18,11 @@ pub struct Paragraph {
     pub column_type: ColumnBreakType,
     /// 원본 break_type 바이트 (라운드트립 보존용, 0이면 column_type에서 재구성)
     pub raw_break_type: u8,
+    /// `column_type=Page` 가 원본의 명시적 쪽나눔이 아니라 파서가 저장 당시
+    /// 자연 쪽 경계(HWP3 pgy 감소·break_flag)에서 승격한 합성값인지 여부.
+    /// 합성 나눔은 rhwp 조판(원본 쪽배치 정합)에만 쓰고, 저장 포맷으로 내보내면
+    /// 한글 재조판의 자연 경계와 이중 작용해 빈 쪽을 만든다(07615 264→329쪽).
+    pub page_break_synthesized: bool,
     /// 문단 텍스트 (UTF-16에서 변환된 문자열)
     pub text: String,
     /// 텍스트 문자별 UTF-16 코드 유닛 위치 (LineSeg/CharShapeRef 위치와 매핑용)
@@ -1313,6 +1318,7 @@ impl Paragraph {
             style_id: self.style_id,
             column_type: ColumnBreakType::None,
             raw_break_type: 0,
+            page_break_synthesized: false,
             control_mask: new_control_mask,
             controls: new_controls,
             ctrl_data_records: new_ctrl_data_records,
