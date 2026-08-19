@@ -65,6 +65,14 @@
       ]
     },
     {
+      "target": "issue_2225_missing_picture_placeholder",
+      "path": "tests/issue_2225_missing_picture_placeholder.rs",
+      "manual": false,
+      "reasons": [
+        "function_gated_native_skia"
+      ]
+    },
+    {
       "target": "issue_4055_b1_chart_edit_probe",
       "path": "tests/issue_4055_b1_chart_edit_probe.rs",
       "manual": false,
