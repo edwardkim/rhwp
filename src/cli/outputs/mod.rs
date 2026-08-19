@@ -2,6 +2,7 @@
 //!
 //! 읽기 전용 query와 달리 파일 시스템 부작용을 가질 수 있으므로 별도 경계에 둔다.
 
+pub(crate) mod doclang;
 pub(crate) mod pdf;
 pub(crate) mod preview;
 pub(crate) mod raster;
