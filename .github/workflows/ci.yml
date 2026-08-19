@@ -928,7 +928,7 @@ jobs:
 
       # 독립 verifier 패키지는 root Cargo target과 Python workflow 계약 범위 밖이다.
       # corpus·golden decision table이 변경돼도 실제 검증기가 실행되도록 명시적으로 묶는다.
-      # criteria_decomp는 위 workspace test가 담당하고, repeat_eval은 standalone manifest다.
+      # criteria_decomp는 위 workspace test가 담당하고, repeat_eval·tool_version_gate는 standalone manifest다.
       - name: Validate LLM verifier tool contracts
         run: |
           export PYTHONPATH=tools/llm_verifier
@@ -936,7 +936,9 @@ jobs:
           python3 -m unittest discover -s tools/llm_verifier/shadow_agree/tests -p 'test_*.py'
           python3 -m unittest discover -s tools/llm_verifier/untrusted_sandbox/tests -p 'test_*.py'
           python3 -m unittest discover -s tools/llm_verifier/lineage_chain/tests -p 'test_*.py'
+          python3 -m unittest discover -s tools/llm_verifier/abstain/tests -p 'test_*.py'
           cargo test --manifest-path tools/llm_verifier/repeat_eval/Cargo.toml
+          cargo test --manifest-path tools/llm_verifier/tool_version_gate/Cargo.toml
 
       - name: Validate Render Diff trigger policy
         run: python3 -m unittest scripts/tests/test_render_diff_workflow.py

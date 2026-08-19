@@ -29,7 +29,9 @@ class LlmVerifierWorkflowTests(unittest.TestCase):
             "tools/llm_verifier/shadow_agree/tests",
             "tools/llm_verifier/untrusted_sandbox/tests",
             "tools/llm_verifier/lineage_chain/tests",
+            "tools/llm_verifier/abstain/tests",
             "cargo test --manifest-path tools/llm_verifier/repeat_eval/Cargo.toml",
+            "cargo test --manifest-path tools/llm_verifier/tool_version_gate/Cargo.toml",
         ]:
             self.assertIn(command, body)
 
