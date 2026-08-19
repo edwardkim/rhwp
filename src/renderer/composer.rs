@@ -2924,6 +2924,12 @@ fn text_surface_replacement(ch: char) -> Option<String> {
         let n = cp - 0xF02B1; // 0-based
         return char::from_u32(0x2460 + n).map(|c| c.to_string());
     }
+    // [#5599] U+F02C5 는 연속 구간의 21이 아니라 **네모 12** 다 — 한글 2022 오라클
+    // 실측(mel-001 p18 국정과제 bullet, PDF 좌표 절단 판정). 렌더는 위 대역과 같은
+    // 원문 유지 계약이고, 텍스트 표면만 ⑫ 로 읽을 수 있게 바꾼다.
+    if cp == 0xF02C5 {
+        return Some('\u{246B}'.to_string());
+    }
     // 렌더가 이미 표시 문자열을 갖고 있는 대역은 같은 답을 쓴다.
     if let Some(replacement) = pua_to_display_text(ch) {
         return Some(replacement);
