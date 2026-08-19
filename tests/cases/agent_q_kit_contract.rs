@@ -77,6 +77,37 @@ fn help_lists_fifty_commands() {
 }
 
 #[test]
+fn every_registered_command_accepts_help() {
+    let output = run(&["--help"]);
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    let commands: Vec<_> = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .filter_map(|line| {
+            line.strip_prefix("  rhwp-q-kit ")
+                .and_then(|usage| usage.split_whitespace().next())
+                .map(str::to_owned)
+        })
+        .collect();
+    assert_eq!(commands.len(), 50, "help command count: {commands:?}");
+
+    for command in commands {
+        let args = [command.as_str(), "--help"];
+        let output = run(&args);
+        assert_eq!(
+            output.status.code(),
+            Some(0),
+            "{}",
+            describe(&args, &output)
+        );
+        let text = String::from_utf8_lossy(&output.stdout);
+        assert!(
+            text.contains(&format!("rhwp-q-kit {command}")),
+            "{command} help usage missing: {text}"
+        );
+    }
+}
+
+#[test]
 fn unknown_command_is_usage() {
     let output = run(&["not-a-real-command"]);
     assert_eq!(

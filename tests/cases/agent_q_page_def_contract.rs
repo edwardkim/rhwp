@@ -52,14 +52,8 @@ fn form01_json_envelope() {
     assert_eq!(v["section"], 0);
     assert_eq!(v["source"], source);
     assert_eq!(v["units"], "HWPUNIT");
-    assert!(
-        v["width"].as_u64().is_some(),
-        "width 가 없다: {v}"
-    );
-    assert!(
-        v["height"].as_u64().is_some(),
-        "height 가 없다: {v}"
-    );
+    assert!(v["width"].as_u64().is_some(), "width 가 없다: {v}");
+    assert!(v["height"].as_u64().is_some(), "height 가 없다: {v}");
     assert!(v["marginLeft"].as_u64().is_some(), "{v}");
     assert!(v["marginRight"].as_u64().is_some(), "{v}");
     assert!(v["marginTop"].as_u64().is_some(), "{v}");

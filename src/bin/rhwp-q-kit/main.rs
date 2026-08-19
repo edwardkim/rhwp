@@ -135,6 +135,11 @@ fn print_help() {
     }
 }
 
+fn print_command_help(spec: &Spec) {
+    let _ = write_stdout(&format!("{} — {}", spec.usage, spec.summary));
+    let _ = write_stdout("종료 코드: 0 성공 · 1 실행 오류 · 2 사용법 오류");
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let code = match args.first().map(String::as_str) {
@@ -152,6 +157,12 @@ fn main() {
             0
         }
         Some(name) => match find(name) {
+            Some(spec)
+                if matches!(args.get(1).map(String::as_str), Some("--help") | Some("-h")) =>
+            {
+                print_command_help(spec);
+                0
+            }
             Some(spec) => (spec.handler)(&args[1..]),
             None => {
                 eprintln!("오류: 알 수 없는 명령입니다 - {name}");
