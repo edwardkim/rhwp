@@ -925,9 +925,12 @@ fn parse_para_shape(
                 Ok(Event::Start(ref ce)) => {
                     match parse_para_shape_child(ce, &mut ps) {
                         ParaShapeChildKind::Margin => {
+                            // [#4898] switch 밖 평문 여백 — 원본 표기를 보존한다.
+                            ps.hwpx_plain_para_margin = true;
                             parse_para_shape_margin_children(reader, &mut ps)?;
                         }
                         ParaShapeChildKind::Switch => {
+                            ps.hwpx_plain_para_margin = false;
                             // <switch>/<case>/<default> 네임스페이스 분기 처리
                             // HwpUnitChar case를 우선 적용, 없으면 default 사용
                             parse_para_shape_switch(reader, &mut ps)?;
