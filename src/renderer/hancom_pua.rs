@@ -15,6 +15,21 @@
 static VERIFIED_HANCOM_PUA_DISPLAY: &[(u32, &str)] = &[
     // `복학원서.hwp` 서명란. Hancom PDF: `(인)`.
     (0xF012B, "(인)"),
+    // `hwp3-sample11`(HWP3→HWP5 변환본) p23 NVRAM 바이트 라벨 ⓪..⑨.
+    // Hancom PDF `pdf/hwp3-sample11-2020.pdf` p23 실측: 라벨 줄이
+    // ⓪ ① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨ ⓐ ⓑ 로 이어지고, 문서 본문은 같은 자리에
+    // F0288 F0289 F028A ③(리터럴) F028C F028D F028E F028F F0290 F0291 ⓐ ⓑ 다.
+    // 같은 쪽 아래 "Host-ID = ①+ⓒ+ⓓ+ⓔ" 줄이 F0289=① 을 한 번 더 확인해 준다.
+    // F028B(=③)는 이 문서가 리터럴 ③ 을 써서 근거가 없으므로 넣지 않는다.
+    (0xF0288, "⓪"),
+    (0xF0289, "①"),
+    (0xF028A, "②"),
+    (0xF028C, "④"),
+    (0xF028D, "⑤"),
+    (0xF028E, "⑥"),
+    (0xF028F, "⑦"),
+    (0xF0290, "⑧"),
+    (0xF0291, "⑨"),
     // `pau-004.hwp`/한컴 문자표와 `issue2007_nested_cell_pagination_42065.hwp` 중첩 표 글머리표.
     // HCR Dotum/Hancom PDF: small right-pointing triangle. 공개 글꼴에서 raw PUA는 두부가 된다.
     (0xF02FB, "▸"),
@@ -34,6 +49,18 @@ static VERIFIED_HANCOM_PUA_DISPLAY: &[(u32, &str)] = &[
     (0xF03F2, "컴"),
     (0xF03F3, "퓨"),
     (0xF03F4, "터"),
+    // 罫線(괘선) 조각 — `hwp3-sample11` 이 텍스트 다이어그램의 세로 묶음에 쓴다.
+    // Hancom PDF `pdf/hwp3-sample11-2020.pdf` 실측:
+    //   p6  `SUN OS 4.1.1 ━F0808 / F0810 / F0810 / 4.1.4 ━F080E` → ┐ │ │ ┘
+    //   p22 `━━━F0807━━━` 와 그 아래 `F080C━>` → ┬ 와 └
+    //   p129 세 줄 연속 F0806 / F0810 / F080C → ┌ │ └
+    // `SO-SUEOP.hwpx`(Hancom PDF `pdf/SO-SUEOP-2024.pdf`)도 같은 묶음을 쓴다.
+    (0xF0806, "┌"),
+    (0xF0807, "┬"),
+    (0xF0808, "┐"),
+    (0xF080C, "└"),
+    (0xF080E, "┘"),
+    (0xF0810, "│"),
 ];
 
 /// 검증된 한컴 기호에 대한 공개 글꼴 표시 대체값.

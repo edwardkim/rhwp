@@ -2017,13 +2017,27 @@ impl LayoutEngine {
             .sum()
     }
 
+    /// 셀 세로 정렬 기준 콘텐츠 높이에 들어가는 비-flow 개체의 시각 bottom.
+    ///
+    /// [Issue #5593] 글 앞으로(`InFrontOfText`)·글 뒤로(`BehindText`) 개체도 포함한다.
+    /// 이 둘은 줄 흐름을 밀지 않으므로 저장 LINE_SEG 에도 흡수되지 않는다 — 종전처럼
+    /// 빼 두면 세로 가운데 정렬 셀이 **글자 줄 높이만으로** 중앙을 잡아, 줄보다 큰
+    /// 개체(바코드·도장)가 줄 위치에 그려지며 칸 아래로 밀려난다(00425: 칸 85.0px,
+    /// 줄 16.0px, 그림 77.5px → 칸 밖 27px).
+    ///
+    /// `TopAndBottom` 은 여기서 제외한 채로 둔다. 그 개체는 줄을 실제로 밀어 한컴이
+    /// 저장 vpos 에 흡수하므로(#1486 악보 셀), 여기서 다시 세면 이중 계상이 된다.
     fn cell_wrap_object_visual_bottom(&self, common: &CommonObjAttr) -> f64 {
         if common.treat_as_char {
             return 0.0;
         }
         if !matches!(
             common.text_wrap,
-            TextWrap::Square | TextWrap::Tight | TextWrap::Through
+            TextWrap::Square
+                | TextWrap::Tight
+                | TextWrap::Through
+                | TextWrap::InFrontOfText
+                | TextWrap::BehindText
         ) {
             return 0.0;
         }
@@ -2496,6 +2510,29 @@ impl LayoutEngine {
             .iter()
             .map(|rx| rx.last().copied().unwrap_or(0.0))
             .fold(col_x.last().copied().unwrap_or(0.0), f64::max);
+        // [Issue #5590] 모든 행이 표 선언 폭에 정확히 맞춰 자기 열 구획을 완결했으면
+        // 표 상자 폭도 그 선언 폭이다. 행별 구획이 서로 어긋나는 표에서는 전역 col_x
+        // 합이 선언 폭보다 커질 수 있는데(어긋난 행 기준으로 앞 열을 풀고 남은 폭을
+        // 떠넘긴 결과), 그 값을 표 폭으로 쓰면 행의 오른쪽 끝과 표 오른쪽 테두리가
+        // 어긋나 표 안에 빈 띠가 남는다.
+        let declared_table_width = if table.common.width > 0 {
+            hwpunit_to_px(table.common.width as i32, self.dpi)
+                * self.render_table_width_scale(table)
+                + cell_spacing * col_count.saturating_sub(1) as f64
+        } else {
+            0.0
+        };
+        // 차이가 0.5px 를 넘을 때만 갈아끼운다 — 부동소수 끝자리만 다른 표까지 새 값으로
+        // 덮으면 SVG 골든이 의미 없이 깨진다.
+        if declared_table_width > 0.0
+            && (table_width - declared_table_width).abs() > 0.5
+            && !row_col_x.is_empty()
+            && row_col_x
+                .iter()
+                .all(|rx| (rx.last().copied().unwrap_or(0.0) - declared_table_width).abs() <= 0.5)
+        {
+            table_width = declared_table_width;
+        }
         // [#4042 버그 A] 셀 안 중첩 표(depth>0, 비-TAC)의 렌더 폭은 표 선언 폭(=부모 셀
         // full 폭)으로 결정되는데, 호출자(table_partial.rs:1309 continuation, table_layout.rs
         // 정상 비-TAC 셀 경로)는 이미 패딩을 뺀 col_area(inner_width)를 넘기고 원점도
