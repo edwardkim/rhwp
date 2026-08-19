@@ -2,6 +2,7 @@
 
 use rhwp::model::control::Control;
 use serde_json::{json, Value};
+use std::collections::BTreeMap;
 
 use crate::envelope::{
     envelope, load_core, parse_one_file, print_json, write_stdout, EXIT_OK, EXIT_RUNTIME,
@@ -25,6 +26,35 @@ fn walk_kind(
         }
     }
     items
+}
+
+fn control_kind(control: &Control) -> &'static str {
+    match control {
+        Control::SectionDef(_) => "sectionDef",
+        Control::ColumnDef(_) => "columnDef",
+        Control::Table(_) => "table",
+        Control::Shape(_) => "shape",
+        Control::Picture(_) => "picture",
+        Control::Header(_) => "header",
+        Control::Footer(_) => "footer",
+        Control::Footnote(_) => "footnote",
+        Control::Endnote(_) => "endnote",
+        Control::AutoNumber(_) => "autoNumber",
+        Control::NewNumber(_) => "newNumber",
+        Control::PageNumberPos(_) => "pageNumberPos",
+        Control::Bookmark(_) => "bookmark",
+        Control::IndexMark(_) => "indexMark",
+        Control::PageNumCtrl(_) => "pageNumCtrl",
+        Control::Hyperlink(_) => "hyperlink",
+        Control::Ruby(_) => "ruby",
+        Control::CharOverlap(_) => "charOverlap",
+        Control::PageHide(_) => "pageHide",
+        Control::HiddenComment(_) => "hiddenComment",
+        Control::Equation(_) => "equation",
+        Control::Field(_) => "field",
+        Control::Form(_) => "form",
+        Control::Unknown(_) => "unknown",
+    }
 }
 
 fn emit(command: &str, path: &str, json_mode: bool, items: Vec<Value>, untrusted: &[&str]) -> i32 {
@@ -359,9 +389,13 @@ pub fn tables_model(args: &[String]) -> i32 {
     };
     let doc = core.document();
     let items = walk_kind(doc, |c| match c {
-        Control::Table(v) => {
-            Some(json!({"rows": v.row_count, "cols": v.col_count, "cells": v.cells.len()}))
-        }
+        Control::Table(v) if v.caption.is_some() => Some(json!({
+            "rows": v.row_count,
+            "cols": v.col_count,
+            "cells": v.cells.len(),
+            "hasCaption": true,
+            "captionParagraphs": v.caption.as_ref().map_or(0, |caption| caption.paragraphs.len()),
+        })),
         _ => None,
     });
     emit(
@@ -1114,9 +1148,18 @@ pub fn ctrl_kinds(args: &[String]) -> i32 {
         Err(c) => return c,
     };
     let doc = core.document();
-    let items = walk_kind(doc, |c| {
-        Some(json!({"treatAsChar": c.is_treat_as_char_object()}))
-    });
+    let mut counts = BTreeMap::<&'static str, usize>::new();
+    for section in &doc.sections {
+        for paragraph in &section.paragraphs {
+            for control in &paragraph.controls {
+                *counts.entry(control_kind(control)).or_default() += 1;
+            }
+        }
+    }
+    let items = counts
+        .into_iter()
+        .map(|(kind, count)| json!({"kind": kind, "count": count}))
+        .collect();
     emit("ctrl-kinds", &path, json_mode, items, &[])
 }
 
@@ -1128,7 +1171,7 @@ pub fn page_starts_on(args: &[String]) -> i32 {
     };
     let doc = core.document();
     let items = walk_kind(doc, |c| match c {
-        Control::PageNumCtrl(v) => Some(json!({"ok": true})),
+        Control::PageNumCtrl(v) => Some(json!({"pageStartsOn": v.page_starts_on.as_hwpx()})),
         _ => None,
     });
     emit(
