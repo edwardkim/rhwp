@@ -395,6 +395,38 @@ fn unicode_query_is_owned_by_the_security_inspection_module() {
 }
 
 #[test]
+fn watermark_query_is_owned_by_the_security_inspection_module() {
+    let compact_main: String = MAIN_SOURCE
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    assert!(
+        SECURITY_INSPECTION_SOURCE.contains("pub(crate) fn inspect_watermark("),
+        "inspect_watermark 구현이 security_inspection 모듈에 있어야 한다"
+    );
+    assert!(
+        SECURITY_INSPECTION_SOURCE.contains("fn inspect_watermark_scan_unit("),
+        "watermark 텍스트 단위 스캔 helper가 handler와 함께 있어야 한다"
+    );
+    assert!(
+        !SECURITY_INSPECTION_SOURCE.contains("pub(crate) fn inspect_watermark_scan_unit("),
+        "watermark 스캔 helper는 모듈 밖으로 노출하지 않는다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn inspect_watermark("),
+        "inspect_watermark 구현이 main.rs로 되돌아가면 안 된다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn inspect_watermark_scan_unit("),
+        "watermark 스캔 helper가 main.rs로 되돌아가면 안 된다"
+    );
+    assert!(
+        compact_main.contains("cli::queries::security_inspection::inspect_watermark("),
+        "watermark dispatch가 security_inspection 모듈 API를 사용해야 한다"
+    );
+}
+
+#[test]
 fn structured_object_queries_are_owned_by_the_query_module() {
     let compact_main: String = MAIN_SOURCE
         .chars()
