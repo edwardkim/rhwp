@@ -8,20 +8,21 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::process::{Command, Output};
 
-#[path = "../src/cli/catalog.rs"]
+#[path = "../../src/cli/catalog.rs"]
 mod catalog;
 
 use catalog::{commands, Visibility};
 
-const MAIN_SOURCE: &str = include_str!("../src/main.rs");
-const DATA_EXTRACTION_SOURCE: &str = include_str!("../src/cli/queries/data_extraction.rs");
-const DIAGNOSTICS_SOURCE: &str = include_str!("../src/cli/queries/diagnostics.rs");
-const DIGEST_SOURCE: &str = include_str!("../src/cli/queries/digest.rs");
-const DOCUMENT_INVENTORY_SOURCE: &str = include_str!("../src/cli/queries/document_inventory.rs");
-const EXPLAIN_SOURCE: &str = include_str!("../src/cli/queries/explain.rs");
-const EXPLORE_SOURCE: &str = include_str!("../src/cli/queries/explore.rs");
-const SECURITY_INSPECTION_SOURCE: &str = include_str!("../src/cli/queries/security_inspection.rs");
-const STRUCTURED_OBJECTS_SOURCE: &str = include_str!("../src/cli/queries/structured_objects.rs");
+const MAIN_SOURCE: &str = include_str!("../../src/main.rs");
+const DATA_EXTRACTION_SOURCE: &str = include_str!("../../src/cli/queries/data_extraction.rs");
+const DIAGNOSTICS_SOURCE: &str = include_str!("../../src/cli/queries/diagnostics.rs");
+const DIGEST_SOURCE: &str = include_str!("../../src/cli/queries/digest.rs");
+const DOCUMENT_INVENTORY_SOURCE: &str = include_str!("../../src/cli/queries/document_inventory.rs");
+const EXPLAIN_SOURCE: &str = include_str!("../../src/cli/queries/explain.rs");
+const EXPLORE_SOURCE: &str = include_str!("../../src/cli/queries/explore.rs");
+const SECURITY_INSPECTION_SOURCE: &str =
+    include_str!("../../src/cli/queries/security_inspection.rs");
+const STRUCTURED_OBJECTS_SOURCE: &str = include_str!("../../src/cli/queries/structured_objects.rs");
 
 fn rhwp_bin() -> String {
     std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
@@ -554,7 +555,7 @@ fn raw_record_diagnostic_is_owned_by_the_query_module() {
 
 #[test]
 fn search_query_is_owned_by_its_query_module() {
-    let search_source = include_str!("../src/cli/queries/search.rs");
+    let search_source = include_str!("../../src/cli/queries/search.rs");
     let compact_main: String = MAIN_SOURCE
         .chars()
         .filter(|ch| !ch.is_whitespace())
