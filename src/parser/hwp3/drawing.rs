@@ -14,7 +14,6 @@ pub struct Hwp3DrawingObjectFrameHeader {
     pub object_count: u32,
     pub bounds: [i32; 4], // shunit32 (x, y, 너비, 높이)
 }
-
 impl Hwp3DrawingObjectFrameHeader {
     pub fn read<R: Read>(mut reader: R) -> Result<Self, io::Error> {
         let header_length = reader.read_u32::<LittleEndian>()?;
@@ -1326,4 +1325,3 @@ mod drawing_object_recursion_depth_tests {
         );
     }
 }
-
