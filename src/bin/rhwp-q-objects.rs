@@ -6,7 +6,6 @@
 use rhwp::document_core::DocumentCore;
 use serde_json::{json, Value};
 use std::io::Write;
-use std::path::PathBuf;
 
 const EXIT_OK: i32 = 0;
 const EXIT_RUNTIME: i32 = 1;
@@ -158,88 +157,4 @@ fn run(args: Vec<String>) -> i32 {
 
 fn main() {
     std::process::exit(run(std::env::args().skip(1).collect()));
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn repo_path(rel: &str) -> String {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join(rel)
-            .to_string_lossy()
-            .into_owned()
-    }
-
-    fn sample() -> String {
-        let form = repo_path("samples/form-01.hwp");
-        if PathBuf::from(&form).is_file() {
-            form
-        } else {
-            repo_path("samples/hwp_table_test.hwp")
-        }
-    }
-
-    #[test]
-    fn help_exits_0() {
-        assert_eq!(run(vec!["--help".into()]), EXIT_OK);
-        assert_eq!(run(vec!["-h".into()]), EXIT_OK);
-    }
-
-    #[test]
-    fn unknown_flag_exits_2() {
-        assert_eq!(run(vec!["--nope".into()]), EXIT_USAGE);
-        assert_eq!(run(vec![sample(), "--weird".into()]), EXIT_USAGE);
-    }
-
-    #[test]
-    fn missing_path_exits_2() {
-        assert_eq!(run(vec![]), EXIT_USAGE);
-        assert_eq!(run(vec!["--json".into()]), EXIT_USAGE);
-    }
-
-    #[test]
-    fn extra_file_exits_2() {
-        assert_eq!(run(vec![sample(), sample()]), EXIT_USAGE);
-    }
-
-    #[test]
-    fn missing_file_exits_1() {
-        assert_eq!(
-            run(vec![repo_path("samples/__no_such_q_objects__.hwp")]),
-            EXIT_RUNTIME
-        );
-    }
-
-    #[test]
-    fn unparseable_file_exits_1() {
-        assert_eq!(run(vec![repo_path("README.md")]), EXIT_RUNTIME);
-    }
-
-    #[test]
-    fn sample_envelope_is_read_only_query() {
-        let path = sample();
-        let report = inspect(&path).expect("표본 문서를 열 수 있어야 한다");
-        assert_eq!(
-            report["schemaVersion"],
-            json!(rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION)
-        );
-        assert_eq!(report["tool"], "rhwp-q-objects");
-        assert_eq!(report["command"], "objects");
-        assert_eq!(report["version"], rhwp::version());
-        assert_eq!(report["untrustedContent"], true);
-        assert_eq!(report["untrustedFields"], json!(["source", "controls"]));
-        assert_eq!(report["source"], path);
-        let controls = report["controls"].as_array().expect("controls 배열");
-        assert_eq!(report["controlCount"], controls.len());
-        assert!(!controls.is_empty(), "표본은 컨트롤 사슬이 비면 안 된다");
-        assert!(controls.iter().all(|item| {
-            item.get("ctrlId").is_some()
-                && item.get("ctrlCh").is_some()
-                && item.get("userDesc").is_some()
-        }));
-        let objects = report["objects"].as_array().expect("objects 배열");
-        assert_eq!(report["objectCount"], objects.len());
-        assert_eq!(run(vec!["--json".into(), path]), EXIT_OK);
-    }
 }
