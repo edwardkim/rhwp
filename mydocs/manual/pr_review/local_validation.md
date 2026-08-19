@@ -61,8 +61,9 @@ node scripts/run-rust-test.mjs issue_1234_short_description \
 검증이 끝나면 이 파생 변경은 review worktree에서 복원한다. `--prepare`가 이름 변경·삭제와 신규 source를
 함께 처리하므로 일반 PR에 `--generate`·`--sync`·`--rebalance` 결과를 포함하지 않는다. 기여자가
 PR 전 검증으로 실행할 명령은 `node --test scripts/tests/rust-test-suite-manifest.test.mjs`와 변경 범위의
-Rust test이며, 파생 파일 일치 검사는 review worktree와 CI의 책임이다. 경로·crate-root 의존성이 탐지된
-source는 생성기가 singleton exception으로 보존한다.
+Rust test이며, source-side `#[cfg(test)]`를 바꾼 경우에는 `node scripts/rust-unit-test-tiers.mjs --check`도
+실행한다. 이 unit-tier 검사는 파생 파일을 만들지 않는다. 반면 manifest 파생 파일 일치 검사는 review
+worktree와 CI의 책임이다. 경로·crate-root 의존성이 탐지된 source는 생성기가 singleton exception으로 보존한다.
 
 제품 소스의 `#[cfg(test)]`는 root `src/`와 내부 `crates/*/src/`의 기존 모듈별 테스트 수와 test
 support 항목을 기준선으로 관리한다.

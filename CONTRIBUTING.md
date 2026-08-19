@@ -1,19 +1,21 @@
 # Contributing to rhwp
 
 > **PR·push 차단 게이트 — 하나라도 실패하면 `gh pr create` / `git push` 하지 마세요.**
-> 테스트만 고친 뒤에도 `cargo fmt --all -- --check` 를 다시 돌리세요.
+> 테스트만 고친 뒤에도 `cargo fmt --all -- --check` 를 다시 돌리세요. 일반 기여자의 source PR
+> checkout에서는 generated suite를 준비하지 않습니다.
 >
 > ```bash
 > cargo fmt --all
 > cargo fmt --all -- --check
-> node scripts/rust-test-suite-manifest.mjs --check
-> node scripts/rust-unit-test-tiers.mjs --check
 > ```
 >
 > CI Lint job 의 Format check 는 `cargo fmt --all -- --check` 입니다.
 > `cargo fmt --check` 만으로는 부족합니다. 실패하면 `cargo fmt --all` 로 고친 뒤
 > `--check` 가 통과할 때까지 PR 을 만들지 마세요.
-> `rust-unit-test-tiers --check`는 source와 추적 정책만 읽으며 파생 inventory를 만들거나 stage하지 않습니다.
+> `src/**`의 `#[cfg(test)]`를 바꾼 경우에는 추가로
+> `node scripts/rust-unit-test-tiers.mjs --check`를 실행하세요. 이 검사는 source와 추적 정책만
+> 읽으며 파생 inventory를 만들거나 stage하지 않습니다. 반면
+> `rust-test-suite-manifest.mjs --prepare`와 manifest `--check`는 review worktree와 CI만 수행합니다.
 
 rhwp에 관심을 가져주셔서 감사합니다!
 
@@ -155,6 +157,7 @@ cargo install cargo-nextest --locked             # 최초 1회
 cargo fmt --all                                  # 로컬 포맷 적용
 cargo fmt --all -- --check                       # CI와 같은 포맷 검증 — PR 전 필수
 node --test scripts/tests/rust-test-suite-manifest.test.mjs
+# `src/**`의 `#[cfg(test)]`를 변경한 경우에만 실행한다. 파생 파일은 생성하지 않는다.
 node scripts/rust-unit-test-tiers.mjs --check
 cargo nextest run \
   --cargo-profile release-test \
@@ -170,8 +173,10 @@ cargo clippy --all-targets --target-dir target/pr-review -- -D warnings # 린트
 새 통합 테스트는 `tests/cases/` 에만 둡니다. `tests/suites/suite-policy.json`,
 `tests/suites/unit-test-tier-policy.json`은 추적하는 정책이고, `tests/generated/`, `tests/suites/manifest.json`,
 `tests/generated/**`, Cargo의 generated test target 블록은 **PR에 넣지 않는 파생 산출물**입니다. 일반 기여자는 자신의 PR checkout에서 `--prepare`, `--generate`,
-`--sync`, `--rebalance`, `--check`를 실행해 이를 등록하지 않습니다. 새 원본의 배정과
-harness 검증은 PR review 전용 worktree 및 CI가 `--prepare` 뒤 `--check`로 수행합니다.
+`--sync`, `--rebalance`, 또는 `rust-test-suite-manifest.mjs --check`를 실행해 이를 등록하지 않습니다.
+`rust-unit-test-tiers.mjs --check`는 source-side `#[cfg(test)]` 변경의 정책 검사로만 실행할 수 있으며
+파일을 생성하지 않습니다. 새 원본의 배정과 harness 검증은 PR review 전용 worktree 및 CI가
+`--prepare` 뒤 manifest `--check`로 수행합니다.
 로컬에서는 위 계약 단위 테스트와 필요한 Rust 회귀 테스트만 실행하세요.
 
 - `release-test` 프로필은 PR CI와 같은 기준이며 debug 대비 수 배 빠릅니다.

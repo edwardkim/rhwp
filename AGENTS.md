@@ -39,23 +39,23 @@
 
 ## 문서와 검증
 
-- **PR·push 직전 필수 (건너뛰면 CI Lint 실패)**:
+- **모든 PR·push 직전 필수 (건너뛰면 CI Lint Format check 실패)**:
   ```
   cargo fmt --all
   cargo fmt --all -- --check
-  node scripts/rust-test-suite-manifest.mjs --check
-  node scripts/rust-unit-test-tiers.mjs --check
   ```
   CI Format check 는 `cargo fmt --all -- --check` 이다. `cargo fmt --check` 만으로는
   부족하다. 테스트만 고친 커밋도 다시 돌려야 한다. `--check` 가 실패하면
   `cargo fmt --all` 후 다시 `--check` 가 통과하기 전에는 push 하지 않는다.
-  `src/` 의 `#[cfg(test)]` 줄이 바뀌었거나 devel 과 merge 되면
-  `node scripts/rust-unit-test-tiers.mjs --generate` 후 `--check` 한다.
-- **PR 전 필수**: `cargo fmt --all -- --check`. CI Lint Format check 와 같은 명령이다.
-  `cargo fmt --check` 만으로는 부족하다. 실패하면 `cargo fmt --all` 후 다시 `--check` 가
-  통과하기 전에는 PR 을 만들지 않는다. 이어서
-  `node scripts/rust-test-suite-manifest.mjs --check` 와
-  `node scripts/rust-unit-test-tiers.mjs --check` 도 통과해야 한다.
+- **source-side test 변경 시 추가**: `src/**`의 `#[cfg(test)]`를 변경하면
+  `node scripts/rust-unit-test-tiers.mjs --check`를 실행한다. 이 검사는 source와 정책만 읽고
+  파생 inventory를 만들지 않는다. 진단용 `--generate` 결과는 `tests/generated/unit-test-tiers.json`에
+  남으며 커밋하지 않는다.
+- **review·maintainer worktree와 CI 전용**: 새 integration source는 `tests/cases/` 원본만 PR에
+  포함한다. `node scripts/rust-test-suite-manifest.mjs --prepare`와 manifest `--check`는
+  파생 suite를 준비한 review worktree와 CI에서만 수행한다. generated suite·manifest·Cargo target은
+  검증 증적일 뿐 source PR에 stage하지 않는다. 세부 절차는 `CONTRIBUTING.md`와
+  `mydocs/manual/pr_review/local_validation.md`의 integration test 절을 따른다.
 - 문서 역할·생명주기·canonical 관계는 `mydocs/README.md`의 manifest를 따른다.
 - 문서 이동·정보구조 리팩토링의 링크와 메타데이터 검사는
   `mydocs/manual/markdown_link_check_guide.md`를 따른다. 일반 Markdown 추가·수정에는 자동 CI를 실행하지 않는다.
