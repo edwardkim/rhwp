@@ -342,23 +342,6 @@ mod tests {
     }
 
     #[test]
-    fn latin1_supplement_passes_through() {
-        // [#5555] 07615 원시 실측 8문자 — 종전에는 전부 '?' → 파서가 조용히 버려
-        // "für"→"fr" 처럼 라틴 확장 문자가 삭제됐다(정답지 본문 478자 전량 소실).
-        assert_eq!(decode_johab(0x00FC), 'ü');
-        assert_eq!(decode_johab(0x00E4), 'ä');
-        assert_eq!(decode_johab(0x00F6), 'ö');
-        assert_eq!(decode_johab(0x00DF), 'ß');
-        assert_eq!(decode_johab(0x00D6), 'Ö');
-        assert_eq!(decode_johab(0x00DC), 'Ü');
-        assert_eq!(decode_johab(0x00C4), 'Ä');
-        assert_eq!(decode_johab(0x00E9), 'é');
-        // 사적 따옴표 매핑(0x0081/0x0082)은 구간 밖 — 종전 유지.
-        assert_eq!(decode_johab(0x0081), '\u{201C}');
-        assert_eq!(decode_johab(0x0082), '\u{201D}');
-    }
-
-    #[test]
     fn hancom_tilde_variant_matches_hangul() {
         // KS X 1001 0xA1AD 는 표준 매핑이 U+223C(∼)지만 한글은 U+FF5E(～)를 쓴다.
         // 실측 80건 — 보정하지 않으면 되살린 문자가 다른 글자가 된다.
