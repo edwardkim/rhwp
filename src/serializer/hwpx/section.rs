@@ -662,7 +662,11 @@ pub fn write_section(
 /// (미등록 스타일 → 0, #1933). 전 문단 경로가 이 함수를 거치므로 여기가 단일
 /// 방출 지점이다.
 pub(crate) fn render_hp_p_open(p: &Paragraph, id: u32, style_id_ref: u8) -> String {
-    let page_break = if matches!(p.column_type, ColumnBreakType::Page) {
+    // 합성 쪽나눔(파서가 자연 쪽 경계에서 승격, HWP3)은 문서 내용이 아니라 조판
+    // 힌트라 저장하지 않는다. 저장하면 한글 재조판의 자연 경계와 이중 작용해
+    // 빈 쪽을 만든다(07615: 합성 138건이 264→329쪽 부풀림, 중화 시 264쪽 복원).
+    let page_break = if matches!(p.column_type, ColumnBreakType::Page) && !p.page_break_synthesized
+    {
         1
     } else {
         0
