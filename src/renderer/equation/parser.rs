@@ -631,9 +631,11 @@ impl EqParser {
             .copied()
             .unwrap_or(self.tokens.len());
         let next = close + 1;
-        let script = if self.tokens.get(next).is_some_and(|token| {
-            token.ty == TokenType::Whitespace && token.value == "`"
-        }) {
+        let script = if self
+            .tokens
+            .get(next)
+            .is_some_and(|token| token.ty == TokenType::Whitespace && token.value == "`")
+        {
             next + 1
         } else {
             next
