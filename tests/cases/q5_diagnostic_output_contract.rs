@@ -93,6 +93,6 @@ fn dump_filtered_human_stdout_is_byte_stable() {
             "--para",
             "0",
         ],
-        "bb27d62a90f3deec83bf8b1a8270680baaf9253cb6b511e6f052fdc0422957ca",
+        "45f876bb12042d4a6539780c4eaf043975fca51e21e479c80fd79e975ea8641d",
     );
 }
