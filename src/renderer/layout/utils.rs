@@ -81,7 +81,25 @@ pub(crate) fn picture_data_is_unusable(data: Option<&[u8]>) -> bool {
 /// 일부 HWP5 그림은 `CommonObjAttr.width/height`보다
 /// `SHAPE_COMPONENT.current_width/current_height`가 실제 한컴 표시 크기에 가깝다.
 /// 기존 도형 경로와 동일하게 current 값이 더 큰 축만 채택해 축소 회귀 위험을 줄인다.
+///
+/// [Issue #5595] 단, 회전 그림에서는 축별 max 를 쓰지 않는다. 회전 그림의
+/// `common.width/height` 는 한컴이 저장한 **회전 후 외접 프레임**이고
+/// `current_width/current_height` 는 **회전 전 원본 표시 크기**다 — 저장 경로의
+/// `DocumentCore::refresh_picture_rotation_layout_for_save` 가 세우는 계약과 같다.
+/// 90°/270° 처럼 두 축이 뒤바뀐 그림에 축별 max 를 적용하면 긴 변이 두 축 모두에
+/// 들어가 **정사각형**이
+/// 되어(00493: 188.5×134.0mm 가 712×712px) 지면 밖으로 나간다. 프레임 값이 온전하면
+/// 회전 후 프레임(common)을 그대로 쓴다.
 pub(crate) fn picture_display_size_hu(picture: &Picture) -> (i32, i32) {
+    if picture.shape_attr.rotation_angle.rem_euclid(360) != 0
+        && picture.common.width > 0
+        && picture.common.height > 0
+        && picture.shape_attr.current_width > 0
+        && picture.shape_attr.current_height > 0
+    {
+        return (picture.common.width as i32, picture.common.height as i32);
+    }
+
     let mut width = picture.common.width as i32;
     let mut height = picture.common.height as i32;
 
