@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Q1·Q2·Q3 완료, Q4 진입 승인 대기
+- 상태: 실행 승인 — Q1·Q2·Q3 완료, Q4 inventory 중단 조건 발동·책임 분해안 승인 대기
 
 ## 1. 전환 이유
 
@@ -102,6 +102,11 @@ Q3도 완료했다. Markdown 이미지 상대 링크와 자산 바이트를 먼�
 text·tabular output과 상태 변경 CSV import를 서로 다른 CQRS 모듈로 이동했으며, 세 구현
 모듈은 모두 1,200줄 이하이다. 세부 증거는
 [`task_m100_5511_stage2_batch_q3.md`](../working/task_m100_5511_stage2_batch_q3.md)에 기록했다.
+
+Q4 inventory에서 `cmd_scan`의 CC 28을 확인해 중단 조건이 발동했다. batch의 ordered stream과
+query/write 책임 경계, 기존 92개 인접 계약, scan characterization 공백과 세 선택지는
+[`task_m100_5511_stage2_batch_q4_inventory.md`](../working/task_m100_5511_stage2_batch_q4_inventory.md)에
+기록했다. 책임 분해안을 승인하기 전에는 제품 코드를 변경하지 않는다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
