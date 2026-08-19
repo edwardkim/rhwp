@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Q1·Q2·Q3·Q4·Q5·Q6 완료, Q7 진입 승인 대기
+- 상태: 실행 승인 — Q1·Q2·Q3·Q4·Q5·Q6 완료, Q7 inventory 중단·A안 승인 대기
 
 ## 1. 전환 이유
 
@@ -135,6 +135,12 @@ Q6도 완료했다. 변환 command, 문서 generation, DocLang output을 세 모
 merge하고, 결합 HEAD에서 Q6·q-pack focused 127/127과 전체 release-test 7,999/7,999를 포함한
 정적·정책 관문을 다시 통과했다. 세부 증거는
 [`task_m100_5511_stage2_batch_q6.md`](../working/task_m100_5511_stage2_batch_q6.md)에 기록했다.
+
+Q7 inventory에서 `ir_diff_paragraph_fields` CC 28, `cmd_verify` CC 29, `ir_diff` CC 38과
+`test-field` 성공·position diagnostics·`ir-sweep` 계약 공백을 확인해 중단 조건이 발동했다.
+기존 직접 계약 104/104 기준선과 세 선택지는
+[`task_m100_5511_stage2_batch_q7_inventory.md`](../working/task_m100_5511_stage2_batch_q7_inventory.md)에
+기록했다. 권장안 A는 최소 characterization 뒤 세 함수를 책임 분해하고 Q7 전체를 이동한다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
