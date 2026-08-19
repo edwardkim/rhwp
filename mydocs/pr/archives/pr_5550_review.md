@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: approved-local-validation
+status: merged
 pr: 5550
 base: devel
 source_head: d53b4e355b1c1c59238f637ea8e1dd650e1bacce
@@ -13,6 +13,9 @@ integration_commits:
   - 5c6aff9e0aa72202a3e16476b3f0925b2b7d1a51
   - 523d76f317117b3d0e35770d39600d7b4abb91e0
 maintainer_correction: 27e733d143c3d2939540bd53c43386ac237f41dc
+integration_pr: 5581
+merge_commit: d9ffc47f4f214f0cdadb1561ef5f00c6548a4ece
+post_validation_correction: 0c7dc94b2a0397c7bd0784b79b5e35c64bf5986f
 ---
 
 # PR #5550 rhwp-agent 조회 CLI 묶음 검토
@@ -57,6 +60,10 @@ collaborator_self_merge.md, intake_and_review.md, post_merge.md
 - `cargo fmt --all -- --check`: 통과
 - `node scripts/rust-test-suite-manifest.mjs --check`: 통과
 - `node scripts/rust-unit-test-tiers.mjs --check`: 통과
+- `0c7dc94b2`가 `capabilities --json`의 외부 명령 목록을 새 80개 공개 명령으로 갱신해 등재·실행 왕복 계약을 복구했다.
+- `cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast`: 7,773 passed
+- `CARGO_TARGET_DIR=target/pr-review cargo clippy --all-targets -- -D warnings`: 통과
+- 통합 PR #5581 CI: Lint, Native Skia, archive와 slow·regular shard, CodeQL 세 언어, Proptest, Adapter inter-diff, Build & Test 통과
 
 ## 적용 계보
 
@@ -66,5 +73,6 @@ collaborator_self_merge.md, intake_and_review.md, post_merge.md
 
 ## 결론
 
-**로컬 승인.** 누적 integration PR의 required CI 성공 후 source PR #5550에 적용 계보와
-메인터너 보정을 기록하고 close한다.
+**병합 완료.** 누적 통합 PR [#5581](https://github.com/edwardkim/rhwp/pull/5581)이
+`d9ffc47f4f214f0cdadb1561ef5f00c6548a4ece`로 `devel`에 병합됐다. 원 PR #5550에는 적용 계보와
+메인터너 보정 근거를 남긴 뒤 종료했다.

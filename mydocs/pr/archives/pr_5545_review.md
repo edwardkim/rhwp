@@ -1,11 +1,13 @@
 ---
 kind: pr-review
-status: approved-local-validation
+status: merged
 pr: 5545
 issue: 5518
 base: devel
 source_head: 37bd853590dddedfd9ca16d3aada41bce6bf755b
 integration_commit: 03f16cb371086a3a2084d21336beb2f414be3bfd
+integration_pr: 5581
+merge_commit: d9ffc47f4f214f0cdadb1561ef5f00c6548a4ece
 ---
 
 # PR #5545 V-fresh toolVersion 검증기 검토
@@ -40,9 +42,11 @@ collaborator_self_merge.md, intake_and_review.md, post_merge.md
 - `cargo fmt --all -- --check`: 통과
 - `node scripts/rust-test-suite-manifest.mjs --check`: 통과
 - `node scripts/rust-unit-test-tiers.mjs --check`: 통과
+- 누적 통합 검증 `cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast`: 7,773 passed
+- 통합 PR #5581 CI: Lint, Native Skia, archive와 slow·regular shard, CodeQL 세 언어, Proptest, Adapter inter-diff, Build & Test 통과
 
 ## 결론
 
-**로컬 승인.** 원 저자 commit을 `-x` 계보로 적용했다. 누적 integration PR의 required CI가 성공하면
-[#5518](https://github.com/edwardkim/rhwp/issues/5518)을 aggregate PR로 종료하고, 원 PR #5545에는
-적용 commit과 병합 PR을 남긴 뒤 close한다.
+**병합 완료.** 원 저자 commit을 `-x` 계보로 적용한 뒤 통합 PR [#5581](https://github.com/edwardkim/rhwp/pull/5581)에
+포함했고, `d9ffc47f4f214f0cdadb1561ef5f00c6548a4ece`로 `devel`에 병합됐다. 원 PR #5545와
+관련 이슈 [#5518](https://github.com/edwardkim/rhwp/issues/5518)는 통합 근거 댓글을 남긴 뒤 종료했다.
