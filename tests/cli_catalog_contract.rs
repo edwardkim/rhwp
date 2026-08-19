@@ -18,6 +18,7 @@ const DATA_EXTRACTION_SOURCE: &str = include_str!("../src/cli/queries/data_extra
 const DIAGNOSTICS_SOURCE: &str = include_str!("../src/cli/queries/diagnostics.rs");
 const DIGEST_SOURCE: &str = include_str!("../src/cli/queries/digest.rs");
 const DOCUMENT_INVENTORY_SOURCE: &str = include_str!("../src/cli/queries/document_inventory.rs");
+const EXPLAIN_SOURCE: &str = include_str!("../src/cli/queries/explain.rs");
 const STRUCTURED_OBJECTS_SOURCE: &str = include_str!("../src/cli/queries/structured_objects.rs");
 
 fn rhwp_bin() -> String {
@@ -277,6 +278,43 @@ fn digest_query_is_owned_by_the_query_module() {
             "Some(\"digest\")=>exit_with(cli::queries::digest::digest_document(&args[2..]))"
         ),
         "digest dispatch가 query 모듈 API를 사용해야 한다"
+    );
+}
+
+#[test]
+fn explain_query_is_owned_by_the_query_module() {
+    assert!(
+        EXPLAIN_SOURCE.contains("pub(crate) fn explain_document("),
+        "explain_document 구현이 explain 모듈에 있어야 한다"
+    );
+    for helper in [
+        "explain_table_summary",
+        "explain_table_phrase",
+        "explain_summary",
+        "explain_json_value",
+    ] {
+        assert!(
+            EXPLAIN_SOURCE.contains(&format!("fn {helper}(")),
+            "{helper} 구현이 explain 모듈에 있어야 한다"
+        );
+        assert!(
+            !MAIN_SOURCE.contains(&format!("fn {helper}(")),
+            "{helper} 구현이 main.rs로 되돌아가면 안 된다"
+        );
+    }
+    assert!(
+        !MAIN_SOURCE.contains("fn explain_document("),
+        "explain_document 구현이 main.rs로 되돌아가면 안 된다"
+    );
+    let compact_main: String = MAIN_SOURCE
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    assert!(
+        compact_main.contains(
+            "Some(\"explain\")=>exit_with(cli::queries::explain::explain_document(&args[2..]))"
+        ),
+        "explain dispatch가 query 모듈 API를 사용해야 한다"
     );
 }
 
