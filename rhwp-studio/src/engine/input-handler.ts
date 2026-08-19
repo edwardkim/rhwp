@@ -2661,32 +2661,12 @@ export class InputHandler {
   private restoreSelectionAfterUndo(cmd: EditCommand | null): void {
     const range = cmd?.selectionBefore?.();
     if (!range) return;
-    if (!this.isRestorableBodySelection(range.start, range.end)) return;
+    // 구역을 걸치는 범위는 되살리지 않는다 — 한컴 실측을 한 구역 안에서만 했다. 이건 실재
+    // 여부가 아니라 "어디까지 맞출지" 의 판단이라 여기 남는다.
+    if (range.start.sectionIndex !== range.end.sectionIndex) return;
+    // 범위가 현재 문서에 실재하는지는 `selectRange` 가 판정하고 거절한다(#2339 유령 범위
+    // 차단은 anchor/focus 소유자의 계약이다). 거절되면 해제된 상태 그대로 둔다.
     this.cursor.selectRange(range.start, range.end);
-  }
-
-  /**
-   * 되살려도 되는 본문 선택 범위인가 (Task #3416).
-   *
-   * 셀 안 범위(`parentParaIndex` 보유)는 되살리지 않는다 — 유효성 확인이 중첩 셀 경로
-   * (`cellPath`)를 따라가는 별도 축이고, 한컴 실측도 본문에서만 했다. 확인할 수 없는 범위를
-   * 세우느니 해제로 남기는 쪽이 #2339 의 판단과 같다.
-   */
-  private isRestorableBodySelection(start: DocumentPosition, end: DocumentPosition): boolean {
-    if (start.parentParaIndex !== undefined || end.parentParaIndex !== undefined) return false;
-    if (start.sectionIndex !== end.sectionIndex) return false;
-    try {
-      const paraCount = this.wasm.getParagraphCount(start.sectionIndex);
-      for (const pos of [start, end]) {
-        if (pos.paragraphIndex < 0 || pos.paragraphIndex >= paraCount) return false;
-        const len = this.wasm.getParagraphLength(pos.sectionIndex, pos.paragraphIndex);
-        if (pos.charOffset < 0 || pos.charOffset > len) return false;
-      }
-    } catch {
-      // 조회 자체가 실패하면 그 범위를 유효하다고 말할 수 없다.
-      return false;
-    }
-    return true;
   }
 
   /**

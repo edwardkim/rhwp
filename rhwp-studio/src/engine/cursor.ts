@@ -183,13 +183,37 @@ export class CursorState {
    * `setAnchor()` 는 "현재 위치에서 선택을 시작한다" 이고 이미 anchor 가 있으면 아무것도 하지
    * 않는다. undo 뒤 복원처럼 **범위 전체를 지정해야 하는** 자리에는 쓸 수 없어 따로 둔다.
    *
-   * 호출부가 범위의 유효성을 먼저 확인해야 한다 — 문서에 없는 범위를 세우면 이후 Bold·
-   * Backspace 가 유령 범위를 만지게 된다(#2339 가 막아 둔 그 경로).
+   * **두 끝이 모두 현재 문서에서 확인될 때만 세운다.** anchor/focus 의 소유자가 여기이므로
+   * "선택은 실재하는 위치를 가리킨다"(#2339)를 지키는 것도 여기 몫이다 — 호출부의 선의에
+   * 맡기면 호출부가 하나 늘 때마다 유령 범위가 되살아난다. 세우지 못하면 아무것도 바꾸지
+   * 않고 `false` 를 돌려준다(종전 선택 상태 그대로).
    */
-  selectRange(start: DocumentPosition, end: DocumentPosition): void {
+  selectRange(start: DocumentPosition, end: DocumentPosition): boolean {
+    if (!this.isVerifiedBodyPosition(start) || !this.isVerifiedBodyPosition(end)) return false;
     this.anchor = { ...start };
     this.position = { ...end };
     this.updateRect();
+    return true;
+  }
+
+  /**
+   * 본문 좌표계에서 **실재가 확인된** 위치인가 (Task #3416).
+   *
+   * 셀 안 위치(`parentParaIndex`)는 `false` 다 — 확인이 중첩 셀 경로(`cellPath`)를 따라가는
+   * 별도 축이라 이 산술로는 실재를 말할 수 없다. "없다" 가 아니라 "이 판정으로는 확인할 수
+   * 없다" 는 뜻이고, 확인할 수 없는 위치를 세우지 않는 것이 #2339 의 판단과 같다.
+   */
+  private isVerifiedBodyPosition(pos: DocumentPosition): boolean {
+    if (pos.parentParaIndex !== undefined) return false;
+    try {
+      const paraCount = this.wasm.getParagraphCount(pos.sectionIndex);
+      if (pos.paragraphIndex < 0 || pos.paragraphIndex >= paraCount) return false;
+      const len = this.wasm.getParagraphLength(pos.sectionIndex, pos.paragraphIndex);
+      return pos.charOffset >= 0 && pos.charOffset <= len;
+    } catch {
+      // 조회 자체가 실패하면 그 위치를 실재한다고 말할 수 없다.
+      return false;
+    }
   }
 
   /** 선택을 해제한다 */
