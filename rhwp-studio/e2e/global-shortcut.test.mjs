@@ -1,20 +1,20 @@
 /**
- * E2E 테스트 — 전역 단축키 (문서 미로드 상태)
+ * E2E 테스트 — 시작 시 빈 문서 + 전역 단축키
  *
- * 검증: 문서가 없는 빈 상태에서 Alt+N → 새 문서 생성
+ * 검증: 앱 시작 직후 빈 문서가 열려 편집 가능 상태이고, Alt+N → 새 문서 생성이 동작한다.
  */
 import { runTest, loadApp, screenshot, assert, getPageCount } from './helpers.mjs';
 
 process.env.VITE_URL = process.env.VITE_URL || 'http://localhost:7700';
 
-runTest('전역 단축키 — 빈 상태 Alt+N', async ({ page }) => {
-  // 앱 로드만, 문서 생성 없음
+runTest('시작 시 빈 문서 + Alt+N', async ({ page }) => {
+  // 앱 로드만, 명시적 문서 생성 없음
   await loadApp(page);
-  await page.evaluate(() => new Promise(r => setTimeout(r, 300)));
+  await page.evaluate(() => new Promise(r => setTimeout(r, 800)));
 
-  // 문서 미로드 상태 확인
+  // 시작 직후 빈 문서가 열려 있어야 한다
   const pageCountBefore = await page.evaluate(() => window.__wasm?.pageCount ?? 0);
-  assert(pageCountBefore === 0, `TC1: 초기 상태 문서 없음 (pageCount=${pageCountBefore})`);
+  assert(pageCountBefore >= 1, `TC1: 시작 시 빈 문서 자동 생성 (pageCount=${pageCountBefore})`);
   await screenshot(page, 'global-01-empty');
 
   // Alt+N 입력 (편집 영역 클릭 없이)

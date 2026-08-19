@@ -24,6 +24,9 @@ import {
   type ZoomPageBox,
 } from './zoom-anchor.ts';
 
+/** 문서 교체 중 보여줄 빈 쪽 기본 크기(A4, zoom 1 기준 CSS px). 이전 문서 쪽 크기를 모를 때만 쓴다. */
+const BLANK_PAGE_FALLBACK_SIZE = { width: 794, height: 1123 };
+
 const TEXT_EDIT_STATIC_LAYER_VERIFY_DELAY_MS = 800;
 const AUTO_RENDERER_RESELECTION_DELAY_MS = 300;
 
@@ -58,6 +61,8 @@ export class CanvasView {
   private autoRendererReselectionTimer: ReturnType<typeof setTimeout> | null = null;
   private documentLoadPrepared = false;
   private layoutViewportSize = { width: 0, height: 0 };
+  private blankPagePlaceholder: HTMLElement | null = null;
+  private lastPageSize: { width: number; height: number } | null = null;
   private disposed = false;
 
   constructor(
@@ -148,7 +153,9 @@ export class CanvasView {
     );
 
     this.container.scrollTop = 0;
+    this.lastPageSize = { width: this.pages[0].width, height: this.pages[0].height };
     this.updateVisiblePages();
+    this.clearBlankPagePlaceholder();
     // 초기 replay가 예약한 document fallback을 load 완료 전에 확정한다.
     await Promise.resolve();
 
@@ -168,6 +175,48 @@ export class CanvasView {
     this.pageRenderer.beginDocument();
     this.activeRendererDecisionKey = null;
     this.reset();
+    this.showBlankPagePlaceholder();
+  }
+
+  /**
+   * 문서 열기를 시작할 때 현재 뷰를 비우고 빈 쪽 상태로 만든다. 파싱이 끝날 때까지
+   * 이전 문서를 붙잡고 있다가 한 번에 갈아치우면 화면이 튀어 보인다.
+   */
+  showBlankPage(): void {
+    if (this.disposed) return;
+    this.reset();
+    this.showBlankPagePlaceholder();
+  }
+
+  /**
+   * 새 문서의 첫 쪽이 그려질 때까지 빈 흰 쪽을 대신 놓는다. 자리표시자가 없으면 회색 작업
+   * 영역이 그대로 드러나 문서를 열 때마다 화면이 깜빡이는 것처럼 보인다.
+   */
+  private showBlankPagePlaceholder(): void {
+    if (this.disposed) return;
+    const zoom = this.viewportManager.getZoom();
+    const size = this.lastPageSize ?? BLANK_PAGE_FALLBACK_SIZE;
+    const gap = this.virtualScroll.getPageGap();
+    const width = size.width * zoom;
+    const height = size.height * zoom;
+
+    const placeholder = document.createElement('div');
+    placeholder.className = 'page-placeholder';
+    placeholder.setAttribute('aria-hidden', 'true');
+    placeholder.style.top = `${gap}px`;
+    placeholder.style.width = `${width}px`;
+    placeholder.style.height = `${height}px`;
+
+    // 자리표시자만 있는 동안에도 스크롤 영역이 쪽 하나 크기를 유지해야 가운데 정렬이 흔들리지 않는다.
+    this.scrollContent.style.width = `${width + 40}px`;
+    this.scrollContent.style.height = `${height + gap * 2}px`;
+    this.scrollContent.appendChild(placeholder);
+    this.blankPagePlaceholder = placeholder;
+  }
+
+  private clearBlankPagePlaceholder(): void {
+    this.blankPagePlaceholder?.remove();
+    this.blankPagePlaceholder = null;
   }
 
   resetRendererDiagnostics(): void {
@@ -897,6 +946,7 @@ export class CanvasView {
     this.currentVisiblePages = [];
     this.pages = [];
     this.scrollContent.replaceChildren();
+    this.blankPagePlaceholder = null;
   }
 
   private releaseAllRenderedPages(): void {
