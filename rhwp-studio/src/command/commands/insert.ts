@@ -454,7 +454,10 @@ export const insertCommands: CommandDef[] = [
           captionIncludeMargin: false,
         };
         let result: any;
-        result = setProps(services, ref, captionProps);
+        // [Task #3230] `setProps` 래퍼가 사라져 공유 라우팅을 직접 부른다. 이 경로는 종전부터
+        // 라우터를 거치지 않고 직접 적용하고 `document-changed` 를 스스로 emit 한다 —
+        // 회전/대칭과 달리 이번 변경 대상이 아니라 종전 동작 그대로 둔다.
+        result = setObjectProps(services.wasm, ref, captionProps);
         // "그림 N " 끝 위치를 Rust가 반환
         charOffset = result?.captionCharOffset ?? 4;
         services.eventBus.emit('document-changed');
@@ -693,33 +696,67 @@ function changeZOrder(
   ih.exitPictureObjectSelectionAndAfterEdit();
 }
 
-function setProps(services: import('../types').CommandServices, ref: PictureRef, props: Record<string, unknown>): any {
-  return setObjectProps(services.wasm, ref, props);
-}
-
 /**
- * [Task #3230] 절대 속성 하나를 바꾸고 **역연산으로** 기록한다.
+ * [Task #3230] 절대 속성 하나를 **역연산 커맨드로** 적용하고 기록한다.
  *
- * 스냅샷(`recordObjectMutation`)이 아니라 `kind:'record'` 를 쓴다 — 되돌릴 것이 스칼라 하나인데
+ * 스냅샷(`recordObjectMutation`) 대신 `kind:'command'`를 쓴다 — 되돌릴 것이 스칼라 하나인데
  * `Document` 통째 클론 2개(문서에 따라 최대 21 MB)를 스택에 얹을 이유가 없다. 호출부가 이미
- * 적용 전 값을 읽어 두었으므로 before 가 정확하다.
+ * 적용 전 값을 읽어 두었으므로 before 가 정확하다. setter를 라우터 전에 직접 호출하지 않아야
+ * 양식 모드의 편집 허용 검사가 실제 변경보다 먼저 실행된다.
  *
- * refresh 를 'full' 로 명시한다 — `kind:'record'` 의 기본은 'none' 이고, 종전 스냅샷 라우팅의
- * 'full' 이 `afterEdit()` → `document-changed` 를 대신 emit 해 주고 있었다(그래서 호출부의 수동
- * emit 이 [undo P3 정리] 에서 제거됐다). 명시하지 않으면 회전이 화면에 반영되지 않는다.
+ * refresh 를 'full' 로 명시한다 — command 라우팅의 자동 판정에 맡기면 개체 회전/대칭의 화면 반영이
+ * 보장되지 않는다. 종전 스냅샷 라우팅의 'full' 이 `afterEdit()` → `document-changed` 를 대신
+ * emit 해 주고 있었다(그래서 호출부의 수동 emit 이 [undo P3 정리] 에서 제거됐다).
  */
-function recordAbsolutePropChange(
-  services: import('../types').CommandServices,
+function executeAbsolutePropChange(
   ih: InputHandler,
   ref: PictureRef,
   before: Record<string, unknown>,
   after: Record<string, unknown>,
 ): void {
-  setProps(services, ref, after);
   ih.executeOperation({
-    kind: 'record',
+    kind: 'command',
     command: new SetObjectPropsCommand(ref, before, after),
     meta: { refresh: 'full' },
+  });
+}
+
+/**
+ * [Task #3230] 속성 왕복이 **참인 역연산인 대상**인지.
+ *
+ * 도형은 참이다 — `rotationAngle` 은 평범한 필드 대입이고 flip 은 비트를 대칭으로 set/clear
+ * 한다(`document_core/commands/object_ops/shape.rs`). 같은 값을 다시 넣으면 원래 상태다.
+ *
+ * **그림·OLE 는 아니다.** `rotationAngle` 이 섞이면 `refresh_picture_rotation_layout_for_save`
+ * 가 각도와 무관하게 — 0 으로 되돌리는 경우까지 — `rotate_image = true` 와
+ * `flip |= 0x0008_0000` 을 세운다(`object_ops/picture.rs:242-243`). 이 둘을 다시 내리는 경로는
+ * 저장소에 없어서, 90° 돌렸다 되돌린 그림은 화면은 같아도 저장 바이트가 원본과 달라진다
+ * (HWPX `hp:rotationInfo rotateimage`·HWP5 `HWPTAG_SHAPE_COMPONENT` 의 flip 비트).
+ * 대칭도 `TRANSFORM_KEYS`(picture.rs:176-184)에 걸려 `raw_rendering`·`render_*` 캐시를
+ * 기본값으로 리셋한다.
+ *
+ * 속성 bag 만으로는 이것들을 복원할 수 없다. 문서를 통째로 되돌리는 스냅샷이라야 정확하므로
+ * 그림·OLE 는 종전 경로를 유지한다 — 되돌리기의 정확성이 스냅샷 비용보다 앞선다.
+ */
+function absolutePropChangeIsInvertible(ref: PictureRef): boolean {
+  return ref.type === 'shape';
+}
+
+/** 역연산이 참이면 커맨드로, 아니면 종전 스냅샷으로 기록한다. */
+function applyAbsolutePropChange(
+  services: import('../types').CommandServices,
+  ih: InputHandler,
+  ref: PictureRef,
+  operationType: string,
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+): void {
+  if (absolutePropChangeIsInvertible(ref)) {
+    executeAbsolutePropChange(ih, ref, before, after);
+    return;
+  }
+  recordObjectMutation(ih, operationType, (wasm) => {
+    setObjectProps(wasm, ref, after);
   });
 }
 
@@ -736,9 +773,11 @@ function applyRotationDelta(services: import('../types').CommandServices, delta:
   // -180 ~ 180 범위로 정규화
   next = ((next % 360) + 360) % 360;
   if (next > 180) next -= 360;
-  // [Task #3230] 스냅샷 → 역연산. `cur` 는 이미 위에서 읽은 적용 전 각도이고 setter 가
-  // 절대값이라 되돌리기가 자명하다.
-  recordAbsolutePropChange(services, ih, ref, { rotationAngle: cur }, { rotationAngle: next });
+  // [Task #3230] 도형은 역연산, 그림·OLE 는 스냅샷 유지(`absolutePropChangeIsInvertible`).
+  // `cur` 는 이미 위에서 읽은 적용 전 각도이고 setter 가 절대값이라 되돌리기가 자명하다.
+  applyAbsolutePropChange(
+    services, ih, ref, 'rotateObject', { rotationAngle: cur }, { rotationAngle: next },
+  );
 }
 
 /** horzFlip/vertFlip을 토글한다 (shape + image 지원). */
@@ -751,5 +790,5 @@ function toggleFlip(services: import('../types').CommandServices, key: 'horzFlip
   if (props.sizeProtect) return;
   const cur = !!props[key];
   // 위 rotate 와 동일 — 토글이지만 setter 에 넘기는 값은 절대값(`!cur`)이라 역연산이 자명하다.
-  recordAbsolutePropChange(services, ih, ref, { [key]: cur }, { [key]: !cur });
+  applyAbsolutePropChange(services, ih, ref, 'flipObject', { [key]: cur }, { [key]: !cur });
 }
