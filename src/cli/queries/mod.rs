@@ -9,6 +9,7 @@ pub(crate) mod explain;
 pub(crate) mod explore;
 pub(crate) mod info;
 pub(crate) mod page_dump;
+pub(crate) mod position_diagnostics;
 pub(crate) mod scan;
 pub(crate) mod search;
 pub(crate) mod security_inspection;
