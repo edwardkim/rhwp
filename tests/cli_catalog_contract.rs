@@ -16,6 +16,7 @@ use catalog::{commands, Visibility};
 const MAIN_SOURCE: &str = include_str!("../src/main.rs");
 const DATA_EXTRACTION_SOURCE: &str = include_str!("../src/cli/queries/data_extraction.rs");
 const DIAGNOSTICS_SOURCE: &str = include_str!("../src/cli/queries/diagnostics.rs");
+const DIGEST_SOURCE: &str = include_str!("../src/cli/queries/digest.rs");
 const DOCUMENT_INVENTORY_SOURCE: &str = include_str!("../src/cli/queries/document_inventory.rs");
 const STRUCTURED_OBJECTS_SOURCE: &str = include_str!("../src/cli/queries/structured_objects.rs");
 
@@ -246,6 +247,36 @@ fn data_extraction_query_is_owned_by_the_query_module() {
     assert!(
         compact_main.contains("data_extraction::extract_data_command(&args[2..]"),
         "extract-data dispatch가 사용자 인자를 그대로 전달해야 한다"
+    );
+}
+
+#[test]
+fn digest_query_is_owned_by_the_query_module() {
+    assert!(
+        DIGEST_SOURCE.contains("pub(crate) fn digest_document("),
+        "digest_document 구현이 digest 모듈에 있어야 한다"
+    );
+    assert!(
+        DIGEST_SOURCE.contains("fn parse_digest_pages("),
+        "digest 전용 범위 파서가 digest 모듈에 있어야 한다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn digest_document("),
+        "digest_document 구현이 main.rs로 되돌아가면 안 된다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn parse_digest_pages("),
+        "digest 전용 범위 파서가 main.rs로 되돌아가면 안 된다"
+    );
+    let compact_main: String = MAIN_SOURCE
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    assert!(
+        compact_main.contains(
+            "Some(\"digest\")=>exit_with(cli::queries::digest::digest_document(&args[2..]))"
+        ),
+        "digest dispatch가 query 모듈 API를 사용해야 한다"
     );
 }
 

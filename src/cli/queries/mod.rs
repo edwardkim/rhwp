@@ -2,6 +2,7 @@
 
 pub(crate) mod data_extraction;
 pub(crate) mod diagnostics;
+pub(crate) mod digest;
 pub(crate) mod document_inventory;
 pub(crate) mod search;
 pub(crate) mod structured_objects;
