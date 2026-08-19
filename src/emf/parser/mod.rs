@@ -105,10 +105,10 @@ pub fn parse(bytes: &[u8]) -> Result<Vec<Record>, Error> {
                         continue;
                     }
                 }
-                // 재동기가 불가능해도 그릴 내용이 있는 프리픽스는 살린다 —
+                // 재동기가 불가능해도 그릴 내용이 있는 EMF+ 프리픽스는 살린다 —
                 // 손상 지점 전까지의 온전한 레코드 렌더가 빈 placeholder 보다 낫다.
-                // 그릴 내용이 전혀 없으면 종전대로 오류(형식 거부 계약 유지).
-                if out.iter().any(is_paintable) {
+                // EMF+ 시그니처 없는 일반 EMF는 종전처럼 형식 오류를 반환한다.
+                if emfplus_comment_seen && out.iter().any(is_paintable) {
                     break;
                 }
                 return Err(err);

@@ -36,6 +36,190 @@ fn load_preview_emf() -> Vec<u8> {
     container.preview_emf.expect("preview_emf")
 }
 
+fn header_prefix() -> Vec<u8> {
+    let mut bytes = Vec::with_capacity(88);
+    bytes.extend_from_slice(&1u32.to_le_bytes());
+    bytes.extend_from_slice(&88u32.to_le_bytes());
+    for value in [0i32, 0, 1000, 500, 0, 0, 10000, 5000] {
+        bytes.extend_from_slice(&value.to_le_bytes());
+    }
+    bytes.extend_from_slice(&0x464D4520u32.to_le_bytes());
+    bytes.extend_from_slice(&0x00010000u32.to_le_bytes());
+    bytes.extend_from_slice(&108u32.to_le_bytes());
+    bytes.extend_from_slice(&2u32.to_le_bytes());
+    bytes.extend_from_slice(&1u16.to_le_bytes());
+    bytes.extend_from_slice(&0u16.to_le_bytes());
+    for _ in 0..3 {
+        bytes.extend_from_slice(&0u32.to_le_bytes());
+    }
+    for value in [1920i32, 1080, 508, 286] {
+        bytes.extend_from_slice(&value.to_le_bytes());
+    }
+    assert_eq!(bytes.len(), 88);
+    bytes
+}
+
+fn push_record(bytes: &mut Vec<u8>, record_type: u32, payload: &[u8]) {
+    let size = 8u32 + payload.len() as u32;
+    assert_eq!(size % 4, 0, "record size must be 4-aligned");
+    bytes.extend_from_slice(&record_type.to_le_bytes());
+    bytes.extend_from_slice(&size.to_le_bytes());
+    bytes.extend_from_slice(payload);
+}
+
+fn push_eof(bytes: &mut Vec<u8>) {
+    push_record(bytes, 14, &[0u8; 12]);
+}
+
+fn emfplus_comment_payload(filler: usize) -> Vec<u8> {
+    let mut payload = Vec::new();
+    payload.extend_from_slice(&((4 + filler) as u32).to_le_bytes());
+    payload.extend_from_slice(b"EMF+");
+    payload.resize(payload.len() + filler, 0u8);
+    payload
+}
+
+fn stretch_dibits_payload() -> Vec<u8> {
+    let mut bmi = Vec::new();
+    bmi.extend_from_slice(&40u32.to_le_bytes());
+    bmi.extend_from_slice(&2i32.to_le_bytes());
+    bmi.extend_from_slice(&2i32.to_le_bytes());
+    bmi.extend_from_slice(&1u16.to_le_bytes());
+    bmi.extend_from_slice(&32u16.to_le_bytes());
+    bmi.extend_from_slice(&[0u8; 24]);
+
+    let mut payload = Vec::new();
+    for value in [0i32, 0, 2, 2] {
+        payload.extend_from_slice(&value.to_le_bytes());
+    }
+    payload.extend_from_slice(&0i32.to_le_bytes());
+    payload.extend_from_slice(&0i32.to_le_bytes());
+    payload.extend_from_slice(&[0u8; 16]);
+    for value in [80u32, 40, 120, 16, 0, 0x00CC_0020] {
+        payload.extend_from_slice(&value.to_le_bytes());
+    }
+    payload.extend_from_slice(&2i32.to_le_bytes());
+    payload.extend_from_slice(&2i32.to_le_bytes());
+    payload.extend_from_slice(&bmi);
+    payload.extend_from_slice(&[0xAAu8; 16]);
+    payload
+}
+
+#[test]
+fn issue_5637_resyncs_after_lying_emfplus_comment() {
+    let mut bytes = header_prefix();
+    push_record(&mut bytes, 0x46, &emfplus_comment_payload(8));
+    for _ in 0..6 {
+        bytes.extend_from_slice(&0xBF00_0000u32.to_le_bytes());
+    }
+    push_record(&mut bytes, 0x21, &[]);
+    push_eof(&mut bytes);
+
+    let records = rhwp::emf::parse_emf(&bytes).expect("resync parse");
+    assert!(
+        records.iter().any(|record| matches!(record, rhwp::emf::Record::SaveDC)),
+        "재동기로 SaveDC 를 살려야 한다: {records:?}"
+    );
+    assert!(
+        records.iter().any(|record| matches!(record, rhwp::emf::Record::Eof)),
+        "EOF 까지 도달해야 한다"
+    );
+}
+
+#[test]
+fn issue_5637_does_not_resync_without_emfplus_comment() {
+    let mut bytes = header_prefix();
+    let mut plain_comment = Vec::new();
+    plain_comment.extend_from_slice(&8u32.to_le_bytes());
+    plain_comment.extend_from_slice(b"GDIC");
+    plain_comment.extend_from_slice(&[0u8; 4]);
+    push_record(&mut bytes, 0x46, &plain_comment);
+    for _ in 0..6 {
+        bytes.extend_from_slice(&0xBF00_0000u32.to_le_bytes());
+    }
+    push_record(&mut bytes, 0x21, &[]);
+    push_eof(&mut bytes);
+
+    assert!(
+        rhwp::emf::parse_emf(&bytes).is_err(),
+        "EMF+ 없는 손상 스트림은 오류를 유지해야 한다"
+    );
+}
+
+#[test]
+fn issue_5637_recovers_a_self_consistent_fallback_bitmap() {
+    let mut bytes = header_prefix();
+    push_record(&mut bytes, 0x46, &emfplus_comment_payload(8));
+    for _ in 0..6 {
+        bytes.extend_from_slice(&0xBF00_0000u32.to_le_bytes());
+    }
+    push_record(&mut bytes, 0x51, &stretch_dibits_payload());
+    for _ in 0..6 {
+        bytes.extend_from_slice(&0xFFFF_FFFFu32.to_le_bytes());
+    }
+
+    let records = rhwp::emf::parse_emf(&bytes).expect("salvage parse");
+    assert!(
+        records
+            .iter()
+            .any(|record| matches!(record, rhwp::emf::Record::StretchDIBits(_))),
+        "자기-일관 EMR_STRETCHDIBITS 를 살려야 한다: {records:?}"
+    );
+}
+
+#[test]
+fn issue_5637_keeps_wellformed_emfplus_stream_unchanged() {
+    let mut bytes = header_prefix();
+    push_record(&mut bytes, 0x46, &emfplus_comment_payload(8));
+    push_record(&mut bytes, 0x21, &[]);
+    push_eof(&mut bytes);
+
+    let records = rhwp::emf::parse_emf(&bytes).expect("parse");
+    assert_eq!(records.len(), 4, "Header+Comment+SaveDC+EOF: {records:?}");
+    assert!(matches!(records[2], rhwp::emf::Record::SaveDC));
+    assert!(matches!(records[3], rhwp::emf::Record::Eof));
+}
+
+#[test]
+fn issue_5637_keeps_a_paintable_emfplus_prefix() {
+    let mut bytes = header_prefix();
+    push_record(&mut bytes, 0x46, &emfplus_comment_payload(8));
+    let mut rectangle = Vec::new();
+    for value in [1i32, 2, 30, 40] {
+        rectangle.extend_from_slice(&value.to_le_bytes());
+    }
+    push_record(&mut bytes, 0x2B, &rectangle);
+    for _ in 0..8 {
+        bytes.extend_from_slice(&0xBF00_0000u32.to_le_bytes());
+    }
+
+    let records = rhwp::emf::parse_emf(&bytes).expect("salvage parse");
+    assert!(
+        records
+            .iter()
+            .any(|record| matches!(record, rhwp::emf::Record::Rectangle(_)))
+    );
+    assert!(
+        !records.iter().any(|record| matches!(record, rhwp::emf::Record::Eof)),
+        "EOF 는 없어야 한다"
+    );
+}
+
+#[test]
+fn issue_5637_rejects_an_unpaintable_emfplus_prefix() {
+    let mut bytes = header_prefix();
+    push_record(&mut bytes, 0x46, &emfplus_comment_payload(8));
+    push_record(&mut bytes, 0x21, &[]);
+    for _ in 0..8 {
+        bytes.extend_from_slice(&0xBF00_0000u32.to_le_bytes());
+    }
+
+    assert!(
+        rhwp::emf::parse_emf(&bytes).is_err(),
+        "그릴 내용 없는 손상 EMF+ 스트림은 오류여야 한다"
+    );
+}
+
 #[test]
 fn emfplus_dual_stream_preview_parses_with_bitmap() {
     let emf = load_preview_emf();

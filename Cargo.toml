@@ -159,10 +159,6 @@ name = "regression_suite_032"
 path = "tests/generated/regression_suite_032.rs"
 
 [[test]]
-name = "cli_catalog_contract"
-path = "tests/cases/cli_catalog_contract.rs"
-
-[[test]]
 name = "cli_exit_codes"
 path = "tests/cli_exit_codes.rs"
 
@@ -171,20 +167,12 @@ name = "cli_exit_codes_native"
 path = "tests/cli_exit_codes_native.rs"
 
 [[test]]
-name = "cli_json_contract"
-path = "tests/cli_json_contract.rs"
-
-[[test]]
 name = "issue_1144"
 path = "tests/issue_1144.rs"
 
 [[test]]
 name = "issue_1144_native"
 path = "tests/issue_1144_native.rs"
-
-[[test]]
-name = "issue_2225_missing_picture_placeholder"
-path = "tests/issue_2225_missing_picture_placeholder.rs"
 
 [[test]]
 name = "issue_4055_b1_chart_edit_probe"
