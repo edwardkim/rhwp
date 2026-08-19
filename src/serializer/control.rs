@@ -2158,18 +2158,40 @@ fn serialize_text_box_if_present(drawing: &DrawingObjAttr, level: u16, records: 
 // ============================================================
 
 /// CommonObjAttr 직렬화
+/// [#5592] `pack_common_attr_bits` 가 의미 필드에서 재구성하는 비트 전체.
+///
+/// 이 마스크 안은 IR enum/bool 필드가 정본이고, 밖(예: bit 1·27·31, 캡션 bit 29 —
+/// 방출 직전 `apply_caption_attr_bit` 가 강제, 잠금 bit 30 — pack 미방출이라 raw 보존)
+/// 은 파스 시점 raw 를 보존한다.
+const COMMON_ATTR_SEMANTIC_MASK: u32 = 0x01            // treat_as_char
+    | (1 << 2)                                          // affect_line_spacing
+    | (0x03 << 3)                                       // vert_rel_to
+    | (0x07 << 5)                                       // vert_align
+    | (0x03 << 8)                                       // horz_rel_to
+    | (0x07 << 10)                                      // horz_align
+    | (1 << 13)                                         // flow_with_text
+    | (1 << 14)                                         // allow_overlap
+    | (0x07 << 15)                                      // width_criterion
+    | (0x03 << 18)                                      // height_criterion
+    | (1 << 20)                                         // size_protect
+    | (0x07 << 21)                                      // text_wrap
+    | (0x03 << 24)                                      // text_flow
+    | (1 << 26)                                         // hwp5_gen_shape_attr_bit26
+    | (1 << 28); // hwp5_gen_shape_attr_bit28
+
 fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
     let mut w = ByteWriter::new();
+    // [#5592] raw attr 를 통째로 우선하면 IR enum 필드(text_wrap·vert_rel_to·
+    // treat_as_char 등)의 수정이 HWP5 저장에서 전량 유실된다 — #4495 봉인이
+    // "common 직접 수정 → IR 합성" 을 약속해도, 합성기가 파스 시점 캐시(attr)를
+    // 다시 우선해 약속이 깨졌다(종전엔 sync_anchor_bits/sync_text_wrap_bits 를
+    // 부른 편집 커맨드만 살아남았다). HWPX 직렬화기와 같은 원칙으로 통일한다:
+    // **알려진 의미 비트는 IR 이 정본, 미지 비트만 raw 를 보존한다.** 파서가
+    // 같은 비트를 그대로 해독하므로 무수정 문서는 병합 결과가 raw 와 동일하다
+    // (범위 밖 원시값 — 예: text_wrap 4~7 — 만 파서 폴백값으로 정규화된다).
     let attr = if common.attr != 0 {
-        // HWPX parser can materialize this compatibility bit semantically while
-        // retaining a non-zero raw attr captured before that materialization.
-        // Keep raw-first serialization, but do not drop an asserted bit 28.
-        common.attr
-            | if common.hwp5_gen_shape_attr_bit28 {
-                1 << 28
-            } else {
-                0
-            }
+        (common.attr & !COMMON_ATTR_SEMANTIC_MASK)
+            | (pack_common_attr_bits(common) & COMMON_ATTR_SEMANTIC_MASK)
     } else {
         pack_common_attr_bits(common)
     };
