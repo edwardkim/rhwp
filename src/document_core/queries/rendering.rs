@@ -602,6 +602,7 @@ fn insert_hwp3_title_filler_page(result: &mut PaginationResult, section_index: u
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     for (page_idx, page) in result.pages.iter_mut().enumerate() {
