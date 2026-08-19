@@ -1022,6 +1022,26 @@ fn read_hwp3_padding_scaled(mut bytes: &[u8]) -> i16 {
     (raw * 4) as i16
 }
 
+/// [#5557] HWP3 기본 셀 여백(35 hunit ×4 = 140 균일)을 한글 표준 셀 여백
+/// (좌우 0.18cm=510 · 상하 0.05cm=141)으로 사상한다.
+///
+/// 한글 2022 HWP3 임포터의 실측 규칙 — SaveAs HWPX 정답지 2개 문서 2,351셀
+/// 전수에서 예외 0. 510 은 hunit×4 로 표현이 불가능한 값(127.5)이라 파일 유래일
+/// 수 없고, 한글이 기본값 튜플을 자기 표준으로 대체하는 것이다. 기본값 튜플만
+/// 사상하고 사용자 지정 여백은 원값(×4)을 보존한다.
+fn map_hwp3_default_cell_padding(
+    left: i16,
+    right: i16,
+    top: i16,
+    bottom: i16,
+) -> (i16, i16, i16, i16) {
+    if left == 140 && right == 140 && top == 140 && bottom == 140 {
+        (510, 510, 141, 141)
+    } else {
+        (left, right, top, bottom)
+    }
+}
+
 fn parse_hwp3_object_dispatch(
     body_cursor: &mut Cursor<&[u8]>,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -1151,6 +1171,14 @@ fn parse_hwp3_object_dispatch(
         let cell_padding_right = read_hwp3_padding_scaled(&info_buf[36..38]);
         let cell_padding_top = read_hwp3_padding_scaled(&info_buf[38..40]);
         let cell_padding_bottom = read_hwp3_padding_scaled(&info_buf[40..42]);
+
+        let (cell_padding_left, cell_padding_right, cell_padding_top, cell_padding_bottom) =
+            map_hwp3_default_cell_padding(
+                cell_padding_left,
+                cell_padding_right,
+                cell_padding_top,
+                cell_padding_bottom,
+            );
 
         table.padding.left = cell_padding_left;
         table.padding.right = cell_padding_right;
