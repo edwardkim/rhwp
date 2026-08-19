@@ -177,6 +177,21 @@ export class CursorState {
     }
   }
 
+  /**
+   * 선택 범위를 명시적으로 세운다 — anchor 는 `start`, 커서는 `end` (Task #3416).
+   *
+   * `setAnchor()` 는 "현재 위치에서 선택을 시작한다" 이고 이미 anchor 가 있으면 아무것도 하지
+   * 않는다. undo 뒤 복원처럼 **범위 전체를 지정해야 하는** 자리에는 쓸 수 없어 따로 둔다.
+   *
+   * 호출부가 범위의 유효성을 먼저 확인해야 한다 — 문서에 없는 범위를 세우면 이후 Bold·
+   * Backspace 가 유령 범위를 만지게 된다(#2339 가 막아 둔 그 경로).
+   */
+  selectRange(start: DocumentPosition, end: DocumentPosition): void {
+    this.anchor = { ...start };
+    this.position = { ...end };
+    this.updateRect();
+  }
+
   /** 선택을 해제한다 */
   clearSelection(): void {
     this.anchor = null;
