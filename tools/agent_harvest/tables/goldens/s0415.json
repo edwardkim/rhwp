@@ -1,0 +1,165 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue_2148_degenerate_cell_vpos.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue_2148_degenerate_cell_vpos.hwpx",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 3,
+            "index": 0,
+            "rows": 3
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue_2148_degenerate_cell_vpos.hwpx",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue_2148_degenerate_cell_vpos.hwpx",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "SSG 6 소방차량 안전운행 표준지침"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1.4 (긴급표시) 운전원은 소방차량의 운행 및 주･정차 시 타 차량 운전자가 인식할 수\n               있도록 경광등 및 사이렌을 작동한다.\n1.5 (안전우선) \n 1.5.1 운전원은 방어운전과 적정속도를 고려하여 주행한다.\n 1.5.2 진출입이 곤란한 지역 통과 시 동승 대원이 하차하여 수신호를 운전원에게 보내고\n       운전원은 차량을 서행한다.\n\n2. 특수한 상황의 안전수칙 \n2.3 (차선침범) 운전원은 불가피하게 중앙선을 넘거나 반대차선 운행 시 전조등, 사이렌 등을\n              활용하여 긴급차량이 주행 중인 상황을 상대방에게 알리며 전방 차량 등에                  주의를 기울이면서 안전속도로 서행한다. \n2.4 (교차로 진입) 운전원은 교차로 통과 시 다음 사항을 주의한다.\n 2.4.1 중앙선을 넘거나 반대차선으로 운행하여 교차로에 진입할 경우\n 2.4.2 교차로 진입 시 안전 확인 후 진행\n 2.4.3 시야가 나쁜 교차로에 진입할 때 또는 커브 길을 돌 때에는 전조등을 위･아래로 번갈아\n       비추어 차가 접근하고 있음을 알림"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 2,
+            "paragraph": 1,
+            "rows": 3,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue_2148_degenerate_cell_vpos.hwpx",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 3,
+            "index": 0,
+            "mergeCount": 2,
+            "rows": 3
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

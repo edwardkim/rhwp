@@ -1,0 +1,481 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36392900_결재문서본문_일일굴착복구공사현황보고.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36392900_결재문서본문_일일굴착복구공사현황보고.hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 1
+          },
+          {
+            "cols": 5,
+            "index": 1,
+            "rows": 5
+          },
+          {
+            "cols": 3,
+            "index": 2,
+            "rows": 1
+          },
+          {
+            "cols": 9,
+            "index": 3,
+            "rows": 2
+          },
+          {
+            "cols": 1,
+            "index": 4,
+            "rows": 1
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36392900_결재문서본문_일일굴착복구공사현황보고.hwpx",
+        "tableCount": 5,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 5,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36392900_결재문서본문_일일굴착복구공사현황보고.hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "일일굴착복구공사 현황보고('26.06.26)"
+              }
+            ],
+            "cols": 1,
+            "control": 2,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 13,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "공무직"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "주무관"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "도로보수과장"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 3,
+                "text": "결\n재"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 2,
+                "text": "정원근"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 2,
+                "text": "민병훈"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "06/26"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "김석기"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 2,
+                "text": "협  조"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": false,
+            "index": 1,
+            "mergeCount": 11,
+            "paragraph": 1,
+            "rows": 5,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "문서번호 :"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "도로보수과-6414"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 2,
+            "mergeCount": 0,
+            "paragraph": 2,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 18,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "구분"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "노선\n(공사위치)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "공사일\n(완료 \n예정일)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "공사명/\n굴착공사개요/\n(담당자)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "전일까지작업"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "금일작업"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "작업\n시간"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "통제\n차선"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "비  고"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "굴착복구"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "면목로\n(면목로492\n~\n상봉역삼거리),\n망우로\n(상봉지하차도교차로주변_)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "6.26\n(11.30)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "상봉동 GTX-B노선 3-2공구 도시가스배관 이설공사 1구간\n\n(주)예스코\n************\n*****\n\nB=1.2m,L=105m"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "L=90m"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "관로굴착 \nB=1.2m\nL=25m\nA=0.3a"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "22:00\n~\n익일 06:00"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "왕복6차로중  1차로\n부분통제"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "□ 현장소장\n*****************\n*****************\n□ 건설사업관리자\n김맹주**************\n□ 현장점검\n*****************\n□ 공사관리\n****************"
+              }
+            ],
+            "cols": 9,
+            "control": 0,
+            "csvReady": true,
+            "index": 3,
+            "mergeCount": 0,
+            "paragraph": 4,
+            "rows": 2,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 4,
+            "mergeCount": 0,
+            "paragraph": 19,
+            "rows": 1,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36392900_결재문서본문_일일굴착복구공사현황보고.hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 5,
+            "index": 1,
+            "mergeCount": 11,
+            "rows": 5
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

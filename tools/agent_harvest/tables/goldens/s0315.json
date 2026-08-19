@@ -1,0 +1,1565 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36389298_결재문서본문_물품검사(수)조서(라벨테이프 등).hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36389298_결재문서본문_물품검사(수)조서(라벨테이프 등).hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 1
+          },
+          {
+            "cols": 2,
+            "index": 1,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 2,
+            "rows": 3
+          },
+          {
+            "cols": 16,
+            "index": 3,
+            "rows": 16
+          },
+          {
+            "cols": 9,
+            "index": 4,
+            "rows": 12
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36389298_결재문서본문_물품검사(수)조서(라벨테이프 등).hwpx",
+        "tableCount": 5,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 5,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36389298_결재문서본문_물품검사(수)조서(라벨테이프 등).hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "물품검사(수)조서(라벨테이프 등)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 1,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 2,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "문서번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "119항공대-2428"
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 4,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 3,
+                "text": "결\n재"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "소방장"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "119항공대장"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 2,
+                "text": "서영남"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "06/25"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "정갑진"
+              }
+            ],
+            "cols": 3,
+            "control": 1,
+            "csvReady": false,
+            "index": 2,
+            "mergeCount": 2,
+            "paragraph": 4,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 61,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "계  약  건  명"
+              },
+              {
+                "col": 3,
+                "colSpan": 13,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "사무용품 등 구매"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "납   품     자"
+              },
+              {
+                "col": 3,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "상 호"
+              },
+              {
+                "col": 6,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "***"
+              },
+              {
+                "col": 12,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "*****"
+              },
+              {
+                "col": 14,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "***"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "계  약  금  액"
+              },
+              {
+                "col": 3,
+                "colSpan": 13,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "*********************"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "계약체결년월일"
+              },
+              {
+                "col": 3,
+                "colSpan": 13,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "2026년   6월   22일"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "납  품  기  한"
+              },
+              {
+                "col": 3,
+                "colSpan": 13,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "2026년   6월   25일"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "납 품 년 월 일"
+              },
+              {
+                "col": 3,
+                "colSpan": 13,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "2026년   6월   25일"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "검사(수)년월일"
+              },
+              {
+                "col": 3,
+                "colSpan": 13,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "2026년   6월   25일"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "검사(수) 장 소"
+              },
+              {
+                "col": 3,
+                "colSpan": 13,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "119항공대"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "검수자 의견\n\n※4개항목 모두체크"
+              },
+              {
+                "col": 3,
+                "colSpan": 13,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "① 수량은 일치 하는가?              예( ○ ) ,  아니오(   )\n ② 계약규격과 외형은 일치 하는가    예( ○ ) ,  아니오(   )      \n ③ 특허 등 특수기능은 있는가         예(    ) ,  해당없음( ○ )\n ④ 구성품은 부착되어 있는가          예( ○ ) ,  아니오(   )"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "물품관리시스템\n   등록대상구분"
+              },
+              {
+                "col": 3,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "비대상 (√ ), 대상(등록  ,  미등록  )"
+              },
+              {
+                "col": 15,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "물품출납\n부 등 재"
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "위와 같이 검사(수) 하였음"
+              },
+              {
+                "col": 15,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "물    품\n출 납 원"
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 2,
+                "text": "2026년  6월  25일"
+              },
+              {
+                "col": 15,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 15,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "분임물품\n출 납 원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 3,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "검수자"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "119특수구조단"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "국"
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "119항공대"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "과"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "직급   소방장"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "성명"
+              },
+              {
+                "col": 11,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "***"
+              },
+              {
+                "col": 13,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "신종수"
+              },
+              {
+                "col": 15,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 3,
+                "text": "정갑진"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "검수자"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "119특수구조단"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "국"
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "119항공대"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "과"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "직급   소방교"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "성명"
+              },
+              {
+                "col": 11,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "***"
+              },
+              {
+                "col": 13,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "배지호"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 11,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 13,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 16,
+            "control": 1,
+            "csvReady": false,
+            "index": 3,
+            "mergeCount": 39,
+            "paragraph": 6,
+            "rows": 16,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 100,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "물 품 검 사 (수) 내 역 서"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "물품목록\n번    호"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "물 품 명"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "규 격 명"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "단  위"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "단   가\n(원)"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "계약상의\n수    량"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "전회까지\n납품수량"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "금  회\n검사(수)량"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "비  고"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "3단 책꽂이 정리함"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "3단"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "개"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "******"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "2"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "도어클로져"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "HD630"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "개"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "******"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "3"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "CR123A 건전지"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "CR123"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "개"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "*****"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "**"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "**"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "4"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "라벨테이프(빨강/검정)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "12m"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "개"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "*****"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "5"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "라벨테이프(검정/흰색)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "12m"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "개"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "*****"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "6"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "라벨테이프(투명/검정)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "18m"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "개"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "*****"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "7"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "라벨테이프(투명/검정)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "12개"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "개"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "*****"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "8"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "도브 비누"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "135gX12"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "box"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "******"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "9"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "액체세제"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "5.7LX2"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "box"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "******"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "배송비"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "-"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "-"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "******"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 9,
+            "control": 0,
+            "csvReady": false,
+            "index": 4,
+            "mergeCount": 1,
+            "paragraph": 8,
+            "rows": 12,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 3,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36389298_결재문서본문_물품검사(수)조서(라벨테이프 등).hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 3,
+            "index": 2,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 16,
+            "index": 3,
+            "mergeCount": 39,
+            "rows": 16
+          },
+          {
+            "cols": 9,
+            "index": 4,
+            "mergeCount": 1,
+            "rows": 12
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

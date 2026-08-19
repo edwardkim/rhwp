@@ -1,0 +1,677 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\pic-in-head-02.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\pic-in-head-02.hwp",
+        "tableCount": 8,
+        "tables": [
+          {
+            "cols": 7,
+            "index": 0,
+            "rows": 7
+          },
+          {
+            "cols": 1,
+            "index": 1,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 2,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 3,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 4,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 5,
+            "rows": 1
+          },
+          {
+            "cols": 2,
+            "index": 6,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 7,
+            "rows": 1
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\pic-in-head-02.hwp",
+        "tableCount": 8,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 8,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\pic-in-head-02.hwp",
+        "tableCount": 8,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 24,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 3,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "보 도 자 료\nhttp://www.hira.or.kr"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "배 포 일"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "2017년 8월 25일"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "매수"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "13매"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "보도일시"
+              },
+              {
+                "col": 3,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "배포즉시"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 2,
+                "text": "자료문의"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 2,
+                "text": "약제관리실\n약제기준부"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "부 장"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "박 영 미"
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "02-2182-8525"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "차 장"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "전 미 정"
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "02-2182-8526"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 2,
+                "text": "배포부서"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 2,
+                "text": "고객홍보실\n홍보부"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "부 장"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "배 영 덕"
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "033-739-1432"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "차 장"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "이 성 규"
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "02-705-6922"
+              }
+            ],
+            "cols": 7,
+            "control": 4,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 16,
+            "paragraph": 0,
+            "rows": 7,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "※ ‘허가초과의약품 사용 관리제도’란?\n - 허가초과의약품은 임상적 근거가 충분히 확보되지 않은 약제로, 임상 현장에서 적절하게 사용되기도 하지만 때로는 임상적 유용성, 안전성 및 윤리적인 문제를 초래하기도 함. \n - 이에 따라 국민의 안전한 약제 사용을 위해 허가초과약제 사용에 대한 관리제도 도입함. 특히 항암제의 경우 질병의 위중함, 약제의 독성 및 부작용 문제, 항암요법 투여주기의 지속성 등을 고려하여 2004년부터 사전승인제를 채택해오고 있으며, 다양한 분야의 전문가가 함께 참여하여 최적의 치료방법을 선택하고 안전한 약제 사용을 강화하고자 다학제적위원회가 구성된 병원에서 치료하도록 하고 있음\n - ‘17년 6월 현재 사용되고 있는 허가초과 항암요법은 230개로, 심사평가원에서는 허가초과 약제사용의 사후 평가를 통해 근거를 생성하고 있으며 소세포페암에 paclitaxel요법(고식적, 2차 이상) 등 총 15개 요법에 대하여 급여(본인부담 5/100)로 전환함"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 13,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "면역관문억제제‘nivolumab(품명:옵디보주)’, ‘pembrolizumab(품명:키트루다주)’급여기준 적용 관련 질의 응답"
+              }
+            ],
+            "cols": 1,
+            "control": 1,
+            "csvReady": true,
+            "index": 2,
+            "mergeCount": 0,
+            "paragraph": 23,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "질문 1"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "옵디보주(nivolumab)와 키트루다주(pembrolizumab)의 보험 적용 대상은  어떻게 되고, 내용을 어디서 확인할 수 있나요?"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 3,
+            "mergeCount": 0,
+            "paragraph": 25,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 9,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "연번"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "항암요법"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "투여대상"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "19"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "nivolumab주1"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "PD-L1 발현 양성(발현 비율 ≧ 10%주2) 이면서 이전 백금기반 화학요법에 실패한 stage IIIB 이상\n\n※ EGFR 또는 ALK 변이가 확인된 환자는 이러한 변이에 대한 승인된 치료제를 투여한 후 질병 진행이 확인되고, 이전 백금기반 화학요법에도 실패한 경우\n※ 이전 PD-1 inhibitor 치료를 받지 않은 경우에 한함."
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "20"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "pembrolizumab주1"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "PD-L1 발현 양성(발현 비율 ≧ 50%주3) 이면서 이전 백금기반 화학요법에 실패한 stage IIIB 이상\n\n※ EGFR 또는 ALK 변이가 확인된 환자는 이러한 변이에 대한 승인된 치료제를 투여한 후 질병 진행이 확인되고, 이전 백금기반 화학요법에도 실패한 경우\n※ 이전 PD-1 inhibitor 치료를 받지 않은 경우에 한함."
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 33,
+                    "rows": 3,
+                    "section": 0
+                  }
+                ],
+                "row": 0,
+                "rowSpan": 1,
+                "text": "※ 비소세포폐암 급여기준 (공고 제2017-184호, 2017.8.21 시행)\n  3. 고식적요법(palliative)\n  나. 투여단계: 2차 이상\n\n주1. 면역관문억제제(nivolumab, pembrolizumab 등)는 예상치 못한 부작용 발생 등의 긴급 상황에 대응 가능한 의료기관에서 항암치료요법에 대한 지식과 경험이 충분한 의사에 의해 투여되어야 하며, 요양급여 실시 현황 등에 관한 자료를 건강보험심사평가원장에게 제출하여야 한다.\n  ▪급여인정 기관: 다음에 한 가지 이상에 해당하는 기관 중 상근하는 혈액종양내과, 감염 또는 내분비내과, 병리과 전문의가 각 1인 이상인 기관\n  ▪급여인정 기간: 1년까지(단, 질병진행시 중단) 급여인정 하되, 1년 내에 최적의 투여  기간에 대한 임상결과 미 발표 시 자동 연장하여 최대 2년으로 함.\n  ▪투여대상: PD-L1 발현율 등의 biomarker를 활용하여 투여대상을 선정하되, 세부 암종별 특성에 따라 달리 적용할 수 있음.\n  ▪사후관리: 요양기관에서 제출한 급여실시내역을 활용하여 효과 및 부작용에 대한 모니터링을 실시할 수 있음.\n\n 주2. IHC 28-8 pharmDx, VENTANA PD-L1(SP263) Assay 검사\n 주3. IHC 22C3 pharmDx 검사"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 4,
+            "mergeCount": 0,
+            "paragraph": 33,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "질문 2"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "비소세포폐암에 옵디보주(nivolumab), 키트루다주(pembrolizumab) 급여기준 질의사항"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 5,
+            "mergeCount": 0,
+            "paragraph": 38,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "pembrolizumab 식약처 허가사항 (비소세포폐암)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "기존 허가사항(신청 시)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "현재 허가사항"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "▪효능·효과\n비소세포폐암\n진행성 비소세포폐암의 치료.\nPD-L1 발현 양성으로서, 백금 기반 화학요법제 치료 도중 또는 이후에 진행이 확인된 환자에게 투여한다. 다만 EGFR 또는 ALK 변이가 확인된 환자는 이 약을 투여하기 전에 이러한 변이에 대한 승인된 치료제를 투여한 후에도 질병의 진행이 확인된 경우여야 한다.\n\n▪용법·용량\n이 약을 비소세포폐암 환자에게 투여하고자 하는 경우, PD-L1 발현이 양성(발현 비율≥50%)인 비소세포폐암 환자에게만 투여 한다."
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "▪효능·효과\n비소세포폐암\n· PD-L1 발현 양성(발현 비율≥50%)으로서, EGFR 또는 ALK 변이가 없는 진행성 비소세포폐암환자에서의 1차 치료\n· PD-L1 발현 양성(발현 비율≥1%)으로서, 백금 기반 화학요법제 치료 도중 또는 이후에  진행이 확인된 진행성 비소세포폐암의 치료. 다만 EGFR 또는 ALK 변이가 확인된 환자는 이 약을 투여하기 전에 이러한 변이에 대한 승인된 치료제를 투여한 후에도 질병의 진행이 확인된 경우여야 한다."
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": false,
+            "index": 6,
+            "mergeCount": 1,
+            "paragraph": 54,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "질문 3"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "비소세포폐암에 옵디보주(nivolumab), 키트루다주(pembrolizumab) 단독요법이 건강보험으로 적용됨에 따라 환자 부담은 비급여일 때와 어떻게 달라지나요?"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 7,
+            "mergeCount": 0,
+            "paragraph": 66,
+            "rows": 1,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\pic-in-head-02.hwp",
+        "tableCount": 8,
+        "tables": [
+          {
+            "cols": 7,
+            "index": 0,
+            "mergeCount": 16,
+            "rows": 7
+          },
+          {
+            "cols": 2,
+            "index": 6,
+            "mergeCount": 1,
+            "rows": 3
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

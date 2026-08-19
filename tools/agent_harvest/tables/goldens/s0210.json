@@ -1,0 +1,629 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-table-cell-order.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-table-cell-order.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 12,
+            "index": 0,
+            "rows": 28
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-table-cell-order.hwp",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-table-cell-order.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 64,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "년"
+              },
+              {
+                "col": 2,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "제      질"
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "제      호"
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "(앞면)"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 4,
+                "text": "법  원\n\n민사신청사건기록"
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 2,
+                "text": "재판부에\n기록회부"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "․"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 2,
+                "text": "공탁명령\n수    령"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "․"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 2,
+                "text": "사  건  번  호"
+              },
+              {
+                "col": 6,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 2,
+                "text": "20  카"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 2,
+                "text": "담\n\n임"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 2,
+                "text": "공탁명령\n발    송"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "․"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 2,
+                "text": "사    건    명"
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 2,
+                "text": "공 탁 서\n사본제출"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "․"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 5,
+                "text": "관  련  사  건\n번    호    및\n사    건    명"
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "20  카"
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 2,
+                "text": "공 탁 서\n사본제출"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "․"
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 2,
+                "text": "20  카"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 3,
+                "text": "재판원본\n서명회부"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 2,
+                "text": "․"
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 2,
+                "text": "(중재사건)"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 6,
+                "text": "신    청    인"
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 3,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 2,
+                "text": "원    본\n수    령"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "․"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 3,
+                "text": "정    본\n발    송"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 2,
+                "text": "․"
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 3,
+                "text": "대  리  인"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 8,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "상    대    방"
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 2,
+                "text": "1㎝"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 2,
+                "text": "피신청인"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 3,
+                "text": "대  리  인"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "2.5㎝"
+              },
+              {
+                "col": 0,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "년\t월\t일(\t)"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "보존종기"
+              },
+              {
+                "col": 4,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "년"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 12,
+            "control": 0,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 45,
+            "paragraph": 1,
+            "rows": 28,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-table-cell-order.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 12,
+            "index": 0,
+            "mergeCount": 45,
+            "rows": 28
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

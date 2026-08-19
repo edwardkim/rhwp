@@ -1,0 +1,326 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1770_rowsplit_tolerance.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1770_rowsplit_tolerance.hwpx",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 2
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1770_rowsplit_tolerance.hwpx",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1770_rowsplit_tolerance.hwpx",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 2,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "■ 근로계약서(예시) [별지 제1호 서식]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 16,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "성   명"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "성 별"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "연 령"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "생년월일"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "최초계약일"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "년   월   일"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "현    주    소"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "전화번호(핸드폰)"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "비    고"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 5,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 6
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 0,
+                    "rows": 4,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 4,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "일반상담사"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "위기대응 및 자살예방상담사"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "○ 월요일~금요일, 9:00~18:00(휴게시간 1시간 제외)\n○ “근로자”의 휴일근무는 업무량을 감안하여 필요한 범위에서 따로 정하되, 가능한 최소화하여야 한다.\n○ 업무량의 증가, 교육 등을 위하여 필요한 경우, “사용자”는 “근로자”에게 사전 통보하고 필요한 범위에서 근무시간을 연장할 수 있다."
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "○ 근무형태: 24시간 교대제 순환 등 근무방식\n○ 근무시간: \n ① 위기대응상담사\n  - (1근무) 07:00~16:00 사이의 8시간\n           (휴게시간 1시간 제외)\n  - (2근무) 13:00~22:00 사이의 8시간\n           (휴게시간 1시간 제외)\n  - (3근무) 22:00~07:00 사이의 8시간\n           (휴게시간 1시간 제외)\n   * 필요시 각 근무시간에서 30분의 시차출퇴근 운영 가능\n\n ② 자살예방상담사의 근무시간은 위기대응상담사의 근무시간과 동일하게 운영하되, 야간전담 근무시간(20:00~07:00) 사이의 9시간(휴게시간 1시간 제외)을 별도로 운영할 수 있다\n○ 위기대응 및 자살예방상담사의 근무유형은 5파트 3교대제이며, 근무 순환방식은 3일근무 1일 휴무, 4일근무 2일 휴무, 3일근무 2일 휴무제 방식으로 하고, 야간전담제 근무방식은 2일 근무 2일 휴무제로 한다.\n○ “근로자”의 근무방식 및 근로시간은 “사용자”가 필요하다고 인정하는 경우, 업무량 등을 감안하여 변경할 수 있다."
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 25
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 0,
+                    "rows": 2,
+                    "section": 0
+                  }
+                ],
+                "row": 1,
+                "rowSpan": 1,
+                "text": "(기간제/무기계약) 상담사 근로계약서 (일반계약직상담사/위기대응계약직상담사/자살예방상담사)\n\n 보건복지상담센터장(이하 “사용자”라 함)과 ㅇㅇㅇ(이하 “근로자”라 함)은 다음과 같이 근로계약을 체결한다.\n\n1. 근로자의 인적사항\n\n\n2. 계약 기간 \n ○ 기간제:     년  월  일 ~      년 월 일 / 무기계약:      년  월  일부터 기한의 정함이 없는 근로계약을 체결한다.\n\n ○ “사용자”는 다음 각 호의 어느 하나에 해당하는 사유가 발생하는 경우에는 근로계약을 해지할 수 있다.\n  - “근로자”가 신체 또는 정신적 장애가 발생하여 정상적으로 업무를 수행할 수 없다고 인정되는 경우. 단, 「근로기준법」 제23조제2항의 사유에 해당하는 경우는 제외한다.\n  - 신원ㆍ경력ㆍ학력 등을 확인한 결과, 서류 전형 시 허위의 사실을 기재한 사실 및 「국가공무원법」 제33조에 해당하는 사실이 확인된 경우\n  - “근로자”가 형사상 범죄로 금고이상의 형의 선고를 받은 경우 \n  - “근로자”가 피성년후견인 또는 피한정후견인 결정을 받은 경우\n  - “근로자”가 해고의 징계를 받은 경우\n  - 주기적 평가결과에 따라 당해 직무수행 부적격자로 판단되는 경우  \n  - 직제와 정원의 개폐 등에 의하여 감원이 불가피한 경우\n\n3. 근무장소 및 업무내용\n ○ 근무장소(부서) : \n ○ 업무내용 : \n ○ “사용자”가 필요하다고 인정하는 경우에는 “근로자”의 담당업무와 근무지를 변경할 수 있다.\n \n4. 근로시간 \n\n5. 임금\n ○ 임금은 기본급 월       원(유급휴일 임금 포함)에 중식비(월      원), 교통비(      원), 명절휴가비(설, 추석 각       원), 기타 수당 및 성과급을 포함한 금액으로 하되, 보건복지상담센터 급여규정이 정하는 바에 따라 지급한다. \n ○ 성과급은 “근로자”의 업무실적을 평가하여 예산의 범위에서 차등하여 지급할 수 있다.\n ○ “근로자”가 퇴직한 경우, “사용자”는 그 지급사유가 발생한 날로부터 14일 이내에 임금을 지급한다. 다만, 특별한 사정이 있을 경우에는 당사자 간의 합의에 의하여 지급기일을 연장할 수 있다.\n ○ “사용자”는 “근로자”가 주당 소정의 근로일수를 개근하지 아니한 경우에는 유급휴일임금을 지급하지 않는다.\n\n6. 임금지급일 및 지급방법\n ○ 임금 산정 기간은 첫날부터 말일까지로 하고, 임금지급일은 매월 30일(2월은 28일)로 한다.\n ○ 임금 지급일이 공휴일인 경우에는 그 전일로 한다.\n ○ 임금은 “근로자”의 예금계좌에 온라인 입금한다.\n\n7. 휴가\n ○ “사용자”는 “근로자”에게 「근로기준법」에 따른 휴가를 부여하여야 한다.\n ○ “근로자”가 법령에 의한 징병검사ㆍ예비군ㆍ민방위 훈련 소집, 업무관련 국가기관 소환 등으로 근무할 수 없는 때에는 사전에 “사용자”에게 증빙서류를 제출하여야 하고, “사용자”는 “근로자”에게 공가를 부여하여야 한다.\n ○ “근로자”의 특별휴가는 “사용자”가 필요에 따라 자체규정을 정하여 실시할 수 있으며, 「국가공무원 복무규정」 제20조를 준용하여 부여할 수 있다.\n\n8. 임금에서의 원천공제\n ○ “사용자”는 “근로자”의 임금 지급 시 갑종근로소득세, 사회보험료 등 법령이 정한 제세공과금을 원천공제하여야 한다.\n\n9. 고지의무\n ○ “근로자”는 본인의 주소, 연락처 등의 변경이 있는 경우 7일 이내에 “사용자”에게 고지하여야 한다.\n ○ “근로자”는 “근로자”의 사정으로 계속 근무할 수 없는 경우에는 퇴직일 20일 전까지 “사용자”에게 사전 통보하여야 한다.\n\n10. 비밀엄수의 의무\n ○ “근로자”는 채용기간중은 물론, 퇴직 후에도 직무상 알게 된 비밀을 엄수하여야 한다.\n\n11. 퇴직급여\n ○ “근로자”는 「근로자퇴직급여 보장법」에 따라서 퇴직급여을 지급받는다.\n\n12. 겸직금지\n ○ “근로자”는 직무와 관련된 영리업무에 종사하여서는 아니 된다.\n\n13. 준용규정\n ○ 본 계약서에서 정하지 아니한 사항은「근로기준법」, 「보건복지부와 그 소속기관 무기계약 및 기간제근로자 관리규정」, 보건복지상담센터 제규정을 따른다.\n ○ 「근로기준법」의 개정으로 인하여 근로조건의 변경이 있는 경우, “사용자”와 “근로자”는 변경된 「근로기준법」을 따른다.\n\n14. 계약의 해석\n ○ 본 계약의 해석과 관련하여 “사용자”와 “근로자”사이에 불일치가 있는 경우에는 “사용자”의 해석에 따른다.\n\n15. 재판관할\n ○ 본 계약과 관련하여 “사용자”와 “근로자”사이에 분쟁이 있는 경우 그 관할 법원은 “사용자”의 소재지 관할법원으로 한다.\n\n16. 기타사항\n ○ 본 계약서는 2통을 작성하여 “사용자”와 “근로자”가 각각 1통씩 보관한다.\n\n년     월    일        \n     “사용자”  보건복지상담센터장          (인)\n      “근로자”                             (인)"
+              }
+            ],
+            "cols": 1,
+            "control": 2,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 2,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 0,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1770_rowsplit_tolerance.hwpx",
+        "tableCount": 1,
+        "tables": [],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

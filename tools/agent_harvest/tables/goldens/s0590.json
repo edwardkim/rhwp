@@ -1,0 +1,373 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\1730000_selection_report.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\1730000_selection_report.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "rows": 18
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\1730000_selection_report.hwp",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\1730000_selection_report.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 32,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "정책연구과제 선정 결과보고서"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "과제명"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "새만금 신교통특구 추진방안연구"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "신청부서"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "새만금개발청 산업단지조성과"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "담당공무원"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "한소희"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "연구방식"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "[ v ] 위탁형   [  ] 공동연구형   [  ] 자문형"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "연구기간"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "2018.4    ~ 12    ( 8  개월)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "예산항목"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "[ v ] 포괄 연구개발비   [  ] 사업별 연구개발비"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "예상금액"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "100,000,000원(부가세포함)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "계약방법"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "협상에 의한 계약"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "연구 필요성"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "o 새만금 지역 4차 산업혁명 전진기지로의 도약을 위해 입지적 강점(도로망·호소·공항부지 등)을 활용한 ‘신교통특구’ 조성 필요 \n   - 자율주행, 드론, 위그선 등 육·해·공을 아우르는 새로운 컨셉의 교통특구를 조성하여 새만금 4차 산업혁명 전진기지의 토대 마련 \n   - 최근 주력산업(중공업 등) 부진으로 침체된 지역경제를 활성화하고, 관련 산업 유치 및 창업 지원을 통해 일자리 창출"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 2,
+                "text": "연구의 유사ㆍ중복\n검토 결과"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "중복검토 방법 : 프리즘검색"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 2,
+                "text": "유사ㆍ중복 여부: [  ] 있다    [v] 없다\n※ 유사ㆍ중복되는 기존 연구과제가 있는 경우 차별성 검토보고서 제출"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 2,
+                "text": "국민 의견\n수렴 여부"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "[  ] 수렴    [v ] 미수렴\n※ 국민생각함 사이트 등을 통해 의견을 수렴"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "연구내용"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "o 3D 공간도로지도, 지능형교통시스템, 건물정보시스템등이 통합된 3차원 교통체계*(자율주행차 陸, 위그선 水, 드론 空) 기반구축 방안 연구"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "연구결과 \n활용방안"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "ㅇ 향후 수립 예정인 ‘새만금 혁신성장 방안’, ‘새만금 5개년 계획’ 등에 신교통특구 조성 방안을 적시하고, 사업시행자를 선정하여 단계별 계획을 마련·추진"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "정책연구 과제 선정 심의 결과"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "ㅇ 조달청 입찰공고 후 유찰로 재공고\nㅇ 1개 업체 단독응찰로 제안서 평가위원회(서면)개최\nㅇ 한국교통연구원으로 최종 선정"
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "210mm×297mm[백상지(80g/㎡)]"
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "비고(이 난은 서식에 포함하지 아니한다)\n- [  ] 에는 해당되는 곳에 √표를 합니다."
+              }
+            ],
+            "cols": 4,
+            "control": 2,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 18,
+            "paragraph": 0,
+            "rows": 18,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\1730000_selection_report.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "mergeCount": 18,
+            "rows": 18
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

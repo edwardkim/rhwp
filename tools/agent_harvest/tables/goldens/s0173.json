@@ -1,0 +1,216 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-empty-cell.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-empty-cell.hwp",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "rows": 2
+          },
+          {
+            "cols": 2,
+            "index": 1,
+            "rows": 2
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-empty-cell.hwp",
+        "tableCount": 2,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-empty-cell.hwp",
+        "tableCount": 2,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "NO.\n(보령시 마크)\n입   장   권(원부)\n  구분 : \n  요금 : \n200  년   월   일\n(당일에 한함)\n성주산 자연휴양림  \n보  령  시  장"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "NO.\n(보령시 마크)\n입   장   권(영수증)\n  구분 : \n  요금 : \n200  년   월   일\n(당일에 한함)\n성주산 자연휴양림  \n보  령  시  장"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "│\n│\n│\n│\n│\n7.5㎝\n│\n│\n│\n│\n│"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "7.5㎝"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 1,
+            "paragraph": 5,
+            "rows": 2,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 4,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "《뒷면》 17㎝"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "유/의/사/항\n1. 쓰레기를 줄입시다. \n2. 쓰레기는 관급봉투를 사용하여 버립시다.\n3. 휴양림내의 시설물을 깨끗하게 이용합시다.\n4. 나무를 꺾거나, 산림을 훼손하지 맙시다.\n5. 고성방가등 소란을 피우지 맙시다.\n6. 산불을 조심합시다.\n7. 입장시 내신 요금은 환불이 불가합니다."
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "│\n│\n│\n│\n│\n7㎝\n│\n│\n│\n│\n│"
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 7,
+            "rows": 2,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-empty-cell.hwp",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "mergeCount": 1,
+            "rows": 2
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

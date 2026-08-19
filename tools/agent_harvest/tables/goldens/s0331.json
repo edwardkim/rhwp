@@ -1,0 +1,261 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\table-text.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\table-text.hwpx",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 8,
+            "index": 0,
+            "rows": 3
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\table-text.hwpx",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\table-text.hwpx",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 18,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "기부 금액(원, %)"
+              },
+              {
+                "col": 4,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "기부 건수(건, %)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "2023년"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "2024년"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "2025년"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "2024년 대비 증감"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "2023년"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "2024년"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "2025년"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "2024년 대비 증감"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "65,063,026,600"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "87,804,677,338"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "151,459,074,040"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "72.5"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "526.278"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "772,712"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1,391,874"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "80.0"
+              }
+            ],
+            "cols": 8,
+            "control": 2,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 2,
+            "paragraph": 0,
+            "rows": 3,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\table-text.hwpx",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 8,
+            "index": 0,
+            "mergeCount": 2,
+            "rows": 3
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

@@ -1,0 +1,349 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-table-caption.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-table-caption.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 10,
+            "index": 0,
+            "rows": 15
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-table-caption.hwp",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-table-caption.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": "[별지 제96호의2서식]",
+            "cellCount": 29,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "면세금지금 납세담보제공 확인서"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "1. 인적사항"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "①상호(법인명)"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "②사업자등록번호"
+              },
+              {
+                "col": 8,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "③성명(대표자)"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "④주민(법인)등록번호"
+              },
+              {
+                "col": 8,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "⑤사업장소재지"
+              },
+              {
+                "col": 2,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 6,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "⑥ 승인번호"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "2. 담보의 제공기간 :      년   월   일   ～      년   월   일"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "3. 납세담보 명세"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "①담보의 종류"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "②납세담보가액"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "③금지금 기준가격"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "원/g (     년    월    일 기준)"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "④월평균 면세금지금 소요량(해당 연월)"
+              },
+              {
+                "col": 5,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "kg (     년    월)"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "4. 추천기관   대한상공회의소    한국귀금속가공업협동조합연합회\n               한국자금중개주식회사"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "※ 송․수신자 확인란(관할세무서장 및 추천기관만 기재)"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "위와 같이 조세특례제한법 제106조의 3 제11항 및 동법시행령 제106조의 8 제2항에 의한 납세담보를 제출하였음을 확인하여 주시기 바랍니다.\n\n                                 년      월      일\n\n                                    신 청 인"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "위와 같이 조세특례제한법 제106조의 3 제11항 및 동법시행령 제106조의 8 제2항에 의한 납세담보를 제출하였음을 확인합니다.\n\n                                    년      월      일\n\n                                   세무서장"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "위와 같이 납세담보를 제출하였기에 조세특례제한법 시행령 제106조의 8 제3항에 의거 확인서를 제출합니다.\n\n                                    년      월      일\n\n                               제  출  자                       \n\n                 귀하"
+              }
+            ],
+            "cols": 10,
+            "control": 1,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 26,
+            "paragraph": 0,
+            "rows": 15,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwp3-table-caption.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 10,
+            "index": 0,
+            "mergeCount": 26,
+            "rows": 15
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

@@ -1,0 +1,542 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\3248363_upmu_bunjang.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\3248363_upmu_bunjang.hwpx",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "rows": 11
+          },
+          {
+            "cols": 4,
+            "index": 1,
+            "rows": 4
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\3248363_upmu_bunjang.hwpx",
+        "tableCount": 2,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\3248363_upmu_bunjang.hwpx",
+        "tableCount": 2,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 37,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "부서명"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "분장업무"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "비고"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 3,
+                "text": "운영\n지원부"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "총무팀"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "1. 보안 및 관인 관수\n2. 행정자료의 관리 및 기록물의 분류･수발･이관 등\n3. 당직･민방위 및 비상계획(재난관리 포함) 업무\n4. 감사･사정업무\n5. 공무원 인사 및 평가 및 노무관리\n6. 공무원 복무 및 후생복지\n7. 조직과 정원의 관리\n8. 규정 제･개정 업무\n9. 민원 일반 및 행정정보공개제도의 운영\n10. 계약 및 세입 관리\n11. 물품 및 국유재산 관리\n12. 공무원 및 단원의 급여･연금\n13. 각종 행사의 수립･시행\n14. 체력단련실 운영\n15. 공무용 차량 관리 및 운영\n16. 다른 부 및 부내 다른 팀 소관 이외의 사항"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "기획총괄팀"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1. 연도별 업무계획 및 중･장기 발전전략의 수립･관리\n2. 주요사업계획의 수립･조정 및 심사평가\n3. 책임운영기관 일반사항 및 평가\n4. 극장 운영자문위원회 운영\n5. 전속단체 단원 인사･평가 및 노무관리, \n6. 공무원 및 전속단체 단원 교육훈련 \n7. 전속단체 단원 복무 및 후생복지\n8. 조직진단 및 평가  \n9. 예산의 편성･심의 및 결산에 관한 사항\n10. 국회･정당 관련 업무"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "시설관리팀"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "1. 시설 중장기 발전계획 수립･시행\n2. 청사 신축 및 증개축 건설사업 관리\n3. 청사 시설(건축, 기계, 전기, 통신, 소방, 가스, 조경 등) 유지보수 및 관리\n4. 청사 관리(영선, 미화, 경비) \n5. 소방 계획 수립 등 소방 안전관리\n6. 청사 및 시설물 안전진단 등 시설 안전관리\n7. 환경 및 에너지 관리\n8. 장애인 관련시설 계획 수립 및 시행\n9. 청사의 관리･방호"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 2,
+                "text": "공연\n기획부"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "공연기획팀"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "1. 국립극장 중장기 공연계획 수립･시행\n2. 국립극장 연간 공연계획 수립･시행\n3. 공연예술의 국내외 교류에 관한 사항\n4. 창작공모에 관한 사항\n5. 공연 홍보물 제작\n6. 마케팅 전략 개발 및 종합계획 수립･시행\n7. 고객관계관리(CRM) 시스템 유지･운영\n8. 국립극장 후원･협찬 및 e-CRM 추진\n9. 개인(타깃별), 단체(법인, 기업, 학교 등), 제휴, 해외 등 마케팅 추진\n10. 야외행사 및 축제계획 수립･시행\n11. 공동주최 심사 및 계약 체결\n12. (재)국립극장진흥재단 지원\n13. 문화나눔 지원\n14. 기타 마케팅에 관한 사항\n15. 통계자료 관리 및 총괄･조정\n16. 부 예산･국회 등 행정일반\n17. 부내 다른 팀 소관 이외의 사항\n18. 관람권･객석관리 및 고객편의제공 및 안내\n19. 공연장 대관 및 시설물 사용허가, 대관관리시스템 유지･운영\n20. 고객지원센터 및 안내원실 운영\n21. 어린이놀이방 등 고객서비스시설 운영\n22. 기타 고객지원에 관한 사항(셔틀버스 서비스 포함)\n23. 고객만족도 제고에 관한 사항\n24. 티켓예매결제시스템 유지･운영"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "전속단체공연지원팀"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "1. 전속단체 연간 공연계획 수립·시행\n2. 전속단체 국가브랜드 공연작품 제작\n3. 전속단체의 정기·특별·기획·지방·해외 공연의 홍보·관객 유치·마케팅\n4. 전속단체 국가문화행사 지원에 관한 사항\n5. 전속단체 역량강화 프로그램 개발 및 운영\n6. 전속단체 공연자문협의회 운영\n7. 기타 기획공연 및 전속단체 공연에 관한 사항\n8. 물리치료실 운영"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 2,
+                "text": "무대\n예술부"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "무대기술팀"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "1. 무대예술 중장기 발전계획 수립･시행\n2. 무대시설 유지관리계획 수립･시행\n3. 무대기술 총괄관리\n4. 무대기술분야 공연･행사 등의 디자인 및 공연장 운영\n5. 특수효과･무대안전관리･무대설치계획서 관리\n6. 대관공연장비사용료 및 기술료 부과\n7. 무대물품구입 및 장비 유지관리\n8. 기계･조명･음향･무대분야 책임감독 업무관리\n9. 책임기계감독･무대기계 조작 및 유지관리\n10. 책임조명감독･무대조명디자인 및 기기조작･유지관리\n11. 책임음향감독･무대음향･영상 디자인 및 기기 조작･유지관리\n12. 책임무대감독･무대연습･일정 관리･진행･안전관리\n13. 무대 제작요원 운영\n14. 무대예술전문인 자격검정업무 등 무대예술전문인 양성계획 수립･시행\n15. 부 내 국회, 예산 등 행정일반사항\n16. 부내 다른 팀 소관 이외의 사항"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "무대미술팀"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "1. 무대미술 총괄관리\n2. 무대미술분야 공연･행사 등의 디자인 운영\n3. 공연･행사 등의 무대장치, 작화, 소품, 의상, 장신구 제작 및 관리\n4. 공연용품 대여관리\n5. 무대장치 페기물 관리\n6. 장치･의상분야 책임감독 업무관리\n7. 책임장치감독･무대장치･작화･소품 제작 및 공연 전환･관리\n8. 책임의상감독･무대의상･장신구 제작 및 공연 전환･관리\n9. 무대예술지원센터 보관소 및 시설분야 관리·운영\n10. 무대예술지원센터 대내외 협력에 관한 사항"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 3,
+                "text": "교육\n전시부"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "예술교육팀"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "1. 중장기 공연예술교육계획 수립･시행\n2. 연도별 공연예술교육사업 추진\n3. 사회교육 개발 및 운영에 관한 사항\n4. 부 예산･국회 등 행정일반\n5. 부내 다른 팀 소관 이외의 사항"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "홍보팀"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "1. 홍보전략 개발 및 종합계획 수립･시행\n2. 국립극장 언론보도 등 홍보 전반에 관한 사항\n3. 극장 홍보물(홍보영상물, 정기간행물, 연보 등) 제작･유통\n4. 온라인 홍보 운영 및 관리(블로그, 페이스북, 유튜브 등)\n5. 삭제 <2022.8.9.>\n5. 이미지통합전략(CIP) 추진\n6. 국립극장 정보화 업무 수립 및 관리\n7. 국립극장 홈페이지 운영관리\n8. 기타 홍보에 관한 사항"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "공연예술박물관팀"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "1. 중장기 공연예술박물관운영 계획 수립시행\n2. 공연예술박물관 전시장 운영관리\n3. 상설 및 기획전시 기획(무대예술지원센터 포함)\n4. 공연예술자료 수집･보존연구\n5. 공연예술자료 복사열람대여에 관한 사항\n6. 공연예술 디지털아카이브 구축 및 서비스\n7. 공연예술자료 표준 분류 개발보완\n8. 공연예술자료실 운영\n9. 공연예술박물관 업무관련 국내외 교류\n10. 국립극장 젊은 공연예술 평론상 공모 사업"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 5,
+            "paragraph": 2,
+            "rows": 11,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 13,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "부서명"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "분  장  업  무"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "비 고"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 3,
+                "text": "전\n속\n단\n체"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "국립창극단"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "1. 판소리를 바탕으로 가･무･악이 어우러진 한국적 총체 음악극 개발\n2. 유능한 창극인의 발굴･육성과 새로운 레퍼토리의 개발\n3. 판소리 및 창극의 대중화와 해외진출을 통한 국제화\n4. 국립창극단의 정기･특별･기획･지방･해외 공연계획 수립 및 시행\n5. 소속 단체 운영 및 단원의 교육 훈련 지원\n6. 국립창극단 공연자문협의회 운영"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "국립무용단"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1. 전통 춤의 원형을 재현하여 민족 고유의 자산으로 계승발전\n2. 한국무용 창작 공연으로 한국무용 발전의 모태로서 역할 수행\n3. 풍부한 레퍼토리를 통한 국가 문화사절 역할 수행\n4. 국립무용단의 정기･특별･기획･지방･해외 공연계획 수립 및 시행\n5. 소속 단체 운영 및 단원의 교육 훈련 지원\n6. 국립무용단 공연자문협의회 운영"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "국립국악\n관현악단"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "1. 한국 전통 음악의 대중화와 전통에 바탕을 둔 새로운 한국음악 창출\n  2. 국악기 개량과 연주기법의 향상, 레퍼토리의 개발 보급\n  3. 국가간 음악 교류를 통한 우리 음악의 세계화 실현\n4. 국립국악관현악단의 정기･특별･기획･지방･해외 공연계획 수립 및 시행\n5. 소속 단체 운영 및 단원의 교육 훈련 지원\n6. 국립국악관현악단 공연자문협의회 운영"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 1,
+            "mergeCount": 2,
+            "paragraph": 4,
+            "rows": 4,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\3248363_upmu_bunjang.hwpx",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "mergeCount": 5,
+            "rows": 11
+          },
+          {
+            "cols": 4,
+            "index": 1,
+            "mergeCount": 2,
+            "rows": 4
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

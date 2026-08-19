@@ -1,0 +1,185 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task3236\\issue3236_split_table.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task3236\\issue3236_split_table.hwpx",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 1
+          },
+          {
+            "cols": 2,
+            "index": 1,
+            "rows": 3
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task3236\\issue3236_split_table.hwpx",
+        "tableCount": 2,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task3236\\issue3236_split_table.hwpx",
+        "tableCount": 2,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "1. 기업의 부도\n  2. 세무당국에 의하여 국세, 지방세 등의 체납처분을 받은 경우(단, 중소기업진흥공단 및 신용회복위원회(재창업지원위원회)를 통해 재창업자금을 지원받은 경우와 신용보증기금 및 기술신용보증기금으로부터 재도전기업주 재기지원보증을 받은 경우는 예외로 한다)\n  3. 민사집행법에 기하여 채무불이행자명부에 등재되거나, 은행연합회 등 신용정보집중기관에 채무불이행자로 등록된 경우(단, 중소기업진흥공단 및 신용회복위원회(재창업지원위원회)를 통해 재창업자금을 지원받은 경우와 신용보증기금 및 기술신용보증기금으로부터 재도전기업주 재기지원보증을 받은 경우는 예외로 한다)\n  4. 파산·회생절차·개인회생절차의 개시 신청이 이루어진 경우(단, 법원의 인가를 받은 회생계획 또는 변제계획에 따른 채무변제를 정상적으로 이행하고 있는 경우는 예외로 한다)\n  5. 최근 3개 회계연도 말 결산 재무제표*상 부채비율이 연속 500% 이상(자본전액잠식이면 부채비율 500% 이상에 포함되는 것으로 간주한다.)인 기업 또는 유동비율이 연속 50% 이하인 기업(단, 기업신용평가등급 중 종합신용등급이 'BBB' 이상인 경우, 기술신용평가기관(TCB)의 기술신용평가 등급이 “BBB” 이상인 경우 또는 외국인투자촉진법에 따른 외국인투자기업 중 외국인투자비율이 50%이상이며, 기업설립일로부터 5년이 경과되지 않은 외국인투자기업인 경우, 또는 산업기술혁신사업 공통운영요령 제2조제9의7호의 산업위기지역 소재 기업은 예외로 한다.) 이때, 사업개시일로부터 접수마감일까지 5년 미만인 기업의 경우는 적용하지 아니한다.\n    - 상기 부채비율 계산시 한국벤처캐피탈협회 회원사 및 중소기업진흥공단 등 「공공기관의 운영에 관한 법률」에 따른 공공기관으로부터 최근 5년 간 대출형 투자유치(CB, BW)를 통한 신규차입금 및 상환전환우선주(RCPS)는 부채총액에서 제외 가능\n    - 상기의 신용등급 ‘BBB’에는 ‘BBB+’, ‘BBB’, ‘BBB-’를 모두 포함함\n    - 회계연도 말 결산 이후 재무상황이 호전된 경우, 수정된 재무제표와 외부회계법인의 의견서 제출 가능\n    - 한국채택국제회계기준(K-IFRS)을 적용함에 따라 부채비율 및 유동비율에 문제가 발생한 경우에는 일반기업회계기준(K-GAAP)을 적용하여 부채비율 및 유동비율 판단 가능. 이 경우, 연구개발기관은 부채비율 및 유동비율 판단을 위해 추가적인 회계기준에 따른 자료를 전문기관에 제출하여야 하며, 한국채택국제회계기준과 일반기업회계기준을 혼용할 수 없음.\n  6. 최근 회계연도 말 결산 기준 자본전액잠식\n   - 한국채택국제회계기준(K-IFRS)을 적용함에 따라 자본전액잠식이 발생한 경우에는 일반기업회계기준(K-GAAP)을 적용하여 자본전액잠식 여부 판단 가능. 이 경우, 연구개발기관은 자본잠식 여부 판단을 위해 추가적인 회계기준에 따른 자료를 전문기관에 제출하여야 하며, 한국채택국제회계기준과 일반기업회계기준을 혼용할 수 없음.\n   - 상기 자본전액잠식 계산시 한국벤처캐피탈협회 회원사 및 중소기업진흥공단 등 「공공기관의 운영에 관한 법률」에 따른 공공기관으로부터 최근 5년 간 대출형 투자유치(CB, BW)를 통한 신규차입금 및 상환전환우선주(RCPS)는 자본으로 계산 가능\n   - 회계연도 말 결산 이후 재무상황이 호전된 경우, 수정된 재무제표와 외부회계법인의 의견서 제출 가능\n  7. 외부감사 기업의 경우 최근 회계년도 말 결산감사 의견이 “의견거절” 또는 “부적정”\n ※ 상기 5호, 6호 및 7호 결산 재무재표 기준은 종속회사가 있는 기업은 별도 재무제표, 종속회사가 없는 기업은 개별 재무제표를 말함(연결 재무제표 기준 실적 불가)\n ※ 상기 5호, 6호 및 7호 추가자료 제출 시 가결산 자료는 인정되지 않음\n    (단, 외부회계법인의 검토의견서가 있는 경우는 예외)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 17,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "주관연구개발기관 유형(한계기업)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "연구개발과제 수"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "중견기업"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "4개까지 수행 가능"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "중소기업"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "2개까지 수행 가능"
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 20,
+            "rows": 3,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 0,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task3236\\issue3236_split_table.hwpx",
+        "tableCount": 2,
+        "tables": [],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

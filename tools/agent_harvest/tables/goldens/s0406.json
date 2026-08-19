@@ -1,0 +1,5114 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4491\\30213_1.혼합단지등 제도개선 방안.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4491\\30213_1.혼합단지등 제도개선 방안.hwp",
+        "tableCount": 50,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 1,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 2,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 3,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 4,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 5,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 6,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 7,
+            "rows": 8
+          },
+          {
+            "cols": 2,
+            "index": 8,
+            "rows": 5
+          },
+          {
+            "cols": 3,
+            "index": 9,
+            "rows": 9
+          },
+          {
+            "cols": 5,
+            "index": 10,
+            "rows": 10
+          },
+          {
+            "cols": 5,
+            "index": 11,
+            "rows": 9
+          },
+          {
+            "cols": 3,
+            "index": 12,
+            "rows": 9
+          },
+          {
+            "cols": 4,
+            "index": 13,
+            "rows": 8
+          },
+          {
+            "cols": 2,
+            "index": 14,
+            "rows": 4
+          },
+          {
+            "cols": 6,
+            "index": 15,
+            "rows": 18
+          },
+          {
+            "cols": 12,
+            "index": 16,
+            "rows": 2
+          },
+          {
+            "cols": 11,
+            "index": 17,
+            "rows": 3
+          },
+          {
+            "cols": 8,
+            "index": 18,
+            "rows": 3
+          },
+          {
+            "cols": 5,
+            "index": 19,
+            "rows": 2
+          },
+          {
+            "cols": 3,
+            "index": 20,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 21,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 22,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 23,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 24,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 25,
+            "rows": 3
+          },
+          {
+            "cols": 1,
+            "index": 26,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 27,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 28,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 29,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 30,
+            "rows": 3
+          },
+          {
+            "cols": 1,
+            "index": 31,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 32,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 33,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 34,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 35,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 36,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 37,
+            "rows": 2
+          },
+          {
+            "cols": 1,
+            "index": 38,
+            "rows": 2
+          },
+          {
+            "cols": 1,
+            "index": 39,
+            "rows": 1
+          },
+          {
+            "cols": 2,
+            "index": 40,
+            "rows": 2
+          },
+          {
+            "cols": 1,
+            "index": 41,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 42,
+            "rows": 3
+          },
+          {
+            "cols": 1,
+            "index": 43,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 44,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 45,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 46,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 47,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 48,
+            "rows": 1
+          },
+          {
+            "cols": 5,
+            "index": 49,
+            "rows": 6
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4491\\30213_1.혼합단지등 제도개선 방안.hwp",
+        "tableCount": 50,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 50,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4491\\30213_1.혼합단지등 제도개선 방안.hwp",
+        "tableCount": 50,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "분양‧임대 혼합단지 및 공공임대주택 관리체계 개선"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 59,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 2,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "국민권익위원회\n(경제제도개선담당관)"
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 79,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "목   차"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 2,
+            "mergeCount": 0,
+            "paragraph": 81,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Ⅰ. 추진 배경\t1\nⅡ. 일반 현황\t2\nⅢ. 문제점 및 개선방안\t8\n󰊱 혼합단지 관리에 대한 이해관계자의 합리적 참여 보장 \t 8\n 1-1. 관리주체간 동등한 관리 권한 부여\t 9\n 1-2. 공동대표회의 구성을 위한 근거 필요\t 12\n 1-3. 사용자의 공동주택 관리 참여 보장\t 15\n󰊲 임대주택 관리의 효율성 제고\t 19\n 2-1. 임대와 분양주택간 의무관리대상 범위 일원화\t 20\n 2-2. 공공임대주택의 특성을 반영한 주택관리 규정 마련\t 21\nⅣ. 조치사항\t24\n□ 관련법령"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 3,
+            "mergeCount": 0,
+            "paragraph": 83,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Ⅰ"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "추진 배경"
+              }
+            ],
+            "cols": 3,
+            "control": 1,
+            "csvReady": true,
+            "index": 4,
+            "mergeCount": 0,
+            "paragraph": 85,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": " 법적 근거 : 부패방지 및 국민권익위원회의 설치 및 운영에 관한 법률 제47조\n\n 이동신문고 ‘인천 남동구 향촌휴먼시아 입주민 대표와의 간담회’ 건의(‘11.8)\n\n ‘혼합단지‘ 고충민원 : (‘10년) 73건 → (’11년) 143건 → (‘12.10월) 100건"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 5,
+            "mergeCount": 0,
+            "paragraph": 87,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Ⅱ"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "일반 현황"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 6,
+            "mergeCount": 0,
+            "paragraph": 108,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 24,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "시기"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "제목"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "내용"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "1963년"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "공영주택법"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "정부지원으로 건설하여 주택 없는 국민에게 임대 또는 분양하는 주택"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1972년"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "주택건설\n촉진법"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "주택이 없는 국민의 주거생활 안정 도모 및 모든 국민의 주거수준 향상을 위해 주택의 건설‧공급과 이를 위한 자금의 조달‧운영 등에 관한 사항 규정"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "1979년"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "공동주택관리령"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "주택건설촉진법에 따른 공동주택의 관리에 관한 사항을 정함"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "1984년"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "집합건물의 소유 및 관리에 관한 법"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "민법 215조(건물의 구분소유)에 따른 집합건물의 소유 및 관리에 대한 사항 규정"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "1984년"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "임대주택\n건설촉진법"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "임대주택건설을 촉진하고 임차자 보호를 목적"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "1993년"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "임대주택법"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "임대주택의 공급‧관리와 주택 임대사업에 필요한 사항을 정함"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "2003년"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "주택법"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "주택건설촉진법과 공동주택관리령을 통합\n※ 공동주택관리령을 법률의 차원으로 끌어올린 것은 강력한 국가 주도의 관리체계의 구축을 의미"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 7,
+            "mergeCount": 0,
+            "paragraph": 112,
+            "rows": 8,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 10,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "법령"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "목 적"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "주택법"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "쾌적한 주거생활에 필요한 주택의 건설·공급·관리와 이를 위한 자금의 조달·운용 등에 관한 사항을 규정\n※ 주택(단독‧공동)/준주택(기숙사‧고시원‧노인복지주택‧오피스텔)/도시형생활주택(단지형 연립주택‧다세대주택‧원룸형주택)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "임대주택법"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "임대주택의 건설·공급 및 관리와 주택임대사업에 필요한 사항을 규정\n※ 주택관리와 관련 이 법에 정하지 아니한 사항에는 「주택법」과 「주택임대차보호법」을 적용(법 제3조)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "집합건물의 소유 및 관리에 관한 법률"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "집합건물의 소유 및 관리에 관한 사항을 규정\n※ 집합건물: 1동의 건물중 구조상 구분된 여러개의 부분이 독립한 건물\n※ 구분소유자의 권리 및 의무, 전유‧공용부분 구분 등 규정"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "관리규약준칙(시‧도)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "공동주택의 관리 또는 사용에 관하여 필요한 사항을 규정하여 입주자 및 사용자의 보호와 주거생활의 질서유지를 목적으로 시‧도별 관리규약준칙 마련"
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": true,
+            "index": 8,
+            "mergeCount": 0,
+            "paragraph": 114,
+            "rows": 5,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 27,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "구분"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "공법"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "사법"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "명칭"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "주택법"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "집합건물의 소유 및 관리에 관한 법"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "범위"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "주택법 16조에 의해 사업계획승인을 얻어 건설된 공동주택\n - 20세대 이상의 공동주택, 또는 30세대 이상 준주택‧도시형 생활주택‧노인복지주택\n - 상업 또는 준주거지역에서 150세대이상의 주택 + 주택 외의 시설을 동일 건축물로 건축"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "- 10세대 이상 20세대 미만의 집합건물(공동주택, 아파트형공장, 노인복지주택, 업무용 상업용 건물, 오피스텔, 도시형생활주택, 준주택)\n - 상업 또는 준주거지역에서 150세대미만의 주택 + 주택 외의 시설을 동일 건축물로 건축"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "대표회의"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "입주자 및 사용자로 구성"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "구분소유자로 구성"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "관리주체"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "의결: 사업주체‧입주자대표회의\n집행: 관리소장"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "구분소유자 전원으로 구성된 관리단(10인 이상은 관리인 선임)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "일상관리"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "입주자대표회의 의결 대의제"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "전원을 구성원으로 한 관리단집회"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "의결방법"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "세대별 투표"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "구분소유자 숫자와 의결권 과반수"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "사용자(점유자)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "사용자는 입주자대표 선거권, 관리규약 제‧개정 동의권 등 권한"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "구분소유자의 승낙하에 점유자는 집회에 출석하여 의견진술"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "지도‧감독"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "시‧군‧구 감독권한 있음"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "사적 자치"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 9,
+            "mergeCount": 0,
+            "paragraph": 116,
+            "rows": 9,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 50,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "항목"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "건축법 허가대상1)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "주택법 승인대상2)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "의무관리대상3)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "임대주택"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "행위허가"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "하자보수"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "입대위 구성"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "주택관리사 배치"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "사업자선정지침"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "관리현황 공개"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "장기수선계획"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "△"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "안전관리"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "△"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "지자체 감독"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "X"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "〇"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "〇"
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": true,
+            "index": 10,
+            "mergeCount": 0,
+            "paragraph": 119,
+            "rows": 10,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 41,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "구분"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "단지수"
+              },
+              {
+                "col": 2,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "세대수"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "계"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "임대"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "분양"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "계"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "200"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "115,836"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "50,566"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "65,260"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "LH"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "34"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "26,649"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "14,158"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "12,491"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "SH"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "154"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "80,979"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "33,481"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "47,488"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "부산도시공사"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "2"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "2,538"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "683"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "1,855"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "대구도시공사"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "6"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "3,840"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "1,533"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "2,307"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "경기도시공사"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "3"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "1,565"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "548"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "1,017"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "강원도개발공사"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "1"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "265"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "163"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "102"
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": false,
+            "index": 11,
+            "mergeCount": 3,
+            "paragraph": 131,
+            "rows": 9,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 27,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "서울시 공공임대 10만호 건설계획(2003)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "전용면적 12평 이상 분양주택단지내 임대주택 혼합 건설 등"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "「도시 및 주거환경 정비법」개정(2005)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "재개발이나 재건축시 임대주택을 단지내 건설토록 강제규정"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "「국민임대주택건설등에 관한 특별법」개정(2005)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "국민임대주택과 분양주택의 혼합단지 조성 방침 마련"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "서울시 장기전세주택 등 혼합단지 공급(2009)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "장지‧발산, 은평 뉴타운에 혼합단지 임대:분양을 일정 비율로 공급"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "보금자리주택건설 등에 관한 특별법 제정(2009)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "무주택 서민을 위해 2009~2018년까지 보금자리주택 150만호 공급, 이 중 임대주택을 80만호 공급"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 12,
+            "mergeCount": 0,
+            "paragraph": 134,
+            "rows": 9,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 26,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "구분"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "분양주택"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "임대주택"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 3,
+                "text": "주민대표기구"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "명칭"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "‧ 입주자대표회의"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "‧ 임차인대표회의"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "법적 성격"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "‧ 의결 및 감독기구(의무구성)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "‧임대사업자와 협의기구(임의구성)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "주요역할"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "‧ 관리규약 제‧개정\n‧ 관리비 예산‧결산, 시설물 보수‧대체 및 개량 결정\n‧ 설비유지, 운영기준 결정\n‧ 관리방법 및 업체 선정 제안\n‧ 자치관리기구 직원 임명\n‧ 관리주체 업무 감사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "‧ 관리 관련 임대사업자 협의\n - 관리규약 제‧개정\n - 관리비\n - 공용부분, 부대시설 등의 유지보수 및 하자 보수"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "관리주체"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "‧ 자치관리: 관리소장 집행\n‧ 위탁관리: 주택관리업자 집행\n※ 입주자대표회의가 의결‧감독"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "‧ 관리주체는 임대사업자이며,\n‧ 임대사업자 직영관리 또는\n‧ 주택관리업자 위탁관리"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 2,
+                "text": "주요시설  보수‧교체비용"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "적립금"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "‧ 장기수선충당금"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "‧ 특별수선충당금"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "비용관리"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "‧ 적립요율은 관리규약으로 규정\n‧ 입주자대표회의명의로 관리"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "‧ 표준건축비의 4/10,000(영구임대의 경우)\n‧ 임대사업자가 관리"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "근거법령"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "‧ 주택법"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "‧ 임대주택법"
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 13,
+            "mergeCount": 5,
+            "paragraph": 151,
+            "rows": 8,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 8,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "구분"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "비목"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "관리비"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "공동주택의 유지관리를 위하여 필요한 비용으로 관리주체가 사용\n※ 일반관리비, 청소비, 경비비, 소독비, 승강기유지비, 지능형 홈네트워크 설비 유지비, 난방비, 급탕비, 수선유지비, 위탁관리수수료"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "사용료"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "거주자들이 사용한 금액을 관리주체가 납부대행하는 것\n※ 전기료, 수도료, 가스사용료, 난방비와 급탕비, 정화조오물수수료, 생활폐기물수수료, 건물전체 보험료, 입주자대표회의의 운영비, 선거관리위원회의 운영경비"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "장기수선충당금"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "공동주택의 주요 시설의 교체 및 보수에 필요한 비용으로 장기수선계획을 수립한 뒤 그에 따라 사용"
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": true,
+            "index": 14,
+            "mergeCount": 0,
+            "paragraph": 156,
+            "rows": 4,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 108,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "지역"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "단지수(개)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "관리비(원/m²)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "사용료(원/m²)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "장기수선충당금(원/m²)"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "잡수입(원)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "전국"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "13,100"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "629"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "772"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "87"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "3,672,018"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "서울"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "2,122"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "755"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "889"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "83"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "5,275,061"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "부산"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "865"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "615"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "692"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "83"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "4,322,553"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "대구"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "716"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "582"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "749"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "73"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "3,158,635"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "인천"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "679"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "642"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "807"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "92"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "4,046,024"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "광주"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "617"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "469"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "620"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "78"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "1,790,756"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "대전"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "388"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "626"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "833"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "138"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "4,821,864"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "울산"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "339"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "574"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "815"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "118"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "2,296,084"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "경기"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "3,396"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "656"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "894"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "82"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "4,803,015"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "강원"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "487"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "634"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "604"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "88"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "1,539,888"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "충북"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "463"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "634"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "737"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "105"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "2,070,213"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "충남"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "569"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "623"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "638"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "89"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "2,503,797"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "전북"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "553"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "542"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "536"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "82"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "1,131,167"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "전남"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "418"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "537"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "627"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "76"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "1,924,665"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "경북"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "617"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "559"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "623"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "87"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "1,870,893"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "경남"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "811"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "542"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "689"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "91"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "2,816,558"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "제주"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "60"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "539"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "430"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "81"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "1,583,483"
+              }
+            ],
+            "cols": 6,
+            "control": 0,
+            "csvReady": true,
+            "index": 15,
+            "mergeCount": 0,
+            "paragraph": 160,
+            "rows": 18,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 18,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "계"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "단독주택"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "아파트"
+              },
+              {
+                "col": 6,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "연립주택"
+              },
+              {
+                "col": 8,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "다세대\n주택"
+              },
+              {
+                "col": 10,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "비거주용\n건물내주택"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "14,677"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "(100.0)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "4,089"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "(27.9)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "8,576"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "(58.4)"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "536"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "(3.7)"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "1,314"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "(9.0)"
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "161"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "(1.1)"
+              }
+            ],
+            "cols": 12,
+            "control": 0,
+            "csvReady": false,
+            "index": 16,
+            "mergeCount": 6,
+            "paragraph": 166,
+            "rows": 2,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 23,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "구분"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "계"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "영 구"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "50년\n공공"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "국민\n임대"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "10년공공"
+              },
+              {
+                "col": 6,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "5년공공"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "민간\n임대"
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "기타\n임대"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "소계"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "공공\n기관"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "민간"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "계"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1,399,227"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "190,519"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "100,722"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "375,941"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "70,679"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "171,020"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "19,605"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "151,415"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "422,366"
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "67,980"
+              }
+            ],
+            "cols": 11,
+            "control": 0,
+            "csvReady": false,
+            "index": 17,
+            "mergeCount": 9,
+            "paragraph": 171,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 17,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "구  분"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "총 계"
+              },
+              {
+                "col": 2,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "분\t양\t주\t택"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "임 대"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "기 타"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "계"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "150세대 미만"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "150세대 이상\n500세대 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "500세대\n이상"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "계"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "25,908"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "24,073"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "11,761"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "7,735"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "4,577"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1,577"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "258"
+              }
+            ],
+            "cols": 8,
+            "control": 0,
+            "csvReady": false,
+            "index": 18,
+            "mergeCount": 5,
+            "paragraph": 175,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 10,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "구\t분"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "계"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "150세대\n미만"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "150세대이상\n～500미만"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "500세대 이상"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "계"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "13,582"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "855"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "7,424"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "5,303"
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": true,
+            "index": 19,
+            "mergeCount": 0,
+            "paragraph": 178,
+            "rows": 2,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Ⅲ"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "문제점 및 개선방안"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 20,
+            "mergeCount": 0,
+            "paragraph": 179,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "•총세대수 772세대 중 분양주택 281세대 임대주택 491세대로 2010.05 입주자대표회의 구성(8개동 8명), 임차인대표회의 구성(9개동 9명)함. 분양주택 291세대중 2/3이상이 전세입자인 입주자대표회의가 단지내 관리계약에 대해 모든 결정을 하고 64%의 공공임대 입주자인 임차인대표회의는 자기들의 결정에 따라 오라고만 한다면 맞는 것인지... (국민신문고 2010-05-18)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 21,
+            "mergeCount": 0,
+            "paragraph": 191,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "※ 입주자대표회의가 주장하는 법적 근거 :「임대주택법」제28조(임대주택의 관리) ⑥항에서 “임대주택이 아닌 주택과 임대주택이 같은 건축물 안에 있거나 같은 주택단지를 구성하고 있는 경우에는 임대주택이 아닌 주택의 관리 방법에 따라야 한다.”고 하여 입주자대표회의 권한 근거로 작용"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 22,
+            "mergeCount": 0,
+            "paragraph": 202,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "•SH공사에서 2010년 건설공급한 상암월드컵11단지아파트는 총 588세대로 분양 58세대, 임대 530세대인 혼합단지로 공동대표회의 구성 전 임차인대표회의 선출이 지체되자 입주자대표회의 명의만으로 전체 588세대를 대상으로 한 위탁관리업체를 선정, 법원에서 무효판결을 받음(사건번호 2011가합13173)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 23,
+            "mergeCount": 0,
+            "paragraph": 204,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "「민법」 215조(건물의 구분소유) \n① 수인이 한 채의 건물을 구분하여 각각 그 일부분을 소유한 때에는 건물과 그 부속물중 공용하는 부분은 그의 공유로 추정한다.\n② 공용부분의 보존에 관한 비용 기타의 부담은 각자의 소유부분의 가액에 비례하여 분담한다\n「집합건물의 소유 및 관리에 관한 법률」제23조(관리단의 당연 설립 등) \n① 건물에 대하여 구분소유 관계가 성립되면 구분소유자 전원을 구성원으로 하여 건물과 그 대지 및 부속시설의 관리에 관한 사업의 시행을 목적으로 하는 관리단이 설립된다."
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 24,
+            "mergeCount": 0,
+            "paragraph": 213,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "◈ 분양의 입주자와 임대의 임대사업자가 공동으로 관리방법을 결정\n\n 「임대주택법」 제28조(임대주택의 관리)\n  (기존)⑥‘제1항을 적용할 때 임대주택이 아닌 주택과 임대주택이 같은 건축물 안에 있거나 같은 주택단지를 구성하고 있는 경우에는 임대주택이 아닌 주택의 관리방법에 따라야 한다’\n  (변경)⑥‘제1항을 적용할 때 임대주택이 아닌 주택과 임대주택이 같은 건축물 안에 있거나 같은 주택단지를 구성하고 있는 경우에는 임대사업자는 임대주택이 아닌 주택의 입주자와 협의하여 관리방법을 정한다’로 개정"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 25,
+            "mergeCount": 2,
+            "paragraph": 220,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "•질의의 분양, 임대혼합단지에 대해서는 주택법령에 정한 바가 없습니다. 따라서 주택관리업자 선정방법은 「주택관리업자 및 사업자 선정지침」이 적용되지 않으므로 공동주택회의에서 협의하여 정하여야 합니다. 또한 질의의 공동주택의 경우는 주택법령이 적용되는 단지가 아니므로 「주택법 시행령」 제52조제4항 단서의 규정이 적용되지 않으며, 기존 주택관리업자와의 재계약 여부 또는 새로운 업체와의 계약 여부는 귀 공동주택회의에서 협의하여 정할 수 있습니다.(2012-03-18 국토부 민원회신)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 26,
+            "mergeCount": 0,
+            "paragraph": 234,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "•은평뉴타운 2지구 마고정3단지는 분양 459, 임대 200세대로 구성된 혼합단지인데, 입주자대표회의측에서 시행자인 SH가 마련한 혼합단지 관리규약상의 공동주택대표회의 구성은 법적 근거가 없는 사항임을 주장하며 처음부터 미구성(SH공사의 혼합단지 분쟁사례)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 27,
+            "mergeCount": 0,
+            "paragraph": 238,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "•상암월드컵11단지는 임대 530, 분양 58세대로 임대가 압도적으로 많음에도 입주자측 4명, 임차인 3명, 임대사업자 1명 비율에 임차인측이 반발해 공동대표회의 구성이 안됨(SH공사의 혼합단지 분쟁사례)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 28,
+            "mergeCount": 0,
+            "paragraph": 241,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "「주택법」 개정안 제44조(공동주택관리규약)\n ③ 분양주택과 임대주택이 혼합된 단지에서는 공통적으로 적용할 수 있는 관리규약을 별도로 정할 수 있다.(신설)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 29,
+            "mergeCount": 0,
+            "paragraph": 243,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "◈ 공동대표회의 구성을 위한 규정 마련\n 「주택법 시행령」 제50조(입주자대표회의의 구성 등) \n ③ 제48조의 공동주택이 임대주택 또는 주택 아닌 건축물 등과 같은 건축물에 있거나 같은 단지를 구성하고 있는 경우에는 제1항의 공동주택의 입주자대표회의와 그 외 건축물의 관리주체가 세대별 비율에 따라 공동대표회의를 구성한다.(신설)"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 30,
+            "mergeCount": 2,
+            "paragraph": 254,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "<분양과 임대 분쟁사례: 잡수익 처리>\n분양은 일부를 예비비로 유보하고 장기수선충당금으로 적립하고자 하나, 임대는 관리비 인하를 주장. 공동대표회의가 없는 경우 입주자대표회의만으로 의결하여 잡수익 전체를 분양세대 중심으로 결정하여 임대세대가 반발\n※ 잡수익: 재활용품, 보육시설 등의 임대료, 이동통신중계기, 알뜰시장 수익금 등으로 구성되며 단지별 전국 평균 월 3,672,018원, 서울지역은 5,275,061원임"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 31,
+            "mergeCount": 0,
+            "paragraph": 272,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "•혼합단지내 갈등은 심리적요인(임차인들의 자격지심, 또는 입주자의 거리두기 등)이 크게 작용하며, 근본적으로는 혼합단지관리에 대한 근거법령이 없는 채로 공급되어 문제가 큰 것임(서울시내 〇〇혼합단지 관리사무소장 인터뷰, 2012.7.)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 32,
+            "mergeCount": 0,
+            "paragraph": 275,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "「민법」 제618조 (임대차의 의의) \n 임대차는 당사자일방이 상대방에게 목적물을 사용, 수익하게 할 것을 약정하고 상대방이 이에 대하여 차임을 지급할 것을 약정함으로써 그 효력이 생긴다."
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 33,
+            "mergeCount": 0,
+            "paragraph": 282,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "「임대주택법법」제29조(임차인대표회의) \n ③ 제1항의 임차인대표회의는 다음 각 호의 사항에 관하여 임대사업자와 협의할 수 있다.\n  1. 임대주택 관리규약의 제정 및 개정\n  2. 관리비\n  3. 임대주택의 공용부분·부대시설 및 복리시설의 유지·보수\n  4. 그 밖에 임대주택의 관리에 관한 사항으로서 대통령령으로 정하는 사항"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 34,
+            "mergeCount": 0,
+            "paragraph": 284,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "※ 참고: 서울시의 공동대표회의 구성안"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "<형태>\nㅇ 입주자대표회의 + 임차인대표회의 + 임대사업자의 일정비율로 구성\nㅇ 생활권 관련 사항은 입주자대표회의+임차인대표회의가 논의하고, 소유권은 입주자대표회의와 임대사업자가 논의\n<장점>\nㅇ 공동주택 관리와 관련한 이행당사자 모두가 참여할 수 있으며\nㅇ 임차인측에 관리에 대한 일정 권한부여를 통해 거주자 참여를 보장 \n<단점>\nㅇ 기존 법령과의 충돌 가능성: 현행「임대주택법」은 임차인대표회의를 협의기구로 두고 있는 바, 위 안은 임차인에게 협의 이상의 관리권한을 부여\nㅇ 생활권과 소유권에 기한 사안이 명확하지 않을 수 있기에 이로 인한 분쟁 발생 가능성"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 35,
+            "mergeCount": 2,
+            "paragraph": 290,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "◈ 임차인에 대한 관리권 위임 근거 조항 마련\n  「임대주택법 시행령」 제27조(임대주택의 관리) \n  ④ 임대사업자는 소유자의 권리ㆍ의무에 영향을 미치는 않는 범위에서 관리에 대한 사항을 임차인에게 위임할 수 있다.(신설)\n\n ※ 참고: 공공임대사업자의 위임가능 범위 예시(국토부‘분양‧임대 혼합단지 관리에 관한 가이드라인’참조)\n <위임불가>\n   1. 공동주택 관리방법의 결정 및 주택관리업자의 선정\n   2. 장기수선계획, 안전관리계획, 안전점검에 관한 사항\n   3. 장기수선충당금 및 특별수선충당금의 지출이 수반되는 장기수선계획에 따른 공사\n   4. 기타 소유권을 기초로 한 권한 행사 및 이에 준하는 행위\n <위임가능>\n   1. 관리 등으로 인하여 발생한 수입의 용도 및 사용절차\n   2. 관리비 등 분양‧임대 공통의 비용이 발생하는 각종 공사 및 용역에 관한 사항\n   3. 단지 내 공용부분의 사용 및 관리에 관한 사항\n   4. 공동체 생활의 활성화 및 질서유지에 관한 사항\n   5. 그 밖에 혼합단지 공동주택의 관리와 관련하여 필요한 사항"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 36,
+            "mergeCount": 2,
+            "paragraph": 299,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 4,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "임대관리"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "주택관리"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "1. 임대차공급 계약 관련 업무\n2. 임대보증금 및 임대료조정ㆍ관리\n3. 임차인 입ㆍ퇴거 관련 업무\n4. 특별수선충당금 적립 및 장기수선계획 수립ㆍ시행\n5. 관리비 사용내역 점검\n6. 임차인(대표회의)와의 분쟁 조정\n7. 불법전대관련 관리 등"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "1. 부대시설, 복지시설 등 각종 공용시설물 관리\n2. 경비ㆍ청소ㆍ소독 및 쓰레기 수거\n3. 관리비 및 사용료 징수\n4. 수선유지비의 징수 및 적립\n5. 공동시설물의 사용방법에 대한 지도ㆍ계몽\n6. 질서문란행위 방지\n7. 안전사고 및 도난사고 등 조치 강구 등"
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": true,
+            "index": 37,
+            "mergeCount": 0,
+            "paragraph": 305,
+            "rows": 2,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 2,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "의무관리대상: 공동주택이 일정규모 이상인 경우 의무관리대상으로 규정하여 입주자대표회의구성, 관리방법 결정, 관리소장, 기술인력 및 장비 배치 등이 의무화"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "공동관리: 공동주택은 개별 단지를 기준으로 관리하고, 예외적으로 주택단지가 인접하거나 시장‧군수가 인정한 경우에만 공동관리를 적용할 수 있도록 규제"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 38,
+            "mergeCount": 0,
+            "paragraph": 311,
+            "rows": 2,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "•150세대 미만의 소규모 공동주택에 승강기가 설치되어 있거나 중앙집중 난방방식으로 운영될 경우 일반 분양주택은 의무관리대상에서 제외됨에도 임대주택에는 세대수에 관계없이 의무관리대상으로 지정하여 관리의무를 부과하는 것은 불평등하니 이를 바로 잡아 달라(2011. 11. 국민신문고 국민제안)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 39,
+            "mergeCount": 0,
+            "paragraph": 315,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 4,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "주택법(시행령 제48조)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "임대주택법(시행령 제27조)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "•300세대 이상의 공동주택\n•150세대 이상으로서 승강기가 설치된 공동주택\n•150세대 이상으로서 중앙집중식 난방방식(지역난방방식을 포함한다)의 공동주택\n•「건축법」 제8조에 따른 건축허가를 받아 주택 외의 시설과 주택을 동일건축물로 건축한 건축물로서 주택이 150세대 이상인 건축물"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "•300세대 이상의 공동주택\n•승강기가 설치된 공동주택\n•중앙집중식 난방방식의 공동주택"
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": true,
+            "index": 40,
+            "mergeCount": 0,
+            "paragraph": 318,
+            "rows": 2,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "「주택법시행령」제46조(주택관리의 적용범위) \n② 제1항에도 불구하고 임대를 목적으로 하여 건설한 공동주택에 대해서는 다음 각 호만 적용한다. <신설 2010.7.6>\n  2. 제48조에 따른 주택관리업자 등에 의한 의무관리대상 공동주택의 범위에 관한 사항"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 41,
+            "mergeCount": 0,
+            "paragraph": 320,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "「임대주택법 시행령」제27조(임대주택의 관리) \n ① 법 제28조제1항 본문에서 \"대통령령으로 정하는 규모\"란「주택법 시행령」제48조 각 호 규모의 임대주택을 말한다.(개정)"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 42,
+            "mergeCount": 2,
+            "paragraph": 327,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "계약사무와 관련해 국가를 당사자로 하는 계약에 따라 업무를 하는데 주택법의 사업자선정지침과 상충되는 부분이 많음. 예를 들어 재활용수거업자 선정은 최고낙찰자를 선정하도록 되어 있는데, 업자들간 담합을 해서 1,000만원짜리를 400-500만원정도로 입찰가를 써내면 무조건 그 중 한명을 선정해야 함. 국계법에서는 ‘예정가 이상의 최고가’ 로 하도록 되어 있음. 또한 나라장터전자입찰을 할 수가 없어서 현장입찰만 가능하므로 담합가능성이 더 높음(주택관리공단 담당자 인터뷰, 2012.7월)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 43,
+            "mergeCount": 0,
+            "paragraph": 337,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "<임대주택법> 공동관리를 위해 ①둘 이상의 임대 사업자, ②둘 이상의 임대주택단지가 서로 인접하고, ③시장‧군수가 합리적이라고 인정한 경우로 한정\n<주택법> 공동 관리를 ①세대수 1,500세대 미만, ②인접단지간 일정너비 이상의 도로가 없는 조건으로 제한"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 44,
+            "mergeCount": 0,
+            "paragraph": 341,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "제28조(임대주택의 관리) ① 임대사업자는 임대주택이 대통령령으로 정하는 규모에 해당하면 「주택법」 제53조에 따른 주택관리업자에게 관리를 위탁하거나 자체관리하여야 한다. 다만, 임대사업자가 국가·지방자치단체·한국토지주택공사 또는 지방공사인 경우에는 대통령령으로 정하는 방법에 따라 관리할 수 있다. <개정 2011.8.4> ⇨ 대통령령 규정 미비"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 45,
+            "mergeCount": 0,
+            "paragraph": 344,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "•판교국민임대 4개지구 5,768세대 대상으로 한 시뮬레이션에서 단지별 관리시 관리인력 43명 -> 32명으로 줄어 연간 246백만원을 절감 가능. 이는 인건비 기준에 의한 것이며, 이 외에도 청소, 경비 등 용역, 기타 물품자재 공동구매를 통해 관리비 절감 가능성 높음. (LH 사례)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 46,
+            "mergeCount": 0,
+            "paragraph": 350,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "◈ 공공임대주택의 경우 통합관리할 수 있는 근거 마련\n「임대주택법 시행령」제27조(임대주택의 관리) \n ② 법 제28조제1항 단서에서 “대통령령으로 정하는 방법”이란 법 제28조제1항 단서의 임대사업자가 권역별로 나누어 임대주택을 통합하여 관리하거나 국토해양부장관이 임대주택 관리방법으로 적절하다고 인정한 것을 말한다.<신설>"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 47,
+            "mergeCount": 2,
+            "paragraph": 355,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Ⅳ"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "조치사항"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 48,
+            "mergeCount": 0,
+            "paragraph": 356,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 27,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "구 분"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "상세 구분"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "조치사항"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "관련 부처"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "조치\n기한"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 3,
+                "text": "1. 혼합단지 관리에 대한 이해관계자의 합리적 참여 보장"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "1-1. 관리주체간 동등한 관리상 권한 부여"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "분양의 입주자와 임대의 임대사업자가 공동으로 관리방법을 결정\n※「임대주택법」 제28조"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "국토부"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "13.12."
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1-2. 공동대표회의 구성을 위한 근거 필요"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "공동대표회의 구성 규정 마련\n※ 「주택법 시행령」 제50조"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "“"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "“"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "1-3. 사용자에 대한 공동주택 관리참여 보장"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "임대사업자 관리권한 중 일부를 임차인에게 위임하는 방법 등\n※ 「임대주택법 시행령」 제27조"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "“"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "“"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 2,
+                "text": "2. 임대주택 관리의 효율성 제고"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "2-1. 임대와 분양주택간 의무관리대상 범위의 일원화"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "임대주택의 의무관리대상 세대수를 분양주택과 통일\n※「임대주택법 시행령」제27조"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "“"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "“"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "2-2. 공공임대주택의 특성을 반영한 주택관리 규정 마련"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "공공임대주택의 경우 통합관리할 수 있는 근거 마련\n※ 「임대주택법 시행령」제27조"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "“"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "“"
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": false,
+            "index": 49,
+            "mergeCount": 2,
+            "paragraph": 358,
+            "rows": 6,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 12,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4491\\30213_1.혼합단지등 제도개선 방안.hwp",
+        "tableCount": 50,
+        "tables": [
+          {
+            "cols": 5,
+            "index": 11,
+            "mergeCount": 3,
+            "rows": 9
+          },
+          {
+            "cols": 4,
+            "index": 13,
+            "mergeCount": 5,
+            "rows": 8
+          },
+          {
+            "cols": 12,
+            "index": 16,
+            "mergeCount": 6,
+            "rows": 2
+          },
+          {
+            "cols": 11,
+            "index": 17,
+            "mergeCount": 9,
+            "rows": 3
+          },
+          {
+            "cols": 8,
+            "index": 18,
+            "mergeCount": 5,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 25,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 30,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 35,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 36,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 42,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 47,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 5,
+            "index": 49,
+            "mergeCount": 2,
+            "rows": 6
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

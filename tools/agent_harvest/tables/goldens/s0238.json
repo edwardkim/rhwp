@@ -1,0 +1,297 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\el-school-001.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\el-school-001.hwpx",
+        "tableCount": 3,
+        "tables": [
+          {
+            "cols": 3,
+            "index": 0,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 1,
+            "rows": 4
+          },
+          {
+            "cols": 3,
+            "index": 2,
+            "rows": 4
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\el-school-001.hwpx",
+        "tableCount": 3,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 3,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\el-school-001.hwpx",
+        "tableCount": 3,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "「 초등학생 대상 범죄 예방 안내 (재강조)」"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "솔숲 교육 소식\n담당: 안전교육"
+              }
+            ],
+            "cols": 3,
+            "control": 2,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 7,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "최근 실제 사례"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "󰋼 초등학교 인근에서 하교하던 학생에게 접근하여 “부탁을 들어주면 1만원을 주겠다” 는 말을 하며 유괴 시도\n󰋼 초등학교 후문 및 인근 주차장에서 하교하는 학생에게 차량으로 접근하여 약취를 시도 한 남성 3명 체포\n󰋼 학교(타지역) 앞에서 칼부림이 있을 거라는 예고글 게시"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 1,
+            "mergeCount": 3,
+            "paragraph": 4,
+            "rows": 4,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 7,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "가정에서의 지도사항"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "󰋼 위급상활 발생 시 112 신고요령을 알려줍니다.\n 󰋼 보호자와 정한 안전한 길로만 다니도록 합니다.\n 󰋼 귀가시간 및 위치를 미리 공유합니다.\n 󰋼 보호받을 수 있는 장소*를 알려 줍니다.\n *안전Dream앱 ‘생활안전지도’ 메뉴에서 ‘아동안전지킴이집’ 확인 가능"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 2,
+            "mergeCount": 3,
+            "paragraph": 6,
+            "rows": 4,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\el-school-001.hwpx",
+        "tableCount": 3,
+        "tables": [
+          {
+            "cols": 3,
+            "index": 1,
+            "mergeCount": 3,
+            "rows": 4
+          },
+          {
+            "cols": 3,
+            "index": 2,
+            "mergeCount": 3,
+            "rows": 4
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

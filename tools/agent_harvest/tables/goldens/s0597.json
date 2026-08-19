@@ -1,0 +1,365 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\3080901_pii_ledger.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\3080901_pii_ledger.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "rows": 17
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\3080901_pii_ledger.hwp",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\3080901_pii_ledger.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 31,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "개인정보의 목적 외 이용 및 제3자 제공 대장"
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "개인정보 또는 \n개인정보파일 명칭"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "이용 또는 제공 구분"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "［  ］목적 외 이용       ［  ］제3자 제공"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 3,
+                "text": "목적 외 이용기관의 명칭\n(목적 외 이용의 경우)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 3,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 3,
+                "text": "담당자"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "소    속"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "성    명"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "전화번호"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 3,
+                "text": "제공받는 기관의 명칭\n(제3자 제공의 경우)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 3,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 3,
+                "text": "담당자"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "성    명"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "소    속"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "전화번호"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "이용하거나 제공한 날짜, 주기 또는 기간"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "※ 개인정보 제공날짜와 이용기간 명시"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "이용하거나 제공한 형태"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "이용 또는 제공의 법적 근거"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "※ 요청하는 기관의 법적 근거 명기 (예 : 공공감사에 의한 법률 제20조, 과세자료의 제출 및 관리에 관한 법률 제7조, 민사소송법 제35조 등)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "이용 목적 또는 \n 제공받는 목적"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "이용하거나 제공한 개인정보의 항목"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "※ 최소한의 개인정보 제공 필요 (목적을 위해 반드시 필요한 개인정보 중심)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "「개인정보 보호법」 제18조제5항에 따라 제한을 하거나 필요한 조치를 마련할 것을 요청한 경우에는 그 내용"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "※ 이용 목적, 이용 방법, 그 밖에 필요한 사항에 대한 제한사항 혹은 개인정보 안전성 확보를 위해 필요한 조치사항 기재"
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "[공문 발송 시 명기 문구]\n제공되는 개인정보는 요청 목적 범위 내에서만 이용해야 하며, 권한 없는 자의 열람이나 외부유출이 되지 않도록 암호화 등 개인정보 보호 관련 법령이 정하는 절차에 따라 안전하게 관리해야 합니다. 이용목적이 달성되거나 보유기간이 경과하면 지체 없이 파기하시기 바라며, 해당 자료에 대한 관리소홀로 발생하는 법적 책임은 귀 기관에게 있음을 알려 드립니다."
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 17,
+            "paragraph": 2,
+            "rows": 17,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\3080901_pii_ledger.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "mergeCount": 17,
+            "rows": 17
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

@@ -1,0 +1,677 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\issue2019_floating_form_74312.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\issue2019_floating_form_74312.hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "rows": 16
+          },
+          {
+            "cols": 4,
+            "index": 1,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 2,
+            "rows": 4
+          },
+          {
+            "cols": 3,
+            "index": 3,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 4,
+            "rows": 1
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": "경고: Preview/PrvText.txt UTF-8 손상(invalid utf-8 sequence of 1 bytes from index 5) — 관용(lossy) 디코딩 적용 (U+FFFD 치환)\n"
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\issue2019_floating_form_74312.hwpx",
+        "tableCount": 5,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": "경고: Preview/PrvText.txt UTF-8 손상(invalid utf-8 sequence of 1 bytes from index 5) — 관용(lossy) 디코딩 적용 (U+FFFD 치환)\n"
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 5,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\issue2019_floating_form_74312.hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 37,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "투자목적회사에 관한 사항"
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "투자목적회사의 설립에 관한 사항"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "투자목적회사\n명 칭"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "회사형태"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "등록번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "설립일"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "주 소"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "투자목적회사의 재산에 관한 사항"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "자 산"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "금 원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "자기자본"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "금 원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "부 채"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "금 원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "자 본 금"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "금 원"
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "투자목적회사의 주주 또는 사원에 관한 사항"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "명 칭"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "생년월일(사업자등록번호)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "출자금액"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "금 원"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "출자지분"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "투자목적회사의 차입에 관한 사항"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "차입금융기관"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "차입일"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "만기일"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 11,
+            "paragraph": 73,
+            "rows": 16,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 8,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "차입금액"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "금 원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "담보가액"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "금 원"
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 1,
+            "mergeCount": 2,
+            "paragraph": 81,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 8,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 4,
+                "text": "신청인"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "조합명"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "납세고유번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "업무집행조합원"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "유한책임조합원수"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "출자금 총액"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "존속기간"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "주소\n(전화번호: )"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 2,
+            "mergeCount": 2,
+            "paragraph": 96,
+            "rows": 4,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "첨부서류"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "1. 조합 규약 사본 (조합원 총회 의사록 및 결의서 사본 포함)\n2. 조합원명부\n3.「벤처투자촉진에 관한 법률 시행령」제34조제3호나목에 따른 유한책임조합원의 수의 산정에\n필요한 자료(「자본시장과 금융투자업에 관한 법률」 제9조제18항에 따른 집합투자기구가 해\n당 벤처투자조합의 출자금 총액의 10퍼센트 이상을 출자한 경우로 한정합니다)\n4. 결성총회 의사록 사본\n5. 조합원의 출자금액 및 출자이행을 증명하는 서류\n6. 고유번호증 사본\n7. 벤처투자조합 재산의 보관을 「자본시장과 금융투자업에 관한 법률」 제8조제7항에 따른 신\n탁업자 및 신탁업을 겸영하는 금융기관에 위탁하였음을 증명하는 서류\n8. 벤처투자조합의 투자심사업무를 전담하는 전문인력의 인적사항\n9. 투자목적회사의 정관 사본\n10. 투자목적회사의 사업계획서\n11. 투자목적회사의 사원 또는 주주 현황\n12. 투자목적회사의 법인 등기사항증명서\n13. 투자목적회사의 재산 및 차입내역을 확인할 수 있는 서류\n14. 투자목적회사의 청산결과보고서(재산을 배분한 명세, 청산감사의견서, 청산총회 의사록 사본을 포함)\n(9.~14. 서류는 투자목적회사를 설립한 벤처투자조합으로 한정합니다)\n※ 변경등록신청인 경우에는 변경된 사실을 증명하는 서류를 말합니다."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "수수료\n없음"
+              }
+            ],
+            "cols": 3,
+            "control": 1,
+            "csvReady": true,
+            "index": 3,
+            "mergeCount": 0,
+            "paragraph": 96,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "접수번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "접수일시"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "처리기간\n14일"
+              }
+            ],
+            "cols": 3,
+            "control": 2,
+            "csvReady": true,
+            "index": 4,
+            "mergeCount": 0,
+            "paragraph": 96,
+            "rows": 1,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": "경고: Preview/PrvText.txt UTF-8 손상(invalid utf-8 sequence of 1 bytes from index 5) — 관용(lossy) 디코딩 적용 (U+FFFD 치환)\n"
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 3,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\issue2019_floating_form_74312.hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "mergeCount": 11,
+            "rows": 16
+          },
+          {
+            "cols": 4,
+            "index": 1,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 2,
+            "mergeCount": 2,
+            "rows": 4
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": "경고: Preview/PrvText.txt UTF-8 손상(invalid utf-8 sequence of 1 bytes from index 5) — 관용(lossy) 디코딩 적용 (U+FFFD 치환)\n"
+    }
+  ]
+}

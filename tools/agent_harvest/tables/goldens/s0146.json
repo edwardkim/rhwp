@@ -1,0 +1,2845 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\exam_kor.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\exam_kor.hwp",
+        "tableCount": 32,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 1,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 3,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 4,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 5,
+            "rows": 3
+          },
+          {
+            "cols": 4,
+            "index": 6,
+            "rows": 6
+          },
+          {
+            "cols": 3,
+            "index": 7,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 8,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 9,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 10,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 11,
+            "rows": 3
+          },
+          {
+            "cols": 1,
+            "index": 12,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 13,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 14,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 15,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 16,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 17,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 18,
+            "rows": 3
+          },
+          {
+            "cols": 1,
+            "index": 19,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 20,
+            "rows": 3
+          },
+          {
+            "cols": 1,
+            "index": 21,
+            "rows": 1
+          },
+          {
+            "cols": 2,
+            "index": 22,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 23,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 24,
+            "rows": 3
+          },
+          {
+            "cols": 4,
+            "index": 25,
+            "rows": 20
+          },
+          {
+            "cols": 3,
+            "index": 26,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 27,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 28,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 29,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 30,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 31,
+            "rows": 3
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\exam_kor.hwp",
+        "tableCount": 32,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 32,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\exam_kor.hwp",
+        "tableCount": 32,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "20"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2025학년도 대학수학능력시험 문제지"
+              }
+            ],
+            "cols": 1,
+            "control": 4,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "A 마을은 가난했지만 전통문화와 공동체적 삶을 중시하며 이웃 마을들과 조화롭게 살아왔다. 오래전, 정부는 마을의 경제 발전을 목표로 서양의 생산 기술을 도입하는 정책을 시행했다. 마을 사람들은 정책의 필요성에 공감하면서도 자신들이 발전을 이뤄 낼 수 있다는 확신이 부족했다. 이에 정부는 마을 사람들을 독려하기 위해 마을의 역량으로 달성할 수 있는 미래상을 지속해서 홍보했다. 이후 마을은 물질적 풍요를 누리게 되었지만 경제적 이권을 두고 이웃 마을들과 경쟁하며 갈등하게 되었다. 격화된 경쟁에서 A 마을은 새로운 기술의 수용만을 우선시했고, 과거에 중시되었던 협력과 나눔의 인생관은 낡은 관념이 되었다. 젊은이들에게 전통문화는 서양 문화에 비해 열등한 것으로 여겨졌다."
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 2,
+            "mergeCount": 2,
+            "paragraph": 79,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "A 단계는 확산 모델 과정 중 한 단계이다. ㉠은 원본 이미지이고, ㉡은 확산 이미지 중의 하나이며, ㉢은 노이즈 이미지이다. (가)는 이미지가 A 단계로 입력되는 부분이고, (나)는 이미지가 A 단계에서 출력되는 부분이다.\n(가)  ⇨  ⇨  (나)\n㉠     ㉡     ㉢"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 3,
+            "mergeCount": 2,
+            "paragraph": 145,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "○○ 인터넷 카페의 이용자 A는 a, B는 b, C는 c라는 ID를 사용한다. 박사 학위 소지자인 A는 □□ 전시관의 해설사이고, B는 같은 전시관에서 물고기 관리를 혼자 전담한다. 이 전시관의 누리집에는 직무별로 담당자가 공개되어 있다. 어떤 사람이 □□ 전시관에서 A의 해설을 듣고 A의 실명을 언급한 후기를 카페 게시판에 올리자 다음과 같은 댓글이 달렸다.\n\n(단, ‘#～# ’는 명예를 훼손하거나 모욕을 주는 표현이고 A, B, C는 실명이다. ID로는 그 사용자의 개인 정보를 알 수 없으며, A, B, C의 법적 책임에 영향을 미치는 다른 요소는 고려하지 않는다.)"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 4,
+            "mergeCount": 2,
+            "paragraph": 175,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<학습 활동>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "｢정을선전｣은 모략을 중심으로 사건이 전개되므로 인물 간 소통 양상을 파악하는 것이 중요하다. 윗글을 바탕으로 인물 간에 나타난 소통의 내용을 정리해 보자."
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 5,
+            "mergeCount": 2,
+            "paragraph": 252,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 24,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "인물 A"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "인물 B"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "소통의 내용"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "①"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "원수"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "중군장"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "A가 B에게 군사를 이끌고 가 서융을 사로잡으라고 명령함."
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "②"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "승상"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "월매"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "A가 B에게 충렬부인이 있는 곳이 어디인지 물음."
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "③"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "옥졸"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "금연"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "B가 A로부터 옥중 시신의 정체와 관련한 정보를 얻음."
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "④"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "옥졸"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "승상"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "A가 B에게, 금연이 옥중 시신에 대하여 발설했을 것이라는 의혹을 제기함."
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "⑤"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "금연"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "승상"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "B가 A로부터 정렬부인이 거짓으로 앓아누웠었다는 정보를 얻음."
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": true,
+            "index": 6,
+            "mergeCount": 0,
+            "paragraph": 253,
+            "rows": 6,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "｢정을선전｣은 영웅소설과 가정소설의 상투적인 면모가 혼재되어 나타난다. 이를테면, 가정 안팎의 서사는 남주인공을 매개로 연결되고, 사건이 선악 구도로 전개되며, 인물의 고난과 감정은 극대화된다. 이 과정에서 일부다처제에서 비롯되는 가정 내 갈등이 개인의 인성 문제로 축소된다. 그러면서도 상전의 수족에 불과한 하층의 시비가 능동적인 행위자로 등장하거나, 가정과 사회에서 상층인 인물이 희화화된다."
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 7,
+            "mergeCount": 2,
+            "paragraph": 260,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "시는 표현하고자 하는 바를 어떤 심적 상태에 놓인 화자의 발화로써 형상화한다. (나)에 나타나 있는 독특한 발화 방식, 즉 끊어질 듯 이어지는 서술, 어휘의 반복적 출현, 맥락이 없어 보이는 구절들의 배열, 수시로 등장하는 말줄임표와 쉼표 등은 사랑의 기억을 떠올리거나 상처를 치유하지 못한 화자의 내면을 드러내는 시적 장치들이다. 이러한 장치들은 사랑의 기억과 함께 상실의 고통을 안고 남은 생을 살아 내야 하는 화자의 복합적인 내면을 생생하게 그려 내는 역할을 한다."
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 8,
+            "mergeCount": 2,
+            "paragraph": 327,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "(다)에서 편지는 받는 사람뿐만 아니라 쓰는 사람 자신을 향한 것이기도 하다. 상대에 대한 열망으로 사랑의 편지를 쓰지만 결국 그것은 자신을 표현하는 글이다. 자신을 이상화하려는 욕구에 빠져 있기에 편지는 ‘그녀’가 사랑할 만한 ‘그’로 채워진다. 사랑의 편지를 받은 ‘그녀’는 ‘편지 속의 그’를 사랑하고, 편지를 쓰는 ‘그’도 ‘편지 속의 그’에게 매료되어 있다. 그러나 이런 식의 자기 고백이 지속될 수 없는 까닭은 이 이상화된 ‘그’와 실제의 ‘그’ 사이의 간극이 주는 부끄러움 때문이다."
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 9,
+            "mergeCount": 2,
+            "paragraph": 351,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "｢배꼽을 주제로 한 변주곡｣은 주인공이 배꼽을 잃어버렸다는 허구적 설정으로 시작하여, 이후 배꼽을 둘러싼 희화적 에피소드들이 이어진다. 주인공은 으레 있어야 할 것이 없어져 불편한 생활을 이어 가던 중 배꼽에 관심을 갖는 이들이 늘어나고 있음을 알게 된다. 이 과정에서 배꼽에 관련된 개인적 상황은 물론 인간 존재와 사회 상황에 대한 심층적 의미의 탐색이 이루어진다."
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 10,
+            "mergeCount": 2,
+            "paragraph": 408,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "조선 후기의 가사나 사설시조에서는 입장이 다른 발화자가 등장하는 대화체를 사용해 작중 상황을 극의 한 장면처럼 만들기도 한다. 대화를 통해 사실성을 추구하는 작품의 경우, 구체적 소재와 다각적인 내용으로 그 시대 삶의 모습을 보여 준다. 대화를 통해 유희성을 보이는 작품의 경우, 대화가 논쟁, 의견 불일치 등 의외의 상황으로 전개되면서 재미가 생겨나며, 때로 등장하는 불완전한 표현은 이러한 작품이 내용 자체보다 대화의 전개 양상에 주목함을 보여 준다."
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 11,
+            "mergeCount": 2,
+            "paragraph": 486,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2025학년도 대학수학능력시험 문제지\n(화법과 작문)"
+              }
+            ],
+            "cols": 1,
+            "control": 3,
+            "csvReady": true,
+            "index": 12,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 1,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "학생 1 : 오늘 발표에 나온 라플레시아에 대한 내용을 인터넷에서 본 적이 있어. 그 꽃은 심한 악취를 풍겨서 파리를 유인하는데, 번식을 위해서 그런 거래.\n학생 2 : 그래? 1 m나 되는 큰 꽃이 악취를 풍기면 엄청나겠는걸? 근데 수염틸란드시아는 다른 식물에 기생하는 건 아니라는 거지?\n학생 1 : 응, 맞아. 나는 수염틸란드시아가 어떻게 번식하는지 알고 싶었는데 그 내용이 없어서 아쉬웠어.\n학생 2 : 나도 그랬어. 그 부분에 대한 설명이 있었으면 더 좋았을 텐데. 수염틸란드시아가 번식을 어떻게 하는지 찾아봐야겠어."
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 13,
+            "mergeCount": 2,
+            "paragraph": 22,
+            "rows": 3,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "[A]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": false,
+            "index": 14,
+            "mergeCount": 1,
+            "paragraph": 33,
+            "rows": 3,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "[B]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": false,
+            "index": 15,
+            "mergeCount": 1,
+            "paragraph": 37,
+            "rows": 3,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "[C]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": false,
+            "index": 16,
+            "mergeCount": 1,
+            "paragraph": 40,
+            "rows": 3,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "[D]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": false,
+            "index": 17,
+            "mergeCount": 1,
+            "paragraph": 47,
+            "rows": 3,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "[E]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": false,
+            "index": 18,
+            "mergeCount": 1,
+            "paragraph": 50,
+            "rows": 3,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "글을 마무리할 때는 지속 가능 항공유 사용의 의의를 제시한 후, 환경과 관련하여 학생들의 실천을 제안하는 내용을 써야겠어."
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 19,
+            "mergeCount": 0,
+            "paragraph": 118,
+            "rows": 1,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "ㄱ. 통계 자료\n\nㄴ. 신문 기사\n2023년 우리나라 국제선 항공기의 탄소 배출량인 약 2천만 톤을 기준으로 산정하면, 지속 가능 항공유를 1% 혼합할 경우 약 16만 톤 정도의 탄소 배출 감축 효과가 있다. 16만 톤은 승용차 약 5만 3천 대의 1년간 탄소 배출량에 해당한다.\nㄷ. 전문가 인터뷰\n“작물을 지속 가능 항공유의 원료로 사용하면 작물 재배로 인한 삼림 훼손과 식량 부족 등이 우려됩니다. 폐기물은 이러한 문제는 없지만 양이 한정되어 있습니다. 미세 조류, 이산화 탄소 등이 원료의 대안으로 떠오르고 있으나 국내 상용화를 위한 기술 개발이 더 필요한 실정입니다.”"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 20,
+            "mergeCount": 2,
+            "paragraph": 125,
+            "rows": 3,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2025학년도 대학수학능력시험 문제지\n(언어와 매체)"
+              }
+            ],
+            "cols": 1,
+            "control": 3,
+            "csvReady": true,
+            "index": 21,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 1,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "[A]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": false,
+            "index": 22,
+            "mergeCount": 1,
+            "paragraph": 2,
+            "rows": 3,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<자 료>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "◦ 뎌녁 ⓐ (​​＋애) 걷나가샤\t- 󰡔석보상절󰡕\n[저쪽 가에 건너가시어]\n◦ 뫼화 그르세 ⓑ 담아(담-＋-아)\t- 󰡔월인천강지곡󰡕\n[모아서 그릇에 담아]\n◦ ⓒ 누네(눈＋에) 빗 봄과\t- 󰡔석보상절󰡕\n[눈에 빛 봄과]\n◦ 쏜 살이 세 낱 ⓓ 붚(붚＋​​) 여디니\t- 󰡔월인천강지곡󰡕\n[쏜 화살이 세 개 북만 꿰어지니]\n◦ 너희 ⓔ 스​​니믈(스​​＋-님＋을) 보고져 노니\t- 󰡔석보상절󰡕\n[너희 스승님을 뵙고자 하니]"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 23,
+            "mergeCount": 2,
+            "paragraph": 14,
+            "rows": 3,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "동일한 모습의 단어가 다른 의미로 쓰일 때, 이들은 의미의 연관성이 없는 ㉠ 동음이의어 관계(󰃚 단풍 철 : 철 성분)나 연관성이 있는 ㉡ 다의어 관계(󰃚 머리를 깎다 : 배의 머리)에 놓인다. 다의어는 한 단어가 여러 의미를 지닌 것인데, 이때 그 구체적 의미가 달라 유의어나 반의어가 다른 경우가 있다. 용언이 다의어일 때는 ㉢ 필수 성분의 개수가 다르거나, 개수는 같고 종류가 다른 경우가 있다. 물론 다의어의 각 의미 간에 유의어나 ㉣ 반의어가 같은 경우도 있고 ㉤ 필수 성분의 개수와 종류가 모두 동일한 경우도 있다."
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 24,
+            "mergeCount": 2,
+            "paragraph": 23,
+            "rows": 3,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 40,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 4,
+                "text": "①"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 4,
+                "text": "㉠"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "난로에 불을 피웠다."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 2,
+                "text": "그들의 사랑에 불이 붙었다."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 4,
+                "text": "②"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 4,
+                "text": "㉡"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 2,
+                "text": "이곳엔 가위표를 치는 거야."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 2,
+                "text": "구슬 치는 아이가 있다."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 4,
+                "text": "③"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 4,
+                "text": "㉢"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 2,
+                "text": "나는 종소리를 듣지 못했다."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 2,
+                "text": "충고까지 잔소리로 듣지 마."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 4,
+                "text": "④"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 4,
+                "text": "㉣"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 2,
+                "text": "배우가 엷은 화장을 했다."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 2,
+                "text": "아이가 엷은 잠에 들었다."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 4,
+                "text": "⑤"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 4,
+                "text": "㉤"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 2,
+                "text": "이곳은 벌써 따뜻한 봄이 왔다."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 2,
+                "text": "그의 성공은 부단한 노력에서 왔다."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 25,
+            "mergeCount": 20,
+            "paragraph": 24,
+            "rows": 20,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<학습 활동>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 36,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "조음 위치\n조음 방법"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "양순음"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "치조음"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "경구개음"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "연구개음"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "후음"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "파열음"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "ㅂㅃㅍ"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "ㄷㄸㅌ"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "ㄱㄲㅋ"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "파찰음"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "ㅈㅉㅊ"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "마찰음"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "ㅅㅆ"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "ㅎ"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "비음"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "ㅁ"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "ㄴ"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "ㅇ"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "유음"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "ㄹ"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 6,
+                    "containerPath": [
+                      {
+                        "cell": 5,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 0
+                      }
+                    ],
+                    "control": 1,
+                    "index": 0,
+                    "paragraph": 26,
+                    "rows": 6,
+                    "section": 2
+                  }
+                ],
+                "row": 2,
+                "rowSpan": 1,
+                "text": "국어 자음은 조음 위치와 조음 방법에 따라 분류할 수 있다. 이를 정리한 위 표를 바탕으로 [자료]의 자음 교체 양상을 알아보자.\n[자료]\nⓐ 덧쌓는[덛싼는]\tⓑ 속력도[송녁또]\tⓒ 읽었고[일걷꼬]\nⓓ 겉옷만[거돈만]\tⓔ 맞붙임[맏뿌침]"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 26,
+            "mergeCount": 2,
+            "paragraph": 26,
+            "rows": 3,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<보 기>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "간접 인용될 때 원 발화의 인칭․지시․시간 표현 등은 맥락에 따라 조정되며, 상대 높임 종결 어미는 격식체든 비격식체든, 높임이든 낮춤이든, 문장의 종류별로 한 가지로 한정된다. ‘보다’를 예로 들면 ‘본다고’(평서), ‘보냐고’(의문), ‘보라고’(명령), ‘보자고’(청유)처럼 나타난다. 감탄형 어미는 평서형으로 실현된다(󰃚 보는구나 → 본다고). 이런 이유로 서로 다른 발화라도 간접 인용될 때 같은 형식을 가질 수 있다."
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 27,
+            "mergeCount": 2,
+            "paragraph": 34,
+            "rows": 3,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "<자 료>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "◦ 그는 그제 우리에게 ㉠ 오늘은 청소를 같이 하자고 말했다.\n◦ 김 선생은 ㉡ 자기도 시를 좋아한다고 학생들에게 말했다.\n◦ 어제 나한테 ㉢ 네가 내일 퇴원을 할 수 있겠냐고 물었지?"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 28,
+            "mergeCount": 2,
+            "paragraph": 35,
+            "rows": 3,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "[A]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": false,
+            "index": 29,
+            "mergeCount": 1,
+            "paragraph": 50,
+            "rows": 3,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "[B]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": false,
+            "index": 30,
+            "mergeCount": 1,
+            "paragraph": 56,
+            "rows": 3,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "[C]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": false,
+            "index": 31,
+            "mergeCount": 1,
+            "paragraph": 60,
+            "rows": 3,
+            "section": 2
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 26,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\exam_kor.hwp",
+        "tableCount": 32,
+        "tables": [
+          {
+            "cols": 3,
+            "index": 2,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 3,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 4,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 5,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 7,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 8,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 9,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 10,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 11,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 13,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 14,
+            "mergeCount": 1,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 15,
+            "mergeCount": 1,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 16,
+            "mergeCount": 1,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 17,
+            "mergeCount": 1,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 18,
+            "mergeCount": 1,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 20,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 22,
+            "mergeCount": 1,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 23,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 24,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 4,
+            "index": 25,
+            "mergeCount": 20,
+            "rows": 20
+          },
+          {
+            "cols": 3,
+            "index": 26,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 27,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 28,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 29,
+            "mergeCount": 1,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 30,
+            "mergeCount": 1,
+            "rows": 3
+          },
+          {
+            "cols": 2,
+            "index": 31,
+            "mergeCount": 1,
+            "rows": 3
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

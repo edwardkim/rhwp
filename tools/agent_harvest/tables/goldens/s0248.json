@@ -1,0 +1,784 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\field-multipara-clickhere.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\field-multipara-clickhere.hwpx",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 3,
+            "index": 0,
+            "rows": 6
+          },
+          {
+            "cols": 1,
+            "index": 1,
+            "rows": 1
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\field-multipara-clickhere.hwpx",
+        "tableCount": 2,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\field-multipara-clickhere.hwpx",
+        "tableCount": 2,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 11,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "아이 키우기 좋은 도시 서울, \"엄마아빠 행복 프로젝트\""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "노  원  소  방  서"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "수신"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "노원구청장 (건축과장)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "(경유)"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "제목"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "고시원 안전시설 등 설치신고서 접수에 따른 건축법령 확인요청"
+              }
+            ],
+            "cols": 3,
+            "control": 2,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 5,
+            "paragraph": 0,
+            "rows": 6,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 63,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 8,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 8,
+                        "colSpan": 25,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "노 원 소 방 서 장"
+                      },
+                      {
+                        "col": 33,
+                        "colSpan": 8,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 5,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 36,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 41,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 7,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": "조사관"
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": "정연도"
+                      },
+                      {
+                        "col": 10,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": ""
+                      },
+                      {
+                        "col": 11,
+                        "colSpan": 5,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": "검사지도팀장"
+                      },
+                      {
+                        "col": 16,
+                        "colSpan": 4,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": "류연하"
+                      },
+                      {
+                        "col": 20,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": ""
+                      },
+                      {
+                        "col": 21,
+                        "colSpan": 5,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": "예방과장"
+                      },
+                      {
+                        "col": 26,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "전결 01/05"
+                      },
+                      {
+                        "col": 29,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": ""
+                      },
+                      {
+                        "col": 31,
+                        "colSpan": 6,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": ""
+                      },
+                      {
+                        "col": 37,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": ""
+                      },
+                      {
+                        "col": 40,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": ""
+                      },
+                      {
+                        "col": 26,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "박구순"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 4,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "협조자"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 7,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "조사관"
+                      },
+                      {
+                        "col": 11,
+                        "colSpan": 4,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "이종우"
+                      },
+                      {
+                        "col": 15,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 16,
+                        "colSpan": 7,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 23,
+                        "colSpan": 4,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 27,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 28,
+                        "colSpan": 8,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 36,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 38,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 7,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 10,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 11,
+                        "colSpan": 5,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 16,
+                        "colSpan": 4,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 20,
+                        "colSpan": 21,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 11,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 11,
+                        "colSpan": 10,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 21,
+                        "colSpan": 9,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 30,
+                        "colSpan": 11,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "시행"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 10,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "예방과-299"
+                      },
+                      {
+                        "col": 13,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "("
+                      },
+                      {
+                        "col": 14,
+                        "colSpan": 5,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "2023. 1. 5."
+                      },
+                      {
+                        "col": 19,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": ")"
+                      },
+                      {
+                        "col": 21,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "접수"
+                      },
+                      {
+                        "col": 24,
+                        "colSpan": 10,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 34,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "("
+                      },
+                      {
+                        "col": 35,
+                        "colSpan": 4,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 39,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": ")"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "우"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 5,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "01791"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 16,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "서울특별시 노원구 한글비석로1길 8, 노원소방서 (하계동)"
+                      },
+                      {
+                        "col": 22,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "/"
+                      },
+                      {
+                        "col": 25,
+                        "colSpan": 16,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "http://fire.seoul.go.kr/nowon/"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "전화"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 7,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "02-6981-6895"
+                      },
+                      {
+                        "col": 9,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "/전송"
+                      },
+                      {
+                        "col": 12,
+                        "colSpan": 5,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "02-2187-8292"
+                      },
+                      {
+                        "col": 17,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "/"
+                      },
+                      {
+                        "col": 18,
+                        "colSpan": 13,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "2015071417@seoul.go.kr"
+                      },
+                      {
+                        "col": 31,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "/"
+                      },
+                      {
+                        "col": 32,
+                        "colSpan": 9,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "부분공개(5,6)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 41,
+                        "isHeader": false,
+                        "row": 11,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 41,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 0
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 17,
+                    "rows": 12,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 0
+                      }
+                    ],
+                    "control": 1,
+                    "index": 1,
+                    "paragraph": 17,
+                    "rows": 1,
+                    "section": 0
+                  }
+                ],
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 17,
+            "rows": 1,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\field-multipara-clickhere.hwpx",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 3,
+            "index": 0,
+            "mergeCount": 5,
+            "rows": 6
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

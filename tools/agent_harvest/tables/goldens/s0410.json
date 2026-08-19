@@ -1,0 +1,1545 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4889\\18098267_nested_fragment_origin.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4889\\18098267_nested_fragment_origin.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 1
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4889\\18098267_nested_fragment_origin.hwp",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4889\\18098267_nested_fragment_origin.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 165,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "WTO서비스분류\n(GNS/W/120)"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "UN표준산품분류\n(CPC)"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "대상 용역"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "1.A.b."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "862"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "회계, 감사 및 부기 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "1.A.c."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "863"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "세무 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "1.A.d."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "8671"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "건축 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "1.A.e."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "8672"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "엔지니어링 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "1.A.f."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "8673"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "종합 엔지니어링 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "1.A.g."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "8674"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "도시계획 및 조경 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "1.B."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "84"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "컴퓨터 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 8,
+                                "rowSpan": 1,
+                                "text": "1.B.a."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 8,
+                                "rowSpan": 1,
+                                "text": "841"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 8,
+                                "rowSpan": 1,
+                                "text": "컴퓨터 하드웨어 설치 관련 자문 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 9,
+                                "rowSpan": 1,
+                                "text": "1.B.b."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 9,
+                                "rowSpan": 1,
+                                "text": "842"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 9,
+                                "rowSpan": 1,
+                                "text": "소프트웨어 실행 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 10,
+                                "rowSpan": 1,
+                                "text": "1.B.c."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 10,
+                                "rowSpan": 1,
+                                "text": "843"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 10,
+                                "rowSpan": 1,
+                                "text": "데이터 처리 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 11,
+                                "rowSpan": 1,
+                                "text": "1.B.d."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 11,
+                                "rowSpan": 1,
+                                "text": "844"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 11,
+                                "rowSpan": 1,
+                                "text": "데이터베이스 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 12,
+                                "rowSpan": 1,
+                                "text": "1.B.e."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 12,
+                                "rowSpan": 1,
+                                "text": "845"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 12,
+                                "rowSpan": 1,
+                                "text": "사무 기계 및 장비(컴퓨터 포함)의 정비 및 수리서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 13,
+                                "rowSpan": 1,
+                                "text": "1.E.a."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 13,
+                                "rowSpan": 1,
+                                "text": "83103"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 13,
+                                "rowSpan": 1,
+                                "text": "운전자 없는 선박 관련 임대/리스 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 14,
+                                "rowSpan": 1,
+                                "text": "1.E.b."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 14,
+                                "rowSpan": 1,
+                                "text": "83104"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 14,
+                                "rowSpan": 1,
+                                "text": "운전자 없는 항공기 관련 임대/리스 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 15,
+                                "rowSpan": 1,
+                                "text": "1.E.c."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 15,
+                                "rowSpan": 1,
+                                "text": "83101, 83105*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 15,
+                                "rowSpan": 1,
+                                "text": "운전자 없는 기타 운송장비 관련 임대/리스 서비스(승객 15인 미만 승용차에 한한다)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 16,
+                                "rowSpan": 1,
+                                "text": "1.E.d."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 16,
+                                "rowSpan": 1,
+                                "text": "83106, 83108,\n83109"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 16,
+                                "rowSpan": 1,
+                                "text": "운전자 없는 기타 기계 및 장비 관련 임대/리스 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 17,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 17,
+                                "rowSpan": 1,
+                                "text": "83107"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 17,
+                                "rowSpan": 1,
+                                "text": "운전자 없는 건설 기계 및 장비 관련 임대/리스 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 18,
+                                "rowSpan": 1,
+                                "text": "1.F.a."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 18,
+                                "rowSpan": 1,
+                                "text": "8711, 8719"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 18,
+                                "rowSpan": 1,
+                                "text": "광고대행 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 19,
+                                "rowSpan": 1,
+                                "text": "1.F.b."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 19,
+                                "rowSpan": 1,
+                                "text": "864"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 19,
+                                "rowSpan": 1,
+                                "text": "시장조사 및 여론조사 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 20,
+                                "rowSpan": 1,
+                                "text": "1.F.c."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 20,
+                                "rowSpan": 1,
+                                "text": "865"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 20,
+                                "rowSpan": 1,
+                                "text": "경영 자문 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 21,
+                                "rowSpan": 1,
+                                "text": "1.F.d."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 21,
+                                "rowSpan": 1,
+                                "text": "86601"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 21,
+                                "rowSpan": 1,
+                                "text": "프로젝트 관리 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 22,
+                                "rowSpan": 1,
+                                "text": "1.F.e."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 22,
+                                "rowSpan": 1,
+                                "text": "86761*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 22,
+                                "rowSpan": 1,
+                                "text": "성분·순도 검사 및 분석 서비스(대기, 물, 소음 수준 및 진동 수준에 대한 진단, 검사 및 분석 서비스로 한정한다)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 23,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 23,
+                                "rowSpan": 1,
+                                "text": "86764"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 23,
+                                "rowSpan": 1,
+                                "text": "기술 점검 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 24,
+                                "rowSpan": 1,
+                                "text": "1.F.f."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 24,
+                                "rowSpan": 1,
+                                "text": "8811*, 8812*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 24,
+                                "rowSpan": 1,
+                                "text": "농업 및 축산업 관련 자문 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 25,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 25,
+                                "rowSpan": 1,
+                                "text": "8814*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 25,
+                                "rowSpan": 1,
+                                "text": "임업에 부수하는 서비스(항공 진화 및 소독은 제외한다)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 26,
+                                "rowSpan": 1,
+                                "text": "1.F.g."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 26,
+                                "rowSpan": 1,
+                                "text": "882*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 26,
+                                "rowSpan": 1,
+                                "text": "어업 관련 자문 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 27,
+                                "rowSpan": 1,
+                                "text": "1.F.h."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 27,
+                                "rowSpan": 1,
+                                "text": "883*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 27,
+                                "rowSpan": 1,
+                                "text": "광업 관련 자문 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 28,
+                                "rowSpan": 1,
+                                "text": "1.F.m."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 28,
+                                "rowSpan": 1,
+                                "text": "86751, 86752"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 28,
+                                "rowSpan": 1,
+                                "text": "관련 과학 및 기술 자문 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 29,
+                                "rowSpan": 1,
+                                "text": "1.F.n."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 29,
+                                "rowSpan": 1,
+                                "text": "633, 8861,\n8862, 8863,\n8864, 8865,\n8866"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 29,
+                                "rowSpan": 1,
+                                "text": "장비의 정비 및 수리"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 30,
+                                "rowSpan": 1,
+                                "text": "1.F.p."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 30,
+                                "rowSpan": 1,
+                                "text": "875"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 30,
+                                "rowSpan": 1,
+                                "text": "사진 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 31,
+                                "rowSpan": 1,
+                                "text": "1.F.q."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 31,
+                                "rowSpan": 1,
+                                "text": "876"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 31,
+                                "rowSpan": 1,
+                                "text": "포장 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 32,
+                                "rowSpan": 1,
+                                "text": "1.F.r."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 32,
+                                "rowSpan": 1,
+                                "text": "88442*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 32,
+                                "rowSpan": 1,
+                                "text": "인쇄(스크린 인쇄, 그라비어 인쇄 및 인쇄 관련 서비스)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 33,
+                                "rowSpan": 1,
+                                "text": "1.F.s."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 33,
+                                "rowSpan": 1,
+                                "text": "87909*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 33,
+                                "rowSpan": 1,
+                                "text": "속기 서비스, 행사 대행 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 34,
+                                "rowSpan": 1,
+                                "text": "1.F.t."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 34,
+                                "rowSpan": 1,
+                                "text": "87905"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 34,
+                                "rowSpan": 1,
+                                "text": "번역 및 통역 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 35,
+                                "rowSpan": 1,
+                                "text": "2.C.j."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 35,
+                                "rowSpan": 1,
+                                "text": "7523*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 35,
+                                "rowSpan": 1,
+                                "text": "온라인 정보 및 데이터베이스 검색"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 36,
+                                "rowSpan": 1,
+                                "text": "2.C.k."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 36,
+                                "rowSpan": 1,
+                                "text": "7523*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 36,
+                                "rowSpan": 1,
+                                "text": "전자적 데이터 교환"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 37,
+                                "rowSpan": 1,
+                                "text": "2.C.l."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 37,
+                                "rowSpan": 1,
+                                "text": "7523*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 37,
+                                "rowSpan": 1,
+                                "text": "저장·전송, 저장·검색을 포함하는 고도/부가가치 팩스 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 38,
+                                "rowSpan": 1,
+                                "text": "2.C.m."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 38,
+                                "rowSpan": 1,
+                                "text": "-"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 38,
+                                "rowSpan": 1,
+                                "text": "코드 및 프로토콜 변환"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 39,
+                                "rowSpan": 1,
+                                "text": "2.C.n."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 39,
+                                "rowSpan": 1,
+                                "text": "843*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 39,
+                                "rowSpan": 1,
+                                "text": "온라인 정보 및/또는 데이터 처리(거래처리를 포함한다)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 40,
+                                "rowSpan": 1,
+                                "text": "2.D.a."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 40,
+                                "rowSpan": 1,
+                                "text": "96112*, 96113*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 40,
+                                "rowSpan": 1,
+                                "text": "영화 및 비디오 테이프 생산 및 배급 서비스(유선 TV 방송을 위한 서비스는 제외한다)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 41,
+                                "rowSpan": 1,
+                                "text": "2.D.e."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 41,
+                                "rowSpan": 1,
+                                "text": "-"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 41,
+                                "rowSpan": 1,
+                                "text": "음반 생산 및 배급 서비스(음향 녹음)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 42,
+                                "rowSpan": 1,
+                                "text": "6.A."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 42,
+                                "rowSpan": 1,
+                                "text": "9401*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 42,
+                                "rowSpan": 1,
+                                "text": "폐수 처리 서비스(산업 폐수의 수집 및 처리 서비스로 한정한다)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 43,
+                                "rowSpan": 1,
+                                "text": "6.B."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 43,
+                                "rowSpan": 1,
+                                "text": "9402*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 43,
+                                "rowSpan": 1,
+                                "text": "산업 폐기물 처리 서비스(산업 폐기물의 수집, 운반 및 처분 서비스로 한정한다)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 44,
+                                "rowSpan": 1,
+                                "text": "6.D."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 44,
+                                "rowSpan": 1,
+                                "text": "9404*, 9405*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 44,
+                                "rowSpan": 1,
+                                "text": "배기가스 정화 서비스 및 소음저감 서비스(건설시공 서비스는 제외한다)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 45,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 45,
+                                "rowSpan": 1,
+                                "text": "9406*, 9409*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 45,
+                                "rowSpan": 1,
+                                "text": "환경 검사 및 평가 서비스(환경영향평가 서비스로 한정한다)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 46,
+                                "rowSpan": 1,
+                                "text": "9.A."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 46,
+                                "rowSpan": 1,
+                                "text": "641"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 46,
+                                "rowSpan": 1,
+                                "text": "호텔 및 기타 숙박 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 47,
+                                "rowSpan": 1,
+                                "text": "9.A."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 47,
+                                "rowSpan": 1,
+                                "text": "642"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 47,
+                                "rowSpan": 1,
+                                "text": "음식 수발 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 48,
+                                "rowSpan": 1,
+                                "text": "9.A."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 48,
+                                "rowSpan": 1,
+                                "text": "6431"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 48,
+                                "rowSpan": 1,
+                                "text": "오락이 없는 음료 수발 서비스(CPC 6431의 철도 및 항공 운송 관련 시설은 제외한다)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 49,
+                                "rowSpan": 1,
+                                "text": "9.B."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 49,
+                                "rowSpan": 1,
+                                "text": "7471"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 49,
+                                "rowSpan": 1,
+                                "text": "여행 대리점 및 패키지 관광 전문 서비스(정부수송요청은 제외한다)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 50,
+                                "rowSpan": 1,
+                                "text": "11.A.b."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 50,
+                                "rowSpan": 1,
+                                "text": "7212*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 50,
+                                "rowSpan": 1,
+                                "text": "국내 운송을 제외한 국제 운송"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 51,
+                                "rowSpan": 1,
+                                "text": "11.A.d."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 51,
+                                "rowSpan": 1,
+                                "text": "8868*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 51,
+                                "rowSpan": 1,
+                                "text": "선박의 정비 및 수리"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 52,
+                                "rowSpan": 1,
+                                "text": "11.F.b."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 52,
+                                "rowSpan": 1,
+                                "text": "71233*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 52,
+                                "rowSpan": 1,
+                                "text": "국내 운송을 제외한 컨테이너 화물의 운송"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 53,
+                                "rowSpan": 1,
+                                "text": "11.H.c."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 53,
+                                "rowSpan": 1,
+                                "text": "748*"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 53,
+                                "rowSpan": 1,
+                                "text": "화물 운송 대행 서비스\n   - 해운 대행 서비스\n   - 해운 화물 주선 서비스 \n   - 해송 중개 서비스\n   - 항공 화물 운송 대행 서비스\n   - 통관 서비스"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 54,
+                                "rowSpan": 1,
+                                "text": "11.I."
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 54,
+                                "rowSpan": 1,
+                                "text": "-"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 54,
+                                "rowSpan": 1,
+                                "text": "철도 운송을 위한 화물 주선"
+                              }
+                            ],
+                            "cols": 3,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 7
+                              },
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              }
+                            ],
+                            "control": 0,
+                            "index": 0,
+                            "paragraph": 0,
+                            "rows": 55,
+                            "section": 0
+                          }
+                        ],
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "[주 1] UN표준산품분류란 중 별표(*)는 서비스 무역에 대한 최초의 양허에 관한 대한민국의 수정 조건부 양허안에 기술된 바에 따라 용역의 \"일부\"를 뜻한다.\n    [주 2] 국제입찰 대상 용역은 특정 국가에 대하여 그 국가가 동일한 용역을 우리나라에 개방한 경우에만 적용한다."
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 7
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 0,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 4,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "UN표준산품분류(CPC)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "대상 공사"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "51"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "건설 공사"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 10
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 0,
+                    "rows": 2,
+                    "section": 0
+                  }
+                ],
+                "row": 0,
+                "rowSpan": 1,
+                "text": "국제입찰의 방법으로 조달계약을 해야 하는 물품·용역 및 공사(제4조제1항관련)\n\n1. 국제입찰 대상 물품\n  별도로 정한 경우를 제외하고 모든 물품을 적용 대상으로 한다.\n\n2. 국제입찰 대상 용역\n\n\n3. 국제입찰 대상 공사"
+              }
+            ],
+            "cols": 1,
+            "control": 2,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 1,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 0,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4889\\18098267_nested_fragment_origin.hwp",
+        "tableCount": 1,
+        "tables": [],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

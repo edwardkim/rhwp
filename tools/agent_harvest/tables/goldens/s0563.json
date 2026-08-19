@@ -1,0 +1,569 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1706\\empty_para_between_tac_tables.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1706\\empty_para_between_tac_tables.hwp",
+        "tableCount": 3,
+        "tables": [
+          {
+            "cols": 10,
+            "index": 0,
+            "rows": 13
+          },
+          {
+            "cols": 6,
+            "index": 1,
+            "rows": 6
+          },
+          {
+            "cols": 1,
+            "index": 2,
+            "rows": 1
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1706\\empty_para_between_tac_tables.hwp",
+        "tableCount": 3,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 3,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1706\\empty_para_between_tac_tables.hwp",
+        "tableCount": 3,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 34,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "합자조합 주된 영업소이전(관할외)등기신청"
+              },
+              {
+                "col": 8,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 2,
+                "text": "접        수"
+              },
+              {
+                "col": 1,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "년       월      일"
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 2,
+                "text": "처 리 인"
+              },
+              {
+                "col": 7,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "등기관 확인"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "각종 통지"
+              },
+              {
+                "col": 1,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "제                     호"
+              },
+              {
+                "col": 7,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "명        칭"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "등기번호"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "주된   영업소"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "등 기 의 목 적"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "주된 영업소 이전등기"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "등 기 의 사 유"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "등      기      할      사      항"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "새 주된 영업소"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "주된 영업소를 이전한 뜻과 그 연월일"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "지배인을 둔 장소를 이전한 뜻과 그 연월일 (주된 영업소에 지배인을 두고 있는 경우)"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "기        타"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 10,
+            "control": 0,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 21,
+            "paragraph": 2,
+            "rows": 13,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 16,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "등록면허세"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "금         원"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "지방교육세"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "금          원"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "농어촌특별세"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "금          원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "세 액 합 계"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "금                        원"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "등기신청수수료"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "금                        원"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "등기신청수수료 납부번호"
+              },
+              {
+                "col": 3,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "첨      부      서      면"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "1. 조합계약서                            통\n1. 총조합원동의서                        통\n1. 업무집행권이 있는 조합원의 과반수 \n   동의서\n   (주된 영업소의 구체적 장소 결정)      통\n1. 등록면허세영수필확인서                통\n1. 등기신청수수료영수필확인서            통"
+              },
+              {
+                "col": 3,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "1. 위임장(대리인이 신청할 경우)          통\n<기 타>"
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "년    월    일\n신청인         명  칭\n               주된 영업소\n\n업무집행조합원 성명 또는 상호                  (인)     (전화 :             )\n               주  소\n\n대리인         성  명                          (인)     (전화 :             )\n               주  소\n지방법원      등기소  귀중"
+              }
+            ],
+            "cols": 6,
+            "control": 0,
+            "csvReady": false,
+            "index": 1,
+            "mergeCount": 8,
+            "paragraph": 4,
+            "rows": 6,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "- 신청서 작성요령 -\n 1. 해당란이 부족할 때에는 별지를 이용합니다.\n 1. 해당 등기신청과 관계없는 사항에 대하여는 “해당없음”으로 기재하거나 삭제하고, 필요한 사항은 추가 기재합니다."
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 2,
+            "mergeCount": 0,
+            "paragraph": 5,
+            "rows": 1,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1706\\empty_para_between_tac_tables.hwp",
+        "tableCount": 3,
+        "tables": [
+          {
+            "cols": 10,
+            "index": 0,
+            "mergeCount": 21,
+            "rows": 13
+          },
+          {
+            "cols": 6,
+            "index": 1,
+            "mergeCount": 8,
+            "rows": 6
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

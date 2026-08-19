@@ -1,0 +1,1567 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1842_cell_tac_group_lineheight.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1842_cell_tac_group_lineheight.hwp",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 1,
+            "rows": 1
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1842_cell_tac_group_lineheight.hwp",
+        "tableCount": 2,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1842_cell_tac_group_lineheight.hwp",
+        "tableCount": 2,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 6,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "①상  호"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "②성  명"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "③생년월일"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 6,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 1,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 36,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "종  류"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "⑤대 수"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "⑥취득일"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "⑦취득가액"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "⑧리스일"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "⑨리스가액"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "코드"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "④명 칭"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 7,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 5
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 1,
+                    "rows": 6,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 52,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "구  분"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "당해 과세기간"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "구  분"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "당해 과세기간"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "코드"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "⑩유  형"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "⑪인원"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "⑫수입금액"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "코드"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "⑩유  형"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "⑪인원"
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "⑫수입금액"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 8,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 8
+                      }
+                    ],
+                    "control": 0,
+                    "index": 2,
+                    "paragraph": 1,
+                    "rows": 7,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 25,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "약   재   명"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "⑬전기이월금액"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "⑭당해과세기간\n  매 입 금 액"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "⑮당해과세기간\n  사 용 금 액"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "차기이월금액"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "감       초"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "녹       용"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "당       귀"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "기       타"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 5,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 11
+                      }
+                    ],
+                    "control": 0,
+                    "index": 3,
+                    "paragraph": 1,
+                    "rows": 5,
+                    "section": 0
+                  }
+                ],
+                "row": 0,
+                "rowSpan": 1,
+                "text": "한방 병ㆍ의원 수입금액 검토부표\n(1)  인적사항\n\n \n(2) 주요 의료기기 현황(고가순으로)                             (단위 : 대, 원)\n\n\n(3) 진료유형별 비보험 수입금액                                 (단위 : 명, 원)\n\n\n(4)  주요한약재 사용현황                                            (단위 : 원)\n\n한의원에 대한 수입금액 및 의료기기 현황 등을 신고합니다.\n     년        월        일\n사  업  자 :                          󰄫\n세무대리인 :                          󰄫\n(관리번호                             )\n         세무서장 귀하"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 1,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 24,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "코드"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "의료기기 명칭"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "코드"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "의료기기 명칭"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "01"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "초음파치료기"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "06"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "전기자극 치료기"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "02"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "물리치료기"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "07"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "고밀도 측정기"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "03"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "전침․무통 전자침"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "08"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "목․허리 견인치료기"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "04"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "혈관 레이저침"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "09"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "추나치료기"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "05"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "간섭파 치료기"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "91～93"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "기타"
+                      }
+                    ],
+                    "cols": 4,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 6
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 6,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 20,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "코드"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "진료유형별 비보험수입금액"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "코드"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "진료유형별 비보험수입금액"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "01"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "보약"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "05"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "혈관레이저요법"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "02"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "추나요법(추나치료)"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "06"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "물리치료"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "03"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "통증치료"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "04"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "불임치료"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "91～93"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "기타"
+                      }
+                    ],
+                    "cols": 4,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 9
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 3,
+                    "rows": 5,
+                    "section": 0
+                  }
+                ],
+                "row": 0,
+                "rowSpan": 1,
+                "text": "※  한방 병․의원 수입금액 검토부표를 불성실하게 작성하시거나 제출하지 않는 경우, 현장확인 또는 조사대상자로 선정되는 등 불이익을 받을 수 있으므로 성실하게 작성하여 주시기 바랍니다. \n1.  작성대상\n  한방병원 또는 한의원이 작성합니다. \n2.  주요 의료기기 현황\n  사용하고 있는 주요 의료기기를 종류별로 구분하여 고가순으로 작성합니다.\n\n3.  진료유형별 비보험 수입금액\n  보험이 적용되지 않는 진료유형별 수입금액을 합계하여 고액순으로 기재하고, 인원란은 진료차트의 비보험 진료건수를 기재합니다.\n\n4. 주요 한약재 사용현황\n가. 당해 과세기간의 주요 한약재 사용현황을 감초, 녹용, 당귀, 기타로 나누어 기재합니다."
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 3,
+            "rows": 1,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 0,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1842_cell_tac_group_lineheight.hwp",
+        "tableCount": 2,
+        "tables": [],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

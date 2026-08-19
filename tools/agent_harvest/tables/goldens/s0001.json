@@ -1,0 +1,681 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp",
+        "tableCount": 11,
+        "tables": [
+          {
+            "cols": 6,
+            "index": 0,
+            "rows": 4
+          },
+          {
+            "cols": 1,
+            "index": 1,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 2,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 3,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 4,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 5,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 6,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 7,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 8,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 9,
+            "rows": 1
+          },
+          {
+            "cols": 4,
+            "index": 10,
+            "rows": 6
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp",
+        "tableCount": 11,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 11,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp",
+        "tableCount": 11,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 14,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "보도일시"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "배포 즉시 보도해 주시기 바랍니다."
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "배포일시"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "2021. 6. 22.(화)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "담당부서"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "통관국 전자상거래통관과"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "담당과장"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "김기동"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "042-481-7830"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "담 당 자"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "윤남희 사무관"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "042-481-7835"
+              }
+            ],
+            "cols": 6,
+            "control": 3,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 5,
+            "paragraph": 0,
+            "rows": 4,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "7월부터 해외직구 구매대행업체 등록제 시행"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 1,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "□ 관세청(청장 임재현)은 7월 1일부터, 해외직구 구매대행에 대한 체계적인 관리와 국내 소비자 보호를 위해 구매대행업체 등록제를 시행한다.\n\n ㅇ 최근 전자상거래 발달 및 온라인 비대면 소비 활성화에 따라 해외직구 물량이 크게 증가*했고, 해외직구 소비자가 간편하게 이용할 수 있는 구매대행이 활성화됐으나, \n\n   * 전자상거래(천건) : (’17) 23,592 → (’18) 32,266 → (’19) 42,994 → (’20) 63,578 → (’21.4) 26,715\n\n ㅇ 그동안 구매대행업체에 대한 관리 기준이 없어 정확한 규모를 파악하기 어렵고, 구매대행업체가 통관단계에서 저가 신고*를 하거나 불법 통관하는 사례**가 지속적으로 발생하는 등 국내 소비자 보호의 사각지대가 존재했다.\n\n   * 구매대행업체가 구매자에게 관·부가세의 비용을 포함하여 금액을 받았을 경우 저가신고를 통해 탈세한 관·부가세만큼 구매대행업체에 이득\n\n   * (사례) 반드시 요건확인이 필요한 수입신고대상 물품임에도 사전에 국내소비자에게 별도의 안내 없이 간이한 절차(목록통관)를 이용하려다 적발\n\n ㅇ 이를 해소하기 위해 일정 규모 이상의 구매대행업체에 대해 등록을 의무화하는 관세법령이 신설*됐으며, 세부 절차 등을 마련하여 7월부터 시행된다.\n\n  * 관세법 제222조 제1항 제7호(’19.12.31), 관세법 시행령 제231조 제1항( ’21.2.17) \n\n□ ➊ ‘전자상거래법*’에 따라 신고한 통신판매업자*로서 ➋직전 연도에 구매대행 한 수입물품의 총 물품가격이 10억 원 이상인 구매대행업체는 등록을 해야 하며,\n\n   *「전자상거래 등에서의 소비자보호에 관한 법률」제12조 제1항\n\n ㅇ 등록 시점을 기준으로 직전 1년간 구매대행 물품의 수입 통관을 주로 처리한 통관지 세관에 등록 신청서와 첨부 서류를 제출*함으로써 등록 신청이 가능하다.\n\n   *「구매대행업자 등록 및 관리에 관한 고시」 별지 서식 참고\n     우편, 전자메일, 팩스로 제출 가능\n\n ㅇ 등록 시 세관에서 ‘구매대행업자 등록부호’를 발급해주며, 이후 구매대행업체로부터 구입하여 통관하는 물품은 수입신고 및 통관목록 작성 시 구매대행업자 등록부호를 기재해야 한다.\n\n ㅇ 다만, 7월 1일 기준으로 등록 대상에 해당되더라도 2022년 6월 30일까지 1년간은 등록 유예가 허용된다.\n\n   * 관세법 부칙(’19.12.31) 제10조(구매대행업자 등록에 관한 경과조치) \n\n□  관세청은 구매대행업체 등록 현황을 지속적으로 모니터링 해 관리체계를 강화해 나가겠다고 밝혔다."
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 2,
+            "mergeCount": 0,
+            "paragraph": 2,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "붙임"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "예상 질의 및 답변"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 3,
+            "mergeCount": 0,
+            "paragraph": 3,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Q1. 관세법상 “구매대행업자”란?"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 4,
+            "mergeCount": 0,
+            "paragraph": 5,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Q2. 등록 대상이 아닌 경우에도 등록이 가능한지?"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 5,
+            "mergeCount": 0,
+            "paragraph": 11,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Q3. 등록 대상임에도 등록을 하지 않은 경우 불이익이 있나요?"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 6,
+            "mergeCount": 0,
+            "paragraph": 20,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Q4. 등록 대상 기준에서 수입물품의 총 ‘물품가격’이란?"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 7,
+            "mergeCount": 0,
+            "paragraph": 24,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Q5. 등록 대상인 경우 올해 등록을 반드시 해야 하나요?"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 8,
+            "mergeCount": 0,
+            "paragraph": 28,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Q6. 등록 신청은 어디에 해야 하나요?"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 9,
+            "mergeCount": 0,
+            "paragraph": 34,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 21,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "구분"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "세관명"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "부서명"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "연락처"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 4,
+                "text": "특송물품 \n통관"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "인천세관(항공)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "특송통관1과"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "032-722-4315"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "인천세관(해상)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "항만통관검사5과"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "032-452-3273"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "평택세관"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "통관검사과"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "031-8054-7110"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "용당세관"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "통관지원과"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "051-793-7153"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "우편물품\n통관"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "인천공항국제우편세관"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "우편통관과"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "032-720-7428"
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 10,
+            "mergeCount": 1,
+            "paragraph": 41,
+            "rows": 6,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp",
+        "tableCount": 11,
+        "tables": [
+          {
+            "cols": 6,
+            "index": 0,
+            "mergeCount": 5,
+            "rows": 4
+          },
+          {
+            "cols": 4,
+            "index": 10,
+            "mergeCount": 1,
+            "rows": 6
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

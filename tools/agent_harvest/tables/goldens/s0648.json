@@ -1,0 +1,1301 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task3307\\issue3307_outline_number.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task3307\\issue3307_outline_number.hwpx",
+        "tableCount": 6,
+        "tables": [
+          {
+            "cols": 5,
+            "index": 0,
+            "rows": 1
+          },
+          {
+            "cols": 5,
+            "index": 1,
+            "rows": 1
+          },
+          {
+            "cols": 4,
+            "index": 2,
+            "rows": 2
+          },
+          {
+            "cols": 4,
+            "index": 3,
+            "rows": 2
+          },
+          {
+            "cols": 11,
+            "index": 4,
+            "rows": 42
+          },
+          {
+            "cols": 2,
+            "index": 5,
+            "rows": 13
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task3307\\issue3307_outline_number.hwpx",
+        "tableCount": 6,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 6,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task3307\\issue3307_outline_number.hwpx",
+        "tableCount": 6,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "다. 회계질서 문란"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "파면"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "해임"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "강등-정직"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "감봉-견책"
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 11,
+            "rows": 1,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "바. 혐오 포현"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "파면-해임"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "강등-정직"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "정직-감봉"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "감봉"
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 15,
+            "rows": 1,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "비위의 유형"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "부정수령 금액"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "비위의 정도 및 과실 여부"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "비위의 정도가 약하고 과실인 경우"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "비위의 정도가 심하거나, 고의가 있는 경우"
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 2,
+            "mergeCount": 3,
+            "paragraph": 22,
+            "rows": 2,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 7,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "1. 「공무원수당 등에 관한 규정」 제15조부터 제17조까지의 규정에 따른 수당을 거짓이나 부정한 방법으로 지급받은 경우"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "50만원 미만"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "정직-견책"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "파면-정직"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "50만원 이상"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "강등-감봉"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "파면-강등"
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 3,
+            "mergeCount": 1,
+            "paragraph": 24,
+            "rows": 2,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 82,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "■ 공무원 징계령 시행규칙 [별지 제1호서식] <개정 2024. 12. 11.>"
+              },
+              {
+                "col": 0,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "확인서"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 2,
+                "text": "인적사항"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "소속"
+              },
+              {
+                "col": 4,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "직위(직급)"
+              },
+              {
+                "col": 8,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "성명"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "(현재)\n(혐의 당시)"
+              },
+              {
+                "col": 4,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "(현재)\n(혐의 당시)"
+              },
+              {
+                "col": 8,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 18,
+                "text": "비위 유형"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "「국가공무원법」 제78조의2제1항제1호에 해당하는 비위"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "「국가공무원법」 제78조의2제1항제2호에 해당하는 비위"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "「국가공무원법」 제78조의2제1항 각 호의 어느 하나에 해당하는 비위를 신고하지 않거나 고발하지 않은 행위"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "성폭력 범죄"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "성매매"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "성희롱"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "음주운전(음주측정 불응 포함)"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "재산등록 및 주식의 매각ㆍ신탁과 관련한 의무 위반"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "부작위 또는 직무태만(소극행정 제외)"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "소극행정"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "「공무원 행동강령」 제13조의3에 따른 부당한 행위"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "성 관련 비위 또는 「공무원 행동강령」 제13조의3에 따른 부당한 행위를 은폐하거나 필요한 조치를 하지 않은 경우"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "공무원 채용과 관련한 청탁이나 강요 등 부당한 행위나 채용 업무와 관련한 비위행위"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "부정청탁"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "부정청탁에 따른 직무수행"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "직무상 비밀이나 미공개정보를 이용한 부당행위"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "우월적 지위 등을 이용하여 다른 공무원 등에게 신체적ㆍ정신적 고통을 주는 등의 부당행위"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "혐오 표현"
+              },
+              {
+                "col": 9,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 0,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 2,
+                "text": "징계부가금"
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "대상 여부([ ]해당함, [ ]해당 없음), 대상금액(      원,      배)"
+              },
+              {
+                "col": 1,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "형사처벌 및 변상책임 이행 상황 등"
+              },
+              {
+                "col": 5,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 5,
+                "text": "감경 대상 공적 유무 및 감경 대상 비위 해당 여부"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "공적 사항"
+              },
+              {
+                "col": 6,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "징계 사항[불문(경고) 포함]"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "포상일"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "포상 종류"
+              },
+              {
+                "col": 3,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "시행청"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "날짜"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "종류"
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "발령청"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": "성실하고 능동적인 업무처리 과정에서의 과실로 인한 비위 해당 여부\n([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "직무와 관련이 없는 사고로 인한 비위 ([ ]해당함, [ ]해당 없음)"
+              },
+              {
+                "col": 0,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": "5. 혐의자의 평소 행실"
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": "주의ㆍ경고 횟수, 직무수행 태도 등을 구체적으로 기재"
+              },
+              {
+                "col": 0,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 4,
+                "text": "6. 그 밖의 사항"
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 1,
+                "text": "「국가공무원법」 제50조의2제3항에 따른 적극행정 해당 여부 검토 의견\n([ ]해당함, [ ]해당 없음)\n※ 「국가공무원법」 제78조제5항에 따라 「적극행정 운영규정」 제17조, 「공무원 징계령 시행규칙」 제3조의2제1항부터 제4항까지의 규정에 해당한다고 판단하는 경우, ‘해당함’에 표기하고 구체적인 의견과 판단 근거를 제출함."
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": "퇴직 예정일\n정년:    .  .  ., 계급정년:    .  .  ., 근무기간 만료:    .  .  ., 그 밖의 사항(    ):    .  .  ."
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "비위행위 당시 공무원 근무경력:    년    월"
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 38,
+                "rowSpan": 1,
+                "text": "그 밖의 정상 참작 사유 기재"
+              },
+              {
+                "col": 0,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "위 기재 사항이 사실과 다름없음을 확인합니다.\n년           월          일"
+              },
+              {
+                "col": 0,
+                "colSpan": 11,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 2,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "징계의결 또는 징계부가금 부과 의결 요구권자(직위)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "직인"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 80,
+                        "control": 1,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 38,
+                    "rows": 1,
+                    "section": 1
+                  }
+                ],
+                "row": 40,
+                "rowSpan": 1,
+                "text": "작성책임자  (소속 및 직위)            (직급)           (성명)           (서명 또는 인)"
+              },
+              {
+                "col": 0,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "210mm×297mm[백상지 80g/㎡]"
+              }
+            ],
+            "cols": 11,
+            "control": 1,
+            "csvReady": false,
+            "index": 4,
+            "mergeCount": 73,
+            "paragraph": 38,
+            "rows": 42,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 26,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "현        행"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "개   정   안"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "제2조(징계 또는 징계부가금의 기준) ① (생  략)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "제2조(징계 또는 징계부가금의 기준) ① (현행과 같음)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "② 징계위원회가 징계등 사건을 의결할 때에는 비위와 부조리를 척결함으로써 공무집행의 공정성 유지와 깨끗한 공직사회의 구현 및 기강 확립에 주력하고, 그 의결 대상이 다음 각 호의 어느 하나에 해당하는 경우에는 그 비위행위자는 물론 각 호에 규정된 사람에 대해서도 엄중히 책임을 물어야 한다."
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "② -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------."
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "1. (생  략)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "1. (현행과 같음)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "2. 부작위 또는 직무태만으로 국민의 권익을 침해하거나 국가 재정상의 손실을 발생하게 한 비위 사건인 경우: 해당 비위와 관련된 감독자"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "2. --------- 직무태만, 「적극행정 운영규정」제2조제2호에 따른 소극행정 ----- : ----------------------------------------------"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "3. <신  설>"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "3.「공무원수당 등에 관한 규정」제15조부터 제17조까지의 규정에 따른 수당을 거짓이나 부정한 방법으로 지급받은 비위 사건인 경우 : 해당 비위와 관련된 감독자"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "제4조(징계의 감경) ① (생  략)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "제4조(징계의 감경) ① (현행과 같음)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "② 제1항에도 불구하고 징계사유가 다음 각 호의 어느 하나에 해당하는 경우에는 해당 징계를 감경할 수 없다."
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "② ---------------------------------------------------------------------------------."
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "1. ∼ 14. (생  략)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "1. ∼ 14. (현행과 같음)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "15.  <신  설>"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "15. 혐오 표현"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "③ (생  략)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "③ (현행과 같음)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 2,
+            "control": 0,
+            "csvReady": true,
+            "index": 5,
+            "mergeCount": 0,
+            "paragraph": 40,
+            "rows": 13,
+            "section": 1
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 3,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task3307\\issue3307_outline_number.hwpx",
+        "tableCount": 6,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 2,
+            "mergeCount": 3,
+            "rows": 2
+          },
+          {
+            "cols": 4,
+            "index": 3,
+            "mergeCount": 1,
+            "rows": 2
+          },
+          {
+            "cols": 11,
+            "index": 4,
+            "mergeCount": 73,
+            "rows": 42
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

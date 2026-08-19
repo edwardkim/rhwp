@@ -1,0 +1,670 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1772\\table_outer_margin_common_sync.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1772\\table_outer_margin_common_sync.hwpx",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 3,
+            "index": 0,
+            "rows": 6
+          },
+          {
+            "cols": 45,
+            "index": 1,
+            "rows": 9
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1772\\table_outer_margin_common_sync.hwpx",
+        "tableCount": 2,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1772\\table_outer_margin_common_sync.hwpx",
+        "tableCount": 2,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 11,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "서울과 함께 세계로 도약하는 서울시립대학교"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "서울시립대학교"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "수신자"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "내부결재"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "(경유)"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "제  목"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "일일 원격근무 업무수행 결과서(2026. 6. 23.)"
+              }
+            ],
+            "cols": 3,
+            "control": 2,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 5,
+            "paragraph": 0,
+            "rows": 6,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 55,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 31,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 39,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 5,
+                "colSpan": 40,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 45,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "★주무관"
+              },
+              {
+                "col": 7,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 12,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "교육지원팀장"
+              },
+              {
+                "col": 17,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 23,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "교무과장"
+              },
+              {
+                "col": 30,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "06/24"
+              },
+              {
+                "col": 33,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 35,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 42,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 44,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "협조자"
+              },
+              {
+                "col": 4,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 18,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 19,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 26,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 31,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 32,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 41,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 44,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 13,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 13,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 34,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "시행"
+              },
+              {
+                "col": 3,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "교무과-11841"
+              },
+              {
+                "col": 15,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "("
+              },
+              {
+                "col": 16,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "2026. 6. 24."
+              },
+              {
+                "col": 22,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ")"
+              },
+              {
+                "col": 24,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "접수"
+              },
+              {
+                "col": 28,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 38,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "("
+              },
+              {
+                "col": 40,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 43,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ")"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "우"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "02504"
+              },
+              {
+                "col": 6,
+                "colSpan": 21,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "서울특별시 동대문구 서울시립대로 163(전농동)"
+              },
+              {
+                "col": 27,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "/"
+              },
+              {
+                "col": 29,
+                "colSpan": 16,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "https://www.uos.ac.kr"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "전화"
+              },
+              {
+                "col": 2,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "02-6490-6111"
+              },
+              {
+                "col": 9,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "/전송"
+              },
+              {
+                "col": 14,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 20,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "/"
+              },
+              {
+                "col": 21,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "sah0330@uos.ac.kr"
+              },
+              {
+                "col": 36,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "/"
+              },
+              {
+                "col": 37,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "부분공개(5,6)"
+              }
+            ],
+            "cols": 45,
+            "control": 0,
+            "csvReady": false,
+            "index": 1,
+            "mergeCount": 46,
+            "paragraph": 5,
+            "rows": 9,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1772\\table_outer_margin_common_sync.hwpx",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 3,
+            "index": 0,
+            "mergeCount": 5,
+            "rows": 6
+          },
+          {
+            "cols": 45,
+            "index": 1,
+            "mergeCount": 46,
+            "rows": 9
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

@@ -1,0 +1,442 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\inner-table-01.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\inner-table-01.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 2,
+            "index": 0,
+            "rows": 8
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\inner-table-01.hwp",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\inner-table-01.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 14,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "대상사업"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "K-water 디지털플랫폼 구축"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "발주기관"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "한국수자원공사"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "담당자"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "종 합 의 견"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 2,
+                "text": "검토의견 \n및 \n개선조치 요구사항"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": " 민간 소프트웨어 시장 침해 가능성 없음\n□ 민간 소프트웨어 시장 침해 가능성을 최소화 하여 사업 추진\n□ 사업 재검토\n□ 소프트웨어 영향평가 비대상\n□ 검토 불가(자료부족)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "▪ 본 사업은 소프트웨어 영향평가 대상 사업으로 61개 기능 요구사항에 대한 민간 SW시장 침해 가능성을 검토한 결과, 중복되거나 유사한 기능을 제공하는 판매용 민간 SW가 존재하고 있지 않아 민간 SW시장 침해 가능성이 없는 것으로 판단함"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "사업개요"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "▪ 사 업 명 : K-water 디지털플랫폼 구축\n\n▪ 사업기간 : 착수일로부터 24개월 (730일간)\n\n▪ 사업금액 :  ￦19,209,180,000(부가세 포함)\n\n▪ 사업목적/배경\n○ (클라우드) H/W 및 클라우드 관리를 위한 전용 S/W설치, 기도입 된 H/W의 클라우드 병합 및 기 구축된 DT/AT 시스템 클라우드 이전\n○ (데이터허브) 실시간 계측 DB 이전, DT/AI에 필요한 기타 데이터의 수집과 전사 데이터 유통시스템 구축, 인공지능(LLM/GPT) 기반 지능형 검색서비스 도입\n○ (SaaS) 분석모델 SaaS 시범 전환 및 SaaS 갤러리 구축\n        \n\n▪ 사업내용\n○ 서버 클라우드 컴퓨팅 환경 구축\n- 대내·외 서버 클라우드 환경 구축\n - 서버 클라우드 관리체계 구축\n - 디지털 전환 사업 이관/탑재\n○ 데이터허브 구축\n - OA망 내 계측 데이터 DB 인프라 이전을 위한 실시간 데이터 구축\n - 전사 데이터 수집/유통체계 구축\n - 생성형 AI 기반 지능형 데이터 검색 서비스 구축\n○ SaaS\n - 분석모델 SaaS 시범 전환\n - SaaS 갤러리 및 데이터 시각화 서비스 구축"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "대상사업\n분석"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 24,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "요구사항 번호"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "요구사항 명칭"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "SFR-CLOUD-001"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "사용자 포털 - 메인화면"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "SFR-CLOUD-002"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "사용자 포털 - 클라우드 이용 서비스"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "SFR-CLOUD-003"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "사용자 포털 - 사용자 관리"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "SFR-CLOUD-004"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "사용자 포털 - 서비스 카탈로그(디지털 자원 저장소)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "SFR-CLOUD-005"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "사용자 포털 - 서비스 이용량 계산"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "~~~~~"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "SFR-SAAS-005"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "시각화 서비스 – 관리자"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "SFR-SAAS-006"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "SaaS 전환"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "SFR-SAAS-007"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "SaaS 배포 및 외부 활용 방안"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "SFR-SAAS-008"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "SaaS 전환 가이드 수립"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 11,
+                        "rowSpan": 1,
+                        "text": "SFR-SAAS-009"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 11,
+                        "rowSpan": 1,
+                        "text": "SaaS 갤러리"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 13,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 4
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 0,
+                    "rows": 12,
+                    "section": 0
+                  }
+                ],
+                "row": 7,
+                "rowSpan": 1,
+                "text": "▪ (서비스) 제공대상 : 내부직원(5,800), 외부기관(1,800), \n                           일반국민/기업(30,000)\n\n▪ 검토내용 \n○ 검토대상(45개 기능 요구사항)과 동일하거나 유사한 기능을 제공 하는 민간 SW검토\n \n끝"
+              }
+            ],
+            "cols": 2,
+            "control": 2,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 2,
+            "paragraph": 0,
+            "rows": 8,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\inner-table-01.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 2,
+            "index": 0,
+            "mergeCount": 2,
+            "rows": 8
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

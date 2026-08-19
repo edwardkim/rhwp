@@ -1,0 +1,3937 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\hancom-hwp\\form-002.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\hancom-hwp\\form-002.hwp",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 27,
+            "index": 0,
+            "rows": 26
+          },
+          {
+            "cols": 28,
+            "index": 1,
+            "rows": 29
+          },
+          {
+            "cols": 27,
+            "index": 2,
+            "rows": 27
+          },
+          {
+            "cols": 27,
+            "index": 3,
+            "rows": 27
+          },
+          {
+            "cols": 27,
+            "index": 4,
+            "rows": 27
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\hancom-hwp\\form-002.hwp",
+        "tableCount": 5,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 5,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\hancom-hwp\\form-002.hwp",
+        "tableCount": 5,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 83,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "품목번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2026-1차-바이오산업기술-맞춤형진단치료-품목-일반-01"
+              },
+              {
+                "col": 11,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "산업기술분류"
+              },
+              {
+                "col": 19,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "중분류Ⅰ"
+              },
+              {
+                "col": 26,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "중분류Ⅱ"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "개발형태"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 6,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 19,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "의약바이오"
+              },
+              {
+                "col": 26,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "혁신도전형"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 21,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "AI 연계"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 15,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 23,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "지역(비수도권) 연계"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 12,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 23,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 5,
+                "text": "초격차프로젝트\n(해당)"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "분야"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "첨단바이오"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "미션"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "글로벌 제약ㆍ바이오 생산기지 구축"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "프로젝트"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "고품질, 고기능성, 고생산성 첨단의약품ㆍ의료제품 디지털팩토리 제조공정 혁신"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "제품·기술"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "고생산성 첨단의약품 제형화 및 제조기술개발"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "세부기술"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "고기능성 혁신형 의약품 고도화 기술"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "연계유형"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 9,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 18,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 4,
+                "text": "특성분류"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "ESG"
+              },
+              {
+                "col": 14,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 16,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 20,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 22,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "R&D 자율성트랙"
+              },
+              {
+                "col": 1,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 13,
+                "colSpan": 14,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 2,
+                "text": "품목명"
+              },
+              {
+                "col": 1,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "암조직 저산소 내성 한계 극복 나노산소운반체 기반 항암제 병용치료 증강제 개발"
+              },
+              {
+                "col": 1,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "(TRL : [시작] 4단계 〜 [종료] 7단계)"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "1. 개념 및 개발내용"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "※ 핵심 목표 : 항암제 내성 극복 병용치료 증강 나노의약품 기술 자립화"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 73,
+                        "control": 3,
+                        "kind": "tableCell",
+                        "paragraph": 5
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 0,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "연구개발계획서 제출시 다음의 항목의 정량적 목표치 및 상용화 수준 제시 필수\n산소탑재효율(농도), 입자크기(nm), 입도분포균일성(PDI), 암표적지향기술(건), 원료 DMF 취득(건), GMP생산실증(건), 제품표준서(건), 비임상보고서(건), IND 신청(건) 등"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 73,
+                        "control": 3,
+                        "kind": "tableCell",
+                        "paragraph": 28
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 0,
+                    "rows": 1,
+                    "section": 0
+                  }
+                ],
+                "row": 19,
+                "rowSpan": 1,
+                "text": "□ 개념\n\n ㅇ 혈액보다 산소 용해도가 높은 나노산소운반체를 활용하여 암 조직에 직접 산소를 전달하여 암조직 저산소(Hypoxia) 내성 한계 극복을 통해 암세포사멸효과를 증대시킬 수 있는 암표적지향형 나노산소운반체 기반 항암화학요법 병용치료 증강제 및 이의 제조공정 기술개발\n   * 나노산소운반체는 암세포 방어막(저산소 환경)의 물리적 무력화를 통해, 기존 항암제가 저산소 내성을 극복하여 효과를 발휘하도록 암세포를 '리셋(Reset)'시키는 항암치료 증강제 역할을 함 \n  - 항암효과의 저해 및 치료 실패의 주원인 되는 고형암의 '저산소 환경'으로 인한 내성문제를 가진 기존 항암제와의 병용투여를 통해 항암제 내성을 극복하여 암치료 효과를 극대화할 수 있는 암표적지향형 나노산소운반체 기반 신개념 항암치료 증강제의 개발이 필요함\n  \n\n□ 개발내용\n\n ㅇ 나노산소운반체 기반 화학항암요법 병용 투여용 제형화 기술 개발\n  - 과불화탄소(PFC) 기반 코어-쉘 구조의 나노산소운반체 최적 조성/제조기술 개발\n   * 입자사이즈 200nm 이하, In vitro 산소봉입농도 15ppm 이상, 산소누출최소화 능력 등\n  - 나노산소운반체의 수동·능동 암표적지향형 전달 플랫폼 기술 개발\n  - 암표적지향형 나노산소운반체의 화학항암요법 병용투여용 주사제형화 기술 개발 \n\n ㅇ PFC 나노산소운반체의 최적 제조공정 개발 및 GMP 실증\n  - PFC 활용 신개념 항암치료 증강제 품질평가 시험법 및 기준규격 확립 (입자크기, 입도분포균일성, 산소 적재량, 방출, 안정성 등)\n  - PFC 나노산소운반체의 GMP 스케일업 생산을 위한 제조공정 최적화\n  - 임상시험제제 GMP 제조 (제조기록서, 제품표준서, PQ배치 실증) 실증을 통한 제조/품질(CMC) 자료 확보(PFC 원료 DMF 등록 포함) \n\n ㅇ 항암화학요법 병용치료 증강제품 허가를 위한 비임상 시험 자료 확보 및 IND 신청\n  - In vitro 및 in vivo 비임상 유효성 및 안전성 자료 확보\n   * 표적지향형 나노산소운반체의 암표적 특이성, 화학항암요법 병용 투여 시 저산소 항암 내성 극복을 통한 치료효과 우월성 비임상 근거자료 포함\n   * 정상세포에서의 용량-독성관계 평가를 통한 in vitro 안전성 근거자료 포함\n  - 비임상 자료 기반 최적 항암화학용법과의 병용추여 임상시험설계(최적 용량/용법 설정)\n   * 병용부가(증강)효과/독성/내약성 및 전달산소의 양적 측면을 고려하여, 식약처 “항암제 임상시험 가이드라인”에 따른 용법/용량 설정 근거 확보  \n  - 허가용 제조/품질(CMC) 및 비임상 자료 확보를 통한 IND 신청\n  * (제품형태) 항암화학요법 병용투여 항암치료 증강 주사제"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "2. 지원 필요성"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "ㅇ (기술적 측면) 기존 암 치료 내성 극복 연구는 암세포의 특정 경로를 표적했으나, 암세포가 계속 우회로를 찾아내 한계가 발생됨에 따라, 암세포가 살아가는 환경 자체를 변화하는 작용기전의 나노산소운반체 개발을 통한 치료효능 향상 기술 확보가 필요함 \n\n ㅇ (시장적 측면) 연간 220조원 규모의 글로벌 항암제 시장에서 암관련 사망 약 90%가 약물치료 내성과 연관이 있고 특히 저산소로 인한 방사선·항암화학요법·면역치료 저항성 환자군은 다수로 이에 대한 글로벌 미충족 수요가 매우 크며, 프랑스 나노바이오틱스사의 방사선 항암 증강제 기술은 얀센에 25억달러에 판매됨\n   * 출처 : 글로벌 항암치료제 최신 동향 (한국바이오협회, 2023), A protracted war against cancer drug resistance (Y. Tian et al., Cancer Cell International, 2024)   \n\n ㅇ (정책·사회적 측면) 췌장암, 교모세포종 등 기존 치료에 반응하지 않는 난치암 환자들에게 나노산소전달체와 함께 기존 항암제 연계한 맞춤형 병용치료제 개발을 통한 치료효과 증대를 통한 생존율 향상 등 삶의 질 개선이 가능함"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "3. 활용분야"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "ㅇ 표준 항암화학요법 및 표적항암제 병용 치료 증강제"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "4. 지원기간/예산/추진체계"
+              },
+              {
+                "col": 5,
+                "colSpan": 22,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "ㅇ 연구개발기간 : 56개월 이내(1차년도 : 9개월, 2차년도 : 11개월, 3~5차년도 : 각 12개월)\n\n ㅇ 정부지원연구개발비 : ’26년 7.5억원 이내(총 정부지원연구개발비 47.5억원 이내)\n\n ㅇ 주관연구개발기관 : 중소·중견 기업 \n\n ㅇ 정부납부기술료 납부대상 여부 : 대상"
+              }
+            ],
+            "cols": 27,
+            "control": 3,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 69,
+            "paragraph": 0,
+            "rows": 26,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 92,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "품목번호"
+              },
+              {
+                "col": 2,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2026-1차-바이오산업기술-맞춤형진단치료-품목-통합-02"
+              },
+              {
+                "col": 12,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "산업기술분류"
+              },
+              {
+                "col": 20,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "중분류Ⅰ"
+              },
+              {
+                "col": 27,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "중분류Ⅱ"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "개발형태"
+              },
+              {
+                "col": 2,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 20,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "의약바이오"
+              },
+              {
+                "col": 27,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "혁신도전형"
+              },
+              {
+                "col": 2,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 11,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 22,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "AI 연계"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 16,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "지역(비수도권) 연계"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 13,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 5,
+                "text": "초격차프로젝트\n(해당)"
+              },
+              {
+                "col": 2,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "분야"
+              },
+              {
+                "col": 5,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "첨단바이오"
+              },
+              {
+                "col": 2,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "미션"
+              },
+              {
+                "col": 5,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "글로벌 제약ㆍ바이오 생산기지 구축"
+              },
+              {
+                "col": 2,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "프로젝트"
+              },
+              {
+                "col": 5,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "고품질, 고기능성, 고생산성 첨단의약품ㆍ의료제품 디지털팩토리 제조공정 혁신"
+              },
+              {
+                "col": 2,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "제품·기술"
+              },
+              {
+                "col": 5,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "고품질 바이오 원부자재 및 장비 자립화 기술"
+              },
+              {
+                "col": 2,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "세부기술"
+              },
+              {
+                "col": 5,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "고품질 첨단의약품 생산용 소재부품장비 개발 및 실증"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "연계유형"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 19,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 26,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 4,
+                "text": "특성분류"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 9,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 18,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 9,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 18,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 9,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 18,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 9,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "ESG"
+              },
+              {
+                "col": 15,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 21,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 23,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 26,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "R&D 자율성트랙"
+              },
+              {
+                "col": 2,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 14,
+                "colSpan": 14,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 2,
+                "text": "총괄 품목명"
+              },
+              {
+                "col": 2,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "(총괄) 차세대 동결건조 바이오의약품을 위한 Dual Chamber Syringe(DCS) 전주기 완제의약품 제조 시스템 개발 지원"
+              },
+              {
+                "col": 2,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "(TRL : [시작] 4단계 〜 [종료] 7단계)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "1세부 품목명"
+              },
+              {
+                "col": 2,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "(1세부) 차세대 동결건조 바이오의약품 피하주사용 Dual Chamber Syringe(DCS)  설계 및 제조기술 개발"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "2세부 품목명"
+              },
+              {
+                "col": 2,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "(2세부) Dual Chamber Syringe(DCS) 탑재를 위한 생물학적 약제의 신개념 고함량 제형화 기술 개발"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "3세부 품목명"
+              },
+              {
+                "col": 2,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "(3세부) 차세대 동결건조 Dual Chamber Syringe(DCS) 완제의약품 제조용 밀폐형 동결건조 시스템 개발 및 검증"
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "1. 개념 및 개발내용"
+              },
+              {
+                "col": 4,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 28,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "※ 핵심 목표 : 세계 최고수준의 차세대 모달리티 의약품용 이중챔버형 주사 시스템 국산화 기술 개발"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 82,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 4
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 2,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "연구개발계획서 제출시 다음의 항목의 정량적 목표치 및 상용화 수준 제시 필수\n조사보고서(건), 기술교류회/워크샵(건), 성과홍보(건), 진도점검(건), 쟁책개선안(건), 기업협력/지원(건) 등"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 82,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 15
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 2,
+                    "rows": 1,
+                    "section": 0
+                  }
+                ],
+                "row": 22,
+                "rowSpan": 1,
+                "text": "□ 개념\n\n ㅇ 차세대 신규 모달리티 바이오의약품(다중/이중항체, ADC, PDC, DAC 등)의 보관 안정성과 투여 편의성이 확보된 동결건조/액상 분리형 dual chamber syringe(DCS) 개발과 맞춤형 제형/공정개발 최적화 및 실시간 분석기술을 적용한 밀폐형 동결건조 시스템 개발을 위한 총괄 지원  \n  - 차세대 모달리티인 바이오접합의약품 시장의 급성장 예상에 따라, dual chamber(이중챔버형) 플랫폼은 다중표적항체, ADC, 펩타이드, mRNA, 희귀질환 치료제와 같이 안정성이 취약한 의약품에서 활용도가 빠르게 증가하고 있음에 따라 고품질의 완제의약품 제조 기술 확보 체계 구축이 필요함 \n  \n\n□ 개발내용\n\n ㅇ 차세대 피하주사용 동결건조 바이오의약품을 위한 Dual Chamber Syringe(DCS) 전주기 완제의약품 개발을 위한 세부과제에 대한 총괄관리 및 지원\n  - 세부과제 간의 개발내용 공유 및 유기적인 개발 지원 등 사업총괄 수행(성과진도점검 및 기술교류 등)\n  - 신규 모달리티 바이오의약품에 대한 맞춤형 제형 개발 및 제조혁신 관련 기술/시장/특허 동향 조사, 분석 등\n  - 세부과제별 애로사항 수렴, 관련 기관/기업 소속 전문가 교류 및 자문 연계, 법·제도 개선 제언, 바이오산업소재 및 제품화 생태계 구축 지원\n  - 세부과제별 주요 실적 기반 국내외 성과홍보 및 관련 기관 협력 지원, 워크샵 개최 등\n  - 수요-공급기업간 상호협력체계 구축(협의체 지원 등)을 통한 DCS 기반 완제의약품 제조 실증 지원\n  - 바이오의약 차세대 제조공정/제조혁신 관련 기술/시장/특허/규제 등 동향 조사 및 분석 지원"
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "2. 지원 필요성"
+              },
+              {
+                "col": 4,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 28,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "ㅇ (기술적 측면) 국내는 dual chamber 디바이스에 적용할 제조공정, 제형, 장비 등에 대한 통합 역량이 다소 부재하여 차세대 바이오의약품을 개발하는 기업이 독자적 상업화를 시도되지 못하고 있기 때문에 글로벌 경쟁력을 갖춘 일체화된 기술 확보가 필요함 \n\n ㅇ (시장적 측면) 바이오의약품 시장은 항체 기반 치료에서 접합체 중심의 정밀치료로 빠르게 재편되고 있으며, ‘25년 기준 항체접합의약품 시장은 약 156억불에서 ’30년 570억불로 예상되며, 이를 기반으로 DAC/PDC/ARC가 혁신 모달리티로 부각되어 치료 패러다임을 형성하고 있음  \n    * 출처 : Modor Intelligence(2025)\n\n ㅇ (정책·사회적 측면) 신규 모달리티 바이오의약품은 기존의 생물의약품 GMP 규제로는 복합구조, 고위험물질, 안전성 등을 포괄하기 어려워 국가 차원의 제조공정 관리기준 및 평가체계 마련이 시급하며, 국제적으로 QbD, PAT, CMC 중심의 공정기반 심사체계를 확립하고 있는 만큼 국내도 이에 상응하는 지원이 필요함"
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "3. 활용분야"
+              },
+              {
+                "col": 4,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 28,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "ㅇ 차세대 항체기반 치료제, 유전자치료제, 항암면역 치료용 백신 등의 제형화, 완제의약품 제조 및 생산"
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "4. 지원기간/예산/추진체계"
+              },
+              {
+                "col": 6,
+                "colSpan": 22,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 28,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "ㅇ 연구개발기간 : 56개월 이내(1차년도 : 9개월, 2차년도 : 11개월, 3~5차년도 : 각 12개월)\n\n ㅇ 정부지원연구개발비 : ’26년 1억원 이내(총 정부지원연구개발비 5.7억원 이내)\n\n ㅇ 주관연구개발기관 : 제한 없음\n\n ㅇ 정부납부기술료 납부대상 여부 : 비대상"
+              }
+            ],
+            "cols": 28,
+            "control": 0,
+            "csvReady": false,
+            "index": 1,
+            "mergeCount": 79,
+            "paragraph": 2,
+            "rows": 29,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 85,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "품목번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2026-1차-바이오산업기술-맞춤형진단치료-품목-통합-03"
+              },
+              {
+                "col": 11,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "산업기술분류"
+              },
+              {
+                "col": 19,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "중분류Ⅰ"
+              },
+              {
+                "col": 26,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "중분류Ⅱ"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "개발형태"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 6,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 19,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "의약바이오"
+              },
+              {
+                "col": 26,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "혁신도전형"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 21,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "AI 연계"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 15,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 23,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "지역(비수도권) 연계"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 12,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 23,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 5,
+                "text": "초격차프로젝트\n(해당)"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "분야"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "첨단바이오"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "미션"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "글로벌 제약ㆍ바이오 생산기지 구축"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "프로젝트"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "고품질, 고기능성, 고생산성 첨단의약품ㆍ의료제품 디지털팩토리 제조공정 혁신"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "제품·기술"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "고품질 바이오 원부자재 및 장비 자립화 기술"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "세부기술"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "고품질 첨단의약품 생산용 소재부품장비 개발 및 실증"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "연계유형"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 9,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 18,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 4,
+                "text": "특성분류"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "ESG"
+              },
+              {
+                "col": 14,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 16,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 20,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 22,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "R&D 자율성트랙"
+              },
+              {
+                "col": 1,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 13,
+                "colSpan": 14,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "총괄 품목명"
+              },
+              {
+                "col": 1,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "(총괄) 차세대 동결건조 바이오의약품을 위한 Dual Chamber Syringe(DCS)  전주기 완제의약품 제조 시스템 개발 지원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 2,
+                "text": "세부 품목명"
+              },
+              {
+                "col": 1,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "(1세부) 차세대 동결건조 바이오의약품 피하주사용 Dual Chamber Syringe(DCS)  설계 및 제조기술 개발"
+              },
+              {
+                "col": 1,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "(TRL : [시작] 4단계 〜 [종료] 7단계)"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "1. 개념 및 개발내용"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "※ 핵심 목표 : 차세대 바이오의약품 맞춤형 Dual Chamber Syringe(DCS) 국산화 기술 확보"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 75,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 5
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "연구개발계획서 제출시 다음의 항목의 정량적 목표치 및 상용화 수준 제시 필수\n내부코팅 균일도 평가법(건), E&L시험(건), CCIT 시험법(건), 안정성 시험(%), 시제품(건),  품질보고서(건), 인증(건) 등"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 75,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 32
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 3,
+                    "rows": 1,
+                    "section": 0
+                  }
+                ],
+                "row": 20,
+                "rowSpan": 1,
+                "text": "□ 개념\n\n ㅇ 차세대 바이오의약품의 동결건조 제형과 액상 용매를 하나의 용기 내에서 물리적으로 분리·보관하고, 투여 직전에 자동 혼합하여 사용할 수 있는 차세대 완제 플랫폼인 Dual Chamber Syringe(DCS)를 개발 및 품질 인증을 통한 상용화 추진\n  - 차세대 완제 플랫폼인 DCS 개발을 위한 유리 또는 고분자 소재를 적용한 배럴(barrel) 설계 및 정밀 가공, 약물 흡착 방지를 위한 실리콘 코팅, 약물과 용매의 분리막 제조기술 확보 및 이를 기반으로 한 DCS 제품에 대한 국산화가 필요함\n  \n\n□ 개발내용\n\n ㅇ Dual Chamber Syringe(DCS) 핵심 구조 설계 및 성형 기술 개발\n  - DCS 제조를 위한 주요 소재(유리, COP(Cyclic Olefin Polymer) 등) 선정 및 최적화 설계 기술 개발 \n  - 주요 소재 기반 배럴의 정밀 성형 및 가공 기술 개발\n  - 동결건조 제형과 용기 간 상호작용을 최소화하기 위한 내부 코팅 기술 개발\n  - 동결건조 분말과 액상을 안정적으로 분리하는 고무막 소재 및 구조 설계 기술 확립\n\n\n ㅇ DCS 적용 바이오의약품의 안정성 및 피하 주사성 평가\n  - 바이오의약품(항체 등) 탑재 DCS의 안정성 및 피하 주사성 평가 체계 확립\n  - 코팅액 등 동결건조 제형의 품질 및 재용해 시 미세입자 생성에 미치는 영향 평가\n  - 고농도 바이오의약품(항체 등) 탑재 DCS의 피하주사 적합성 평가\n\n ㅇ DCS 무균 제조공정 및 품질 확보 기술 개발 (2, 3세부 연계)\n  - 무균충전 및 CCIT(Container Closure Integrity Test)* 검증이 가능한 생산공정 최적화\n   * CCIT: 용기 밀폐 시스템(Container Closure System)이 외부 오염 침투를 차단할 수 있는지 검증하는 시험 <USP 1207>\n  - 충전 후 밀봉, 혼합 안정성 확보를 위한 공정 제어 및 자동화 기술 확보\n  - 시제품 생산 및 평가 체계 확립(물리·화학적 안정성 및 재용해(reconstitution) 등)\n\n ㅇ DCS 플랫폼 실증 및 GMP 시제품 제작·인증 (3세부, 수요기업 연계)\n  - GMP 기준에 부합하는 DCS 완제 주사기 생산 및 공정 밸리데이션(보고서 확보 포함)\n  - 품질규격(Quality Specification) 수립 및 DCS 제품 인증\n  - DCS 활용 차세대 피하주사용 동결건조 바이오의약품 상용화 가능성 검증\n  * (제품형태) 동결건조 바이오의약품 피하주사용 사전충전형 DCS 주사기"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "2. 지원 필요성"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "ㅇ (기술적 측면) 국내는 Dual Chamber Syringe(DCS)용 소재, 내부 코팅, 분리막 등 핵심 구성요소의 통합 설계 및 엔지니어링 역량이 미비하여, 기업들이 독자적인 차세대 완제의약품 개발에 한계가 있음에 따라, 기기 개발과 연계한 제형, 공정, 장비를 연계한 통합 제조시스템 구축이 필요함\n\n ㅇ (시장적 측면) DCS 시장은 ‘24년 1.7억 달러에서 ’32년 3.2억달러 규모로 연평균 성장률 8.29 %로 성장할 것으로 예상되며, 현재 국내소비 전량을 수입에 의존하고 대부분 독일의 Vetter사가 독점하는 고부가가치 시장임  \n    * 출처 : Research and Markets(2025)\n\n ㅇ (정책·사회적 측면) 시린지 내부가 코팅된 배럴은 DCS 및 PFS는 주사형 바이오의약품의 보급이 증가함에 따라 약물 투여의 주요 형태가 되고 있으며, 이와 관련된 핵심기술은 미국, 유럽, 일본 등 선진국에 집중되어 있어 국내 제품 개발 및 상용화를 위한 지원이 필요함"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "3. 활용분야"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "ㅇ 항체 기반 신규 모달리티 치료제, 유전자치료제 등 바이오신약 완제품"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "4. 지원기간/예산/추진체계"
+              },
+              {
+                "col": 5,
+                "colSpan": 22,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "ㅇ 연구개발기간 : 56개월 이내(1차년도 : 9개월, 2차년도 : 11개월, 3~5차년도 : 각 12개월)\n\n ㅇ 정부지원연구개발비 : ’26년 8억원 이내(총 정부지원연구개발비 50.7억원 이내)\n\n ㅇ 주관연구개발기관 : 중소·중견 기업 (수요기업 참여 필수)\n\n ㅇ 정부납부기술료 납부대상 여부 : 대상"
+              }
+            ],
+            "cols": 27,
+            "control": 0,
+            "csvReady": false,
+            "index": 2,
+            "mergeCount": 70,
+            "paragraph": 3,
+            "rows": 27,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 85,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "품목번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2026-1차-바이오산업기술-맞춤형진단치료-품목-통합-04"
+              },
+              {
+                "col": 11,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "산업기술분류"
+              },
+              {
+                "col": 19,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "중분류Ⅰ"
+              },
+              {
+                "col": 26,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "중분류Ⅱ"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "개발형태"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 6,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 19,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "의약바이오"
+              },
+              {
+                "col": 26,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "혁신도전형"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 21,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "AI 연계"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 15,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 23,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "지역(비수도권) 연계"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 12,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 23,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 5,
+                "text": "초격차프로젝트\n(해당)"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "분야"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "첨단바이오"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "미션"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "글로벌 제약ㆍ바이오 생산기지 구축"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "프로젝트"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "고품질, 고기능성, 고생산성 첨단의약품ㆍ의료제품 디지털팩토리 제조공정 혁신"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "제품·기술"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "고생산성 첨단의약품 제형화 및 제조기술개발"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "세부기술"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "고기능성 혁신형 의약품 고도화 기술"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "연계유형"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 9,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 18,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 4,
+                "text": "특성분류"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "ESG"
+              },
+              {
+                "col": 14,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 16,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 20,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 22,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "R&D 자율성트랙"
+              },
+              {
+                "col": 1,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 13,
+                "colSpan": 14,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "총괄 품목명"
+              },
+              {
+                "col": 1,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "(총괄) 차세대 동결건조 바이오의약품을 위한 Dual Chamber Syringe(DCS)  전주기 완제의약품 제조 시스템 개발 지원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 2,
+                "text": "세부 품목명"
+              },
+              {
+                "col": 1,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "(2세부) Dual Chamber Syringe(DCS) 탑재를 위한 생물학적 약제의 신개념 고함량 제형화 기술 개발"
+              },
+              {
+                "col": 1,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "(TRL : [시작] 4단계 〜 [종료] 7단계)"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "1. 개념 및 개발내용"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "※ 핵심 목표 : 세계 최고 수준의 고함량 바이오의약품 피하주사 가능 제형화 기술 개발"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 75,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 5
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 4,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "연구개발계획서 제출시 다음의 항목의 정량적 목표치 및 상용화 수준 제시 필수\nAI활용 제형설계(건), 제형화소재(건), 시제품(건), 안정성평가(개월), 제조보고서(건), GMP급 생산실증(배치), 비임상시험(건), IND신청(건) 등"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 75,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 28
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 4,
+                    "rows": 1,
+                    "section": 0
+                  }
+                ],
+                "row": 20,
+                "rowSpan": 1,
+                "text": "□ 개념\n\n ㅇ 액상에서 불안정한 복합구조 바이오의약품을 고함량으로 Dual Chamber Syringe(DCS)에 탑재할 수 있는 제형 및 충전 공정개발을 통하여 기존의 기술을 뛰어넘는 피하주사(SC) 제형화 플랫폼 기술 개발과 IND 신청을 통한 제품화  \n  - 항체의약품 SC 제형화를 위해서 첨가제인 Hyaluronidase 없이도 제형화가 가능하며, 농축이 매우 어려운 생물학적 약제의 특성을 극복하기 위한 고함량 제형화 기술 개발이 필요함\n  \n\n□ 개발내용\n\n ㅇ DCS 탑재 가능 후보물질 선정 및 이의 제형화 기술 개발\n  - 바이오의약품 후보물질 선정 및 고함량 피하주사(SC) 제형 기술 탐색(소재 포함)\n  - 설계기반 고함량 SC 제형설계 및 이의 제조기술 개발\n  - 바이오의약품의 고함량 SC 제형 개발 및 이의 특성 분석\n\n ㅇ 바이오의약품 고함량 SC 제형의 유효성 및 안전성 검증\n  - 보관 과정에서의 안정성 평가 및 주사 용이성 등 검증\n  - 생체이용률(BA), 체내동태평가 등 비임상시험 결과 확보\n  - 용해 후, 불용성 입자와 미립자 품질검증 등을 통한 안전성 입증\n\n ㅇ 고함량 SC 제형기술 최적화 및 DCS 충전 공정 기술 개발 (1, 3세부 연계) \n  - 제형 및 제조공정 안정화를 위한 설계기반 주요품질인자 및 공정파라미터 도출\n  - DCS 적용 동결건조 제조공정 기술 확립 및 검증\n  - QbD 기반 고함량 SC 제형최적화 및 GMP급 원료의약품 제조\n\n ㅇ 비임상 시험 및 임상시험 신청을 통한 기술 검증\n  - GMP급 원료의약품 시제품 냉장보관 안정성(6개월 이상) 결과 확보\n  - 비임상시험(안전성, 유효성 평가 등) 완료 및 임상 1상 IND 신청\n  * (제품형태) 고함량 SC제형화 바이오의약품"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "2. 지원 필요성"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "ㅇ (기술적 측면) 고기능성 바이오의약품(바이오접합의약품 등)의 핵심 원천기술은 미국, 유럽, 일본 등 주요 기술 선도국이 특허부터 임상 데이터 패키지까지 선점하고 있어 국내 기술 접근성이 제한적임에 따라, 생물학적 제제에 대한 투여경로 전환 기술 확보를 통한 기술 자립화 및 제품 경쟁력 확보 필요\n\n ㅇ (시장적 측면) ‘24년 기준 피하주사 제형 및 전달 시스템 관련 시장은 약 417억불에서 ’30년은 565억불로 예상되어 환자 편의성 및 자가투여 선호 증가에 따라 빠른 시장 확대가 예상됨  \n    * 출처 : Knowledge sourcing intelligence(2025)\n\n ㅇ (정책·사회적 측면) 대부분의 항체의약품 및 바이오접합의약품 등은 정맥 점적주사로만 투여가 가능하여 추가 의료비용이 발생하게 되며, 특히 매우 복잡한 재분산/희석 과정으로 인해 투약 오류 발생에 따른 환자 치료 불편함을 개선할 수 있는 안정성 높은 차별화된 제형화 기술 개발 필요"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "3. 활용분야"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "ㅇ 냉장/실온 안정화가 어려운 바이오의약품(바이오접합의약품 포함) 피하주사제 개발"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "4. 지원기간/예산/추진체계"
+              },
+              {
+                "col": 5,
+                "colSpan": 22,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "ㅇ 연구개발기간 : 56개월 이내(1차년도 : 9개월, 2차년도 : 11개월, 3~5차년도 : 각 12개월)\n\n ㅇ 정부지원연구개발비 : ’26년 9.5억원 이내(총 정부지원연구개발비 60억원 이내)\n\n ㅇ 주관연구개발기관 : 중소·중견 기업 \n\n ㅇ 정부납부기술료 납부대상 여부 : 대상\n\n ㅇ 기타사항 : 유연 컨소시엄 과제로 주관기업(최근 3년내 주관기관으로 산업기술 R&D 수행경험이 있는 대기업, 중견기업 및 아래 2가지 요건 중 하나*를 만족하는 중소기업에 한함) 단독으로 과제를 신청(컨소시엄을 구성하여 신청 불가)하고, 선정평가시에는 기업역량 및 기술조달(공동연구·외주용역 포함) 계획을 종합적으로 평가하고, 선정된 과제는 협약체결 이후 기업이 주도하여 컨소시엄을 구성하는 방식의 과제 유형임\n    * 중소기업 요건 : ①최근 3년내 우수평가를 받은 중소기업, ②우수기술연구센터(ATC), 우수기업연구소(ATC+), 월드클래스기업(WC300), 소부장 으뜸기업 중 어느 하나에 해당하는 중소기업"
+              }
+            ],
+            "cols": 27,
+            "control": 0,
+            "csvReady": false,
+            "index": 3,
+            "mergeCount": 70,
+            "paragraph": 4,
+            "rows": 27,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 85,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "품목번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2026-1차-바이오산업기술-맞춤형진단치료-품목-통합-05"
+              },
+              {
+                "col": 11,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "산업기술분류"
+              },
+              {
+                "col": 19,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "중분류Ⅰ"
+              },
+              {
+                "col": 26,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "중분류Ⅱ"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "개발형태"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 6,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 19,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "융합바이오"
+              },
+              {
+                "col": 26,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "혁신도전형"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 10,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 21,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "AI 연계"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 15,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 23,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "지역(비수도권) 연계"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 12,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 23,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 5,
+                "text": "초격차프로젝트\n(해당)"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "분야"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "첨단바이오"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "미션"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "글로벌 제약ㆍ바이오 생산기지 구축"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "프로젝트"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "고품질, 고기능성, 고생산성 첨단의약품ㆍ의료제품 디지털팩토리 제조공정 혁신"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "제품·기술"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "고품질 바이오 원부자재 및 장비 자립화 기술"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "세부기술"
+              },
+              {
+                "col": 4,
+                "colSpan": 23,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "고품질 첨단의약품 생산용 소재부품장비 개발 및 실증"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "연계유형"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 9,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 18,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 4,
+                "text": "특성분류"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 17,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 24,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "ESG"
+              },
+              {
+                "col": 14,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 16,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 20,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 22,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 25,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "R&D 자율성트랙"
+              },
+              {
+                "col": 1,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 13,
+                "colSpan": 14,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "총괄 품목명"
+              },
+              {
+                "col": 1,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "(총괄) 차세대 동결건조 바이오의약품을 위한 Dual Chamber Syringe(DCS)  전주기 완제의약품 제조 시스템 개발 지원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 2,
+                "text": "세부 품목명"
+              },
+              {
+                "col": 1,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "(3세부) 차세대 동결건조 Dual Chamber Syringe(DCS) 완제의약품 제조용 밀폐형 동결건조 시스템 개발 및 검증"
+              },
+              {
+                "col": 1,
+                "colSpan": 26,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "(TRL : [시작] 4단계 〜 [종료] 7단계)"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "1. 개념 및 개발내용"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "※ 핵심 목표 : 실시간 분석 기반 DCS 완제의약품 공정 자동화 및 밀폐형 동결건조 실증 국산화 플랫폼 개발"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 75,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 4
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "연구개발계획서 제출시 다음의 항목의 정량적 목표치 및 상용화 수준 제시 필수\n분석 알고리즘(건), 보고서(건), 장비 시스템(건), 공정분석기술(건), 예측정확도(%), 품질 향상 효과(%), 실증(건), 인증(건) 등"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 75,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 25
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  }
+                ],
+                "row": 20,
+                "rowSpan": 1,
+                "text": "□ 개념\n\n ㅇ 바이오의약품 전용 Dual Chamber Syringe(DCS)의 구조적 특성을 반영하여 동결건조 공정을 자동화할 수 있는 장비를 개발하고, 실시간 공정분석기술(PAT)을 적용한 파일럿 생산라인을 구축함으로써 제조공정 및 설비의 실증을 완료하는 통합형 제조 플랫폼 기술 개발\n  - 글로벌 규제기관은 PAT 기반의 실시간 공정분석과 밀폐형 무균시스템 적용을 권고하고 있으며, 특히 고활성 원료의약품(HPAPI)이 접합된 의약품은 규제가 강화됨에 따라, DCS를 활용한 맞춤형 충전–동결건조–밀폐 일체화 공정의 실증을 통해 완제공정 고도화와 품질 신뢰성 확보가 필요함  \n  \n\n□ 개발내용\n\n ㅇ 차세대 바이오의약품 제형의 동결 건조 공정 모니터링 및 제어 기술 개발 (2세부 연계)\n  - 피하주사용 고함량 바이오의약품 제형의 제조공정 단계별(동결-1차건조-2차건조) 실시간 분석기술 개발\n  - 건조 종말점 예측 및 공정 이상 탐지를 위한 분석 알고리즘 구축\n  - 실시간 공정분석(PAT) 신호 기반의 자동 제어 및 데이터 피드백 시스템 구현\n  - DCS 구조와 연계한 동결 공정 최적화 기술 개발\n\n ㅇ DCS 완제공정용 밀폐형 동결건조 시스템 기술 개발 (1세부 연계)\n  - 밀폐형 동결건조 시스템 개발을 위한 온도·압력·수분 등의 핵심 공정변수 제어 알고리즘 및 실시간 제어 시스템(부품, 장치 포함) 개발\n  - 고활성 원료의약품(HPAPI) 대응이 가능한 무균·밀폐형 공정 환경 구현\n  - 바이오의약품의 충전–동결건조–밀폐 일체형 공정이 가능한 밀폐형 장비 구조 설계 및 시제품 제작\n\n ㅇ 파일럿 생산라인 구축 및 통합 실증 플랫폼 개발 (수요기업/기관 연계)\n  - DCS 완제의약품 공정 파일럿 라인 구축(2종)\n  - 실시간 공정 모니터링과 자동제어 통합 시스템 실증 수행\n  - 완제공정의 품질·생산성 향상 효과(10% 이상) 및 공정 신뢰성 검증\n  - Data Integrity(전자기록 무결성)을 갖춘 GMP 적용 가능성 확보(21 CFR part 11)\n   * (제품형태) PAT 적용 DCS 완제의약품 제조용 밀폐형 동결건조 시스템"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "2. 지원 필요성"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "ㅇ (기술적 측면) 듀얼 챔버 완제공정은 분리막 설계, 내부 코팅, 밀봉무결성(CCI), 열·질량전달 제어가 복합적으로 작용하는 고난도 공정으로, 밀폐형 동결건조 시스템에 실시간 분석(PAT)과 모델예측제어(MPC)를 결합한 과학적 플랫폼을 구축함으로써 배치 간 품질균일성과 스케일업 신뢰성 확보 가능 \n\n ㅇ (시장적 측면) 차세대 동결건조 장비 및 서비스 시장은 ’25년 47.6억 달러에서 ’30년 75.4억 달러 규모로 성장할 것으로 전망되며, 유럽·미국 기업이 과점한 상황에서 국산 장비 부재로 인한 수입 의존도가 높아, 실사용 파일럿 및 GMP 전환 레퍼런스 라인 구축을 통해 자립화와 수출 산업화를 동시에 추진할 필요가 있음  \n    * 출처 : Modor Intelligence(2025)\n\n ㅇ (정책·사회적 측면) PIC/S GMP 대응과 글로벌 제조 경쟁 심화에 따라 고품질 바이오제조 장비 국산화와 공정 고도화가 요구되고 있으며, 표준 공정사이클·시험법·데이터 인테그리티(DI) 체계를 국산 장비와 제어 시스템에 통합함으로써 소부장 자립 및 CDMO 기업의 경쟁력 강화를 실현할 필요가 있음"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "3. 활용분야"
+              },
+              {
+                "col": 3,
+                "colSpan": 24,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "ㅇ 항체 기반 신규 모달리티 치료제, 유전자치료제 등 바이오신약 완제품"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "4. 지원기간/예산/추진체계"
+              },
+              {
+                "col": 5,
+                "colSpan": 22,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 27,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "ㅇ 연구개발기간 : 56개월 이내(1차년도 : 9개월, 2차년도 : 11개월, 3~5차년도 : 각 12개월)\n\n ㅇ 정부지원연구개발비 : ’26년 9억원 이내(총 정부지원연구개발비 57억원 이내)\n\n ㅇ 주관연구개발기관 : 중소·중견 기업 (수요기업 참여 필수)\n\n ㅇ 정부납부기술료 납부대상 여부 : 대상"
+              }
+            ],
+            "cols": 27,
+            "control": 0,
+            "csvReady": false,
+            "index": 4,
+            "mergeCount": 70,
+            "paragraph": 5,
+            "rows": 27,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 5,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\hancom-hwp\\form-002.hwp",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 27,
+            "index": 0,
+            "mergeCount": 69,
+            "rows": 26
+          },
+          {
+            "cols": 28,
+            "index": 1,
+            "mergeCount": 79,
+            "rows": 29
+          },
+          {
+            "cols": 27,
+            "index": 2,
+            "mergeCount": 70,
+            "rows": 27
+          },
+          {
+            "cols": 27,
+            "index": 3,
+            "mergeCount": 70,
+            "rows": 27
+          },
+          {
+            "cols": 27,
+            "index": 4,
+            "mergeCount": 70,
+            "rows": 27
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

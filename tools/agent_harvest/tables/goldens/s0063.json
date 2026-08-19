@@ -1,0 +1,2224 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\basic\\issue2007_nested_cell_pagination_42065.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\basic\\issue2007_nested_cell_pagination_42065.hwp",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 2
+          },
+          {
+            "cols": 3,
+            "index": 1,
+            "rows": 2
+          },
+          {
+            "cols": 1,
+            "index": 2,
+            "rows": 2
+          },
+          {
+            "cols": 1,
+            "index": 3,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 4,
+            "rows": 1
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\basic\\issue2007_nested_cell_pagination_42065.hwp",
+        "tableCount": 5,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 5,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\basic\\issue2007_nested_cell_pagination_42065.hwp",
+        "tableCount": 5,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 2,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Ⅰ. 규제 심사(안) 개요"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "□ 요  약"
+              }
+            ],
+            "cols": 1,
+            "control": 4,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 2,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "규제 사무명"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "현행 규제내용"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "변경(또는 신설) 규제내용"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "공익침해행위 피신고자 등에 대한 사실확인 기능 보완"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "<신  설>"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "○ 신고사항의 진위여부를 확인하는데 필요한 범위에서 피신고자, 이해관계인, 관계기관에 출석요구, 자료제출요구 등을 할 수 있도록 함\n○ 정당한 사유없이 위 요구를 방해‧거부하거나 고의로 지연시킨 자는 1천만원 이하의 과태료 부과"
+              }
+            ],
+            "cols": 3,
+            "control": 2,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 1,
+            "rows": 2,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 2,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Ⅱ. 규제심사안"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 5,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "1. 공익침해행위 피신고자 등에 대한 사실확인 기능 보완"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "󰊱 규제 신설 내용"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "○ 신고사항을 확인하기 위하여 피신고자, 이해관계인 및 관계기관에 다음의 사항을 할 수 있도록 함\n\n  - 출석요구 및 진술청취 또는 진술서 제출 요구, 자료제출 요구, 현장조사 또는 검증, 관련 사실 또는 정보의 조회\n\n○ 정당한 사유없이 자료제출, 의견진술 등을 방해‧거부하거나 고의로 지연시키는 자에게 1천만원 이하의 과태료를 부과함"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 1,
+                        "kind": "tableCell",
+                        "paragraph": 0
+                      }
+                    ],
+                    "control": 5,
+                    "index": 0,
+                    "paragraph": 2,
+                    "rows": 4,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 18,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "현        행"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "개   정   안"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "제9조(신고내용의 확인 및 이첩 등) ① (생  략)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "제9조(신고내용의 확인 및 이첩 등) ① (현행과 같음)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "② 위원회는 제1항의 사항에 대한 진위여부를 확인하는 데 필요한 범위에서 공익신고자에게 필요한 자료의 제출을 요구할 수 있다."
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "② 위원회는 제1항의 사항에 대한 진위여부를 확인하는데 필요한 범위에서 공익신고자, 피신고자, 이해관계인 및 관계 기관에 다음 각 호의 사항을 할 수 있다.\n  1. 출석요구 및 진술청취 또는 진술서 제출 요구\n  2. 신고사항과 관련이 있다고 인정되는 자료 등의 제출 요구\n  3. 신고사항과 관련이 있다고 인정되는 장소, 시설 또는 자료 등에 대한 현장조사 또는 검증\n  4. 신고사항과 관련이 있다고 인정되는 사실 또는 정보의 조회"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "③ ∼ ⑧ (생  략)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "③ ∼ ⑧ (현행과 같음)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "제31조(과태료) ①ㆍ② (생  략)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "제31조(과태료) ①ㆍ② (현행과 같음)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "<신  설>"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "③ 정당한 사유 없이 제9조제2항에 따른 행위를 방해ㆍ거부하거나 고의로 지연시킨 자에게는 1천만원 이하의 과태료를 부과한다."
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "③ 제1항 및 제2항에 따른 과태료는 대통령령으로 정하는 바에 따라 위원회가 부과ㆍ징수한다."
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "④ 제1항부터 제3항까지------------------------------------------------------."
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 1,
+                        "kind": "tableCell",
+                        "paragraph": 3
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 2,
+                    "rows": 9,
+                    "section": 0
+                  }
+                ],
+                "row": 1,
+                "rowSpan": 1,
+                "text": "<조문 대비표>"
+              }
+            ],
+            "cols": 1,
+            "control": 1,
+            "csvReady": true,
+            "index": 2,
+            "mergeCount": 0,
+            "paragraph": 2,
+            "rows": 2,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 35,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "1. 규제사무명 등"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "등록번호"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "규제사무명"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "공익침해행위 피신고자 등에 대한 사실확인 기능 보완"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 2,
+                        "text": "2. 구분"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "등록변경사유"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "신설"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "등록단위"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "성격별분류"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "행정적규제"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "유형/구분"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 3,
+                        "text": "3. 소관부처 및\n   작성자 인적사항"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "소관부처"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "국민권익위원회"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "제안부처"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "국민권익위원회"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "담당부서"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "공익심사정책과"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "처리기관"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "중앙행정기관(본부)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "작성자 인적사항"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "- 국민권익위원회 공익심사정책과 정은수 사무관"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "4. 근거법령명 등"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 4,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "공익신고자 보호법"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "5. 피규제집단 \n   및 이해관계자"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 4,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 11,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 2,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "유형"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "인원수 또는\n규모"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "의견\n수렴방식"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "의견내용"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "피규제자"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "피신고자, 이해관계인 및 관계기관"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 2,
+                                "text": "-"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 2,
+                                "text": "입법예고"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 2,
+                                "text": "검토중"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "이해관계자"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "신고자"
+                              }
+                            ],
+                            "cols": 5,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 1
+                              },
+                              {
+                                "cell": 28,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              }
+                            ],
+                            "control": 0,
+                            "index": 0,
+                            "paragraph": 6,
+                            "rows": 3,
+                            "section": 0
+                          }
+                        ],
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "6. 규제존속기한"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 4,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "- 미설정 (사유 : 지속적인 시행이 필요한 사항)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "7. 종전규제 및 \n   신설(강화)규제의 내용"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 4,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "- 신설 규제 내용\n · 신고내용의 진위여부를 확인하는데 필요한 범위에서 피신고자 등에 대한 자료제출, 의견진술 등의 요구를 할 수 있도록 하고, 이를 방해‧거부한 경우 1천만원 이하의 과태료를 부과"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 11,
+                        "rowSpan": 1,
+                        "text": "8. 규제체계도"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 4,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 1,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "ㅇ 공익침해행위 신고"
+                              }
+                            ],
+                            "cols": 1,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 1
+                              },
+                              {
+                                "cell": 34,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              }
+                            ],
+                            "control": 0,
+                            "index": 0,
+                            "paragraph": 6,
+                            "rows": 1,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 1,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "ㅇ 피신고자, 이해관계인 및 관계기관에 자료제출 등 요구"
+                              }
+                            ],
+                            "cols": 1,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 1
+                              },
+                              {
+                                "cell": 34,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 2
+                              }
+                            ],
+                            "control": 0,
+                            "index": 1,
+                            "paragraph": 6,
+                            "rows": 1,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 1,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "ㅇ 방해‧거부 및 고의로 지연시 과태료 부과"
+                              }
+                            ],
+                            "cols": 1,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 1
+                              },
+                              {
+                                "cell": 34,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 4
+                              }
+                            ],
+                            "control": 0,
+                            "index": 2,
+                            "paragraph": 6,
+                            "rows": 1,
+                            "section": 0
+                          }
+                        ],
+                        "row": 11,
+                        "rowSpan": 1,
+                        "text": "⇩\n\n⇩"
+                      }
+                    ],
+                    "cols": 5,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 1
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 6,
+                    "rows": 12,
+                    "section": 0
+                  }
+                ],
+                "row": 0,
+                "rowSpan": 1,
+                "text": "【분석대상 규제의 개요】"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 3,
+            "mergeCount": 0,
+            "paragraph": 6,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 55,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 2,
+                                "text": "구 분"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 2,
+                                "text": "접 수"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 4,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "처  리"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "소 계"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "이 첩"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "송 부"
+                              },
+                              {
+                                "col": 5,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "종 결"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "2011년"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "292"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "227"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "8"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "143"
+                              },
+                              {
+                                "col": 5,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "76"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "2012년"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "1,153"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "1,113"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "104"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "531"
+                              },
+                              {
+                                "col": 5,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "478"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "2013년"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "2,887"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "2,509"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "73"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "1,427"
+                              },
+                              {
+                                "col": 5,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "1,009"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "2014년"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "9,130"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "8,239"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "168"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "6,569"
+                              },
+                              {
+                                "col": 5,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "1,502"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "2015년"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "5,771"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "7,089"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "90"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "3,190"
+                              },
+                              {
+                                "col": 5,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "3,809"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "2016년"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "2,611"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "2,560"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "79"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "1,155"
+                              },
+                              {
+                                "col": 5,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "1,326"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 8,
+                                "rowSpan": 1,
+                                "text": "2017년(9월)"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 8,
+                                "rowSpan": 1,
+                                "text": "1,660"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 8,
+                                "rowSpan": 1,
+                                "text": "1,442"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 8,
+                                "rowSpan": 1,
+                                "text": "52"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 8,
+                                "rowSpan": 1,
+                                "text": "366"
+                              },
+                              {
+                                "col": 5,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 8,
+                                "rowSpan": 1,
+                                "text": "1,024"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 9,
+                                "rowSpan": 1,
+                                "text": "합 계"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 9,
+                                "rowSpan": 1,
+                                "text": "23,504"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 9,
+                                "rowSpan": 1,
+                                "text": "23,179"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 9,
+                                "rowSpan": 1,
+                                "text": "574"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 9,
+                                "rowSpan": 1,
+                                "text": "13,381"
+                              },
+                              {
+                                "col": 5,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 9,
+                                "rowSpan": 1,
+                                "text": "9,224"
+                              }
+                            ],
+                            "cols": 6,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 1,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              },
+                              {
+                                "cell": 0,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 12
+                              }
+                            ],
+                            "control": 0,
+                            "index": 0,
+                            "paragraph": 7,
+                            "rows": 10,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 21,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "기  관"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "조사‧수사권"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "주 요 내 용"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "미국 OSC\n(특별조사국)"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "수사권‧기소권"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "󰋻내부신고의 접수, 조사, 수사 및 기소\n󰋻조사내용 중 공개가치가 있는 사실 선별, 언론 공개"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "홍콩 ICAC\n(염정공서)"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "수사권\n기소권(한정적)"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "󰋻일반수사권, 특별조사권, 무영장 체포권\n󰋻위반사항에 대한 명백한 증거가 없는 경우에도 가택수사 허용\n󰋻금융계좌 추적권\n󰋻혐의자 재산권 행사 제한, 재산명세서 제출 요구권\n󰋻직권 인지수사권\n󰋻사안의 정도에 따라 법무부 동의하에 법원에 기소하거나, 타 행정부서에 이첩 및 행정징계위원회에 회부\n󰋻법무부, 검찰과 대등한 협력관계"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "싱가포르 CPIB\n(탐오조사국 또는 부패행위조사국)"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "조사‧수사권"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "󰋻계좌추적권, 압수수색권\n󰋻특수한 경우 무영장 체포권\n󰋻기소가 필요한 사건은 검찰에 이첩\n󰋻법무부, 검찰과 상호보완 관계(검찰총장이 부패혐의에 대해 조사국장에게 조사요구 가능)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "말레이시아 MACC\n(반부패위원회)"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "부패전담수사권\n(경찰권‧조사권 동시보유)"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "󰋻특수한 경우 무영장 체포권\n󰋻긴급시 영장없이 검색 및 압수권 행사\n󰋻계좌추적권, 압수수색권 \n󰋻직권 인지수사권\n󰋻형사범죄성이 인정되는 사건에 대해 기소, 공소유지"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "인도네시아\nKPK\n(부패방지위원회)"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "조사‧수사권, 체포권, 기소권"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "󰋻정예 조사관들에게 국회의원 도청권, 공공부문 부패사건 조사 및 기소권 부여\n󰋻직접 수사한 사건은 반부패법원(특별법원)에 직접 기소\n󰋻다음의 경우 검‧경이 진행하는 부패행위의 기소를 이첩받음\n  - 부패신고 처리에 착수하지 않을 때\n  - 정당한 사유없이 부패사건의 처리가 지연될 때\n  - 부패행위자를 보호하는 방식으로 사건이 처리될 때\n  - 부패행위 처리 자체에 부정이 있을 때\n  - 타 기관 개입으로 부패사건의 적절한 처리에 장애가 있을 때"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "EU\n(부패방지총국)"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "조사‧수사권"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "󰋻조약에 의한 독자적 수사권, 행정조사권\n󰋻EU 예산사용 관련, 조직내외 부정‧비리 조사 감시\n󰋻조사를 위해 EU의 모든 기구와 기관을 사전 통보 없이 조사 가능"
+                              }
+                            ],
+                            "cols": 3,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 1,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              },
+                              {
+                                "cell": 0,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 72
+                              }
+                            ],
+                            "control": 0,
+                            "index": 1,
+                            "paragraph": 7,
+                            "rows": 7,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 32,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "기  관"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "주 요 기 능"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "관 련 법 률"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "주 요 내 용"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "공정위"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "󰋻불공정거래행위 규제\n󰋻부당한 공동행위 및 사업자단체의 경쟁제한행위 규제"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "󰋻공정거래법, 하도급법, 가맹사업법 등"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "󰋻직권으로 필요한 조사(인지조사)\n󰋻당사자․이해관계인․참고인의 출석 및 의견청취\n󰋻조사에 필요한 자료나 물건의 제출명령 및 제출된 자료나 물건의 영치\n󰋻금융거래정보의 제출요구\n󰋻조사불응시 벌금 및 과태료, 이행강제금"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "국세청"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "󰋻국가재정 확보"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "󰋻국세기본법, 국세징수법, 조세범처벌법\n󰋻기타 개별세법"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "󰋻자료 제출요구(개별세법상 질문‧조사권)\n󰋻현장조사, 압수수색\n󰋻금융조사\n󰋻조사불응시 과태료"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "선관위"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "󰋻공명선거 실시"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "󰋻공직선거법"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "󰋻관계인에 대한 질문․조사 및 관계서류 등 자료의 제출 요구\n󰋻선관위에 동행 또는 출석요구\n󰋻조사불응시 징역형․벌금 및 과태료"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "인권위"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "󰋻인권침해행위에 대한 조사와 구제\n󰋻인권에 대한 교육․홍보"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "󰋻국가인권위원회법"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "󰋻당사자․관계인에 대한 출석요구, 진술청취 및 자료 등의 제출요구\n󰋻조사와 관련한 장소, 시설, 자료 등에 대한 실지조사 또는 감정\n󰋻당사자․관계인․관계기관 등에 대한 조사 및 관련 사실․정보에 대한 조회\n󰋻질문․검사권\n󰋻조사불응시 과태료"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "감사원"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "󰋻세입․세출의 결산검사\n󰋻행정기관 및 공무원 직무감찰"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "󰋻감사원법, 공공감사에 관한 법률"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "󰋻세입․세출의 결산 확인․검사\n󰋻직무감찰, 관계자 등의 출석요구\n󰋻관계물품 등의 제출 요구\n󰋻창고․금고․문부․물품 등의 봉인\n󰋻금융거래정보 또는 자료제출 요구\n󰋻조사불응시 징역형․벌금"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "금융위"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "󰋻건전한 거래질서 확립 및 투자자 보호"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "󰋻자본시장과 금융투자업에 관한 법률 등"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "󰋻위반행위의 혐의가 있는 자․관계자에 대한 진술서 제출 및 출석 요구\n󰋻조사에 필요한 장부․서류․물건 제출 및 제출된 물건의 영치\n󰋻사무소․사업장 출입을 통한 업무․장부․서류․물건 조사, 압수수색\n󰋻조사불응시 징역형․벌금"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "조달청"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "󰋻조달사업 공공성 확보"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "󰋻조달사업에 관한 법률\n ※ ’17.1월 조사권 도입"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 7,
+                                "rowSpan": 1,
+                                "text": "󰋻‘불공정한 수요물자 조달행위’ 신고내용 조사를 위해 계약상대자에게 자료제출 요구\n󰋻사무소․사업장․공장 등을 방문하여 시설․서류 조사"
+                              }
+                            ],
+                            "cols": 4,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 1,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              },
+                              {
+                                "cell": 0,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 79
+                              }
+                            ],
+                            "control": 0,
+                            "index": 2,
+                            "paragraph": 7,
+                            "rows": 8,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 1,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "󰋻독점규제 및 공정거래에 관한 법률\n제49조(위반행위의 인지ㆍ신고등) ①공정거래위원회는 이 법의 규정에 위반한 혐의가 있다고 인정할 때에는 직권으로 필요한 조사를 할 수 있다. \n  ②누구든지 이 법의 규정에 위반되는 사실이 있다고 인정할 때에는 그 사실을 공정거래위원회에 신고할 수 있다.\n  ③공정거래위원회는 제1항 또는 제2항의 규정에 의하여 조사를 한 경우에는 그 결과(調査結果 是正措置命令등의 처분을 하고자 하는 경우에는 그 처분의 내용을 포함한다)를 서면으로 당해사건의 당사자에게 통지하여야 한다.  \n제50조(위반행위의 조사 등) ①공정거래위원회는 이 법의 시행을 위하여 필요하다고 인정할 때에는 대통령령이 정하는 바에 의하여 다음 각호의 처분을 할 수 있다.\n  1. 당사자, 이해관계인 또는 참고인의 출석 및 의견의 청취\n  2. 감정인의 지정 및 감정의 위촉\n  3. 사업자, 사업자단체 또는 이들의 임직원에 대하여 원가 및 경영상황에 관한 보고, 기타 필요한 자료나 물건의 제출을 명하거나 제출된 자료나 물건의 영치\n  ②공정거래위원회는 이 법의 시행을 위하여 필요하다고 인정할 때에는 그 소속공무원[제65조(權限의 위임ㆍ委託)의 규정에 의한 위임을 받은 기관의 소속공무원을 포함한다]으로 하여금 사업자 또는 사업자단체의 사무소 또는 사업장에 출입하여 업무 및 경영상황, 장부ㆍ서류, 전산자료ㆍ음성녹음자료ㆍ화상자료 그 밖에 대통령령이 정하는 자료나 물건을 조사하게 할 수 있으며, 대통령령이 정하는 바에 의하여 지정된 장소에서 당사자, 이해관계인 또는 참고인의 진술을 듣게 할 수 있다. \n  ③제2항의 규정에 의하여 조사를 하는 공무원은 대통령령이 정하는 바에 따라 사업자, 사업자단체 또는 이들의 임직원에 대하여 조사에 필요한 자료나 물건의 제출을 명하거나 제출된 자료나 물건의 영치를 할 수 있다.\n  ④제2항의 규정에 의하여 조사를 하는 공무원은 그 권한을 표시하는 증표를 관계인에게 제시하여야 한다.\n  ⑤공정거래위원회는 제15조(탈법행위의 금지)를 위반하여 제9조(상호출자의 금지등)제1항의 적용을 면탈하는 행위를 한 상당한 혐의가 있는 자의 조사와 관련하여 금융거래 관련 정보 또는 자료(이하 \"금융거래정보\"라 한다)에 의하지 아니하고는 그 탈법행위 여부를 확인할 수 없다고 인정되는 경우 또는 제23조(불공정거래행위의 금지)제1항제7호를 위반한 상당한 혐의가 있는 공시대상기업집단에 속하는 회사의 조사와 관련하여 금융거래정보에 의하지 아니하고는 자금 등의 지원 여부를 확인할 수 없다고 인정되는 경우에는 「금융실명거래 및 비밀보장에 관한 법률」 제4조의 규정에 불구하고 제37조의3(전원회의 및 소회의 관장사항)에 규정된 회의의 의결을 거쳐 다음 각호의 사항을 기재한 문서에 의하여 금융기관의 특정점포의 장에게 금융거래정보의 제출을 요구할 수 있으며, 그 특정점포의 장은 이를 거부하지 못한다. \n  1. 거래자의 인적 사항\n  2. 요구대상 거래기간\n  3. 요구의 법적 근거\n  4. 사용목적\n  5. 요구하는 금융거래정보의 내용(제9조의 적용을 면탈하려는 행위 또는 부당지원행위와 관련된 혐의가 있다고 인정되는 자의 금융기관과의 제9조의 적용을 면탈하려는 행위 또는 부당지원행위와 관련된 금융거래정보에 한한다)\n  6. 요구하는 기관의 담당자 및 책임자의 성명과 직책 등 인적 사항\n  ⑥제5항의 규정에 의한 금융거래정보의 제출요구는 조사를 위하여 필요한 최소한도에 그쳐야 한다.  \n  ⑦제5항의 규정에 따라 금융기관이 공정거래위원회에 금융거래정보를 제공하는 경우에는 당해 금융기관은 금융거래정보를 제공한 날부터 10일 이내에 제공한 금융거래정보의 주요내용ㆍ사용목적ㆍ제공받은 자 및 제공일자 등을 거래자에게 서면으로 통지하여야 한다. 이 경우 통지에 소요되는 비용에 관하여는 「금융실명거래 및 비밀보장에 관한 법률」 제4조의2(거래정보등의 제공사실의 통보)제4항의 규정을 준용한다.  \n  ⑧공정거래위원회는 제5항의 규정에 따라 금융기관에 대하여 금융거래정보를 요구하는 경우에는 그 사실을 기록하여야 하며, 금융거래정보를 요구한 날부터 3년간 동 기록을 보관하여야 한다. \n  ⑨제5항의 규정에 따라 금융거래정보를 제공받은 자는 그 자료를 타인에게 제공 또는 누설하거나 그 목적 외의 용도로 이를 이용하여서는 아니된다.  \n제50조의2(조사권의 남용금지) 조사공무원은 이 법의 시행을 위하여 필요한 최소한의 범위 안에서 조사를 행하여야 하며, 다른 목적 등을 위하여 조사권을 남용하여서는 아니된다.\n제50조의4(이행강제금 등) ① 공정거래위원회는 사업자 또는 사업자단체가 제50조제1항제3호 또는 같은 조 제3항에 따른 보고 또는 자료나 물건의 제출 명령을 이행하지 아니한 경우, 그 보고 또는 자료나 물건이 이 법 위반 여부를 확인하는 데 필요하다고 인정하는 때에는 소회의의 결정으로 그 보고 또는 자료나 물건의 제출을 다시 명령할 수 있으며, 이를 이행하지 아니한 자에게는 매 1일당 대통령령으로 정하는 1일 평균매출액의 1000분의 3의 범위에서 이행강제금을 부과할 수 있다. 다만, 매출액이 없거나 매출액의 산정이 곤란한 경우에는 매 1일당 200만원의 범위에서 이행강제금을 부과할 수 있다.\n  ② 이행강제금의 부과ㆍ납부ㆍ징수 및 환급 등에 대해서는 제17조의3제2항 및 제3항을 준용한다.\n제66조(벌칙) ①다음 각 호의 어느 하나에 해당하는 자는 3년 이하의 징역 또는 2억원 이하의 벌금에 처한다.  \n  11. 제50조제2항에 따른 조사 시 폭언·폭행, 고의적인 현장진입 저지·지연 등을 통하여 조사를 거부·방해 또는 기피한 자\n제69조의2(과태료) ①사업자 또는 사업자단체가 제1호 내지 제6호 및 제8호에 해당하는 경우에는 1억원 이하, 제7호에 해당하는 경우에는 2억원 이하, 회사 또는 사업자단체의 임원 또는 종업원 기타 이해관계인이 제1호 내지 제6호 및 제8호에 해당하는 경우에는 1천만원 이하, 제7호에 해당하는 경우에는 5천만원 이하의 과태료에 처한다. \n  1. 제11조의2(대규모내부거래의 이사회 의결 및 공시)부터 제11조의4(기업집단현황 등에 관한 공시)까지의 규정에 따른 공시를 하는 경우에 이사회의 의결을 거치지 아니하거나 공시를 하지 아니한 자 또는 주요내용을 누락하거나 허위로 공시한 자\n  2. 제12조(企業結合의 申告)제1항 또는 제6항의 규정에 의한 기업결합의 신고를 하지 아니하거나 허위의 신고를 한 자 또는 같은 조 제8항을 위반한 자\n  3. 제14조의2(系列會社의 編入 및 제외등)제2항의 자료요청에 대하여 정당한 이유없이 자료를 제출하지 아니하거나 허위의 자료를 제출한 자\n  4. 삭제  <2009.3.25.>\n  5. 제50조(위반행위의 조사등)제1항제1호의 규정에 위반하여 정당한 사유없이 출석을 하지 아니한 자\n  6. 제50조(위반행위의 조사등)제1항제3호 또는 제3항의 규정에 의한 보고 또는 필요한 자료나 물건의 제출을 하지 아니하거나, 허위의 보고 또는 자료나 물건을 제출한 자\n  7. 제50조제2항에 따른 조사 시 자료의 은닉·폐기, 접근거부 또는 위조·변조 등을 통하여 조사를 거부·방해 또는 기피한 자\n  8. 제50조(위반행위의 조사등)제5항의 규정에 의한 금융거래정보의 제출을 거부한 자"
+                              }
+                            ],
+                            "cols": 1,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 1,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              },
+                              {
+                                "cell": 0,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 84
+                              }
+                            ],
+                            "control": 0,
+                            "index": 3,
+                            "paragraph": 7,
+                            "rows": 1,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 1,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "󰋻국세징수법\n제26조(수색의 권한과 방법) ① 세무공무원은 재산을 압류하기 위하여 필요할 때에는 체납자의 가옥·선박·창고 또는 그 밖의 장소를 수색하거나 폐쇄된 문·금고 또는 기구를 열게 하거나 직접 열 수 있다. 체납자의 재산을 점유하는 제3자가 재산의 인도(引渡)를 거부할 때에도 또한 같다.\n제27조(질문권·검사권) 세무공무원은 체납처분을 집행하면서 압류할 재산의 소재 또는 수량을 알고자 할 때에는 다음 각 호의 어느 하나에 해당하는 자에게 질문하거나 장부, 서류, 그 밖의 물건을 검사할 수 있다. \n  1. 체납자\n  2. 체납자와 거래관계가 있는 자\n  3. 체납자의 재산을 점유하는 자\n  4. 체납자와 채권·채무 관계가 있는 자\n  5. 체납자가 주주 또는 사원인 법인\n  6. 체납자인 법인의 주주 또는 사원\n  7. 체납자의 재산을 은닉한 혐의가 있다고 인정되는 자로서 대통령령으로 정하는 자\n󰋻국세기본법\n제17조(명령사항위반 등에 대한 과태료 부과) 관할 세무서장은 다음 각 호의 어느 하나에 해당하는 자에게는 2,000만원 이하의 과태료를 부과한다. (중략)\n   5. 「소득세법」·「법인세법」 등 세법의 질문·조사권 규정에 따른 세무공무원의 질문에 대하여 거짓으로 진술을 하거나 그 직무집행을 거부 또는 기피한 자"
+                              }
+                            ],
+                            "cols": 1,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 1,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              },
+                              {
+                                "cell": 0,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 87
+                              }
+                            ],
+                            "control": 0,
+                            "index": 4,
+                            "paragraph": 7,
+                            "rows": 1,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 1,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "󰋻공직선거법\n제272조의2(선거범죄의 조사등) ① 각급선거관리위원회(읍·면·동선거관리위원회를 제외한다. 이하 이 條에서 같다)위원·직원은 선거범죄에 관하여 그 범죄의 혐의가 있다고 인정되거나, 후보자(경선후보자를 포함한다)·예비후보자·선거사무장·선거연락소장 또는 선거사무원이 제기한 그 범죄의 혐의가 있다는 소명이 이유있다고 인정되는 경우 또는 현행범의 신고를 받은 경우에는 그 장소에 출입하여 관계인에 대하여 질문·조사를 하거나 관련서류 기타 조사에 필요한 자료의 제출을 요구할 수 있다.  \n  ② 각급선거관리위원회 위원·직원은 선거범죄 현장에서 선거범죄에 사용된 증거물품으로서 증거인멸의 우려가 있다고 인정되는 때에는 조사에 필요한 범위 안에서 현장에서 이를 수거할 수 있다. 이 경우 당해 선거관리위원회위원·직원은 수거한 증거물품을 그 관련된 선거범죄에 대하여 고발 또는 수사의뢰한 때에는 관계수사기관에 송부하고, 그러하지 아니한 때에는 그 소유·점유·관리하는 자에게 지체없이 반환하여야 한다.  \n  ③ 누구든지 제1항의 규정에 의한 장소의 출입을 방해하여서는 아니되며 질문·조사를 받거나 자료의 제출을 요구받은 자는 이에 응하여야 한다.\n  ④ 각급선거관리위원회위원·직원은 선거범죄 조사와 관련하여 관계자에게 질문·조사하기 위하여 필요하다고 인정되는 때에는 선거관리위원회에 동행 또는 출석할 것을 요구할 수 있다. 다만, 선거기간중 후보자에 대하여는 동행 또는 출석을 요구할 수 없다.  \n  ⑤ 각급선거관리위원회위원·직원은 선거의 자유와 공정을 현저히 해할 우려가 있는 이 법에 위반되는 행위가 눈앞에 행하여지고 있거나, 행하여질 것이 명백하다고 인정되는 경우에는 그 현장에서 행위의 중단 또는 예방에 필요한 조치를 할 수 있다.  \n  ⑥ 각급선거관리위원회위원·직원이 제1항의 규정에 의한 장소에 출입하거나 질문·조사 ·자료의 제출을 요구하는 경우에는 관계인에게 그 신분을 표시하는 증표를 제시하고 소속과 성명을 밝히고 그 목적과 이유를 설명하여야 한다.\n  ⑦ 각급선거관리위원회 위원·직원이 제1항에 따라 피조사자에 대하여 질문·조사를 하는 경우 질문·조사를 하기 전에 피조사자에게 진술을 거부할 수 있는 권리 및 변호인의 조력을 받을 권리가 있음을 알리고, 문답서에 이에 대한 답변을 기재하여야 한다. \n  ⑧ 각급선거관리위원회 위원·직원은 피조사자가 변호인의 조력을 받으려는 의사를 밝힌 경우 지체 없이 변호인(변호인이 되려는 자를 포함한다)으로 하여금 조사에 참여하게 하거나 의견을 진술하게 하여야 한다.  \n  ⑨ 제1항부터 제8항까지의 규정에 따른 소명절차·방법, 증거자료의 수거, 증표의 규격 기타 필요한 사항은 중앙선거관리위원회규칙으로 정한다\n제256조(각종제한규정위반죄) ① ~  (중략)\n  ⑤ 다음 각 호의 어느 하나에 해당하는 자는 1년 이하의 징역 또는 200만원 이하의 벌금에 처한다. (중략)\n  12. 제272조의2제3항(제8조의8제11항에서 준용하는 경우를 포함한다)을 위반하여 출입을 방해하거나 자료제출요구에 응하지 아니한 자 또는 허위의 자료를 제출한 자\n제261조(과태료의 부과·징수 등) ① ~ ⑤ (중략)\n  ⑥다음 각 호의 어느 하나에 해당하는 행위를 한 자는 300만원 이하의 과태료를 부과한다. (중략)\n  1. 제70조제3항·제71조제10항·제72조제3항(제74조제2항에서 준용하는 경우를 포함한다)·제73조제1항(관할 선거구선거관리위원회가 제공하는 내용에 한한다) 및 제2항·제272조의3제4항 또는 제275조의 규정을 위반한 자\n  2. 「형사소송법」 제211조(현행범인과 준현행범인)에 규정된 현행범인 또는 준현행범인으로서 제272조의2제4항(제8조의8제11항에서 준용하는 경우를 포함한다)에 따른 동행요구에 응하지 아니한 자"
+                              }
+                            ],
+                            "cols": 1,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 1,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              },
+                              {
+                                "cell": 0,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 90
+                              }
+                            ],
+                            "control": 0,
+                            "index": 5,
+                            "paragraph": 7,
+                            "rows": 1,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 1,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "󰋻국가인권위원회법\n제36조(조사의 방법) ① 위원회는 다음 각 호에서 정한 방법으로 진정에 관하여 조사할 수 있다.\n  1. 진정인·피해자·피진정인(이하 \"당사자\"라 한다) 또는 관계인에 대한 출석 요구, 진술 청취 또는 진술서 제출 요구\n  2. 당사자, 관계인 또는 관계 기관 등에 대하여 조사 사항과 관련이 있다고 인정되는 자료 등의 제출 요구\n  3. 조사 사항과 관련이 있다고 인정되는 장소, 시설 또는 자료 등에 대한 현장조사 또는 감정(鑑定)\n  4. 당사자, 관계인 또는 관계 기관 등에 대하여 조사 사항과 관련이 있다고 인정되는 사실 또는 정보의 조회\n  ② 위원회는 조사를 위하여 필요하다고 인정하면 위원 또는 소속 직원에게 일정한 장소 또는 시설을 방문하여 장소, 시설 또는 자료 등에 대하여 현장조사 또는 감정을 하게 할 수 있다. 이 경우 위원회는 그 장소 또는 시설에 당사자나 관계인의 출석을 요구하여 진술을 들을 수 있다.\n  ③ 제1항제1호에 따라 진술서 제출을 요구받은 사람은 14일 이내에 진술서를 제출하여야 한다.\n  ④ 제1항과 제2항에 따른 피진정인에 대한 출석 요구는 인권침해행위나 차별행위를 한 행위당사자의 진술서만으로는 사안을 판단하기 어렵고, 제30조제1항에 따른 인권침해행위나 차별행위가 있었다고 볼 만한 상당한 이유가 있는 경우에만 할 수 있다.\n  ⑤ 제2항에 따라 조사를 하는 위원 또는 소속 직원은 그 장소 또는 시설을 관리하는 장 또는 직원에게 필요한 자료나 물건의 제출을 요구할 수 있다.\n  ⑥ 제2항에 따라 조사를 하는 위원 또는 소속 직원은 그 권한을 표시하는 증표를 지니고 이를 그 장소 또는 시설을 관리하는 장 또는 직원에게 내보여야 한다.\n  ⑦ 위원회가 자료나 물건의 제출을 요구하거나 그 자료, 물건 또는 시설에 대한 현장조사 또는 감정을 하려고 하는 경우 관계 국가기관의 장은 그 자료, 물건 또는 시설이 다음 각 호의 어느 하나에 해당한다는 사실을 위원회에 소명하고 그 자료나 물건의 제출 또는 그 자료, 물건, 시설에 대한 현장조사 또는 감정을 거부할 수 있다. 이 경우 위원회는 관계 국가기관의 장에게 필요한 사항의 확인을 요구할 수 있으며, 요구를 받은 관계 국가기관의 장은 이에 성실히 협조하여야 한다.\n  1. 국가의 안전보장 또는 외교관계에 중대한 영향을 미치는 국가기밀 사항인 경우\n  2. 범죄 수사나 계속 중인 재판에 중대한 지장을 줄 우려가 있는 경우\n제37조(질문ㆍ검사권) ① 위원회는 제36조의 조사에 필요한 자료 등이 있는 곳 또는 관계인에 관하여 파악하려면 그 내용을 알고 있다고 믿을 만한 상당한 이유가 있는 사람에게 질문하거나 그 내용을 포함하고 있다고 믿을 만한 상당한 이유가 있는 서류와 그 밖의 물건을 검사할 수 있다.\n  ② 제1항의 경우에는 제36조제5항부터 제7항까지를 준용한다.\n제63조(과태료) ①다음 각호의 1에 해당하는 자는 1천만원 이하의 과태료에 처한다.\n  1. 정당한 이유없이 제24조제1항의 규정에 의한 방문조사 또는 제36조의 규정에 의한 실지조사를 거부, 방해 또는 기피한 자\n  2. 정당한 이유없이 제36조제1항제1호 또는 제2항의 규정에 의한 위원회의 진술서 제출요구 또는 출석요구에 응하지 아니한 자\n  3. 정당한 이유없이 제36조제1항제2호 및 제4호 또는 제5항의 규정에 의한 자료 등의 제출요구 및 사실조회에 응하지 아니하거나 거짓의 자료 등을 제출한 자"
+                              }
+                            ],
+                            "cols": 1,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 1,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              },
+                              {
+                                "cell": 0,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 93
+                              }
+                            ],
+                            "control": 0,
+                            "index": 6,
+                            "paragraph": 7,
+                            "rows": 1,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 1,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "󰋻감사원법\n제27조(출석답변ㆍ자료제출ㆍ봉인 등) ① 감사원은 감사에 필요하면 다음 각 호의 조치를 할 수 있다.\n  1. 관계자 또는 감사사항과 관련이 있다고 인정된 자의 출석·답변의 요구(「정보통신망 이용촉진 및 정보보호 등에 관한 법률」에 따른 정보통신망을 이용한 요구를 포함한다. 이하 같다)\n  2. 증명서, 변명서, 그 밖의 관계 문서 및 장부, 물품 등의 제출 요구\n  3. 창고, 금고, 문서 및 장부, 물품 등의 봉인\n  ② 감사원은 이 법에 따른 회계검사와 감사대상 기관인 금융기관에 대한 감사를 위하여 필요하면 다른 법률의 규정에도 불구하고 인적 사항을 적은 문서(「정보통신망 이용촉진 및 정보보호 등에 관한 법률」에 따른 전자문서를 포함한다. 이하 같다)에 의하여 금융기관의 특정 점포에 금융거래의 내용에 관한 정보 또는 자료의 제출을 요구할 수 있으며, 해당 금융기관에 종사하는 자는 이를 거부하지 못한다.\n  ③ 제1항제3호에 따른 봉인 및 제2항에 따른 금융거래의 내용에 관한 정보 또는 자료의 제출 요구는 감사에 필요한 최소한도에 그쳐야 한다.\n  ④ 제2항 및 제3항에 따라 금융거래의 내용에 관한 정보 또는 자료를 받은 자는 그 정보 또는 자료를 다른 사람에게 제공 또는 누설하거나 해당 목적 외의 용도로 이용하여서는 아니 된다.\n  ⑤ 감사원은 감사를 위하여 제출받은 개인의 신상이나 사생활에 관한 정보 또는 자료를 해당 감사 목적 외의 용도로 이용하여서는 아니 된다. 다만, 본인 또는 자료를 제출한 기관의 장의 동의가 있는 경우에는 그러하지 아니하다.\n제51조(벌칙) ① 다음 각 호의 어느 하나에 해당하는 자는 1년 이하의 징역 또는 1천만원 이하의 벌금에 처한다.  \n  1. 이 법에 따른 감사를 받는 자로서 감사를 거부하거나 자료제출 요구에 따르지 아니한 자\n  2. 이 법에 따른 감사를 방해한 자\n  3. 제27조제2항 및 제50조에 따른 정보 또는 자료의 제출이나 출석하여 답변할 것을 요구받고도 정당한 사유 없이 이에 따르지 아니한 자\n  ② 제27조제4항을 위반한 자는 3년 이하의 징역 또는 2천만원 이하의 벌금에 처한다."
+                              }
+                            ],
+                            "cols": 1,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 1,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              },
+                              {
+                                "cell": 0,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 96
+                              }
+                            ],
+                            "control": 0,
+                            "index": 7,
+                            "paragraph": 7,
+                            "rows": 1,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 1,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "󰋻자본시장과 금융투자업에 관한 법률\n제426조(보고 및 조사) ① 금융위원회(제172조부터 제174조까지, 제176조, 제178조, 제178조의2, 제180조부터 제180조의3까지의 규정을 위반한 사항인 경우에는 증권선물위원회를 말한다. 이하 이 조에서 같다)는 이 법 또는 이 법에 따른 명령이나 처분을 위반한 사항이 있거나 투자자 보호 또는 건전한 거래질서를 위하여 필요하다고 인정되는 경우에는 위반행위의 혐의가 있는 자, 그 밖의 관계자에게 참고가 될 보고 또는 자료의 제출을 명하거나 금융감독원장에게 장부·서류, 그 밖의 물건을 조사하게 할 수 있다.  \n  ② 금융위원회는 제1항에 따른 조사를 위하여 위반행위의 혐의가 있는 자, 그 밖의 관계자에게 다음 각 호의 사항을 요구할 수 있다.  \n  1. 조사사항에 관한 사실과 상황에 대한 진술서의 제출\n  2. 조사사항에 관한 진술을 위한 출석\n  3. 조사에 필요한 장부·서류, 그 밖의 물건의 제출\n  ③ 금융위원회는 제1항에 따른 조사를 함에 있어서 제172조부터 제174조까지, 제176조, 제178조, 제178조의2, 제180조부터 제180조의3까지의 규정을 위반한 사항의 조사에 필요하다고 인정되는 경우에는 다음 각 호의 조치를 할 수 있다.  \n  1. 제2항제3호에 따라 제출된 장부·서류, 그 밖의 물건의 영치\n  2. 관계자의 사무소 또는 사업장에 대한 출입을 통한 업무·장부·서류, 그 밖의 물건의 조사\n  ④ 금융위원회는 제1항에 따른 조사를 함에 있어서 필요하다고 인정되는 경우에는 금융투자업자, 금융투자업관계기관 또는 거래소에 대통령령으로 정하는 방법에 따라 조사에 필요한 자료의 제출을 요구할 수 있다. \n  ⑤ 금융위원회는 제1항에 따른 조사 결과 별표 15 각 호의 어느 하나에 해당하는 경우에는 시정명령, 그 밖에 대통령령으로 정하는 조치를 할 수 있으며, 조사 및 조치를 함에 있어서 필요한 절차·조치기준, 그 밖에 필요한 사항을 정하여 고시할 수 있다.  \n  ⑥ 거래소는 이상거래의 심리 및 회원에 대한 감리결과 이 법 또는 이 법에 따른 명령이나 처분을 위반한 혐의를 알게 된 경우에는 금융위원회에 통보하여야 한다.\n  ⑦ 제3항제2호에 따라 조사를 하는 자는 그 권한을 표시하는 증표를 지니고 이를 관계자에게 내보여야 한다.\n  ⑧ 금융위원회는 관계자에 대한 조사실적·처리결과, 그 밖에 관계자의 위법행위를 예방하는데 필요한 정보 및 자료를 대통령령으로 정하는 방법에 따라 공표할 수 있다.  \n제427조(불공정거래 조사를 위한 압수·수색) ① 증권선물위원회는 제172조부터 제174조까지, 제176조, 제178조, 제178조의2, 제180조부터 제180조의3까지의 규정을 위반한 행위(이하 이 조에서 \"위반행위\"라 한다)를 조사하기 위하여 필요하다고 인정되는 경우에는 금융위원회 소속공무원 중 대통령령으로 정하는 자(이하 이 조에서 \"조사공무원\"이라 한다)에게 위반행위의 혐의가 있는 자를 심문하거나 물건을 압수 또는 사업장 등을 수색하게 할 수 있다. \n  ② 조사공무원이 위반행위를 조사하기 위하여 압수 또는 수색을 하는 경우에는 검사의 청구에 의하여 법관이 발부한 압수·수색영장이 있어야 한다. \n  ③ 조사공무원이 제1항에 따라 심문·압수·수색을 하는 경우에는 그 권한을 표시하는 증표를 지니고 이를 관계자에게 내보여야 한다.\n  ④ 형사소송법 중 압수·수색과 압수·수색영장의 집행 및 압수물 환부(還付) 등에 관한 규정은 이 법에 규정된 압수·수색과 압수·수색영장에 관하여 준용한다.\n  ⑤ 조사공무원이 영치·심문·압수 또는 수색을 한 경우에는 그 전 과정을 기재하여 입회인 또는 심문을 받은 자에게 확인시킨 후 그와 함께 기명날인 또는 서명하여야 한다. 이 경우 입회인 또는 심문을 받은 자가 기명날인 또는 서명을 하지 아니하거나 할 수 없는 때에는 그 사유를 덧붙여 적어야 한다.\n  ⑥ 조사공무원이 위반행위의 조사를 완료한 경우에는 그 결과를 증권선물위원회에 보고하여야 한다.\n제427조의2(조사권한의 남용 금지) ① 조사공무원 및 제426조에 따라 조사업무를 수행하는 금융감독원 소속 직원(이하 \"조사원\"이라 한다)은 이 법의 시행을 위하여 필요한 최소한의 범위 안에서 조사를 행하여야 하며, 다른 목적 등을 위하여 조사권을 남용하여서는 아니 된다.\n  ② 금융위원회는 조사원의 조사권 남용을 방지하고 조사절차의 적법성을 보장하기 위한 구체적 기준을 정하여 고시할 수 있다.\n제445조(벌칙) 다음 각 호의 어느 하나에 해당하는 자는 3년 이하의 징역 또는 1억원 이하의 벌금에 처한다. (중략)\n  48. 제426조제2항에 따른 금융위원회(제172조부터 제174조까지, 제176조, 제178조, 제178조의2, 제180조부터 제180조의3까지의 규정을 위반한 사항인 경우에는 증권선물위원회를 말한다)의 요구에 불응한 자"
+                              }
+                            ],
+                            "cols": 1,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 1,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              },
+                              {
+                                "cell": 0,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 99
+                              }
+                            ],
+                            "control": 0,
+                            "index": 8,
+                            "paragraph": 7,
+                            "rows": 1,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 1,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "󰋻조달사업에 관한 법률\n제9조의3(불공정한 수요물자 조달행위의 조사) ① 조달청장은 수요물자 조달과정에서 공정성을 해치는 다음 각 호의 어느 하나에 해당하는 행위(이하 \"불공정한 수요물자 조달행위\"라 한다)에 대하여 신고를 접수하고, 그 신고 내용의 조사를 위하여 필요한 경우 소속 공무원으로 하여금 계약상대자에게 자료의 제출을 요구하거나 사무소·사업장·공장 등을 방문하여 시설·서류 등을 조사하게 할 수 있다.\n  1. 입찰자 또는 계약상대자 등이 입찰 또는 계약, 납품검사 등에 관한 서류를 위조·변조하거나 거짓 서류를 제출하는 행위\n  2. 직접생산기준을 위반하여 납품하는 행위\n  3. 원산지를 거짓으로 표시하여 납품하는 행위\n  4. 수요기관 등의 사전 승인 없이 계약규격과 상이한 제품을 납품하는 행위\n  5. 우수조달물품등의 지정을 거짓이나 부정한 방법으로 받은 행위\n  ② 제1항에 따라 조사를 수행하는 공무원은 그 권한을 표시하는 증표를 관계인에게 제시하여야 한다.\n  ③ 제1항에 따라 조사를 수행하는 공무원은 이 법의 시행을 위하여 필요한 최소한의 범위에서 행하여야 하며, 다른 목적 등을 위하여 권한을 남용하여서는 아니 된다.\n  ④ 조달청장은 불공정한 수요물자 조달행위가 확인된 계약상대자에 대하여는 시정을 요구할 수 있으며, 「국가를 당사자로 하는 계약에 관한 법률」 등 관계 법령이나 계약조건에 따라 처분 등 조치를 취하여야 한다.\n  ⑤ 제4항에 따라 시정요구를 받은 계약상대자는 대통령령으로 정하는 바에 따라 조달청장에게 이의를 제기할 수 있다."
+                              }
+                            ],
+                            "cols": 1,
+                            "containerPath": [
+                              {
+                                "cell": 0,
+                                "control": 1,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              },
+                              {
+                                "cell": 0,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 102
+                              }
+                            ],
+                            "control": 0,
+                            "index": 9,
+                            "paragraph": 7,
+                            "rows": 1,
+                            "section": 0
+                          }
+                        ],
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "[평가요소별 규제영향분석]\n\n가. 규제의 필요성\n\n 1) 현황 및 문제점\n\n  □ 공익신고 접수‧처리 현황\n\n   ○ 공익신고가 접수되면 신고자만을 대상으로 신고내용을 확인하고, 조사·수사가 필요한 경우 해당 기관에 이첩·송부\n\n< 공익신고 접수 및 처리 현황 >\n(단위 : 건)\n\n      ※ 접수된 공익신고 사건 중 공익침해행위 여부가 비교적 명확한 경우 이첩, 그렇지 않은 경우 송부 처리\n\n  □ 낮은 이첩율과 저조한 송부사건 혐의적발률\n\n   ○ 피신고자에 대한 사실확인 없이 신고자의 제출 자료와 진술에 의존하여 송부 중심으로 사건 처리\n       ※ 이첩률 : 2.5%, 송부율 : 57.7%, 송부사건이 이첩사건의 23.3배\n\n   ○ 그 결과, 송부사건의 공익침해행위 혐의적발률이 47.1%에 불과 \n       ※ 혐의적발률 : 송부사건 47.1%, 이첩사건 82.2%\n\n\n\n 2) 정부개입의 필요성\n\n   ○ 신고사건 송부율이 높은 반면 절반 이상의 송부사건에서 혐의가 적발되지 않아 권익위, 조사·수사기관의 행정력 낭비 발생\n\n   ○ 피신고자 등에 대한 사실확인 절차 없이 신고자의 자료제출 및 진술에 의존하여 이첩·송부 또는 종결 여부를 결정함으로써 신고자의 입증부담 가중\n\n   ○ 조사·수사기관에 대한 권익위의 공익신고 사건 이첩·송부 전 피신고자의 소명기회 부족\n\n 3) 규제의 도입목표 및 기대효과\n\n   ○ 공익신고 사건에 대한 철저한 사실확인을 통해 이첩률 및 혐의적발률을 제고하여 효율적인 공익신고 처리 체계를 구축\n\n   ○ 권익위의 조사·수사기관 이첩·송부 전 신고자의 입증부담을 경감하고 피신고자에게는 충분한 소명기회 부여\n\n나. 대안의 발굴·검토\n\n 1) 고려된 대안\n\n  <현행유지안, 비규제대안> : 피신고자에 대한 사실확인 부재\n\n   ○ 피신고자에 대해 자료제출, 의견진술 등 사실확인을 하지 않는 대안\n\n    ⇒ 피신고자에게는 소명기회가 부여되지 않으며, 공익신고 처리기간 지연 및 무혐의 가능성 등으로 인해 신고자는 권익위에 신고할 유인 감소, 신고처리를 통한 부패행위 통제기능 약화\n\n\n\n  <규제대안 1> : 피신고자에 대한 사실확인 및 불응시 과태료 부과\n\n   ○ 피신고자 등에 대한 자료제출, 의견진술 등 사실확인 기능을 보완하고 이를 거부‧방해할 경우 과태료를 부과하는 대안\n\n    ⇒ 신고사항의 철저한 진위확인을 통해 이첩률과 혐의적발률을 제고하여 공익신고 처리 체계의 효율성을 제고하고, 신고자 만족도를 제고하는 한편 피신고자에게는 철저한 소명기회를 부여하며, 사실확인 요청에 대한 방해·거부·고의지연 시 과태료 부과를 통해 이행력 제고\n\n  <규제대안 2> : 피신고자에 대한 사실확인(과태료 미부과)\n\n   ○ 피신고자 등에 대한 자료제출, 의견진술 등 사실확인 기능을 보완하되, 불응시 제재수단은 부과하지 않는 대안\n\n    ⇒ 과태료 부과는 의무이행 확보라는 목적 달성을 위한 최소한의 수단으로서 자료제출 요구 등에 대한 방해‧거부시 제재수단을 부과하지 않는 경우 사실확인 기능 보완이라는 개정취지 및 목적달성에 한계가 있음\n\n 2) 대안의 분석\n  \n  <해외사례 분석>\n\n   ○ 해외 반부패 전담기구 대부분은 신고를 접수하면서 피신고자에 대해 사실확인 등 조사기능을 수행하고 있음\n\n   ○ CPI* 원천지수 중 하나인 베텔스만재단(BF)의 지속가능지수(Sustainable Governance Indicators)는 “권익위의 조사권 부재”를 부패예방점수(Corruption Prevention Score) 감점요인으로 지적(2016)\n      * CPI(반부패인식지수) : 국제투명성기구(TI)가 매년 발표하는 지표로 공공부문 및 정치부문에 존재하는 것으로 인식되는 부패의 정도를 측정\n\n< 해외 반부패 전담기구 조사기능 현황 >\n\n\n  <국내 유사입법례 분석>\n\n   ○ 공정위, 인권위 등은 피신고자 등에 대한 자료제출, 의견진술 요구 및 불응시 제재규정을 통해 고유의 행정목적을 달성하고 있음\n\n< 국내기관 조사기능 현황 >\n\n\n< 조사기능 관련 타기관 입법례 >\n\n 공정거래위원회\n\n\n 국세청\n\n\n 중앙선거관리위원회\n\n\n 국가인권위원회\n\n\n 감사원\n\n\n 금융위원회\n\n\n 조달청\n\n  \n  <이해관계자 협의> : 입법예고‧기관협의 중\n  \n  <기존 규제만으로 목적달성이 어려운 경우>\n\n   ○ 신고자만을 대상으로 신고내용을 확인함에 따라 신고자의 입증부담이 가중되고, 피신고자에 대한 소명기회 부여 등 사실관계 확인 없이 송부한 사건이 무혐의, 종결되어 무고, 명예훼손 등이 발생하는 경우 행정비효율과 공익신고 제도에 대한 불신 초래\n\n   ○ 따라서 조사기관에 이첩하기 전에 피신고자를 대상으로 최소한의 사실관계를 확인하는 것은 신고자의 입증부담을 경감하고 음해‧무고성 투서가 조사·수사기관으로 이송되는 것을 방지하여 공익신고 제도의 효율성과 공신력 제고에 기여할 수 있을 것임 \n \n 3) 대안별 비용·편익분석 : 해당없음\n\n \n다. 대안분석의 종합결론\n\n 1) 대안별 집행자원 및 능력\n\n   ○ ‘현행유지안’, '규제대안1‘, ’규제대안2‘의 예산 및 인력 등 집행자원 및 능력에 차이 없음\n\n 2) 대안선택 및 근거\n\n   ○ ‘규제대안1’을 선택하는 것이 타당\n\n    – ‘현행유지안’과 비교하는 경우, 피신고자에 대한 사실확인 기능을 보완하는 것이 피규제자의 권익을 보호하는 한편, 신고자의 만족도를 제고하고, 공익신고 처리의 실효성 제고에 기여\n\n    – ‘규제대안2’와 비교하는 경우, 과태료를 부과하는 방안이 의무이행 확보를 유도함으로써 개정목적 달성에 기여하는 대안임\n\n\n 3) 선호된 대안의 기대효과\n\n   ○ 공익신고 처리의 실효성을 제고함으로써 공익침해행위를 효율적으로 예방‧관리하고 투명하고 깨끗한 사회풍토 확립에 기여\n\n 4) 선호된 대안의 이해관계자 의견 및 조치 : 검토중"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 1,
+                        "kind": "tableCell",
+                        "paragraph": 0
+                      }
+                    ],
+                    "control": 2,
+                    "index": 0,
+                    "paragraph": 7,
+                    "rows": 1,
+                    "section": 0
+                  }
+                ],
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 1,
+            "control": 1,
+            "csvReady": true,
+            "index": 4,
+            "mergeCount": 0,
+            "paragraph": 7,
+            "rows": 1,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 0,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\basic\\issue2007_nested_cell_pagination_42065.hwp",
+        "tableCount": 5,
+        "tables": [],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

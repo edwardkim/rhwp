@@ -1,0 +1,2485 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2146\\21761835_jeonjik_exemption_table.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2146\\21761835_jeonjik_exemption_table.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 5,
+            "index": 0,
+            "rows": 78
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2146\\21761835_jeonjik_exemption_table.hwp",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2146\\21761835_jeonjik_exemption_table.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 296,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": true,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "직렬"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": true,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "계급\n직류"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": true,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "5급이상"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": true,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "6ㆍ7급"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": true,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "8ㆍ9급"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "행    정"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "운    수"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "산업기사(철도운송), 물류관리사, 철도교통안전관리자"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "사회복지"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "사회복지"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "사회복지사 1급"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "사회복지사 2급"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "사회복지사 3급"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "전    산"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "전    산"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "기술사(컴퓨터시스템응용, 정보통신, 정보관리)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "기사(전자계산기, 정보통신, 정보처리, 전자계산기조직응용, 정보보안)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "산업기사(전자계산기제어, 정보통신, 사무자동화, 정보처리, 정보보안, 멀티미디어콘텐츠제작전문가)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "사    서"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "사    서"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "1급 정사서"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "2급 정사서"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "준사서"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "속    기"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "속    기"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "한글속기 1급"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "한글속기 1ㆍ2급"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "한글속기 1ㆍ2‧3급"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 5,
+                "text": "공    업"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "일반기계"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 2,
+                "text": "기술사(기계, 공조냉동기계, 철도차량, 차량, 건설기계, 용접, 금형, 산업기계설비, 기계안전, 공장관리, 품질관리, 소방)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 2,
+                "text": "기능장(기계가공, 에너지관리, 철도차량정비, 자동차정비, 건설기계정비, 용접, 금형제작, 판금제관, 배관)\n기사(일반기계, 메카트로닉스, 공조냉동기계, 철도차량, 자동차정비, 건설기계설비, 건설기계정비, 궤도장비정비, 기계설계, 용접, 프레스금형설계, 사출금형설계, 농업기계, 에너지관리, 산업안전, 품질경영, 승강기, 소방설비:기계분야)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 2,
+                "text": "산업기사(컴퓨터응용가공, 기계가공조립, 생산자동화, 기계설계, 공조냉동기계, 에너지관리, 철도차량, 철도운송, 자동차정비, 건설기계설비, 건설기계정비, 궤도장비정비, 치공구설계, 정밀측정, 용접, 프레스금형, 사출금형, 기계정비, 판금제관, 농업기계, 배관, 산업안전, 품질경영, 승강기, 영사, 소방설비:기계분야), 사진기능사"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "농업기계"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 2,
+                "text": "기계운전"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "기술사(기계, 철도차량, 차량, 건설기계, 용접, 금형, 산업기계설비,  기계안전, 교통)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "기능장(기계가공, 철도차량정비, 자동차정비, 건설기계정비, 용접, 금형제작,  판금제관, 배관)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "산업기사(컴퓨터응용가공, 기계조립, 생산자동화, 기계설계,"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "기사(일반기계, 메카트로닉스, 철도차량, 자동차정비, 건설기계설비, 건설기계정비, 궤도장비정비, 기계설계, 용접, 프레스금형설계, 사출금형설계, 산업안전, 교통)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "철도차량, 철도운송, 자동차정비, 건설기계설비, 건설기계정비, 궤도장비정비, 치공구설계, 정밀측정, 용접, 프레스금형, 사출금형, 기계정비, 판금제관, 배관, 산업안전, 교통), 철도교통안전관리자"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 2,
+                "text": "일반전기"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 2,
+                "text": "기술사(발송배전, 건축전기설비, 전기응용, 철도신호, 전기철도, 전기안전, 품질관리, 소방)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 2,
+                "text": "기능장(전기)\n기사(전기, 전기공사, 철도신호, 전기철도, 산업안전, 품질경영, 승강기, 소방설비:전기분야)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 2,
+                "text": "산업기사(전기, 전기공사, 철도신호, 산업안전, 품질경영, 승강기, 전기철도, 소방설비:전기분야)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 7,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "전    자"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "기술사(산업계측제어, 전자응용, 컴퓨터시스템응용, 품질관리)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "기능장(전자기기)\n기사(메카트로닉스, 전자, 전자계산기, 전자계산기조직응용, 품질경영, 반도체설계)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "산업기사(생산자동화, 전자, 전자계산기제어, 품질경영)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "원 자 력"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "기술사(원자력발전, 방사선관리), 방사선취급감독자, 방사성동위원소취급자(특수), 원자로조종감독자, 핵연료물질취급감독자, 원자로조종사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "기사(원자력, 에너지관리)\n방사성동위원소취급자(일반), 핵연료물질취급자"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "금    속"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 2,
+                "text": "기술사(금속재료, 표면처리, 금속가공, 금속제련, 비파괴검사, 품질관리)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 2,
+                "text": "기능장(금속재료, 표면처리, 주조, 압연, 제선, 제강)\n기사(금속재료, 방사선비파괴검사, 초음파비파괴검사, 자기비파괴검사, 침투비파괴검사, 와전류비파괴검사, 누설비파괴검사, 품질경영)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 2,
+                "text": "산업기사(금속재료, 표면처리, 주조, 방사선비파괴검사, 초음파비파괴검사, 자기비파괴검사, 침투비파괴검사,  품질경영)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "야    금"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "섬    유"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "기술사(섬유, 의류, 품질관리)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "기사(섬유, 의류, 산업안전, 품질경영)\n생사기사2급(19 99. 3. 27 이전 취득)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "산업기사(섬유, 섬유디자인, 패션디자인, 패션머천다이징, 산업안전, 품질경영)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "일반화공"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "기술사(화공, 세라믹,  화공안전, 가스, 품질관리, 식품)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "기능장(위험물, 가스)\n기사(화약류제조, 화공, 화학분석,산업안전, 가스, 품질경영, 식품)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "산업기사(화약류제조, 위험물, 산업안전, 가스, 품질경영, 식품)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 2,
+                "text": "공    업"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "가    스"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "기술사(화공안전)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "기능장(위험물 , 가스)\n기사(화공, 산업안전, 가스)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "산업기사(위험물, 산업안전, 가스)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "자    원"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "기술사(자원관리, 화약류관리, 해양, 지질및지반, 광해방지)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "기사(광산보안, 화약류관리, 해양환경, 해양자원개발, 해양공학, 응용지질, 광해방지)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "산업기사(광산보안, 화약류관리, 해양조사)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 5,
+                "text": "농    업"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "일반농업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "기술사(종자, 시설원예, 농화학, 식품)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "기사(종자, 시설원예, 식물보호, 토양환경, 식품, 바이오화학제품제조, 유기농업, 화훼장식)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "산업기사(종자, 식물보호, 농림토양평가관리, 식품, 유기농업)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "잠    업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "기사(바이오화학제품제조)\n생사기사 2급(1999. 3. 27 이전 취득)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "식물검역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "기술사(조경, 종자, 산림, 농화학)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "기사(종자, 시설원예, 식물보호, 농화학, 토양환경, 산림, 바이오화학제품제조, 유기농업)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "산업기사(종자, 시설원예, 식물보호, 농림토양평가관리, 산림, 유기농업)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "농 화 학"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "기술사(농화학)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "축    산"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "기술사(축산, 식품)\n수의사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "기사(축산, 식품)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "산업기사(축산, 식품)\n가축인공수정사"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 4,
+                "text": "녹    지"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "산림자원"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "기술사(종자, 산림, 농화학, 조경)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "기사(종자, 산림,  임업종묘, 식물보호, 임산가공,  조경)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "산업기사(종자, 산림, 식물보호, 임산가공, 조경)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "산림보호"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "기술사(종자, 산림, 농화학)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "기능장(산림)\n기사(산림, 임업종묘, 식물보호, 토양환경)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "산업기사(산림, 임업종묘, 식물보호, 농림토양평가관리)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "산림이용"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "기술사(산림)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "기사(산림, 임산가공)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "산업기사(산림, 임산가공)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "조    경"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "기술사(조경, 자연환경관리, 산림, 시설원예)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "기사(조경, 자연생태복원, 산림, 시설원예, 식물보호)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "산업기사(조경, 자연생태복원, 산림, 식물보호)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": "수    의"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": "수    의"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": "수의사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 10,
+                "text": "해양수산"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": "일반해양"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 7,
+                "text": "기술사(해양, 수산양식, 어로, 수산제조, 수질관리, 식품"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 7,
+                "text": "기사(해양환경, 해양자원개발, 해양공학, 어업생산관리, 수산양식, 수산제조, 식품, 수질환경)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 7,
+                "text": "산업기사(해양조사, 수산양식, 어로, 수질환경, 식품)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "일반수산"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "수산제조"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": "수산증식"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 1,
+                "text": "어    로"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 1,
+                "text": "수산물검사"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": "해양교통시    설"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "일반선박"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "기술사(기계, 산업기계설비, 조선)\n1ㆍ2급 항해사 \n1ㆍ2급 기관사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "기사(일반기계, 조선)\n3ㆍ4급 항해사\n3ㆍ4급 기관사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "산업기사(컴퓨터응용가공, 조선)\n5ㆍ6급 항해사\n5ㆍ6급 기관사"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 38,
+                "rowSpan": 1,
+                "text": "선박항해"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 38,
+                "rowSpan": 1,
+                "text": "기술사(조선)\n1ㆍ2급 항해사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 38,
+                "rowSpan": 1,
+                "text": "기사(조선, 항로표지)\n3ㆍ4급 항해사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 38,
+                "rowSpan": 1,
+                "text": "산업기사(조선, 항로표지)\n5ㆍ6급 항해사"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "선박기관"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "기술사(기계, 산업기계설비, 조선)\n1ㆍ2급 기관사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "기사(일반기계)\n3ㆍ4급 기관사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "산업기사(컴퓨터응용가공)\n5ㆍ6급 기관사"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "보    건"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "보    건"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "기술사(산업위생관리, 대기관리, 수질관리, 소음진동, 폐기물처리, 식품, 방사선관리, 광해방지, 인간공학)\n방사성동위원소취급자(특수), 방사선취급감독자, 의사, 한의사, 치과의사, 약사, 한약사, 수의사, 전문간호사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "기사(산업위생관리, 대기환경, 수질환경, 소음진동, 폐기물처리, 식품, 광해방지, 인간공학)\n위생사, 영양사, 방사성동위원소취급자(일반), 보건의료정보관리사, 임상병리사, 방사선사, 물리치료사, 치과기공사, 치과위생사, 작업치료사, 간호사, 조산사, 임상심리사1급, 응급구조사1급"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "산업기사(산업위생관리, 대기환경, 수질환경, 소음진동, 폐기물처리, 식품)\n임상심리사2급, 응급구조사2급"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "보    건"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "방    역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "의사, 한의사, 수의사, 약사,  전문간호사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "간호사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "식품위생"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "식품위생"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "기술사(축산, 수산제조, 품질관리, 포장, 식품)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "기사(축산, 수산제조, 품질경영, 포장, 식품)\n영양사, 위생사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "산업기사(축산, 품질경영, 포장, 식품)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 2,
+                "text": "위    생"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 1,
+                "text": "위    생"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 1,
+                "text": "위생사\n영양사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 1,
+                "text": "위생사\n영양사"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 44,
+                "rowSpan": 1,
+                "text": "사    역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 44,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 44,
+                "rowSpan": 1,
+                "text": "영양사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 44,
+                "rowSpan": 1,
+                "text": "영양사\n환경기능사"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 1,
+                "text": "의료기술"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 1,
+                "text": "의료기술"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 1,
+                "text": "기술사(방사선관리)\n의사, 한의사, 치과의사, 약사, 한약사, 전문간호사, 방사성동위원소취급자(특수), 방사선취급감독자"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 1,
+                "text": "방사성동위원소취급자(일반), 보건의료정보관리사, 임상병리사, 방사선사, 물리치료사, 치과기공사, 치과위생사, 작업치료사, 간호사, 조산사, 응급구조사1급, 의지ㆍ보조기사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 1,
+                "text": "응급구조사2급"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 46,
+                "rowSpan": 2,
+                "text": "의    무"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 46,
+                "rowSpan": 1,
+                "text": "일반의무"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 46,
+                "rowSpan": 1,
+                "text": "의사, 한의사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 46,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 46,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 47,
+                "rowSpan": 1,
+                "text": "치    무"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 47,
+                "rowSpan": 1,
+                "text": "치과의사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 47,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 47,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 48,
+                "rowSpan": 2,
+                "text": "약    무"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 48,
+                "rowSpan": 1,
+                "text": "약    무"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 48,
+                "rowSpan": 2,
+                "text": "약사, 한의사, 한약사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 48,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 48,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 49,
+                "rowSpan": 1,
+                "text": "약    제"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 50,
+                "rowSpan": 1,
+                "text": "간    호"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 50,
+                "rowSpan": 1,
+                "text": "간    호"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 50,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 50,
+                "rowSpan": 1,
+                "text": "간호사, 조산사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 50,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 51,
+                "rowSpan": 1,
+                "text": "간호조무"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 51,
+                "rowSpan": 1,
+                "text": "간호조무"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 51,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 51,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 51,
+                "rowSpan": 1,
+                "text": "간호조무사"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 52,
+                "rowSpan": 1,
+                "text": "보건진료"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 52,
+                "rowSpan": 1,
+                "text": "보건진료"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 52,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 52,
+                "rowSpan": 1,
+                "text": "간호사, 조산사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 52,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 53,
+                "rowSpan": 4,
+                "text": "환    경"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 53,
+                "rowSpan": 1,
+                "text": "일반환경"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 53,
+                "rowSpan": 1,
+                "text": "기술사(화공, 수자원개발, 상하수도, 조경, 산림, 농화학, 해양, 화공안전, 산업위생관리, 대기관리, 수질관리, 소음진동, 지질및지반, 기상예보, 폐기물처리, 자연환경관리, 토양환경, 방사선관리, 광해방지)\n의사, 약사, 수의사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 53,
+                "rowSpan": 1,
+                "text": "기사(화공, 조경, 산림, 식물보호, 해양환경, 산업위생관리, 대기환경, 수질환경, 소음진동, 응용지질, 폐기물처리, 자연생태복원, 생물분류, 토양환경, 기상, 광해방지)\n위생사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 53,
+                "rowSpan": 1,
+                "text": "산업기사(조경, 산림, 식물보호, 농림토양평가관리, 해양조사, 산업위생관리, 대기환경, 수질환경, 소음진동, 폐기물처리, 자연생태복원)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 54,
+                "rowSpan": 1,
+                "text": "수    질"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 54,
+                "rowSpan": 1,
+                "text": "기술사(수자원개발, 상하수도, 산림, 농화학, 해양, 수산양식, 수질관리, 광해방지)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 54,
+                "rowSpan": 1,
+                "text": "기사(농화학, 해양환경, 해양자원개발, 수산양식, 수질환경, 광해방지) 위생사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 54,
+                "rowSpan": 1,
+                "text": "산업기사(산림, 해양조사, 수산양식, 수질환경)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 55,
+                "rowSpan": 1,
+                "text": "대    기"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 55,
+                "rowSpan": 1,
+                "text": "기술사(산림, 대기관리, 소음진동, 지질및지반, 기상예보)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 55,
+                "rowSpan": 1,
+                "text": "기사(대기환경, 소음진동, 기상, 응용지질)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 55,
+                "rowSpan": 1,
+                "text": "산업기사(산림, 대기환경, 소음진동)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 56,
+                "rowSpan": 1,
+                "text": "폐 기 물"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 56,
+                "rowSpan": 1,
+                "text": "기술사(화공, 산림, 상하수도, 농화학, 원자력발전, 방사선관리, 산업위생관리, 폐기물처리, 토양환경, 광해방지)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 56,
+                "rowSpan": 1,
+                "text": "기사(화공, 원자력, 에너지관리, 산업위생관리, 폐기물처리, 토양환경, 광해방지)\n위생사 2급, 위생시험사 2급"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 56,
+                "rowSpan": 1,
+                "text": "산업기사(화공, 산림, 에너지관리, 산업위생관리, 폐기물처리)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 57,
+                "rowSpan": 3,
+                "text": "항    공"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 57,
+                "rowSpan": 1,
+                "text": "일반항공"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 57,
+                "rowSpan": 1,
+                "text": "기술사(항공기관, 항공기체)\n운송용조종사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 57,
+                "rowSpan": 1,
+                "text": "기사(항공)\n항공공장정비사, 사업용조종사, 항공사, 항공정비사, 항공교통관제사, 항공기관사, 운항관리사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 57,
+                "rowSpan": 1,
+                "text": "산업기사(항공)\n자가용조종사"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 58,
+                "rowSpan": 1,
+                "text": "조    종"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 58,
+                "rowSpan": 1,
+                "text": "운송용조종사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 58,
+                "rowSpan": 1,
+                "text": "사업용조종사, 항공사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 58,
+                "rowSpan": 1,
+                "text": "자가용조종사"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 59,
+                "rowSpan": 1,
+                "text": "정    비"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 59,
+                "rowSpan": 1,
+                "text": "기술사(항공기관, 항공기체)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 59,
+                "rowSpan": 1,
+                "text": "기사(항공)\n항공정비사, 항공공장정비사, 항공기관사"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 59,
+                "rowSpan": 1,
+                "text": "산업기사(항공)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 60,
+                "rowSpan": 10,
+                "text": "시    설"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 60,
+                "rowSpan": 1,
+                "text": "도시계획"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 60,
+                "rowSpan": 1,
+                "text": "기술사(토질 및 기초, 토목구조, 항만 및 해안, 도로 및 공항, 수자원개발, 상하수도, 토목시공, 측량 및 지형공간정보, 건축구조, 건축시공, 도시계획, 조경, 지적, 교통, 지질및지반)\n건축사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 60,
+                "rowSpan": 1,
+                "text": "기능장(건축일반시공)\n기사(토목, 측량 및 지형공간정보, 건축, 도시계획, 조경, 지적, 교통, 응용지질, 방재)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 60,
+                "rowSpan": 1,
+                "text": "산업기사(토목, 측량 및 지형공간정보, 건축일반시공, 건축, 조경, 지적, 교통)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 61,
+                "rowSpan": 1,
+                "text": "일반토목"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 61,
+                "rowSpan": 2,
+                "text": "기술사(토질 및 기초, 토목품질시험, 토목구조, 항만 및 해안, 도로 및 공항, 철도, 수자원개발, 농어업토목, 토목시공, 측량 및 지형공간정보, 도시계획, 조경, 지적, 지질및지반, 건설안전, 교통, 광해방지)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 61,
+                "rowSpan": 2,
+                "text": "기사(건설재료시험, 철도토목, 토목, 측량 및 지형공간정보, 도시계획, 조경, 지적, 건설안전, 교통, 응용지질, 광해방지, 방재)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 61,
+                "rowSpan": 2,
+                "text": "산업기사(건설재료시험, 콘크리트, 철도토목, 토목, 측량 및 지형공간정보, 조경, 지적, 건설안전, 교통)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 62,
+                "rowSpan": 1,
+                "text": "수도토목"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 63,
+                "rowSpan": 1,
+                "text": "농업토목"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 63,
+                "rowSpan": 1,
+                "text": "기술사(토질 및 기초, 토목품질시험, 토목구조, 수자원개발, 상하수도, 농어업토목, 토목시공, 측량 및 지형공간정보, 조경, 지적, 지질및지반, 건설안전, 교통)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 63,
+                "rowSpan": 1,
+                "text": "기사(건설재료시험, 토목, 측량 및 지형공간정보, 조경, 지적, 응용지질, 건설안전, 교통, 방재)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 63,
+                "rowSpan": 1,
+                "text": "산업기사(건설재료시험, 토목, 측량 및 지형공간정보, 조경, 지적, 건설안전, 교통)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 64,
+                "rowSpan": 1,
+                "text": "건    축"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 64,
+                "rowSpan": 1,
+                "text": "기술사(건축전기설비, 건축구조, 건축기계설비, 건축시공, 건축품질시험, 건설안전, 소방)\n건축사"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 64,
+                "rowSpan": 1,
+                "text": "기능장(건축일반시공, 건축목재시공)\n기사(건축설비, 건축, 실내건축, 건설안전, 소방설비)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 64,
+                "rowSpan": 1,
+                "text": "산업기사(건축설비, 건축일반시공, 건축, 건축목공, 방수, 실내건축, 건설안전, 소방설비)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 65,
+                "rowSpan": 1,
+                "text": "지    적"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 65,
+                "rowSpan": 1,
+                "text": "기술사(측량 및 지형공간정보, 지적)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 65,
+                "rowSpan": 1,
+                "text": "기사(측량 및 지형공간정보, 지적)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 65,
+                "rowSpan": 1,
+                "text": "산업기사(측량 및 지형공간정보, 지적)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 66,
+                "rowSpan": 1,
+                "text": "측    지"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 66,
+                "rowSpan": 1,
+                "text": "기술사(측량 및 지형공간정보, 지적)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 66,
+                "rowSpan": 1,
+                "text": "기사(측량 및 지형공간정보, 지적)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 66,
+                "rowSpan": 1,
+                "text": "산업기사(측량 및 지형공간정보, 지적)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 67,
+                "rowSpan": 1,
+                "text": "교통시설"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 67,
+                "rowSpan": 2,
+                "text": "기술사(토지 및 기초, 토목품질시험, 토목구조, 도로 및 공항, 철도, 토목시공, 측량 및 지형공간정보, 도시계획, 조경, 지적, 건설안전, 교통, 지질및지반)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 67,
+                "rowSpan": 2,
+                "text": "기사(건설재료시험, 철도토목, 토목, 측량 및 지형공간정보, 도시계획, 조경, 지적, 건설안전, 교통, 응용지질)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 67,
+                "rowSpan": 2,
+                "text": "산업기사(건설재료시험, 철도토목, 토목, 측량 및 지형공간정보, 조경, 지적, 건설안전, 교통)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 68,
+                "rowSpan": 1,
+                "text": "도시교통  설    계"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 69,
+                "rowSpan": 1,
+                "text": "디자인"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 69,
+                "rowSpan": 1,
+                "text": "기술사(제품디자인, 도시계획, 조경)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 69,
+                "rowSpan": 1,
+                "text": "기사(시각디자인, 컬러리스트, 제품디자인, 건축, 실내건축, 도시계획, 조경)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 69,
+                "rowSpan": 1,
+                "text": "산업기사(시각디자인, 컬러리스트, 제품디자인, 건축, 실내건축, 조경)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 70,
+                "rowSpan": 4,
+                "text": "방송통신"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 70,
+                "rowSpan": 1,
+                "text": "통 신 사"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 70,
+                "rowSpan": 4,
+                "text": "기술사(전자응용, 정보통신)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 70,
+                "rowSpan": 4,
+                "text": "기능장(전자기기, 통신설비)\n기사(전자, 정보통신, 전파전자통신, 전자계산기, 무선설비, 정보처리)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 70,
+                "rowSpan": 4,
+                "text": "산업기사(전자, 전자계산기제어, 정보통신, 전파전자통신, 정보처리, 사무자동화, 통신선로, 무선설비, 방송통신)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 71,
+                "rowSpan": 1,
+                "text": "통신기술"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 72,
+                "rowSpan": 1,
+                "text": "전송기술"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 73,
+                "rowSpan": 1,
+                "text": "전자통신\n기    술"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 74,
+                "rowSpan": 1,
+                "text": "조    리"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 74,
+                "rowSpan": 1,
+                "text": "조    리"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 74,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 74,
+                "rowSpan": 1,
+                "text": "조리기능장"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 74,
+                "rowSpan": 1,
+                "text": "조리산업기사(한식, 중식, 일식, 양식, 복어)\n조리기능사(한식, 중식, 일식, 양식, 복어)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 75,
+                "rowSpan": 1,
+                "text": "방재안전"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 75,
+                "rowSpan": 1,
+                "text": "방재안전"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 75,
+                "rowSpan": 1,
+                "text": "기술사(토질 및 기초, 토목품질시험, 토목구조, 항만 및 해안, 도로 및 공항, 철도, 수자원개발, 상하수도, 농어업토목, 토목시공, 측량 및 지형공간정보, 도시계획, 지질 및 지반, 건설안전, 교통, 광해방지, 건축전기설비, 건축구조, 건축기계설비, 건축시공, 건축품질시험)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 75,
+                "rowSpan": 1,
+                "text": "기능장(건축일반시공, 건축목재시공)\n기사(건설재료시험, 콘크리트, 철도토목, 토목, 측량 및 지형공간정보, 도시계획, 응용지질, 건설안전, 교통, 광해방지, 건축설비, 건축, 방재)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 75,
+                "rowSpan": 1,
+                "text": "산업기사(건설재료시험, 콘크리트, 철도토목, 토목, 측량 및 지형공간정보, 건설안전, 교통, 건축설비, 건축일반시공, 건축, 건축목공)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 76,
+                "rowSpan": 1,
+                "text": "시설관리"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 76,
+                "rowSpan": 1,
+                "text": "시설관리"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 76,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 76,
+                "rowSpan": 1,
+                "text": "기능장(전기)\n기사(전기, 전기공사, 토목, 건축설비, 건축, 소방설비<전기분야, 기계분야>, 조경)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 76,
+                "rowSpan": 1,
+                "text": "산업기사(전기, 전기공사, 기계정비, 토목, 건축설비, 건축, 소방설비<전기분야, 기계분야>, 조경)\n기능사(전기, 기계정비, 조경)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 77,
+                "rowSpan": 1,
+                "text": "운    전"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 77,
+                "rowSpan": 1,
+                "text": "운    전"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 77,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 77,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 77,
+                "rowSpan": 1,
+                "text": "제1종운전면허(대형)\n제1종운전면허(보통)\n제2종운전면허(보통)"
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 39,
+            "paragraph": 4,
+            "rows": 78,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2146\\21761835_jeonjik_exemption_table.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 5,
+            "index": 0,
+            "mergeCount": 39,
+            "rows": 78
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

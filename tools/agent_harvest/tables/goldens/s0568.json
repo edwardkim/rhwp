@@ -1,0 +1,1341 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1745\\table_text_anchor_wrap.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1745\\table_text_anchor_wrap.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 6,
+            "index": 0,
+            "rows": 48
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1745\\table_text_anchor_wrap.hwp",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1745\\table_text_anchor_wrap.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 153,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "업무정지 처분을 갈음하여 부과하는 과징금 산정기준(제33조 관련)"
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "1. 의약품등의 제조업자, 품목허가를 받은 자 및 수입자의 경우"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "구분"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "업무정지에 1일에 해당하는 과징금"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "해당 품목의 전년도 총생산금액 또는 총수입금액"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "1"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "5만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "3억5천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "2"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "6만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "3억5천만원 이상 4억5천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "3"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "8만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "4억5천만원 이상 5억5천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "4"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "9만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "5억5천만원 이상 6억5천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "5"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "11만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "6억5천만원 이상 7억5천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "6"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "13만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "7억5천만원 이상 8억5천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "7"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "14만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "8억5천만원 이상 9억5천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "8"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "19만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "9억5천만원 이상 15억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "9"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "31만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "15억원 이상 25억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "10"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "47만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "25억원 이상 35억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "11"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "61만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "35억원 이상 45억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "12"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "78만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "45억원 이상 55억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "13"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "94만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "55억원 이상 65억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "14"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "111만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "65억원 이상 75억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "15"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "128만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "75억원 이상 85억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "16"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "139만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "85억원 이상 95억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "17"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "194만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "95억원 이상 150억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "18"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "317만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "150억원 이상 250억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "19"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "478만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "250억원 이상 350억원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "20"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "556만원"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "350억원 이상"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "비고\n1. 업무정지 1개월은 30일을 기준으로 한다.\n2. 의약품등의 제조업자, 품목허가를 받은 자 또는 수입자에 대한 과징금 산정기준은 다음 각 목과 같다.\n  가. 제조(수입)업무의 정지처분을 갈음하여 과징금 처분을 하는 경우에는 해당 업소에 대한 처분일이 속한 연도의 전년도의 전품목의 1년간 총생산금액 또는 총수입금액을 기준으로 한다.\n  나. 품목제조(수입)업무의 정지처분을 갈음하여 과징금 처분을 하는 경우에는 해당 업소에 대한 처분일이 속한 연도의 전년도의 해당 품목의 1년간 총생산금액 또는 총수입금액을 기준으로 한다.\n  다. 가목 및 나목의 경우 제조업자, 품목허가를 받은 자 또는 수입자가 신규로 품목을 제조 또는 수입하거나 휴업 등으로 인하여 1년간의 총생산금액 또는 총수입금액을 기준으로 과징금을 산정하는 것이 불합리하다고 인정되는 경우에는 분기별, 월별 또는 일별 생산(수입)금액을 기준으로 산정한다.\n\n3. 의약품등의 제조업자 또는 수입자에 대한 과징금 산정기준 적용 시 그 처분내용에 제조(수입)업무정지와 품목제조(수입)업무정지가 아닌 다른 종류의 업무정지기간만 표시되어 있는 때에는 그 기간에 2분의 1을 곱하여 산정한다.\n\n2. 약국개설자 및 의약품 판매업자의 경우"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 2,
+                "text": "구분"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 2,
+                "text": "업무정지 1일에 해당하는 과징금"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "의약품 도매상"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "약국개설자 또는 의약품 도매상을 제외한 의약품 판매업자"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "전년도 총매출 금액"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "전년도 총매출 금액"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "1"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "3만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "5억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "3천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "2"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "6만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "5억원 이상 7억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "3천만원 이상\n4천5백만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": "3"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": "9만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": "7억원 이상 10억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": "4천5백만원 이상\n6천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": "4"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": "12만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": "10억원 이상 15억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": "6천만원 이상\n7천5백만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "5"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "15만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "15억원 이상 20억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "7천5백만원 이상\n9천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "6"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "18만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "20억원 이상 25억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "9천만원 이상\n1억5백만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": "7"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": "21만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": "25억원 이상 30억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": "1억5백만원 이상\n1억2천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 1,
+                "text": "8"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 1,
+                "text": "24만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 1,
+                "text": "30억원 이상 35억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 1,
+                "text": "1억2천만원 이상\n1억3천5백만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 1,
+                "text": "9"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 1,
+                "text": "27만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 1,
+                "text": "35억원 이상 40억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 1,
+                "text": "1억3천5백만원 이상\n1억5천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": "10"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": "30만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": "40억원 이상 45억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": "1억5천만원 이상\n1억6천5백만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "11"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "33만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "45억원 이상 50억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "1억6천5백만원 이상\n1억8천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 38,
+                "rowSpan": 1,
+                "text": "12"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 38,
+                "rowSpan": 1,
+                "text": "36만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 38,
+                "rowSpan": 1,
+                "text": "50억원 이상 60억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 38,
+                "rowSpan": 1,
+                "text": "1억8천만원 이상\n1억9천5백만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "13"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "39만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "60억원 이상 70억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "1억9천5백만원 이상\n2억1천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "14"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "42만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "70억원 이상 80억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "2억1천만원 이상\n2억2천5백만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "15"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "45만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "80억원 이상 90억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "2억2천5백만원 이상\n2억4천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "16"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "48만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "90억원 이상 100억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "2억4천만원 이상\n2억5천5백만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 1,
+                "text": "17"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 1,
+                "text": "51만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 1,
+                "text": "100억원 이상 150억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 1,
+                "text": "2억5천5백만원 이상\n2억7천만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 44,
+                "rowSpan": 1,
+                "text": "18"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 44,
+                "rowSpan": 1,
+                "text": "54만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 44,
+                "rowSpan": 1,
+                "text": "150억원 이상 200억원 미만"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 44,
+                "rowSpan": 1,
+                "text": "2억7천만원 이상\n2억8천5백만원 미만"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 1,
+                "text": "19"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 1,
+                "text": "57만원"
+              },
+              {
+                "col": 3,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 1,
+                "text": "200억원 이상"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 1,
+                "text": "2억8천5백만원 이상"
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 46,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 47,
+                "rowSpan": 1,
+                "text": "비고\n1. 업무정지 1개월은 30일을 기준으로 한다.\n2. 약국개설자 또는 의약품 판매업자에 대한 과징금 산정은 해당 업소의 처분 전년도 1년간의 총매출금액을 기준으로 한다. 다만, 신규사업·휴업 등으로 인하여 1년간 총매출금액을 산출할 수 없거나 1년간의 총매출금액을 기준으로 하는 것이 불합리하다고 인정되는 경우에는 분기별, 월별 또는 일별 매출금액을 기준으로 산출 또는 조정한다."
+              }
+            ],
+            "cols": 6,
+            "control": 2,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 113,
+            "paragraph": 0,
+            "rows": 48,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task1745\\table_text_anchor_wrap.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 6,
+            "index": 0,
+            "mergeCount": 113,
+            "rows": 48
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

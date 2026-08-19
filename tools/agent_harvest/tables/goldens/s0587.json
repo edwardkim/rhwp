@@ -1,0 +1,150 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2070\\hy_ladder4.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2070\\hy_ladder4.hwpx",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 5
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2070\\hy_ladder4.hwpx",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2070\\hy_ladder4.hwpx",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 5,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "8. 복합개발사업의 시행으로 용도가 폐지되는 기반시설의 조서ㆍ도면 및 그 기반시설에 대한 둘 이상의 감정평가법인등의 감정평가서와 새로 설치할 기반시설의 조서ㆍ도면 및 그 설치비용 계산서"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "8. 복합개발사업의 시행으로 용도가 폐지되는 기반시설의 조서ㆍ도면 및 그 기반시설에 대한 둘 이상의 감정평가법인등의 감정평가서와 새로 설치할 기반시설의 조서ㆍ도면 및 그 설치비용 계산서"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "8. 복합개발사업의 시행으로 용도가 폐지되는 기반시설의 조서ㆍ도면 및 그 기반시설에 대한 둘 이상의 감정평가법인등의 감정평가서와 새로 설치할 기반시설의 조서ㆍ도면 및 그 설치비용 계산서"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "8. 복합개발사업의 시행으로 용도가 폐지되는 기반시설의 조서ㆍ도면 및 그 기반시설에 대한 둘 이상의 감정평가법인등의 감정평가서와 새로 설치할 기반시설의 조서ㆍ도면 및 그 설치비용 계산서"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "8. 복합개발사업의 시행으로 용도가 폐지되는 기반시설의 조서ㆍ도면 및 그 기반시설에 대한 둘 이상의 감정평가법인등의 감정평가서와 새로 설치할 기반시설의 조서ㆍ도면 및 그 설치비용 계산서"
+              }
+            ],
+            "cols": 1,
+            "control": 2,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 5,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 0,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2070\\hy_ladder4.hwpx",
+        "tableCount": 1,
+        "tables": [],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

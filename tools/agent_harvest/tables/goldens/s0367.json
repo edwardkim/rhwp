@@ -1,0 +1,1943 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1949_giant_cell_nested_tables_perf.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1949_giant_cell_nested_tables_perf.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 3
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1949_giant_cell_nested_tables_perf.hwp",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1949_giant_cell_nested_tables_perf.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "[별표]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "수면비행선박 안전시설요건(제4조 관련)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 7,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "2종류가 합쳐진 재료"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "압력 p(MPa)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "안쪽 역류"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "바깥쪽 역류"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "스테인리스강 - 청동\n스테인리스강 - 고무\n스테인리스강 - 카프롤론"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "-\n6.0\n-"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "15.0\n8.0\n6.0"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 81
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 0,
+                    "rows": 3,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 74,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "풍력"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 7,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "수면비행선박의 수선면 상부 측면중심과 해수면의 거리 (m)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "Beaufort\nScale"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "m/s"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "1"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "2"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "3"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "4"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "5"
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "6"
+                      },
+                      {
+                        "col": 8,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "7이상"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "2"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "5"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "15"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "20"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "25"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "25"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "30"
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "30"
+                      },
+                      {
+                        "col": 8,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "35"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "3"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "7"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "50"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "60"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "65"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "70"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "75"
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "80"
+                      },
+                      {
+                        "col": 8,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "85"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "4"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "9"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "95"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "120"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "135"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "145"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "150"
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "160"
+                      },
+                      {
+                        "col": 8,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "165"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "5"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "12"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "155"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "195"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "220"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "235"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "250"
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "265"
+                      },
+                      {
+                        "col": 8,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "275"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "6"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "15"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "240"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "300"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "335"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "360"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "385"
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "400"
+                      },
+                      {
+                        "col": 8,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "415"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "7"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "19"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "435"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "545"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "605"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "655"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "700"
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "730"
+                      },
+                      {
+                        "col": 8,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "750"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "8"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "23"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "705"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "875"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "970"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "1050"
+                      },
+                      {
+                        "col": 6,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "1115"
+                      },
+                      {
+                        "col": 7,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "1170"
+                      },
+                      {
+                        "col": 8,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "1230"
+                      }
+                    ],
+                    "cols": 9,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 288
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 0,
+                    "rows": 9,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 4,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "구 역"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "침수율"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "화물구역 또는 창고\n선실\n기관구역\n액체용 tank\nRo-Ro 화물구역\nvoid"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "60\n95\n85\n0 또는 95*\n90\n95"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 322
+                      }
+                    ],
+                    "control": 0,
+                    "index": 2,
+                    "paragraph": 0,
+                    "rows": 2,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 10,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "구  분"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "변동률"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "정상상태"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "과도상태"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "주파수"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "±5퍼센트"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "±10퍼센트 (5초)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "전  압"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "＋6퍼센트, －10퍼센트"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "±20퍼센트 (1.5초)"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 619
+                      }
+                    ],
+                    "control": 0,
+                    "index": 3,
+                    "paragraph": 0,
+                    "rows": 4,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 8,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "파라미터"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "변동률"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "전압 허용한계 (정상상태)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "±10퍼센트"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "전압주기 변동 편차"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "5퍼센트"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "전압맥동 (정상직류전압에 대한 교류 실효치)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "10퍼센트"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 623
+                      }
+                    ],
+                    "control": 0,
+                    "index": 4,
+                    "paragraph": 0,
+                    "rows": 4,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 7,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "계통"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "변동률"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "충전하는 동안 축전지에 접속된 회로 (비고 참조)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "＋30퍼센트, －2퍼센트"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "충전하는 동안 축전지에 접속되지 않는 회로"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "＋20퍼센트, －25퍼센트"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "(비고)\n충전장치에서의 맥동전압을 포함한 충․방전 특성에 따라 다른 전압변동률을 고려할 수 있다."
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 626
+                      }
+                    ],
+                    "control": 0,
+                    "index": 5,
+                    "paragraph": 0,
+                    "rows": 4,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 12,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "형식"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "각 탐지기에 대한 \n최대 바닥면적"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "탐지기의 최대\n중심간 거리"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "격벽으로부터의 \n최대거리"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "열 탐지기"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "37 ㎡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "9 m"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "4.5 m"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "연기탐지기"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "74 ㎡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "11 m"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "5.5 m"
+                      }
+                    ],
+                    "cols": 4,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 1517
+                      }
+                    ],
+                    "control": 0,
+                    "index": 6,
+                    "paragraph": 0,
+                    "rows": 3,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 4,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "여객 정원"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "소화기수"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "13에서 30\n31에서 60\n61에서 200\n201에서 300\n301에서 400\n401에서 500\n501에서 600\n601에서 700"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "1\n2\n3\n4\n5\n6\n7\n8"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 1606
+                      }
+                    ],
+                    "control": 0,
+                    "index": 7,
+                    "paragraph": 0,
+                    "rows": 2,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 4,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "설계등급 1 : 충돌설계가속도(gcoll)가 3 미만"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "1   \t의자/안전벨트\n 1.1  \t낮거나 높은 등받이\n 1.2  \t의자의 방향에 제한 없음\n 1.3  \t안전벨트 요구하지 않음\n 2  \t돌출된 물체에 보호대 부착\n 3  \t수하물에 특별한 제한 없음\n 4  \t중량물의 제한 및 위치 선정"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "설계등급 2 : 충돌설계가속도(gcoll)가 3 이상 12 이하"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "1  \t의자/안전벨트\n 1.1  \t변형을 방지하는 패딩이 있는 높은 등받이\n 1.2  \t전 방향 의자\n 1.3  \t전면에 보호대가 없는 경우에는 무릎벨트를 설치. 다만, 그러한 위치 및 배치에서 벨트 없이 만족스럽게 시험된 경우에는 예외\n 2  \t돌출 된 물체에는 보호대 부착\n 3  \t수화물 구역의 전면 보호\n 4  \t중량물의 제한 및 위치 선정"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 1719
+                      }
+                    ],
+                    "control": 0,
+                    "index": 8,
+                    "paragraph": 0,
+                    "rows": 4,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 11,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "항해예정시간"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "화장실 설치기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "1시간 미만"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "여객 정원 80인까지 1개, 80인 초과 시 80인 단수 마다 1개 추가"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "1시간 이상 \n2시간 미만"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "여객 정원 70인까지 1개, 70인 초과 시 70인 단수 마다 1개 추가"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "2시간 이상 \n3시간 미만"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "여객 정원 60인 까지 1개, 60인 초과 시 60인 단수 마다 1개 추가"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "3시간 이상"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "여객 정원 50인 까지 1개, 50인 초과 시 50인 단수 마다 1개 추가"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "비고 :\n1. “항해예정시간”이란 출발항에서 최종 도착항에 이르는 기항지의 정박시간을 포함한 총 소요시간을 말한다.\n2. 초과 인원 단수가 절반 미만인 경우에는 그 초과인원에 대한 화장실을 설치하지 아니할 수 있다."
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 1786
+                      }
+                    ],
+                    "control": 0,
+                    "index": 9,
+                    "paragraph": 0,
+                    "rows": 6,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 10,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "승객 의자석의 수"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "승객용 통로 폭의 최소값"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "바닥에서 63cm\n미만인 곳"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "바닥에서 63cm\n이상인 곳"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "10개 이하"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "30cm주1)"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "38cm"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "11개 이상"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "30cm"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "49cm"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 2001
+                      }
+                    ],
+                    "control": 0,
+                    "index": 10,
+                    "paragraph": 0,
+                    "rows": 4,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 16,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "작동과 효과(Motion and effect)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "(1) 주조종장치\n(Primary controls)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "보조익(Aileron)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "오른쪽 날개를 내리기 위해 오른쪽 방향(시계방향)으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "승강타(Elevator)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "기수를 올리기 위해 뒤 방향으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "방향타(Rudder)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "기수를 오른쪽으로 향하게 하기 위해 오른쪽 페달을 앞으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "(2) 2차조종장치\n(Secondary controls)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "플랩(또는 보조 양력장치\n[Flaps (or auxiliary \nlift devices)]"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "플랩을 올리거나 보조양력장치를 집어넣기 위해 앞으로 또는 위쪽으로 조작. 플랩을 내리거나 보조 양력장치를 펼치기 위해 뒤로 또는 아래쪽으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "트림 탭(또는 유사장치)\n(Trim tabs or equivalent)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "조종 축과 평행한 축에 대해 수면비행선박과 같은 회전을 일으키도록 조종장치의 방향전환이나 회전이 이루어져야 한다. 롤 트림 조종축의 경우 조종사가 조작하는데 편리하도록 그 위치가 바뀔 수 있다. 단발기에 대해서, 회전요소의 한 부분만 영향을 받는다면, 러더 트림은 조종사의 손 조작방향에 따라 수면비행선박이 같은 방향으로 움직이도록 작동하여야 한다."
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 2276
+                      }
+                    ],
+                    "control": 0,
+                    "index": 11,
+                    "paragraph": 0,
+                    "rows": 8,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 28,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "작동과 효과(Motion and effect)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "(1) 동력 조종장치\n(Powerplant controls)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "출력(추력)손잡이\n[Power (thrust) lever]"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "전진방향 추력을 증가시키기 위해서는 앞쪽으로, 후진방향추력을 증가시키기 위해서는 뒤쪽으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "프로펠러(Propellers)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "회전수를 증가시키기 위해 앞쪽으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "혼합비(Mixture)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "혼합비를 높이기 위해 앞쪽 또는 위쪽으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "연료(Fuel)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "개방하기 위해서는 앞쪽으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "기화기, 공기 예열장치\n(Carburetor, air heat\nor alternate air)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "냉각시키기 위해 앞쪽 또는 위쪽으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "과급기\n(Supercharger)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "낮은 압력으로 불어넣기 위해 앞쪽 또는 위쪽으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "터보 과급기\n(Turbosuper-chargers)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "압력을 증가시키기 위해 앞쪽, 위쪽 또는 시계방향으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "로터리 조종기\n(Rotary controls)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "시계방향으로 조작할 경우 꺼짐(off)에서 켜짐(on) 상태로 전환"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "(2) 보조 제어장치\n(Auxiliary controls)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 11,
+                        "rowSpan": 1,
+                        "text": "연료탱크 선택기\n(Fuel tank selector)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 11,
+                        "rowSpan": 1,
+                        "text": "오른쪽 탱크는 오른쪽, 왼쪽 탱크는 왼쪽으로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 12,
+                        "rowSpan": 1,
+                        "text": "육상 착륙장치\n(Landing gear)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 12,
+                        "rowSpan": 1,
+                        "text": "내리기 위해서는 아래로 조작"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 13,
+                        "rowSpan": 1,
+                        "text": "속도 브레이크\n(Speed brakes)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 13,
+                        "rowSpan": 1,
+                        "text": "내리기 위해서는 뒤로 조작"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 2,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 2280
+                      }
+                    ],
+                    "control": 0,
+                    "index": 12,
+                    "paragraph": 0,
+                    "rows": 14,
+                    "section": 0
+                  }
+                ],
+                "row": 2,
+                "rowSpan": 1,
+                "text": "제1장 선체구조\n\n1.1 일반사항\n\n1.1.1 수면비행선박은 비행기와 선박의 중간형태로 구조는 수상 및 수면 위 대기중 운항 조건을 모두 만족하여야 하며 선체구조 및 그 밖의 구조부재가 강, 내식성 알루미늄 합금 또는 복합재료로 제조되는 수면비행선박에 대하여 적용한다.\n     \n1.1.2 수면비행선박의 각 부재 치수는 직접강도 계산에 따라 결정하며, 계산에 사용되는 자료와 그 결과를 해양수산부장관에 제출하여야 한다. 수면비행선박의 종강도, 그 밖의 중요강도 및 국부강도를 유지하는데 필요한 선체, 각 요소부재 및 날개와 같이 직접 선체에 부착되는 주요 구성요소에 대하여 해양수산부장관이 필요하다고 인정하는 경우, 「항공기기술기준」 (Korean Airworthiness Standard, KAS, 국토해양부 고시 2010-286호, 2010-05-12) 및 미국연방항공규정 (Federal Aviation Regulation) 등 관련 규정을 준용할 수 있다. <개정 2017.12.21>\n\n1.1.3 수면비행선박의 설계수명은 최소 25년으로 하며 소유자 신청에 따라 운항시간 48,000시간으로 할 수 있다. 운항시간을 기준으로 설계수명을 설정할 경우 선박소유자는 주기관 운전 적산시간 등 해양수산부장관이 인정하는 방법으로 운항시간을 기록 유지하여야 한다. <개정 2017.12.21>\n\n1.2 재료 및 용접\n\n용접, 리벳결합 및 FRP 결합(Bonding)은 미리 승인을 받은 용접법, 리벳결합법 및 FRP결합법에 따라 승인된 재료를 사용하여야 한다. 용접은 해양수산부장관이 인정하는 기량자격을 가진 용접사가 실시하여야 하며 리벳결합 및 FRP 결합의 경우 숙련된 기술자가 실시하여야 한다.\n\n1.3 건조승인을 위한 도면 및 자료승인\n\n  수면비행선박을 건조하고자 하는 자는「선박안전법 시행규칙｣ 제29조에 따른 도면 및 자료와 그 밖에 수면비행선박의 안전 확보에 필요하다고 인정하는 도면 및 자료 3부를 제출하여 해양수산부장관의 승인을 받아야 한다. 특히, 복합재료로 건조되는 선박은 적층요령도, 이음부 상세도, 접착상세도, 사용원재료 목록표, 성형작업요령서 및 복합재료 시험성적서를 추가로 제출하여야 한다.\n\n1.4 구조\n\n1.4.1 구조에 관한 일반적인 사항\n\n1.4.1.1 안전계수(Factor of safety)란 예상되는 하중보다 큰 하중이 발생할 가능성과 재료 및 설계상의 불확실성을 고려하여 사용하는 설계계수를 말하며 특별한 규정이 없는 한 1.5를 사용하여야 한다.\n\n1.4.1.2 한계하중은 예상되는 운항조건에서 일어날 수 있는 최대하중이며, 극한하중은 한계하중에 1.4.1.1의 안전계수를 곱한 하중이다. \n\n1.4.1.3 수면비행하중 및 수상하중은 수면비행선박의 각 질량을 고려한 관성력과 평형을 이루어야 하며, 이 하중들은 실제조건에 근사하게 분배되어야 한다. 만약 하중을 받은 변형이 외부하중 또는 내부하중의 분포를 심각하게 변화시킨다면 이 변화도 고려하여야 하며, 실제하중을 적용하기 위하여 실선계측에 근거한 가속도 및 하중을 고려할 수도 있다.\n\n1.4.1.4 선체구조는 영구 변형 없이 한계하중을 지지할 수 있어야 하며, 한계하중으로 인한 변형은 안전운항에 지장을 주어서는 아니 된다. 아울러, 최소한 3초 동안 파괴되지 않고 극한하중에 견딜 수 있어야 한다. 다만, 한계하중과 극한하중 사이에서의 국부적인 파괴나 구조적인 불안정성은 극한하중에서 최소 3초 동안 구조물이 견딜 수 있다면 인정될 수 있다. 그러나 실제 하중조건과 동일한 동적실험을 통하여 구조 안전성이 증명된 경우에는 3초 동안의 제한은 적용되지 않는다.\n\n1.4.1.5 구조해석을 통하여 안전성을 입증하지 못한 경우에는 하중시험을 하여야 하며 하중시험이 설계하중과 동일하게 반영될 수 있다면 비행시험을 포함한 동적시험이 허용될 수 있다.\n\n1.4.2 비상착수조건(Emergency landing conditions)\n\n선박은 비상착수 시 모든 탑승자를 보호할 수 있도록 설계되어야 하며, 이는 규정된 좌석, 안전벨트를 사용하는 것을 전제로 한다. 또한, 탑승자가 다치지 않도록 선내 모든 물체는 고정시켜야 한다. \n\n1.4.3 피로평가(Fatigue evaluation)\n\n1.4.3.1 피로강도 평가는 구조부재의 특성을 고려하여, 운항기간 중 발생 가능한 반복하중에 견딜 수 있음을 피로시험 또는 해석으로 입증하여야 한다. 다만, 소형수면비행선박 이외의 선박은 피로강도 평가 시 해양수산부장관이 필요하다고 인정하는 경우에는 「항공기 기술기준」 등 관련 규정을 준용할 수 있다. \n\n1.4.3.2 <삭제>\n\n1.4.3.3 <삭제>\n\n1.5 선체 개구 및 밀폐시험\n\n1.5.1 선체 개구 및 밀폐\n\n1.5.1.1 복원성 계산상의 침수지점 하방의 선체구조는 수밀이어야 한다. 다만, 주날개 또는 꼬리날개 등이 선체와 독립적 구조(분리가능구조)로 되어 있고, 선박의 운항, 복원성 또는 침수에 영향을 미치지 않을 경우에는 예외로 한다. \n\n1.5.1.2 주날개 및 후미(Tail)를 포함한 침수지점 상방의 선체구조와 외부 문, 창문 및 개구덮개를 포함한 선체 및 날개상의 기상창(Weather opening)은 풍우밀이 이어야 한다. 다만, 주날개 또는 꼬리날개 등이 선체와 독립적 구조(분리가능구조)로 되어 있고, 선박의 운항, 복원성 또는 침수에 영향을 미치지 않을 경우에는 예외로 한다.\n\n1.5.2 밀폐시험\n\n1.5.2.1 선체완성 후 수밀 횡격벽 뿐만 아니라 수밀 또는 풍우밀이 요구되는 선체의 각 노출부에 대하여 밀폐성을 검증하기 위한 압력시험을 수행하여야 한다. 압력시험은 ｢선박안전법 시행규칙｣ 별표 9에 따른 수압시험 또는 기밀시험으로 한다.\n\n1.5.2.2 기관실, 전기설비, 기 설치된 절연재 및 의장품 등에 손상을 주지 않고 기밀시험을 할 수 없는 경우에는 모든 교차부(Crossings) 및 용접 연결부에 대한 자세한 육안검사로 대체될 수 있다. 필요한 경우, 액체침투탐상시험 및 초음파 탐상시험이 요구될 수 있다.\n\n\n\n제2장 선체의장\n\n2.1 일반사항\n\n선체의장과 관련된 설비는 이 장에서 정한 요건 이 외의 사항에 대해서는 ｢선박설비기준｣ 제3편을 준용할 수 있다. 다만, 이 장에서 규정하고 있는 것과 미국연방항공규정 Federal Aviation Regulation 등 동등 이상의 기준을 만족한다고 해양수산부장관이 승인한 경우에 이를 인정할 수 있다. <개정 2017.12.21>\n\n2.2 조타장치 \n\n2.2.1  설계하중\n\n2.2.1.1 타의 타각 범위에서 발생할 수 있는 공기 및 유체역학상의 힘과 토크의 최대값이 설계하중으로 결정되어야 하며, 완충기가 장치에 고정되어 있다면 타두재의 토크는 완충기의 특성에 따라 다르게 적용할 수 있다. \n\n2.2.1.2 설계하중은 입증된 계산식 또는 모델 시험을 근거로 결정되어야 하며, 수중타에 작용하는 설계하중은 배수량 모드에서, 공기타에 작용하는 설계하중은 수면효과모드에서의 최대 속력에서 결정하여야 한다.\n\n2.2.2 조타기의 주요 구성요소에 대한 계산\n\n2.2.2.1 조타기의 형태에 따라서 구성요소에 작용하는 굽힘 모멘트, 전단력, 지점반력 및 조타기의 치수, 지점의 유연성 등은 그 효력을  입증하여야 한다. \n\n2.2.2.2 수중타 강도계산 시 유체역학적인 하중만 외부하중으로 고려될 경우 조타기 구성요소의 설계 단면에서의 응력 경감은 최대항복응력의 0.5배를 초과하지 아니하여야 한다. 지점에 작용하는 압력은 아래 표와 같이 주어진 값을 초과하지 아니하여야 한다.\n\n\n\n2.2.3 조타기\n\n2.2.3.1 수중타에 대한 조타기, 조타기의 제어와 작동 시스템은 「선박설비기준」제73조부터 제77조까지의 규정에 적합하여야 한다. 공기타는 「선박설비기준」의 조타설비에 규정되어 있지 않은 경우, 시운전을 통하여 선박을 조타하기에 충분한 성능임을 입증하여야 한다. \n\n2.2.3.2 수중타에는 주 조타기와 보조 조타기가 설치되어야 한다. 다만, 수면비행선박에 여러 개의 타가 설치되어 있고, 조타기가 독립적으로 각각의 타를 움직이며, 이러한 타 중 한 개의 타만으로 선박을 조타하기에 충분할 경우에는 보조 조타기의 설치를 생략할 수 있다.\n\n2.2.3.3 공중타 조타기 성능은 수면효과모드에서 수면비행선박이 최대속력으로 운항할 때 안전하고 신속하게 충돌회피가 가능함이 입증되어야 한다. \n\n2.2.3.4 수중타가 설치된 경우, 배수량모드에서의 수중타 조타기는 수면비행선박이 7노트로 주행할 때 15초 이내에 한쪽 현 30도에서 다른 쪽 현 30도까지 타를 조작할 수 있어야 한다. 다만, 수중타 대신에 워터제트나 그 밖의 장치가 설치될 경우 본 조항의 수중타 선회성능과 동등함을 입증하여야 한다. \n\n2.2.3.5 수중타의 조타기가 120N 이하의 힘으로 한 사람에 의하여 핸들이 조작 가능하다면 수동 조타 방식으로 설치 할 수 있다. 또한, 짧은 시간 동안 200N까지 조작력이 증가하는 것을 인정할 수 있다.\n\n2.2.3.6 배수량모드에서는 수중타의 각을 양 현으로 각각 35도까지 제한할 수 있는 타 정지 시스템이 제공되어야 한다. 다만, 배수량 모드에서 최대 각도가 더 큰 경우에는 근거자료를 제출하여 그 효력을 입증하여야 한다.\n\n2.3 양묘설비 \n\n2.3.1 수면비행선박은 최소 1개의 닻, 와이어로프 또는 체인 케이블, 고박 및 회수장치를 설치하여야 한다. 다만, 닻의 질량이 25kg 이하이면, 회수장치는 생략할 수 있으며, 그러한 경우 수면비행선박에는 닻을 본선에 싣기 위한 와이어로프 또는 체인 케이블을 고박할 수 있는 장비를 비치하여야 한다. 다만, 공간협소 등의 이유로 본 조항의 양묘설비를 설치하기 곤란한 소형수면비행선박의 경우 예외로 할 수 있다.\n     \n2.3.2 닻 및 닻 체인 등의 계산\n\n2.3.2.1 선수 닻의 질량(kg)은 최소한 다음 식의 값 이상이어야 한다.\n\n      Q = 1.75E\n      이 계산식에서\n       E는 「선박설비기준」제57조에 따른 의장수. 다만, 고파지력(HHP) 닻을 사용하는 경우에는  위의 계산식에 따라 산정된 중량의 0.75배로 할 수 있다.\n\n2.3.2.2 닻의 와이어로프(체인 케이블)의 길이 ℓ(미터)는 최소한 다음 식의 값 이상이어야 한다.\n\nℓ = 7.5 + 20\n이 계산식에서\n  Q는 2.3.2.1에 따른 닻의 질량(kg)\n\n2.3.2.3 닻의 와이어로프(체인 케이블)의 절단강도 Fst(kN)는 다음 식의 값 이상이어야 한다. \n\n       Fst = 0.06kQ\n       이 계산식에서\n        k는 파지력 계수로서 일반 닻은 3.0 고파지력 닻은 6.0으로 한다.\n        Q는 2.3.2.1에 따른 닻의 질량(kg)\n\n2.3.2.4 와이어로프의 끝단은 소켓, 클램프 또는 고리로 연결되어야 하며, 와이어로프는 연결 샤클과 닻 샤클로 연결되어야 한다.\n\n2.3.2.5 회수장치 설치여부와 관계없이 수면비행선박은 와이어로프(체인 케이블)대신에 합성섬유로프를 사용할 수 있다. 합성섬유로프의 절단강도 Fsyn(kN)는 다음 계산식의 값 이상이어야 한다.\n\n       Fsyn = 0.124δavFst8/9   \n       이 계산식에서\n        δav 는 합성섬유로프의 연신율(퍼센트). 다만, 연신율은 30퍼센트 이상이어야 한다.\n        Fst 는 2.3.2.3에 따른 와이어로프의 절단 강도(kN)\n\n2.3.2.6 합성섬유로프의 끝단은 고리로 이어져야 하며, 가능한 한 2.3.2.3에 따른 와이어로프 1미터 이상의 길이로 닻에 고박하여야 한다. 닻의 와이어로프(체인 케이블)는 닻을 자유롭게 풀거나 감을 수 있도록 배치되어야 한다.\n\n2.3.2.7 2.3.2.1부터 2.3.2.3까지, 2.3.2.5의 기준에도 불구하고 동일한 성능을 입증하기 위하여 실 해역 시험 및 시뮬레이션을 통하여 결정할 수도 있다.\n\n2.4 계류 및 예인장치\n\n2.4.1 일반사항\n\n2.4.1.1 수면비행선박에는 연안 또는 안벽 계류를 위한 장치 및 예인 장치가 제공되어야 한다. 다만, 예인에 사용할 수 있는 다른 장치가 비치된 경우에는 이를 예인장치로 사용할 수 있다. \n\n2.4.1.2 계류 및 예인 장치는 손상을 입은 경우에도 수면비행선박의 수밀성이 보장되도록 배치하고 설계하여야 한다. 수면비행선박의 안전예인속도는 동형선의 최초 건조된 선박에 대한 해상시운전시 결정하여야 한다.\n\n2.4.2 계류 장치의 계산\n\n2.4.2.1 수면비행선박의 계류 로프의 수(n)는 다음 계산식에 따른 수 이상으로 하되 소수점이하는 반올림한다. 다만, 어떠한 경우에도 계류로프의 수는 2개 이상이어야 한다.\n\n      n = 1.5+0.004E \n      이 계산식에서\n        E는 「선박설비기준」 제57조에 따른 의장수.\n\n2.4.2.2 계류 로프의 길이 ℓ(미터)는 수면비행선박 길이의 1.5배 이상이어야 하며 5m 기준으로 반올림한다. 다만, 2.4.2.1에 따른 E의 값이 500을 초과한 경우 계류 로프의 길이는 1.2L로 할 수 있다.(L:수면비행선박의 길이)\n\n2.4.2.3 와이어로프의 절단강도 Fst(kN)는 다음 계산식의 값 이상이어야 한다.\n\nFst = 5.0 \n이 계산식에서\n       E는 「선박설비기준」제57조에 따른 의장수.\n\n2.4.2.4 계류 로프는 스틸 와이어로프와 천연섬유 또는 합성섬유 재료이어야 한다. 합성섬유로프의 절단 강도 Fsyn(kN)는 다음 계산식의 값 이상이어야 한다.\n\n       Fsyn = 0.074δavFst,(kN)   \n   \n    이 계산식에서 \n       δav 는 합성섬유로프의 연신율(퍼센트). 다만, 연신율은 30퍼센트 이상이어야 한다.\n       Fst 는 2.4.2.3에 따른 와이어로프의 절단 강도(kN)\n\n2.4.2.5 2.4.2.3 및 2.4.2.4에 따른 절단강도에도 불구하고 합성 섬유 또는 천연 섬유의 계류 로프의 직경은 20mm 이상이어야 한다. 다만, 계류성능 적합성을 입증할 경우 20mm 보다 작은 직경의 로프를 사용 할 수 있다. \n\n\n제3장 복원성 및 구획기준\n\n3.1 일반사항 \n \n3.1.1 이 장에서 특별히 규정하지 않는 경우에는 다음 용어의 뜻을 적용한다.\n\n3.1.1.1 \"예상최악조건\"이란 수면비행선박의 운항이 허용되는 최악의 환경조건으로 운항구역에서의 풍력, 유의파고, 최저공기온도, 시야, 수심 및 항만당국이 요구하는 사항 등을 말한다. \n\n  3.1.1.2 \"침수점(Downflooding point)\"이란 비손상 및 손상 시 부력을 형성하는 공간을 침수에 이르게 하는 개구를 말한다.\n\n  3.1.1.3 \"침수율(Permeability)\"이란 공간의 부피에 대한 물의 점유 비율을 말한다.\n\n  3.1.1.4 \"수밀(Watertight)\"이란 비손상 및 손상상태에서 작용하는 수두에 대하여 어떠한 방향에서도 물의 침입을 막을 수 있는 구조를 말한다.\n\n  3.1.1.5 \"풍우밀(Weathertight)\"이란 1.5.2의 시험조건 아래에서 수면비행선박에 물이 침입하지 아니하는 구조를 말한다.\n\n  3.1.1.6 \"정수 설계고도(Still water design altitude)\"란 정수상태에서 실제운항속도를 가지고 수면효과 상태로 항해 시 비행고도를 말한다.\n\n  3.1.1.7 \"최악의 설계고도(Worst design altitude)\"란 운항 제한점인 최대 유의파고 상황에서 수면효과 모드로 운항시의 비행고도를 말한다.\n\n  3.1.1.8 \"수륙양용모드(Amphibian mode)\"란 수면비행선박이 공기쿠션에 의하여 부양되어 수면이 아닌 지면에서 정지 또는 움직일 때 정적 또는 동적 공기쿠션 및/또는 표면과의 접촉 및/또는 슬라이딩으로 인한 선체나 다른 장치에 의해 생성된 수직방향의 힘의 적절한 조합으로 그 중량이 전부 또는 지배적으로 지지되어 운항되는 모드를 말한다. \n\n  3.1.1.9 \"배수량모드(Displacement mode)\"란  수면비행선박의 중량 전체 또는 대부분이 부력에 의하여 지지된 상태를 말한다. \n\n  3.1.1.10 \"전이모드(Transitional mode)\"란 배수량모드에서 활주모드(또는 수륙양용모드) 및 그 반대로 전환되는 모드를 말한다.   \n\n  3.1.1.11 \"활주모드(Planing mode)\"란 수면비행선박이 이수 전 또는 착수 후 배수량모드로 운항하는 모드를 말한다.\n\n  3.1.1.12 \"이수 또는 착수모드(Take off/landing mode)\" 란 활주모드(또는 수륙양용모드)에서 수면효과모드로 또는 그 반대모드로 변환하는 모드를 말한다. \n\n  3.1.1.13 \"수면효과모드(Ground effect mode)\"는 수면비행선박이 수면 또는 다른 표면 위로 수면효과 범위 내에서 안정적으로 운항하는 모드를 말한다.\n\n  3.1.1.14 \"비행초과모드(Fly-Over Mode)\"는 일정시간 동안 B형 수면비행선박이 수면효과(ground effect)의 수직범위를 초과하여, ICAO 규정에 따른 항공기의 최소안전고도를 초과하지 않는 범위까지 고도를 증가시키는 것을 말한다. \n\n  3.1.1.15 \"스케그\"란 수직 또는 경사된 판 또는 체적을 갖는 구조물로, 유도된 공기역학적 항력을 감소시키거나, 정적 또는 동적 공기쿠션 효과를 증가시킬 목적으로 날개에 부착되거나 그 일부분을 형성하는 구조를 말한다. 수면효과(ground effect)내에서 운항중일 때 수면 또는 그 밖의 표면 위로 미끄러지거나 안정성을 제공하기 위하여 사용될 수 있다.\n\n3.1.2 수면비행선박의 복원성 및 안정성을 확인하기 위하여, 배수량모드에서의 비손상 및 손상복원성 특성에 대한 자료를 제출하여야 한다. 또한, 예상최악조건에서 수면비행선박이 안전하게 착수가 가능한 지 여부를 확인하기 위하여 시운전을 통하거나 해석자료를 제출하여 인정받아야 한다.\n\n3.1.3 착빙이 가능한 곳은 복원성 계산 시 착빙의 영향을 고려하여야 하며, 제빙설비가 설치되어 있는 경우에는 이를 감안하여야 한다. 다만, 국내에서만 운항하는 수면비행선박은 착빙을 고려하지 않을 수 있다.\n\n3.2 부력 \n  \n3.2.1 수면비행선박은 비손상 및 손상복원성의 요건에 적합한 충분한 부력을 가져야 하며, 운항하려는 형태에 따라 추가로 예비부력이 요구될 수 있다. 또한 수밀성을 확인하기 위하여 배치도가 제공되어야 한다. 부력은 흘수선 하부에 위치한 수밀구역과 흘수선 상부에 위치한 수밀 또는 풍우밀 구획을 포함하여 계산하여야 한다. \n \n3.2.2 흘수선 상부의 구조물이 침수하여 선박의 복원성 및 부력에 큰 영향을 미치는 경우 해당 구조물은 풍우밀을 유지할 수 있는 강도가 요구되며, 풍우밀 폐쇄장치 및 배수장치를 설치하여야 한다. 또한, 풍우밀 구역의 개구 폐쇄장치는 모든 운항 상태에서 풍우밀을 유지하여야 한다.\n\n3.3 비손상복원성 및 안정성\n \n3.3.1 일반 \n\n 3.3.1.1 모든 운항 상태에서 선체운동에 의하여 일시적인 외력이나 모멘트가 작용할 경우 초기상태의 흘수, 고도, 횡경사 및 트림으로 회복할 수 있음을 계산 또는 시운전으로 증명하여야 한다.\n\n3.3.1.2 모든 운항 상태에서 수면비행선박의 일부분 또는 부가물이 다른 물체와 충돌로 인하여 수면비행선박이 복원성을 상실하거나 위험한 고도 또는 동요운동을 유발할 경우에 필요한 장치 및 장비를 마련하여야 한다. 다만, 소형수면비행선박에는 적용하지 않는다.\n\n3.3.1.3 정수상태에서 회전 시 회전방향의 경사각은 다음을 초과하지 않아야 한다. \n가. 수면비행선박의 불안정을 유도하는 경사각\n나. 정수설계고도의 수면비행모드에서 착수 시 날개가 수면과 접촉하는 경사각. 다만, B형 수면비행선박에는 적용하지 아니한다. \n다. 수면효과모드로 항해 시 스케그 및 날개끝 수직판이 수면과 접촉하는 경사각\n\n3.3.2 배수량모드에서의 비손상복원성\n \n3.3.2.1 모든 화물적재 조건과 여객의 움직임을 감안한 정수상태에서 개구의 하단은 수면으로부터 상방 100mm 이상을 유지하도록 충분한 복원성을 가져야 한다.\n\n3.3.2.2 3.8.1.1의 여객집중과 실험으로 결정된 회전으로 인한 횡경사각이 8도 또는 날개가 수면을 접촉하는 경사각 중 작은 각도를 초과하지 말아야 한다.\n\n3.3.2.3 3.3.2.1부터 3.3.2.2까지의 규정을 적용하기 곤란한 형식의 수면비행선박은 시운전을 통하여 안정성을 입증하여야 한다.\n\n3.3.3 전이, 이수 및 착수모드의 안정성\n\n운항상태의 변화가 복원성 감소와 관련이 없을 경우, 예상최악조건에서 전이 및 착수모드에서 충분한 복원성이 있음을 입증하여야 한다. 3.8.1.1에 따른 여객집중을 반영한 횡경사각은 전이모드에서 날개면각의 80퍼센트, 이수 및 착수 시  날개면각의 50퍼센트를 초과할 수 없다. \n\n3.3.4 수면효과모드의 안정성\n\n 3.3.4.1 예상최악조건에서 최소복원성의 하중상태로 최소반경으로 회전 시, 최대 횡경사각은 수면비행선박의 일부분이 수면과 접하는 각도의 90퍼센트를 초과하지 말아야 한다. 이 각은 3.1.1.7에 따른 최악의 설계고도에 상응하는 비행고도에서 결정된다. \n\n 3.3.4.2 3.3.4.1에도 불구하고 수면비행선박이 수면효과모드에서 회전반경을 줄이기 위하여 수면과 선체 일부분이 접하도록 특별히 설계, 제작된 경우 이와 같은 운전의 안전성은 시운전을 통하여 입증하여야 한다. \n\n 3.3.4.3 수직, 횡방향 및 종방향의 운동을 제어하는 자동 안정화 장치를 설치한 수면비행선박은 자동 안정화 장치의 미 작동 시에도 안전하게 운항할 수 있도록 충분한 안정성을 가져야 한다.\n\n 3.3.4.4 예상최악조건에서 3.8.1.1의 여객집중에 따른 영향과 풍압 또는 고속회전 중 더 큰 영향을 미치는 것과의 조합에 의한 횡경사각은 스케그 및 날개끝 수직판이 입수하는 각을 넘지 않아야 한다. 이 조합된 횡경사각은 계산 또는 시운전으로 결정할 수 있다.\n\n3.3.5 비행초과모드의 안정성\n\n수면비행선박의 비행초과모드  안정성은 수면비행선박의 속도, 비행초과 할 물체와의 거리, 높이, 크기 및 기타 요소들을 고려하여 계산과 시험으로 확인하여야 한다. \n\n3.3.6 3.3.2부터 3.3.5에 따른 기준을 적용하기 곤란한 형식의 수면비행선박은 시운전을 통하여 안정성을 입증하여야 한다 \n\n3.3.7 복원성 확인\n\n 3.3.7.1 정적인 공기의 완충작용 또는 그 밖의 목적으로 날개 또는 다른 선체 하부로 공기를 주입하는 설비가 있는 수면비행선박의 경우 복원성 및 안정성에 대하여 이러한 설비의 효과를 고려하여야 한다.\n\n 3.3.7.2 배수량모드에서 전체적 또는 부분적으로 완만한 경사의 해안에 안착되거나 수륙양용모드로 작동하도록 설계된 수면비행선박은 예상최악조건에서 쇄파영역을 통과하는 전이모드에 대하여 충분한 부력과 복원력을 가지고 있음을 시운전이나 자료를 통하여 증명하여야 한다.\n\n 3.3.7.3 정수중 복원성 평가는 시운전으로 확인하여야 한다.\n\n3.4 수면비행선박의 기상조건 \n\n3.4.1 \"한계설계조건\"이란 선박이 배수량모드를 유지하여야 하는 특정한 제한조건으로, 설계 목적으로 선택된다. 이러한 조건은 생존 조건에서 적절한 안전성을 부여하기 위하여 적당한 마진에 의해 예상최악조건보다 더 엄격하게 설정되어야 한다.\n\n3.4.2 최소 복원성을 갖는 배수량모드에서 한계설계조건에 따른 횡파압으로 인한 횡 경사모멘트 Mv는 전복모멘트 Mc보다 작거나 같아야 한다. \n\n3.4.3 배수량모드에서 풍압에 의한 횡경사모멘트 Mv[kNm]는 횡경사 주기 동안 상수로 결정되어야 하며  다음에 따라 계산하여야 한다. \n\nMv=0.001 Pv Av Zf\n\n여기서,\nPv = 풍압(N/㎡)\nAv = 수선면 상부의 투영 측면적(㎡)\nZ  = 수선면 하부의 투영 측면적 중심으로부터 Av의 중심까지 거리(m)\nf   = 유선에 대한 factor, f≤1, 풍동시험에서의 model test결과로 결정\n      (자료 미비 시에는 f=1)\n   Pv값은 한계설계조건에 따른 풍력은 표 1 에 따라 결정되어야 하며 이러한 풍력은 최악의 조건에 따른 값보다 높은 풍력등급(Beaufort Scale) 이어야 한다.\n\n\n\n\n\n[표 1] 풍압 Pv (Pascal)\n        \n\n3.4.4  배수량모드에 대한 횡동요 크기는 3.4.6에 따라 계산되거나 이와 동등하다고 그 효력이 입증된 방법에 따라 결정되어야 하며, 추진과 횡동요 안정장치가 없는 상태이어야 한다. \n\n3.4.5 배수량모드의 전복모멘트 Mc는 3.4.6.1과 3.4.6.2에 의해 결정되고 침수각은 다음 개구의 하방으로 300mm 아래에 있는 지점에 따른 최소 횡경사각을 가정한다.\n\n 3.4.5.1 창문틀\n\n 3.4.5.2 외부 출입문의 틀\n\n 3.4.5.3 다른 침수점\n\n3.4.6 배수량모드에서 최소 전복 모멘트 Mc는 횡동요를 고려한 정 또는 동 복원성 곡선으로부터 결정한다.\n\n 3.4.6.1 정복원력곡선이 사용되는 경우 Mc는 그림 1에서 처럼 횡동요를 고려한 복원 모멘트(또는 암)와 전복 모멘트 곡선아래 면적을 등치시키면 얻어 진다. 그림 1에서처럼 θz 는 횡동요 진폭, Mk는 빗금 친 면적 S1과 S2가 같아지도록 횡축에 평행하게 그은 선이다.\n     Mc = OM (종축의 좌표가 모멘트를 표시하는 경우)\n     Mc = OM x 배수량 (종축의 좌표가 암을 표시하는 경우)\n\n 3.4.6.2 동복원력 곡선이 사용되는 경우, 그림 2에서 먼저 보조점 A 를 결정하여야 한다. 이를 위하여 횡경사의 진폭을 횡축을 따라 오른쪽으로 그리면 점 A'를 구할 수  있다. 그림2와 같이 횡축에 평행하게 횡경사 진폭이 같게 되는 선 AA'를 그려서 (AA'=2θz) 보조점 A를 구한다. 동복원력곡선에 접선 AC를 그린다. 점 A로부터 횡축에 평행하게 1 라디안 (57.3도)까지 연장시켜 선 AB를 그린다. 점 B로부터 수선과 선 AC 와의 교점을 E 라고 한다. 동복원력 곡선의 종좌표에 의한 거리 BE 는 전복 모멘트이다. 다만, 종좌표가 동복원 암이면 거리 BE는 전복 모멘트가 아니며 이 경우 전복 모멘트 Mc는 거리 BE와 배수량을 곱하여 구한다.\n\n     Mc = 9.81 △ BE   (kNm)\n     △ = 경하중량과 만재배수량의 평균 배수량 (ton)\n            \n\n 3.4.6.3 횡동요 각도 θz의 진폭은 한계설계조건에서 파랑 방향과 90도의 방향으로 진행하는 선박의 횡동요 횟수 50회 중 최대 횡동요 진폭으로서, 불규칙 해상상태에서의 모형선 또는 시운전 등에 의해서 결정한다. 다만, 자료가 없으면 15도로 가정한다.\n\n 3.4.6.4 복원력 곡선의 유효성은 침수각까지로 제한한다.\n\n3.4.7 소형수면비행선박은 3.4.1부터 3.4.6의 요건을 적용하지 않을 수 있다.\n\n3.5 손상 후 배수량모드의 부력과 복원성\n  \n3.5.1 손상복원성 계산에서 침수율은 직접계산에 따른 침수율 또는 다음 표와 같은 침수율이 적용될 수 있다.\n\n        \n         * 나쁜 영향을 주는 것으로 한다. \n\n3.5.2 공소에 부력을 제공할 필요가 있는 경우 저밀도 발포제 또는 이외에 유사한 매체를 부력체로 사용할 수 있으며, 다음의 요건에 적합한 것이어야 한다.\n\n 3.5.2.1 발포제인 경우 독립기포 형태이어야 하며, 유사 재료를 사용할 경우에는 비흡수성 일 것\n\n 3.5.2.2 운항 중 구조적으로 안전할 것\n\n 3.5.2.3 접촉하는 구조부재 및 그 밖의 물질과 화학적으로 불활성 재료일 것\n\n 3.5.2.4 고정되고, 공소의 검사를 위하여 쉽게 제거 가능할 것\n\n3.5.3 선체가 분리되는 전손상태를 제외한 손상범위는 발생 가능한 손상원인을 모두 고려하여 추정되어야 하며, 그러한 손상범위에 대하여 정수중에서 충분한 부력과 양의 복원성이 있음을 확인하기 위하여 다음의 요건을 만족하여야 한다. 다만, 손상범위는 가장 나쁜 상황을 초래하는 한 구역 침수로 가정한다. \n\n 3.5.3.1 침수 후 평형상태에 도달한 최종 흘수선은 점진적인 침수가 일어나지 않아야 한다. \n\n 3.5.3.2 수평으로부터 어떠한 방향으로도 경사각이 15도를 초과하지 않아야 한다. 다만, 이것이 명확하게 비현실적인 경우에는 손상 후 15분 이내에 경사각이 15도로 감소되고 유효한 미끄럼방지 처리된 갑판 및 손잡이, 가드레일 등의 붙잡을 수 있는 설비가 있을 때에는 일시적으로 경사각을 20도까지 허용할 수 있다.\n\n 3.5.3.3 손상 후 구명뗏목 탑승장소는 흘수선 상부에 위치하여야 한다.\n\n 3.5.3.4 여객실 또는 탈출로의 침수가 여객의 탈출을 심각하게 방해하지 않아야 한다.\n\n 3.5.3.5 탈출준비에 필수적인 비상 설비, 비상 통신수단, 전원 공급장치 및 방송시설 등에 쉽게 접근할 수 있어야 한다. \n\n3.6 경사시험과 복원성자료\n\n3.6.1 수면비행선박은 완성단계에서 경사시험을 실시하고 복원성자료를 작성하여야 한다. 다만, 경사시험을 통하여 수직방향 무게중심 측정이 곤란한 경우에는 경하중량 산정시험 및 정확한 계산을 통하여 경하중량과 무게중심을 계산할 수 있다.\n\n3.6.2 복원성 자료 및 경사시험 또는 경하중량 산정시험 계산서는 보관용 사본을 포함하여 해양수산부장관의 승인을 받아야 한다. 승인된 자료는 본선에 비치하여야 하며 수정 및 추가사항이 있는 경우 이를 반영하여야 한다. \n\n3.6.3 수면비행선박의 특성, 하중조건 및 운항조건을 반영하여야 하며, 복원성 교차곡선에 포함된 모든 수밀, 풍우밀 구조와 침수점 및 침수각이 식별되어야 한다.\n\n3.7 흘수표 및 설계수선의 표시와 기록\n\n3.7.1 흘수표는 선수와 선미에 명확히 표시를 하고, 흘수표시가 읽기 어려운 장소에 위치한 경우 또는 항행상의 제한으로 흘수표시를 읽기 어려운 경우에는 선수 및 선미 흘수를 알 수 있는 흘수지시장치를 취부하여야 한다. \n\n3.7.2 설계수선은 수면비행선박 중앙의 측면에 명확하게 표시하여야 한다. \n\n3.8 여객 규정\n\n3.8.1 배수량모드 시 다음의 요건을 만족하여야 한다.\n\n3.8.1.1 여객중량의 영향을 고려하여 다음의 자료를 사용하여야 한다.\n 가. 각 여객의 중량은 75kg로 할 것\n 나. 의자석 여객의 수직방향 무게중심은 의자석으로부터 상방 0.3m로 할 것   다. 여객과 수하물은 지정된 장소에 있는 것으로 간주할 것\n 라. 여객이 한쪽 현에 모두 모여 횡경사에 최악의 영향을 주도록 배치되는 상태를 반영할 것. 다만, 소형수면비행선박에는 이를 적용하지 않을 수 있다. \n\n 3.8.1.2 수면비행선박의 복원성은 다음의 재화상태에 대하여 3.8.1.1에 따라 검증하여야 한다. \n 가. 여객, 화물 및 보급품의 만재상태 \n 나. 여객 및 화물의 만재와 10퍼센트 보급품 적재상태 \n 다. 여객 및 화물의 적재 없이 10퍼센트 보급품\n\n 3.8.1.3 여객 50퍼센트가 중심선으로부터 한쪽 현의 의자석에 앉은 것으로 가정하고 3.8.1.2의 가목에서의 하중조건으로 복원성을 검토하고, 나머지 여객은 최대 횡경사모멘트를 형성하기 위하여 각 여객에 할당된 장소가 아닌 곳에 위치하도록 하여야 한다. 다만, 소형수면비행선박은 이 규정을 적용하지 않을 수 있다. \n\n\n제4장 기관장치\n\n4.1 일반사항\n\n기관장치와 관련된 설비는 이 장에서 정한 요건 이외의 사항에 대해서는 ｢선박기관기준｣을 준용할 수 있다. 다만, 미국연방항공규정 Federal Aviation Regulation 등 이 장에서 규정하고 있는 것과 동등이상의 기준을 만족한다고 해양수산부장관이 승인한 경우에 이를 인정할 수 있다. \n\n4.2 주기관 및 보조기관 \n\n4.2.1 일반사항\n\n 4.2.1.1 기관 및 부속 관장치는 그 사용용도에 적합하게 설계 및 제조되어야 하며, 기관장치의 회전부분, 왕복운동부분, 고온부분 등에는 기관을 감시하거나 운전하는 사람 또는 기관에 접근하는 사람에게 해를 주지 아니하도록 보호 장치를 하여야 한다.\n\n 4.2.1.2 배기가스관, 소음기, 열매체유관 등 온도가 220℃를 초과하고 가연성 유체의 누설로 인한 발화의 위험성이 있는 기관장치의 모든 표면은 불연성 재료에 의한 유효한 피복을 하여야 한다. 또한, 이 피복재가 흡유성 및 침유성인 경우에는 피복재를 강 또는 이와 동등한 재료로 피복하여야 한다. \n\n 4.2.1.3 단일의 중요 추진용 구성품에 대한 신뢰성을 입증하여야 한다. \n\n 4.2.1.4 중요 보기 중 1개가 작동 불가능한 경우에도 추진기관의 정상운전을 유지, 회복 또는 정지시킬 수 있는 보조수단을 강구하여야 하며, 다음 장치들의 고장에 대하여는 특히 주의를 하여야 한다.\n       가. 주전원으로 사용되는 발전장치  \n       나. 연료유공급․윤활유․흡기․냉각수․기관시동 및 제어장치와 같이 주기관 또는 주전원에 필수적으로 사용 또는 공급하는 장치 \n\n 4.2.1.5 내압을 받는 모든 기관부분, 유압계통, 공기압계통 등의 시스템 및 이와 관련된 부착품은 처음 사용하기 전에 압력시험을 포함한 적합한 시험을 하여야 한다.\n\n 4.2.1.6 주 추진기관, 보조기관 및 압력용기는 청소, 정비 및 검사가 용이하도록 설치되어야 한다. \n\n 4.2.1.7 이 기준의 요건을 완전히 만족하지 않는 기관장치라도 사용 실적에 의해 안전성이 확보되었다고 해양수산부장관이 인정하는 경우로서 다음 사항을 만족하는 경우에는 그 장치의 사용을 인정할 수 있다;\n가. 설계, 제조, 시험, 설치 및 규정된 보수, 유지가 해상 환경에 적합할 것 \n나. 위와 동등한 안전수준이 확보될 것\n\n 4.2.1.8 기관 장치를 정확하게 운용하기 위하여 필요한 운전조건 및 제한 등에 관한 정보를 제공하여야 한다. \n\n 4.2.1.9 주 추진기관 및 수면비행선박의 추진 및 안전을 위해 필요한 모든 보기는 수면비행선박에 설치된 후, 직립상태 및 허용 운항 상태 범위에서 수면비행선박이 얻을 수 있는 횡경사 및 종경사 상태에서도 작동되도록 설계하여야 한다.\n\n 4.2.1.10 모든 압력용기 및 그 부속 관장치는 사용 목적에 적합한 설계 및 구조를 가져야 하며, 선내 인원에 대한 위험이 최소가 되도록 설치 및 보호하여야 한다. 특히 이 장치의 재료와 부품의 사용압력 및 온도에 대하여 충분히 고려하여야 하며, 사용 상태에서 통상적으로 발생하는 응력을 초과하는 안전 여유를 고려하여야 한다. 모든 압력용기 및 부속 관장치는 사용 중에 발생하는 과압을 방지하기 위하여 보호 장치가 있어야 한다. \n\n4.2.2 기관일반\n\n 4.2.2.1 기관에는 속도, 압력, 온도 및 운전성능을 감시하고 제어할 수 있는 장치가 있어야 하며, 장치 중 발생한 일부 고장으로 인해 기관장치의 전체 제어가 불가능하지 않도록 배치하여야 한다. \n\n 4.2.2.2 기관은 과속도, 윤활유 압력상실, 냉각수 상실, 고온, 움직이는 부분(moving parts)의 고장 및 과부하에 대한 안전장치가 있어야 한다. 안전장치는 경보를 제공하여도 좋으나, 기관을 완전히 정지시키지 않도록 하여야 하며, 해당 안전장치는 시험이 가능하여야 한다.\n\n 4.2.2.3 모든 운전조건에서도 조종실에서 기관을 신속하게 정지시킬 수 있도록 2조의 독립된 안전장치가 있어야 한다. 다만, 기관에 부착되는 작동기(Actuator)는 이중으로 할 필요는 없다. \n\n 4.2.2.4 기관의 주요 부품은 통상 운전 시 열이나 동적조건에 충분히 견딜 수 있는 강도를 가져야 한다. 기관은 보호 장치의 허용범위에서 정상을 초과하는 속도 및 온도로 일정시간 운전하여도 손상이 없어야 한다.\n\n 4.2.2.5 기관은 화재나 폭발의 위험을 최소화하도록 설계되어야 하며 화재예방요건에 만족하여야 한다.  \n\n 4.2.2.6 화재의 위험을 방지하기 위하여 연료유나 기름의 드레인을 안전한 장소로 배출할 수 있는 설비를 하여야 한다.\n\n 4.2.2.7 기관에 의해 구동되는 장치가 파손되더라도 기관의 주요 구성품의 기능에는 가능한 한 큰 영향이 미치지 않도록 설치하여야 한다.\n\n 4.2.2.8 기관구역은 어떠한 운전상태에서도 충분히 통풍되어야 하며 밀폐된 구역은 기관의 시동 전에 대기상태에서 강제 통풍할 수 있는 설비를 설치하여야 한다.\n 4.2.2.9 모든 기관장치는 진동에 의하여 관련 구조부재 및 기관장치의 파손이 발생하지 않음을 입증하여야 한다. \n\n4.2.3 가스터빈 \n\n 4.2.3.1 가스터빈은 승인된 최대 안정속도까지의 운전범위에서 불규칙하거나 위험한 불안정 현상이 발생하지 않고 해상환경에서 운전되도록 설계하여야 한다. 손상을 유발하는 진동, 실속(stalling) 또는 불규칙한 회전이 발생되는 모든 속도 범위에서 지속적으로 작동되지 않도록 설치되어야 한다. \n\n 4.2.3.2 압축기 또는 터빈 날개가 노출되는 경우 선체나 다른 기관장치, 선내 인원이나 그 밖에 사람에게 위험을 주지 않도록 설계되고 설치되어야 한다.\n\n 4.2.3.3 시동 실패 또는 정지 후 연료유가 분사관이나 배기장치 속으로 들어 갈 수 있는 가스터빈에 대하여는 4.2.2.6의 요건을 적용한다. \n\n 4.2.3.4 가스터빈의 설치 시 운전 환경 상 오염물질의 흡입에 의한 손상 가능성을 충분히 고려하여야 하며 권고된 최대 오염농도 범위가 명시되어야 한다. 압축기나 터빈에는 염분퇴적물의 누적을 방지하고 필요한 경우 공기흡입구에는 착빙을 방지하는 설비를 하여야 한다.\n\n 4.2.3.5 축 또는 연결부가 파손되었을 경우 파손 부위가 선체, 장비 및 선내 인원에게 위험을 주지 않아야 하고 필요한 경우 보호 장치를 하여야 한다.\n\n 4.2.3.6 각 기관에는 가능한 한 각 로터사프트에 직접 연결되는 비상 과속도 방지장치를 구비해야 한다. \n\n 4.2.3.7 가스발생기 및 고압 기름관이 소음 차폐물로 완전히 둘러싸인 경우에는 그 차폐물 내부에 화재탐지장치 및 소화 장치를 설치하여야 한다. \n\n 4.2.3.8 케이싱은 견고하게 제작되어야 하며, 냉각기와 열교환기는 개별적으로 내압시험을 하여야 한다. \n\n4.2.4 내연기관 \n\n 4.2.4.1 모든 추진 장치는 원동기로부터 추진기까지 그 장치 및 부속품에 대하여 단독 및 조합된 비틀림 진동해석과 그 밖의 진동해석 또는 입증된 자료를 제출하여 확인하여야 한다.\n\n 4.2.4.2 고압연료유 펌프와 연료유 분사노즐 사이에 있는 모든 고압 연료유관 외부에는 연료유관 손상 시 누설된 기름을 저장할 수 있도록 이중관으로 보호하여야 한다. 이중관 장치에는 누유 저장설비를 갖추어야 하며, 연료유관의 손상 시 경보를 발하는 장치가 있어야 한다.\n\n 4.2.4.3 충분한 배기면적이 필요한 추진기관에는 형식 승인된 크랭크실 도출밸브를 설치하여야 하며 도출밸브의 배출은 인명에 대한 위험을 최소화 하도록 하여야 한다. \n\n 4.2.4.4 윤활유장치는 모든 운전속도에서 유효하여야 하며, 수면비행선박의 모든 경사, 트림상태와 운전각도에서 흡입이 가능하고 기름의 누설이 없도록 하여야 한다.\n\n 4.2.4.5 기관에서의 순환을 감안하여 윤활유 압력 또는 유량이 안전수준 이하로 저하하는 경우 가시 또는 가청 경보를 발하는 장치를 설치하여야 한다.\n\n 4.2.4.6 압축공기에 의해 시동, 역전 또는 제어되는 기관의 경우 공기압축기, 공기탱크 및 시동 공기관이 화재 및 폭발의 위험을 최소화할 수 있어야 한다.\n\n4.2.5 동력전달장치\n\n 4.2.5.1 동력전달장치는 운항 중 발생할 수 있는 가장 가혹한 부하상태에서도 사용된 재료의 허용용력을 초과하지 않도록 충분한 강도와 강성을 가져야 한다.\n\n 4.2.5.2 축계, 베어링 및 지지대는 주기관에 설계된 과속도 방지 설정 값의 105퍼센트에 이르는 축의 모든 속도에서 유해한 휘둘림과 과도한 진동이 발생하지 않도록 설계하여야 한다. \n\n 4.2.5.3 동력전달장치는 사용 중 예상되는 다양한 반복하중이 작용하는 상태에서 사용기간 동안 위험한 피로파괴의 가능성이 최소화 되도록 설치되어야 하며, 장치의 강도 및 구성의 적합성은 내피로재 사용 및 적절한 상세설계와 병행하여 시험 및 충분히 낮은 응력 수준의 설계 등을 통하여 증명되어야 한다. 동력전달장치의 손상을 야기할 수 있는 비틀림 진동이나 그 밖의 진동이 통상 운행 중 운용하지 않는 속도에서 발생하고 이러한 내용이 선박운항매뉴얼에 반영되어 있는 경우에는 이를 허용할 수 있다. \n\n 4.2.5.4 동력 전달장치로 클러치를 설치한 경우에는 클러치의 물림이 동력전달장치나 구동되는 기기에 손상을 유발하는 응력이 생기지 않도록 하여야 한다. 또한, 클러치의 부주의한 작동이 동력전달장치나 구동 기기부에 과도한 응력이 생기지 않도록 하여야 한다. \n\n 4.2.5.5 동력전달장치 또는 구동되는 기기 구성품의 손상이 선체나 승선자에게 손상을 주지 않도록 보호설비를 설치하여야 한다.\n\n 4.2.5.6 윤활유의 공급 중단이나 압력 상실을 조종사에게 알릴 수 있는 설비가 있어야 한다.\n\n4.2.6 추진 및 부양 장치\n\n 4.2.6.1 이 절의 요건은 다음 사항을 전제로 한다:\n가. 추진기와 부양 장치는 별도의 장치로 분리하여 설치하거나 이중 기능장치에 연계하여 설치할 수 있다. \n나. 추진기는 직접적으로 추진력을 공급하는 장치 및 추력에 기여하는  모든 덕트, 베인, 노즐과 같은 기관부속품을 포함한다. \n다. 부양 장치는 수면비행선박에 양력을 발생시키는 장치 및 양력을 발생시키기 위해 프로펠러로부터 공기의 흐름을 전달하거나 엔진으로부터 가스제트를 전달하는 장치를 포함한다.\n\n 4.2.6.2 추진 및 부양 장치는 운항 중 발생할 수 있는 부하를 감당할 수 있는 강도와 강성을 가져야 하며 설계자료, 계산 및 시운전을 통하여 입증되어야 한다.   \n\n 4.2.6.3 추진 및 부양 장치의 설계는 물안개, 파편, 소금, 모래, 얼음 등이 있는 환경에서 운항할 때 발생할 수 있는 부식, 다른 재질에 의한 전해작용, 침식 또는 공동현상의 영향을 고려하여야 한다.\n\n 4.2.6.4 추진 및 부양 장치의 설계 및 시험은 안정적이고 주기적인 부하, 외력에 의한 부하, 조정 및 역전장치의 사용과 회전부의 축 위치를 고려한 다각적인 측면에서 덕트의 막힘으로 발생되는 압력에 주시하여 행해져야 한다.\n\n 4.2.6.5 다음 사항에 적합한 장치를 설치하여야 한다.\n가. 파편 또는 이물질의 유입을 최소화할 것;\n나. 축계나 회전부로부터 사람이 다칠 수 있는 가능성을 최소화할 것;\n\n4.3 보기 및 관장치\n\n4.3.1 일반사항 \n\n 4.3.1.1 관장치는 수면비행선박이 운항상태에서 일정한 유량과 압력으로 공급되도록 배치되어야 하며, 관장치의 기능상실과 누설로 인하여 전기계통에 손상이 일어나 화재 또는 폭발이 발생되지 않아야 한다. 관의 누설 또는 균열이 발생한 경우에도 고온표면에 가연성 액체가 접촉되지 않도록 하여야 한다.\n\n 4.3.1.2 관장치는 재료의 허용응력을 고려하여 최대허용 사용압력이 설계압력을 넘지 않아야 하며 관장치의 사용압력은 밸브, 관 부착품 등 관장치 구성품의 최고 허용압력보다 커서는 아니 된다. 최고사용압력을 넘을 가능성이 있는 모든 관장치는 입증된 안전장치에 의해 보호되어야 한다.\n\n 4.3.1.3 탱크 및 관장치는 사용압력보다 높은 압력으로 압력시험을 실시하여야 하며 저장탱크 또는 저장기의 시험은 넘침 상태에서 정적수두 및 수면비행선박의 움직임에 따라 발생되는 동적하중을 고려하여야 한다.\n\n 4.3.1.4 관장치에 사용되는 재료는 작동유체에 적합하여야 하며 화재 위험성을 고려하여 선정하여야 한다. 비금속재료는 선체, 수밀갑판 및 격벽수밀의 보전이 유지되는 장치에는 허용될 수 있다.\n\n4.3.2 연료유, 윤활유 및 기타 가연성 기름장치\n\n 4.3.2.1 비산 또는 누설된 기름이 고온 표면에 접촉하거나 기관의 공기 흡입구 또는 그 밖에 발화원에 혼입되는 것을 방지하기 위하여 실행할 수 있는 연료유, 윤활유 및 그 밖의 가연성 기름의 관 계통은 스크린을 부착하거나 보호하여야 한다. 이러한 관장치의 이음은 최소로 하여야 하며, 가연성 액체를 운송하는 유연관은 승인된 형식이어야 한다.\n\n 4.3.2.2 연료유, 윤활유 및 그 밖의 가연성기름은 공용구역 및 거주구역 앞으로 흘러서는 아니 된다.\n\n 4.3.2.3 연료유를 사용하는 수면비행선박에서 연료유의 저장, 분배 및 이용 장치는 수면비행선박 및 승선자의 안전을 확보할 수 있는 것이어야 하며, 다음 규정에 적합한 것이어야 한다.\n가. 0.18 N/을 초과하는 압력의 기름을 내장하는 연료유 장치는   결함 또는 누설을 발견할 수 있는 감지장치가 설치되어야 한다. \n나. 기관구역의 통풍은 모든 정상상태에서 유증기의 축적을 방지하여야 한다.\n다. 연료유 탱크는 탱크로부터 유출 또는 누설된 기름이 고온표면과 접촉하여 화재를 발생시킬 수 있는 위치에 설치되어서는 아니 된다.\n라. 연료유관은 콕 또는 밸브가 부착되어야 한다.\n마. 연료 탱크에는 필요한 경우 탱크로부터 누설된 연료를 모아두기 위한 저장장치가 제공되어야 한다. \n바. 연료유 탱크의 연료유 양을 확인하기 위한 안전한 수단이 설치되어야 한다.\n사. 유면게이지 및 표시기는 탱크에 과주입되어 기름이 유출되지 아니하도록 하여야 하며 원통형 유리게이지의 사용은 금지한다.\n아. 연료유 탱크 또는 주입관을 포함한 연료유 장치는 과도한 압력 상승을 방지하기 위한 설비가 설치되어야 한다. 도출밸브 및 공기관 또는 넘침관은 안전한 장소로 유도되어야 하며 인화점이 43℃ 미만인 연료유의 경우 그 끝단에는 플레임 어레스터를 부착하여야 한다.\n자. 차목을 전제로, 연료유 관과 그 밸브 및 부착품은 강 또는 그 밖의 승인된 재료로 제작된 것이어야 한다. 다만, 해양수산부장관이 그 필요성을 인정하는 경우 플렉시블관의 제한적 사용은 허용할 수 있다. 이러한 플렉시블관 및 그 끝단의 부착품은 충분한 강도를 갖는 승인된 내화성 재료를 사용하여 제작되어야 한다.\n차. 고압 연료유 관과 그 밸브 및 부착품은 이음매 없는 강구조이어야 하며 고압 연료유 관 손상 시 누설된 기름을 저장할 수 있도록 이중관으로 보호되어야 한다.\n\n 4.3.2.4 압력 윤활유 장치에 사용되는 윤활유의 저장, 분배 및 이용 장치는 수면비행선박 및 승선자의 안전을 확보할 수 있어야 하며 기관구역 및 보조기관 구역에 설치되는 윤활유 장치는 다음의 경우를 제외하고 전  4.3.2.3 가목 및 다목부터 아목까지의 규정에 적합하여야 한다.\n가. 윤활유 계통에 사용되는 유리 유량계는 등급의 내화성이 시험에 의하여 확인되는 경우에 한하여 사용할 수 있다;\n나. 폐쇄장치를 부착한 측심관은 기관구역에 설치될 수 있다. \n\n 4.3.2.5 동력전달장치, 제어․작동장치 및 가열장치에서의 압력으로 사용되는 그 밖의 가연성 기름의 저장, 분배 및 이용 장치는 수면비행선박 및 승선자의 안전을 확보할 수 있는 것이어야 한다. \n\n 4.3.2.6 4.2.1.1부터 4.2.2.5까지의 요건에 추가하여 가연성 액체를 자동 또는 원격으로 저장하거나 이송하는 모든 장치는 기름이 넘치는 것을 방지하기 위한 설비를 하여야 한다.\n\n4.3.3 빌지 흡입 및 배출 장치 \n\n 4.3.3.1 액체를 전용으로 싣는 구획을 제외한 모든 수밀구획은 배수설비를 하여야 하며 빌지 배출이 필요하지 아니하다고 생각되는 특정한 구획은 수면비행선박의 안전에 지장이 없다는 것이 입증되면 빌지 배출장치가 생략될 수 있다.\n\n 4.3.3.2 액체를 전용으로 싣는 구획을 제외하고 예상되는 최악 손상조건에서 수선하부에 위치하는 모든 수밀구획은 배수를 위하여 빌지 배출장치가 설치되어야 한다. 이러한 수밀구획의 용량 또는 위치는 해당 구획의 침수로 수면비행선박의 안전에 영향이 없도록 하여야 한다.\n\n 4.3.3.3 빌지 배출장치는 수면비행선박이 손상되어 발생할 수 있는 모든 경사 및 트림 상태에서도 작동할 수 있어야 하며, 침수가 한 구획에서 다른 구획으로 전이되지 아니하도록 설계되어야 한다. 빌지 장치가 작동하기 위하여 필요한 밸브와 펌프는 해당 구획에서 조작할 수 있어야 한다.\n가. 주 빌지관 계통에 2대의 동력펌프가 설치되어야 하며, 그 중 1대는 추진 기관에 의해 구동될 수 있다. 수면비행선박 안전에 영향을 미치지 않는다고 입증될 경우 특정구획의 빌지 배출장치는 생략될 수 있으며 이 빌지 배출장치 대신에 다음 .12의 요건에 따를 수 있다.\n나. 다동선에서 어느 한 선체에 있는 빌지펌프가 다른 선체에 있는 빌지를 배출 할 수 없는 경우에는 각 선체에 2대의 동력펌프가 설치되어야 한다. 각 선체에 설치하는 빌지펌프 중 1대는 독립 동력펌프이어야 한다.\n\n 4.3.3.4 동력구동의 자흡식 빌지펌프는 소화용 또는 일반용으로 사용될 수 있으나, 연료유 또는 그 밖의 가연성액체의 이송용으로는 사용될 수 없다.\n\n 4.3.3.5 각 동력 빌지펌프는 2 m/s 이상의 속도로 빌지관을 통하여 물을 흡입할 수 있어야 한다.\n\n 4.3.3.6 빌지주관의 지름(d)은 다음 식에 따라 계산되어야 하며, 빌지 주관의 실제 안지름은 산식의 규격에 가장 가까운 표준관으로 할 수 있다:\n\n           \n        여기서 :\n             : 빌지주관의 안지름(mm);\n             : 수면비행선박의 길이(m);\n             : 단동선의 경우 선폭(m), 다동선의 경우 계획수선이하에서의 선폭 (m); 그리고 \n             : 수면비행선박 수밀구조의 형깊이(m) \n\n 4.3.3.7 빌지 흡입지관의 안지름은 25mm 미만이어서는 아니 되며 빌지홉입 지관에는 효과적인 여과기가 부착되어야 한다.\n\n 4.3.3.8 해수 유입밸브를 설치한 경우 해당 구획에서 폐쇄될 수 있어야 한다.\n \n 4.3.3.9 펌프에 연결되는 모든 빌지 흡입관은 다른 용도의 배관과 독립되어야 한다.\n\n 4.3.3.10 빌지 배출장치가 설치되는 모든 구역은 빌지 경보장치가 설치되어야 한다.\n\n 4.3.3.11 독립 빌지펌프를 설치한 수면비행선박에서 각 선체용 빌지펌프의 합계용량(Q)은  4.3.3.5 및 4.3.3.6에 따른 펌프 용량의 2.4배 이상이어야 한다.\n\n 4.3.3.12 빌지주관이 설치되어 있지 아니한 빌지 배출장치는 각 구역마다 1대의 고정식 잠수펌프가 설치되어야 하며 각 펌프의 용량은 다음 식에 따른다:\n\n        ton/h (최소한 8 ton/h)\n     여기서 ;\n       : 잠수펌프의 수\n       :  4.3.3.11에 따른 합계용량 \n\n   다만, 소형수면비행선박에 대해서는 해양수산부장관이 인정하는 경우 휴대식 빌지펌프 1대로 빌지 배출을 할 수 있다. \n    \n 4.3.3.13 다음 장소에는 역지밸브가 설치되어야 한다.\n가. 빌지밸브 분배 매니폴드\n나. 펌프 또는 빌지 흡입주관에 직접 부착되는 빌지 흡입 호스 연결부 \n다. 직접 빌지 흡입관과 빌지 흡입주관이 연결된 빌지펌프의 연결부\n\n4.3.4 밸러스트 장치  \n\n 4.3.4.1 원칙적으로 연료유 탱크에 물 밸러스트를 적재하여서는 아니 되나  연료유 탱크에 물 밸러스트를 적재하여야 하는 수면비행선박에서는 유수분리장치를 설치하거나 기름에 오염된 밸러스트를 처리하기 위하여 육상설비로의 이송 등 대체수단이 설치되어야 한다. \n\n 4.3.4.2 연료유 이송장치가 밸러스트 목적으로 사용되는 경우, 이 장치는 모든 물 밸러스트 장치로부터 격리되어야 하며 연료유 장치의 요건에 만족하여야 한다.\n\n4.3.5 냉각장치는 수면비행선박의 운항 중 모든 윤활유 및 유압액체의 온도를 제조자가 정한 권고치 이내로 유지시킬 수 있어야 한다. \n\n4.3.6 기관 급기장치는 충분한 공기를 공급할 수 있는 장치를 설치하여야 하며, 이 장치는 염분, 물, 누유되는 연료, 산업축적물 및 이물질의 유입으로 인한 손상으로부터 보호되어야 한다.\n\n4.3.7 기관구역의 통풍장치는 황천시를 포함한 모든 기상상태에서 기관이 전 부하로 운전하고 있을 때 인명의 안전 및 기관의 효율적 운전을 위하여 충분한 공기의 공급이 유지되도록 통풍되어야 한다. 보조기관구역도 그 구역의 목적에 적합하도록 통풍되어야 하며 이러한 통풍장치는 수면비행선박의 안전운항에 지장을 초래하지 않는 것이어야 한다.\n\n4.3.8 배기장치 \n\n 4.3.8.1 배기장치는 거주구역, 공기조화장치 및 기관 흡기구 안으로 배기가스의 흡입 위험을 최소화 할 수 있도록 배치되어야 한다.\n\n 4.3.8.2 흘수선 가까이에서 배기가스를 배출하는 관은 선체 외판 또는 관 끝단에 침식이나 부식에 견딜 수 있는 차단 플랩 또는 그 밖의 장치가 설치되어야 하고 해당 구역 또는 기관 배기 매니폴드에 침수를 방지하기 위한 장치를 설치하여야 한다.\n\n 4.3.8.3 가스터빈 배기장치의 경우 고온의 배기가스가 선체 내부나 정박 시 수면비행선박 주위의 사람이 접근하는 장소에 유도되지 아니하도록 배치되어야 한다.\n\n\n제5장 전기설비 및 제어설비\n\n5.1 일반\n\n5.1.1 전기설비 및 제어설비는 이 장에서 정한 요건 이외의 사항에 대해서는 「선박전기설비기준」을 준용할 수 있다. 다만, 미국연방항공규정 Federal Aviation Regulation 등 이 기준에서 정하고 있는 것과 동등이상의 기준을 만족한다고 해양수산부장관이 승인한 경우에 이를 인정할 수 있다.\n\n5.1.2 시스템안전평가(SSA)는 고장으로 인한 영향을 고려하여야 하며, 동시 또는 연속적으로 발생하는 결함 가능성도 고려하여야 한다.\n\n5.1.3 중요장비의 전원 중단으로 수면비행선박의 안전을 침해할 경우 그 장비는 독립된 두 개의 회로에 의하여 급전되어야 하며, 하나의 회로에서의 고장이 두 개의 회로 모두에 영향을 주어서는 아니 된다. \n\n5.1.4 축전지와 같은 무거운 장비는 사고 시에도 고박 될 수 있도록 설치되어야 한다. \n\n5.1.5 부주의한 조작이나 예기치 못한 일로 스위치 또는 차단기가 열림으로써 중요한 기능 및 비상기능에의 급전이 중단되어서는 아니 된다. \n\n5.1.6 추진 및 자세 제어가 목적인 전자장비는 국제전기기술위원회(IEC)의 표준에 따라 승인되고 설치되어야 한다. \n\n5.1.7 국내 또는 국제기준에서 특별히 규정하지 않는 한, 모든 전기기기는 정격치로부터 다음의 변동에서도 동작할 수 있어야 한다.\n\n 5.1.7.1 교류 배전계통 전압 및 주파수 변동  \n\n\n\n 5.1.7.2 직류 배전계통 전압 변동\n\n\n 5.1.7.3 축전지계통 전압 변동\n    \n\n5.1.8 \t절연구조의 배전계통에는 절연저항을 영구적으로 측정하는 장치를 설치하여야 한다. 다만, 소형수면비행선박의 경우 절연표시등으로 대체 할 수 있다. \n\n5.1.9 배전계통의 전압파형에서 전체 고조파 왜곡(THD)은 8퍼센트를 초과하여서는 아니 되며, 단일고조파는 3퍼센트를 초과하여서는 아니 된다.\n\n5.1.10 비상시에도 사용이 요구되는 장비들은 주전원 상실 후 15초 이내에 자동으로 비상전원으로부터 급전되어야 한다.\n\n5.1.11 선외전원으로부터 수전하는 회로가 교류인 경우에는 상회전 방향, 직류인 경우에는 극성을 확인하는 장치를 영구적으로 설치하여야 한다.\n\n5.1.12 수면비행선박에 설치되는 전등은 한국산업표준(KS)에 적합한 것을 사용하여야 한다.\n\n5.1.13 항해설비 및 무선설비의 전원은 다음의 조건을 만족하여야 한다.\n\n 5.1.13.1 모든 항해설비 및 무선설비의 전력은 주전원으로부터 공급되어야 하고, 주전원 고장 시 비상전원으로부터 공급되어야 한다. \n\n 5.1.13.2 예비전원의 설치가 불가능하고 전력의 주전원이 상실된 경우, 비상전원으로 사용되는 축전지로부터 급전되어야 한다. 다만 이 축전지는 시동용으로 사용할 수 없다.\n \n 5.1.13.3 기동을 위하여 전력을 필요로 하는 모든 항해설비 및 무선설비는 배전반으로부터 개폐기 및 보호설비를 사용하여 두 개의 독립된 급전선으로부터 공급되어야 한다. 주전원, 예비전원 또는 비상전원으로부터 배전반 모선에 대한 전력은 두 개의 독립된 급전선에 의하여 공급되어야 한다.\n\n5.1.14 낙뢰와 정전기 방지를 위한 전기적 접속 및 보호조치는 다음의 조건을 만족하여야한다.\n\n 5.1.14.1 금속 구성품의 경우 수면비행선박 동체에 전기적으로 결합시킬 수 있어야 하며 낙뢰가 일어나도 수면비행선박이 위험하지 않도록 구성품을 설계할 것\n\n 5.1.14.2 비금속 구성품의 경우 낙뢰로 인한 영향이 최소화 되도록 구성품을 설계하여야 하며 낙뢰 전류를 우회시킬 수 있을 것\n\n5.2 주전원\n\n5.2.1 주전원은 2대의 주배전반에 급전하는 2조의 발전장치(발전기 또는 축전지)로 구성하여야 하며, 주배전반은 화재위험을 최소화하는 건조한 장소에 설치하여야 한다. 다만, 소형수면비행선박 또는 조종사 1인에 의하여 운항되도록 허가된 수면비행선박은 주배전반 대신에 기계적 장치로 주기관 제어 및 선박 조종이 가능한 경우 주배전반을 1대만 설치할 수 있다. \n\n5.2.2 발전장치의 용량은 1조의 발전장치가 정지하거나 고장 난 경우에도 안전운항을 유지하기 위하여 필요한 전기설비에 급전할 수 있어야 한다. 또한 냉난방, 냉장, 기계식 통풍, 위생수 및 청수를 사용할 수 있도록 급전할 수 있어야 한다.\n\n5.2.3 수면비행선박의 주전원 장치는 추진기관의 속력에 관계없이 모든 전기설비에 급전할 수 있어야 한다.\n\n5.2.4 주추진 장치로부터 독립된 1개의 전원은 주추진 장치를 시동할 수 있어야 한다. \n\n5.2.5 급전장치의 중요부분으로 사용되는 1조의 충전장치 또는 변압기가 사용할 수 없게 되어도 5.2.2에서 언급되는 전기설비에 급전할 수 있어야 한다. \n\n5.2.6 선내에서 여객과 선원이 통상적으로 접근할 수 있는 장소의 조명에 이용되는 주조명 장치는 주전원으로부터 급전되어야 한다.\n\n5.2.7 발전장치와 그 밖의 이중화된 장치의 접속 2개의 주배전반에 균등하게 분할되어야 하며, 발전장치는 단독으로 작동되어야 한다. 또한, 이와 동등하다고 입증된 장치가 대체 설치될 수 있다. 다만, 소형수면비행선박 또는 조종사 1인에 의하여 운항되도록 허가된 수면비행선박에 대하여 주배전반을 1대만 설치할 수 있다. \n\n5.2.8 주전원 설비는 어떤 부하상태에서도 추진기관의 정상작동이 가능하도록 하여야 하며, 부하에 따라 중요하지 않은 장비의 차단이 가능하여야 한다.\n\n5.3 비상전원\n\n5.3.1 자기기전식(self-contained) 비상전원이 제공되어야 한다. 다만, 소형수면비행선박이 원동기에 의한 발전기 1조와 축전지(단, 발전기와 병렬운전이 가능할 것)를 주전원으로 사용하고 축전지가 5.3.2에 적합한 장소에 설치되는 경우 해당 축전지를 비상전원으로 볼 수 있다. \n\n5.3.2 비상전원, 이와 관련이 있는 변압장치, 임시전원, 비상배전반 및 비상조명 배전반은 제3장에 따라 손상사고 후 수선보다 상방에 위치하여 작동될 수 있어야 하며, 쉽게 접근할 수 있어야 한다. 다만, 이들 비상전원 설비들이 설치된 구획이 주전원, 이와 관련이 있는 변압장치 및 주배전반이 설치되어 있는 구획과 인접하지 않도록 배치되며, 해당 구획의 화재, 침수에도 주전원의 사용이 보장되는 경우에는 이 규정을 적용하지 않을 수 있다. 또한 소형수면비행선박의 경우 비상전원, 이와 관련이 있는 변압장치, 임시전원, 비상배전반 및 비상조명 배전반들이 침수에 적절히 보호되는 경우 이 규정을 적용하지 아니한다. \n\n5.3.3 비상전원, 이와 관련이 있는 변압장치, 임시 비상전원, 비상배전반 및 비상조명 배전반의 위치는 주전원, 이와 관련이 있는 변압장치 및 주배전반이 설치되어 있는 장소에서 발생한 화재 또는 그 밖의 사고가 비상전원의 공급, 제어 및 배전을 방해하지 않도록 배치되어야 한다. 다만, 소형수면비행선박의 비상전원이 주전원이 설치되어 있는 기관구역의 화재에 의하여 비상급전에 영향을 받지 아니하는 장소에 설치하는 경우 이 규정을 적용하지 아니한다. \n\n5.3.4 주전원 및 비상전원으로부터 공급되는 급전선은 가능한 한 수직방향과 수평방향 모두 서로 멀리 분리되도록 배치되어야 한다.\n\n5.3.5 비상전원은 주전원이 고장 난 경우 자동으로 비상배전반에 연결될 수 있어야 하며, 5.3.11의 설비에 즉시 전원을 공급할 수 있어야 한다. 또한, 다음 규정에 적합한 발전기 또는 축전지이어야 한다.\n\n 5.3.5.1 비상전원이 발전기인 경우, 규정에 적합한 인화점을 가지는 연료가 독립적으로 공급되는 원동기에 의해 구동되어야 하며, 5.3.12에 따른 임시비상전원이 제공되어야 한다.\n \n 5.3.5.2 비상전원이 축전지인 경우, 전 방전기간을 통하여 재충전 없이 공칭전압의 ±12퍼센트 내에서 축전지 전압을 유지하면서 비상부하에 급전할 수 있어야 한다.\n\n5.3.6 축전지가 임시비상전원으로 사용되는 경우 방전중임을 표시하는 표시기가 조종실 내에 설치되어야 한다. \n\n5.3.7 비상배전반은 정상작동 중에는 과부하 및 단락에 대하여 주배전반 측에서 보호되어야 하고, 주전원의 고장 시 비상배전반에서 자동적으로 차단되는 중간 접속피더에 의하여 주배전반으로부터 급전되어야 하며, 주배전반에 대한 수동전환이 가능해야 한다. \n\n5.3.8 비상회로는 비상배전반에 의해서 급전되어야 한다.\n\n5.3.9 비상발전기와 원동기 및 비상축전지는 수면비행선박의 손상으로 인하여 유발된 최대 종경사 및 횡경사에 대해서도 최대정격출력으로 작동할 수 있도록 설계되고 배치되어야 한다. \n\n5.3.10 축전지가 비상, 백업 또는 엔진시동 설비에 전원을 공급하기 위하여 설치된 경우에는 선내 전원으로부터 축전지에 전원을 충전할 수 있는 설비가 마련되어야 하며, 이러한 충전설비는 축전지가 충전 중이건 아니건 관계없이 설비에 전원을 공급할 수 있어야 한다. 선내 축전지는 매 운항 전에 전압 및 절연상태 등 정상작동 여부를 확인할 수 있고 과충전 또는 과열의 위험을 최소화하여야 하며, 위험가스가 발생하는 형식의 축전지를 사용하는 경우에는 효과적인 공기통풍장치가 설치되어야 한다. \n\n5.3.11 비상전원은 다음의 설비들에 동시에 전원을 공급할 수 있어야 한다.\n\n  5.3.11.1 다음의 비상조명에 대하여 5시간 동안 전원을 공급할 것\n     가. 구명설비의 보관 장소\n나. 복도, 계단, 거주 및 업무용 구역의 출구, 승정장소와 같은 모든 탈출로\n다. 공공장소\n라. 기관구역 및 주비상발전구역과 그 제어장소\n마. 제어장소\n\n  5.3.11.2 다음의 장치에 대하여 5시간 동안 전원을 공급할 것\n가. 조종불능 표시등을 제외한 항해등\n나. 퇴선하는 동안 여객 및 승무원에게 방송하기 위한 선내 전기 통신장비\n다. 화재탐지, 일반경보장치 및 수동화재경보\n라. 소화계통의 원격 제어장치(전기 작동식일 경우)\n\n  5.3.11.3 다음 장치의 간헐적인 작동으로 4시간 동안 전원을 공급할 것\n가. 주간신호등(자체 축전지가 내장된 경우는 제외)\n나. 기적(전기 작동식일 경우)\n\n  5.3.11.4 다음의 장치에 대하여 5시간 동안 전원을 공급할 것\n가. 무선설비 및 이와 관련된 기타 설비\n나. 필수적인 추진기기용 전기식 계기 및 제어장치(별도의 대체 전원이 있는 경우는 제외)\n\n  5.3.11.5 조종불능 표시등에 대하여 12시간 동안 전원을 공급할 것\n\n  5.3.11.6 성능이 입증된 수동 대체장치가 아니라면 추진에 요구되는 장치를 포함하는 방향제어장치용 동력구동장치에 대하여 10분 동안\n\n5.3.12 임시비상전원은 비상시 사용에 적합하게 설치된 축전지로서 재충전 없이 방전하는 동안 축전지의 전압을 정상전압의 ±12퍼센트 이내로 유지하면서 급전할 수 있는 것이어야 한다. 또한, 주전원 또는 비상전원 고장 시에도 최소한 5.3.11의 .1부터 .3에 명시된 조명장치는 전력에 의하여 작동하는 것일 경우 30분간 자동적으로 급전할 수 있도록 설치되어야 한다.\n\n5.3.13 5.3.11항에서 규정한 각각의 설비들이 비상시 사용에 적합하게 설치된 축전지들로부터 규정된 시간 동안 독립적으로 전원공급을 받을 수 있다면, 5.3.12의 요건에 따른 임시비상전원을 설치하지 않아도 된다. 추진 및 방향제어장치들의 계기 및 제어장치에 대한 비상전원의 급전은 중단되지 않아야 한다.\n\n5.3.14 배전계통은 하나의 주 수직 구획에서의 화재가 다른 주 수직 구획의 안전 확보에 필요한 설비를 방해하지 아니하도록 배치되어야 한다. 이 요건은 해당 구획을 통과하는 주 전로와 비상전로가 수직방향과 수평방향 모두 가능한 한 멀리 떨어져 있다면 만족된 것으로 한다.\n\n5.4 발전기의 시동장치\n\n5.4.1 발전기는 0℃의 저온상태에서도 시동할 수 있어야 한다. 이것이 불가능하거나 보다 저온이 될 가능성이 있는 경우에는, 발전기 시동을 확보하기 위한 가열장치가 설치되어야 한다. \n\n5.4.2 주발전기(비상발전기)는 최소한 6(3)회의 연속시동이 가능한 용량의 에너지를 비축한 시동장치가 설비되어야 한다. 비축된 에너지는 자동시동장치에 의하여 완전히 소모되지 않도록 보호되어야 하며, 3(3)회의 추가 시동을 할 수 있는 제2의 에너지원이 설치되어야한다. 다만, 다발 추진기관이 설치된 경우 제 2에너지원을 설치할 필요는 없다.\n\n5.4.3 비상발전기의 비축된 에너지는 항상 유지되어야 하며, 다음을 만족하여야 한다. \n\n 5.4.3.1 전기식 및 유압식 시동장치는 비상배전반으로부터 급전되어야 한다.\n\n 5.4.3.2 압축공기식 시동장치는 체크밸브를 통하여 주 또는 보조 공기탱크에 의해서 또는 비상공기압축기(전기구동의 경우에는 비상배전반에서 급전되어야 함)에 의해서 급기되어야 한다.\n\n 5.4.3.3 시동, 충전 및 에너지 비축장치는 모두 비상발전기구역에 배치되어야 한다. 이 장치들은 비상발전기의 작동 이외의 목적에 사용되어서는 아니 되나 비상발전기구역에 설치된 체크밸브를 통하여 주 또는 보조 압축공기장치로부터 비상발전기용 공기탱크에 급기하는 것을 배제하는 것은 아니다. \n\n5.5 조타 및 자세제어장치\n\n5.5.1 수면비행선박의 조타 또는 자세제어 장치가 전력에만 의존하는 경우에는, 최소한 3개의 독립된 회로에 의해 급전되어야 하며, 그 중 2개는 주전원으로부터 주배전반을 통하여 급전되어야 하고 나머지 1개는 화재 또는 침수에도 영향을 받지 않는 장소에 설치된 임시전원을 포함한 비상전원으로부터 급전되어야 한다. 공급전원 중 어느 하나에 고장이 나도 대체 급전선으로 전환하는 동안에 수면비행선박 또는 여객에게 위험이 발생하여서는 아니 된다. 이들 회로에는 단락보호 및 과부하 경보장치가 설치되어야 한다. 전력에만 의존하지 않는 장치는 전력 손실시 기계적 또는 유압적 방법을 포함하여 파손안전(Fail-safe) 조건을 만족하여야한다.\n\n5.5.2 과전류 보호 장치가 설치된 경우, 이 보호 장치는 전동기 또는 회로의 전 부하 전류의 2배 이상인 전류에 대해 보호되어야 하고, 3상 전원인 경우, 어느 한 상의 결상을 지시하는 경보장치가 조종실 내에 설치되어야 한다.\n\n5.5.3 전력의 지속적인 공급에 의존하지 않는 장치가 전기공급이 필요 없는 최소 1개의 대체장치로 설치된 경우에는, 전기적인 동력 또는 제어 장치는 5.5.2에 따라서 보호된 단일회로에 의하여 급전할 수 있다. \n\n5.5.4 수면비행선박의 방향 제어장치 및 안정장치의 전력공급에 대하여는 11.3항에 만족되어야 한다.\n\n5.6 전기로 인한 충격, 화재 및 그 밖의 위험에 대한 예방수단\n\n5.6.1 고장상태에서는 대전되기 쉬운 전기 기기 또는 설비의 노출 금속부분은 해당 설비가 다음의 요건 중 하나라도 만족하지 않는 경우에는 접지시켜야 한다. \n\n 5.6.1.1 도체간 전압이 직류 55V 또는 선간 실효치 55V를 초과하지 아니하는 전압으로 급전되며, 이 전압을 달성하기 위한 목적으로 단권변압기(auto-transformer)가 사용되지 아니할 것\n\n 5.6.1.2 단일의 전력소비기기에 급전하는 안전절연변압기에 의하여 250V를 초과하지 아니하는 전압으로 급전될 것\n\n 5.6.1.3 이중 절연구조로 되어 있을 것\n\n5.6.2 모든 전기기기는 정상적으로 조작 또는 접촉한 경우에 상해를 야기하지 아니하도록 제조 및 설치되어야 한다. \n\n5.6.3 주배전반 및 비상배전반은 선원이 위험 없이 설비 및 장비에 접근할 수 있도록 배치되어야 한다. 배전반의 측면과 후면, 필요시 전면은 보호되어야 한다. 선간 전압 또는 대지에 대한 전압이 직류 55 V, 교류 55 V를 넘는 배전반은 폐쇄형으로 하여야 한다. 필요시 배전반 전후에 비전도성 매트 또는 그레이팅이 설치되어야 한다.\n\n5.6.4 동력, 전열 또는 조명용의 비접지식 배전계통의 1차 또는 2차 측에는 지면에 대한 절연을 연속적으로 감시하고 비정상적으로 낮은 절연값이 발생할 경우 작동할 수 있는 가시 또는 가청 경보가 설치되어야 한다. 성능 및 안전이 입증된 경우에는 제한된 2차 배전계통에 대한 절연값을 수동으로 체크하는 장치를 사용할 수 있다.\n\n5.6.5 전선 및 배선\n\n 5.6.5.1 각 주전원 및 비상전원 전선과 동력용 전선 및 제어 또는 통신용 전선은 분리하여 포설되어야 한다. 비상 부하용 동력 및 제어 전선이 화재 위험지역을 관통할 경우에는 내연성(Fire resistance)을 만족 하여야 한다. 안전을 이유로, 시스템은 이중화된 동력 또는 제어 전선을 가져야 하며, 선로는 가능한 한 멀리 떨어져서 배치되어야 한다. \n\n 5.6.5.2 모든 전선의 금속피복 및 외장은 전기적으로 연속되고 접지되어야 한다.\n\n 5.6.5.3 장비에 대한 모든 외부전선은 최소 비할로겐 난연성이어야 하며, 고유의 난연성이 손상되지 않도록 설치되어야 한다. 특정용도에 필요한 경우, 무선주파수 전선과 같이 특수전선의 사용은 안전에 이상이 없다고 입증된 경우에 한하여 허용할 수 있다.\n\n 5.6.5.4 필수 또는 비상용의 동력, 조명, 선내통신 또는 신호를 제공하는 전선은 가능한 한 기관구역 및 케이싱, 그 밖의 화재의 위험성이 큰 장소로부터 격리하여 배선되어야 한다. 가능한 한 이러한 모든 전선은 인접하는 구획의 화재로 인하여 발생될 수 있는 격벽의 열에 의하여 사용불능이 되지 아니하도록 배선하여야 한다.\n\n 5.6.5.5 전선이 전기적 고장으로 인하여 화재 또는 폭발의 위험성이 발생할 수 있는 위험구역에 포설된 경우에는, 안전성을 확보하기 위한 예방조치가 취해져야 한다.\n\n 5.6.5.6 전선은 벗겨지거나 그 밖에 손상되는 것을 막을 수 있도록 설치 및 지지되어야 한다.\n\n 5.6.5.7 모든 도선의 단말 및 접속은 전선 본래의 전기적, 기계적 난연성 및 필요한 경우에는 내연성(Fire resistance)의 것이어야 한다.\n\n5.6.6 5.5에서 인정하는 경우 또는 안전성이 입증되어 예외적으로 다른 방법을 허용하는 경우를 제외하고는 각 독립회로는 단락 및 과부하에 대하여 보호되어야 한다. 또한, 400 사이클 회로를 사용하는 경우에는 회로 임피던스가 관찰되어야 한다.\n\n5.6.7 각 회로의 과부하 보호장치의 정격 또는 지정값은 보호장치 설치장소에 영구적으로 표시되어야 한다.\n\n5.6.8 보호장치가 퓨즈일 때, 퓨즈는 보호된 회로를 공급하는 차단 스위치의 부하 측에 배치되어야 한다.\n\n5.6.9 조명기기는 전선에 유해한 온도의 상승 및 주위 물건의 과열을 방지하도록 배치되어야 한다.\n\n5.6.10 축전지는 적절히 격납되어야 하며, 위험가스가 발생하는 형식의 축전지를 사용할 경우 격납을 위하여 사용되는 구획실은 효과적으로 통풍되어야 한다.\n\n5.6.11 인화성증기의 발화원이 될 수 있는 전기 또는 그 밖의 설비는 인화성 증기가 발생될 가능성이 있는 구획실에 설치되어서는 아니 된다.\n\n5.6.12 다음의 5.6.12.1부터 5.6.12.9까지의 규정에 적합한 것이어야 하며, 또한 이에 추가하여 비금속으로 건조되는 수면비행선박은 5.6.12.10부터  5.6.12.15까지의 규정에도 적합한 것이어야 한다.\n\n 5.6.12.1 수면비행선박에 공급되는 전압은 직류 또는 교류이어야 하며, 다음을 초과하여서는 아니 된다.\n가. 동력, 난방 및 기타 영구적으로 설치되는 장비는 500V\n나. 조명, 선내통신 및 리셉터클(receptacle)은 250V\n\n 5.6.12.2 배전계통에서는 선체귀선 방식이 아닌 접지방식이 허용된다.\n\n 5.6.12.3 접지식 본질안전회로를 제외하고 접지식 배전장치를 사용하여서는 아니 된다.\n\n 5.6.12.4 기름누설이 발생할 수 있는 모든 구역에는 통풍장치를 포함한 인증된 안전형 전기설비를 사용하여야 한다. 그와 같은 구역에는 운항목적에 필요한 전기설비 및 부착물만 부착하여야 한다.\n\n 5.6.12.5 위험을 예방하기 위하여 전압을 모든 회로, 지회로 및 모든 기기로부터 차단시킬 수 있는 수단이 제공되어야 한다. \n\n 5.6.12.6 전기설비는 통전부분, 회전부분 또는 운동부분 및 화상을 일으키거나 화재의 원인이 될 수 있는 가열된 표면에 접촉될 가능성을 최소화하도록 설계되어야 한다.\n\n 5.6.12.7 전기설비는 안전상태가 보장되어야 하며, 전기설비의 손상으로부터 발생할 수 있는 화재나 위험한 결과의 발생 가능성이 최소화되어야 한다.\n\n 5.6.12.8 각 회로의 과부하 보호 장치의 정격 또는 지정 값은 보호 장치가 설치된 곳에 영구적으로 표시되어야 한다.\n\n 5.6.12.9 축전지로부터 공급되는 전선에 대한 보호 장치를 설치하는 것이 불가능한 경우(예: 축전지실, 엔진시동회로) 보호되지 않는 전선은 가능한 한 짧게 배선되어야 하며, 고장의 위험성을 최소화하기 위하여 예방조치(예: 각 도체의 절연체 위에 슬리브를 추가로 끼운 단심케이블을 사용하고 덮개를 씌운 단자를 사용)가 취해져야 한다.\n\n 5.6.12.10 낙뢰 및 정전기 방전 때문에 일어날 수 있는 화재, 구조 손상, 전기충격 및 전자파 간섭을 최소화하기 위하여 수면비행선박의 모든 금속은 가능한 한 이종금속 간의 전기적 부식을 고려하여 전기적으로 접속시켜서 전기장비의 접지회귀에 적합한 연속 전기 계통을 형성하고 수면에 연결시키도록 하여야 한다. 연료 탱크 내를 제외한 구조물 내 절연된 부품은 일반적으로 본딩(bonding)이 필요하지 아니하다.\n\n 5.6.12.11 각 연료보급 지점에는 연료공급 장비를 수면비행선박에 접속하는 설비가 비치되어야 한다.\n\n 5.6.12.12 액체나 가스의 흐름으로 인하여 정전기 방전을 할 수 있는 금속파이프는 전 길이에 걸쳐 전기적으로 연속되도록 접속시켜야 하며 접지되어야 한다.\n\n 5.6.12.13 낙뢰보호를 위하여 사용되는 1차 도체는 구리인 경우 최소 50㎟ 이상의 단면적을 가지는 도체를 사용하여야 하며, 알루미늄의 경우에는 동등한 서지 용량을 가지는 도체를 사용하여야 한다.\n\n 5.6.12.14 낙뢰방전용으로 사용되지 아니하나 정전기의 등전위, 기기의 접속 등에 사용되는 2차 도체는 구리인 경우 최소 5㎟ 이상의 단면적을 가지는 도체를 사용하여야 하며, 알루미늄의 경우에는 동등한 서지 용량을 가지는 도체를 사용하여야 한다.\n\n 5.6.12.15 접속된 물체와 선체 사이의 저항은 0.05Ω을 초과하여서는 아니 된다다만, 0.05Ω 이상의 값이 위험하지 아니하다고 증명된 곳은 제외하며, 접속 경로는 과도한 전압강하 없이 최대전류를 수용할 수 있도록 충분한 단면적을 가져야 한다.\n\n제6장 항해설비\n\n6.1 일반사항\n\n항해와 관련된 설비는 이 장에서 정한 요건 이외의 사항에 대해서는 ｢선박용물건의 형식승인시험 및 검정에 관한 기준｣, ｢예비검사의 대상 및 기준｣ 또는 ｢선박설비기준｣ 제3편 제3장을 준용할 수 있다. 다만, 미연방항공규정 Federal Aviation Regulation 등 이 장에서 정하고 있는 것과 동등이상의 기준을 만족한다고 해양수산부장관이 승인한 경우에만 이를 인정할 수 있다. \n\n6.2 계기의 배치\n\n6.2.1 다발 수면비행선박의 경우 동력장치계기는 동력장치 수만큼 설치되어야 한다. \n\n6.2.2 6.10의 항해 및 비행계기는 계기판 상에 집중 배치하고 조종사의 전방 시계에 수직한 면내에서 중앙에 가깝게 배치하여야 하며, 다음 요건에 적합하여야 한다.\n\n 6.2.2.1 자세 계기는 계기판의 중앙상방 위치에 두어야 한다.\n\n 6.2.2.2 대기속도(수면상 대기압 기준으로 측정한 속도를 말한다)계는 자세 계기의 바로 왼쪽에 두어야 한다.\n\n 6.2.2.3 고도계는 자세 계기의 바로 오른쪽에 두어야 한다.\n\n 6.2.2.4 자기컴퍼스를 제외하고 비행방향을 가장 유효하게 지시하는 계기는 자세계기의 바로 아래쪽에 두어야 한다.\n\n6.2.3 6.2.2에도 불구하고 공간협소 등 설치가 불가능할 경우 다른 방법으로 배치할 수 있다.\n\n6.3 경보등, 주의등 및 그 밖의 지시등\n\n  경보등, 주의등 또는 그 밖의 지시등을 조종실에 장착하는 경우에는 경보등은 적색, 주의등은 황색, 정상상태를 나타내는 지시등은 녹색을 사용하여야 한다. \n\n6.4 대기속도계 및 거리 측정장치 \n\n6.4.1 수면비행선박의 속도는 동압(선수에 부딪히는 공기의 충격압력, 피토트 관(Pitot tube)으로 측정) 및 정압(임의 고도에서 측정한 대기압)에서 최소 교정오차로 측정된 대기속도를 표시하여야 한다.\n\n6.4.2 대기속도계는 비행시험을 통하여 오차를 측정하여야 하며, 그 오차는 전 속도범위를 통하여 측정 대기속도의 3퍼센트 또는 5노트 중 큰 값을 초과해서는 아니 된다.\n\n6.4.3 정확한 대기속도 측정을 위하여 동압관 및 정압관의 습기가 배출되도록 하여야 하며, 착빙으로 인한 오작동을 막을 수 있도록 동압관 및 정압관 가열장치 또는 이와 같은 수준의 방법을 가지고 있어야 한다. \n\n6.4.4 소형수면비행선박을 제외한 수면비행선박은 2개의 대기속도계가 필요하며, 각각의 동압관 및 정압관은 조류 충돌로 인하여 동시에 손상을 입지 않도록 설치하여야 한다. \n      \n6.4.5 수면비행선박에는 선속거리계가 설치되어야 하며, 자동충돌예방 보조장치가 설치된 경우에는 대수 선속거리 측정이 가능한 것이어야 한다. 다만, 소형수면비행선박의 경우 위성항법장치가 설치되어 선속거리계와 동등한 기능을 제공받을 수 있는 경우에는 이를 설치하지 아니할 수 있다.\n\n6.5 자기컴퍼스\n\n  수면비행선박에는 자기컴퍼스를 설치하여야 하며, 수면비행선박의 진동 또는 자장에 의해서 정밀도가 심하게 영향을 받지 않아야 하고, 수평비행 중 어떤 방위에서도 자차가 10도 이상이어서는 아니 된다.\n\n6.6 전원을 사용하는 계기\n\n수면비행선박에 전원을 사용하는 계기가 설치된 경우 다음 요건에 적합하여야 한다.\n\n6.6.1 전원공급이 중단된 계기에는 이를 나타내는 일체형 전력 표시기 또는 분리된 전력지시기가 설치되어야 하며, 분리된 전력지시기를 사용하는 경우, 조종사가 지시기를 확인할 수 있도록 배치하여야 한다.\n\n6.6.2 전원을 사용하는 계기는 최소한 2개의 독립된 전원이 있어야 하며, 각 전원을 선택할 수 있는 수동식 또는 자동식 수단이 있어야 한다. 이 경우 다발 수면비행선박의 독립된 전원은 같은 기관에 의해 작동하는 것이 아니어야 한다.\n\n6.6.3 전원공급장치는 다음과 같이 설계하여야 한다.\n\n 6.6.3.1 하나의 계기 고장이 다른 계기에 전력을 공급하는 것을 방해하여서는 아니 된다.\n\n 6.6.3.2 하나의 전원으로부터의 전력공급 고장이 다른 전원으로부터 공급을 방해하여서는 아니 된다.\n\n6.7 타각지시기 및 추진지시기\n\n6.7.1 수중타가 있는 수면비행선박에는 활주모드에서 타각을 표시하는 지시기가 설치되어야 한다. 수중타가 없는 수면비행선박의 경우, 지시기는 조타 스러스트의 방향을 표시하여야 한다. 이 경우 주 추진을 제외하고 보조 추진장치를 사용하는 수면비행선박이 보조 추진장치의 조작을 위해 조이스틱을 사용하는 때에는 그러한 조이스틱의 조작 방향이 조타 스러스트의 방향을 표시하는 것으로 볼 수 있다. \n\n6.7.2 조타륜, 틸러, 조이스틱 또는 조종 레버의 회전방향과 같은 방향으로 수면비행선박이 회전하도록 설계하여야 한다.\n\n6.7.3 수면비행선박에는 추진 장치의 작동상태를 나타내는 11.2.6의 지시기가 설치되어야 한다. \n\n6.8 동력장치계기\n\n6.8.1 동력장치계기 및 계기의 배관은 다음 요건에 적합하여야 한다.\n\n 6.8.1.1 각 동력장치 및 보조동력장치 계기의 배관은 다음 요건에 적합하여야 한다.\n가. 각 연료배관은 손상을 유발하는 진동이 발생되지 않도록 하여야 하며, 유압 및 선체운동에 따른 관성력 등의 하중을 견디도록 설치하고 지지되도록 하여야 한다.\n나. 상호 상대운동을 하는 선체와 동력장치 사이에 연결되어 있거나 내압 및 축방향의 하중을 받고 있는 연료배관은 유연성을 가져야 하며, 유연성 있는 호스 결합방식을 사용하여야 한다.\n다. 유연성이 있는 호스는 승인 받은 것이거나 적합성이 증명되어야 하며, 고온에 취약한 유연성 있는 호스는 온도가 높은 곳에 사용되어서는 아니 된다.\n\n6.8.1.2 가압된 가연성 유체를 송유하는 계기배관은 배관의 손상으로 인하여 발생한 다량의 유체 유출을 방지하기 위하여 압력원에 안전장치를 설치하여야 한다. 또한, 유체가 유출되더라도 안전운항에 영향을 미치지 않도록 설치 및 배치되어야 한다. \n\n6.8.2 연료량 지시계는 다음 요건에 적합하여야 한다.\n\n 6.8.2.1 운항 중 각 연료 탱크 내에 있는 연료의 양을 조종사에게 지시하는 장치가 있어야 한다. \n\n 6.8.2.2 각 연료량 지시계는 탱크 내에 잔류 연료량이 사용 불능량(선체운동으로 인한 연료공급이 불가능한 최초 상태에서의 탱크 내 연료 잔량을 말한다)과 같을 때 수평 운항에 있어 “0”을 가리키도록 눈금이 조정되어야 한다.\n\n 6.8.2.3 연료량 지시계로 사용되는 노출된 사이트게이지는 외부로부터의 손상위험으로부터 보호되어야 한다.\n\n 6.8.2.4 물이 고여 결빙할 수 있는 트랩형의 사이트게이지는 지상으로 배수할 수 있는 수단을 구비하여야 한다.\n\n 6.8.2.5 수면비행선박이 수면에 있을 때 각 탱크 내의 사용가능한 연료량을 지시하여 주는 수단(봉 게이지 등)을 구비하여야 한다.\n\n 6.8.2.6 서로 연관된 출구 및 기실을 갖는 탱크들은 하나의 탱크로 간주하고 하나의 지시계를 갖출 수 있다.\n\n 6.8.2.7 연료를 다른 탱크에 이송시키는 역할만 하는 소형 보조 탱크의 경우에는 연료량 지시계를 설치할 필요가 없다. 다만, 연료의 넘침을 방지할 수 있어야 하며, 송유가 순조롭게 진행되지 않는 경우에는 조종사에게 즉시 경고를 할 수 있어야 한다. \n\n6.8.3 연료유량계가 설치되는 경우에는 계측 부품의 작동불량으로 연료의 흐름을 심하게 제한하는 경우에는 연료를 바이패스(bypass)할 수 있는 측관을 갖추어야 한다.\n\n6.8.4 각 윤활유 탱크 내의 윤활유의 양을 지시하기 위하여 다음과 같은 윤활유량 지시계가 있어야 한다.\n\n 6.8.4.1 수면 상에서 사용할 수 있는 봉게이지\n\n 6.8.4.2 운항 중 윤활유 이송장치 또는 예비 윤활유 공급장치를 장착하는 경우에는 운항 중 조종사에게 각 탱크의 윤활유 양을 지시할 수 있는 장치\n\n6.9  자이로컴퍼스\n\n6.9.1 자이로컴퍼스는 조타위치에서 식별할 수 있는 위치에 설치하여야 한다. 다만, 해당 위치에 자이로리피터가 설치되는 경우에는 그러하지 아니하다.\n\n6.9.2 정지상태로부터 6시간 이내에 안정될 수 있는 것이어야 하며, 수면비행선박의 속력 및 위도의 변화에 따라 생기는 오차를 수정할 수 있는 것이어야 한다. 또한 동력공급이 정지된 경우 경보를 지시하고 밝기조절이 가능하여야 한다.\n               \n6.9.3 필요한 경우 선수방위에 관한 정보를 항해용 레이더, 그 밖의 항해용구 등에 전달할 수 있는 것이어야 한다.\n\n6.10 항해 및 비행계기\n\n6.10.1 수면비행선박에는 항해 및 비행계기로 대기속도계, 고도계, 자기컴퍼스 및 대기온도계를 설치하여야 하며, 터빈기관 수면비행선박의 경우에는 속도 경보장치를 설치하여야 한다.\n\n6.10.2 자세계(자세 디스플레이 장치)가 장착되어 있다면, 참고 지형물 및 수평선의 상대적 위치를 변위 보정에 필요한 것 이상으로 조정하지 못하도록 설계하여야 한다.\n\n6.10.3 소형수면비행선박을 제외한 수면비행선박은 다음 계기를 추가로 설치하여야 한다. \n\n 6.10.3.1 고도에 따라 대기속도 제한 값이 다르다면 고도에 따른 최대운항속도의 편차를 지시하는 최대허용 대기속도계\n\n 6.10.3.2 정밀형 고도계\n\n 6.10.3.3 다음 요건에 적합한 자세계\n가. 발전기와 독립적인 전원으로부터 동력을 공급받을 것\n나. 발전기 고장 시 30분 이상의 시간 동안 계속적이고 안정적으로 작동할 것\n다. 다른 자세계와 독립적으로 작동할 것\n라. 발전기 고장 시 자동적으로 작동할 것\n마. 조종석에서 조종사가 명확하게 보고 사용할 수 있는 계기판에 위치하고 있을 것\n바. 운항 시 모든 비행 단계에서 조명될 것\n\n6.10.4 수면비행선박은 자기컴퍼스에 추가하여 선수방위를 제공하는 자이로컴파스를 설치하여야 한다. 소형수면비행선박을 제외한 수면비행선박은 선수방위 이외에 선속 및 운동특성이 표시되는 자이로 컴파스를 추가로 비치하여야 한다. \n\n6.11 레이더\n\n6.11.1 수면비행선박은 운항속도에 적합하고 X-밴드에서 작동하는 1대 이상의 레이더를 설치하여야 한다.\n\n6.11.2 소형수면비행선박을 제외한 수면비행선박은 자동충돌예방 보조장치(ARPA) 또는 자동플로팅 설비를 갖춘 1대 이상의 고성능 레이더를 설치하여야 한다. 최대승선인원이 50인을 초과하는 경우 고성능 레이더 외에 X-밴드에서 작동하는 레이더를 추가로 설치하여야 한다. \n\n6.11.3 수면비행선박에 장애물 탐지 및 회피 장치로 자동충돌예방 보조장치가 설치되는 경우 다음의 기능을 만족하여야 한다. \n\n 6.11.3.1 수면비행선박의 위치, 선수방향 및 속력에 대한 자료 처리\n\n 6.11.3.2 수면비행선박의 위치 및 예보된 항로에 대해서 모든 고정된 장애물, 부유 장애물 및 반잠수 장애물을 인지\n\n 6.11.3.3 긴급정지를 포함하는 충돌회피궤도 계산\n\n 6.11.3.4 충돌회피 조종이 필요하다면, 조종사에게 알릴 수 있는 경보\n\n 6.11.3.5 조종실에 충돌회피궤도를 표시 \n\n6.11.4 레이더 조작자와 조종사 등을 포함하여 선원 간 통신설비가 설치되어야 한다.\n\n6.12 위치확인 장치\n\n6.12.1 수면비행선박은 위치확인 장치로 위성항법장치(GPS) 수신기, 선박자동식별장치(AIS) 및 전자해도표시시스템(ECDIS)를 설치하여야 한다. 다만,  소형수면비행선박의 경우 설치장소가 협소한 경우 전자해도표시시스템(ECDIS)은 설치하지 아니할 수 있다. \n\n6.12.2 선박자동식별장치는 다음 요건에 적합한 것이어야 한다.\n\n 6.12.2.1 수면비행선박의 식별, 형식, 위치, 항로, 속력, 항해 상황 및 그 밖에 안전에 관련된 정보를 설비를 갖춘 해안국과 그 밖의 선박에 자동적으로 제공할 것\n\n 6.12.2.2 자동식별장치가 설치된 선박으로부터 이러한 정보를 자동적으로 수신할 것\n\n 6.12.2.3 선박을 감시 및 추적할 수 있을 것\n\n 6.12.2.4 육상기지의 설비와 자료 교환할 수 있을 것\n\n6.13 공기역학 선회율 지시기\n\n수면효과 및 비행초과 모드에서 사용할 수 있는 공기역학 선회율 지시기가 설치되어야 하며, 운항 상 지정된 최대 회전율에 이르면 조종사에게 가시 또는 가청의 경고를 줄 수 있는 수단을 반영하여야 한다.\n\n6.14 전조등\n\n수면비행선박에는 최소한 1개의 전조등이 설치되어야 하며 다음의 요건에 적합하여야 한다.\n\n 6.14.1 조종사에게 유해한 빛이 보여서는 아니 된다.\n\n 6.14.2 조종사가 밝은 빛 주위의 명암으로 나쁜 영향을 받아서는 아니 된다.\n\n 6.14.3 시계가 어두운 경우 착수 및 이수에 충분한 조명을 발해야 한다.\n\n 6.14.4 이중 필라멘트 형식 또는 이와 동등한 효과를 가진 형식의 전구를 사용하여야 한다. \n\n 6.14.5 화재 위험의 원인이 되어서는 아니 된다.\n\n6.15 야시경\n\n운항조건상 시계강화 설비가 필요하다고 인정되는 경우에는 해당 설비를 갖추어야 한다.\n\n6.16 항해자료기록장치\n\n6.16.1 수면비행선박은 회수 가능한 항해자료기록장치 또는 항해자료를 실시간으로 끊김 없이 선주에게 송신할 수 있는 장치를 설치하여야 한다. 선박에 송신장치가 설치된 경우 선주는 육상에 영구보관가능한 수신기록장치를 구비하여야 하고, 항만당국 요청에 따라 언제든지 수신기록을 제출할 수 있어야 한다. \n\n6.16.2 항해자료기록장치 또는 수신기록장치는 다음 내용이 기록될 수 있어야 한다.\n\n 6.16.2.1 날짜, 시간, 위치, 속력 및 침로\n\n 6.16.2.2 조종실 대화내용 및 초단파대를 사용한 통신내용\n\n 6.16.2.3 레이더에 표시되는 자료\n\n 6.16.2.4 선교에 표시되는 경보사항, 주기관 상태, 개구상태(항해자료기록장치 또는 수신기록장치의 사용 형식과 일치하지 않는 정보일 경우 영상녹화 등의 방법이 대체수단으로 인정될 수 있다.)\n\n 6.16.2.5 풍속 및 풍향(풍속 및 풍향을 측정할 수 있는 센서가 설치된 수면비행선박에 한정한다)\n\n6.16.2.6 자동식별장치에 표시되는 모든 자료\n\n6.16.3 수면비행 선박에 설치된 항해자료기록장치는 다음 요건에 적합한 보호된 용기 내에 설치되어야 한다. \n\n 6.16.3.1 사고 후 자료를 입수할 수 있어야 하며, 그 자료를 변조할 수 없을 것\n\n 6.16.3.2 어떤 사고 시에도 기록 자료의 손상이 없어야 하며, 그 자료를 복구 가능할 것\n\n 6.16.3.3 눈에 잘 띄는 색상이어야 하며, 역반사재가 부착되어 있을 것\n\n 6.16.3.4 기록장치의 위치를 파악할 수 있는 장치가 부착되어 있을 것\n\n6.16.4 수면비행 선박에 설치된 항해자료기록장치는 다음의 요건을 만족하여야 한다. \n\n 6.16.4.1 기록되는 자료의 상태를 점검할 수 있어야 하며, 수정할 수 없는 오류가 발생하였을 경우 경보를 발하는 것일 것\n\n 6.16.4.2 수면비행선박의 비상전원으로 작동될 수 있어야 하며, 비상전원이 손실된 경우에도 예비전원으로 조종실의 음성을 2시간동안 계속 기록할 수 있을 것\n\n 6.16.4.3 기록이 중단된 후에도 최소 12시간 이상 모든 저장된 자료를 유지할 수 있을 것\n\n 6.16.4.4 정상적인 상태에서 자동으로 작동되어야 하며, 사고 후에 기록된 자료가 저장되고 기록의 중단이 최소화 될 수 있을 것\n\n 6.16.4.5 필요한 센서와 연결될 수 있어야 하며, 항해자료기록장치의 오류로 인하여 다른 장비의 기능저하가 없는 것일 것\n\n 6.16.4.6 6.16.4.1부터 6.16.4.5까지의 규정에도 불구하고 회수 가능하며 조종실음성기록이 가능한 항공기용 기록장치 (FDR, Flight Data Reorder 등)를 설치한 경우 항해자료기록장치의 요건을 만족한 것으로 볼 수 있다. 다만, 소형수면비행선박을 제외한 수면비행선박은 국토교통부 ｢항공기 기술기준｣ 25.1457 및 25.1459 또는 국제민간항공기구(ICAO) 부속서 6(Annex 6)의 기준을 만족하는 기록장치가 설치되어야 한다. \n\n6.17 등화 \n\n수면비행선박은 다음의 등화를 설치하여야 한다. \n\n6.17.1 앞쪽에 마스트등(백색등) 1개와 그 마스트등보다 뒤쪽의 높은 위치에 마스트등 1개. 이 경우 등화각은 양쪽 현으로 112.5도, 총 225도가 되어야 한다. 다만, 길이 50미터 미만의 수면비행선박은 앞쪽 또는 뒤쪽에 하나의 마스트등만을 표시하여야 한다. \n\n6.17.2 좌현에는 홍색, 우현에는 녹색의 현등 1조, 최대승선인원 50인을 초과하는 수면비행선박은 예비용 1조를 추가로 설치하여야 한다. 등화각은 정횡 방향에서 선수 90도, 선미 22.5도 총 112.5도가 되어야 한다.\n\n6.17.3 백색 선미등 1개, 등화각은 양쪽 현으로 67.5도, 총 135도가 되어야 한다.\n\n6.17.4 사방을 비출 수 있는 고광도 홍색섬광등 1개 \n \n6.18 무선설비의 설치\n\n   6.18.1 수면비행선박에는 ｢선박안전법 시행규칙｣ 별표 30에 따른 무선설비를 설치하여야 하며, 복합재료로 건조된 선박의 경우 위성용비상위치지시용무선표지설비(EPIRB)를 선내에 설치할 수 있다. \n\n   6.18.2 수색 및 구조에 필요한 통신수단으로서 위성휴대전화기를 선내에 비치하여야 한다. 위성휴대전화기는 다음의 요건에 적합하여야 한다. \n\n    6.18.2.1 연속통화시간이 2시간 이상일 것\n\n    6.18.2.2 위치추적을 위한 통화대기시간이 72시간 이상일 것\n\n6.18.3 항로 인근 해역 및 공역에서 신뢰성 있는 송수신이 가능할 것 \n\n\n제7장 구명설비\n\n7.1 일반사항\n\n구명과 관련된 설비는 이 장에서 정한 요건 이외의 사항에 대해서는 ｢선박용물건의 형식승인시험 및 검정에 관한 기준｣ 또는 ｢선박구명설비기준｣을 준용할 수 있다. 다만, 미연방항공규정 Federal Aviation Regulation 등 이 기준에서 정하고 있는 것과 동등이상의 기준을 만족한다고 해양수산부장관이 승인한 경우 이를 인정할 수 있다. \n\n7.2 개인용 구명설비\n\n7.2.1 여객이 출입할 수 있는 곳에는 개인용 구명설비가 제공되어야 한다. 구명조끼는 쉽게 접근할 수 있는 곳에 보관하여야 하며, 그 위치를 명확히 표시하여야 한다.\n\n7.2.2 수면비행선박은 최대승선인원의 수에 해당하는 구명조끼를 선내에 비치하여야 한다. 이 경우 구명조끼에는 구명조끼등 및 호각이 견고하게 부착되어야 한다. 또한 다음 어느 하나에 해당하는 경우에는 각각의 경우 구명조끼를 추가로 비치하여야 한다.\n\n 7.2.2.1 여객 정원의 10퍼센트에 상당하는 수 또는 각 어린이당 1개씩 구명조끼를 제공할 수 있는 수 중 큰 수 이상의 어린이용 구명조끼를 비치할 것\n\n 7.2.2.2 여객용 수면비행선박은 최대승선인원의 5퍼센트 이상의 구명조끼를 추가로 비치할 것\n\n7.2.3 수면비행선박은 최대승선인원 수에 해당하는 보온구를 비치하여야 하며, 승무원 수의 방수복을 추가로 비치하여야 한다. 다만, 소형수면비행선박은 방수복을 비치하지 아니할 수 있다.  \n\n7.3 비상배치표, 비상지침 및 지침서\n\n7.3.1 비상배치표는 조종실, 기관구역 및 선원거주구역을 포함한 선내 전반에 걸쳐서 눈에 잘 뜨이는 장소에 게시되어야 한다.\n\n7.3.2 소집장소, 비상시 여객이 취하여야 할 행동 및 구명조끼 착용방법에 관한 지침서를 여객들이 잘 볼 수 있도록 국문 및 영문으로 게시되어야 한다. 또한 구명뗏목 진수 통제위치 또는 그 근처에 진수 설비를 작동하기 위한 절차 및 경고를 표시하여야 하며, 비상조명에 의하여 쉽게 식별되어야 한다.\n\n7.3.3 여객용 수면비행선박은 비상탈출을 위한 다음과 같은 여객소집장소를 지정하여야 한다.\n\n 7.3.3.1 승정장소와 같은 위치에 있지 않다면 모든 여객이 쉽게 출입할 수 있는 승정장소 근처의 장소\n\n 7.3.3.2 여객을 지휘하고 지침을 전달하기에 충분한 면적을 가진 장소\n\n7.4 구명뗏목 \n\n7.4.1 모든 수면비행선박은 최대승선인원의 110퍼센트 이상을 수용할 수 있는 구명뗏목을 비치하여야 한다,\n\n7.4.2 구명뗏목은 여객 거주구역 또는 승정장소에서 가까운 장소에 적재하여야 하며, 간단한 방법으로 안전하게 진수될 수 있어야 한다. \n\n7.4.3 구명뗏목은 가능한 한 균등히 배치하여야 한다. \n\n7.4.4 구명뗏목의 진수위치는 기계류, 의장품, 선체 돌출부와의 충돌로 인한 손상을 고려하여 진수의 안전이 확보되는 곳에 위치되어야 한다.\n\n7.4.5 진수준비 및 진수 중에는 구명뗏목을 포함하여 구명뗏목이 진수되는 수역을 주전원 및 비상전원으로부터 공급되는 불빛으로 조명할 수 있어야 한다. \n\n7.4.6 각 구명뗏목은 다음 요건에 따라 탑재되어야 한다.\n\n 7.4.6.1 구명뗏목 및 그 탑재장치가 다른 진수위치에 있는 구명뗏목의 작동을 방해하지 않도록 하여야 한다.\n\n 7.4.6.2 즉시 진수가 가능하여야 한다.\n\n 7.4.6.3 필수 의장품이 탑재되어야 한다.\n\n 7.4.6.4 화재와 폭발에 의하여 손상을 받지 않는 안전한 위치에 탑재되어야 한다.\n\n7.4.7 구명뗏목은 탑재위치에서의 수평충돌하중과 수직설계하중에 견딜 수 있도록 고박되어야 한다. 다만, 수면비행선박의 공기역학적인 특성으로 선체 외부에 설치하는 것이 불가능한 경우에는 선체 내부에 구명뗏목을 적재할 수 있다.\n\n7.5 구명뗏목의 승정장치\n\n7.5.1 탈출로, 출입구 및 승정위치는 10.12의 요건에 적합하여야 한다.\n\n7.5.2 통로, 계단과 소집 및 승정장소로 통하는 출구는 주전원 및 비상전원으로부터 공급되는 불빛으로 조명되어야 한다. 다만, 출구의 위치를 쉽게 식별할 수 있는 소형수면비행선박의 경우 불빛 대신에 형광물질을 사용할 수 있다.\n\n7.5.3 구명뗏목에 승정하는 도중 사람이 물에 빠지는 것을 방지하기 위하여 해상탈출설비 또는 동등한 수준의 탈출수단이 설치되어야 한다. 다만, 예정된 승정위치와 수선사이의 건현이 2m 이하일 경우에는 별도의 승정장치 없이 사람이 직접 구명뗏목에 승정할 수 있다. \n\n7.5.4 구명뗏목의 승정장치가 모든 비손상 및 손상 상태에서의 트림 및 횡경사에 효과적이어야 한다. 이 경우 해상탈출설비 또는 탈출수단은 모든 운항조건 및 손상 후의 모든 침수조건에서도 사람이 구명뗏목에 승정할 수 있도록 설계되어야 한다.\n\n7.6 구명줄 발사기\n\n소형수면비행선박을 제외한 수면비행선박에는 구명줄 발사기를 비치하여야 한다. \n\n7.7 신호장치\n\n수면비행선박은 4개 이상의 로켓낙하산신호와 2개 이상의 자기발연신호가 조종실 부근에 비치되어야 한다. 다만, 일반용 소형수면비행선박의 경우 자기발연신호는 1개 이상으로 할 수 있다. \n\n제8장 방화구조\n\n8.1 일반사항\n\n8.1.1 방화와 관련된 설비는 이 장에서 정한 요건 이외의 사항에 대해서는 ｢선박용물건의 형식승인시험 및 검정에 관한 기준｣ 또는 ｢선박방화구조기준｣을 준용할 수 있다 다만, 미국연방항공규정 Federal Aviation Regulation 등 이 기준에서 정하고 있는 것과 동등이상의 기준을 만족한다고 해양수산부장관이 승인한 경우에 이를 인정할 수 있다.\n\n8.1.2 이 장의 규정을 적용하기 위하여 다음 기본 원칙이 준수되어야 한다.\n\n 8.1.2.1 어느 한 구획에 화재가 발생하여도 추진, 제어, 화재탐지, 경보 및 손상되지 않는 구역의 소화능력을 포함하여 수면비행선박의 주요기능 및 안전장치를 유지하여야 한다.\n\n 8.1.2.2 내화경계에 따라 수면비행선박이 구획되어야 한다.\n\n 8.1.2.3 가연성재료와 화재 발생 시 연기 및 유독가스를 발생하는 재료의 사용을 제한한다. 다만, 복합재료로 제조되는 소형수면비행선박의 선체는 예외로 한다. \n\n 8.1.2.4 화재는 그 발생장소에서 탐지, 억제 및 소화하여야 한다.\n\n 8.1.2.5 탈출수단 및 소화를 위한 접근수단을 보호하여야 한다.\n\n 8.1.2.6 소화설비는 즉시 사용할 수 있어야 한다.\n\n 8.1.2.7 소화 및 탈출시간동안 선체구조가 유지되어야 한다.\n\n8.1.3 이 장의 규정을 적용하기 위하여 다음 조건이 준수되어야 한다.\n\n 8.1.3.1 인화점이 43℃ 미만인 연료의 사용은 권고되지 아니한다. 다만, 8.16.2부터 8.16.6까지의 요건을 만족하면 저인화점 연료를 사용할 수 있다.\n\n 8.1.3.2 식품저장실에 개방형 가열조리기구가 없어야 하고, 주방은 설치하지 아니 한다.\n\n 8.1.3.3 국제해사위험물코드(IMDG Code)의 요건에 적합한 경우를 제외하고는 위험물을 운송하여서는 아니 된다.\n\n8.1.4 이 장의 8.4 및 8.5에서 규정하는 부록 1의 요건의 적합여부는 공인된 시험기관에서 부록 1의 시험절차에 따라 시험하고 합격한 후 공인된 시험기관의 증서를 발급받는 경우에만 만족하는 것으로 한다. \n\n8.1.5 복합재료로 제조되는 소형수면비행선박의 경우 내화경계가 요구되는 경계는 난연수지 3회 도포 또는 난연수지 패널로 시공하는 것을 동등한 기준을 만족하는 것으로 인정할 수 있다.\n\n8.1.6 복합재료로 제조되는 소형수면비행선박의 경우 내화성재료 또는 불연성재료로 제작되는 것이 요구되는 구역은 난연수지 3회 도포 또는 난연수지 패널로 제작하는 것을 동등한 기준을 만족하는 것으로 인정할 수 있다.\n\n8.2 정의\n\n이 장에서 사용하는 용어의 뜻은 다음과 같다.\n\n8.2.1 \"내화구역\"이란 다음 요건에 적합한 격벽과 갑판으로 형성된 구획을 말한다.\n\n 8.2.1.1 불연성재료 또는 8.2.1.2부터 8.2.1.4까지의 요건을 만족하는 단열재 또는 자체에 내화성을 갖고 있는 내화성재료로 제조되어야 한다.\n\n 8.2.1.2 방화시험이 종료될 때까지 연기 및 화염 통과를 방지할 수 있는 구조이어야 하며 만족하는 방화시간까지 하중을 지지하여야 한다.\n\n 8.2.1.3 화재에 노출되지 않는 쪽의 평균온도가 최초의 온도보다 140℃를 초과 상승하지 아니하고 또 이음매를 포함한 어느 한 점에서의 온도도 최초의 온도보다 180℃를 초과 상승하지 않는 방열성을 보유하여야 한다.\n\n 8.2.1.4  8.2.1.1부터  8.2.1.3까지의 조건에 적합함을 확인하기 위하여 격벽 및 갑판 표본에 대하여는 화재시험절차코드(FTP Code)에 따른 시험을 하여야 한다.\n\n8.2.2 \"내화성재료\"란 화재시험절차코드(FTP Code)를 만족하는 성질을 갖는 재료를 말한다. “화재시험절차코드”란 국제해상인명안전협약(SOLAS 1974) Ⅱ-2장에 정의된 화재시험절차에 대한 국제 코드를 말한다.\n\n8.2.3 \"불연성재료\"란 750℃ 정도로 가열할 때에 연소되지 아니하며 자기 발화할 만큼 충분한 양의 인화성 증기를 발생하지 아니하는 재료를 말하며, 이는 화재시험절차코드를 따르며, 이외의 물질은 가연성재료이다.\n\n8.2.4 \"동등한 재료\"란 불연성 재료로서 그 자체 또는 단열재를 시공함으로써 화재시험절차코드(FTP Code)에서 정의한 표준화재시험에서 화재에 노출된 후에도 강과 같은 수준의 구조 및 보전성에 관한 특성을 가지는 재료(예, 단열 시공한 알루미늄)를 말한다.\n\n8.2.5 \"화재 확산이 느림\"이란 화재의 확산을 충분히 제한하는 것을 말하는 것으로서 화재시험절차 코드에 따라 결정한다.\n\n8.2.6 \"연기방지\" 또는 \"연기의 통과를 방지할 수 있음\"이란 불연성 또는 내화성재료로 연기의 통과를 방지할 수 있음을 말한다.\n\n8.2.7 \"검증시간\"이란 의자석의 개수에 상응한 훈련되어 있지 않은 승선자와 선원이 경보발령 후 수면비행선박을 탈출하는데 걸린 실험시간을 말한다.\n\n8.2.8 \"카울링\"이란 수면비행선박의 기관을 덮는 덮개를 말한다.\n\n8.2.9 \"나셀\"이란 수면비행선박의 기관이 탑재되어 있는 폐위된 구역을 말한다.\n\n8.3 방화구조\n\n8.3.1 화재위험구역은 불연성재료를 사용하거나 화재시험절차코드(FTP Code) 및 이 장의 요건에 적합한 내화성재료를 사용하여 건조되어야 한다.\n\n8.3.2 선체는 방화구조에 의하여 다음과 같이 화재위험구역과 화재위험이 적은 구역으로 구분되어야 한다.  \n\n8.3.2.1 \"화재위험구역\"은 다음 구역을 말한다.\n가. 기관구역\n나. 위험물이 저장된 구역\n다. 인화성 액체 저장실\n라. 주 발전기, 빌지펌프, 주유장소 및 배전반을 포함하는 보조기관구역 및 이와 유사한 구역 다만, 특수한 형태의 소형 빌지펌프가 화재위험이 없거나 선체와 분리된 부가물에 설치되어 안전을 입증한 경우 포함하지 않는다. \n마. 선원 거주 및 업무구역 \n바. 여객실\n\n8.3.2.2 \"화재위험이 적은 구역\"은 다음 구역을 말한다.\n가. 화재위험이 거의 없거나 전혀 없는 보기구역\n나. 화물구역\n다. 연료유 탱크구획\n라. 공용실\n마. 화재위험이 거의 없거나 전혀 없는 탱크, 공소 및 장소\n바. 알코올 함유량이 부피로 24퍼센트 이하의 포장음료가 있는 장소\n사. 조종실\n아. 탈출로로 사용되는 외부계단과 개방갑판\n자. 내부, 외부의 소집장소\n차. 구명뗏목의 승정장소를 형성하는 갑판과 폐위 공간\n카. 구명뗏목의 승정장소와 접하거나 하부에 위치한 최저 흘수 해상 운항 상태에서 수선까지의 선측 및 선실구역\n\n8.3.2.3 화재위험구역은 30분과 10.20.1에 따라 결정된 시간 중 작은 시간동안 연기와 화염의 통과를 막도록 건조되어야 한다.\n\n8.3.2.4 거주구역(조종실, 선원구역 및 여객실)과 거주구역 이외의 화재위험구역 간의 연결구간(격벽, 갑판 및 외판)은 내화구조로 건조되거나 또는 화재가 확산되지 않음이 시험으로 입증된 일정거리 이상으로 분리되어야 한다. 다만 화재위험구역의 화재가 거주구역으로 확산되지 않음을 시험을 통하여 입증한 소형수면비행선박은 예외로 한다.  \n\n8.3.2.5 화재위험구역 내의 주요하중을 지지하는 구조물과 제어실을 지지하는 구조는 규정된 방화시간 동안 화재에 노출되었을 때 선체구조가 붕괴되지 않게 하중을 분산할 수 있도록 배치하여야 한다.\n\n8.3.2.6 통풍기, 연료차단기, 원격 소화 장치의 제어설비 및 화재탐지 지시반은 조종실에 설치하여야 한다.\n\n8.3.2.7 가연성액체 또는 그 증발기체와 접촉할 수 있는 구역에 단열이 되어 있는 경우, 표면은 가연성액체 또는 증발기체가 통과할 수 없도록 하여야 하며, 단열재의 폭로 면과 접착제는 화염확산이 느린 특성을 가져야 한다.\n\n8.3.2.8 공용실과 선원구역내의 가구 및 비품은 다음 기준을 만족하여야 한다.\n가. 허용된 가연성 단판을 제외한 모든 가구는 불연성재료와 화염확산이 느린 특성을 가져야 한다.\n나. 모든 가구는 불연성재료 또는 내화성재료의 골조로 하여 제조되고 화재시험절차 코드를 따라야 한다.\n다. 모든 직물, 커튼 및 그 밖의 매달린 직물류는 화재확산을 방지하는 특성을 가진 재료를 사용하여야 하며, 이는 화재시험절차 코드를 따른다.\n라. 갑판광택제는 화재시험절차코드를 따른다.\n\n8.3.2.9 다음 표면은 화재에 노출되었을 때 화재시험절차코드에 따라 과도한 양의 연기나 유독성 물질이 발생하지 않는 재료로 만들어져야 하며, 화염확산이 느린 특성을 지닌 재료로 제작하여야 한다.\n가. 통로 및 계단 주위 벽의 노출면과 여객실, 선원 거주 및 업무구역, 제어구역, 내부 소집장소 및 승정장소의 격벽, 벽과 천장\n나. 통로, 계단의 은폐되거나 접근할 수 없는 장소의 표면, 여객실 선원 거주 및 업무구역, 제어구역의 통로 및 계단 폐위구역\n\n8.3.2.10 모든 단열 또는 방음재는 불연성재료 또는 내화성재료이어야 한다. 다만, 내습제와 단열재에 사용되는 접착제 및 냉각장치의 관장치 단열재는 불연성 또는 내화성이 아니어도 되지만 사용량이 최소가 되도록 하여야 하며, 이들 재료의 노출표면은 화염확산이 느린 특성을 지녀야 한다.\n\n8.3.2.11 공용실, 선원 거주 및 업무구역, 조종실, 복도 및 계단내의 천정, 패널 또는 내장판 이면의 공간은 간격이 14m 이하의 밀착된 통풍 정지판으로 구획되어야 한다. \n\n8.3.2.12 내화구역의 개구는 다음 요건에 적합하여야 한다.\n가. 문의 골격과 잠금 장치와 함께 내화구역의 모든 문과 창구는 내화뿐만 아니라 주위 격벽과 동일하게 연기 및 화염이 통과하지 않아야 하며,  내화구역이 배관, 닥트, 전선 또는 다른 목적으로 관통되었다면 격벽의 내화성이 상실되지 않았음을 확인할 수 있는 필요한 조치 및 시험이 이루어져야 한다.\n나. 방화문은 어느 쪽에서도 한 사람이 충분히 개폐할 수 있어야 한다.\n다. 화재위험구역 및 계단 폐위부와 경계를 이루는 방화문은 다음 요건을 만족하여야 한다.\n1) 문은 평상시 자동폐쇄형이거나 접근이 필요 없는 경우 항상 닫혀 있어야 한다.\n2) 자동폐쇄문은 현장에서 폐쇄가 가능하거나 이중 안전장치가 있어 원거리에서 폐쇄가 가능한 개방 멈춤 장치를 설치할 수 있다. 이 경우 조종실에서 폐쇄할 수 없는 장치는 인정되지 않는다.\n라. 수면비행선박의 개방구역에 면한 외부 벽의 내화구역에 대한 규정은 유리벽, 창 및 현창에는 적용하지 아니하며, 개방구역에 면한 내화구역 규정은 외부 문에는 적용하지 아니한다.\n\n8.4 여객실과 선원실 내부\n\n선원실과 여객실의 내부는 다음 화재방지 요건에 적합하여야 한다.\n\n8.4.1 재질은 내화성재료이어야 한다. \n\n8.4.2 흡연은 금지되어야 하며, 모든 여객에게 알리기 위한 조명표시판(문자 또는 기호)이 한 개 이상은 있어야 한다. 흡연 금지를 나타내는 표시는 조명되었을 때 모든 점등 조건하에서 여객실에 앉은 각 여객이 볼 수 있어야 한다.\n\n8.4.3 8.4.2에 추가하여 여객용 수면비행선박은 다음 규정을 적용한다.\n 8.4.3.1 일회용 수건, 종이, 또는 쓰레기 처분용 용기는 최소한 내화성 재료로 구성되고 밀폐되어야 하며, 일반적인 사용 중 발생할 수 있는 화재를 억제할 수 있어야 한다. 운용 중 예상되는 마모, 부적절한 배치 및 환기 상태 등의 모든 조건에서 그러한 화재를 억제할 수 있는 용기의 성능을 시험에 의해 입증하여야 한다. \n\n 8.4.3.2 화장실문 양쪽에는 “금연(No Smoking)” 또는 “화장실에서 금연(No Smoking in Lavatory)” 표시를 명확하게 하여야 한다. 금연표시는 최소 2.54cm 이상의 높이의 백색 바탕에 1.27cm 이상의 높이의 적색문자로 한다(“금연(No Smoking)” 기호를 표시에 포함할 수 있다.\n\n 8.4.3.3 선원이나 여객이 사용하는 모든 구역에 사용되는 재료(마감재 또는 장식재를 포함한다)는 다음 요건을 만족하여야 한다.\n가. 부록 1에 따라 수직시험 대상이 되는 내부천장 패널, 내부벽 패널, 칸막이, 대형벽장의 벽, 구조 바닥, 보관함의 조립 등에 사용하는 재료(의자석 밑 보관함과 잡지나 지도 등 작은 것을 보관하는 칸막이 이외의 것)는 반드시 자기소화성을 지녀야 한다. 평균 연소길이가 15.24cm 를 초과하지 않아야 하며, 화염원을 없앤 후의 평균 연소시간이 15초를 초과하지 않아야 한다. 시험시료에서 떨어져 나간 파편은 떨어진 후 평균 3초 이상의 화염을 내지 않아야 한다.\n나. 바닥 덮개, 직물(커튼천이나 겉천을 포함), 의자석 쿠션, 충전물, 장식과 비장식용 코팅 천, 가죽, 쟁반과 조리실 가구, 전기 도관, 열과 음향 차단제 및 절연 커버, 공기관, 접합부위 및 가장자리 덮개, 화물실의 라이너, 절연 담요, 화물실 덮개와 투명판, 주조부품과 열성형 부품들, 공기도관 접합 및 장식용 천조각 등은 부록 1에 따라 수직시험을 할 때 자기소화성을 지녀야 한다. 평균 연소길이가 20.32cm를 초과하지 않아야 되고, 화염원을 없앤 후의 평균 연소시간은 15초를 초과해서는 아니 된다. 시험시료에서 떨어져 나간 파편은 떨어진 후 평균 5초 이상의 화염을 내어서는 아니 된다.\n다. 부록 1의 해당 요건에 따라 수평시험을 할 때, 아크릴 창문, 표지, 일부 혹은 전체가 탄성인 재질로 이루어진 부품들, 공동 하우징 안에 두개 이상으로 만들어진 가장자리 조명 기구 조합, 의자석 벨트, 어깨 멜빵 및 여객과 선원이 사용하는 곳에 쓰이는 컨테이너, 상자, 운반대 등을 포함한 화물과 수화물 고정장치 등은 평균연소율이 분당 6.35cm를 넘어서는 아니 된다.\n라. 화재를 크게 전파하지 않는 작은 부품들(손잡이, 핸들, 롤러, 결합구, 클립, 덧쇠, 마찰 스트립, 도르래 및 작은 전기 부품들)과 전선과 케이블의 절연재들은 가, 나 또는 다에서 언급하지 않은 재료들은 부록 1에 따른 수평시험에서 연소율이 분당 10.16cm를 초과하여서는 아니 된다.\n\n8.4.4 배관, 탱크 또는 연료, 윤활유 또는 그 밖의 가연성 유체가 담긴 장비의 파손이 위험을 초래하지 않도록 보호 및 격리되지 않는 한 선원실이나 여객실 내부에 설치해서는 아니 된다.\n\n8.4.5 방화벽의 여객실 측에 위치한 재료는 방화벽에 1,093℃ 이상의 화염온도에 노출되는 경우 발화가 일어나지 않도록 자기소화성 재질이거나, 방화벽으로부터 일정거리이상 떨어져야 하고, 기타 입증된 방법으로 보호되어야 한다. 자기소화성 소재에 대해서는 부록 1에 따라 수직시험을 수행하여야 하며 재료의 평균 연소 길이는 15.24cm를 초과하지 않아야 하고, 화염원을 제거한 후 평균 화염 연소시간이 15초를 초과하지 않아야 한다. 이 시험 물질의 시편에서 떨어진 파편은 낙하 후 평균 3초 이상 계속 화염을 내면서 타지 않아야 한다. \n\n8.5 화물실 화재방지\n\n8.5.1 화물실에 적재된 화물에 화재를 일으킬 수 있는 열원은 차단하고 격리하여야 한다.\n\n8.5.2 각각의 화물실은 8.4.3.3에 적합한 재료로 제작하여야 한다.\n\n8.5.3 8.5.1과 8.5.2에 추가하여, 여객용 수면비행선박의 경우에는 각 화물실은 다음 어느 하나에 해당하는 요건에 적합하여야 한다.\n\n 8.5.3.1 조종사가 화재발생 사실을 쉽게 인지할 수 있는 곳에 위치하거나, 연기 또는 화재탐지장치를 이용하여 조종실에 경고를 줄 수 있어야 하며, 조종사가 휴대식소화기를 휴대하고 화물실의 어느 곳에나 효과적으로 도달할 수 있는 구조이어야 한다.\n\n 8.5.3.2 조종실에 경고를 줄 수 있도록 연기 또는 열 화재탐지장치를 설치하여야 하며, 부록 1의 45도시험을 충족하는 재료로 벽면, 천장, 바닥을 제작하여야 한다. 화염을 접촉시키거나 제거 하는 동안 화염이 재료를 관통해서는 아니 된다. 화염원의 제거 후 평균 화염 시간은 15초를 초과할 수 없으며, 평균 백열 시간은 10초를 초과할 수 없다. 화물실은 각각의 패널에 요구되는 규정 이상의 화재방지가 가능하도록 제작하여야 한다.\n\n 8.5.3.3 해당 구획 내에 화재가 봉쇄될 수 있는 밀폐된 구조이어야 한다.\n\n8.6 연소가열기의 설치 \n\n연소가열기는 추진 및 발전용 외에는 수면비행선박에 설치되어서는 아니 된다.\n\n\n8.7 가연성유체 화재방지\n\n8.7.1 유체시스템의 누출로 인해 가연성유체나 증기가 새어 나올 수 있는 장소에는 유체나 증기의 발화 가능성과 발화되었을 경우 위험을 최소화할 수 있는 수단이 있어야 한다.\n\n8.7.2 8.7.1의 적용을 위해 다음 사항이 고려되어야 한다.\n\n 8.7.2.1 유체 누출이 가능한 출처와 경로 그리고 누출 검출방법\n\n 8.7.2.2 가연성 또는 흡수성 물질의 영향을 고려한 유체의 인화특성\n\n 8.7.2.3 누전, 장비의 과열, 보호 장비의 고장을 포함한 점화 가능 원칙\n\n 8.7.2.4 유체흐름의 차단, 장비품의 작동정지, 내화봉쇄 또는 소화기 사용 등의 화재를 진화하거나 조정하는 방법\n\n 8.7.2.5 안전운항에 필수적인 수면비행선박의 각 부품들의 내화 특성\n\n8.7.3 유체화재에 대처하거나 방지하기 위한 조종사의 활동, 장비품의 작동정지 또는 소화기의 작동이 필요한 경우 조종사에게 경보하는 수단이 구비되어야 한다.\n\n8.7.4 가연성 유체나 증기가 새어나올 만한 장소는 식별되고 명시되어야 한다.\n\n8.8 지정방화구역\n\n8.8.1 지정방화구역은 다음과 같다.\n\n 8.8.1.1 기관 출력 부분\n\n 8.8.1.2 기관 보기 부분\n\n 8.8.1.3 기관 출력부분과 기관 보기 부분이 서로 격리되어 있지 않은 경우 모든 동력 장치실\n\n 8.8.1.4 압축기 및 보기 부분\n\n 8.8.1.5 가연성 유체 또는 가스가 통과하는 관 또는 부품을 포함하는 연소실, 터빈 및 테일 파이프 부분\n\n 8.8.1.6 압축기, 보기 부분, 연소실, 터빈 및 테일 파이프 부분이 서로 격리되어 있지 않은 경우 모든 동력 장치실\n\n8.8.2 모든 보조 동력장치실\n\n8.8.3 연료점화 가열기와 그 밖에 연소 장비가 장착된 장치\n\n8.9 비행조종장치, 기관마운트 및 비행구조물 화재방지\n\n지정방화구역(designated fire zones) 또는 방화구역에서 발생한 화재의 영향을 받을 수 있는 곳에 위치한 필수 비행조종장치, 기관마운트 및 그 밖의 비행구조물은 내화성(fireproof) 재료로 제작하거나 화재를 견딜 수 있도록 단열되어야 한다. 기관 진동차단장치는 내화성이 없는 부분이 화재의 영향으로 인해 열화 되더라도 기관이 이탈하지 않도록 설계되어야 한다.\n\n8.10 방화벽 후방 나셀 부\n기관실 방화벽의 반대면에 배치된 구성부품, 배관 및 접속연결부는 열에 강한 재료를 사용하고, 방화벽으로부터 충분히 떨어진 곳에 배치하여 방화벽의 기관측 부분이 1,093℃ 이상의 온도에 15분간 놓인 경우에도 견딜 수 있어야 한다. \n\n8.11 배관, 피팅 및 구성부품\n\n8.11.1 8.11.2에 규정된 것을 제외하고 기관이 화재를 일으켰을 때 영향을 받는 구역에서 가연성 유체, 가스 또는 공기를 이송하는 구성부품, 배관 및 피팅은 불연성이어야 한다. 다만, 기관에 부착된 가연성 유체탱크 및 그 지지구조는 화재에 의하여 내화성을 가지지 않는 부분이 손상되어도 가연성 유체가 누출되거나 넘치지 않는 경우를 제외하고는 내화성 재료로 제작되거나 내화성 재료로 싸여져야 한다. 왕복동기관에 장비된 23.7L 미만의 일체형 윤활유 섬프탱크는 내화성 재료로 제작하거나 단열하지 않을 수 있다. 또한 구성부품은 누출된 가연성유체가 발화해도 보호될 수 있도록 감싸주거나 배치하여야 한다. 그리고 용도에 적합함이 입증된 경우를 제외하고는 유연성 호스 어셈블리(호스 및 단말접속)를 사용하여서는 아니 된다.\n\n8.11.2 다음 사항은 8.11.1의 규정을 적용하지 않는다.\n\n 8.11.2.1 형식 승인된 기관의 일부로 이미 승인된 배관 및 피팅\n\n 8.11.2.2 파손되어도 화재를 일으키거나 화재를 확산시키지 않는 통풍, 배출관 및 피팅\n\n8.12 차단장치\n\n8.12.1 2개 이상의 기관이 설치된 수면비행선박은 다음 요건에 적합하여야 한다.\n\n 8.12.1.1 각 기관에 대해 위험한 양의 연료, 윤활유, 부동액 및 그 이외의 가연성 유체가 기관실 내에 유입되는 것을 차단하거나 방지하는 장치가 있어야 한다. 다만, 기관의 일부를 이루는 배관들은 예외로 한다.\n\n 8.12.1.2 어느 기관에 대한 연료차단 밸브를 작동하여도 다른 기관에 대한 연료공급에 지장을 주어서는 아니 된다. 즉, 다른 기관의 연료차단 밸브가 열려있는 경우에는 그 기관에 대해 연료를 공급할 수 있어야 한다.\n\n 8.12.1.3 차단 후 프로펠러 페더링 조작 및 그 밖의 장비의 비상조작에 지장을 주지 않아야 한다.\n\n 8.12.1.4 차단장치가 기관실 내부에 설치되어 있어 기관실 외부에 설치되어 있는 것과 같은 안전성을 가지지 않는다면 그러한 차단장치는 기관실 외부에 설치되어야 한다.\n\n 8.12.1.5 기관이 차단된 후에 기관구역으로 유입될 수 있는 가연성 유체의 양은 0.95L을 초과하지 않아야 한다. 다만, 이를 만족할 수 없는 경우로서 유입된 가연성 유체가 안전하게 수용되거나 또는 안전하게 외부로 배출될 수 있음을 입증하는 경우에는 그러하지 아니하다.\n\n 8.12.1.6 각 차단장치의 부주의한 작동을 방지하고 차단 후에도 비행 중에 선원이 다시 개방할 수 있도록 하여야 한다.\n\n8.12.2 터빈 기관을 설치한 경우로서 다음의 경우에는 기관 윤활장치의 차단장치는 필요 없다.\n\n 8.12.2.1 윤활유 탱크가 기관에 내장되어 있거나 기관에 장착되어 있는 경우\n\n 8.12.2.2 기관 외부의 윤활장치의 전체 구성부품이 내화성 재료인 경우\n\n8.12.3 동력으로 작동되는 밸브는 설정된 위치에 밸브가 도달하는 경우 선원에게 지시해 줄 수 있는 장치를 설치해야 하고, 진동상태에서 밸브가 설정된 위치로부터 움직이지 않도록 설계하여야 한다.\n\n8.13 카울링 및 나셀\n\n8.13.1 카울링은 운항 중 발생하는 모든 진동, 관성력 및 공기하중에 견딜 수 있도록 제작되고 지지되어야 한다.\n\n8.13.2 카울링의 각 부분에는 통상적인 수상항해 및 수면비행에서 신속하고 완벽하게 배수할 수 있는 수단이 있어야 한다. 다만, 그러한 배수가 화재의 위험을 야기할 수 있는 경우에는 배출이 이루어져서는 아니 된다.\n\n8.13.3 카울링과 나셀은 내화성 재료로 제작되어야 한다. 다만, 8.3.2.4 본문에 따라 여객실 등 다른 구획으로  화재가 확산되지 않음을 시험을 통하여 입증한 경우 카울링과 나셀 전체가 내화성재료일 필요는 없다. \n\n8.13.4 기관실의 카울링의 개구부 후방에 있는 모든 선체부분은 개구부로부터 61cm의 거리까지 불연성 재료로 제작하여야 한다. \n\n8.13.5 배기계통의 개구부에 접근해 있거나 배기가스에 노출되어 고온이 되는 카울링의 각 부분은 내화성 재료로 제작하여야 한다.\n\n8.13.6 과급기가 있는 기관을 장비한 다발기의 나셀은 기관실 내의 화재에 의해 카울링 또는 나셀을 통과하여 화재가 기관실 이외의 나셀 구역으로 퍼지지 않도록 하여야 한다.\n\n8.14 기관실 주위 벽 내부의 단열구조 \n\n이 장에도 불구하고, 선내에 기관실이 있는 경우 기관실 주위 벽 내부(천정 및 바닥을 포함한다)의 단열구조는 A60급 또는 이와 같은 수준의 단열 재료로 둘러싸야 한다. 다만, 복합소재로 제조되는 소형수면비행선박은 이를 적용하지 아니 한다. \n\n8.15 통풍장치\n\n8.15.1 통풍이 필요한 구역에 사용되는 소화방법이 소화의 효과를 높이기 위해서 해당 구역의 차단이 필요한 경우, 모든 통풍장치의 주요 흡입 및 배출관은 해당 구역의 외부에서 폐쇄가 가능하여야 하며, 이에 대한 제어장치는 쉽게 접근할 수 있을 뿐만 아니라 눈에 띄게 영구적으로 표시되어야 하고, 개방 또는 폐쇄 등의 여부가 표시되어야 한다. 이 경우 화재위험구역에 대한 통풍장치의 주요 흡입 및 배출관은 조종실에서 차단할 수 있어야 한다.\n\n8.15.2 모든 송풍기는 조종실에서 정지시킬 수 있어야 한다. 수면비행선박의 외부로부터 접근 가능한 위치에서 비상폐쇄 조작이 이루어지는 경우를 제외하고는 탈출 전에 이러한 제어가 항상 가능하여야 한다.\n\n8.15.3 화재위험이 많은 구역의 통풍용 닥트는 다른 구역을 통과하여서는 아니 되며, 다른 구역의 통풍용 닥트도 화재위험이 많은 구역을 통과하여서는 아니 된다. 다만, 주기관의 폐기관에 열교환장치를 설치하여 여객실 및 선원실의 난방 장치를 설치하거나 이와 유사한 방식으로 주기관을 이용한 냉난방 장치가 설치된 소형수면비행선박은 닥트가 다른 구역을 통과할 시 폐쇄 및 단열이 가능하다면 이 조항을 적용하지 아니할 수 있다. \n\n8.15.4 내화구역 또는 연기방지구역에 부착되어 있는 모든 댐퍼도 부착되어 있는 구역의 접근 가능한 양측에서 수동으로 폐쇄할 수 있어야 하고 조종실에서 원격으로 폐쇄할 수 있어야 한다.\n\n8.15.5 통풍용 닥트가 내화구역 또는 연기방지구역을 통과할 필요가 있는 경우에는 이중 안전장치가 부착된 자동 폐쇄형 방화 댐퍼를 해당 구역 부근에 부착하여야 한다. 그와 같은 구역과 댐퍼 사이에 있는 닥트는 내화구역에서 요구되는 기준과 동일한 기준으로 단열되어야 한다.\n\n8.16 연료장치\n\n8.16.1 연료와 그 밖의 가연성 액체가 적재된 탱크는 통풍 및 배수가 되는 증기방지폐위장소 또는 코퍼댐으로 여객, 선원 및 수화물구역과 격리되어야 된다. 다만, 소형수면비행선박은 이 조항에서 제외한다. \n\n8.16.2 연료유 탱크는 화재위험이 많은 구역과 구조적인 경계를 형성하여서는 아니 된다. 다만, 복합재료로 제조되는 소형수면비행선박 또는, 연료의 인화점이 60℃ 이상이고 강 또는 이와 동등한 재료로 제조된 탱크인 경우에는 그와 같은 구역에 설치할 수 있다. \n\n8.16.3 손상된 경우 저장탱크에서 기름이 누설될 수 있는 연료유관은 폐쇄용 콕 또는 밸브를 이들 탱크 외부에 직접 부착하여야 한다. 폐쇄장치에는 전기 및 전자식 방식으로 작동되지 않는 안티사이펀(anti-siphon) 밸브 또는 이와 유사한 연료유 누설을 차단할 수 있는 장치를 포함한다. \n\n8.16.4 가연성액체를 이송하는 관, 밸브 및 커플링은 ｢선박기관기준｣ 제112조를 만족하는 강 또는 이를 대체할 수 있는 재료이어야 하며, 이 경우 신축관은 사용할 수 없다. 다만, 신축관이 승인된 기관장치 또는 승인된 보기류의 일부라면 제외한다. \n\n8.16.5 가연성 액체를 이송하는 관, 밸브 및 커플링은 고온의 표면 또는 기관의 공기 유입구, 전기설비 및 그 밖에 점화가 가능한 장소로부터 멀리 떨어져 배치하여야 하며 단열되어야 한다.\n\n8.16.6 인화점이 43℃ 미만인 연료를 사용하는 모든 수면비행선박은 연료의 저장, 배분 및 사용은 화재 및 폭발의 위험성을 감안하여 8.16.1부터 8.16.5까지의 요건에 추가하여 다음 요건에 적합하도록 배치하여야 한다.\n\n 8.16.6.1 연료장치는 수면비행선박 본체의 외부에 위치하거나 연료증기가 폐위공간에 쌓이지 않도록 하여야 한다.\n\n 8.16.6.2 연료유 탱크 또는 주입관을 포함한 연료유 장치의 어떠한 부분에 대하여도 과도한 압력을 방지하는 장치를 부착하여야 한다.\n\n 8.16.6.3 접지내장형 안전회로 이외에 접지배전장치를 사용할 수 없다.\n\n 8.16.6.4 기름누설이 생길 수 있는 모든 구역에는 운항목적에 중요한 전기설비 및 부착물만 부착하여야 한다.\n\n 8.16.6.5 고정식증기탐지장치는 연료유관이 통과하는 각 구역에 설치하여야 하며, 조종실에는 경보장치가 설치되어야 한다. 다만, 공냉식 기관 또는 공냉식 보기류가 설치된 구역등 유증기의 배출이 즉시 이루어지도록 구성되어 고정식증기탐지장치의 설치가 필요 없다고 인정된 구역은 적용되지 않는다. \n\n 8.16.6.6 연료량 지시계는 안전형식이어야 한다.  \n\n 8.16.6.7 연료를 주입하는 동안 수면비행선박에는 여객의 승선을 금하거나 연료 주입구 근처에는 “금연(No Smoking)” 및 \"화기엄금(Caution: Inflammable) 표지판이 부착되어야 한다. 수면비행선박과 육상을 연결하는 연료 연결구는 연료보급 시 발생되는 증기에 의한 점화를 최대한 억제하여야 하며, 주유 시 접지되어야 한다.\n\n8.17 유압장치\n\n유압유는 불연성이어야 한다.\n\n8.18 배기장치\n\n배기가스장치는 단열되어야 하고 배기가스장치와 연결된 모든 부분과 정상 또는 비상운전에서의 배기가스로 인한 온도상승의 영향을 받는 부분은 불연성재질로 제작되거나 보호되고 고온으로부터 보호하기 위하여 불연성재질로 단열되어야 한다.\n\n\n제9장 소방설비\n\n9.1 일반사항\n\n소방과 관련된 설비는 이 장에서 정한 요건 이외의 사항에 대해서는 ｢선박용물건의 형식승인시험 및 검정에 관한 기준｣ 또는 ｢선박소방설비기준｣을 준용할 수 있다. 다만, 미국연방항공규정 Federal Aviation Regulation 등 이 기준에서 정하고 있는 것과 동등이상의 기준을 만족한다고 해양수산부장관이 승인한 경우에 이를 인정할 수 있다. \n\n9.2 화재탐지장치 일반 \n\n9.2.1 “화재탐지장치” 란 탐지기, 표시반, 제어반 및 경보장치로 구성된 장치를 말하며 선내에 설치된 탐지기의 위치 및 작동상태를 원격 식별할 수 있어야 한다. \n\n9.2.2 화재위험구역, 불규칙적으로 사용되는 거주구역의 폐위구역 또는 선원이 직접 확인할 수 없는 화장실, 계단 폐위구역 및 통로에는 통상 운항 상태에서 화재발생위치를 조종실에 알려주는 승인된 화재탐지기를 설치하여야 한다.\n\n9.2.3 승선한 사람이 화재 발생을 감시할 수 있다고 입증된 선내 구역에 한정하여 화재탐지장치를 설치하지 아니할 수 있다.\n\n9.3 화재 탐지장치 기술요건\n    \n9.3.1 9.2에 따라 설치되는 화재탐지장치는 다음 요건에 적합하여야 한다.\n\n 9.3.1.1 화재탐지장치의 작동에 필요한 동력원 및 전기회로에 대하여는 동력 상실 또는 고장이  발생한 경우 제어반상의 가시․가청 경보신호가 발해져야 하며, 이 경보신호는 화재 경보신호와 식별되어야 한다. 제어반은 조종실에 배치하여야 한다.\n\n9.3.1.2 화재탐지장치에 사용되는 전기설비의 동력 공급원은 2개 이상이어야 하며, 그중 1개는 비상전원이어야 한다. 전력공급은 이 목적만을 위하여 배치한 별개의 배선에 의하여 이루어져야 한다. 이 배선은 화재탐지장치용 제어반 내 또는 그 부근에 자동교환 스위치에 접속되어야 한다.\n\n 9.3.1.3 탐지기 또는 수동화재경보장치가 작동한 경우에는 제어반 및 표시반에 가시․가청 화재경보신호가 작동하여야 한다. 만약 화재 발생 후 30초 이내에 신호에 대한 주의 및 후속조치가 없을 경우 거주구역, 조종실 및 기관구역 전체에 자동적으로 가청경보가 작동하여야 한다. 이 경보장치는 화재 탐지장치의 일부일 필요는 없다.\n\n9.3.1.4 표시반은 탐지기 또는 수동화재경보장치가 작동하고 있는 구획을 표시하여야 하며 표시반은 조종실에 설치한다.\n\n9.3.1.5 조종실, 공용실, 거주구역을 보호하는 화재 탐지기의 계통은 화재위험성이 많은 기관구역을 포함하여서는 아니 된다. 화재탐지기는 열, 연기 또는 그 밖의 연소물, 화염 또는 이들의 혼합된 요인에 의해 작동하여야 한다. 화염 탐지기는 연기 또는 열 탐지기에 부가된 경우에만 사용되어야 한다. \n\n9.3.1.6 화재탐지장치는 다음 조건을 만족하여야 한다.\n\n 9.3.1.1 하나의 폐회로가 화재로 2개소 이상 손상을 입지 않아야 한다.\n\n 9.3.1.2 폐회로 상에서 일어나는 전원 단선, 단락, 접지 등 어떠한 결함도 전체의 폐회로를 작동 불가능하게 하지 않도록 확보할 수 있는 수단이 제공되어야 한다.\n\n 9.3.1.3 전기, 전자 및 정보와 관련된 장치의 결함 시 최초의 상태가 복구될 수 있도록 배치되어야 한다.\n\n 9.3.1.4 먼저 작동된 화재경보가 다른 화재탐지기의 추가적인 화재경보의 작동을 방해해서는 아니 된다.\n\n9.3.2 수면비행선박에 설치되는 화재탐지장치는 다음 각 호에 따라 설치하여야 한다.\n\n9.3.2.1 수동화재경보장치는 모든 구역의 각 출입구에 설치하여야 하며, 통로에는 20m을 초과하지 않는 간격으로 설치하여야 한다.\n\n9.3.2.2 연기탐지기는 20m을 초과하지 않는 간격으로 거주구역 내의 계단, 복도 및 탈출로에 설치하여야 한다.\n\n9.3.2.3 기류의 흐름이 탐지기에 불리한 영향을 끼치는 장소 및 충격이나 물리적 손상이 일어나기 쉬운 장소는 피하여 설치하여야 한다. \n\n9.3.2.4 탐지기의 최대 간격은 다음 표에 따라야 한다.\n\n9.3.2.5 화재탐지장치의 배선은 화재위험이 있는 폐위된 장소는 피해서 배치되어야 한다. 다만, 이들 장소에 화재탐지장치를 비치할 필요가 있는 경우 또는 전력공급원에 접속할 필요가 있는 경우에는 그러하지 아니하다.\n\n9.4 기관구역의 화재탐지장치\n\n9.4.1 기관구역에는 그 효력이 입증된 경우를 제외하고는 온도 탐지기만을 사용하는 화재탐지장치는 허용되지 아니하며, 기관구역 화재탐지장치는 설치 후 다양한 기관운전 및 통풍 상태에서 시험되어야 한다.\n\n9.4.2 9.4.1에도 불구하고 기관구역에 주 추진기관만 설치한 수면비행선박이 기관구역을 감시할 목적으로 원격감시장치(예, CCTV)를 설치한 때에는 화재탐지장치를 설치하지 아니할 수 있다.\n\n9.5 소화장치의 일반요건\n\n9.5.1 수면비행선박은 9.6에 따른 필요한 수의 휴대식소화기를 비치하여야 한다.\n\n9.5.2 소형수면비행선박을 제외한 수면비행선박은 선원 거주 및 업무구역과 여객실을 제외한 화재위험구역에 고정식 소화장치가 설치되어야 한다. 수면비행선박의 수밀 및 풍우밀 구역 외부에 위치한 주기관구역은 화재위험구역으로 간주한다. \n\n9.6 휴대식소화기의 비치\n\n수면비행선박에 비치하는 휴대식소화기는 다음 요건에 적합하도록 비치하여야 한다.\n\n9.6.1 조종실 내에 조종사가 앉아서 쉽게 사용이 가능한 휴대식 소화기를 1개 이상 비치하여야 한다. 다만, 조종실과 여객실이 구분되지 않을 경우에는 조종실 및 여객실의 화재 진압에 충분한 용량 및 수량의 휴대식 소화기를 비치하여야 한다.\n \n9.6.2 여객 정원 7명 이상의 수면비행선박의 여객실에는 사용에 편리한 위치에 적어도 1개 이상의 휴대식소화기가 비치되어야 한다. 소화기의 전체 수량은 수면비행선박의 폐위공간의 수를 초과할 필요는 없으나 최소한 2개 이상이어야 한다.\n\n9.6.3 휴대식 소화기에 사용되는 각 소화제의 형식 및 양은 소화제가 사용되는 곳에 발생할 수 있는 종류의 화재에 적합한 것이어야 한다. 선원실 내의 소화기는 유독가스의 농축으로 인한 위험을 최소화 할 수 있도록 설계하여야 한다.\n\n9.7 고정식 가스소화장치\n\n9.7.1 선내에 폐위된 기관 및 화물구역에 대한 가스소화장치는 두 차례의 독립된 방출에 충분한 양의 가스가 비치되어야 하며, 소화제의 자동방출은 허용되지 않는다. 다만, 사람의 진입이 불가능한 경우는 소화제의 자동 방출을 허용할 수 있다.\n\n9.7.2 고정식 가스소화장치는 다음 요건에 적합하여야 한다.\n\n 9.7.2.1 대기의 오존층에 해로운 영향을 주거나 또는 인체에 유해한 양의 유독가스가 발생하는 소화제의 사용은 허용되지 아니한다.\n\n 9.7.2.2 소화제를 운송하기 위한 배관에는 운송되는 구역에 대하여 명확히 표시를 한 제어밸브를 부착하여야 한다. 실린더와 매니폴드 사이의 방출관에는 역지밸브가 설치되어야 한다. 부주의로 인한 소화제의 방출을 방지하기 위한 장치가 설비되어야 한다.  \n\n 9.7.2.3 소화제를 분배하는 관 및 방출 노즐은 소화제를 균등하게 분배할 수 있도록 배치되어야 한다.\n\n 9.7.2.4 소화구역으로 공기가 유입될 수 있는 모든 개구 또는 소화구역으로부터 가스가 유출될 수 있는 모든 개구를 폐쇄하는 수단을 비치하여야 한다. 자연통풍 방식의 공랭식 기관구역은 이 조항에서 제외한다.\n\n 9.7.2.5 구역의 공기 저장장치 속의 공기가 화재 시 그 구역에 방출되어 고정식 가스소화장치의 효과에 중대한 영향을 미칠 수 있는 경우에는 추가로 소화제를 비치하여야 한다.\n\n 9.7.2.6 사람이 통상작업을 하거나 접근할 수 있는 장소에 소화제가 방출되는 경우 이를 알리는 자동식 가청 경보장치를 설치하여야 한다. 이 경보장치는 소화제 방출 전에 일정 시간동안 작동하여야 한다.\n\n 9.7.2.7 고정식 가스소화장치의 제어장치는 조종사가 즉시 접근할 수 있는 곳에 배치하여야 하며, 인명의 안전을 고려하여 장치조작에 관한 명확한 지침이 있어야 한다. \n\n 9.7.2.8 선원이 용기 내의 소화제의 양을 안전하게 확인할 수 있는 수단을 강구하여야 한다.\n\n 9.7.2.9 소화제 보관용기 및 부속 압력부품은 배치장소 및 운항 중에 예측되는 최고 주위온도를 고려하여 설계하여야 한다.\n\n 9.7.2.10 소화제는 보호구역의 외부에 안전하고 즉시 접근할 수 있는 구획에 보관하여야 하고, 통풍이 가능하여야 한다. 출입문은 바깥쪽으로 열리는 것이어야 하며, 이 구획과 인접하는 폐위구역 사이의 경계를 형성하는 문, 개구 및 그 밖의 폐쇄수단을 포함하여 격벽이나 갑판은 가스밀폐식이어야 한다. \n\n9.7.3 고정식 탄산가스소화장치는 9.7.2의 요건에 추가하여 다음 요건에 적합하여야 한다.\n\n 9.7.3.1 기관구역용으로 비치하는 탄산가스양은 최소한 다음 용적 중 큰 쪽에 해당하는 양의 탄산가스를 공급하기 위하여 충분한 것이어야 한다.\n가. 보호되는 최대의 기관구역 총 용적의 40퍼센트\n나. 케이싱의 수평 면적이 탱크정부와 케이싱 최하단 사이의 중간에 해당되는 해당 구역의 수평 면적의 40퍼센트 이하가 되는 수평면으로부터 상부의 케이싱 부분을 기관구역에서 제외한 면적\n다. 케이싱을 포함하여 보호되는 최대의 기관구역의 총 용적의 35퍼센트\n\n 9.7.3.2 탄산가스의 부피는 밀도 0.5㎥/kg로 계산한다.\n\n 9.7.3.3 기관구역용으로 고정된 관장치는 탄산가스의 85퍼센트에 상당하는 양을 2분 이내에 기관구역으로 방출할 수 있어야 한다.\n\n 9.7.3.4 보호구역에서의 탄산가스 배출 및 경보 작동을 위하여 2개의 독립된 단속 장치가 설치되어야 한다. 이 중 하나는 저장용기로부터 탄산가스의 배출용으로, 다른 하나는 탄산가스가 2개 이상의 공간을 보호하는 경우 보호된 구역 안으로 탄산가스를 이송하는 관에 설치된 밸브의 개방용이어야 한다.\n\n9.8 화재제어도\n\n소형수면비행선박을 제외한 수면비행선박은 갑판별로 다음 위치를 명시하는 화재제어도를 한국어와 영어로 게시하여야 한다. \n\n9.8.1 조종실\n\n9.8.2 다음 설비 및 장치와 함께 내화구역으로 폐위된 수면비행선박의 구획\n   가. 화재탐지장치(경보장치 포함)\n   나. 고정식 및 휴대식 소화설비\n   다. 여러 구획실 및 갑판으로의 접근설비\n   라. 통풍장치(주송풍 제어장치, 댐퍼 위치 및 각 구역의 통풍용 송풍장치의 식별번호 상세를 포함한다)\n9.8.3 육상시설 연결구가 있다면 그 위치 및 제어장치의 위치\n\n9.9 화장실 화재방지\n\n여객 정원 20인 이상인 수면비행선박의 각 화장실에는 연기감지장치 또는 조종실에 경고등 장치 또는 선원이 즉시 감지할 수 있는 여객실에 경고등 또는 경고음 등 이와 동등한 장치를 설치하여야 하며, 화장실 내에는 수건, 종이 또는 쓰레기를 위한 용기에 대하여 고정식 소화기를 설치하여야 한다. 소화기는 이러한 용기에 화재가 발생한 경우 자동적으로 방출될 수 있어야 한다.\n\n9.10 여객용 수면비행선박에 대한 요건\n\n9.10.1 여객용 수면비행선박은 조종실, 구명설비 적재장소, 탈출로 및 구명뗏목 에 대한 승정장소는 화재위험구역과 인접하여서는 아니 된다.\n\n9.10.2 거주구역의 각 구역의 통풍용 송풍기는 조종실에서 독립적으로 제어될 수 있어야 한다.\n\n9.10.3 여객용 수면비행선박은 9.6에 따라 비치하는 휴대식 소화기에 추가하여, 다음과 같은 수의 휴대식 소화기를 여객실에 고르게 배치하여야 한다.\n\n\n\t\t\n9.10.4 다음 요건에 적합한 소화설비를 설치하여야 한다.\n\n 9.10.4.1 기관구역에는 고정식 소화설비를 설치하여야 한다. 다만, 가연성 유체 또는 가스가 통과하는 배관 또는 구성품을 포함하는 터빈기관의 연소기, 터빈, 테일 파이프와 같이 화염을 제어할 수 있는 부분은 제외한다. \n\n 9.10.4.2 나셀 소화장치는 보호되어야 하는 나셀 내의 각 구역을 동시에 소화할 수 있어야 한다.\n\n9.10.5 고정식 소화장치에 사용되는 소화제는 저장된 곳에서 통상적으로 예상되는 온도범위에서 열적 안정성이 있어야 한다. 유독한 소화제를 사용하는 경우 소화계통의 결함 유무에 관계없이(정상운용 중 소화제의 유출이 발생하였을 때 또는 운항 중 소화제를 방출하였을 때) 유독한 유체 또는 가스가 여객실이나 선원실 등에 침투되는 것을 방지하기 위한 방안이 마련되어야 하며 이는 시험으로써 증명되어야 한다. 다만, 다음 어느 하나에 해당하는 고정식 탄산가스소화장치는 이 시험을 면제할 수 있다.\n\n 9.10.5.1 2.26kg(5lb) 이하의 탄산가스가 화재제어 절차에 따라 선체의 구획에 배출되는 경우\n\n 9.10.5.2 모든 승선자를 위한 방호호흡장비가 갖추어진 경우\n\n9.10.6 소화제 용기는 과대한 내부압력에 의해 용기가 파손되지 않도록 압력을 경감시킬 수 있는 장치를 갖추어야 한다. 압력을 경감시킬 수 있는 장치와 연결된 배출관의 끝부분은 소화제가 방출될 때 수면비행선박을 손상시키지 않는 위치에 배치되어야 한다. 각 배관은 얼음이나 이물질에 막히는 것을 방지하도록 배치되고 보호되어야 한다.\n\n9.10.7 각 소화제의 용기에는 소화제가 방출되어 있는 상태를 나타내거나 용기내의 소화제 압력이 소화에 필요한 적정압력 미만인 것을 나타낼 수 있는 수단이 강구되어야 한다. 용기 내의 적정 압력을 위하여 각 소화제 용기의 온도가 유지되어야 하며, 기폭제가 든 캡슐이 소화제의 방출을 위해 사용될 경우에도 캡슐이 위험한 상태가 되지 않도록 용기의 온도조건을 유지하여야 한다.\n\n9.10.8 고정식 소화장치를 구성하는 재료는 소화제와 위험한 화학반응을 일으키는 것이어서는 아니 된다.\n\n9.11 일반용 수면비행선박의 요건\n\n9.11.1 조종실, 구명설비의 적재장소, 탈출로 및 구명뗏목의 승정장소는 선원 거주 및 업무구역과 인접하여야 한다.\n\n9.11.2 화물구역은 다음 요건에 적합하여야 한다.\n\n 9.11.2.1 갑판구역 또는 냉동화물창을 제외한 화물구역에는 모든 통상 운항조건에서 화재발생 위치를 9.3에 따라 조종실에 표시하는 승인된 자동 연기 탐지장치를 설치하여야 하며, 9.7에 따라 조종실에서 신속히 작동할 수 있는 승인된 고정식 소화장치에 의해 보호되어야 한다. \n\n 9.11.2.2 화물구역에 대한 탄산가스의 양은 최소한 보호되는 가장 큰 화물구역의 총 용적의 30퍼센트와 같은 수준이어야 한다.\n\n\n제10장 거주구역 및 탈출설비\n\n10.1 일반사항\n\n10.1.1 거주구역 및 탈출과 관련된 설비는 이 장에서 정한 요건 이외의 사항에 대해서는 ｢선박용물건의 형식승인시험 및 검정에 관한 기준｣ 또는 ｢선박설비기준｣ 제2편을 준용할 수 있다. 다만, 미국연방항공규정 Federal Aviation Regulation 등 이 기준에서 정하고 있는 것과 동등이상의 기준을 만족한다고 해양수산부장관이 승인한 경우에 이를 인정할 수 있다. \n\n10.1.2 여객실, 공용실 및 선원 거주 및 업무구역에 있는 설비는 평상시 및 비상시의 시동, 정지 및 운전 중에 승선자에게 부상이 생기지 않도록 설계되어야 한다. 또한, 여객 및 선원 거주 및 업무구역에 설치된 창문은 파손되더라도 위험한 조각으로 깨지지 않는 재질이어야 한다.\n\n10.2 여객실 일반요건\n\n10.2.1 조종장치, 전선, 배관, 부속물 및 그 밖의 부품이 차폐, 절연 또는 다른 방법으로 보호되지 않는다면 그러한 장치의 고장이 수면비행선박의 안전운항에 영향을 줄 수 있거나 여객에 상해를 입힐 수 있다면 여객실에 위치하지 않도록 하여야 한다.\n\n10.2.2 수면비행선박의 안전운항을 위해 필요한 조종장치 등이 여객실에 배치되는 경우, 그러한 조종장치 등이 권한 없는 승선자에 의해 안전운항을 방해하지 못하도록 차폐, 절연 또는 보호하여야 한다.\n\n10.2.3 의자석은 모든 운항 및 비상상태에서 분리되지 않도록 수면비행선박의 프레임에 부착되어야 한다. 또한 의자석은 정상 운항 및 비상상황에서 의자석에 있는 사람을 보호할 수 있도록 안전벨트 또는 이와 유사한 장치를 갖추어야 한다.\n\n10.2.4 바닥은 모든 정상 운항 및 비상 상황에서 미끄럼 방지 조치가 되어야 한다.\n\n10.3 난방 및 통풍장치\n\n10.3.1 난방 및 통풍장치는 선원실 및 여객실에 유해하거나 위험한 가스 또는 증기가 집중되지 않도록 설계 및 설치되어야 한다. 가연성 가스의 축적을 방지하고 적정 온도를 유지하기 위하여 효과적인 통풍설비가 제공되어야 한다.\n\n10.3.2 소화약제의 고의 또는 과실에 의한 배출로 발생될 수 있는 소화약제의 유해한 축적으로부터 여객 또는 선원의 위험을 최소한도로 감소시켜야 한다.\n\n10.3.3 통풍되는 공기의 가열을 위해 사용되는 배기가스 열교환기는 통풍되는 공기에 배기가스가 섞일 가능성이 없도록 설치되어야 한다.\n\n10.3.4 통풍장치는 조종실 및 여객실의 모든 승선자를 위해 최소요구량(5리터/초 이상)의 신선한 공기를 공급할 수 있어야 한다. 이 경우 공기의 품질 및 압력은 승선자 또는 설비에 해롭지 않아야 한다.\n\n10.4 선내방송과 정보전달장치\n\n10.4.1 수면비행선박의 선내에는 일반 비상경보장치가 설치되어야 하며, 경보는 모든 구역에서 청취 가능하여야 한다. 경보의 음압은 일반 운항 상태에서 발생하는 주변 소리의 음압보다 최소 10dB(A) 이상 높아야 한다. 경보는 작동된 후에는 정상적으로 스위치를 끄거나 또는 선내방송으로 인해 일시적으로 정지될 때까지 계속해서 울려야 한다.\n\n10.4.2 여객 및 선원이 출입하는 장소, 탈출통로 및 구명뗏목의 승정장소를 포함하는 모든 장소에 선내방송장치가 있어야 한다. 이 장치는 어느 한 구획의 침수 또는 화재로 인해 다른 부분의 방송장치가 사용이 불가능하게 되어서는 아니 된다. 다만, 선내 최대 소음이 65dB(A)을 넘지 아니하고 여객 및 선원이 음성만으로 의사소통이 가능하다고 인정되는 소형 수면비행선박의 경우 선내방송장치의 설치를 면제할 수 있다.\n\n10.4.3 여객용 수면비행선박에는 앉아 있는 여객이 볼 수 있는 조명장치나 형광물질로 되어 있는 밝은 주의표시 또는 시각정보 전달장치로 안전 조치를 알려 줄 수 있어야 한다.\n\n10.4.4 10.4.2와 10.4.3에 따른 방법으로 조종사는 필요시 여객에게 착석 및 안전벨트의 사용을 요구할 수 있어야 한다. 다만, 운항시간이 2시간 미만인 수면비행선박으로서 모든 운항 모드에서 안전벨트의 착용을 의무화하도록 한 수면비행선박에 대해서는 10.4.3의 조명 표시요건을 적용하지 아니 할 수 있다. 또한, 조종실과 여객실이 분리되지 않고, 조종사가 여객에게 직접 정보전달이 가능한 경우 10.4.1부터 10.4.4를 위한 설비를 설치할 필요는 없다. \n\n10.4.5 모든 출구, 탈출로, 비상설비, 구명설비의 위치 및 구명조끼 착용방법을 나타내는 일반 도식을 포함한 수면비행선박의 비상지침서는 모든 여객이 이용할 수 있도록 의자석 근처에 비치하여야 한다.\n\n10.5 설계가속도\n\n10.5.1 종방향 무게중심에서 1초를 초과하는 동안 1.0g를 초과하는 수직가속도가 가해지는 여객용 수면비행선박은 여객 안전을 위한 특별한 고려가 되어 있지 않는 경우 측정 표준편차(RMS)를 사용하여서는 아니 된다.\n\n10.5.2 여객용 수면비행선박은 구명설비 및 비상전원 부근을 포함하여 공용실, 선원 거주 및 업무구역, 탈출로로의 진입 및 그 곳으로부터 탈출과 관련하여 충돌설계가속도(gcoll)가 결정되어야 한다. 충돌설계가속도를 결정할 때에는 수면비행선박의 크기, 종류, 운항모드, 속력, 배수량 및 선체재질을 고려하여야 한다.\n\n10.5.3 충돌설계가속도는 다음에 따라 계산한다.\n\n\t, 단 12를 초과할 필요는 없다.\n\n\t하중 P는 다음 중 작은 것을 택하여야 한다.\n\t,\n\t\n\n\t선체 재료 계수 M은 다음과 같다.\n\t\tM = 1.3  (고장력강)\n\t\tM = 1.0  (알루미늄 합금) \n\t\tM = 0.95 (연강)\t\n\t\tM = 0.8  (FRP) \n\n\t수면비행선박의 길이 계수 CL은:\n\t\t\n\n\t수면비행선박의 높이 계수 CH는:\n\t\t(CH max = 0.75, CH min = 0.3)\n\n\t선속 Vimp에서 운동 에너지는\n\t\t (kN․m)\n\n\t수면비행선박의 주요 치수는\n\t\tL = 수면비행선박의 길이(m)\n\t\tD = 수면비행선박의 중앙에서 용골의 하면으로부터 선체girder 상면까지의 깊이(m)\n\t\tT = 수면비행선박의 중앙에서 용골 하면으로부터 흘수\n\t\t△ = 경하중량과 만재배수량의 평균 배수량 (ton)\n\t\tVimp = 예상 충돌선속으로 각 운항조건에서 선속의 2/3 (m/s)\n\t\tg = 중력가속도 = 9.806 (m/s2) \n\n10.5.4 10.5.3의 요건에도 불구하고 충돌설계가속도는 충돌하중해석(실험, 실해역 테스트 또는 시물레이션)을 수행하여 결정할 수 있으며, 그 효력이 입증되어야 한다. \n\n10.6 거주구역 설계\n\n10.6.1 여객실 및 선원의 거주 및 업무구역은 다음 표 또는 이와 동등한 방법에 따라 설계되어야 한다. \n\n\n10.6.2 공용실 및 조종실 내의 장비 및 가방들은 10.5에 따른 충돌설계가속도에 노출되었을 때 보관되었던 장소에 그대로 있을 수 있도록 고정되어야 한다.\n\n10.6.3 의자, 구명설비, 중량물 및 그 지지구조는 10.5에서 규정하는 수치까지 부하를 가했을 때 여객의 신속한 탈출을 방해할 수 있는 변형이나 이동이 있어서는 아니 된다.\n\n10.7 의자석 구조\n\n10.7.1 모든 여객과 선원에게는 의자석이 제공되어야 하며, 의자석은 폐위구역 내에 배치하여야 한다. 위험한 항해상태 또는 잠재적으로 위험한 해상상태에서 사용 금지된 의자석은 10.7 및 10.16의 요건을 만족할 필요는 없다. 그러한 의자석은 10.6.3의 따라 고정되어야 하고, 위험한 상태에서는 사용할 수 없음을 명확하게 표시하여야 한다.\n\n10.7.2 의자석과 그 배치는 비상장비 및 탈출통로로의 접근과 이용을 방해하지 않도록 배치하여야 한다.\n\n10.7.3 의자석, 안전벨트와 같은 부착물, 주위 구조물 및 의자석 배열은 10.5 및 10.6.1에 따른 충돌조건에서 여객이 갇히는 것을 피하여야 한다, 또한 부상의 가능성을 최소화할 수 있도록 설계하여 배치되어야 하며, 충격에너지 흡수를 위하여 위험한 돌출물이나 딱딱한 모서리는 제거하거나 보호대를 부착하여야 한다.\n\n10.7.4 10.7.1부터 10.7.3의  규정에도 불구하고 소형수면비행선박의 의자석에 대하여는 「고속선기준」“별표2 국내고속선기준“에 따라 의자석의 성능요건을 적용할 수 있다.\n\n10.8 최대승선인원의 산정기준\n\n수면비행선박의 최대승선인원 산정기준은 수면비행선박에 고정 설치된 의자석 중 이 장의 의자석 요건을 모두 만족하는 의자석 1개에 대하여 정원 1인으로 산정하고 총 의자석의 개수로써 최대승선인원을 산정하여야 한다. \n\n10.9 안전벨트\n\n10.9.1 조종실 의자에 대하여 10.5에 따라 충돌 설계가속도가 3g를 초과하는 경우에 한 손으로 풀 수 있는 3점식 안전벨트 또는 어깨를 고정시킬 수 있는 안전벨트를 설치하여야 한다.\n\n10.9.2 이 장의 규정에도 불구하고 국내항해에 종사하는 수면비행선박의 모든 의자석에 설치하는 안전벨트는 ｢산업표준화법｣에 따른 한국산업규격(자동차용 의자석벨트 : KS R 4027)에 적합한 안전벨트를 의자석에 설치할 수 있다.\n\n10.10 출입문\n\n10.10.1 외부 출입문은 여객이 사용 시 프로펠러 회전면에 의한 위험이 없도록 배치하여야 한다.\n\n10.10.2 여객 또는 선원을 위한 외부 출입문은 다음 요건에 적합하여야 한다.\n\n 10.10.2.1 운항 중 기계적 결함, 화물 또는 사람에 의해서 문이 열리지 않도록 하는 잠금장치 및 안전장치가 구비되어 있어야 한다.\n\n 10.10.2.2 내부 잠금장치가 잠금 위치에 있을 때, 출입구문은 안쪽 또는 바깥쪽 어느 곳에서도 열 수 있어야 한다.\n\n 10.10.2.3 출입문을 여는 방법은 간단하고 명료하여야 하고, 캄캄하더라도 용이하게 도달하고 조작할 수 있도록 표시하고 배치하여야 한다. 또한 외부로부터의 구조를 위하여 표시를 하여야 한다.\n\n 10.10.2.4 출입문은 10.16의 요건을 충족해야한다.\n\n 10.10.2.5 출입문은 비상착수 시 선체의 변형에 의해 기능손실이 없어야 한다.\n\n 10.10.2.6 수면비행선박의 외부에서 작동할 수 있는 보조 잠금 장치를 사용할 수 있으나, 이러한 장치는 통상적인 내부 개방장치에 의해서 그 작동을 멈출 수 있어야 한다.\n\n 10.10.2.7 출입문은 사람들이 수면비행선박의 안쪽에서 출입문에 밀집해 있을 때에도 안쪽 또는 바깥쪽 어느 곳에서도 열 수 있어야 한다.\n\n 10.10.2.8 안쪽 방향으로 열리는 출입문의 경우, 출입문을 여는데 방해가 되는 정도까지 인원이 몰리는 것을 방지하는 수단을 강구하여야 한다.\n\n 10.10.2.9 출입문의 잠금상태를 확인하기 위하여 잠금장치를 직접 육안으로 인지할 수 있어야 한다. \n\n 10.10.2.10 출입문이 완전히 닫히지 않았거나 잠기지 않은 경우에는, 이것을 선원에게 알려주는 시각적인 경보장치가 있어야 하며, 조종석에서 확인할 수 있어야 한다.\n\n10.10.3 수면비행선박의 외부 출입문은 다음 규격 및 정적하중에 적합한 것이어야 한다. \n\n10.10.3.1 모든 여객 탑승구 문은 비상탈출구로써 인정할 수 있다. 출구의 형태는 높이 또는 높이방향의 길이가 122cm 이상, 폭 61cm 이상의 충분한 면적을 확보하여야 하며,  모서리의 곡률 반지름은 출구 폭의 3분의 1 이하이어야 한다. 다만, 공간협소 등의 이유로 이 규정에 따른 탑승구를 설치하기 곤란한 소형수면비행선박의 경우 출입구의 폭 및 높이는 ｢항공기기술기준｣ 23.807 비상탈출구의 형식요건을 적용할 수 있다. \n\n10.10.3.2 여객 탑승구 문에 일체식 계단이 장착된 경우, 이 계단은 다음에 명시된 정적 극한 하중계수에 상응하는 관성하중이 가해진 후에도 여객 탑승구 문을 통한 비상탈출의 효율성이 저해되지 않도록 설계되어야 한다. 다만, 10.5.3에 따라 계산된 충돌설계가속도의 효력이 입증된 경우에는 다음의 하중계수를 대체할 수 있다.\n      가. 상방으로 4.5g\n      나. 전방으로 9.0g\n      다. 측방으로 1.5g\n      라. 하방으로 6.0g\n     \n10.10.4 화장실 문이 설치된 경우, 사람이 화장실 안에 갇히는 일이 없도록 설계하여야 한다. 잠금장치가 설치되는 경우에는, 화장실 바깥에서 열 수 있어야 한다.\n\n10.11 여객용 수면비행선박의 화장실설비\n\n여객용 수면비행선박에는 다음 표에 해당하는 화장실을 설치하여야 한다.\n\n\n다만, 다음의 어느 하나에 해당하는 경우에는 화장실을 설치하지 아니할 수 있다.\n\n10.11.1 출발항에서 도착항(중간기항지를 포함한다)까지의 항해시간이 30분 미만인 수면비행선박으로서 해당 수면비행선박의 출발항 및 도착항의 대합실에 화장실이 있는 경우\n\n10.11.2 여객 정원 20인승 미만으로서 항행예정시간이 2시간 미만인 수면비행선박\n\n10.12 출구 및 탈출설비\n\n10.12.1 수면비행선박은 비상시 모든 승선자가 수면비행선박에서 안전하게 구명뗏목으로 승정할 수 있어야 하며, 이 요건은 비상시에 사용될 모든 출구와 구명설비의 위치, 탈출 절차의 실행 가능성 및 탈출시간에 대하여 증명되어야 한다. \n\n10.12.2 공용실, 탈출로, 출입구, 구명조끼 보관장소, 구명뗏목 탑재장소 및 승정장소는 명확하고 영구적으로 표시하여야 하고 조명장치가 설치되어야 한다.\n\n10.12.3 폐위된 공용실 및 이와 유사하게 영구적으로 폐위되고 여객 및 선원이 머무를 수 있는 구역에는 최소한 두개의 비상구가 멀리 떨어지게 설치되어야 한다. 출구는 안전하게 접근할 수 있어야 하고, 이러한 출구는 탑승이나 하선통로로도 사용할 수 있다.\n\n10.12.4 화재 시 피난장소로 사용되는 공용실은 화재위험구역에 인접하지 않도록 구획되어야 한다.\n\n10.12.5 출구의 폐쇄장치는 선원이 직접 또는 표시기를 통하여 문이 닫혀있음과 정상 작동중임을 확인할 수 있어야 한다. 외부문의 설계는 얼음이나 부유물의 부착으로 고착되지 않도록 하여야 한다.\n\n10.12.6 여객의 안전하고 신속한 탈출을 위하여 출구 부근에 선원을 위한 충분한 공간이 있어야 한다.\n\n10.12.7 수면비행선박 내부에서 출입구로 통하는 발판, 사다리 등은 견고한 구조이어야 하며, 항구적으로 고정되어 있어야 한다. 출구에는 이용하는 사람을 위하여 필요시 수면비행선박의 종경사 및 횡경사 상태에서 적합하게 사용할 수 있는 손잡이를 설치하여야 한다.\n\n10.12.8 모든 사람은 장애물이 없는 최소한 두 개의 탈출로를 이용할 수 있어야 한다. 탈출로는 손상이나 비상시와 같은 경우에 이용할 수 있도록 탈출시설이 배치되어 있어야 하며, 탈출로는 주전원 또는 비상전원에서 급전되는 조명시설이 있어야 한다.\n\n10.12.9 탈출로를 구성하는 통로, 출입로 및 계단의 치수는 구명조끼를 착용하고 쉽게 움직일 수 있어야 한다. 탈출로에는 부상을 일으키거나, 옷이 걸리거나, 구명조끼에 손상을 주거나 또는 장애인의 탈출을 제한하는 돌출물이 있어서는 아니 된다.\n\n10.12.10 여객을 출구로 안내하기 위한 수단이 제공되어야 한다.\n\n10.12.11 승정장소는 여객이 구명뗏목에 승정할 수 있도록 손잡이 설치 및 승정갑판의 미끄럼 방지 조치를 하여야 하며, 클리트, 볼라드 및 이와 유사한 설치물이 없는 장소이어야 한다.\n\n\n10.13 비상 탈출\n\n10.13.1 수면비행선박의 비상탈출설비는 최대승선인원이 탑승상태에서 부록 2의 비상탈출 시험절차를 만족하도록 설치되어야 한다. 이 때 비상탈출은 해당 수면비행선박의 상갑판 하부의 수밀성이 유지되는 것을 조건으로, 10.20.1에서 정한 시간까지 완료되어야 한다. \n\n10.13.2 10.13.1에서 요구하는 탈출 시연 중 여객실 내 조명을 비추기 위하여 10.17에서 요구하는 비상 조명만을 사용할 수 있다. \n\n10.14 조종사의 비상 탈출\n\n조종사가 여객의 비상탈출구에 쉽게 접근할 수 없는 수면비행선박에는 조종실 내에 비상탈출구를 설치하여야 한다. \n\n10.15 비상탈출구\n\n10.15.1 비상탈출구는 비상 착수 시에 생길 수 있는 어떤 자세에서도 어려움 없이 탈출할 수 있도록 배치하여야 한다. 수면비행선박에는 다음과 같은 비상탈출구가 있어야 한다. \n\n 10.15.1.1 2개 이상의 의자석이 있는 모든 수면비행선박의 경우, 캐노피가 있는 수면비행선박을 제외하고, 10.10에서 규정한 주 출입문으로부터 여객실의 반대편에 1개 이상의 비상탈출구가 있어야 한다.\n\n 10.15.1.2 경미한 파손이 따르는 착수에 있어서 조종사의 탈출을 방해하기 쉬운 출입문으로 조종실이 여객실과 분리되어 있으면 조종실에 1개의 비상탈출구가 있어야 한다.\n\n 10.15.1.3 비상탈출구는 사람이 이를 이용할 때 위험하게 만드는 프로펠러 또는 다른 잠재적 위험성이 있는 위치에 있어서는 아니 된다.\n\n10.15.2 비상탈출구는 쉽게 열 수 있는 창문이나 이동 창문, 패널 또는 외부 출입문으로서 48cm × 66cm의 타원이 충분히 들어갈 수 있는 크기이어야 한다. 보조 잠금 장치는 보통의 내부 열림 장치에 의해서 풀어질 수 있어야 하며, 밖으로 열리는 비상탈출구의 내부 핸들은 부주의한 작동으로부터 보호되어야 한다. 이외에 각 비상탈출구는 다음 요건에 적합하여야 한다.\n\n 10.15.2.1 비상시 쉽게 도달할 수 있어야 한다.\n\n 10.15.2.2 간단하면서도 분명한 개방방법이 있어야 한다.\n\n 10.15.2.3 어둠속에서도 쉽게 찾을 수 있고, 작동시킬 수 있도록 배열 및 표시되어야 한다.\n\n 10.15.2.4 선체 변형 시에도 비상탈출구가 끼는 일이 없어야 한다.\n\n10.15.3 각 비상탈출구의기능은 시험에 의해 입증되어야 한다.\n\n10.15.4 여객용 수면비행선박의 경우에는 다음 요건에 적합한 비상탈출구를 설치하여야 한다.\n\n10.15.4.1 비상탈출구의 형식은 국토교통부 ｢항공기기술기준｣ 25.807 (a)에 따른다. \n\n10.15.4.2 1개의 쌍으로 이루어진 출구는 완전히 대칭이거나 동일한 크기일 필요는 없으나, 10.15.4.5에 따른 여객 의자석의 수는 2개의 출구 중 크기가 작은 것을 기준으로 하여야 한다.\n\n10.15.4.3 비상탈출구는 여객의 의자석분포를 고려하여 균등하게 배치하여야 한다.\n\n10.15.4.4 비상탈출구의 위치는 다음 요건에 적합하여야 한다.\n\n가. 수면비행선박에 꼬리부분 비상탈출구가 없고, 각 측면에 오직 1개의 여객실 바닥높이에 근접한 탈출구가 있는 경우에는 다른 위치가 보다 효과적인 여객탈출 수단을 제공하지 않는 한 여객실의 뒤쪽 부분에 있어야 한다. \n나. 수면비행선박이 여객운송과 화물수송을 하는 복합사양이 아니고, 각 측면에 2개 이상의 탈출구가 여객실 바닥높이에 근접하여 있는 경우에는 여객실의 좌우 양측 전후방 끝 부근에 가능한 한 여객실 바닥 높이의 탈출구를 1개 이상씩 배치되어야 한다.\n다. 선체 좌우 측면에 각 2개 이상의 여객용 비상탈출구가 요구되는 수면비행선박의 경우, 여객용 탈출구는 선체의 동일한 갑판 상 같은 측면의 여객 탈출구사이의 거리는 18m 이상 떨어져서는 안 된다. 이 때 가장 가까운 출입구 사이의 거리는 수면비행선박의 길이 방향 축에 평행하게 측정하여야 한다.\n\n10.15.4.5 허용되는 최대 여객의 의자석 수와 탈출구의 요건은 국토교통부 ｢항공기기술기준｣ 25.807 (g)에 따른다. 또한, 여객용 통로가 1개밖에 없는 수면비행선박은 통로 양쪽 옆의 의자석이 1개의 열에 있어 3개를 초과할 수 없다.\n\n10.15.4.6 다음 출구들은 이 장의 비상탈출구 관련 요건을 만족해야 하며, 쉽게 접근할 수 있어야 한다.\n\n가. 최소 필요 비상탈출구 외에 추가로 설치된 여객실 내의 비상탈출구\n나. 그 밖의 선체 꼬리부분의 여객 탈출구\n\n10.15.4.7 10.15.4.5의 기준에 따른 비상탈출구 요건을 만족하지 않는다면 추가로 국토교통부 ｢항공기기술기준｣ 25.807 (i) 요건에 따른 비상탈출구를 설치하여야 한다.\n\n10.15.5 10.15.4에 따른 여객용 수면비행선박에 설치하는 비상탈출구는 다음 요건을 만족하여야 한다.\n\n10.15.5.1 조종사용 비상탈출구를 포함한 모든 비상탈출구는 선체 외벽에 설치된 움직이는 문 또는 해치 형태이어야 하며, 바깥쪽으로 열릴 때 장애물이 없어야 한다. 추가로, 각각의 비상탈출구에는 비상탈출구가 닫힌 경우에도 외부 상황을 볼 수 있는 수단이 구비되어야 한다. 이때 비상탈출구와 외부조망 수단 사이에 장애물이 없다면, 외부 상황을 볼 수 있는 수단은 비상탈출구 또는 인접한 부분에 위치하여야 하며, 외부 조망 수단은 모든 등화가 점등되어 있을 때 탈출여객의 해상 도달 예상지역을 조망할 수 있어야 한다.\n\n10.15.5.2 비상탈출구는 수면비행선박 내․외부에서 열 수 있어야 한다. 다만, 조종실에 들어갈 수 있는 승인된 다른 출구가 있는 경우에는 조종실에 있는 열리는 창문이 설치된 비상탈출구는 수면비행선박 외부에서 개방할 수 없어도 좋다. 선체의 변형이 없는 경우 다음과 같은 조건에서 모든 비상탈출구를 개방할 수 있어야 한다.\n\n가. 개방을 위한 장치를 작동한 후 탈출구가 완전히 열릴 때까지 시간은 10초 이내\n나. 수면비행선박 내 비상탈출구 방향으로 여객들이 혼잡하게 몰리는 경우\n\n10.15.5.3 동력공급으로 탈출구를 개방하는 장치가 고장 난 경우에도 10.15.5.2의 기준에 적합한 것이어야 하며, 이 경우 수동으로 개방하는 것을 허용할 수 있다.\n\n10.15.5.4 비상탈출구는 10.15.5.2 및 10.15.5.3의 요건에 적합함을 시험, 또는 해석 및 시험을 조합하는 방법으로 입증하여야 한다.\n\n10.15.5.5 여객을 운송하는 대형 터보제트 수면비행선박의 운항규정에 따라 요구되는 선체 꼬리부분 비상탈출구는 다음 요건에 적합하여야 한다.\n\n가. 비행 중에 열리는 것이 불가능하도록 설계 및 제작할 것\n나. 비행 중에 열리는 것이 불가능하도록 설계 및 제작되었다는 것을 명시한 76.2cm 떨어진 위치에서 읽을 수 있는 식별표시를 탈출구 개방장치 가까운 곳에 게시할 것\n\n10.15.5.6 비상탈출구는 비상시 개방한 경우 개방상태로 유지할 수 있는 수단이 구비되어야 한다. 이 경우 개방상태로 유지하기 위한 별도의 조작이 요구되지 않는 것이어야 하며, 능동적인 조작으로 폐쇄가 가능하여야 한다.\n\n10.15.6 10.15.1부터 10.15.5까지의 요건을 적용하는데 있어서 여객이 탑승하는 주 출입문은 비상탈출구로 본다. \n\n10.16 비상탈출구의 표시\n\n10.16.1 각 비상탈출구 및 외부 출입문은 외부에 표시가 되어야 하며, 수면비행선박 외부에서 다음에 따라 확인이 가능하여야 한다.\n\n 10.16.1.1 비상탈출구 표면과 인접한 곳에 비상탈출구 개방 방법을 보여주는 영구적으로 명시된 게시물 또는 설명\n\n 10.16.1.2 5cm 넓이의 유색 선으로 탈출구 윤곽을 나타내야 한다.\n\n 10.16.1.3 선체 외부 표면과 명확하게 구분할 수 있는 명암을 가져야 한다. 어두운 색의 반사율이 15퍼센트 이하인 경우에는 밝은 색 반사율이 45퍼센트 이상이 되도록 대조시켜야 한다. “반사율”이란 물체가 받는 광량에 대해 반사하는 비율을 말한다. 어두운 색의 반사율이 15퍼센트를 넘는 경우는, 그 반사율과 밝은 색의 반사율은 30퍼센트 이상 차이가 있어야 한다.\n\n 10.16.1.4 꼬리부분 탈출구와 같은 선체 측면에 없는 탈출구는 외부 개방 사용방법을 적색으로 표시하여야 한다. 다만, 선체표면색 때문에 적색이 눈에 띄지 않는 경우에는 밝은 황연색(Chrome Yellow)으로 표시하여야 한다. 선체의 한쪽 측면에서만 탈출구의 개방 수단이 있는 경우에는 그 반대쪽에 해당 내용을 표시하여야 한다.\n\n10.16.2 여객용 수면비행선박의 경우, 이러한 탈출구 및 출입문은 5cm높이의 붉은 바탕에 2.5cm 높이의 백색 글자로 내부에 ”탈출구\" 표시를 하여야 한다. 이 글자는 발광이거나, 독립적인 내부 전원에 의하여 조명되어야 한다. 이때 휘도는 0.509 cd./m2 이상이어야 한다. 색깔은 여객실 내부의 등 색깔과 같다면 그와 반대로 할 수 있다. 여객용 비상탈출구 위치는 승선자가 주 여객실 통로를 따라서 접근할 때 볼 수 있는 표시로 나타내야 하며 다음에서 규정하는 표시를 해야 한다.\n\n 10.16.2.1 각 여객용 비상탈출구에 가까운 통로 위쪽, 또는 이와 유사한 위치에 있어서 머리 위쪽의 공간이 낮을 경우는 다른 위쪽에 여객용 비상탈출구 위치 표시가 있어야 한다. 다만, 1개의 표시를 통해 탈출구를 쉽게 볼 수 있다면, 2개 이상의 탈출구를 1개의 표시만으로 나타낼 수 있다.\n\n 10.16.2.2 각 여객용 비상탈출구 옆에는 여객용 비상탈출구 표시를 해야 한다. 다만, 1개의 표시를 통해 각 탈출구를 쉽게 찾을 수 있다면 2개 이상의 탈출구를 1개의 표시만으로 나타낼 수 있다.\n\n 10.16.2.3 격벽 또는 칸막이로 인해 가려지는 비상탈출구를 지시하기 위해 여객실 전후방 시야를 방해하는 격벽 또는 칸막이 위에 1개의 표시를 하여야 한다. 다만, 이 장소에 표시를 하는 것이 불가능할 경우 다른 장소에 표시를 해도 무방하다.\n\n 10.16.2.4 “비상탈출구(Emergency Exit)” 대신 “탈출구(Exit)”라는 단어를 사용할 수 있다.\n\n10.16.3  비상탈출구 위치와 관련하여 다음 요건을 만족하여야 한다.\n\n10.16.3.1 각 비상탈출구는 여객실 폭과 같은 거리에서부터 식별이 가능하여야 한다.\n\n10.16.3.2 연기가 밀집된 조건에서 여객이 비상탈출구의 위치를 찾기 위한 보조수단이 있어야 한다.\n\n10.16.3.3 작동 손잡이의 위치와 각 비상탈출구의 개방방법을 표시하여야 한다. \n\n10.16.3.4 작동 손잡이는 다음과 같아야 한다.\n\n가. 자체 발광하여야 하며, 초기 휘도가 0.509 cd/m2 이상이어야 한다.\n나. 출입문에 여객이 몰리는 상태에서도 비상등에 의해서 식별 가능한 장소에 위치하여야 한다.\n\n10.16.3.5 회전식 손잡이 방식의 기계적 잠금 장치를 갖춘 각 여객 출입문은 다음과 같이 표시되어야 한다.\n\n가. 화살표 폭이 1.9cm이상이고 머리폭은 화살표 폭의 2배이며, 손잡이 길이의 4분의 3에 해당하는 반경으로 70도이상 연장된 원호 형태의 적색화살표\n나. 손잡이를 끝까지 조작하여 잠금장치를 해제했을 때, 탈출구 손잡이 중심선이 화살표 끝점에서 ±2.5cm 이내에 있을 것\n다. 화살표 끝점 가까운 곳에 높이가 2.5cm이고 “열림(Open)”이라는 적색의 단어를 수평으로 표시할 것\n\n10.17 비상 조명\n\n10.17.1 여객용 수면비행선박의 경우, 비상조명은 다음 요건에 적합하여야 한다.\n\n10.17.1.1 여객실에는 주 조명장치와는 독립된 비상조명장치를 설치하여야 한다. 다만, 비상조명장치의 전원공급이 주 조명장치의 전원공급과 독립적인 경우, 비상조명장치와 주 조명장치는 일반 여객실 내부 조명원을 공동으로 사용할 수 있다.\n\n10.17.1.2 비상 조명은 조종 장소에서 수동 및 자동으로 작동할 수 있어야 한다. 조종실 제어장치는 비상 조명이 조종실에 설치되어 있는 경우, 자동으로 작동되도록 “켬(On)”, “끔(Off)” 및 “준비(Armed)\" 위치가 있어야 한다. 또한 “준비(Armed)” 또는 “켬(On)”위치에서 부주의로 인한 조종실 제어장치의 작동으로부터 보호하는 수단이 구비되어야 하고 비상 조명 시스템은 자동 작동 후에 조종사가 소등 및 다시 작동할 수 있어야 한다.\n\n10.17.1.3 비상조명장치가 설치되었을 때에는 다음 조건에서 비상조명장치가 자동으로 점등되어야 한다.\n\n가. 수면비행선박의 정상 전원이 고장 날 때\n나. 수면비행선박 비행 축으로 2g가 넘는 감속이 있는 경우 \n다. 비상 조명이 여객의 탈출을 도울 수 있도록 자동으로 작동되어야 하는 그 밖의 비상 조건 발생 시\n\n10.17.1.4 비상 조명은 다음 요건을 만족하는 내부 조명을 제공할 수 있어야 한다.\n\n가. 10.16.2의 요건을 포함하여, 비상 출구 표시 및 위치 표시의 점등\n나. 여객실 내에는 조명이 제공되어야 하고, 조명의 밝기는 주 여객통로의 중심선을 따라 의자석 팔걸이 높이에서 측정하였을 때, 평균 조도는 0.54럭스 이상이어야 하며, 각각의 측정값은 어떤 지점에서도 0.11럭스 이상이어야 한다. 주 여객통로는 선체의 가장 앞부분에 있는 여객용 비상탈출구(또는 승선자의 의자석)부터 가장 뒤쪽의 여객용 비상탈출구(또는 승선자의 의자석)까지의 선체 길이방향 통로를 말한다.\n다. 여객실 통로 바닥으로부터 1.2m를 초과하는 위치의 조명을 인식할 수 없는 경우에도 여객의 비상탈출을 안내하기 위하여 바닥에 인접한 비상탈출로 표시가 제공되어야 한다. 여객용 비상탈출구에 도달하기 위한 주 통로와 탈출구 사이의 통로바닥에는 조명이 있어야 하며, 조명의 광도는 여객 탈출경로의 중심선을 따라 바닥과 평행하게 15cm이내의 높이로 측정하였을 때, 0.21럭스 이상이어야 한다.\n라. 바닥에 인접한 비상탈출 경로표시 조명이 소등되었을 때 비상탈출 경로를 여객실의 바닥으로부터 1.2m 이하의 높이에 있는 표시 및 시각적 특징만을 참조함으로써 확인할 수 있어야 한다.\n\n10.17.1.5 비상조명장치를 작동한 후  10분간 요구되는 수준의 광도를 낼 수 있도록 각 비상조명장치에 전원을 공급할 수 있어야 한다.\n\n10.17.1.6 전원공급원으로써 충전가능한 축전지가 비상조명장치에 사용되는 경우 그러한 축전지는 수면비행선박의 주 전원으로 충전할 수 있다. 다만, 충전회로는 회로의 결함으로 인해 부주의한 방전이 발생하지 않도록 설계하여야 한다. 만약 비상조명장치가 충전 회로를 포함하지 않는다면 배터리 상태 모니터가 요구된다.\n\n10.17.1.7 축전지, 전선 연결장치, 전구 및 스위치 등을 포함한 비상조명장치의 구성부품은 10.10.3.2에 따른 관성력을 받은 후에도 정상적으로 작동하여야 한다. \n\n10.17.1.8 비상조명장치는 불시착으로 수면비행선박의 선체가 한 단면이 횡단면 방향으로 분리된 후에도 다음 요건에 적합하도록 설계된 것이어야 한다.\n\n가. 10.17에서 규정하는 모든 전기적인 비상 조명은 최소 75퍼센트 이상이 작동될 수 있을 것\n나. 10.16.2 및 10.16.3에 따른 비상탈출구 표시에 전기적인 조명이 사용되는 경우 절단에 의해서 직접 손상된 것 외에는 작동 상태로 남아 있을 것\n\n10.17.2 비상탈출구의 조명은 다음 요건에 적합하여야 한다.\n\n10.17.2.1 10.16.2 및 10.16.3에 따른 여객용 비상탈출구 표시는 조명이 있는 백색바탕에 높이 3.8cm이상의 적색문자로 표시하여야 하며, 문자를 제외한 면적이 135㎠ 이상이어야 한다. 조명이 있는 바탕과 문자의 명암대비는 10:1 이상이어야 한다. 문자 획의 높이와 폭의 비율은 6:1～7:1 이어야 한다. 이 표시들은 밝기가 85.65cd/m2 이상인 바탕을 비추는 전기적인 내부조명이 있어야하며, 바탕 명암 대비가 3:1 이하인 것이어야 한다.\n\n10.17.2.2 10.16.1에 따른 비상탈출구 외부 표시는 백색바탕에 높이 3.8 cm이상인 적색문자로 표시하여야 하며, 문자를 제외한 면적이 135㎠ 이상이어야 한다. 이 표시는 전기적인 내부조명이 있거나 또는 전기적이 아닌 방법에 의한 발광성이 있어야 하며, 초기 휘도가 1.27cd/m2 이상이어야 한다. 전기적이 아닌 방법에 의한 발광성이 있는 표시는 배경과 문자색을 반대로 할 수 있다.\n\n10.17.2.3 조종사석을 제외한 여객 정원이 9인 이하인 수면비행선박은 10.16.1부터 10.16.3까지의 규정에 따른 표시를 높이 5cm 이상의 백색바탕에 높이 2.5cm 이상인 적색문자로 표시하여야 한다. 이 표시는 전기적인 내부조명이 있거나 또는 전기적이 아닌 방법에 의한 발광성이 있어야 하며, 초기 휘도가 0.509cd/m2 이상이어야 한다. 전기적이 아닌 방법에 의한 발광성이 있는 표시는 배경과 문자색을 반대로 할 수 있다.\n\n10.17.2.4 주익 위에 있는 비상탈출구의 조명은 다음과 같아야 한다.\n\n가. 대피자가 여객실 밖으로 첫발을 내디딘다고 생각되는 장소로서, 면적이 0.18㎡인 구역의 조도는 0.32럭스 이상일 것. 이 때 조도는 투사광에 수직으로 측정한다.\n나. 대피자가 설정된 탈출경로를 사용하여 최초로 수면 또는 구명뗏목에 닿을 것으로 예상되는 위치의 조도는 0.32럭스 이상일 것. 이 때 조도는 투사광에 수직으로 측정한다.\n\n10.17.3 소형수면비행선박은 10.20의 요건을 만족시키는 비상조명 성능을 갖춘 경우 예외를 인정할 수 있다. \n\n10.18 비상탈출구에 대한 접근성\n\n10.18.1 여객용 수면비행선박의 경우, 창문 형식의 비상탈출구는 의자석 또는 의자석의 등받이에 의해 가려져서는 아니 된다.\n\n10.18.2 10.18.1에 추가하여 비상탈출구에 접근할 수 있도록 다음 요건을 만족하여야 한다.\n\n 10.18.2.1 복도에서 여객 출입문까지의 통로는 장애물이 없어야 하며, 최소한 50cm의 폭을 가져야 한다.\n\n 10.18.2.2 여객의 탈출을 도울 수 있도록 여객 출입문 옆에는 통로를 50cm 미만으로 가리지 않도록 충분한 공간이 있어야 한다.\n\n 10.18.2.3 여객실 의자석으로부터 여객실 사이의 통로를 지나서 비상출입문까지 이르는 여객 통로는 가려지지 않아야 한다. 다만, 통로를 통한 자유로운 출입이 가능할 경우 커튼은 사용할 수 있다.\n\n 10.18.2.4 만약, 문에 열림 상태에서 고정하는 걸쇠가 없다면, 여객실 사이에 문을 설치하여서는 아니 된다. 걸쇠는 10.10.3.2에 따른 관성력을 견딜 수 있어야 한다.\n\n 10.18.2.5 여객실 의자석에서 비상탈출구로 가기 위하여 여객실을 분리하는 출입구를 통과해야 한다면, 이 출입문에는 열림 위치에서 걸쇠를 하는 방법이 있어야 한다. 이 걸쇠는 10.10.3.2에 따른 관성력을 견딜 수 있어야 한다.\n\n 10.18.2.6 10.20에 따른 탈출시간 내에 비상탈출이 가능하다고 인정된 때에는 여객실 의자석 사이의 통로의 폭은 50cm미만으로 할 수 있다. 이 경우에도 의자석 사이의 여객용 통로 폭은 다음 표의 값 이상이어야 한다. \n          \n           주1) 해양수산부장관이 요구하는 시험에 의해 입증된 경우에는 규정보다 좁은 것이 허용되지만, 그 값은 23cm 이상이어야 한다.\n\n10.18.3 비상탈출구 형식에 따른 접근성은 국토교통부 ｢항공기기술기준｣ 25.813 (a)와 (c)에 적합하여야 한다. \n      \n10.18.4 선원이 여객탈출을 돕기 위한 다음과 같은 공간이 있어야 한다.\n\n 10.18.4.1 여객을 돕기 위해 설정된 공간은 여객실 바닥에 선원이 선채로 대피하는 사람을 돕기 위한 충분한 사각형의 공간이어야 하며, 여객을 돕는 공간으로 인하여 탈출구에서 요구되는 장애물 없는 통로의 폭이 감소되지 않아야 한다.\n\n 10.18.4.2 각각의 보조공간에는 선원이 넘어지지 않도록 이용할 수 있는 하나 이상의 손잡이가 장착되어야 한다.\n\n10.19 여객실의 바닥 하부 서비스실(조리실을 포함한다. 이하 같다)\n\n활주 또는 수면비행 중에는 사용하고 이착수 중에는 사용하지 않는 서비스실이 선내의 여객실의 바닥 하부에 있는 수면비행선박은 다음 요건에 적합하여야 한다.\n\n10.19.1 각 여객실의 바닥 하부 서비스실에는 사용자가 통상적인 조명상태 또는 비상 조명상태에서 여객실로 신속하게 탈출하기 위하여 서비스실의 양쪽 끝에 한 개씩 또는 충분히 떨어진 두 개의 탈출경로가 있어야 하며, 이 탈출경로 사용을 위하여 동력장치에 의존하지 않도록 하여야 한다. 탈출경로는 화재, 기계적 또는 구조적인 손상, 사람이 위에 서 있거나 기대는 것으로 인한 폐쇄 가능성을 최소화하도록 설계하여야 한다. 수면비행선박의 주 전원 또는 주 조명장치가 고장 난 경우 여객실의 바닥 하부 서비스실에는 자동적으로 비상조명이 제공되어야 한다.\n\n10.19.2 조종실과 여객실의 바닥 하부 서비스실 사이에는 양방향 음성통신 수단이 있어야 한다.\n\n10.19.3 통상 및 비상상태에서 조종실이나 여객실의 바닥 높이인 비상탈출구에 있는 선원이 여객실의 바닥 하부 서비스실 사용자에게 비상상황을 알릴 수 있는 음성 비상경보장치가 있어야 한다.\n\n10.19.4 여객실의 바닥 하부 서비스실 사용자에게 안전벨트의 착용 시점을 알려주는 적절한 수단이 제공하여야 한다.\n\n10.19.5 여객실의 바닥 하부 서비스실의 승선자를 위해 최대비행하중을 견딜 수 있는 앞쪽 또는 뒤쪽을 향하는 의자석이 있어야 한다.\n\n10.20 탈출시험\n\n10.20.1 수면비행선박의 탈출시간은 7분40초 또는 수면비행선박의 구조방화시간(T)이 30분 미만인 경우 다음 산식에 따른 시간을 초과하지 않아야 한다. 이 경우 탈출시간은 여객 및 선원의 총인원에 대하여 훈련받지 않은 사람이 탈출명령에 따라 탈출하는 실제 시간을 말한다.\n\n\t\t(T-7)/3 (분)\n\n10.20.2 탈출 분석을 포함한 탈출절차는 다음 사항들을 반영하여야 한다.\n\n 10.20.2.1 조종사의 비상방송\n\n 10.20.2.2 모항과의 연락\n\n 10.20.2.3 구명조끼 착용\n\n 10.20.2.4 구명뗏목 및 비상시 필요한 장소에 인원 배치\n\n 10.20.2.5 기관 및 연료유 공급 배관의 차단\n\n 10.20.2.6 탈출 지시\n\n 10.20.2.7 구명뗏목, 해상탈출설비(MES)의 전개\n\n 10.20.2.8 구명뗏목의 선측에 대기\n\n 10.20.2.9 여객의 통제\n\n 10.20.2.10 통제 하에서 여객의 질서 있는 탈출\n\n 10.20.2.11 모든 여객의 탈출 확인\n\n 10.20.2.12 선원의 탈출\n\n 10.20.2.13 수면비행선박으로부터 구명뗏목의 이탈\n\n10.20.3 10.20.1에 따른 탈출시간에 대한 적합성은 부록 2의 비상탈출 시험절차에 따른 시연을 통하여 입증되어야 한다.\n\n10.20.4 탈출시험은 긴급한 탈출이 요구되는 비상시 일어날 수 있는 많은 인원의 이동 또는 혼란의 가속을 충분히 고려하여야 하며, 구명뗏목이 적재된 상태에서 다음과 같이 시행한다.\n\n 10.20.4.1 모든 수면비행선박의 탈출시간은 추진기가 정지하고 정상운항 중의 여객이 배치된 상태에서 퇴선 방송의 시작부터 마지막 사람이 구명뗏목에 탑승한 시간까지 경과된 시간이며, 여객과 선원이 구명조끼를 입는 시간이 반영되어야 한다.\n\n 10.20.4.2 모든 수면비행선박은 승정을 위하여 구명뗏목을 선측에 진수, 팽창 및 고정하는데 필요한 시간이 반영되어야 한다.\n\n10.20.5 탈출로가 탈출장소에서 공유되지 않는 경우 해당 탈출로에 대한 탈출시간은 탈출분석에서 가장 많은 시간이 걸리는 한쪽 현의 구명뗏목과 출입구를 이용하고 그 구명뗏목 및 출입구에 할당된 여객과 선원에 의해 시행하는 탈출시험으로 증명되어야 한다.\n\n10.20.6 탈출시험이 불가한 경우에는 탈출 분석에서 가장 위험하다고 나타난 통로를 이용하여 부분적으로 탈출시험을 하여야 한다.\n\n10.20.7 탈출시험은 탈출계획에 따라 통제조건 하에서 다음과 같이 시행되어야 한다.\n\n 10.20.7.1 수면비행선박이 잔잔한 항내에 떠 있고, 모든 기관과 장비가 정상적인 항해 상태에서 탈출시험이 시작되어야 한다.\n\n 10.20.7.2 선내의 모든 비상구와 문은 통상 항해 상태와 같은 상태이어야 한다.\n\n 10.20.7.3 필요하다면 안전벨트를 매고 있어야 한다.\n\n 10.20.7.4 모든 여객과 선원의 탈출통로는 탈출 중에 어떠한 사람도 물에 들어갈 필요가 없어야 한다.\n\n10.20.8 여객선에서 탈출시험을 위해 동원되는 집단은 정상적인 건강, 키 및 몸무게를 가진 사람들로 구성하고, 가급적이면 다른 성별 및 연령별로 구성하여야 한다.\n\n10.20.9 탈출시험에 참가하는 선원 이외의 사람들은 그 탈출시험을 위하여 특별히 훈련을 받아서는 아니 된다.\n\n10.20.10 탈출시험은 새로운 설계 및 이전에 시험된 것과 실질상 다른 탈출조건을 가진 수면비행선박에서 시행되어야 한다.\n\n10.21 수하물 칸 등\n\n10.21.1 적재장소 및 가속도를 고려하여 수하물과 저장품 등의 이동을 방지하기 위한 설비를 하여야 한다. 다만, 보호설비를 설치하기가 불가능한 경우에는 수하물과 저장품 등을 위한 고박설비를 설치하여야 하며, 여객실에 수하물의 적재를 위하여 설치된 선반 및 머리위의 적재 칸은 수면비행선박이 어떠한 운항조건에서도 수하물이 떨어지는 것을 방지할 수 있는 장치가 있어야 한다.\n\n10.21.2 여객용 수면비행선박의 경우, 여객의 편의를 위한 의자석 아래와 머리 위의 적재 칸을 제외한 모든 여객실내의 수하물 칸은 완전히 폐위되어야 한다.\n\n10.21.3 제어장치, 전기기기, 고온부 및 배관 등의 손상이 수면비행선박의 안전운항에 영향을 주거나 선원의 접근을 필요로 하는 경우에는 적재구역에서 수하물과 저장품 등의 이동으로 인하여 손상되거나 잘못 작동하지 않도록 보호되거나 다른 구역에 설치하여야 한다.\n\n10.21.4 적재구역에는 제한적재중량을 영구적으로 표시하여야 한다.\n\n10.21.5 수화물 칸 등의 외부 문에 대한 폐쇄는 풍우밀구조로 하여야 한다.\n\n10.22 화물실\n\n10.22.1 수면비행선박에 화물실이 있는 경우에는 각 화물실은 다음 요건에 적합하여야 한다.\n\n 10.22.1.1 각 화물실은 게시된 적재물의 최대중량에 대해 모든 비행 하중조건 및 지상 하중조건에 해당하는 최대 하중계수에서의 임계하중분포에 대하여 설계되어야 한다.\n\n 10.22.1.2 화물실에는 그 적재물이 움직임으로써 발생하는 위험을 방지하고 손상이나 고장이 안전운항에 영향을 미치는 조종장치, 전선, 계통선 장비 또는 보조장비를 보호하는 방법이 갖추어져 있어야 한다.\n\n 10.22.1.3 화물실이 탑승칸 뒤에 있고 구조물에 의하여 탑승칸과 분리되어 있을 경우, 충돌설계가속도에 해당하는 관성하중으로 인하여 화물실의 내용물에 의한 승선자의 부상을 방지할 수 있도록 화물실 안에 고박 및 보호설비가 마련되어 있어야 한다. \n\n10.22.2 화물이 승선자와 동일한 실내에서 운반되는 설계에서는 10.10.3.2에 따른 관성력 조건에서 승선자의 부상을 방지하는 수단이 있어야 한다.\n\n10.22.3 화물 수송 용도로만 사용하는 수면비행선박의 경우, 조종사의 비상탈 출구는 어떠한 화물 하중 조건에서도 10.14의 요건을 만족하여야 한다.\n\n10.23 소음기준\n\n10.23.1 선원 및 여객실의 소음기준은 선내방송을 청취할 수 있도록 75dB(A)을 넘지 않아야 한다.\n\n10.23.2 조종실에서의 최대 소음은 그 구역 내에서 의사전달 및 외부와의 무선통신이 가능하도록 65dB(A)을 넘지 않아야 한다.\n\n10.23.3 10.23.1 및 10.23.2의 요건에도 불구하고 헤드셋을 착용하고 조종실 내부에서 의사전달 및 외부와의 무선통신이 가능한 경우 90 dB(A)을 초과하여서는 아니 된다.\n\n10.24 환기\n\n여객실 및 선원실은 일산화탄소 농도가 공기의 20,000분의 1을 초과되지 않도록 환기되어야 한다.\n\n제11장 특수설비\n\n11.1 경보시스템\n\n11.1.1 수면비행선박을 제어하는 장소에는 고장 또는 위험상태를 알리는 가시 또는 가청 경보장치가 설치되어야 한다. 이 경보는 그 상황이 확인될 때까지 유지되어야 하고, 각 경보표시는 고장이 교정될 때까지 지속되어야 하며 교정 시 자동으로 정상상태로 복귀되어야 한다. 만약 최초경보가 확인되어 고장이 교정되기 전에 제2의 고장이 발생한 경우, 가시가청 경보장치가 재작동하여야 한다. 경보시스템은 시험 기능을 갖추어야 한다.\n\n11.1.1.1 즉각적인 조치가 요구되는 상황을 표시하는 비상경보는 다른 경보와 구별되고 조종실 내에 있는 모든 선원이 확실히 알 수 있어야 하며, 다음 상황에서 제공되어야 한다.\n\n가. 화재탐지계통의 작동\n나. 통상적인 전력공급의 상실 \n다. 주기관의 과속도\n라. 영구적으로 설치된 니켈-카드뮴(Ni-Cd) 축전지의 온도 상승\n마. 수면비행선박의 고도가 허용된 범위의 경계에 접근하거나 이를 초과하였을 경우\n바. 1초 이상 동안 수면비행선박 설계제한(design limitation)의 90퍼센트를 초과하는 직선 또는 각 가속도, 다만, 단발 추진기관을 갖는 소형수면비행선박은 예외로 한다.\n\n11.1.1.2 11.1.1.1 마목에 따른 경보는 부주의한 실속(stalling)을 방지하기 위하여 안전여유를 가지고 작동되어야 하고 직선 및 선회 운항 시 조종사가 명확히 구별할 수 있어야 한다. 실속경고는 수면비행선박 고유의 공기역학적 특성을 통해서나 경보장치에 의해서 인식되어야 하며 실제 실속 속력보다 7퍼센트를 초과하는 속력 또는 입증된 최소속력에서 시작되어야 한다.\n\n11.1.1.3 다음에 대한 경보신호가 조종실에 설치되어야 한다.\n\n가. 기관 과속도 이외에 기기 또는 장치의 수치가 한계값을 초과\n나. 동력구동 제어장치에 대한 정상적인 전원 공급의 고장\n다. 빌지 경보의 작동\n라. 자동 빌지 펌프의 작동\n마. 컴퍼스 계통의 고장\n바. 주기관 연료유 탱크의 저액면\n사. 연료유 탱크의 넘침, 단 주유기에 넘침 방지 장치가 설치된 경우 제외\n아. 항해등(현등, 마스트등 또는 선미등)의 소등 또는 고장\n자. 정상적인 운전을 위하여 필수적인 유체 저장기 내용물의 저수위\n차. 전원의 상실\n카. 가연성 가스가 축적될 위험이 있는 장소에 설치된 통풍기의 고장 \n타. 연료유 관장치의 고장\n\n 11.1.1.4 11.1.1.1부터 11.1.1.3까지의 규정에 따른 모든 경보는 제어기능을 행할 수 있는 모든 장소에 설치되어야 한다.\n\n11.1.2 경보시스템은 요구되는 경보에 대하여 구조 및 기능상의 요건을 만족하여야 한다.\n\n11.1.3 여객, 화물 및 기관구역을 감시하는 장치는 가능한 한 모든 비상상황에 대한 감시 및 작동 제어를 포함하는 통합운항센터를 구성하여야 한다. 이 통합운항센터는 감시 동작이 제대로 이행되었는지를 표시하는 피드백 수단을 필요로 할 수 있다. 다만, 소형수면비행선박에 대하여 통합운항센터 대신에 개별운항센터를 구성할 수 있다. \n\n11.2 조종실의 배치\n\n11.2.1\t정의\n\n11.2.1.1 \"조종구역\"이란 조종실 및 조종실에서 선측까지 연장된 구역을 말한다. \n\n11.2.1.2 \"워크스테이션\"이란 특별한 조치를 필요로 하는 업무를 수행하는 위치를 말한다. \n\n11.2.1.3 \"주요 제어장치\"란 비상시에 요구되는 것을 포함하여 항해 중에 수면비행선박의 안전운항에 필요한 모든 제어장치를 말한다. \n\n11.2.2\t조종실\n\n11.2.2.1 조종장치 및 계기판은 어두운 색이어야 하고, 광도는 번쩍임을 방지하도록 조절되어야 한다. 시각정보가 제공되는 경우에는 모든 조종사가 동시에 볼 수 있는 것이어야 하며, 이것이 불가능한 경우에는 계기판 또는 표시장치는 이중으로 설치되어야 한다.\n\n11.2.2.2 수면비행선박의 조종실은 전체 및 국부 조명, 난방 및 통풍장치를 설치하여야 한다.\n\n11.2.2.3 수면비행선박의 조종실에 설치된 계기판 및 장치는 음향경보의 가청성을 감소시키는 소음을 발생하여서는 아니 된다.\n\n11.2.2.4 조종실의 창문은 안전항해를 방해하는 반짝임, 반사 또는 빛의 산란이 발생하지 않도록 만곡부를 가져야 한다. 또한 창문이 부서지는 경우 위험한 파편이 되지 않는 물질로 만들어져야 한다.\n\n11.2.2.5 조종석이 여객과 격벽으로 분리되어 있을 경우 조종사와 여객사이의 의사교환이 가능하도록 개방된 또는 개방 가능한 창문이나 출입문이 설치되어야 한다.\n\n11.2.2.6 11.2.7에 따른 주 조종장치(케이블과 조종 로드를 제외한다)와 조종사 측면에 추진기관의 프로펠러가 설치되어서는 아니 된다. \n\n11.2.2.7 부조종사를 위한 조종장치가 있다면 부조종사의 조종석에서 수면비행선박을 안전하게 조종할 수 있도록 설치되어야 한다.\n\n11.2.3 조종실의 시야\n\n11.2.3.1 조종실은 항해 워크스테이션에 배치된 조종사의 수평 시야 확보를 위해 선수로부터 양현 120도까지 수평 시야를 확보할 수 있도록 배치되어야 한다. 기관 및 추진 장치는 시야 확보에 불리한 영향을 주어서는 아니 된다.\n\n11.2.3.2 맹목구간의 크기와 수는 최소로 하여야 하고, 조종실에서 경계를 유지하는데 불리한 영향을 주어서는 아니 된다. 만일 창 사이에 부재가 있다면, 이러한 부재는 조종사의 시야를 방해하여서는 아니 된다.\n\n11.2.3.3 수면비행선박의 운항 모드, 흘수, 고도 및 트림의 상태를 고려하여 조종사가 착석상태에서 선수로부터 수평으로 양현 120도까지 범위에서의 해면에 대한 시야는 확보되어야 한다. \n\n11.2.3.4 배수량 모드에서 조종사가 항적감시를 위하여 수면비행선박의 선미 궤적을 관찰할 수 있도록 항해 워크스테이션에서의 시야확보를 위한 설비가 설치되어야 한다. \n \n11.2.3.5 입거를 위해 사용되는 모든 워크스테이션은 1명의 조종사가 안전하게 접안할 수 있도록 시야를 확보하여야 한다.\n\n11.2.3.6 조종실은 다음 요건을 만족하여야 한다.\n\n가. 조종실은 넓고 투명하며, 일그러지지 않는 시야를 제공하여 조종사로 하여금 활주, 이수, 수면비행 및 착수의 운용한계 범위에서 모든 기동을 안전하게 수행할 수 있도록 설계되어야 한다.\n나. 조종실은 조종사의 시야를 방해할 수 있는 직사광 또는 반사광을 받지 않도록 설계되어야 한다.\n다. 정상 강우 조건하에서의 비행 또는 착수  중에 비행경로에 대한 조종사의 시야가 충분히 보호될 수 있도록 하여야 한다.\n\n11.2.3.7 모든 조종실에는 증기(vapor) 또는 서리가 바람막이 창과 측면 창에 형성되는 것을 방지하거나 제거하는 수단을 강구함으로써 11.2.3.6 가목에 따른 시야가 확보될 수 있도록 하여야 한다.\n\n11.2.4 조종실의 배치\n\n11.2.4.1 개개의 워크스테이션을 포함하는 조종실의 설계 및 배치는 각 기능을 위하여 요구되는 시야를 확보하여야 한다.\n\n11.2.4.2 조종실은 수면비행선박의 기관, 여객 및 화물을 위한 장소로 사용하여서는 아니 되며, 항해, 통신 및 수면비행선박의 안전운항에 필요한 그 밖의 기능 이외의 목적을 위해서 사용되어서는 아니 된다.\n\n11.2.4.3 명령, 항해, 조종, 제어, 통신 및 그 밖에 주요 계기를 위한 설비의 배치는 조종사가 필요한 모든 정보를 받을 수 있고 의자에 앉은 상태에서 필요한 기기 및 제어장치를 사용할 수 있도록 배치되어야 한다. 필요하다면 이러한 기능을 제공하는 설비는 이중화되어야 한다.\n\n11.2.4.4 기관 성능의 감시를 위한 별도의 워크스테이션이 조종실 내에 있다면, 이러한 워크스테이션의 배치와 사용은 조종실에서 수행되어야 하는 주요 기능들을 방해하지 않아야 한다.\n\n11.2.4.5 통신장비의 배치는 조종실에서 수행되는 주요 항해 기능을 방해하지 않아야 한다.\n\n11.2.4.6 조종실 및 주요 제어장치들과 관련 있는 장소의 설계 및 배치를 위해서는 필수 선원의 수가 평가되어야 한다. 주요 통신제어장치의 설계 및 배치는 운항 및 비상시의 사고 상황에서 선원이 조종실을 벗어나지 아니하고 조종사가 수면비행선박을 제어할 수 있도록 통합 운항 및 비상 제어센터를 구성하여야 한다.\n\n11.2.4.7 주요 조종장치와 관련 있는 위치 및 의자석은 각 조종사가 의자석에 앉은 상태에서 다음 요건을 만족하여야 한다.\n\n가. 단독 및 기타 조종장치의 작동으로 모든 제어장치를 제한받지 않고 작동할 수 있어야 한다.\n나. 모든 워크스테이션에서 수행하여야 할 조작에 필요한 조종 능력을 발휘하여야 한다.\n\n11.2.4.8 조종사의 주의를 혼란시킬 수 있는 여객의 접근을 방지하도록 배치하여야 한다.\n\n11.2.5 조종실 문\n\n조종실과 여객실 사이에 잠글 수 있는 문을 설치한 여객용 수면비행선박은 다음 요건에 적합하여야 한다.\n\n11.2.5.1 여객 정원 20인 이상인 수면비행선박은 선원과 여객이 비상탈출구로 가기 위해 조종실과 여객실 사이의 문을 사용할 필요가 없도록 비상탈출구를 설계하여야 한다.\n\n11.2.5.2 조종실 문 주위가 정체되는 경우에도 조종사가 조종실에서 객실로 직접 들어갈 수 있는 방법이 있어야 한다. 또한, 조종사가 무능력하게 되었을 경우에는 선원이 조종실에 들어갈 수 있는 비상수단이 있어야 한다. \n\n11.2.6 조종장치와 조작장치\n\n11.2.6.1 동력장치의 조작장치의 위치는 다음 요건에 적합하여야 한다.\n\n가. 다발 수면비행선박의 경우, 조종석 중앙 또는 중앙부근에서 받침대(pedestal), 또는 머리위쪽에 위치하여야 한다.\n나. 단좌 직렬식 단발 수면비행선박의 경우, 왼쪽 콘솔 또는 계기판에 위치하여야 한다.\n다. 그 밖의 단발 수면비행선박의 경우, 조종실의 중앙 또는 중앙부근, 받침대, 계기판 또는 머리 위에 위치하여야 한다.\n라. 의자석이 병렬식이고 두 세트의 동력장치의 조작장치가 있는 경우, 왼쪽 및 오른쪽의 콘솔에 각각 위치하여야 한다.\n\n11.2.6.2 조종장치의 배치는 왼쪽으로부터 오른쪽으로 출력(추력) 레버, 프로펠러(회전수 조작), 혼합비 조작(터빈 기관 수면비행선박의 경우, 연료차단 및 컨디션 레버)의 순으로 한다. 출력(추력) 레버는 2.54cm 이상 길게 하거나 높은 곳에 위치하도록 하여 프로펠러 또는 혼합기 조절 장치보다 더 돌출될 수 있도록 하여야 한다. 혼합기 가열장치 또는 이와 유사한 기능을 하는 공기 조절장치는 받침대(pedestal) 이외의 곳에 장착된 경우에는 스로틀의 왼쪽에 위치하거나 혼합기 조절 레버에서 20.3cm 떨어진 곳에 위치하여야 한다. 혼합기 가열장치 또는 이와 유사한 기능을 하는 공기 조절장치가 받침대(pedestal)에 위치한 경우에는 출력(추력) 레버의 아래나 후방에 위치하여야 한다. 과급기 조종장치는 프로펠러 조절기의 후방 또는 아래에 위치되어야 한다. 의자석이 직렬로 배열되어 있거나 단좌식 수면비행선박의 경우에는 조종실의 왼쪽편의 자리를 활용할 수 있다. 그러나 조종장치의 배치는 왼쪽으로부터 오른쪽으로 출력(추력)레버, 프로펠러(회전수 조작), 혼합비 조작장치의 순으로 한다.\n\n11.2.6.3 각 기관에 대해서 형태가 동일한 조종장치는 기관조작의 혼동을 피할 수 있도록 장착되어야 한다. 또한 다음 요건을 만족하여야 한다.\n가. 통상적인 다발 수면비행선박의 경우, 왼쪽의 조작장치는 왼쪽 기관을 조종하며, 오른쪽의 조작장치는 오른쪽 기관을 조종할 수 있도록 위치하여야 한다.\n나. 기관이 전방과 후방에 위치한(직렬식) 쌍발 수면비행선박의 경우, 왼쪽의 조작장치는 전방의 기관을 조종하며, 오른쪽편의 조작장치는 후방 기관을 조종할 수 있도록 위치하여야 한다.\n\n11.2.6.4 날개 플랩과 보조 양력장치의 조작장치는 다음과 같이 배치하여야 한다.\n가. 중심, 받침대 또는 스로틀 제어중심선의 오른쪽에 배치할 것\n나. 육상착륙장치가 있는 경우, 혼동을 막기 위하여 착륙 조종장치로부터 멀리 배치할 것\n\n11.2.6.5 육상착륙장치가 있는 경우, 착륙장치 조종장치는 스로틀 중심선 또는 받침대(pedestal) 중심선의 왼쪽에 위치하여야 한다.\n\n11.2.6.6 각 연료공급의 선택장치는 조종사 의자석이 어떤 위치에 있더라도 의자석이나 주 조종장치에서 조종사가 이동하지 않고 식별 및 도달할 수 있도록 위치하여야 한다.\n\n가. 기계식 연료 선택장치에 대해서는 다음을 적용한다.\n1) 연료밸브의 선택위치는 포인터로 지시되어야 하며, 선택된 위치를 명확히 식별하고 촉감으로(멈춤 장치 등) 확인할 수 있어야 한다.\n2) 위치지시기의 포인터는 손잡이의 일부분으로서 위치하여야 하며 회전 중심을 기준으로 최대로 멀리 떨어진 곳에 위치하여야 한다.\n\n나. 전기식 또는 전자식 연료 선택장치는 다음 요건에 적합하여야 한다.\n1) 디지털 조절장치 또는 전자식 스위치에는 라벨이 표시되어야 한다.\n2) 선택된 탱크 또는 선택된 기능을 조종사가 알 수 있도록 지시하는 수단이 제공되어야 한다. 선택 스위치의 위치는 표시의 수단으로 인정되지 않으며, “차단(off)” 또는 “닫힘(closed)” 위치는 붉은색으로 표시되어야 한다.\n\n다. 연료밸브 선택장치 손잡이 또는 전자식 또는 디지털 방식의 선택장치가 연료차단 선택장치의 기능도 하는 경우, 차단위치는 붉은 색으로 표시되어야 한다. 별도의 비상 연료차단 장치가 있는 경우, 해당 장치의 색은 붉은 색이어야 한다.\n\n11.2.7 조종장치와 조작장치의 설계\n     조종실 조종장치는 다음과 같이 조작 및 작동하도록 설계하여야 한다.\n\n11.2.7.1 공기역학 조종장치\n\n\n\n11.2.7.2 동력장치와 보조제어장치\n\n\n\n11.2.8 조종장치와 조작장치의 손잡이\n\n11.2.8.1 육상착륙장치가 있는 경우 플랩 및 착륙장치의 손잡이는 다음 그림과 같이 일반적인 모양을 따라야 한다. 다만 정확한 크기나 특정 비율은 필요로 하지 않는다.\n\n      \n\n11.2.8.2 동력장치 조작 손잡이는 다음 그림의 일반적인 형태에 따라야 한다. 다만 정확한 크기나 특정 비율은 필요로 하지 아니 한다.     \n     \n\n\n\n\n\n\n\n\n\n\n\n\n\n11.2.9 계기장치 및 해도\n\n11.2.9.1 계기, 계기판 및 제어장치는 조작, 정비 및 환경조건을 고려하여 콘솔 또는 그 밖의 장소에 영구적으로 설치되어야 한다. 또한, 모든 계기는 기능에 따라 논리적으로 집중하여 배치되어야 한다. 혼란을 최소화하기 위하여 계기는 기능을 공유하거나 스위치를 연결하여서는 아니 된다.\n\n11.2.9.2 조종사가 사용하여야 하는 계기는 명확히 보이고 쉽게 읽을 수 있어야 하며 통상적인 의자석 위치 및 시야로부터 실제적인 편차를 최소화하여야 한다.\n\n11.2.9.3 조종사에게 안전운항에 필요한 정보가 다른 방법으로 제시되지 않는다면 수면비행선박의 안전운항에 필수적인 계기들은 제한사항과 함께 표시되어야 한다. 구명뗏목의 진수 및 소화장치의 감시를 위한 것과 같은 비상제어장치는 조종구역 내에서 별도의 제한된 위치에 있어야 한다.\n\n11.2.9.5 계기 및 제어장치에는 번쩍이는 빛 및 반사광을 최소화하고 강한 빛에 의하여 방해되는 것을 방지하기 위하여 차광막 및 빛을 흐리게 하는 수단이 제공되어야 한다. 또한, 콘솔 상부 및 계기의 표면은 어둡고 반짝임이 없는 색이어야 한다.\n\n11.2.10 조명\n\n11.2.10.1 항해 및 정박 중에 조종사가 모든 임무를 충분하게 수행하도록 조명하여야 하며, 전력계통의 고장이 발생하더라도 필수적인 계기 및 제어장치의 조명은 제한된 감소만 있어야 한다.\n\n11.2.10.2 조종실은 반짝이는 빛 및 영상 반사광이 없도록 하여야 하며, 작업구역과 주위 사이에 휘도의 큰 차이는 나지 않도록 하여야 한다. 또한, 간접 반사광을 최소로 감소시키기 위하여 비 반사체 또는 빛나지 않는 표면이 사용되어야 한다.\n\n11.2.10.3 조명장치는 조종사가 조종실의 다른 구역 및 개별적인 계기 및 제어장치의 요구사항에 따라 조명의 광도 및 방향을 조절할 수 있어야 한다.\n\n11.2.10.4 운항 모드에서 조명이 필요한 구역 또는 계기에는 적응을 돕기 위해 홍등이 사용되어야 한다.\n\n11.2.11 바람막이 창 및 창문\n\n11.2.11.1 조종실 창문을 통하여 기후조건에 관계없이 항상 명확한 시야가 확보되어야 한다. 창문을 깨끗한 상태로 유지하는 수단은 수면비행선박이 운항 또는 정박 중 조종사의 안전운항 능력을 심각하게 손상시킬 정도의 시야 감소를 초래하지 않도록 설치되어야 한다.\n\n11.2.11.2 태양 빛의 반짝임 또는 불필요한 반사광에 의해 나쁘게 영향 받지 않도록 조종실의 전방 시야가 확보되도록 하여야 하며 편광 유리를 설치하여서는 아니 된다.\n\n11.2.11.3 조종사가 정상 비행자세에서 조종사 등(back)보다 전방에 있는 측면 창문과 바람막이 창은 70퍼센트 이상의 투과율을 가져야 한다.\n\n11.2.11.4 운항 제한사항에 의해 착빙 기상 상태로의 운용이 금지되어 있는 경우를 제외하고, 조종사가 시계를 확보할 수 있도록 방풍창의 결빙 축적을 방지하거나 제거할 수 있는 방안이 강구되어야 한다. 또한, 착빙을 방지하기 위하여 가열장치(transparency heating system)에 의한 바람막이 창 또는 창문의 온도는 조종실에 부정적인 영향을 미칠 수 있는 구조적 손상 또는 화재의 위험을 유발할 정도까지 상승되어서는 아니 된다. \n\n11.2.11.5 여객용 수면비행선박은 11.2.11.1부터 11.2.11.4까지의 요건에 추가하여 다음 요건에 적합하여야 한다.\n\n가. 조종사 정면에 있는 바람막이 창 및 관련 구조물은 최대속도로 운항 시 조류충돌에 대비하여 강화된 구조이어야 한다. \n나. 조종사 정면에 있는 바람막이 창은 그 중 하나를 통한 시계가 불량한 경우, 조종사석에 있는 조종사가 하나 이상의 나머지 창을 사용하여 계속적으로 안전한 비행 및 착수를 할 수 있도록 배치되어야 한다.\n\n11.2.12 통신설비\n\n11.2.12.1 평상시 및 비상시에 다른 구역에서 업무에 종사하는 선원과 통신을 할 수 있는 필요한 수단이 비치되어야 한다.\n\n11.2.12.2 원격 제어 가능 여부에 관계 없이 조종실과 비상 조타장소를 포함하는 기계실 사이에는 통신수단이 비치되어야 한다.\n\n11.2.12.3 조종실을 포함하여 여객 및 선원이 출입할 수 있는 모든 장소에 선내방송 및 안전관련 방송을 할 수 있는 수단이 설치되어야 한다. 다만, 조종실과 여객실이 분리되지 않고 조종사가 여객에게 직접 정보전달이 가능한 경우 예외로 할 수 있다.\n\n11.2.13 온도 및 통풍\n\n조종실에는 적절한 온도 및 통풍 제어장치가 설치되어야 한다.\n\n11.2.14 색\n\n조종실 내부의 표면재는 반사광을 피하기 위하여 적합한 색 및 마감재를 사용하여야 한다.\n\n11.2.15 안전 조치\n\n조종실은 조종사에게 부상 위험을 주지 않아야 하며, 젖거나 마른 상태를 대비한 미끄럼 방지 바닥재 및 적절한 핸드레일을 설치하여야 한다. 문은 열리거나 닫힌 상태에서 움직임을 방지하는 장치가 설치되어야 한다.\n\n11.3 공기역학적 안정화시스템\n\n11.3.1 정의\n\n    이 장에서 사용된 용어 중 \"공기역학적\"이 의미하는 것과 이 기준에서 용어 사이에 의미상 상충되는 것이 있을 경우, “공기역학적”의 뜻은 다음에 따라야 한다.\n\n11.3.1.1 \"안정화시스템\"이란 수면비행선박의 횡동요, 비행 트림, 종동요, 방향 및 고도 등 자세의 주요 요소 및 수면비행선박의 횡동요, 종동요, 선수요 및 상하요 등 운동을 제어하기 위한 시스템을 말하며 수면비행선박의 안전운항과 관련이 없는 것은 포함하지 아니한다.\n\n11.3.1.2 안정화시스템의 주요 요소는 다음을 반영하여야 한다.\n\n가. 러더, 포일, 플랩, 스커트, 팬, 틸팅 및 조종할 수 있는 프로펠러, 유체 이송 펌프\n나. 안정장치를 구동하는 동력장치\n다. 센서, 논리 처리기 및 자동 안전 제어기와 같이 결정을 하고 명령을 하기 위하여 자료를 처리하고 수집할 수 있는 안정 장비\n\n11.3.1.3 \"안정화장치\"란 수면비행선박의 자세를 제어하는 힘을 발생시키는 장치로 11.3.1.1에 열거된 장치를 말한다. \n\n11.3.1.4 \"자동안전제어장치\"란 수면비행선박의 안전을 저해하는 상태가 발생하면 수면비행선박을 배수량 또는 그 밖의 안전 모드로 바꾸기 위하여 자료를 처리하고 결정을 하기 위한 논리 장치를 말한다. \n\n11.3.1.5 \"자동제어장치\"란 수면비행선박의 방향 및 고도를 조종사의 조작 없이 유지할 수 있게 하는 장치를 말한다. \n\n11.3.2 일반요건\n\n11.3.2.1 하나의 안정장치 또는 장비에 작동오류 또는 기능상실이 발생한 경우, 작동하고 있는 안정장치는 안전한계 내에서 수면비행선박 운동의 주요 요소를 유지하고 수면비행선박을 배수량 또는 그 밖의 안전모드로 변경할 수 있도록 설계되어야 한다.\n\n11.3.2.2 모든 자동장비, 안정장치 또는 그 동력장치가 기능을 상실한 경우, 수면비행선박 운동의 요소들은 안전한계 내에서 유지되어야 한다. \n\n11.3.2.3 자동안정화시스템을 설치한 수면비행선박에는 만일 여분의 시스템이 동등한 안전을 보장하지 않는다면 자동안전제어장치가 설치되어야 한다. 자동안전제어장치가 설치된 경우, 조종실부터 제어될 수 있어야 한다.\n\n11.3.2.4 수면비행선박을 배수량 또는 그 밖의 안전 모드로 안전하게 변환하고 감속을 하기 위한 모든 자동안전제어장치의 요소와 수준을 결정하기 위해서는 수면비행선박의 항행구역에서 추진기, 부양장치 및 안정장치가 동력을 상실한 경우에 대하여 고도, 횡동요, 비행트림, 종동요, 선수요 및 조합된 가속도의 입증된 안전한 수치가 고려되어야 한다.\n\n11.3.2.5 자동안정화시스템에 의해 제공된 수면비행선박의 요소 및 안정의 정도는 수면비행선박의 용도와 항행조건에 적합한 것이 증명되어야 한다.\n\n11.3.3 세로방향과 수직높이 제어시스템\n\n11.3.3.1 자동안정화시스템을 설치한 수면비행선박에는 만일 이 제어장치가 11.3.2.3에서 요구되지 않은 여분의 장치가 아니라면 자동 안전제어장치가 설치되어야 한다. 예견할 수 있는 오작동은 자동제어시스템 작동에 작은 영향만을 주어야 하며 조종사가 신속하게 조치할 수 있어야 한다.\n\n11.3.3.2 수면비행선박을 배수량 또는 그 밖의 안전 모드로 안전하게 변환하고 감속을 하기 위한 모든 자동안전제어장치의 요소와 수준은 수면비행선박의 항행구역에서 운동을 위한 안전한 수치가 고려되어야 한다.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n[부록 1]\n\n방화구조 시험절차\n\n비가연성 물체가 별표의 8.4 및 8.5에 적합함을 입증하기 위한 시험절차는 다음과 같다.\n\n (a) 상태조절\n    시편은 온도의 균형이 취해질 때까지 혹은 24시간 온도 21±15℃(70±5℉) 또는 상태습도 50±5퍼센트에서 조절하여야 한다. 조절실에서는 1회에 1개의 시료만을 꺼내서 즉시 불꽃에 시험한다.\n\n (b) 시료형상\n    전선과 케이블 절연재 및 작은 부품들은 예외로 하고, 시험재료는 평판재료로부터 잘라낸 시료나 부품의 모형과 같이 비행기에 장착되는 부품으로부터 절단해 낸 일부이거나 절단부분을 모방한 것이어야 한다. 시료는 잘라내는 부위는 어느 곳이든 상관없지만 샌드위치 패널 같은 조립체는 분해해서 시료로 사용할 수 없다.\n    시료의 두께는 다음 경우를 제외하고는 수면비행선박에서 사용하도록 허용된 최소 두께보다 두껍지 않아야 한다.\n(1) 의자석쿠션과 같은 두꺼운 발포부품은 1.3cm의 두께로 시험하여야 한다.\n(2) 작은 부품들에 사용하는 재료의 경우, 별표 8.4.3.3 라목의 요건에 적합함을 입증할 때 두께가 0.32cm 이하인 재료를 시험에 사용하여야 한다.\n (d) 및 (e)에 따른 시험을 수행할 때 시료는 다음과 같이 금속프레임 안에 장착한다.\n(1) (d)에서 명시한 수직시험에서는 긴 두 변과 위쪽을 고정하고,\n(2) (e)에서 명시한 수평시험에서는 긴 두 변과 화염으로부터 먼 변을 고정한다.\n(3) 만약 비행기에서 사용하는 실제 크기가 더 작지 않다면, 시료의 노출 부분은 최소한 폭 5.08cm 이고 길이가 30.48cm 이어야 한다.\n(4) 버너로 불을 붙이는 변은 끝부분이 마무리되어 있거나 보호되어 있지 않아야 하며, 비행기에 설치된 재료 또는 부품의 실제 단면을 대표하는 것이어야 한다. (f)에 따른 시험을 행하는 경우 시료는 모든 네 변을 완전히 고정하고 화염에 노출되는 부분의 크기가 20.32cm×20.32cm 이상이 되도록 하여 금속프레임에 장착한다.\n\n (c) 장치\n   (g)에 따른 경우를 제외하고 시험은 미연방 시험방법 규격(Federal Test Method Standard) 191 모델 5903(5902방법을 개정)의 시험 또는 이와 동등하다고 승인된 방법에 따라 수행하여야 한다. 시험실에 비해 너무 큰 시료에 대해서는 같은 형상의 틈새가 없는 조건에서 시험하여야 한다.\n\n (d) 수직시험\n   세 개의 시료에 대해 시험을 수행하여 그 결과를 평균하여야 한다. 헝겊에 대해서는 임계 가연성 조건에 대한 봉합방향이 가장 긴 치수에 평행하여야 한다. 각 시료는 수직으로 지지되어야 한다. 시료의 착화에는 높이가 3.8cm의 화염을 얻을 수 있도록 조절된 내경 0.95cm의 분젠버너 또는 티릴버너를 사용한다. 화염 중심의 최저 화염온도는 보정된 열전대 고온계로 측정하며 843℃)이상이어야 한다. 시료의 밑변은 버너의 상단으로부터 1.9cm이상 떨어져야 한다. 화염은 시료의 밑변 중심선에 닿도록 하여야 한다. 별표 8.4.3.3 가목 및 8.4.5를 적용하는 재료에 대하여서는 화염을 60초간 접촉한 후 제거한다. 별표 8.4.3.3 나목의 요건이 적용되는 재료에 대하여서는 화염을 12초간 접촉한 후 제거한다. 화염시간, 연소 길이 및 적하물(滴下物)의 화염시간(있는 경우)을 기록한다. (h)에 따라 결정된 연소 길이는 0.25cm 단위로 측정한다.\n\n(e) 수평시험\n  세 개의 시료에 대해 시험하여 그 결과를 평균하여야 한다. 각 시료는 수평으로 지지되어야 한다. 비행기에 장착될 때 노출되는 면을 시험할 때에는 밑면이 되도록 한다. 시료의 착화에는 높이가 3.8cm의 화염을 얻을 수 있도록 조절된 내경 0.95cm의 분젠버너 또는 티릴버너를 사용한다. 화염 중심의 최저 화염온도는 보정된 열전대 고온계로 측정해야 하며 843℃ 이상이어야 한다. 밑변은 버너의 상단 1.9cm 위의 버너 중심선상에 두어야 한다. 화염을 15초간 접촉시킨 후 제거한다. 시간을 측정할 때에는 최저  25.4cm 길이의 시료를 사용해야 하며 약 3.8cm 연소된 이후에 연소 앞단에서부터 시간측정을 개시한다. 이때 평균연소율을 기록한다.\n\n (f) 45도시험\n  세 개의 시료에 대해 시험을 하여 그 결과를 평균하여야 한다. 각 시료는 수평면에 대해 45도의 위치로 지지되어야 한다. 비행기에 장착될 때 노출되는 면을 시험할 경우 노출면이 아랫면이 되도록 한다. 시료의 착화에는 높이가 3.8cm의 화염을 얻을 수 있도록 조절된 내경 0.95cm의 분젠버너 또는 티릴버너를 사용한다. 화염 중심의 최저 화염온도는 보정된 열전대 고온계로 측정해야 하며 843℃ 이상이어야 한다. 틈새바람이 없도록 충분히 주의하여야 한다. 화염의 3분의 1을 시료의 중심에 30초간 접촉시킨 후 화염을 제거한다. 화염시간, 백열시간, 및 화염의 시료 통과(중심부 통과) 여부를 기록한다.\n\n (g) 60도시험\n   각 전선 사양(조성과 치수)별로 세 개의 시료에 대해 시험을 하여야 한다. 전선 또는 케이블(절연을 포함)의 시료는 (g)에서 규정하는 보관함 안에서 문을 연 상태 또는 높이 61cm, 30.5×30.5cm의 상자 속에서 윗면과 수직인 한 측면(앞면)을 열고, 완전 연소를 위하여 충분한 공기흐름을 얻을 수 있도록 한다. 또한, 외풍이 없도록 한 상태로 상자 앞면과 나란하게 약 15.24cm 정도 떨어지도록 하여, 수평과 60도의 각도로 놓아야 한다. 시료의 하단은 완전히 고정해 두어야 한다. 시료의 상단은 풀리 또는 지지봉의 위를 통해 시료가 가연성 시험 중에 활짝 펴져서 고정되도록 적당한 중량물을 사용한다. 아래의 집게와 위의 풀리 또는 지지봉 사이의 시험 재료의 길이는 61cm여야 하며, 화염을 내기 위한 중심을 알 수 있도록 하단으로부터 20.4cm 떨어진 부분에 표시한다. 분젠버너나 티릴버너의 화염을 시험 표식에 30초간 접촉한다. 버너는 시료의 시험 표시 아래에 두고 시료에 직각으로 또한 시료의 수직면과 30도의 각도를 이루도록 놓아야 한다. 버너는 구경이 0.95cm이고 화염의 높이가 7.6cm인 것으로 약 3분의 1의 높이가 내부원추가 되도록 조절한다. 화염 중 가장 뜨거운 부분의 최저 온도는 보정된 열전대 고온계를 사용해서 측정했을 때 954℃ 이상이어야 한다. 버너는 화염의 가장 뜨거운 부분이 전선 상의 시험 표시 부분에 닿도록 위치하여야 한다. 화염시간, 연소 길이 및 적하물의 화염시간(적화물이 있는 경우에만 해당한다)을 기록한다. (h)에 따라 화염길이를 0.25cm 단위로 해서 측정한다. 전선 시료의 파괴를 실패로 간주하지 않는다.\n\n(h) 연소 길이\n    연소 길이는 최초의 시료 끝으로부터 화염에 의해 생긴 시험시료의 손상부위에서 가장 먼 곳까지의 거리이다. 손상부위는 부분적 또는 전부의 멸실, 탄 것 또는 취성화 영역을 포함하고 그을음, 얼룩, 굽은 것 또는 탈색된 영역, 재료가 열원으로부터 떨어져 있어 수축 또는 녹은 영역은 포함하지 않는다.\n[부록 2]\n\n비상탈출 시험절차\n\n별표 10.20.3의 요건에 대한 적합성을 입증하기 위한 시험절차는 다음과 같다.\n\n(a) 비상탈출은 수면비행선박의 비상등 작동 전 외부 조명 광도가 0.3 foot-candle 보다 크지 않은 수준에서 실시되어야 하며, 초기 외부 조명 광원은 실제 비상탈출 평가 중 계속 작동되고 있어야 한다. 이때, 수면비행선박의 비상등 시스템을 작동하는 경우를 제외하고 이 외부 조명 광도는 증가하지 않아야 한다.\n\n(b) 수면비행선박은 수면 위에 떠있는 정상적인 자세이어야 한다.\n\n(c) 수면비행선박의 날개로부터의 강하장치가 설치되어있지 않은 경우, 시험을 위해 날개에서 수면으로 내려오는데 해상탈출설비(MES)를 사용할 수 있다. 참가자를 보호하기 위하여 구명뗏목과 같은 안전 장비를 수면에 설치할 수 있다. 수면비행선박의 비상탈출 설비가 아닌 설비는 보조 장비로 사용할 수 없다.\n\n(d) (a)에 따른 것 이외에 수면비행선박의 비상등만을 조명으로 사용할 수 있다.\n\n(e) 수면비행선박의 계획된 운항을 위해 필요한 모든 비상설비가 설치되어 있어야 한다.\n\n(f) 각 내부 문이나 커튼은 이수 시 배치상태로 두어야 한다.\n\n(g) 모든 선원은 이수 시에 지정된 의자석에 앉아야 하고 시험 시작 신호를 받을 때까지 계속 앉아 있어야 한다. 모든 선원은 출구, 비상 장비 등에 대한 작동 지식을 가지고 있어야 한다.\n\n(h) 건강한 사람들로 이루어진 대표적인 여객 하중은 다음과 같이 정한다.\n(1) 최소한 40퍼센트의 여객 하중은 여성이어야 한다.\n(2) 최소한 35퍼센트의 여객 하중은 50세를 초과하여야 한다.\n(3) 최소한 15퍼센트의 여객 하중은 50세 초과 여성이어야 한다.\n(4) 2세 이하의 유아를 모사하기 위해 총 승객하중에는 속하지 않는 세 개의 실제 크기의 인형을 여객이 소지하고 있어야 한다.\n(5) 일상적인 임무로서 항공기를 정비하고 운용하는 선원, 정비사, 훈련요원 등은 여객의 임무를 하여서는 아니 된다.\n\n (i) 여객을 특정한 의자석에 배정하여서는 아니 된다. 수면비행선박의 회사 직원은 비상출구 옆자리에 앉아서는 아니 된다.\n\n(j) 안전벨트와 어깨 멜빵(요건에서 정하는 경우에 한정한다)을 채워야 한다.\n\n(k) 시험을 시작하기 전에 기내 휴대 수화물, 담요, 베개 그리고 다른 비슷한 물품들의 전체 양의 약 절반 정도를 통로와 비상 출구로 향하는 길에 방해물로 흩어놓아야 한다.\n\n(l) 시험에 사용될 특정 출구를 승무원이나 승객에게 사전에 알려주지 않아야 한다.\n\n(m) 수면비행선박의 소유자는 시험 6개월 전부터 현재까지의 기간 동안에 연습이나 예행연습을 하거나 참가자들을 대상으로 시험에 대한 설명을 하여서는 아니 되며 참가자들을 이러한 시험에 참가시켜서는 아니 된다.\n\n(n) 비상탈출 시험을 위한 수면비행선박에 탑승하기 전, 여객은 선원의 지시를 따르도록 지시를 받을 수는 있으나 안전관련 절차를 제외한 시험 절차에 대한 지시를 받지 않아야 한다. 선원은 비상탈출 시험을 시작하기 전 여객에게 이수 전 승객 브리핑을 제공할 수 있다. 선원은 승인을 받은 교육 프로그램에 따라 해상탈출설비 아래에서 보조임무를 할 수 있도록 시험 시 임무를 부여받을 수 있다.\n\n(o) 비상탈출 시험이 시작될 때까지 비상탈출에 사용할 비상탈출구를 참가자에게 노출하지 않아야 한다.\n\n(p) 시험에 사용하는 비상탈출구는 쌍을 이루는 2개의 탈출구 중 하나씩으로 이루어져야 한다. 수면비행선박에 해상탈출설비(MES)가 설치되어 있는 경우, 시험 시작 시 비상탈출구가 개방상태에 있고 해상탈출설비가 팽창된 상태에서 시험을 수행할 수 있다. 이 경우 모든 비상탈출구는 시험에 사용하는 비상탈출구를 시험 참가자들이 알 수 없도록 배치하여야 한다. 이 방법을 사용하는 경우 사용하는 비상탈출구에 대한 시험준비 시간을 고려하여야 하며 시험에 사용하지 않는 비상탈출구는 시험을 시작하기 전 알 수 없도록 한다. 사용하는 비상탈출구는 수면비행선박의 모든 비상탈출구를 대표할 수 있는 것이어야 한다. 이때 바닥 높이의 비상탈출구를 하나 이상 사용하여야 한다.\n\n(q) (c)의 경우를 제외하고 모든 탈출자는 수면비행선박의 설비를 사용하여 수면비행선박에서 탈출하여야 한다.\n\n(r) 수면비행선박의 소유자의 승인된 절차서는 충분히 활용되어야 한다. 다만, 선원은 시험과정에서 객실내의 다른 사람을 적극적으로 도울 수 없다.\n \n(s) 탈출시간은 마지막 사람이 수면비행선박으로부터 대피하여 수면에 도달할 때까지의 시간이다. 해상탈출설비(MES)의 사용률이 실제 추락 시 날개로부터 내려와야 하는 상황에서 가용할 수 있는 수단의 사용률 보다 크지 않다고 가정하면, (c)에 따라 허용되어 해상탈출설비를 사용하는 탈출 참가자는 그들이 해상탈출설비에 도달한 때를 수면에 도달한 것으로 간주한다."
+              }
+            ],
+            "cols": 1,
+            "control": 2,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 3,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 0,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue1949_giant_cell_nested_tables_perf.hwp",
+        "tableCount": 1,
+        "tables": [],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

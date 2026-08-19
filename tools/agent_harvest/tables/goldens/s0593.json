@@ -1,0 +1,2168 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\18095317_eogu_geumji.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\18095317_eogu_geumji.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 5,
+            "index": 0,
+            "rows": 69
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\18095317_eogu_geumji.hwp",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\18095317_eogu_geumji.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 223,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "■ 수산업법 시행령 [별표 7] <개정 2024. 12. 24.>"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "어업의 종류별 어구사용의 금지구역 및 금지기간(제38조제2항 관련)"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "근해어업"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "어업의 종류"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "금지사항"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "금지기간"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "사용 금지구역"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 4,
+                "text": "가."
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 2,
+                "text": "1) 동해구외끌이중형저인망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 2,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "5월 1일부터\n5월 31일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "강원특별자치도, 경상북도, 경상북도와 울산광역시의 경계와 해안선의 교점에서 방위각 107도의 연장선 이북의 해역"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "주1)의 해역"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "2) 서남해구외끌이중형저인망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "주1)의 해역"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "3) 서남해구쌍끌이중형저인망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "주1)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 4,
+                "text": "나."
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 4,
+                "text": "1) 대형선망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "불빛이용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "가) 주2)의 해역\n나) 제주특별자치도 추자도와 전라남도 거문도의 주위 7천4백미터 이내의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "삼치포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "12월 1일부터\n다음 해 2월 말일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "주3)의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 2,
+                "text": "멸치포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "다) 주4)의 해역\n라) 주5)의 해역\n마) 주6)의 해역"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "4월 1일부터\n6월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "주7)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "바) 제주특별자치도 본도 주위 7천4백미터 이내의 해역. 다만, 주15)를 제외한 제주특별자치도 본도로부터 2천7백미터 외측 해역에서 7월 1일부터 8월 31일까지 불빛을 이용하지 않고 전갱이를 포획할 목적으로 조업하는 경우와, 같은 해역에서 9월 1일부터 다음 해 1월 31일까지 불빛을 이용하지 않고 고등어를 포획할 목적으로 조업하는 경우는 제외한다(부도 3 참조).\n사) 주15)의 해역\n아) 주16)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 4,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 6,
+                "text": "2) 소형선망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "불빛이용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "가) 주2)의 해역\n나) 제주특별자치도 추자도와 전라남도 거문도의 주위 7천4백미터 이내의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "삼치포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "12월 1일부터\n다음 해 2월 말일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "주3)의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 2,
+                "text": "멸치포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "다) 주4)의 해역\n라) 주5)의 해역\n마) 주6)의 해역"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "4월 1일부터\n6월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "주7)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "바) 제주특별자치도 본도 주위 7천4백미터 이내의 해역. 다만, 주15)를 제외한 제주특별자치도 본도로부터 2천7백미터 외측 해역에서 7월 1일부터 8월 31일까지 불빛을 이용하지 않고 전갱이를 포획할 목적으로 조업하는 경우와, 같은 해역에서 9월 1일부터 다음 해 1월 31일까지 불빛을 이용하지 않고 고등어를 포획할 목적으로 조업하는 경우는 제외한다(부도 3 참조).\n사) 주15)의 해역\n아) 주16)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "세목망으로 된 어망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "5월 16일부터 6월 15일까지. 다만, 인천광역시, 경기도, 충청남도, 전북특별자치도, 전라남도 영광군ㆍ신안군은 7월 1일부터 7월 31일까지로 한다."
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 2,
+                "text": "다. 근해채낚기어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 2,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "1월 1일부터\n8월 31일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "울산광역시, 강원특별자치도, 경상북도 육지로부터 5천5백미터 이내의 해역"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "9월 1일부터\n12월 31일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "울산광역시, 강원특별자치도, 경상북도 육지로부터 2천7백미터 이내의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 5,
+                "text": "라. 근해자망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "멸치포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "4월 1일부터\n6월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "주8)의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "살오징어포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "동해 전 해역과 동경 128도30분선 기준 동쪽의 남해 해역. 다만, 부산광역시장ㆍ울산광역시장ㆍ경상북도지사 또는 경상남도지사로부터 근해자망어업허가를 받은 경우에는 동해 전 해역과 동경 129도선 기준 동쪽의 남해 해역으로 한다."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "뻗침대를 붙인 자망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "인천광역시ㆍ경기도 해역 중 주17) 바깥 쪽 해역과 전라남도 해역을 제외한 전국 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 2,
+                "text": "뻗침대를 붙인 자망에 세목망으로 된 어망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "1월 1일부터 8월31일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "인천광역시ㆍ경기도 해역 중 주17) 바깥 쪽 해역"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "8월 1일부터 8월 31일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "전라남도 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "세목망으로 된 어망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "5월 16일부터 6월 15일까지. 다만, 인천광역시, 경기도, 충청남도, 전북특별자치도, 전라남도 영광군ㆍ신안군은 7월 1일부터 7월 31일까지로 하고, 전라남도 해역에서 뻗침대를 붙인 어구에 세목망을 사용하는 경우에는 금지기간을 적용하지 않는다."
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "마. 근해안강망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "세목망으로 된 어망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "5월 16일부터 6월 15일까지. 다만, 인천광역시, 경기도, 충청남도, 전북특별자치도, 전라남도 영광군ㆍ신안군은 2월1일부터 2월 말일까지 및 7월 1일부터 7월 31일까지로 한다."
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 2,
+                "text": "바. 근해자리돔들망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 2,
+                "text": "멸치포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "주6)의 해역"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": "4월 1일부터\n6월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": "주9)의 해역을 제외한 주7)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 3,
+                "text": "사."
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 2,
+                "text": "1) 근해장어통발어업\n2) 근해통발어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": "게를 포획할 목적으로 통발 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": "5월 1일부터 7월 31일까지, 10월 31일부터 12월 31일까지. 다만, 대게의 경우는 연중으로 한다."
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": "주10)의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "대게포획금지, 대게류ㆍ붉은대게류 통발 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "주11)의 해역"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "3) 근해문어단지어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "제주특별자치도 본도의 주위 마을어업 및 협동양식어업 구역 이내의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": "아. 근해형망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": "형망 사용금지.\n다만, 법 제27조제1항 및 제3항에 따라  관리선으로 지정을 받거나 승인을 받은 어선에 의해 해당 어장에서 사용되는 형망은 제외한다."
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": "6월 1일부터 \n7월 31일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 2,
+                "text": "자. 기선권현망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 1,
+                "text": "멸치포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 1,
+                "text": "4월 1일부터 \n6월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 1,
+                "text": "주7)의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 1,
+                "text": "기선권현망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 1,
+                "text": "연중 21시 30분부터 다음날 04시 30분까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 1,
+                "text": "주7)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 2,
+                "text": "차. 모든 근해어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": "멸치를 포획할 목적의 어망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": "3월 1일부터 \n6월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": "주6)의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "새우를 포획할 목적의 어망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "7월 1일부터 \n8월 31일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "1) 주12)의 해역\n2) 주13)의 해역\n3) 주14)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 38,
+                "rowSpan": 1,
+                "text": "2. 연안어업"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "어업의 종류"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "금지사항"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "금지기간"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 39,
+                "rowSpan": 1,
+                "text": "사용 금지구역"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "가. 연안개량안강망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": "5월 16일부터 6월 15일까지. 다만, 인천광역시, 경기도, 충청남도, 전북특별자치도, 전라남도 영광군ㆍ신안군은 7월 1일부터 7월 31일까지로 한다."
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 40,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 6,
+                "text": "나. 연안선망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "멸치를 포획할 목적의 어망사용금지(충청남도 연안선망으로 한정한다)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 41,
+                "rowSpan": 1,
+                "text": "충청남도 태안군 육지로부터 5.5킬로미터 이내의 해역. 다만, 천수만 내측 외의 수역에 대해서는 8월 1일부터 8월 20일까지 제외한다."
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "불빛이용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 42,
+                "rowSpan": 1,
+                "text": "1) 주2)의 해역\n2) 제주특별자치도 본도 및 추자도와 전라남도 거문도의 주위 7천4백미터 이내의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 1,
+                "text": "세목망으로 된 어망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 1,
+                "text": "5월 16일부터 6월 15일까지. 다만, 인천광역시, 경기도, 충청남도, 전북특별자치도, 전라남도 영광군ㆍ신안군은 7월 1일부터 7월 31일까지로 한다."
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 43,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 44,
+                "rowSpan": 1,
+                "text": "삼치포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 44,
+                "rowSpan": 1,
+                "text": "12월 1일부터 다음 해 2월 말일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 44,
+                "rowSpan": 1,
+                "text": "주3)의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 2,
+                "text": "멸치포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 45,
+                "rowSpan": 1,
+                "text": "3) 주5)의 해역\n4) 주6)의 해역"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 46,
+                "rowSpan": 1,
+                "text": "4월 1일부터\n6월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 46,
+                "rowSpan": 1,
+                "text": "주7)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 47,
+                "rowSpan": 2,
+                "text": "다. 연안통발어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 47,
+                "rowSpan": 1,
+                "text": "게를 포획할 목적의 통발 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 47,
+                "rowSpan": 1,
+                "text": "5월 1일부터 \n7월 31일까지,\n10월 31일부터 \n12월 31일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 47,
+                "rowSpan": 1,
+                "text": "주10)의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 48,
+                "rowSpan": 1,
+                "text": "대게포획금지, 대게류ㆍ붉은대게류 통발 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 48,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 48,
+                "rowSpan": 1,
+                "text": "주11)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 49,
+                "rowSpan": 1,
+                "text": "라. 연안조망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 49,
+                "rowSpan": 1,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 49,
+                "rowSpan": 1,
+                "text": "10월 1일부터\n다음 해 4월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 49,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 50,
+                "rowSpan": 1,
+                "text": "마. 연안선인망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 50,
+                "rowSpan": 1,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 50,
+                "rowSpan": 1,
+                "text": "1월 1일부터\n9월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 50,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 51,
+                "rowSpan": 3,
+                "text": "바. 연안자망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 51,
+                "rowSpan": 1,
+                "text": "뻗침대를 붙인 자망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 51,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 51,
+                "rowSpan": 1,
+                "text": "인천광역시, 경기도, 전라남도 해역을 제외한 전국해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 52,
+                "rowSpan": 1,
+                "text": "세목망으로 된 어망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 52,
+                "rowSpan": 1,
+                "text": "5월 16일부터 6월 15일까지. 다만, 인천광역시, 경기도, 충청남도, 전북특별자치도, 전라남도 영광군ㆍ신안군은 7월 1일부터 7월 31일까지로 하고, 전라남도 해역에서 뻗침대를 붙인 어구에 세목망을 사용하는 경우에는 8월 1일부터 8월 31일까지로 한다."
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 52,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 53,
+                "rowSpan": 1,
+                "text": "멸치포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 53,
+                "rowSpan": 1,
+                "text": "4월 1일부터\n6월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 53,
+                "rowSpan": 1,
+                "text": "주8)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 54,
+                "rowSpan": 2,
+                "text": "사. 연안들망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 54,
+                "rowSpan": 2,
+                "text": "멸치포획금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 54,
+                "rowSpan": 1,
+                "text": "연중"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 54,
+                "rowSpan": 1,
+                "text": "주6)의 해역"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 55,
+                "rowSpan": 1,
+                "text": "4월 1일부터\n6월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 55,
+                "rowSpan": 1,
+                "text": "주9)의 해역을 제외한 주7)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 56,
+                "rowSpan": 2,
+                "text": "아. 모든 연안어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 56,
+                "rowSpan": 1,
+                "text": "새우를 포획할 목적의 어망 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 56,
+                "rowSpan": 1,
+                "text": "7월 1일부터\n8월 31일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 56,
+                "rowSpan": 1,
+                "text": "1) 주12)의 해역\n2) 주13)의 해역\n3) 주14)의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 57,
+                "rowSpan": 1,
+                "text": "멸치를 포획할 목적의 어망사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 57,
+                "rowSpan": 1,
+                "text": "3월 1일부터\n6월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 57,
+                "rowSpan": 1,
+                "text": "주6)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 58,
+                "rowSpan": 1,
+                "text": "3. 구획어업"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 59,
+                "rowSpan": 1,
+                "text": "어업의 종류"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 59,
+                "rowSpan": 1,
+                "text": "금지사항"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 59,
+                "rowSpan": 1,
+                "text": "금지기간"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 59,
+                "rowSpan": 1,
+                "text": "사용 금지구역"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 60,
+                "rowSpan": 1,
+                "text": "가. 장망류어업(장망을 사용하는 어업은 제외한다)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 60,
+                "rowSpan": 1,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 60,
+                "rowSpan": 1,
+                "text": "5월 1일부터 5월 31일까지. 다만, 인천광역시, 경기도, 충청남도, 전북특별자치도, 전라남도 영광군ㆍ신안군은 7월 1일부터 7월 31일까지로 한다."
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 60,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 61,
+                "rowSpan": 1,
+                "text": "나. 해선망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 61,
+                "rowSpan": 1,
+                "text": "조업금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 61,
+                "rowSpan": 1,
+                "text": "5월 16일부터 6월 15일까지. 다만, 인천광역시, 경기도, 충청남도, 전라남도 영광군ㆍ신안군은 7월 1일부터 7월 31일까지로 한다."
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 61,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 62,
+                "rowSpan": 2,
+                "text": "다. 새우조망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 62,
+                "rowSpan": 2,
+                "text": "새우조망으로 새우포획을 허용한 경우 외 사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 62,
+                "rowSpan": 1,
+                "text": "5월 1일부터 9월 30일까지. 다만, 시장ㆍ군수ㆍ구청장이 국립수산과학원장과 미리 협의를 거쳐 10개월 이내의 조업기간을 별도로 설정하여 고시한 경우에는 그에 따른다."
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 62,
+                "rowSpan": 1,
+                "text": "경상남도 통영시ㆍ거제시ㆍ사천시ㆍ남해군 연안해역"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 63,
+                "rowSpan": 1,
+                "text": "7월 1일부터 8월 31일까지. 다만, 시장ㆍ군수ㆍ구청장이 국립수산과학원장과 미리 협의를 거쳐 10개월 이내의 조업기간을 별도로 설정하여 고시한 경우에는 그에 따른다."
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 63,
+                "rowSpan": 1,
+                "text": "전라남도 여수시ㆍ장흥군ㆍ강진군ㆍ고흥군ㆍ완도군ㆍ진도군ㆍ해남군 연안해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 64,
+                "rowSpan": 1,
+                "text": "라. 패류형망어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 64,
+                "rowSpan": 1,
+                "text": "형망사용금지.\n다만, 법 제27조제1항 및 제3항에 따라 관리선으로 지정을 받거나 승인을 받은 어선에 의해 해당 어장에서 사용되는 형망은 제외한다."
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 64,
+                "rowSpan": 1,
+                "text": "6월 1일부터\n7월 31일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 64,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 65,
+                "rowSpan": 2,
+                "text": "마. 모든 어업"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 65,
+                "rowSpan": 1,
+                "text": "멸치를 포획할 목적의 어망사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 65,
+                "rowSpan": 1,
+                "text": "3월 1일부터\n6월 30일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 65,
+                "rowSpan": 1,
+                "text": "주6)의 해역"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 66,
+                "rowSpan": 1,
+                "text": "새우를 포획할 목적의 어망사용금지"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 66,
+                "rowSpan": 1,
+                "text": "7월 1일부터\n8월 31일까지"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 66,
+                "rowSpan": 1,
+                "text": "1) 주12)의 해역\n2) 주13)의 해역\n3) 주14)의 해역"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 67,
+                "rowSpan": 1,
+                "text": "주1) 동해구외끌이중형저인망어업, 서남해구외끌이중형저인망어업, 서남해구쌍끌이중형저인망어업 조업금지구역(별도 참조)\n    가. 다음 좌표를 차례대로 연결한 선 안의 해역(11월 1일부터 다음 해 2월 15일까지로 한정한다)\n      1) 북위 40도 27분 16.39초 동경 129도 09분 18.87초\n      2) 북위 39도 48분 58.84초 동경 128도 27분 02.28초\n      3) 북위 39도 21분 52.82초 동경 128도 03분 59.58초\n      4) 북위 39도 17분 42.69초 동경 127도 33분 33.02초\n    나. 다음 좌표를 차례대로 연결한 선 안의 해역(12월 1일부터 다음 해 5월 31일까지로 한정한다)\n      1) 북위 39도 02분 09.47초 동경 128도 06분 47.00초\n      2) 북위 38도 41분 11.90초 동경 128도 25분 21.76초\n      3) 북위 38도 27분 00.20초 동경 128도 32분 58.40초\n      4) 북위 38도 10분 51.79초 동경 128도 40분 34.36초\n      5) 북위 38도 00분 49.88초 동경 128도 49분 05.38초\n      6) 북위 37도 40분 26.16초 동경 129도 08분 22.01초\n      7) 북위 37도 03분 31.06초 동경 129도 38분 07.50초\n      8) 북위 36도 46분 03.82초 동경 129도 29분 58.13초\n    다. 다음 좌표를 차례대로 연결한 선 안의 해역(5월로 한정한다)\n      1) 북위 39도 48분 12.06초 동경 124도 11분 12.29초\n      2) 북위 39도 46분 38.93초 동경 123도 54분 29.98초\n      3) 북위 38도 23분 01.47초 동경 124도 34분 50.98초\n      4) 북위 38도 11분 19.97초 동경 124도 45분 49.77초\n\n주2) 북위 38도 00분 09.86초 동경 125도 49분 52.80초, 북위 34도 00분 11.50초 동경 125도 49분 52.90초, 북위 34도 00분 11.54초 동경 127도 59분 52.23초, 북위 34도 30분 11.34초 동경 127도 59분 52.21초, 북위 34도 30분 11.36초 동경 128도 59분 51.90초, 북위 35도 38분 55.10초 동경 129도 34분 20.92초, 북위 36도 04분 39.45초 동경 129도 41분 26.94초, 북위 37도 03분 37.71초 동경 129도 33분 03.44초, 북위 37도 14분 06.39초 동경 129도 28분 41.81초, 북위 37도 40분 23.47초 동경 129도 10분 48.48초, 북위 38도 26분 52.66초 동경 128도 35분 36.41초와 북위 38도 41분 14.63초 동경 128도 21분 31.94초를 차례대로 연결한 선 안의 해역. 다만, 경상북도 포항시 남구 구룡포읍 사라말 이북에서 강원특별자치도 고성군 거진읍 거진말 이남까지의 해역 중 북위 35도 59분 29.73초 동경 129도 37분 44.64초, 북위 36도 04분 39.45초 동경 129도 37분 47.89초, 북위 36도 13분 23.87초 동경 129도 33분 02.30초, 북위 36도 30분 26.85초 동경 129도 31분 59.83초, 북위 37도 03분 39.27초 동경 129도 31분 50.65초, 북위 37도 14분 09.91초 동경 129도 27분 28.86초, 북위 37도 40분 23.47초 동경 129도 09분 37.09초와 북위 38도 26분 54.65초 동경 128도 33분 08.00초를 차례대로 연결한 선 밖의 해역에서 소형선망어업의 허가를 받아 사용하는 경우는 제외한다.\n\n주3) 다음 좌표를 차례대로 연결한 선 안의 해역\n    가. 북위 34도 40분 50.30초 동경 128도 34분 43.47초\n    나. 북위 34도 23분 39.76초 동경 127도 49분 11.33초\n    다. 북위 33도 57분 52.83초 동경 127도 20분 25.54초\n    라. 북위 34도 05분 52.80초 동경 126도 36분 08.70초\n\n주4) 대형선망어업 및 소형선망어업의 멸치 포획금지구역(부도 1 제1호 참조)\n    가. 다음 좌표를 연결한 선 안의 해역\n      1) 북위 36도 06분 38.30초 동경 129도 26분 22.99초\n      2) 북위 36도 05분 06.28초 동경 129도 32분 50.36초\n    나. 다음 좌표를 연결한 선 안의 해역\n      1) 북위 35도 59분 29.63초 동경 129도 34분 05.54초\n      2) 북위 35도 51분 12.35초 동경 129도 31분 32.91초\n    다. 다음 좌표를 차례대로 연결한 선 안의 해역\n      1) 북위 35도 39분 04.22초 동경 129도 27분 04.06초\n      2) 북위 35도 38분 51.36초 동경 129도 28분 21.94초\n      3) 북위 35도 29분 10.31초 동경 129도 27분 48.32초\n      4) 북위 35도 21분 11.21초 동경 129도 22분 59.49초\n      5) 북위 35도 10분 53.70초 동경 129도 13분 49.21초\n      6) 북위 35도 02분 20.04초 동경 129도 06분 24.37초\n      7) 북위 34도 51분 54.45초 동경 128도 47분 02.99초\n      8) 북위 34도 47분 12.12초 동경 128도 45분 36.17초\n      9) 북위 34도 42분 44.26초 동경 128도 41분 26.29초\n      10) 북위 34도 40분 54.36초 동경 128도 37분 13.15초\n      11) 북위 34도 40분 50.30초 동경 128도 34분 43.47초\n      12) 북위 34도 41분 34.23초 동경 128도 27분 25.94초\n      13) 북위 34도 41분 37.59초 동경 128도 23분 50.15초\n      14) 북위 34도 44분 44.48초 동경 128도 18분 10.59초\n      15) 북위 34도 42분 40.76초 동경 128도 10분 31.23초\n      16) 북위 34도 39분 46.65초, 동경 128도 02분 44.04초\n      17) 북위 34도 42분 14.11초 동경 127도 53분 26.09초\n      18) 북위 34도 37분 36.42초 동경 127도 51분 15.99초\n      19) 북위 34도 24분 02.47초 동경 127도 47분 04.20초\n      20) 북위 34도 12분 44.14초 동경 127도 15분 26.78초\n      21) 북위 34도 08분 48.32초 동경 126도 54분 00.00초\n      22) 북위 34도 05분 01.96초 동경 126도 40분 12.78초\n      23) 북위 34도 05분 52.80초 동경 126도 36분 08.70초\n      24) 북위 34도 07분 19.07초 동경 126도 30분 43.10초\n      25) 북위 34도 13분 22.96초 동경 126도 25분 06.59초\n      26) 북위 34도 18분 42.20초 동경 126도 05분 16.10초\n      27) 북위 34도 25분 07.09초 동경 126도 05분 21.33초\n    라. 다음 좌표를 연결한 선 안의 해역\n      1) 북위 34도 35분 19.76초 동경 126도 14분 59.45초\n      2) 북위 34도 40분 45.54초 동경 126도 15분 18.81초\n    마. 다음 좌표를 차례대로 연결한 선 안의 해역\n      1) 북위 34도 04분 10.64초 동경 127도 16분 21.12초\n      2) 북위 34도 02분 11.97초 동경 127도 15분 35.82초\n      3) 북위 34도 00분 07.41초 동경 127도 16분 43.46초\n      4) 북위 34도 02분 22.60초 동경 127도 21분 15.05초\n      5) 북위 34도 04분 23.88초 동경 127도 20분 11.15초\n      6) 북위 34도 04분 53.18초 동경 127도 17분 34.56초\n      7) 북위 34도 04분 10.64초 동경 127도 16분 21.12초\n    바. 다음 좌표를 차례대로 연결한 선 안의 해역\n      1) 북위 34도 14분 07.54초 동경 126도 53분 21.37초\n      2) 북위 34도 13분 08.91초 동경 126도 55분 44.16초\n      3) 북위 34도 11분 20.39초 동경 126도 57분 06.92초\n      4) 북위 34도 10분 38.80초 동경 126도 56분 47.26초\n      5) 북위 34도 08분 11.55초 동경 126도 50분 32.62초\n      6) 북위 34도 12분 44.65초 동경 126도 49분 30.95초\n      7) 북위 34도 14분 07.54초 동경 126도 53분 21.37초\n    사. 다음 좌표를 차례대로 연결한 선 안의 해역\n      1) 북위 34도 16분 08.14초 동경 126도 36분 45.06초\n      2) 북위 34도 10분 52.74초 동경 126도 42분 25.01초\n      3) 북위 34도 08분 54.72초 동경 126도 42분 17.71초\n      4) 북위 34도 06분 01.99초 동경 126도 40분 41.16초\n      5) 북위 34도 04분 47.89초 동경 126도 36분 09.00초\n      6) 북위 34도 06분 29.15초 동경 126도 29분 53.23초\n      7) 북위 34도 16분 01.40초 동경 126도 33분 47.38초\n      8) 북위 34도 16분 08.14초 동경 126도 36분 45.06초\n    아. 다음 좌표를 차례대로 연결한 선 안의 해역\n      1) 북위 33도 59분 06.56초 동경 126도 15분 00.93초\n      2) 북위 33도 58분 50.32초 동경 126도 21분 05.28초\n      3) 북위 33도 56분 56.83초 동경 126도 21분 52.61초\n      4) 북위 33도 54분 53.81초 동경 126도 19분 37.63초\n      5) 북위 33도 59분 06.56초 동경 126도 15분 00.93초\n\n주5) 전라남도 여수시 남면 금오도, 남면 안도, 남면 연도 및 완도군 청산면 청산도의 해안선으로부터 550미터 선 안의 해역\n\n주6) 북위 34도 59분 19.02초 동경 128도 49분 42.30초와 북위 34도 53분 43.48초 동경 128도 45분 06.82초를 연결한 선과 북위 34도 53분 22.50초 동경 128도 28분 32.43초 및 북위 34도 53분 06.80초 동경 128도 28분 40.60초를 연결한 선 안의 해역\n\n주7) 주6)의 해역을 제외한 경상남도의 해역과 부산광역시ㆍ울산광역시 및 전라남도의 해역\n\n주8) 근해자망어업 및 연안자망어업의 멸치 포획금지구역(부도 1 제2호 참조)\n    가. 다음 좌표를 연결한 선 안의 해역\n      1) 북위 36도 06분 38.30초 동경 129도 26분 22.99초\n      2) 북위 36도 05분 06.28초 동경 129도 32분 50.36초\n    나. 다음 좌표를 연결한 선 안의 해역\n      1) 북위 35도 59분 29.63초 동경 129도 34분 05.54초\n      2) 북위 35도 51분 12.35초 동경 129도 31분 32.91초\n    다. 다음 좌표를 차례대로 연결한 선 안의 해역\n      1) 북위 35도 39분 04.22초 동경 129도 27분 04.06초\n      2) 북위 35도 38분 51.36초 동경 129도 28분 21.94초\n      3) 북위 35도 29분 10.31초 동경 129도 27분 48.32초\n      4) 북위 35도 21분 11.21초 동경 129도 22분 59.49초\n      5) 북위 35도 10분 52.97초 동경 129도 14분 28.70초\n      6) 북위 35도 01분 36.28초 동경 129도 06분 09.92초\n      7) 북위 34도 58분 41.68초 동경 128도 59분 19.23초\n      8) 북위 34도 53분 42.06초 동경 128도 47분 43.97초\n      9) 북위 34도 47분 12.12초 동경 128도 45분 36.17초\n      10) 북위 34도 42분 44.26초 동경 128도 41분 26.29초\n      11) 북위 34도 40분 54.36초 동경 128도 37분 13.15초\n      12) 북위 34도 40분 50.30초 동경 128도 34분 43.47초\n      13) 북위 34도 41분 34.23초 동경 128도 27분 25.94초\n      14) 북위 34도 41분 37.59초 동경 128도 23분 50.15초\n      15) 북위 34도 44분 44.48초 동경 128도 18분 10.59초\n      16) 북위 34도 42분 40.76초 동경 128도 10분 31.23초\n      17) 북위 34도 39분 46.65초 동경 128도 02분 44.04초\n      18) 북위 34도 42분 14.11초 동경 127도 53분 26.09초\n      19) 북위 34도 37분 36.42초 동경 127도 51분 15.99초\n      20) 북위 34도 31분 52.23초 동경 127도 50분 31.33초\n      21) 북위 34도 23분 39.76초 동경 127도 49분 11.33초\n      22) 북위 34도 24분 03.98초 동경 127도 46분 17.71초\n      23) 북위 34도 29분 25.93초 동경 127도 44분 08.71초\n      24) 북위 34도 32분 21.21초 동경 127도 38분 22.27초\n      25) 북위 34도 34분 25.25초 동경 127도 29분 13.34초\n    라. 다음 좌표를 차례대로 연결한 선 안의 해역\n      1) 북위 34도 31분 07.80초 동경 127도 10분 14.07초\n      2) 북위 34도 26분 43.54초 동경 126도 57분 57.49초\n      3) 북위 34도 24분 15.40초 동경 126도 58분 04.52초\n      4) 북위 34도 24분 15.68초 동경 126도 57분 04.19초\n    마. 북위 34도 21분 12.07초 동경 126도 54분 30.30초와 북위 34도 20분 32.26초 동경 126도 53분 56.87초를 연결한 선, 북위 34도 18분 55.34초 동경 126도 47분 38.20초와 북위 34도 17분 15.62초 동경 126도 46분 39.59초를 연결한 선 및 북위 34도 23분 11.21초 동경 126도 38분 35.73초와 북위 34도 23분 14.89초 동경 126도 38분 13.76초를 연결한 선 안의 해역\n    바. 다음 좌표를 차례대로 연결한 선 안의 해역\n      1) 북위 34도 04분 16.23초 동경 127도 16분 02.82초\n      2) 북위 34도 02분 16.01초 동경 127도 14분 57.14초\n      3) 북위 33도 58분 58.74초 동경 127도 15분 20.59초\n      4) 북위 33도 57분 52.83초 동경 127도 20분 25.54초\n      5) 북위 34도 02분 31.34초 동경 127도 23분 14.40초\n      6) 북위 34도 04분 34.91초 동경 127도 20분 26.45초\n      7) 북위 34도 04분 36.95초 동경 127도 17분 34.51초\n      8) 북위 34도 04분 16.23초 동경 127도 16분 02.82초\n\n주9) 북위 34도 45분 14.58초 동경 127도 39분 41.38초, 북위 34도 44분 26.13초 동경 127도 39분 48.15초, 북위 34도 42분 41.26초 동경 127도 42분 03.74초, 북위 34도 41분 00.32초 동경 127도 38분 21.35초를 차례대로 연결한 선 안의 해역과 북위 34도 03분 46.49초 동경 127도 18분 21.56초와 북위 34도 03분 48.55초 동경 127도 17분 35.12초를 연결한 선과 북위 34도 00분 19.18초 동경 127도 19분 29.65초와 북위 34도 01분 59.90초 동경 127도 19분 53.48초를 연결한 선 안의 해역\n\n주10) 강원특별자치도 고성군 현내면 저진단과 그 지점에서 정동 3만7천미터의 점, 강원특별자치도 양양군 현북면 기사문단에서 정동 3만7천미터의 점, 강원특별자치도 삼척시 원덕읍 임원말 동쪽 끝에서 정동 3만7천미터의 점, 강원특별자치도와 경상북도의 도 경계와 해안선의 교점에서 정동 3만7천미터의 점, 강원특별자치도와 경상북도의 도 경계와 해안선의 교점을 차례대로 연결한 선 안의 해역\n\n주11) 다음 좌표를 차례대로 연결한 선 안의 해역(부도 2 참조)\n    가. 북위37도08분37초 동경129도21분52초\n    나. 북위37도08분37초 동경129도45분12초\n    다. 북위37도06분12초 동경129도45분12초\n    라. 북위36도41분27초 동경129도51분24초\n    마. 북위36도28분18초 동경129도53분08초\n    바. 북위36도19분30초 동경129도51분06초\n    사. 북위36도11분13초 동경129도48분48초\n    아. 북위36도06분57초 동경129도45분44초\n    자. 북위35도58분46초 동경129도44분01초\n    차. 북위35도55분37초 동경129도43분14초\n    카. 북위35도49분04초 동경129도44분27초\n    타. 북위35도46분01초 동경129도46분21초\n    파. 북위35도39분00초 동경130도00분15초\n    하. 북위35도39분00초 동경129도26분52초\n\n주12) 다음 좌표를 연결한 선 안의 해역\n    가. 북위 34도 44분 21.48초 동경 127도 33분 53.43초\n    나. 북위 34도 40분 58.22초 동경 127도 26분 43.88초\n\n주13) 다음 좌표를 연결한 선 안의 해역\n    가. 북위 34도 39분 05.89초 동경 127도 11분 47.23초\n    나. 북위 34도 41분 31.68초 동경 127도 10분 31.29초\n\n주14) 다음 좌표를 차례대로 연결한 선 안의 해역\n    가. 북위 35도 15분 02.07초 동경 126도 18분 29.78초\n    나. 북위 35도 18분 01.04초 동경 126도 08분 28.59초\n    다. 북위 35도 34분 14.87초 동경 126도 15분 44.35초\n    라. 북위 35도 23분 00.39초 동경 126도 23분 53.12초\n\n주15) 다음 좌표를 차례대로 연결한 선 안의 해역(부도 3 참조)\n    가. 북위33도24분40초 동경126도12분15초\n    나. 북위33도25분09초 동경126도12분23초\n    다. 북위33도25분37초 동경126도13분00초\n    라. 북위33도25분38초 동경126도13분47초\n    마. 북위33도10분23초 동경126도15분27초\n    바. 북위33도09분36초 동경126도15분18초\n    사. 북위33도09분05초 동경126도16분17초\n    아. 북위33도09분38초 동경126도16분50초\n    자. 북위33도09분45초 동경126도17분24초\n    차. 북위33도10분18초 동경126도17분49초\n    카. 북위33도31분17초 동경126도56분09초\n    타. 북위33도31분50초 동경126도57분18초\n    파. 북위33도30분55초 동경126도58분35초\n    하. 북위33도29분53초 동경126도58분53초\n    거. 북위33도28분59초 동경126도57분47초\n\n주16) 다음 좌표를 차례대로 연결한 선 안의 해역(부도 4 참조)\n    가. 북위37도36분00초 동경126도12분20초\n    나. 북위37도23분30초 동경126도20분40초\n    다. 북위37도20분00초 동경126도23분30초\n    라. 북위37도12분20초 동경126도23분30초\n    마. 북위37도10분05초 동경126도30분00초\n    바. 북위37도07분15초 동경126도30분00초\n    사. 북위37도05분30초 동경126도22분00초\n    아. 북위36도55분00초 동경126도06분30초\n    자. 북위36도48분00초 동경126도03분50초\n    차. 북위36도41분10초 동경126도05분35초\n    카. 북위36도38분00초 동경126도05분30초\n    타. 북위36도33분30초 동경126도14분30초\n    파. 북위36도19분20초 동경126도19분50초\n    하. 북위36도18분05초 동경126도26분50초\n    거. 북위35도51분00초 동경126도28분00초\n    너. 북위35도49분40초 동경126도21분30초\n    더. 북위35도48분10초 동경126도21분50초\n    러. 북위35도47분10초 동경126도25분00초\n    머. 북위35도39분20초 동경126도24분20초\n    버. 북위35도23분30초 동경126도20분50초\n    서. 북위35도16분20초 동경126도15분00초\n    어. 북위35도12분50초 동경126도10분00초\n\n주17) 다음 좌표를 차례대로 연결한 선 안의 해역(부도 5 참조)\n    가. 북위37도30분00초 동경126도00분00초\n    나. 북위37도31분20초 동경126도03분02초\n    다. 북위37도30분00초 동경126도03분02초\n    라. 북위37도30분00초 동경126도16분21초\n    마. 북위37도23분30초 동경126도20분40초\n    바. 북위37도19분38초 동경126도13분22초\n    사. 북위37도18분15초 동경126도03분55초\n    아. 북위37도09분40초 동경126도04분25초\n    자. 북위37도06분50초 동경126도07분45초\n    차. 북위37도05분30초 동경126도22분00초"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 6,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "구분"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "범례"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "제주특별자치도 본도 주위 2천7백미터 이내 및 주15)의 해역"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 9,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 5,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 6,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 7,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 8,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              }
+                            ],
+                            "cols": 9,
+                            "containerPath": [
+                              {
+                                "cell": 222,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 11
+                              },
+                              {
+                                "cell": 3,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              }
+                            ],
+                            "control": 0,
+                            "index": 0,
+                            "paragraph": 0,
+                            "rows": 1,
+                            "section": 0
+                          }
+                        ],
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "제주특별자치도 본도 주위 7천4백미터 이내 해역"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 9,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 5,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 6,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 7,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 8,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": ""
+                              }
+                            ],
+                            "cols": 9,
+                            "containerPath": [
+                              {
+                                "cell": 222,
+                                "control": 2,
+                                "kind": "tableCell",
+                                "paragraph": 11
+                              },
+                              {
+                                "cell": 5,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              }
+                            ],
+                            "control": 0,
+                            "index": 0,
+                            "paragraph": 0,
+                            "rows": 1,
+                            "section": 0
+                          }
+                        ],
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 222,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 11
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 0,
+                    "rows": 3,
+                    "section": 0
+                  }
+                ],
+                "row": 68,
+                "rowSpan": 1,
+                "text": "[부도 1] <개정 2024. 12. 24.>\n1. 대형선망어업 및 소형선망어업의 멸치 포획금지구역도\n\n2. 근해자망어업 및 연안자망어업의 멸치 포획금지구역도\n\n\n[부도 2]\n근해장어통발어업ㆍ근해통발어업 및 연안통발어업의 대게 포획금지,\n대게류ㆍ붉은대게류 통발 사용금지 구역도\n\n[부도 3]\n\n\n\n[부도 4] <개정 2024. 12. 24.>\n\n[부도 5]"
+              }
+            ],
+            "cols": 5,
+            "control": 2,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 48,
+            "paragraph": 0,
+            "rows": 69,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\18095317_eogu_geumji.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 5,
+            "index": 0,
+            "mergeCount": 48,
+            "rows": 69
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

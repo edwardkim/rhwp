@@ -1,0 +1,1397 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hcar-001.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hcar-001.hwp",
+        "tableCount": 12,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 1
+          },
+          {
+            "cols": 7,
+            "index": 1,
+            "rows": 12
+          },
+          {
+            "cols": 1,
+            "index": 2,
+            "rows": 2
+          },
+          {
+            "cols": 1,
+            "index": 3,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 4,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 5,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 6,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 7,
+            "rows": 1
+          },
+          {
+            "cols": 5,
+            "index": 8,
+            "rows": 2
+          },
+          {
+            "cols": 5,
+            "index": 9,
+            "rows": 10
+          },
+          {
+            "cols": 1,
+            "index": 10,
+            "rows": 1
+          },
+          {
+            "cols": 6,
+            "index": 11,
+            "rows": 11
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hcar-001.hwp",
+        "tableCount": 12,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 12,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hcar-001.hwp",
+        "tableCount": 12,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "[별지 제1호 서식] _ 서명란에 모두 서명 必(공동명의자 포함), 추가보조금 및 전환지원금 칸에 모두 체크"
+              }
+            ],
+            "cols": 1,
+            "control": 2,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 29,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "성명(기관명)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "대표자"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "생년월일(법인등록번호)"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 3,
+                "text": "구입차종"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 3,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 3,
+                "text": "구매대수"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 3,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 3,
+                "text": "보조금\n신청액"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "총      계"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "원"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "구매지원금"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "원"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "전환지원금"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 2,
+                "text": "추가보조금"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "□ 해당 없음  □ 다자녀 가구 (□　2자녀 / □　3자녀 / □　4자녀 이상) \n □ 생애 첫차 구매 □ 택시 □ 소상공인(화물)  □ 택배 □ 기타(              )"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "[화물차 신청자]  □ 경유화물차 보유  □ 경유화물차 미보유"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "전환지원금"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "□ 신청 (택1: □ 차량 판매  □ 폐차)  □ 미신청(미해당)        ※ 추후(별도) 신청 불가"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "등록주소지"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "연  락  처"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "(전화)               (휴대폰)                   (이메일)"
+              },
+              {
+                "col": 0,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "전기자동차 보급사업과 관련하여 위와 같이 전기자동차를 구입하고자 구매 지원신청서를 제출합니다.\n\n    2026년      월       일 \n신청자 :           (인 또는 서명)\n파주시장 귀하"
+              },
+              {
+                "col": 0,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "※ 첨부서류 : 전기차 구매계약서 1부(출고예정일 포함), 주민등록초본, 사업자등록증 또는 법인등기부등본,\n             지방세 납세(완납)증명서, 추가보조금 증빙서류, 기타 공고문에 기재된 필요 서류 일체"
+              },
+              {
+                "col": 0,
+                "colSpan": 7,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 4,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "[수집・이용하려는 개인정보의 항목]\n・개인식별정보(성명, 연락처, 주소, 신상사항 등)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "[개인정보의 수집・이용 목적]\n・전기차 구매보조금 지급 절차에 이용"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "[개인정보 이용 및 보유기간]\n・전기자동차 보조금 지급 완료 시까지 활용, 사업 종료 후 5년간 보유"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "□ 동의함 \t\t\t□ 동의하지 않음"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 28,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 9
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 2,
+                    "rows": 4,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 5,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "[위탁·제공되는 개인정보 항목]\n・개인식별정보(성명, 연락처, 주소, 신상사항 등)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "[개인정보를 위탁 받는 자]\n・전기자동차 제작‧판매사(현대, 기아, 테슬라, BMW, KG모빌리티 등)   \n[개인정보를 제공 받는 자]\n・기후에너지환경부, 한국환경공단, 전기자동차 보급 지자체"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "[개인정보를 위탁·제공 받는 자의 개인정보 이용목적]\n・(전기자동차 제작사) 전기자동차 구매 계약 절차에 이용하며 관련 개인정보 보안을 유지해야 함\n・(기후에너지환경부, 지자체, 한국환경공단) 전기자동차 보급실적 등 관련자료 작성에 이용"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "[개인정보를 위탁·제공 받는 자의 개인정보 이용 및 보유기간]\n・사업 종료 후 5년간 보유"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "□ 동의함 \t\t\t□ 동의하지 않음"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 28,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 12
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 2,
+                    "rows": 5,
+                    "section": 0
+                  }
+                ],
+                "row": 11,
+                "rowSpan": 1,
+                "text": "개인정보 수집・이용 및 제3자 위탁·제공 동의서\n\n전기자동차 구매 지원과 관련하여 「개인정보보호법」 제15조(개인정보의 수집ㆍ이용) 및 제22조에 따라 귀하의 개인정보를 아래와 같이 수집・이용 및 제3자 위탁·제공을 하고자 합니다.\n다음의 사항에 대해 충분히 읽어보신 후, 동의 여부를 체크, 서명하여 주시기 바랍니다.\n※ 귀하께서는 개인정보 제공 및 활용을 거부할 권리가 있으며, 제공사항은 구입을 위해 반드시 필요한 사항으로 \n   거부하실 경우 보조금 지급이 어려움을 알려드립니다.\n※ 보조금 지원대상자로 선정이 되지 않는 경우에도 제출하신 개인정보는 반환하지 않음을 알려드립니다.\n\n 1. 개인정보 수집 및 이용 동의[필수]\n     \n\n 2. 개인정보의 제3자 위탁·제공 동의[필수]\n\n본인은 본 “개인정보의 수집･이용 및 제3자 위탁·제공 동의서” 내용을 읽고 명확히 이해하였으며, 이에 동의합니다.                         2026년      월      일   신청자  성명 :          (인 또는 서명)"
+              }
+            ],
+            "cols": 7,
+            "control": 0,
+            "csvReady": false,
+            "index": 1,
+            "mergeCount": 15,
+            "paragraph": 2,
+            "rows": 12,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 2,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "전기차 보조금 지급 취소 또는 환수에 관한 사항\n\n ○ 구매보조금 신청자가 다음에 해당하는 경우에는 보조금 지급을 취소하고, 해당 금액과 보조금에 따라 발생한 이자를 환수합니다.\n  - 거짓 또는 부정한 방법으로 보조금을 신청하여 지급받은 경우\n  - 매매취소 등 사유로 인해 보조금 대상 전기차 계약이 무효 또는 취소되어 해당 자동차의 등록을 말소(반품)한 경우\n  - 해당 차종을 보조금이 지급되지 않는 차종으로 교환한 경우\n ○ 보조금 반환 및 이자는 15일 이내의 기한을 정하여 서면으로 반환을 통보하며, 미이행 시에는 「보조금 관리에 관한 법률」 제33조에 따라 국세징수의 예로 강제 징수됩니다.\n\n   본인은 위의 사유가 발생할 경우 보조금 지급 취소 또는 환수가 될 수 있도록 적극 협조하는데 동의합니다.\n\n2026년      월      일\n\n                                         신청자  성명 :                  (인 또는 서명)\n\n파주시장 귀하"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "전기차 보조금 지급 신청 유의사항 동의서\n\n ○ 「대기환경보전법」 시행규칙 제79조의4제1항에 따른 의무운행기간(최초등록을 기준으로 계산)을 준수해야 함. 다만, 의무운행기간 내 차량 판매 시 의무운행기간은 구매자에게 인계(보조금 반환 의무 포함)\n ○ 의무운행기간 내 폐차 시에는 보조사업자(파주시)의 사전 승인을 받아야 하며, 8년 이내 수출 목적의 말소등록시, 그 밖의 경우 2년 이내 폐차 시 ‘대기환경보전법’ 및 ‘전기자동차 보급사업 보조금 업무처리지침’ 등 관련규정에 의거 운행기간별 보조금 환수율에 따라 보조금을 반납해야 함\n ○ 보조금을 지원받아 전기화물차를 구매한 자가 해당 차량을 2만 km 이상 운행하지 아니하고 최초 등록한 날로부터 2년 이내에 판매하는 경우 지급된 보조금의 30%를 반납해야 함\n ○ 자동차 최초 등록 주소지가 ‘파주시’여야 하며, 공동명의 차량의 경우 차량 지분율과 관계없이 차량 등록증상 대표소유자 1인에게 보조금을 지원하는 것으로 간주함\n ○ 지방세법 규정에 따라 보험개발원의 차량기준가액 산정으로 일부 차종에서는 기초연금, 장애인연금 등 수급이 중단될 수 있으니 관계기관(시청, 행정복지센터 등)에 확인해야 함\n ○ 전기자동차 구매지원 자격 부여일로부터 2개월 이내에 차량이 출고되지 않을 경우 대상자 선정에서 취소되거나 대기자로 변경될 수 있음\n ○ 지원대상자 확정일로부터 10일 이내 차량 출고, 출고·등록 후 10일 이내(단, 지급신청 마감일은 보조금 지원대상자 확정 통보 후 20일 이내)에 보조금 지급 신청을 완료해야 하며 기한을 준수하지 않을 경우 대상자 선정에서 취소될 수 있음\n ○ 구매 지원신청서 접수 이후 타 차종(차명 포함)이나 연식변경 차량으로 변경할 수 없음\n ○ 기타 보조금 지원업무 수행을 위하여 보조사업자(파주시)가 정하는 사항을 추가로 정할 수 있음\n ○ 제출한 서류는 일체 반환하지 않으며, 전기차 구매 보조금은 파주시가 해당 전기차 제작·수입사로 지급함\n ○ 공고문 및 신청서식 등에 예시되지 않은 사항은 『2026년 전기자동차 보급사업 보조금 업무처리지침(기후부)』과 파주시의 결정에 따름\n\n\n        본인은 상기 유의사항을 이해·동의하였으며, 전기자동차 보조금 대상자 선정 및 보조금 지원 시  상기 사항의 이행에 동의합니다.\n\n2026년      월      일\n\n                                         신청자  성명 :                  (인 또는 서명)\n\n\n파주시장 귀하"
+              }
+            ],
+            "cols": 1,
+            "control": 2,
+            "csvReady": true,
+            "index": 2,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 2,
+            "section": 1
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "[별지 제2호 서식] 보조금 지급신청 시 제출"
+              }
+            ],
+            "cols": 1,
+            "control": 2,
+            "csvReady": true,
+            "index": 3,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 1,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 6,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "< 벌칙 규정(지방재정법 제97조 및 제98조) >"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "○ 부정한 방법으로 지방보조금를 교부받은 지방보조사업자 등에 대한 벌칙(제97조)\n ­ 거짓 신청이나 그 밖의 부정한 방법으로 지방보조금을 교부받은 자와 그 사실을 알면서  지방보조금을 교부한 자는 5년 이하의 징역 또는 3천만원 이하 벌금 부과 \n ­ 법령, 지방보조금 교부결정의 내용, 법령에 따른 자치단체장의 처분에 대한 선량한 관리자로서의 주의 의무를 위반하여 다른 용도에 사용한 보조사업자에 대해 3년 이하의 징역 또는 2천만원 이하의 벌금 부과\n ­ 자치단체장의 승인 없이 사업계획 또는 보조사업에 소요되는 경비의 배분을 변경하거나, 임의로 다른 사업자에게 인계 또는 중단·폐지, 자치단체장의 보조사업 수행 정지명령을 위반, 보조사업 실적보고서를 거짓으로 작성 제출 등의 행위를 한 보조사업자에 대해서는 각각 1천만원 이하의 벌금 부과\n○ 지방보조사업 법인 대표자 등에 대한 양벌 규정(제98조)\n ­ 거짓 신청으로 보조금을 교부받는 등 벌칙에 해당되는 행위를 한 지방보조사업 법인의 대표자, 또는 대리인, 사용인, 종업원이 그 업무를 게을리 한 경우에는 해당 벌금형 부과"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 5
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 1,
+                    "rows": 3,
+                    "section": 2
+                  }
+                ],
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2026년 전기자동차 보조사업 청렴 이행서약서\n\n  위 지방보조사업과 관련하여 파주시로부터 교부받은 지방보조금의 사용에 있어 교부조건 및 사업계획과 관계법령에 규정된 절차에 따라 공정하고 투명하게 집행하겠으며 파주시에서 요구하는 청렴 활동에 적극 협조하겠습니다. \n 아울러 교부받은 지방보조금의 사용과정에서 관련된 직원들은 이유 여하를 막론하고 귀 파주시의 사전 승인 없이 임의로 변경하여 사용하거나 교부 목적 이외에 사용하지 않도록 하겠으며, 이를 위반할 시에는 지방재정법 등 관계 법령에 따라 아래와 같이 처벌받을 수 있음을 충분히 이해하고 이에 책임질 것을 서약합니다.\n\n2026.    .    .\n\n지원대상자(구매자) :                       (서명 또는 인)\n전기차 제작·판매사(신청인) :                       (사업자  직인)\n          \n 파주시장 귀하"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 4,
+            "mergeCount": 0,
+            "paragraph": 1,
+            "rows": 1,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "[별지 제3호 서식]"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 5,
+            "mergeCount": 0,
+            "paragraph": 2,
+            "rows": 1,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 3,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "초소형\n전기자동차"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "[ ] 승용 \n[ ] 화물"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "지역거점사업 참여\n확인(신청)서"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 0
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 1,
+                    "section": 2
+                  },
+                  {
+                    "cellCount": 2,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "000 대표이사"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "직인"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 0,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 16
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 3,
+                    "rows": 1,
+                    "section": 2
+                  }
+                ],
+                "row": 0,
+                "rowSpan": 1,
+                "text": "1. 기 관 명 :\n  2. 성명(대표자) :                               (생년월일 :                   )\n  3. 주    소 : \n  4. 사업장 소재지 : \n  5. 지역거점사업 소재지 :\n  6. 사업내용\n- 개요\n- 용도\n- 운영대수\n별첨. 사업계획서 1부\n\n\n  파주시의                            사업 참여를 확인(신청)합니다.\n\n                                                  2026년      월      일"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 6,
+            "mergeCount": 0,
+            "paragraph": 3,
+            "rows": 1,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "[별지 제4호 서식]"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 7,
+            "mergeCount": 0,
+            "paragraph": 4,
+            "rows": 1,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "전기자동차 말소"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "("
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "□ 폐차"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": ")"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "승인요청서"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "□ 수출"
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": false,
+            "index": 8,
+            "mergeCount": 4,
+            "paragraph": 5,
+            "rows": 2,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 24,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "소  유  주"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "성  명\n(법인명)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "연  락  처"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "주  소"
+              },
+              {
+                "col": 2,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "차    량     정    보"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "차       명"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "최초등록일"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "차 량 번 호"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "차 대 번 호"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "말 소 사 유"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "말소(예정)일"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "말 소 시  유 의 사 항"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "- 보조금을 지급 받은 자는 「대기환경보전법」 시행규칙 제79조의4제1항에 따라 전기자동차를 의무 운행하여야 하며, 의무운행기간 내 말소(폐차, 수출 등) 시에는 파주시의 사전 승인을 받아야 합니다.\n - 의무운행기간 미준수 시 「대기환경보전법」 시행규칙 제79조의4제2항에 따른 운행기간별 보조금 회수요율에 따라 보조금을 반납하여야 합니다.\n   ※ 다만, 교통사고나 천재지변 등 불가피한 사유로 등록말소를 하려는 자에 대해서는 등록말소        사유로 폐차 시 보험사 등으로부터 지급받은 보상금액이 해당 차량 구매 시 지불한 가격보다        높은 경우에 한해 그 차액을 환수 조치합니다."
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "파주시 전기자동차 보급사업과 관련하여 구매 보조금을 지급받아 구입한 전기자동차 말소와 관련하여 위 유의사항을 확인하였으며, 말소를 진행하고자 하오니 승인하여 주시기 바랍니다.\n\n2026년     월     일\n\n신청인(소유주) :                  (인) \n 파주시장 귀하"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "※ 제출서류 : 말소 관련 증빙 서류\n - (공    통) 자동차등록증 사본 또는 자동차등록원부(갑)\n - (교통사고) 교통사고 발생 증빙자료(교통사고 사실 확인원, 사진 등), 보험사의 차량 보상금 지급(또는 산출) 내역"
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": false,
+            "index": 9,
+            "mergeCount": 10,
+            "paragraph": 6,
+            "rows": 10,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "[별지 제5호 서식]"
+              }
+            ],
+            "cols": 1,
+            "control": 1,
+            "csvReady": true,
+            "index": 10,
+            "mergeCount": 0,
+            "paragraph": 6,
+            "rows": 1,
+            "section": 2
+          },
+          {
+            "caption": null,
+            "cellCount": 31,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 4,
+                "text": "매 도 자"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "성  명\n(법인명)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 4,
+                "text": "매 수 자"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "성  명\n(법인명)"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "연락처"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "연락처"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "주  소"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "주  소"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "E-mail"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "E-mail"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "차    량    내    역"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "차       명"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "최 초 등 록 일"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "차 량 번 호"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "차 대 번 호"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "매 매 시  유 의 사 항"
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "- 보조금을 지급 받은 자는 「대기환경보전법」시행규칙 제79조의4제1항에 따른 의무운행기간     (최초등록일을 기준으로 계산)을 준수하여야 합니다.\n - 의무운행기간 내 차량 등록 말소할 경우 파주시의 사전 승인을 받아야 하며 ‘대기환경     보전법’, ‘전기자동차 보급사업 보조금 업무처리지침’ 등 관련규정에 따라 운행기간별     보조금 환수율에 따라 보조금을 반납하여야 합니다.\n - 의무운행기간 내 전기차를 매도하는 경우 해당 차량의 매수자가 잔여 의무운행기준     준수 의무(보조금 반환 의무 포함)를 승계한 것으로 간주됩니다.\n - 의무운행기간 내 전기자동차(화물) 매매 시에는 파주시의 사전 승인을 받아야 합니다. \n - 파주시의 지원을 받아 전기화물차를 구매한 자(보조금수령자)가 해당 차량을 2만 km     이상 운행하지 아니하고 최초 등록한 날부터 2년 이내에 판매하는 경우 지급된 보조금의      30%를 반납하여야 합니다."
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "파주시 전기자동차 보급사업과 관련하여 구매 보조금을 지급받아 구입한 전기자동차 매매와 관련하여 위 유의사항을 확인하였으며, 명의이전을 진행하고자 하오니 승인하여 주시기 바랍니다.\n\n2026년     월     일\n\n매 도 자 :                (인)\n매 수 자 :                (인)\n\n파주시장 귀하"
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "※ 제출서류 : 자동차등록증 사본, 매수자 주민등록등본(개인) 또는 법인등기부등본(법인), 매도자 주민등록등본\n                 차량번호(차량 전면·후면) 및 계기판 촬영 사진[운행거리(km) 증빙자료]"
+              }
+            ],
+            "cols": 6,
+            "control": 0,
+            "csvReady": false,
+            "index": 11,
+            "mergeCount": 11,
+            "paragraph": 8,
+            "rows": 11,
+            "section": 2
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 4,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hcar-001.hwp",
+        "tableCount": 12,
+        "tables": [
+          {
+            "cols": 7,
+            "index": 1,
+            "mergeCount": 15,
+            "rows": 12
+          },
+          {
+            "cols": 5,
+            "index": 8,
+            "mergeCount": 4,
+            "rows": 2
+          },
+          {
+            "cols": 5,
+            "index": 9,
+            "mergeCount": 10,
+            "rows": 10
+          },
+          {
+            "cols": 6,
+            "index": 11,
+            "mergeCount": 11,
+            "rows": 11
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

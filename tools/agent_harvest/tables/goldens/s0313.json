@@ -1,0 +1,2293 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36388711_사회보장제도 신설 협의요청서(청년오피스)_260624.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36388711_사회보장제도 신설 협의요청서(청년오피스)_260624.hwpx",
+        "tableCount": 6,
+        "tables": [
+          {
+            "cols": 8,
+            "index": 0,
+            "rows": 28
+          },
+          {
+            "cols": 3,
+            "index": 1,
+            "rows": 6
+          },
+          {
+            "cols": 7,
+            "index": 2,
+            "rows": 10
+          },
+          {
+            "cols": 6,
+            "index": 3,
+            "rows": 4
+          },
+          {
+            "cols": 5,
+            "index": 4,
+            "rows": 3
+          },
+          {
+            "cols": 5,
+            "index": 5,
+            "rows": 4
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36388711_사회보장제도 신설 협의요청서(청년오피스)_260624.hwpx",
+        "tableCount": 6,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 6,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36388711_사회보장제도 신설 협의요청서(청년오피스)_260624.hwpx",
+        "tableCount": 6,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 66,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": true,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "구  분"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": true,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "주요 내용"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "협의구분"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "☑ 신설"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "협의요청일/\n시행예정일"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "협의요청일(2026.06.24) / 제도(사업)의 도입(예상) 시기(2027.01.01.)"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "작성자"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "서울특별시"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "청년사업담당관"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "최현정"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "2133-9495"
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "ciao@seoul.go.kr"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 2,
+                "text": "근거"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "중앙"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "□ 법령 □ 시행령 □ 시행규칙 □ 조례 □ 훈령 □ 예규 □ 고시"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "지자체"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "□ 법률 □ 시행령 □ 시행규칙 ☑ 시･도 조례/규칙 □ 시･군･구 조례 규칙\n □ 지침(방침) □ 기타"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "사업목적\n(신설필요성)"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "주요 산업군별 청년 취·창업 코리빙하우스 시설 주거 지원을 통한 교류·협업 강화 및 동반성장 기반 마련"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 5,
+                "text": "사업\n유형"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "목적별"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "☑ 주거 □ 경제 □ 일자리 □ 신체적 건강 □ 안전 □ 문화 및 여가\n □ 법률 및 권익보장 □ 정신적 건강 ☑ 보육 및 교육 □ 관계 □ 돌봄 □ 기타(   )"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "가구유형"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "□ 신혼부부가구 ☑ 1인가구 □ 조손가구 □ 장애인가구 □ 독거노인가구 \n □ 가정위탁가구 □ 한부모가구 □ 소년소녀가구 □ 다자녀가구 \n □ 다문화가구 □ 기타(   )"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "생애주기"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "□ 구분없음(전생애) □ 영유아 □ 아동 □ 청소년 ☑ 청년 □ 중장년 □ 노년"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 2,
+                "text": "예산분류\n* 다중선택 불가"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "중앙"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "○ 일반지방행정(010) ○ 공공질서 및 안전(020) ○ 통일외교(030) \n ○ 국방(040) ○ 교육(050) ○ 문화 및 관광(060) ○ 환경(070)\n ○ 사회복지(080) ○ 보건(090) ○ 농림수산(100) ○ 산업중소기업 및 에너지(110) \n ○ 교통 및 물류(120) ○ 통신(130) ○ 국토 및 지역개발(140) ○ 과학기술(150)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "지자체"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "○ 일반공공행정(010) ○ 공공질서 및 안전(020) ○ 교육(050) \n ○ 문화 및 관광(060) ○ 환경(070) ☑ 사회복지(080) ○ 보건(090)\n ○ 농림수산(100) ○ 산업중소기업 및 에너지(110) ○ 교통 및 물류(120) \n ○ 국토 및 지역개발(150) ○ 과학기술(150)"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "성과지표"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 13,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "구분"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2026년"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2027년"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2028년"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2029년"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2030년"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "목표치"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "200"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "250"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "300"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "300"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "산출근거"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 5,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "시범사업(2027년) 200명 운영\n 사업성과에 따라 단계적 확대"
+                      }
+                    ],
+                    "cols": 6,
+                    "containerPath": [
+                      {
+                        "cell": 32,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 4
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 2,
+                    "rows": 3,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 13,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "구분"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2026년"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2027년"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2028년"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2029년"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2030년"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "80%"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "85%"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "90%"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "90%"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "산출근거"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 5,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "성장활동 프로그램 참여율"
+                      }
+                    ],
+                    "cols": 6,
+                    "containerPath": [
+                      {
+                        "cell": 32,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 8
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 2,
+                    "rows": 3,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 13,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "구분"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2026년"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2027년"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2028년"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2029년"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2030년"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "80%"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "85%"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "90%"
+                      },
+                      {
+                        "col": 5,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "90%"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "산출근거"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 5,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "성장 활요 계획 수랭 완료율"
+                      }
+                    ],
+                    "cols": 6,
+                    "containerPath": [
+                      {
+                        "cell": 32,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 12
+                      }
+                    ],
+                    "control": 0,
+                    "index": 2,
+                    "paragraph": 2,
+                    "rows": 3,
+                    "section": 0
+                  }
+                ],
+                "row": 12,
+                "rowSpan": 1,
+                "text": "사업의 효과성･목적달성 정도를 측정할 수 있는 지표* \n\n가. 성과지표1 : 지원 대상자 수 \n - 성과목표치 \n\n\n나. 성과목표2 : 참여자 프로그램 참여율 \n - 성과목표치 \n\n\n다. 성과목표3 : 성장 활용 계획 수행 완료율 \n - 성과목표치"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 3,
+                "text": "지원\n대상"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 2,
+                "text": "선정기준"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "(자격기준) \n □ 취득 수급자격 ☑ 기타 인적자격 □ 자체소득재산 기준 □ 기타(   )"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "(선정기준 상세내용) \n - 서울시 거주 또는 생활권 청년(19~39세), 무주택 청년 1인 가구, 기준중위소득 150% 이하, 성장활동 계획\n - 성장활동 계획서 심사 및 면접 심사 실시"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "대상규모"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 10,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2026년"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2027년"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2028년"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2029년"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2030년"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "200"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "250"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "300"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "300"
+                      }
+                    ],
+                    "cols": 5,
+                    "containerPath": [
+                      {
+                        "cell": 38,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 1
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 2,
+                    "rows": 2,
+                    "section": 0
+                  }
+                ],
+                "row": 15,
+                "rowSpan": 1,
+                "text": "□ 개인"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 3,
+                "text": "지원\n내용"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "지원유형"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "□ 현금지급 □ 현금대여(융자) □ 현물지급 □ 현물대여 ☑ 감면\n □ 전자바우처 □ 실물바우처 ☑ 프로그램/서비스 □ 자원봉사 □ 시설입소 \n □ 지역화폐 □ 기타(   )"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "지원주기\n* 다중선택 불가"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "○ 일  ○ 주  ☑ 월  ○ 분기  ○ 반기  ○ 년  ○ 수시  ○ 일회성  \n○ 부정기 ○ 기타 (   )"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "지원수준"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "임대료의 30% 범위내 지원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 5,
+                "text": "전달\n체계"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "신청"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "□ 중앙행정기관 (기관명: \t) ☑ 시･도 (기관명: 서울특별시 \t)\n□ 시･군･구 (기관명:  \t) □ 읍･면･동 (기관명:\t)\n□ 보건소 (기관명:    \t) □ 학교/교육청 (기관명:\t)\n□ 공공기관(중앙부처)(기관명: \t) □ 지자체 소속 공공기관 (기관명:\t)\n□ 민간 (기관명:    \t) □ 기타 (\t)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "조사"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "□ 중앙행정기관 (기관명: \t) ☑ 시･도 (기관명: 서울특별시 \t)\n□ 시･군･구 (기관명:   \t) □ 읍･면･동 (기관명:\t)\n□ 보건소 (기관명: \t) □ 학교/교육청 (기관명:\t)\n□ 공공기관(중앙부처)(기관명: \t) □ 지자체 소속 공공기관 (기관명:\t)\n□ 민간 (기관명:\t) □ 기타 (\t)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "결정"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "□ 중앙행정기관 (기관명:\t) ☑ 시･도 (기관명: 서울특별시 \t)\n□ 시･군･구 (기관명:   \t) □ 읍･면･동 (기관명:\t)\n□ 보건소 (기관명:     \t) □ 학교/교육청 (기관명:\t)\n□ 공공기관(중앙부처) (기관명: \t) □ 지자체 소속 공공기관 (기관명:\t)\n□ 민간 (기관명:    \t) □ 기타 (\t)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "지급"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "□ 중앙행정기관 (기관명:  \t) ☑ 시･도 (기관명: 서울특별시 \t)\n□ 시･군･구 (기관명:   \t) □ 읍･면･동 (기관명:\t)\n□ 보건소 (기관명:    \t) □ 학교/교육청 (기관명:\t)\n□ 공공기관(중앙부처)(기관명:\t) □ 지자체 소속 공공기관 (기관명:\t)\n□ 민간 (기관명:  \t) □ 기타 (\t)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "사후\n관리"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "□ 중앙행정기관 (기관명:\t) ☑ 시･도 (기관명: 서울특별시 \t)\n□ 시･군･구 (기관명:  \t) □ 읍･면･동 (기관명:\t)\n□ 보건소 (기관명:    \t) □ 학교/교육청 (기관명:\t)\n□ 공공기관(중앙부처)(기관명:\t) □ 지자체 소속 공공기관 (기관명:  )\n□ 민간 (기관명:       \t) □ 기타 (\t)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 3,
+                "text": "소요\n재원"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "총규모"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 10,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2026년"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2027년"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2028년"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2029년"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2030년"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "-"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "844백만원"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "980백만원"
+                      },
+                      {
+                        "col": 3,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "1,116백만원"
+                      },
+                      {
+                        "col": 4,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "1,116백만원"
+                      }
+                    ],
+                    "cols": 5,
+                    "containerPath": [
+                      {
+                        "cell": 59,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 2,
+                    "rows": 2,
+                    "section": 0
+                  }
+                ],
+                "row": 24,
+                "rowSpan": 1,
+                "text": "총     844    백만원"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 2,
+                "text": "재원별 규모"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "□ 국비 (총    백만원) ☑ 시･도 (총    백만원) □ 시･군･구 (총    백만원)\n □ 기금출자 (총    백만원) □ 민간재원 (총    백만원)\n □ 교육청특별 회계 (총    백만원) □ 기타 (   )"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "기타"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "지역사회보장\n계획포함 여부"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "□ 포함 (추진전략번호:   세부사업번호:    중점사업: □ Yes □ No)  ☑ 미포함"
+              }
+            ],
+            "cols": 8,
+            "control": 0,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 44,
+            "paragraph": 2,
+            "rows": 28,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 18,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": true,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "심사기준"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": true,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "진단결과"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": true,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "핵심 사유"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "① 정책수단 적절성\n   (현금/현물/서비스)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "적정"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "⦁청년의 성장활동은 주거 안정뿐 아니라 학습·협업 공간, 네트워크 등 다양한 기반이 필요하나 기존 정책은 주거 또는 교육 지원이 별도로 운영되고 있음. \n⦁단순 현금 지원이 아닌 주거와 성장 지원 ․프로그램 연계형 서비스 제공으로 현금의 직접 지원이 아닌 임대료에서 감면 하는 방식으로 지원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "② 유사·중복성\n  (중앙/광역/기초)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "해소"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "⦁(서울시) 청년월세지원, 청년안심주택 등은 주거 안정 지원에 중점을 두고 있으며, 청년수당 및 청년취업사관학교는 생활지원, 구직·직무역량 개발 중심으로 운영되고 있음 \n⦁본 사업은 주거공간과 프로젝트 수행, 네트워킹, 멘토링 등 성장활동을 연계 지원하는 사업으로 기존 제도와 목적 및 지원방식에 차이가 있는 새로운 사업 형태임"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "③ 정책 부합성\n  (국정과제 등)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "부합"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "⦁「청년기본법」 및 「서울특별시 청년 기본 조례」에 따른 청년의 자립기반 형성 및 성장 지원을 위한 사업임\n⦁ 「2030 서울 청년정책 기본계획」의 청년 성장기반 확충 및 자립역량 강화 정책에 포함됨"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "④ 대상·수준 적절성"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "적정"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "⦁무주택 청년 1인 가구를 대상으로 성장활동 계획서 및 면접심사를 통해 지원 필요성과 참여 의지를 종합적으로 검토하여 선발함\n⦁임대료 전액 지원이 아닌 서울시·민간 운영사·참여자가 비용을 분담하는 방식으로 운영하여 지원의 적정성과 지속가능성을 확보함"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "⑤ 전달체계 부담"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "적정"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "⦁기존 민간 복합주거시설과 서울시 청년정책 인프라를 활용하여 별도 시설 구축 없이 사업을 운영할 계획임"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 6,
+            "rows": 6,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 48,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "【 특성가구별 평균 주택가격 및 임차료 】"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "(단위 : 만원)"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 2,
+                "text": "구분"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 2,
+                "text": "주택가격"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 2,
+                "text": "전세"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "보증부 월세"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 2,
+                "text": "무보증 월세"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "보증금"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "월세"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "일반가구"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "42,057.1"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "22,198.4"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "2,495.4"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "37.8"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "32.7"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "수도권"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "62,352.5"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "26,177.3"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "3,445.9"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "42.0"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "35.3"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "수도권 외"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "26,329.1"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "14,419.8"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "1,409.1"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "33.1"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "30.9"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "청년가구"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "34,384.1"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "17,270.1"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "1,980.4"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "39.4"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "34.4"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "수도권"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "43,830.7"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "20,117.8"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "2,790.7"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "43.3"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "36.5"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "수도권 외"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "28,443.4"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "12,492.2"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "939.1"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "34.4"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "32.7"
+              },
+              {
+                "col": 0,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "< 국토교통부, 2024년도 주거실태조사 >"
+              }
+            ],
+            "cols": 7,
+            "control": 0,
+            "csvReady": false,
+            "index": 2,
+            "mergeCount": 11,
+            "paragraph": 22,
+            "rows": 10,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 24,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "사업명"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "주체"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "지원내용"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "지원대상"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "소득기준"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "비고"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "청년월세지원"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "중앙정부"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "월 20만원 월세지원 \n(최대 24개월)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "저소득‧1인가구 청년\n(만19~34세)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "중위소득 60% 이하"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "총 재산 가액 122백만원 이하"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "청년월세지원"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "서울시"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "월 20만원 월세지원 \n(최대 12개월)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "저소득‧1인가구 청년\n(만19~39세)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "중위소득 150% 이하"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "임차보증금 8천만원이하,\n 월세 60만원 이하 무주택자"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "청년안심주택"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "서울시"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "시세대비 낮은 임대료(30~70%)로 주택 공급"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "저소득 근로청년, 신혼부부\n(만 19~39세)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "도시근로자 월 평균소득 100%이하"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "무주택자, 총자산 251백만원 이하"
+              }
+            ],
+            "cols": 6,
+            "control": 0,
+            "csvReady": true,
+            "index": 3,
+            "mergeCount": 0,
+            "paragraph": 34,
+            "rows": 4,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 11,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "재정자립도"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "재정자주도"
+              },
+              {
+                "col": 2,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "사회보장예산 비율"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "전체예산\n(a)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "사회복지* 예산(b)"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "사회복지*\n예산비율\n(b/a*100)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "75.5"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "75.6"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "369,787"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "148,178"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "40.1"
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": false,
+            "index": 4,
+            "mergeCount": 3,
+            "paragraph": 76,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 20,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "연도"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2027"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2028"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2029"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2030"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "청년오피스 입주자수"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "200명"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "250명"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "300명"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "350명"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "성장활동 프로그램 참여율"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "80%"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "80%"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "80%"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "80%"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "성장 활동 계획 수행 완료율"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "80%"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "80%"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "80%"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "80%"
+              }
+            ],
+            "cols": 5,
+            "control": 0,
+            "csvReady": true,
+            "index": 5,
+            "mergeCount": 0,
+            "paragraph": 86,
+            "rows": 4,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 3,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\opengov\\36388711_사회보장제도 신설 협의요청서(청년오피스)_260624.hwpx",
+        "tableCount": 6,
+        "tables": [
+          {
+            "cols": 8,
+            "index": 0,
+            "mergeCount": 44,
+            "rows": 28
+          },
+          {
+            "cols": 7,
+            "index": 2,
+            "mergeCount": 11,
+            "rows": 10
+          },
+          {
+            "cols": 5,
+            "index": 4,
+            "mergeCount": 3,
+            "rows": 3
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

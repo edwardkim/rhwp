@@ -1,0 +1,1843 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issues\\2809\\jubo_20260104.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issues\\2809\\jubo_20260104.hwp",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 4
+          },
+          {
+            "cols": 12,
+            "index": 1,
+            "rows": 18
+          },
+          {
+            "cols": 9,
+            "index": 2,
+            "rows": 8
+          },
+          {
+            "cols": 10,
+            "index": 3,
+            "rows": 18
+          },
+          {
+            "cols": 15,
+            "index": 4,
+            "rows": 32
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issues\\2809\\jubo_20260104.hwp",
+        "tableCount": 5,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 5,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issues\\2809\\jubo_20260104.hwp",
+        "tableCount": 5,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 4,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "2026년 1월 4일 주보"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "교회창립 1953년 5월 17일\n예수의 길을 따르는 신앙공동체\n(요한복음 14장 6절)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "예배와 친교"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "한국기독교장로회\n서울제일교회\n04559 서울특별시 중구 마른내로 120 (오장동)\n전화_ 02-2266-0809 팩스_ 02-2266-0807\nhttp://www.seouljeil.org\nYouTube“교회서울제일”"
+              }
+            ],
+            "cols": 1,
+            "control": 2,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 0,
+            "rows": 4,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 45,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "주 일 예 배 순 서\n성탄절 후 둘째 주일 / 새해주일"
+              },
+              {
+                "col": 0,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "오전 11시                              인도자：조 현 순 장로"
+              },
+              {
+                "col": 0,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "부르심과 모임"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "임재의 기원 / 징울림과 묵상"
+              },
+              {
+                "col": 8,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "··························"
+              },
+              {
+                "col": 10,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "예배로의 부름"
+              },
+              {
+                "col": 4,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "···········································"
+              },
+              {
+                "col": 10,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "인 도 자"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "모임 찬송 / 찬송가 551장"
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "······························"
+              },
+              {
+                "col": 10,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 1,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "성시 교독 / 시편 147편"
+              },
+              {
+                "col": 5,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "·································"
+              },
+              {
+                "col": 10,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "예루살렘아 주를 찬송할지어다 시온아 네 하나님을 찬양할지어다\n그가 네 문빗장을 견고히 하시고 너의 자녀들에게 복을 주셨으며\n네 경내를 평안하게 하시고 아름다운 밀로 너를 배불리시며\n그의 명령을 땅에 보내시니 그의 말씀이 속히 달리는도다\n그가 그의 말씀을 야곱에게 보이시며 \n그의 율례와 규례를 이스라엘에게 보이시는도다\n그는 어느 민족에게도 이와 같이 행하지 아니하셨나니 \n그들은 그의 법도를 알지 못하였도다 할렐루야"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "영광송 / 만왕의 왕 우리 구주"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "·······················"
+              },
+              {
+                "col": 10,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "말씀과 응답"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "오늘의 기도"
+              },
+              {
+                "col": 3,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "··············································"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "한 동 철 집 사"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "주의 기도"
+              },
+              {
+                "col": 2,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "················································"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "성경봉독 / 에베소서 1:3-14"
+              },
+              {
+                "col": 7,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "····························"
+              },
+              {
+                "col": 11,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 11,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "3우리 주 예수 그리스도의 아버지이신 하나님을 찬양합시다. 하나님께서는 그리스도 안에서, 하늘에 속한 온갖 신령한 복을"
+              }
+            ],
+            "cols": 12,
+            "control": 3,
+            "csvReady": false,
+            "index": 1,
+            "mergeCount": 29,
+            "paragraph": 0,
+            "rows": 18,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 28,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "우리에게 주셨습니다. 4하나님은 세상 창조 전에 그리스도 안에서 우리를 택하시고 사랑해 주셔서, 하나님 앞에서 거룩하고 흠이 없는 사람이 되게 하셨습니다. 5하나님은 하나님의 기뻐하시는 뜻을 따라 예수 그리스도를 통하여 우리를 하나님의 자녀로 삼으시기로 예정하신 것입니다. 6그래서 하나님이 하나님의 사랑하시는 아들 안에서 우리에게 거저 주신 하나님의 영광스러운 은혜를 찬미하게 하셨습니다. 7우리는 이 아들 안에서 하나님의 풍성한 은혜를 따라 그의 피로 구속 곧 죄 용서를 받게 되었습니다. 8하나님은 우리에게 모든 지혜와 총명을 넘치게 주셔서, 9그리스도 안에서 미리 세우신 하나님이 기뻐하시는 뜻을 따라 하나님의 신비한 뜻을 우리에게 알려 주셨습니다. 10하나님의 계획은, 때가 차면, 하늘과 땅에 있는 모든 것을 그리스도 안에서 그분을 머리로 하여 통일시키는 것입니다. 11하나님은 그리스도 안에서 우리를 상속자로 삼으셨습니다. 이것은 모든 것을 자기의 원하시는 뜻대로 행하시는 분의 계획에 따라 미리 정해진 일입니다. 12그것은 그리스도께 맨 먼저 소망을 둔 우리로 하여금 하나님의 영광을 찬미하는 사람이 되게 하시려는 것이었습니다. 13여러분도 그리스도 안에서 진리의 말씀 곧 여러분을 구원하는 복음을 듣고서 그리스도를 믿었으므로, 약속하신 성령의 날인을 받았습니다. 14이 성령은, 하나님의 소유인 우리가 완전히 구원받을 때까지 우리의 상속의 담보이시며, 우리로 하여금 하나님의 영광을 찬미하게 하십니다."
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "찬양 / 주 너를 지키시고 복 주시리니 (John Rutter 곡)"
+              },
+              {
+                "col": 6,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "····"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "성 가 대"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "말씀 증언 / 하나님을 찬양하라!"
+              },
+              {
+                "col": 5,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "·······················"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "정 원 진 목 사"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "침묵 기도"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "···············································"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "응답송 / 예수님 친히 제자를"
+              },
+              {
+                "col": 4,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "·························"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "감사 찬송 / 찬송가 335장"
+              },
+              {
+                "col": 3,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "·····························"
+              },
+              {
+                "col": 7,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "성 가 대"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 1,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "봉헌송 / 모든 것이 주께로부터"
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "·······················"
+              },
+              {
+                "col": 7,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              }
+            ],
+            "cols": 9,
+            "control": 0,
+            "csvReady": false,
+            "index": 2,
+            "mergeCount": 15,
+            "paragraph": 1,
+            "rows": 8,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 38,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "봉헌기도"
+              },
+              {
+                "col": 2,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "·················································"
+              },
+              {
+                "col": 8,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "정 원 진 목 사"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "사귐과 보냄"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "평화의 인사"
+              },
+              {
+                "col": 3,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "··············································"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "공동체 소식 나눔"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "········································"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "인 도 자"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "서울제일교회 신앙고백"
+              },
+              {
+                "col": 6,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "·································"
+              },
+              {
+                "col": 8,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "우리는 혼자가 아닙니다. 우리는 하나님 안에 있으며, \n하나님과 함께 우리와 세상을 변화시켜 나갑니다. \n그 변화의 길을 우리 주 예수 그리스도께서 앞서가셨습니다. \n우리는 그 십자가 길이 \n정의와 평화, 생명과 사랑을 이루는 길임을 믿고 뒤따라갑니다. \n변화의 영이신 성령께서는 우리가 하나님 나라를 꿈꾸게 하시고, \n공동체를 이루어 그 꿈을 이루도록 힘 보태 주십니다. \n우리는 교회가 하나님 나라의 씨앗임을 믿습니다. \n말씀과 사귐과 봉사를 통해 그 안에서 하나님 나라를 이루고 \n그것을 밖으로 확장해 나가고자 우리의 삶을 헌신합니다. 아멘."
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "보냄찬송 / 찬송가 586장"
+              },
+              {
+                "col": 7,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "······························"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "다 같 이"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "*"
+              },
+              {
+                "col": 1,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "보내는 말씀과 축도"
+              },
+              {
+                "col": 5,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "·····································"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "정 원 진 목 사"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "*표에서 가능한 모든 분은 일어섬"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "기후위기시계\n\n\n1월 4일 오전 11시 기준 지구 평균기온 1.5℃ 상승까지 3년 199일 14시간 남음"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "★ 12/22-12/28 햇빛 발전량 : 244.76kWh(교회)+157.36kWh(서제)+211.37kWh(봉화)\n★ 환경효과 : 271㎏ 이산화탄소(CO2) 절감 또는 어린 소나무 3그루를 심는 효과"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "중보기도 제목들\n\n\n∙투병 중인 김중자 장로, 김숙자, 김화숙, 오동근, 황은숙 권사, 유영지 교우를 위해\n∙요양 중인 강정순, 김명득 권사를 위해"
+              }
+            ],
+            "cols": 10,
+            "control": 0,
+            "csvReady": false,
+            "index": 3,
+            "mergeCount": 25,
+            "paragraph": 2,
+            "rows": 18,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 89,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "서울제일교회를 방문하신 여러분을 환영합니다"
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "• 처음 나온 분은 예배 후 2층 담임목사실에서 면담하시기 바랍니다.\n• 헌금은 입장하면서 예배실 입구에 마련되어 있는 헌금함에 넣습니다.\n• 예배 전에 헌금하지 못한 분은 예배 후에 드리시면 됩니다.\n• 등록을 원하는 분은 2층 사무실에서 교적부를 작성하시기 바랍니다."
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "예배 및 봉사 위원"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "이번주(1/4)"
+              },
+              {
+                "col": 8,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "다음주(1/11)"
+              },
+              {
+                "col": 12,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "다다음주(1/18)"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "예 배 인 도"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "조현순"
+              },
+              {
+                "col": 8,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "조현순"
+              },
+              {
+                "col": 12,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "여신도회"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "기 도 / 봉 헌"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "한동철"
+              },
+              {
+                "col": 8,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "강성철"
+              },
+              {
+                "col": 12,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "여신도회"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "말 씀 증 언"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "정원진"
+              },
+              {
+                "col": 8,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "정원진"
+              },
+              {
+                "col": 12,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "이윤경"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "말 씀 과 실 천"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "신년 하례회"
+              },
+              {
+                "col": 8,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "정기 제직회"
+              },
+              {
+                "col": 12,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "정기 공동의회"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "공 동 식 사 준 비"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "홍기옥"
+              },
+              {
+                "col": 8,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "이정임"
+              },
+              {
+                "col": 12,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "이미자"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "설거지 봉사"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "이태환, 신연식"
+              },
+              {
+                "col": 8,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "이동수, 전호철"
+              },
+              {
+                "col": 12,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "이현우, 김영수"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "상상뜰 카페지기"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "최창기, 이윤주"
+              },
+              {
+                "col": 8,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "최창기, 홍금란"
+              },
+              {
+                "col": 12,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "최창기, 김효식"
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "1월 강단꽃 제공"
+              },
+              {
+                "col": 3,
+                "colSpan": 12,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "김명일(모친기일), 김영섭(아내기일), 신연식(동윤생일), 이현우(부친기일)"
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "성탄절 예배 통계"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 2,
+                "text": "교 회 출 석"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "교회학교"
+              },
+              {
+                "col": 6,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "주일현장예배"
+              },
+              {
+                "col": 9,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "가정예배"
+              },
+              {
+                "col": 13,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "송구영신예배"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "4명"
+              },
+              {
+                "col": 6,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "79명"
+              },
+              {
+                "col": 9,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "22명"
+              },
+              {
+                "col": 13,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "49명"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 4,
+                "text": "헌 금\n(12/31까지)"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "교회학교"
+              },
+              {
+                "col": 6,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "주정헌금"
+              },
+              {
+                "col": 9,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "감사헌금"
+              },
+              {
+                "col": 13,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "성탄절"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "2,000원"
+              },
+              {
+                "col": 6,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "3,605,000원"
+              },
+              {
+                "col": 9,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "410,000원"
+              },
+              {
+                "col": 13,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "20,000원"
+              },
+              {
+                "col": 1,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "신년감사"
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "선교헌금"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "기후정의험금"
+              },
+              {
+                "col": 10,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "강단꽃"
+              },
+              {
+                "col": 13,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "헌금 총계"
+              },
+              {
+                "col": 1,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "1,610,000원"
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "80,000원"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "210,000원"
+              },
+              {
+                "col": 10,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "50,000원"
+              },
+              {
+                "col": 13,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "5,987,000원"
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "∙감사헌금: 강선영(아버지 추모), 신연식(한 해 동안 보호하심), 유일상(범사), 정석현(범사), 홍예지(범사)\n∙선교헌금: 김지은, 오동근/원주희, 함위영, 홍성자/변성호\n∙성탄감사헌금: 무기명 \n∙신년감사헌금: 강선영, 김명일, 김예솔, 김요한, 김지은, 김지형, 김태웅, 김효식/이다정, 문성훈/염태정, 신연식, 유재형/진민경, 윤영애, 이승숙/장경우, 이윤주, 이재호, 이준아/정병훈/정지섭, 이태환/김순호, 정미현, 정연지/이현우, 정원진/유미선, 정인숙, 정효숙/추광태, 조은빛, 홍금란, 홍기옥\n∙기후정의헌금: 이현우/정연지. 무기명      ∙강단꽃: 김영섭"
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "헌금계좌 : 국민은행 003-01-0658-182 한국기독교장로회 서울제일교회"
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "집회 시간 안내"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "주 일 예 배"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "주 일 11:00"
+              },
+              {
+                "col": 4,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "1층 예배실"
+              },
+              {
+                "col": 7,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "어린이부"
+              },
+              {
+                "col": 11,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "주 일 11:00"
+              },
+              {
+                "col": 14,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "3층 어린이실"
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "성 경 공 부"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "목요일 19:00"
+              },
+              {
+                "col": 4,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "3층 세미나실"
+              },
+              {
+                "col": 7,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "청  년  회"
+              },
+              {
+                "col": 11,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "주 일 13:30"
+              },
+              {
+                "col": 14,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "3층 청년회실"
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": "교회를 섬기는 사람들"
+              },
+              {
+                "col": 0,
+                "colSpan": 15,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "담임목사:정원진  부 목 사:신연식   협동목사:정용택 \n 시무장로:김효식 조현순 문성훈 소소영 이동수 협동장로: 이현우 이태환\n 교육목회자:진민경(어린이부), 정미현(청년회) 생태환경선교사:김요한\n 지 휘 자:권혁성  반 주 자:박희성(피아노) 김덕영·한동철(장구) 사무간사:강선영"
+              }
+            ],
+            "cols": 15,
+            "control": 0,
+            "csvReady": false,
+            "index": 4,
+            "mergeCount": 87,
+            "paragraph": 46,
+            "rows": 32,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 4,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issues\\2809\\jubo_20260104.hwp",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 12,
+            "index": 1,
+            "mergeCount": 29,
+            "rows": 18
+          },
+          {
+            "cols": 9,
+            "index": 2,
+            "mergeCount": 15,
+            "rows": 8
+          },
+          {
+            "cols": 10,
+            "index": 3,
+            "mergeCount": 25,
+            "rows": 18
+          },
+          {
+            "cols": 15,
+            "index": 4,
+            "mergeCount": 87,
+            "rows": 32
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

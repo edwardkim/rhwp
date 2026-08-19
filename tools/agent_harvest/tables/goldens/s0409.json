@@ -1,0 +1,1923 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4690\\30098_indent_over_stored_cs.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4690\\30098_indent_over_stored_cs.hwp",
+        "tableCount": 13,
+        "tables": [
+          {
+            "cols": 1,
+            "index": 0,
+            "rows": 3
+          },
+          {
+            "cols": 9,
+            "index": 1,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 2,
+            "rows": 1
+          },
+          {
+            "cols": 7,
+            "index": 3,
+            "rows": 3
+          },
+          {
+            "cols": 1,
+            "index": 4,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 5,
+            "rows": 3
+          },
+          {
+            "cols": 1,
+            "index": 6,
+            "rows": 1
+          },
+          {
+            "cols": 3,
+            "index": 7,
+            "rows": 3
+          },
+          {
+            "cols": 1,
+            "index": 8,
+            "rows": 1
+          },
+          {
+            "cols": 4,
+            "index": 9,
+            "rows": 2
+          },
+          {
+            "cols": 1,
+            "index": 10,
+            "rows": 6
+          },
+          {
+            "cols": 9,
+            "index": 11,
+            "rows": 39
+          },
+          {
+            "cols": 10,
+            "index": 12,
+            "rows": 38
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4690\\30098_indent_over_stored_cs.hwp",
+        "tableCount": 13,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 13,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4690\\30098_indent_over_stored_cs.hwp",
+        "tableCount": 13,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "개인정보보호를 위한\n주민등록표 등ㆍ초본 교부 개선"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 0,
+            "mergeCount": 0,
+            "paragraph": 4,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 9,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "목      차"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 7,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 9,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 24,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "Ⅰ. 추진배경\t 1\nⅡ. 일반현황\t 2\nⅢ. 문제점 및 개선방안\t 3\nⅣ. 조치사항\t 7"
+              }
+            ],
+            "cols": 1,
+            "control": 1,
+            "csvReady": true,
+            "index": 2,
+            "mergeCount": 0,
+            "paragraph": 27,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 21,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "구 분"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "계"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "본인"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "세대원"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "수임자"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "이해관계자"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "기타"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "발 급"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "9,649,706"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "3,166,271"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "94,715"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "260,470"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "5,513,809"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "614,441"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "비 율"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "100%"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "32.8%"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1.0%"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "2.7%"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "57.1%"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "6.4%"
+              }
+            ],
+            "cols": 7,
+            "control": 0,
+            "csvReady": true,
+            "index": 3,
+            "mergeCount": 0,
+            "paragraph": 75,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "▪주민등록 등초본 발급을 위임받은 사람이 주민센터 현장에서 위임한 사람의 서명을  직접 기입하는 사례 다수 발생 (각 구청ㆍ주민센터 실태조사 , ’11. 1월, 2월)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 4,
+            "mergeCount": 0,
+            "paragraph": 96,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "< 예 시 >"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 6,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "대상자 및 항목"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "신청서"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "증명자료"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "2. 본인 또는 세대원의 위임을 받아 신청하는 경우"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "별지 제9호서식(위임장)"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "-"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 5,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 103,
+                    "rows": 2,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 6,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "대상자 및 항목"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "신청서"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "증명자료"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "2. 본인 또는 세대원의 위임을 받아 신청하는 경우"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "별지 제9호서식(위임장)"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "위임한 사람의 주민등록증 등 신분증명서"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 5,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 11
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 103,
+                    "rows": 2,
+                    "section": 0
+                  }
+                ],
+                "row": 2,
+                "rowSpan": 1,
+                "text": "< 현 행 >\n▪ 주민등록법 시행규칙 별표(제출서류 등)\n\n▪ 주민등록법 시행규칙 별지 제9호 서식\n 첨부서류 2. 위임한 사람의 주민등록증 등 신분증명서(담당 공무원이 위임장의 진위 여부 확인을 위하여 요청하는 경우)\n\n\n\n\n< 변 경 >\n▪ 주민등록법 시행규칙 별표(제출서류 등)\n\n▪ 주민등록법 시행규칙 별지 제9호 서식\n 첨부서류 2. 위임한 사람의 주민등록증 등 신분증명서"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 5,
+            "mergeCount": 2,
+            "paragraph": 103,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "▪불법 채권추심업체 및 흥신소 등에서 특정인의 개인정보 취득을 위해 차용증을 위조하여 주민등록표 초본을 발급받은 후 초본의 세대주 및 관계 정보를 다시 주민등록표 등본 발급을 위한 위임장 위조에 활용 (중앙일보, ’11. 1. 10일자)\n\n ▪불법 채권추심업체에서는 채무자 외에 세대주에게 채권추심을 위한 자료로 활용 가능\n   (불법채권추심업체 실태조사, ’11. 2월)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 6,
+            "mergeCount": 0,
+            "paragraph": 111,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 2,
+                "text": "< 예 시 >"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "▪ 주민등록법 시행규칙 제13조 제7항 개정\n\n ⑦ 열람 또는 등ㆍ초본 교부기관의 장은 개인별 주민등록표를 열람하게 하거나 그 초본을 교부할 때에는 주소변동사항 중 세대주의 성명 및 관계를 생략하고 열람하게 하거나 교부하여야 한다. 다만, 다음 각 호의 어느 하나에 해당하는 자가 과거의 주소변동사항 중 세대주의 성명 및 관계를 포함하여 신청하는 경우에는 이를 포함하여 열람하게 하거나 교부할 수 있다.\n  1. 본인 또는 세대원이나 본인 또는 세대원의 위임을 받은 자\n  2. 국가 또는 지방자치단체가 공무상 필요로 하는 경우"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": false,
+            "index": 7,
+            "mergeCount": 2,
+            "paragraph": 119,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "▪주민등록법 시행령 별표2에 따라 채권ㆍ채무관계가 있는 금융기관 등은 이해관계자의 주민등록표 초본 교부신청이 가능하지만, 별표에 해당 금융기관 등이 열거되지 않고 모호하게 되어 있어, 주민등록 담당자가 일일이 확인할 수가 없는 상황임. 금융위원회 인터넷 사이트를 통하여 제도권금융회사 조회를 하고 있으나, 제도권이 아닌 금융기관이나, 사이비(유사명의)채권추심업체, 채권유동화전문회사 등은 조회ㆍ자격유무 판단이 어려워 주민등록 초본 교부신청 무자격 업체 등에 발급되는 경우도 있는 실정임. (구청ㆍ주민센터 실태조사, ’11. 1월)"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 8,
+            "mergeCount": 0,
+            "paragraph": 125,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 8,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "구  분"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "세부개선과제"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "소관기관"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "조치기한"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "개인정보보호를 위한 주민등록표 등ㆍ초본 교부 제한"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "○ 위임장에 의한 열람 및 주민등록표 등ㆍ초본 교부 신청 시 위임한 사람의 신분증 확인 의무화\n  - 위임장 진위여부 검증을 강화하기 위해 주민등록표 등ㆍ초본 발급기관에서 위임한 사람의 신분증 확인 의무화 \n\n\n\n○ 제3자의 주민등록표 초본 교부 시 개인정보 표시 제한\n  - 채권ㆍ채무관계 등의 이해관계자가 주민등록표 초본을 발급ㆍ열람하는 경우에는 ‘세대주 성명 및 관계’ 정보 삭제\n\n\n\n○ 초본 교부 신청 가능한 금융기관 등의 목록화\n  - 주민등록법 시행령 별표 2의 3호에 해당하는 금융기관 등을 목록화하여 지침을 신설하거나 조회가능한 수단 마련"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "행정안전부"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "’11.9.31"
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": true,
+            "index": 9,
+            "mergeCount": 0,
+            "paragraph": 137,
+            "rows": 2,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 6,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "[별표 2] <개정 2009.11.20>"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "채권ㆍ채무관계 등 정당한 이해관계가 있는 자의 범위(제47조제4항 관련)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1. 「민법」 제22조에 따른 부재자의 재산관리인 또는 이해관계인"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "2. 부동산 또는 이에 준하는 것에 관한 권리의 설정ㆍ변경ㆍ소멸에 관계되는 자"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "3. 연체대출금 회수와 보증채무의 구상권 행사 등 연체채권의 회수를 위하여 채무자 및 그 보증인에 대한 주민등록표 초본의 열람 또는 교부신청이 필요한 다음의 금융기관 등\n  가. 「금융기관부실자산 등의 효율적 처리 및 한국자산관리공사의 설립에 관한 법률」에 따른 한국자산관리공사 및 같은 법 제2조제1호에 따른 금융기관 \n  나. 「농림수산업자 신용보증법」에 따른 농림수산업자신용보증기금 \n  다. 「지역신용보증재단법」에 따른 신용보증재단 및 전국신용보증재단연합회\n  라. 「한국주택금융공사법」에 따른 주택금융신용보증기금을 운용ㆍ관리하는 기관\n  마. 「자본시장과 금융투자업에 관한 법률」에 따른 신탁업자 및 증권금융회사\n  바. 삭제 <2008.7.29>\n  사. 「예금자보호법」에 따른 예금보험공사\n  아. 「중소기업진흥에 관한 법률」에 따른 중소기업진흥공단\n  자. 「중소기업협동조합법」에 따른 중소기업협동조합중앙회\n  차. 「신용정보의 이용 및 보호에 관한 법률」에 따라 금융위원회의 채권추심업 허가를 받은 신용정보업자\n  카. 「자산유동화에 관한 법률」에 따른 유동화전문회사\n  타. 「주택저당채권유동화회사법」에 따른 주택저당채권유동화회사\n  파. 「수출보험법」에 따른 한국수출보험공사"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "4. 개인 및 법인 등의 채권ㆍ채무와 관계되는 자(제3호에 규정된 금융기관 등은 제외한다). 다만, 기한경과나 기한의 이익 상실 등으로 변제기가 도래한 경우로 한정하며, 개인의 채권ㆍ채무관계에서 채무금액 50만원 이하인 경우는 제외한다."
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 10,
+            "mergeCount": 0,
+            "paragraph": 172,
+            "rows": 6,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 55,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "[별지 제9호서식] <개정 2010.8.9>"
+              },
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "주민등록표 열람 또는 등ㆍ초본 교부 신청 위임장"
+              },
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "※ 뒤쪽의 유의사항을 읽고 작성하여 주시기 바라며, [  ]에는 해당되는 곳에 √표를 합니다.                           (앞 쪽)"
+              },
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 3,
+                "text": "위임 받은\n사람\n(신청인)"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "성명"
+              },
+              {
+                "col": 7,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "주민등록번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "주소"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "전화번호"
+              },
+              {
+                "col": 7,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "대상자와의 관계"
+              },
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 4,
+                "text": "위임한 사람\n(열람 또는 등ㆍ초본\n교부 대상자)"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "성명"
+              },
+              {
+                "col": 7,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "주민등록번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "주소"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "전화번호"
+              },
+              {
+                "col": 7,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "세대주 성명"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "수수료 면제 대상 \n                 [  ]국민기초생활수급자   [  ]국가보훈대상자   [  ]그 밖의 대상자(         )"
+              },
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 14,
+                "text": "위임 내용\n(신청 내용)"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "열  람"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "[  ]등본사항                  [  ]초본사항"
+              },
+              {
+                "col": 2,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "※ 개인정보 보호를 위하여 아래의 등ㆍ초본 사항 중 필요한 사항만 선택하여 신청할 수 있습니다. \n   선택사항을 표시하지 않는 경우에는 “포함”으로 굵게 표시된 사항만 포함하여 교부해 드립니다."
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 8,
+                "text": "등본 교부\n[  ] 통"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "1. 과거의 주소변동 사항   \n[  ]전체 포함  [  ]최근 5년 포함  [  ]미포함"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "2. 세대구성 사유 \n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "3. 세대원의 세대주와의 관계\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "4. 세대원의 전입일 / 변동일, 변동 사유\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "5. 교부 대상자 외 다른 세대원의 이름\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "6. 교부 대상자 외 다른 세대원의 주민등록번호 뒷자리\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "7. 동거인\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "8. 외국인 배우자\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 2,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 4,
+                "text": "초본 교부\n[  ] 통"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "1. 개인 인적사항 변경 내용\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "2. 과거의 주소변동 사항\n[  ]전체 포함  [  ]최근 5년 포함  [  ]미포함"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "3. 과거의 주소변동 사항 중 세대주의 성명과 세대주와의 관계\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 4,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "4. 병역사항\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "용도 및 목적"
+              },
+              {
+                "col": 1,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": "「주민등록법」 제29조제2항에 따라 주민등록표 열람 또는 등ㆍ초본 교부 신청을 위와 같이 위임합니다."
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 5,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "장년      월      일"
+              },
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "위임한 사람"
+              },
+              {
+                "col": 5,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "(서명 또는 인)"
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": "시장ㆍ군수ㆍ구청장 또는 읍ㆍ면ㆍ동장 및 출장소장 귀하"
+              },
+              {
+                "col": 6,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 2,
+                "text": "첨부서류\n(확인 후 돌려 드립니다)"
+              },
+              {
+                "col": 3,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 2,
+                "text": "1. 신청인(위임받은 사람)의 주민등록증 등 신분증명서\n2. 위임한 사람의 주민등록증 등 신분증명서(담당 공무원이 위임장의 진위 여부 확인을 위하여 요청하는 경우)\n3. 위임한 사람이 수수료 면제 대상자인 경우는 필요한 증명자료"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 1,
+                "text": "수수료"
+              },
+              {
+                "col": 8,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 38,
+                "rowSpan": 1,
+                "text": "210㎜×297㎜[일반용지 60g/㎡(재활용품)]"
+              }
+            ],
+            "cols": 9,
+            "control": 0,
+            "csvReady": false,
+            "index": 11,
+            "mergeCount": 52,
+            "paragraph": 188,
+            "rows": 39,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 60,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "[별지 제7호서식] <개정 2010.8.9>"
+              },
+              {
+                "col": 5,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "본인은 민원24(www.minwon.go.kr)에서도 신청할 수 있습니다."
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "주민등록표 열람 또는 등ㆍ초본 교부 신청서"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "※ 뒤쪽의 유의사항을 읽고 작성하여 주시기 바라며, [ ]에는 해당되는 곳에 √표를 합니다.                             (앞 쪽)"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 4,
+                "text": "신청인\n(개인)"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "성명"
+              },
+              {
+                "col": 4,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "(서명 또는 인)"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "주민등록번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "주소"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "대상자와의 관계"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "전화번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "수수료 면제 대상 \n                 [  ]국민기초생활수급자   [  ]국가보훈대상자   [  ]그 밖의 대상자(         )"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 4,
+                "text": "신청인\n(법인)"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "기관명"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "사업자등록번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "대표자"
+              },
+              {
+                "col": 4,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "(서명 또는 인)"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "대표전화번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "소재지"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "방문자 성명"
+              },
+              {
+                "col": 3,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "주민등록번호"
+              },
+              {
+                "col": 7,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "직위"
+              },
+              {
+                "col": 9,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "전화번호"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 2,
+                "text": "열람 또는 \n등ㆍ초본 \n교부 대상자"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "성명"
+              },
+              {
+                "col": 7,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "주민등록번호"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "주소\n[행정기관명 :              ]"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 14,
+                "text": "신청 내용"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "열  람"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "[  ]등본사항                  [  ]초본사항"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 17,
+                "rowSpan": 1,
+                "text": "※ 개인정보 보호를 위하여 아래의 등ㆍ초본 사항 중 필요한 사항만 선택하여 신청할 수 있습니다. \n   선택사항을 표시하지 않는 경우에는 “포함”으로 굵게 표시된 사항만 포함하여 교부해 드립니다."
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 8,
+                "text": "등본 교부\n[  ] 통"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 18,
+                "rowSpan": 1,
+                "text": "1. 과거의 주소변동 사항   \n[  ]전체 포함  [  ]최근 5년 포함  [  ]미포함"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 19,
+                "rowSpan": 1,
+                "text": "2. 세대구성 사유 \n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 20,
+                "rowSpan": 1,
+                "text": "3. 세대원의 세대주와의 관계\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 21,
+                "rowSpan": 1,
+                "text": "4. 세대원의 전입일 / 변동일, 변동 사유\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 22,
+                "rowSpan": 1,
+                "text": "5. 교부 대상자 외 다른 세대원의 이름\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 23,
+                "rowSpan": 1,
+                "text": "6. 교부 대상자 외 다른 세대원의 주민등록번호 뒷자리\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 24,
+                "rowSpan": 1,
+                "text": "7. 동거인\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 25,
+                "rowSpan": 1,
+                "text": "8. 외국인 배우자\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 4,
+                "text": "초본 교부\n[  ] 통"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 26,
+                "rowSpan": 1,
+                "text": "1. 개인 인적사항 변경 내용\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 27,
+                "rowSpan": 1,
+                "text": "2. 과거의 주소변동 사항\n[  ]전체 포함  [  ]최근 5년 포함  [  ]미포함"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 28,
+                "rowSpan": 1,
+                "text": "3. 과거의 주소변동 사항 중 세대주의 성명과 세대주와의 관계\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 2,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 29,
+                "rowSpan": 1,
+                "text": "4. 병역사항\n                                          [  ]포함  [  ]미포함"
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 30,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "용도 및 목적"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 6,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 31,
+                "rowSpan": 1,
+                "text": "제출처"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": "증명자료"
+              },
+              {
+                "col": 1,
+                "colSpan": 9,
+                "isHeader": false,
+                "row": 32,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 33,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 34,
+                "rowSpan": 1,
+                "text": "「주민등록법 시행령」 제47조와 제48조에 따라 주민등록표의 열람 또는 등ㆍ초본 교부를 신청합니다."
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 35,
+                "rowSpan": 1,
+                "text": "년      월      일"
+              },
+              {
+                "col": 0,
+                "colSpan": 8,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": "시장ㆍ군수ㆍ구청장 또는 읍ㆍ면ㆍ동장 및 출장소장 귀하"
+              },
+              {
+                "col": 8,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 36,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 10,
+                "isHeader": false,
+                "row": 37,
+                "rowSpan": 1,
+                "text": "210㎜×297㎜[일반용지 60g/㎡(재활용품)]"
+              }
+            ],
+            "cols": 10,
+            "control": 0,
+            "csvReady": false,
+            "index": 12,
+            "mergeCount": 56,
+            "paragraph": 189,
+            "rows": 38,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 4,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue4690\\30098_indent_over_stored_cs.hwp",
+        "tableCount": 13,
+        "tables": [
+          {
+            "cols": 3,
+            "index": 5,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 7,
+            "mergeCount": 2,
+            "rows": 3
+          },
+          {
+            "cols": 9,
+            "index": 11,
+            "mergeCount": 52,
+            "rows": 39
+          },
+          {
+            "cols": 10,
+            "index": 12,
+            "mergeCount": 56,
+            "rows": 38
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

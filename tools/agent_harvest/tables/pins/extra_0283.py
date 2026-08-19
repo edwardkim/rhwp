@@ -1,0 +1,36648 @@
+# extra pins
+
+LINE = NAME = FIELD = CELL = ITEM = SHAPE = LEAF = None
+
+def test_x0283_r_source():
+    '''실측 잎'''
+    assert LEAF == "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\hwpx-h-01.hwpx"
+
+def test_x0283_r_runs_0_argv_0():
+    '''실측 잎'''
+    assert LEAF == "tables"
+
+def test_x0283_r_runs_0_argv_1():
+    '''실측 잎'''
+    assert LEAF == "--json"
+
+def test_x0283_r_runs_0_exit():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_0_stdout_command():
+    '''실측 잎'''
+    assert LEAF == "tables"
+
+def test_x0283_r_runs_0_stdout_schemaVersion():
+    '''실측 잎'''
+    assert LEAF == "1.0"
+
+def test_x0283_r_runs_0_stdout_source():
+    '''실측 잎'''
+    assert LEAF == "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\hwpx-h-01.hwpx"
+
+def test_x0283_r_runs_0_stdout_tableCount():
+    '''실측 잎'''
+    assert LEAF == 26
+
+def test_x0283_r_runs_0_stdout_tables_0_cols():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_0_stdout_tables_0_index():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_0_stdout_tables_0_rows():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_0_stdout_tables_1_cols():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_0_stdout_tables_1_index():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_0_stdout_tables_1_rows():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_0_stdout_tables_2_cols():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_0_stdout_tables_2_index():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_0_stdout_tables_2_rows():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_0_stdout_tables_3_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_0_stdout_tables_3_index():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_0_stdout_tables_3_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_0_stdout_tables_4_cols():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_0_stdout_tables_4_index():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_0_stdout_tables_4_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_0_stdout_tables_5_cols():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_0_stdout_tables_5_index():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_0_stdout_tables_5_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_0_stdout_tables_6_cols():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_0_stdout_tables_6_index():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_0_stdout_tables_6_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_0_stdout_tables_7_cols():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_0_stdout_tables_7_index():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_0_stdout_tables_7_rows():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_0_stdout_tables_8_cols():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_0_stdout_tables_8_index():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_0_stdout_tables_8_rows():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_0_stdout_tables_9_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_0_stdout_tables_9_index():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_0_stdout_tables_9_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_0_stdout_tables_10_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_0_stdout_tables_10_index():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_0_stdout_tables_10_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_0_stdout_tables_11_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_0_stdout_tables_11_index():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_0_stdout_tables_11_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_0_stdout_tables_12_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_0_stdout_tables_12_index():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_0_stdout_tables_12_rows():
+    '''실측 잎'''
+    assert LEAF == 16
+
+def test_x0283_r_runs_0_stdout_tables_13_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_0_stdout_tables_13_index():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_0_stdout_tables_13_rows():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_0_stdout_tables_14_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_0_stdout_tables_14_index():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_0_stdout_tables_14_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_0_stdout_tables_15_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_0_stdout_tables_15_index():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_0_stdout_tables_15_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_0_stdout_tables_16_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_0_stdout_tables_16_index():
+    '''실측 잎'''
+    assert LEAF == 16
+
+def test_x0283_r_runs_0_stdout_tables_16_rows():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_0_stdout_tables_17_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_0_stdout_tables_17_index():
+    '''실측 잎'''
+    assert LEAF == 17
+
+def test_x0283_r_runs_0_stdout_tables_17_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_0_stdout_tables_18_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_0_stdout_tables_18_index():
+    '''실측 잎'''
+    assert LEAF == 18
+
+def test_x0283_r_runs_0_stdout_tables_18_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_0_stdout_tables_19_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_0_stdout_tables_19_index():
+    '''실측 잎'''
+    assert LEAF == 19
+
+def test_x0283_r_runs_0_stdout_tables_19_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_0_stdout_tables_20_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_0_stdout_tables_20_index():
+    '''실측 잎'''
+    assert LEAF == 20
+
+def test_x0283_r_runs_0_stdout_tables_20_rows():
+    '''실측 잎'''
+    assert LEAF == 16
+
+def test_x0283_r_runs_0_stdout_tables_21_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_0_stdout_tables_21_index():
+    '''실측 잎'''
+    assert LEAF == 21
+
+def test_x0283_r_runs_0_stdout_tables_21_rows():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_0_stdout_tables_22_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_0_stdout_tables_22_index():
+    '''실측 잎'''
+    assert LEAF == 22
+
+def test_x0283_r_runs_0_stdout_tables_22_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_0_stdout_tables_23_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_0_stdout_tables_23_index():
+    '''실측 잎'''
+    assert LEAF == 23
+
+def test_x0283_r_runs_0_stdout_tables_23_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_0_stdout_tables_24_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_0_stdout_tables_24_index():
+    '''실측 잎'''
+    assert LEAF == 24
+
+def test_x0283_r_runs_0_stdout_tables_24_rows():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_0_stdout_tables_25_cols():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_0_stdout_tables_25_index():
+    '''실측 잎'''
+    assert LEAF == 25
+
+def test_x0283_r_runs_0_stdout_tables_25_rows():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_0_stdout_tool():
+    '''실측 잎'''
+    assert LEAF == "rhwp-agent"
+
+def test_x0283_r_runs_0_stdout_untrustedContent():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_0_stdout_version():
+    '''실측 잎'''
+    assert LEAF == "0.8.4"
+
+def test_x0283_r_runs_1_argv_0():
+    '''실측 잎'''
+    assert LEAF == "table-count"
+
+def test_x0283_r_runs_1_argv_1():
+    '''실측 잎'''
+    assert LEAF == "--json"
+
+def test_x0283_r_runs_1_exit():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_1_stdout_command():
+    '''실측 잎'''
+    assert LEAF == "table-count"
+
+def test_x0283_r_runs_1_stdout_schemaVersion():
+    '''실측 잎'''
+    assert LEAF == "1.0"
+
+def test_x0283_r_runs_1_stdout_source():
+    '''실측 잎'''
+    assert LEAF == "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\hwpx-h-01.hwpx"
+
+def test_x0283_r_runs_1_stdout_tableCount():
+    '''실측 잎'''
+    assert LEAF == 26
+
+def test_x0283_r_runs_1_stdout_tool():
+    '''실측 잎'''
+    assert LEAF == "rhwp-agent"
+
+def test_x0283_r_runs_1_stdout_untrustedContent():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_1_stdout_version():
+    '''실측 잎'''
+    assert LEAF == "0.8.4"
+
+def test_x0283_r_runs_2_argv_0():
+    '''실측 잎'''
+    assert LEAF == "table-inspect"
+
+def test_x0283_r_runs_2_argv_1():
+    '''실측 잎'''
+    assert LEAF == "--json"
+
+def test_x0283_r_runs_2_exit():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_command():
+    '''실측 잎'''
+    assert LEAF == "table-inspect"
+
+def test_x0283_r_runs_2_stdout_emittedCount():
+    '''실측 잎'''
+    assert LEAF == 26
+
+def test_x0283_r_runs_2_stdout_schemaVersion():
+    '''실측 잎'''
+    assert LEAF == "1.0"
+
+def test_x0283_r_runs_2_stdout_source():
+    '''실측 잎'''
+    assert LEAF == "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\hwpx-h-01.hwpx"
+
+def test_x0283_r_runs_2_stdout_tableCount():
+    '''실측 잎'''
+    assert LEAF == 26
+
+def test_x0283_r_runs_2_stdout_tables_0_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_0_cellCount():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == ""
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "보도자료"
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_0_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == ""
+
+def test_x0283_r_runs_2_stdout_tables_0_cols():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_0_control():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_0_csvReady():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_tables_0_index():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_0_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_0_paragraph():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_0_rows():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_0_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_1_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_1_cellCount():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_1_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_1_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_1_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_1_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_1_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_1_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "‘24년 1분기 해외직접투자는 150.9억 달러로 전년동기비 14.6% 감소"
+
+def test_x0283_r_runs_2_stdout_tables_1_cols():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_1_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_1_csvReady():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_tables_1_index():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_1_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_1_paragraph():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_1_rows():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_1_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_2_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_2_cellCount():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "보도시점"
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2024. 6. 21.(금) 11:00"
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "배포"
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_2_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2024. 6. 21.(금) 09:00"
+
+def test_x0283_r_runs_2_stdout_tables_2_cols():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_2_control():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_2_csvReady():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_tables_2_index():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_2_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_2_paragraph():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_2_rows():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_2_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_3_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_3_cellCount():
+    '''실측 잎'''
+    assert LEAF == 33
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구분"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2024년"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "총투자"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "282.3"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "198.5"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "184.8"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "150.9"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "176.8"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "159.8"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "150.5"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "157.7"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "150.9"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "증감률"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "(147.8)"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "(16.6)"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "(5.2)"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(△51.2)"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△37.4)"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(△19.5)"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(△18.5)"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(4.5)"
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_3_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "(△14.6)"
+
+def test_x0283_r_runs_2_stdout_tables_3_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_3_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_3_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_3_index():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_3_paragraph():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_3_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_3_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_4_cellCount():
+    '''실측 잎'''
+    assert LEAF == 24
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구분"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "금융보험업"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "제조업"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "부동산업"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "전문과학기술업"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "광업"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "‘23.1Q"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "66.8"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "63.2"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "8.1"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "3.6"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "11.7"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "‘24.1Q"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "55.0"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "40.5"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "22.4"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "9.3"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "6.3"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "증감률(%)"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "(17.8)"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "(35.9)"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "(177.3)"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "(156.9)"
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_4_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "(△46.3)"
+
+def test_x0283_r_runs_2_stdout_tables_4_cols():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_4_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_csvReady():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_tables_4_index():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_4_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_4_paragraph():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_4_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_4_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_5_cellCount():
+    '''실측 잎'''
+    assert LEAF == 24
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구분"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "미국"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "룩셈부르크"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "케이맨제도"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "저지"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "베트남"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "‘23.1Q"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "87.1"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "9.5"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "15.0"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "4.5"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "‘24.1Q"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "61.2"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "16.4"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "12.6"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "9.3"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "6.7"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "증감률(%)"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "(△29.8)"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "(71.8)"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "(△16.2)"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "(3,236.4)"
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_5_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "(47.4)"
+
+def test_x0283_r_runs_2_stdout_tables_5_cols():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_5_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_csvReady():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_tables_5_index():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_5_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_5_paragraph():
+    '''실측 잎'''
+    assert LEAF == 21
+
+def test_x0283_r_runs_2_stdout_tables_5_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_5_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_6_cellCount():
+    '''실측 잎'''
+    assert LEAF == 32
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구분"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "북미"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "유럽"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "아시아"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "중남미"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "대양주"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "아프리카"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "중동"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "‘23.1Q"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "97.8"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "23.4"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "23.9"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "30.8"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "0.6"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "0.1"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "‘24.1Q"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "67.5"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "37.0"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "21.5"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "18.6"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "2.7"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "2.6"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "1.1"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "증감률(%)"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "(△31.0)"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "(58.2)"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(△9.7)"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△39.6)"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(353.0)"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(773.5)"
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_6_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(616.9)"
+
+def test_x0283_r_runs_2_stdout_tables_6_cols():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_6_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_csvReady():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_tables_6_index():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_6_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_6_paragraph():
+    '''실측 잎'''
+    assert LEAF == 23
+
+def test_x0283_r_runs_2_stdout_tables_6_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_6_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_7_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_7_cellCount():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "담당 부서"
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "대외경제국"
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "책임자"
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "과  장"
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "강병중"
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "(044-215-7630)"
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == ""
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "국제경제과"
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "담당자"
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "사무관"
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "황예진"
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_7_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "(yejin1210@korea.kr)"
+
+def test_x0283_r_runs_2_stdout_tables_7_cols():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_7_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_7_csvReady():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_tables_7_index():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_7_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_7_paragraph():
+    '''실측 잎'''
+    assert LEAF == 28
+
+def test_x0283_r_runs_2_stdout_tables_7_rows():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_7_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_8_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_8_cellCount():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "별첨"
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == ""
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_8_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "’24.1분기 해외직접투자 세부 통계(단위: 억 달러, 전년동기 대비 %)"
+
+def test_x0283_r_runs_2_stdout_tables_8_cols():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_8_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_8_csvReady():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_tables_8_index():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_8_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_8_paragraph():
+    '''실측 잎'''
+    assert LEAF == 30
+
+def test_x0283_r_runs_2_stdout_tables_8_rows():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_8_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_9_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_9_cellCount():
+    '''실측 잎'''
+    assert LEAF == 32
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2024년"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "전 체"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "282.3"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "198.5"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "184.8"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "150.9"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "176.8"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "159.8"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "150.5"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "157.7"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "150.9"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "(147.8)"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "(16.6)"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "(5.2)"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "(△51.2)"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(△37.4)"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△19.5)"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(△18.5)"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(4.5)"
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_9_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△14.6)"
+
+def test_x0283_r_runs_2_stdout_tables_9_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_9_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_9_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_9_index():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_9_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_9_paragraph():
+    '''실측 잎'''
+    assert LEAF == 37
+
+def test_x0283_r_runs_2_stdout_tables_9_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_9_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_10_cellCount():
+    '''실측 잎'''
+    assert LEAF == 108
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2024년"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "금융\n보험업"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "85.0"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "73.6"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "84.6"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "60.9"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "66.8"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "63.6"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "70.3"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "63.0"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "55.0"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "(54.4)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "(17.0)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "(13.5)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "(△43.5)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(△21.4)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△13.5)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(△17.0)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(3.4)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△17.8)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "제조업"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "111.8"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "59.7"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "44.3"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "37.4"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "63.2"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "40.1"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "49.6"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "51.7"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "40.5"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(288.4)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(85.2)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(18.8)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(△53.9)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "(△43.5)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "(△32.9)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "(12.1)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "(38.2)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "(△35.9)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "부동산업"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "27.4"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "15.7"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "14.6"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "16.2"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "8.1"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "12.3"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "9.3"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "12.9"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "22.4"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "(192.1)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "(27.3)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "(△36.7)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "(△36.3)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "(△70.4)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(△21.8)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(△36.4)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(△20.8)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(177.3)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "전문과학\n기술업"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "6.6"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_72_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_72_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_72_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_72_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_72_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_72_text():
+    '''실측 잎'''
+    assert LEAF == "5.8"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_73_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_73_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_73_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_73_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_73_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_73_text():
+    '''실측 잎'''
+    assert LEAF == "7.7"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_74_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_74_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_74_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_74_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_74_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_74_text():
+    '''실측 잎'''
+    assert LEAF == "7.2"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_75_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_75_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_75_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_75_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_75_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_75_text():
+    '''실측 잎'''
+    assert LEAF == "3.6"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_76_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_76_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_76_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_76_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_76_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_76_text():
+    '''실측 잎'''
+    assert LEAF == "7.4"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_77_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_77_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_77_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_77_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_77_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_77_text():
+    '''실측 잎'''
+    assert LEAF == "4.6"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_78_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_78_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_78_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_78_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_78_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_78_text():
+    '''실측 잎'''
+    assert LEAF == "2.7"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_79_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_79_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_79_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_79_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_79_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_79_text():
+    '''실측 잎'''
+    assert LEAF == "9.3"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_80_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_80_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_80_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_80_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_80_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_80_text():
+    '''실측 잎'''
+    assert LEAF == "(84.5)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_81_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_81_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_81_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_81_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_81_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_81_text():
+    '''실측 잎'''
+    assert LEAF == "(△64.5)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_82_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_82_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_82_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_82_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_82_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_82_text():
+    '''실측 잎'''
+    assert LEAF == "(59.6)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_83_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_83_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_83_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_83_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_83_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_83_text():
+    '''실측 잎'''
+    assert LEAF == "(61.2)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_84_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_84_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_84_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_84_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_84_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_84_text():
+    '''실측 잎'''
+    assert LEAF == "(△45.5)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_85_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_85_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_85_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_85_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_85_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_85_text():
+    '''실측 잎'''
+    assert LEAF == "(27.8)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_86_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_86_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_86_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_86_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_86_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_86_text():
+    '''실측 잎'''
+    assert LEAF == "(△39.8)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_87_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_87_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_87_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_87_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_87_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_87_text():
+    '''실측 잎'''
+    assert LEAF == "(△62.2)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_88_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_88_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_88_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_88_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_88_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_88_text():
+    '''실측 잎'''
+    assert LEAF == "(156.9)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_89_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_89_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_89_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_89_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_89_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_89_text():
+    '''실측 잎'''
+    assert LEAF == "광업"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_90_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_90_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_90_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_90_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_90_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_90_text():
+    '''실측 잎'''
+    assert LEAF == "9.8"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_91_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_91_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_91_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_91_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_91_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_91_text():
+    '''실측 잎'''
+    assert LEAF == "4.7"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_92_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_92_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_92_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_92_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_92_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_92_text():
+    '''실측 잎'''
+    assert LEAF == "4.7"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_93_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_93_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_93_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_93_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_93_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_93_text():
+    '''실측 잎'''
+    assert LEAF == "4.9"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_94_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_94_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_94_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_94_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_94_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_94_text():
+    '''실측 잎'''
+    assert LEAF == "11.7"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_95_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_95_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_95_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_95_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_95_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_95_text():
+    '''실측 잎'''
+    assert LEAF == "11.2"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_96_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_96_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_96_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_96_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_96_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_96_text():
+    '''실측 잎'''
+    assert LEAF == "4.9"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_97_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_97_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_97_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_97_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_97_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_97_text():
+    '''실측 잎'''
+    assert LEAF == "7.3"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_98_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_98_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_98_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_98_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_98_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_98_text():
+    '''실측 잎'''
+    assert LEAF == "6.3"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_99_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_99_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_99_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_99_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_99_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_99_text():
+    '''실측 잎'''
+    assert LEAF == "(156.6)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_100_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_100_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_100_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_100_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_100_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_100_text():
+    '''실측 잎'''
+    assert LEAF == "(23.2)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_101_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_101_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_101_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_101_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_101_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_101_text():
+    '''실측 잎'''
+    assert LEAF == "(△2.2)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_102_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_102_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_102_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_102_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_102_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_102_text():
+    '''실측 잎'''
+    assert LEAF == "(△27.5)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_103_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_103_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_103_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_103_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_103_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_103_text():
+    '''실측 잎'''
+    assert LEAF == "(18.7)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_104_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_104_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_104_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_104_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_104_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_104_text():
+    '''실측 잎'''
+    assert LEAF == "(139.4)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_105_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_105_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_105_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_105_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_105_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_105_text():
+    '''실측 잎'''
+    assert LEAF == "(4.4)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_106_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_106_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_106_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_106_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_106_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_106_text():
+    '''실측 잎'''
+    assert LEAF == "(47.6)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_107_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_107_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_107_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_107_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_107_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_10_cells_107_text():
+    '''실측 잎'''
+    assert LEAF == "(△46.4)"
+
+def test_x0283_r_runs_2_stdout_tables_10_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_10_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_10_index():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_10_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_10_paragraph():
+    '''실측 잎'''
+    assert LEAF == 41
+
+def test_x0283_r_runs_2_stdout_tables_10_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_10_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_11_cellCount():
+    '''실측 잎'''
+    assert LEAF == 108
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2024년"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "미국"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "91.8"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "72.4"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "75.5"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "55.3"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "87.1"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "64.0"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "68.2"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "59.1"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "61.2"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "(113.5)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "(15.7)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "(5.8)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "(△46.0)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(△5.2)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△11.6)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(△9.7)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(7.0)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△29.8)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "룩셈부르크"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "16.1"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "14.4"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "8.7"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "10.4"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "9.5"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "11.3"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "12.8"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "16.5"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "16.4"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(76.6)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(56.3)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(4.7)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(△39.9)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "(△40.9)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "(△21.1)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "(46.5)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "(59.0)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "(71.8)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "케이맨제도"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "22.5"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "27.6"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "26.3"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "18.4"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "15.0"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "14.7"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "14.2"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "20.4"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "12.6"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "(74.8)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "(29.5)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "(22.5)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "(△65.6)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "(△33.4)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(△46.8)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(△46.0)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(11.1)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(△16.2)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "저지"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "14.0"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_72_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_72_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_72_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_72_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_72_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_72_text():
+    '''실측 잎'''
+    assert LEAF == "0.4"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_73_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_73_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_73_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_73_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_73_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_73_text():
+    '''실측 잎'''
+    assert LEAF == "0.7"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_74_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_74_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_74_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_74_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_74_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_74_text():
+    '''실측 잎'''
+    assert LEAF == "0.8"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_75_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_75_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_75_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_75_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_75_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_75_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_76_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_76_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_76_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_76_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_76_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_76_text():
+    '''실측 잎'''
+    assert LEAF == "1.5"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_77_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_77_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_77_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_77_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_77_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_77_text():
+    '''실측 잎'''
+    assert LEAF == "0.2"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_78_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_78_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_78_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_78_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_78_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_78_text():
+    '''실측 잎'''
+    assert LEAF == "0.8"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_79_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_79_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_79_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_79_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_79_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_79_text():
+    '''실측 잎'''
+    assert LEAF == "9.3"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_80_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_80_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_80_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_80_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_80_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_80_text():
+    '''실측 잎'''
+    assert LEAF == "(7,552.3)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_81_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_81_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_81_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_81_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_81_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_81_text():
+    '''실측 잎'''
+    assert LEAF == "(936.4)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_82_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_82_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_82_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_82_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_82_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_82_text():
+    '''실측 잎'''
+    assert LEAF == "(162.9)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_83_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_83_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_83_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_83_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_83_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_83_text():
+    '''실측 잎'''
+    assert LEAF == "(11.7)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_84_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_84_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_84_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_84_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_84_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_84_text():
+    '''실측 잎'''
+    assert LEAF == "(△98.0)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_85_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_85_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_85_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_85_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_85_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_85_text():
+    '''실측 잎'''
+    assert LEAF == "(276.1)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_86_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_86_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_86_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_86_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_86_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_86_text():
+    '''실측 잎'''
+    assert LEAF == "(△74.9)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_87_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_87_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_87_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_87_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_87_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_87_text():
+    '''실측 잎'''
+    assert LEAF == "(6.5)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_88_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_88_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_88_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_88_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_88_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_88_text():
+    '''실측 잎'''
+    assert LEAF == "(3,236.4)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_89_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_89_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_89_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_89_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_89_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_89_text():
+    '''실측 잎'''
+    assert LEAF == "베트남"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_90_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_90_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_90_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_90_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_90_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_90_text():
+    '''실측 잎'''
+    assert LEAF == "4.0"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_91_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_91_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_91_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_91_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_91_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_91_text():
+    '''실측 잎'''
+    assert LEAF == "8.6"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_92_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_92_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_92_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_92_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_92_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_92_text():
+    '''실측 잎'''
+    assert LEAF == "5.4"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_93_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_93_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_93_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_93_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_93_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_93_text():
+    '''실측 잎'''
+    assert LEAF == "10.4"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_94_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_94_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_94_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_94_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_94_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_94_text():
+    '''실측 잎'''
+    assert LEAF == "4.5"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_95_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_95_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_95_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_95_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_95_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_95_text():
+    '''실측 잎'''
+    assert LEAF == "8.6"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_96_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_96_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_96_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_96_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_96_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_96_text():
+    '''실측 잎'''
+    assert LEAF == "5.9"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_97_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_97_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_97_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_97_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_97_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_97_text():
+    '''실측 잎'''
+    assert LEAF == "7.4"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_98_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_98_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_98_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_98_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_98_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_98_text():
+    '''실측 잎'''
+    assert LEAF == "6.7"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_99_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_99_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_99_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_99_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_99_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_99_text():
+    '''실측 잎'''
+    assert LEAF == "(△45.6)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_100_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_100_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_100_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_100_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_100_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_100_text():
+    '''실측 잎'''
+    assert LEAF == "(70.5)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_101_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_101_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_101_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_101_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_101_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_101_text():
+    '''실측 잎'''
+    assert LEAF == "(26.0)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_102_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_102_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_102_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_102_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_102_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_102_text():
+    '''실측 잎'''
+    assert LEAF == "(23.7)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_103_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_103_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_103_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_103_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_103_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_103_text():
+    '''실측 잎'''
+    assert LEAF == "(12.9)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_104_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_104_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_104_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_104_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_104_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_104_text():
+    '''실측 잎'''
+    assert LEAF == "(0.8)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_105_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_105_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_105_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_105_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_105_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_105_text():
+    '''실측 잎'''
+    assert LEAF == "(9.2)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_106_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_106_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_106_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_106_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_106_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_106_text():
+    '''실측 잎'''
+    assert LEAF == "(△29.0)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_107_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_107_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_107_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_107_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_107_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_11_cells_107_text():
+    '''실측 잎'''
+    assert LEAF == "(47.4)"
+
+def test_x0283_r_runs_2_stdout_tables_11_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_11_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_11_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_11_index():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_11_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_11_paragraph():
+    '''실측 잎'''
+    assert LEAF == 44
+
+def test_x0283_r_runs_2_stdout_tables_11_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_11_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_12_cellCount():
+    '''실측 잎'''
+    assert LEAF == 146
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2024년"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "북미"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "98.4"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "81.7"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "78.1"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "61.7"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "97.8"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "76.3"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "77.8"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "62.7"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "67.5"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "(115.1)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "(10.8)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "(0.0)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "(△43.5)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(△0.7)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△6.7)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(△0.3)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(1.6)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△31.0)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "유럽"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "59.8"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "33.9"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "35.6"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "27.7"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "23.4"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "23.7"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "28.6"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "34.2"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "37.0"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(183.4)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(39.6)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(66.3)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(△51.3)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "(△60.9)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "(△30.0)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "(△19.5)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "(23.4)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "(58.2)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "아시아"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "90.0"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "40.0"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "37.5"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "35.0"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "23.9"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "34.1"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "22.1"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "29.1"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "21.5"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "(231.9)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "(11.5)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "(△18.9)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "(△54.5)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "(△73.5)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(△14.7)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(△41.2)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(△16.7)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(△9.7)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "중남미"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "28.4"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_72_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_72_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_72_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_72_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_72_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_72_text():
+    '''실측 잎'''
+    assert LEAF == "35.1"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_73_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_73_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_73_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_73_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_73_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_73_text():
+    '''실측 잎'''
+    assert LEAF == "28.8"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_74_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_74_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_74_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_74_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_74_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_74_text():
+    '''실측 잎'''
+    assert LEAF == "23.0"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_75_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_75_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_75_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_75_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_75_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_75_text():
+    '''실측 잎'''
+    assert LEAF == "30.8"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_76_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_76_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_76_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_76_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_76_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_76_text():
+    '''실측 잎'''
+    assert LEAF == "20.7"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_77_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_77_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_77_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_77_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_77_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_77_text():
+    '''실측 잎'''
+    assert LEAF == "19.2"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_78_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_78_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_78_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_78_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_78_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_78_text():
+    '''실측 잎'''
+    assert LEAF == "27.0"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_79_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_79_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_79_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_79_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_79_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_79_text():
+    '''실측 잎'''
+    assert LEAF == "18.6"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_80_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_80_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_80_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_80_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_80_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_80_text():
+    '''실측 잎'''
+    assert LEAF == "(72.1)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_81_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_81_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_81_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_81_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_81_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_81_text():
+    '''실측 잎'''
+    assert LEAF == "(26.1)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_82_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_82_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_82_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_82_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_82_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_82_text():
+    '''실측 잎'''
+    assert LEAF == "(17.4)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_83_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_83_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_83_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_83_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_83_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_83_text():
+    '''실측 잎'''
+    assert LEAF == "(△62.6)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_84_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_84_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_84_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_84_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_84_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_84_text():
+    '''실측 잎'''
+    assert LEAF == "(8.3)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_85_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_85_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_85_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_85_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_85_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_85_text():
+    '''실측 잎'''
+    assert LEAF == "(△40.8)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_86_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_86_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_86_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_86_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_86_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_86_text():
+    '''실측 잎'''
+    assert LEAF == "(△33.3)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_87_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_87_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_87_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_87_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_87_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_87_text():
+    '''실측 잎'''
+    assert LEAF == "(17.8)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_88_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_88_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_88_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_88_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_88_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_88_text():
+    '''실측 잎'''
+    assert LEAF == "(△39.6)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_89_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_89_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_89_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_89_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_89_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_89_text():
+    '''실측 잎'''
+    assert LEAF == "대양주"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_90_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_90_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_90_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_90_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_90_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_90_text():
+    '''실측 잎'''
+    assert LEAF == "5.2"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_91_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_91_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_91_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_91_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_91_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_91_text():
+    '''실측 잎'''
+    assert LEAF == "6.8"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_92_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_92_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_92_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_92_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_92_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_92_text():
+    '''실측 잎'''
+    assert LEAF == "4.2"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_93_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_93_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_93_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_93_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_93_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_93_text():
+    '''실측 잎'''
+    assert LEAF == "3.0"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_94_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_94_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_94_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_94_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_94_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_94_text():
+    '''실측 잎'''
+    assert LEAF == "0.6"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_95_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_95_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_95_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_95_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_95_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_95_text():
+    '''실측 잎'''
+    assert LEAF == "3.5"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_96_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_96_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_96_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_96_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_96_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_96_text():
+    '''실측 잎'''
+    assert LEAF == "1.6"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_97_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_97_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_97_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_97_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_97_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_97_text():
+    '''실측 잎'''
+    assert LEAF == "3.0"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_98_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_98_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_98_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_98_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_98_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_98_text():
+    '''실측 잎'''
+    assert LEAF == "2.7"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_99_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_99_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_99_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_99_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_99_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_99_text():
+    '''실측 잎'''
+    assert LEAF == "(146.3)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_100_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_100_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_100_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_100_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_100_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_100_text():
+    '''실측 잎'''
+    assert LEAF == "(6.9)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_101_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_101_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_101_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_101_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_101_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_101_text():
+    '''실측 잎'''
+    assert LEAF == "(△14.5)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_102_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_102_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_102_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_102_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_102_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_102_text():
+    '''실측 잎'''
+    assert LEAF == "(△12.1)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_103_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_103_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_103_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_103_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_103_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_103_text():
+    '''실측 잎'''
+    assert LEAF == "(△88.4)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_104_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_104_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_104_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_104_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_104_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_104_text():
+    '''실측 잎'''
+    assert LEAF == "(△48.4)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_105_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_105_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_105_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_105_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_105_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_105_text():
+    '''실측 잎'''
+    assert LEAF == "(△62.5)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_106_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_106_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_106_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_106_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_106_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_106_text():
+    '''실측 잎'''
+    assert LEAF == "(3.2)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_107_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_107_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_107_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_107_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_107_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_107_text():
+    '''실측 잎'''
+    assert LEAF == "(353.0)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_108_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_108_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_108_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_108_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_108_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_108_text():
+    '''실측 잎'''
+    assert LEAF == "아프리카"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_109_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_109_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_109_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_109_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_109_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_109_text():
+    '''실측 잎'''
+    assert LEAF == "0.2"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_110_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_110_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_110_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_110_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_110_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_110_text():
+    '''실측 잎'''
+    assert LEAF == "0.5"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_111_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_111_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_111_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_111_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_111_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_111_text():
+    '''실측 잎'''
+    assert LEAF == "0.2"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_112_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_112_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_112_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_112_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_112_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_112_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_113_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_113_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_113_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_113_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_113_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_113_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_114_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_114_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_114_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_114_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_114_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_114_text():
+    '''실측 잎'''
+    assert LEAF == "1.0"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_115_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_115_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_115_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_115_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_115_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_115_text():
+    '''실측 잎'''
+    assert LEAF == "0.8"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_116_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_116_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_116_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_116_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_116_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_116_text():
+    '''실측 잎'''
+    assert LEAF == "1.3"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_117_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_117_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_117_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_117_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_117_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_117_text():
+    '''실측 잎'''
+    assert LEAF == "2.6"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_118_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_118_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_118_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_118_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_118_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_118_text():
+    '''실측 잎'''
+    assert LEAF == "(△68.1)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_119_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_119_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_119_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_119_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_119_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_119_text():
+    '''실측 잎'''
+    assert LEAF == "(△72.9)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_120_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_120_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_120_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_120_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_120_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_120_text():
+    '''실측 잎'''
+    assert LEAF == "(△24.4)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_121_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_121_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_121_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_121_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_121_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_121_text():
+    '''실측 잎'''
+    assert LEAF == "(△10.4)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_122_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_122_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_122_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_122_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_122_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_122_text():
+    '''실측 잎'''
+    assert LEAF == "(26.0)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_123_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_123_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_123_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_123_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_123_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_123_text():
+    '''실측 잎'''
+    assert LEAF == "(109.2)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_124_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_124_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_124_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_124_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_124_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_124_text():
+    '''실측 잎'''
+    assert LEAF == "(238.1)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_125_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_125_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_125_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_125_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_125_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_125_text():
+    '''실측 잎'''
+    assert LEAF == "(341.3)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_126_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_126_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_126_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_126_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_126_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_126_text():
+    '''실측 잎'''
+    assert LEAF == "(773.5)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_127_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_127_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_127_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_127_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_127_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_127_text():
+    '''실측 잎'''
+    assert LEAF == "중동"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_128_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_128_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_128_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_128_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_128_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_128_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_129_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_129_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_129_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_129_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_129_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_129_text():
+    '''실측 잎'''
+    assert LEAF == "0.5"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_130_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_130_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_130_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_130_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_130_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_130_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_131_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_131_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_131_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_131_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_131_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_131_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_132_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_132_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_132_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_132_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_132_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_132_text():
+    '''실측 잎'''
+    assert LEAF == "0.1"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_133_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_133_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_133_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_133_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_133_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_133_text():
+    '''실측 잎'''
+    assert LEAF == "0.4"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_134_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_134_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_134_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_134_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_134_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_134_text():
+    '''실측 잎'''
+    assert LEAF == "0.4"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_135_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_135_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_135_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_135_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_135_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_135_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_136_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_136_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_136_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_136_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_136_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_136_text():
+    '''실측 잎'''
+    assert LEAF == "1.1"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_137_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_137_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_137_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_137_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_137_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_137_text():
+    '''실측 잎'''
+    assert LEAF == "(△51.4)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_138_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_138_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_138_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_138_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_138_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_138_text():
+    '''실측 잎'''
+    assert LEAF == "(15.1)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_139_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_139_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_139_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_139_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_139_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_139_text():
+    '''실측 잎'''
+    assert LEAF == "(552.1)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_140_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_140_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_140_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_140_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_140_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_140_text():
+    '''실측 잎'''
+    assert LEAF == "(△76.0)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_141_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_141_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_141_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_141_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_141_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_141_text():
+    '''실측 잎'''
+    assert LEAF == "(△50.9)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_142_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_142_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_142_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_142_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_142_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_142_text():
+    '''실측 잎'''
+    assert LEAF == "(△18.1)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_143_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_143_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_143_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_143_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_143_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_143_text():
+    '''실측 잎'''
+    assert LEAF == "(35.8)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_144_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_144_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_144_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_144_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_144_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_144_text():
+    '''실측 잎'''
+    assert LEAF == "(8.5)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_145_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_145_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_145_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_145_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_145_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_12_cells_145_text():
+    '''실측 잎'''
+    assert LEAF == "(616.9)"
+
+def test_x0283_r_runs_2_stdout_tables_12_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_12_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_12_index():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_12_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_12_paragraph():
+    '''실측 잎'''
+    assert LEAF == 47
+
+def test_x0283_r_runs_2_stdout_tables_12_rows():
+    '''실측 잎'''
+    assert LEAF == 16
+
+def test_x0283_r_runs_2_stdout_tables_12_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_13_cellCount():
+    '''실측 잎'''
+    assert LEAF == 21
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2019년"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2020년"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2021년"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "2024년 1분기"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "투자액"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "656.3"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "582.0"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "769.0"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "816.5"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "644.8"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "150.9"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "증감률"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "(26.6)"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "(△11.3)"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "(32.1)"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "(6.2)"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "(△21.0)"
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_13_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "(△14.6)"
+
+def test_x0283_r_runs_2_stdout_tables_13_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_13_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_csvReady():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_tables_13_index():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_13_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_13_paragraph():
+    '''실측 잎'''
+    assert LEAF == 52
+
+def test_x0283_r_runs_2_stdout_tables_13_rows():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_13_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_14_cellCount():
+    '''실측 잎'''
+    assert LEAF == 72
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2019년"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2020년"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2021년"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "2024년 1분기"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "금융\n보험업"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "266.6"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "191.6"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "300.4"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "304.1"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "263.7"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "55.0"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "(47.5)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "(△28.1)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "(56.8)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "(1.3)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "(△13.3)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "(△17.8)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "제조업"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "184.1"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "137.9"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "179.5"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "253.2"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "204.6"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "40.5"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(14.2)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△25.1)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(30.1)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(41.1)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△19.2)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "(△35.9)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "부동산업"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "80.1"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "74.1"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "70.3"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "73.9"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "42.5"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "22.4"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "(47.3)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "(△7.4)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(△5.2)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(5.1)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(△42.5)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(177.3)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "전문과학\n기술업"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "10.8"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "8.4"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "29.1"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "27.2"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "18.3"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "9.3"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "(24.2)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "(△22.3)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "(245.9)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "(△6.4)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "(△32.8)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "(156.9)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "광업"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "26.2"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "19.6"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "19.2"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "24.2"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "35.0"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "6.3"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(46.5)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(△25.3)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(△1.6)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(25.5)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "(45.1)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_14_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "(△46.4)"
+
+def test_x0283_r_runs_2_stdout_tables_14_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_14_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_14_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_14_index():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_14_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_14_paragraph():
+    '''실측 잎'''
+    assert LEAF == 56
+
+def test_x0283_r_runs_2_stdout_tables_14_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_14_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_15_cellCount():
+    '''실측 잎'''
+    assert LEAF == 72
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2019년"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2020년"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2021년"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "2024년 1분기"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "미국"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "157.6"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "152.1"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "279.3"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "295.0"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "278.4"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "61.2"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "(40.3)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "(△3.5)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "(83.7)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "(5.6)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "(△5.6)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "(△29.8)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "룩셈부르크"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "35.6"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "28.0"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "43.9"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "49.6"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "50.1"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "16.4"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(20.6)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△21.3)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(56.9)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(12.9)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(1.1)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "(71.8)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "케이맨제도"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "85.6"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "67.8"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "109.1"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "94.8"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "64.3"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "12.6"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "(35.1)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "(△20.7)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(60.9)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(△13.2)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(△32.2)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(△16.2)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "저지"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "15.6"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "2.9"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "1.2"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "15.9"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "2.8"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "9.3"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "(133.0)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "(△81.3)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "(△59.2)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "(1,235.8)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "(△82.5)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "(3,236.4)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "베트남"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "46.2"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "29.5"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "25.2"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "28.4"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "26.5"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "6.7"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(37.8)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(△36.1)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(△14.8)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(13.0)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "(△6.8)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_15_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "(47.4)"
+
+def test_x0283_r_runs_2_stdout_tables_15_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_15_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_15_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_15_index():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_15_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_15_paragraph():
+    '''실측 잎'''
+    assert LEAF == 59
+
+def test_x0283_r_runs_2_stdout_tables_15_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_15_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_16_cellCount():
+    '''실측 잎'''
+    assert LEAF == 98
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2019년"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2020년"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2021년"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "2024년 1분기"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "북미"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "169.7"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "181.6"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "306.8"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "320.0"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "314.6"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "67.5"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "(43.8)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "(7.0)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "(68.9)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "(4.3)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "(△1.7)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "(△31.0)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "유럽"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "146.4"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "103.2"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "123.7"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "157.0"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "109.9"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "37.0"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(22.1)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△29.5)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(19.8)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(26.9)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△30.0)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "(58.2)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "아시아"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "208.6"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "191.8"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "186.2"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "202.5"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "109.2"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "21.5"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "(16.8)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "(△8.1)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(△2.9)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(8.8)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(△46.1)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(△9.7)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "중남미"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "109.4"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "82.3"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "130.2"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "115.2"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "97.7"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "18.6"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "(31.1)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "(△24.8)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "(58.2)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "(△11.5)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "(△15.2)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "(△39.6)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "대양주"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "10.3"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "11.4"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "16.7"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "19.1"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "8.7"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "2.7"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(46.2)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(10.5)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(47.2)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(14.3)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "(△54.4)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "(353.0)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_72_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_72_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_72_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_72_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_72_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_72_text():
+    '''실측 잎'''
+    assert LEAF == "아프리카"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_73_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_73_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_73_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_73_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_73_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_73_text():
+    '''실측 잎'''
+    assert LEAF == "5.9"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_74_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_74_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_74_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_74_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_74_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_74_text():
+    '''실측 잎'''
+    assert LEAF == "3.8"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_75_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_75_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_75_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_75_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_75_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_75_text():
+    '''실측 잎'''
+    assert LEAF == "3.1"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_76_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_76_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_76_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_76_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_76_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_76_text():
+    '''실측 잎'''
+    assert LEAF == "1.2"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_77_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_77_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_77_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_77_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_77_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_77_text():
+    '''실측 잎'''
+    assert LEAF == "3.4"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_78_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_78_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_78_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_78_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_78_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_78_text():
+    '''실측 잎'''
+    assert LEAF == "2.6"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_79_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_79_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_79_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_79_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_79_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_79_text():
+    '''실측 잎'''
+    assert LEAF == "(273.8)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_80_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_80_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_80_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_80_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_80_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_80_text():
+    '''실측 잎'''
+    assert LEAF == "(△35.4)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_81_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_81_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_81_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_81_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_81_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_81_text():
+    '''실측 잎'''
+    assert LEAF == "(△18.5)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_82_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_82_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_82_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_82_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_82_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_82_text():
+    '''실측 잎'''
+    assert LEAF == "(△60.3)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_83_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_83_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_83_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_83_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_83_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_83_text():
+    '''실측 잎'''
+    assert LEAF == "(173.5)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_84_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_84_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_84_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_84_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_84_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_84_text():
+    '''실측 잎'''
+    assert LEAF == "(773.5)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_85_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_85_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_85_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_85_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_85_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_85_text():
+    '''실측 잎'''
+    assert LEAF == "중동"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_86_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_86_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_86_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_86_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_86_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_86_text():
+    '''실측 잎'''
+    assert LEAF == "5.9"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_87_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_87_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_87_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_87_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_87_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_87_text():
+    '''실측 잎'''
+    assert LEAF == "7.8"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_88_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_88_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_88_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_88_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_88_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_88_text():
+    '''실측 잎'''
+    assert LEAF == "2.3"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_89_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_89_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_89_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_89_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_89_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_89_text():
+    '''실측 잎'''
+    assert LEAF == "1.4"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_90_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_90_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_90_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_90_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_90_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_90_text():
+    '''실측 잎'''
+    assert LEAF == "1.3"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_91_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_91_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_91_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_91_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_91_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_91_text():
+    '''실측 잎'''
+    assert LEAF == "1.1"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_92_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_92_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_92_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_92_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_92_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_92_text():
+    '''실측 잎'''
+    assert LEAF == "(△38.5)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_93_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_93_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_93_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_93_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_93_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_93_text():
+    '''실측 잎'''
+    assert LEAF == "(31.9)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_94_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_94_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_94_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_94_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_94_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_94_text():
+    '''실측 잎'''
+    assert LEAF == "(△70.1)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_95_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_95_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_95_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_95_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_95_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_95_text():
+    '''실측 잎'''
+    assert LEAF == "(△38.3)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_96_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_96_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_96_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_96_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_96_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_96_text():
+    '''실측 잎'''
+    assert LEAF == "(△8.0)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_97_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_97_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_97_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_97_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_97_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_16_cells_97_text():
+    '''실측 잎'''
+    assert LEAF == "(616.9)"
+
+def test_x0283_r_runs_2_stdout_tables_16_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_16_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_16_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_16_index():
+    '''실측 잎'''
+    assert LEAF == 16
+
+def test_x0283_r_runs_2_stdout_tables_16_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_16_paragraph():
+    '''실측 잎'''
+    assert LEAF == 64
+
+def test_x0283_r_runs_2_stdout_tables_16_rows():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_16_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_17_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_17_cellCount():
+    '''실측 잎'''
+    assert LEAF == 32
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2024년"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "전 체"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "240.8"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "159.0"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "143.4"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "105.6"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "138.4"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "129.9"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "128.6"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "119.5"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "128.7"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "(241.8)"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "(27.4)"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "(11.1)"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "(△60.1)"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(△42.5)"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△18.3)"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(△10.3)"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(13.2)"
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_17_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△7.0)"
+
+def test_x0283_r_runs_2_stdout_tables_17_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_17_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_17_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_17_index():
+    '''실측 잎'''
+    assert LEAF == 17
+
+def test_x0283_r_runs_2_stdout_tables_17_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_17_paragraph():
+    '''실측 잎'''
+    assert LEAF == 71
+
+def test_x0283_r_runs_2_stdout_tables_17_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_17_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_18_cellCount():
+    '''실측 잎'''
+    assert LEAF == 108
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2024년"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "금융\n보험업"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "69.0"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "55.2"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "67.9"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "49.4"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "55.5"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "52.0"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "60.3"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "48.5"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "43.4"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "(87.8)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "(11.6)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "(20.2)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "(△46.5)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(△19.6)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△5.8)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(△11.1)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(△1.9)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△21.9)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "제조업"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "106.7"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "50.6"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "41.6"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "32.8"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "54.9"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "36.4"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "45.2"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "40.8"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "37.6"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(461.0)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(171.2)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(47.3)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(△54.9)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "(△48.5)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "(△28.0)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "(8.6)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "(24.6)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "(△31.5)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "부동산업"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "15.7"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "12.0"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "5.0"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "13.1"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "7.0"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "9.0"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "6.9"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "9.3"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "17.7"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "(192.3)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "(87.6)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "(△73.5)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "(△24.0)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "(△55.2)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(△24.6)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(39.7)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(△28.9)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(152.1)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "전문과학\n기술업"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "6.4"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_72_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_72_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_72_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_72_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_72_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_72_text():
+    '''실측 잎'''
+    assert LEAF == "5.7"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_73_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_73_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_73_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_73_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_73_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_73_text():
+    '''실측 잎'''
+    assert LEAF == "6.5"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_74_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_74_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_74_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_74_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_74_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_74_text():
+    '''실측 잎'''
+    assert LEAF == "6.9"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_75_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_75_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_75_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_75_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_75_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_75_text():
+    '''실측 잎'''
+    assert LEAF == "1.6"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_76_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_76_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_76_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_76_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_76_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_76_text():
+    '''실측 잎'''
+    assert LEAF == "7.3"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_77_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_77_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_77_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_77_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_77_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_77_text():
+    '''실측 잎'''
+    assert LEAF == "4.5"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_78_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_78_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_78_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_78_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_78_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_78_text():
+    '''실측 잎'''
+    assert LEAF == "2.4"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_79_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_79_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_79_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_79_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_79_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_79_text():
+    '''실측 잎'''
+    assert LEAF == "9.2"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_80_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_80_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_80_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_80_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_80_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_80_text():
+    '''실측 잎'''
+    assert LEAF == "(270.9)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_81_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_81_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_81_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_81_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_81_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_81_text():
+    '''실측 잎'''
+    assert LEAF == "(△63.3)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_82_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_82_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_82_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_82_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_82_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_82_text():
+    '''실측 잎'''
+    assert LEAF == "(52.6)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_83_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_83_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_83_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_83_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_83_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_83_text():
+    '''실측 잎'''
+    assert LEAF == "(59.6)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_84_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_84_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_84_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_84_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_84_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_84_text():
+    '''실측 잎'''
+    assert LEAF == "(△74.6)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_85_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_85_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_85_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_85_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_85_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_85_text():
+    '''실측 잎'''
+    assert LEAF == "(27.9)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_86_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_86_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_86_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_86_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_86_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_86_text():
+    '''실측 잎'''
+    assert LEAF == "(△30.2)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_87_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_87_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_87_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_87_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_87_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_87_text():
+    '''실측 잎'''
+    assert LEAF == "(△66.1)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_88_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_88_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_88_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_88_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_88_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_88_text():
+    '''실측 잎'''
+    assert LEAF == "(466.4)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_89_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_89_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_89_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_89_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_89_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_89_text():
+    '''실측 잎'''
+    assert LEAF == "광업"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_90_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_90_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_90_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_90_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_90_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_90_text():
+    '''실측 잎'''
+    assert LEAF == "9.8"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_91_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_91_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_91_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_91_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_91_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_91_text():
+    '''실측 잎'''
+    assert LEAF == "1.1"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_92_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_92_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_92_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_92_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_92_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_92_text():
+    '''실측 잎'''
+    assert LEAF == "1.9"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_93_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_93_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_93_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_93_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_93_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_93_text():
+    '''실측 잎'''
+    assert LEAF == "-7.9"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_94_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_94_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_94_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_94_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_94_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_94_text():
+    '''실측 잎'''
+    assert LEAF == "11.4"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_95_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_95_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_95_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_95_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_95_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_95_text():
+    '''실측 잎'''
+    assert LEAF == "7.8"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_96_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_96_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_96_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_96_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_96_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_96_text():
+    '''실측 잎'''
+    assert LEAF == "3.7"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_97_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_97_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_97_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_97_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_97_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_97_text():
+    '''실측 잎'''
+    assert LEAF == "3.0"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_98_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_98_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_98_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_98_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_98_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_98_text():
+    '''실측 잎'''
+    assert LEAF == "6.2"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_99_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_99_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_99_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_99_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_99_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_99_text():
+    '''실측 잎'''
+    assert LEAF == "(212.0)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_100_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_100_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_100_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_100_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_100_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_100_text():
+    '''실측 잎'''
+    assert LEAF == "(△42.6)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_101_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_101_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_101_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_101_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_101_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_101_text():
+    '''실측 잎'''
+    assert LEAF == "(264.1)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_102_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_102_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_102_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_102_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_102_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_102_text():
+    '''실측 잎'''
+    assert LEAF == "(△302.1)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_103_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_103_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_103_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_103_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_103_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_103_text():
+    '''실측 잎'''
+    assert LEAF == "(17.0)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_104_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_104_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_104_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_104_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_104_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_104_text():
+    '''실측 잎'''
+    assert LEAF == "(639.3)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_105_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_105_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_105_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_105_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_105_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_105_text():
+    '''실측 잎'''
+    assert LEAF == "(97.0)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_106_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_106_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_106_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_106_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_106_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_106_text():
+    '''실측 잎'''
+    assert LEAF == "(△138.4)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_107_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_107_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_107_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_107_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_107_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_18_cells_107_text():
+    '''실측 잎'''
+    assert LEAF == "(△45.4)"
+
+def test_x0283_r_runs_2_stdout_tables_18_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_18_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_18_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_18_index():
+    '''실측 잎'''
+    assert LEAF == 18
+
+def test_x0283_r_runs_2_stdout_tables_18_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_18_paragraph():
+    '''실측 잎'''
+    assert LEAF == 75
+
+def test_x0283_r_runs_2_stdout_tables_18_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_18_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_19_cellCount():
+    '''실측 잎'''
+    assert LEAF == 108
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2024년"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "미국"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "74.3"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "64.9"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "66.5"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "43.3"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "75.5"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "58.4"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "62.6"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "53.3"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "55.2"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "(129.2)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "(20.5)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "(11.5)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "(△51.3)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(1.7)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△10.1)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(△5.9)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(23.1)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△26.9)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "룩셈부르크"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "14.7"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "12.7"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "4.2"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "9.8"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "8.5"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "8.6"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "10.9"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "13.9"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "13.7"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(155.7)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(150.7)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(△29.5)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(△37.3)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "(△42.2)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "(△32.3)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "(160.0)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "(42.0)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "(60.8)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "저지"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "13.6"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "-0.2"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "-1.3"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "0.4"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "0.1"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "1.2"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "0.2"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "0.6"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "9.2"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "(12,032.6)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "(440.6)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "(368.9)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "(△5.4)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "(△99.0)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(△780.8)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(△112.1)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(48.1)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(6,462.7)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "케이맨제도"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "13.2"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_72_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_72_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_72_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_72_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_72_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_72_text():
+    '''실측 잎'''
+    assert LEAF == "21.0"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_73_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_73_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_73_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_73_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_73_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_73_text():
+    '''실측 잎'''
+    assert LEAF == "19.5"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_74_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_74_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_74_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_74_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_74_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_74_text():
+    '''실측 잎'''
+    assert LEAF == "10.0"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_75_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_75_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_75_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_75_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_75_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_75_text():
+    '''실측 잎'''
+    assert LEAF == "7.4"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_76_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_76_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_76_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_76_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_76_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_76_text():
+    '''실측 잎'''
+    assert LEAF == "9.5"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_77_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_77_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_77_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_77_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_77_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_77_text():
+    '''실측 잎'''
+    assert LEAF == "10.8"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_78_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_78_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_78_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_78_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_78_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_78_text():
+    '''실측 잎'''
+    assert LEAF == "14.2"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_79_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_79_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_79_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_79_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_79_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_79_text():
+    '''실측 잎'''
+    assert LEAF == "6.4"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_80_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_80_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_80_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_80_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_80_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_80_text():
+    '''실측 잎'''
+    assert LEAF == "(422.6)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_81_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_81_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_81_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_81_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_81_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_81_text():
+    '''실측 잎'''
+    assert LEAF == "(61.7)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_82_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_82_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_82_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_82_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_82_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_82_text():
+    '''실측 잎'''
+    assert LEAF == "(29.6)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_83_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_83_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_83_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_83_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_83_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_83_text():
+    '''실측 잎'''
+    assert LEAF == "(△79.3)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_84_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_84_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_84_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_84_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_84_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_84_text():
+    '''실측 잎'''
+    assert LEAF == "(△43.8)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_85_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_85_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_85_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_85_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_85_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_85_text():
+    '''실측 잎'''
+    assert LEAF == "(△54.7)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_86_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_86_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_86_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_86_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_86_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_86_text():
+    '''실측 잎'''
+    assert LEAF == "(△44.7)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_87_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_87_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_87_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_87_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_87_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_87_text():
+    '''실측 잎'''
+    assert LEAF == "(41.9)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_88_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_88_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_88_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_88_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_88_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_88_text():
+    '''실측 잎'''
+    assert LEAF == "(△14.1)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_89_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_89_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_89_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_89_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_89_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_89_text():
+    '''실측 잎'''
+    assert LEAF == "캐나다"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_90_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_90_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_90_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_90_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_90_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_90_text():
+    '''실측 잎'''
+    assert LEAF == "6.4"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_91_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_91_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_91_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_91_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_91_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_91_text():
+    '''실측 잎'''
+    assert LEAF == "9.0"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_92_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_92_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_92_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_92_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_92_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_92_text():
+    '''실측 잎'''
+    assert LEAF == "1.2"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_93_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_93_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_93_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_93_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_93_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_93_text():
+    '''실측 잎'''
+    assert LEAF == "6.3"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_94_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_94_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_94_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_94_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_94_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_94_text():
+    '''실측 잎'''
+    assert LEAF == "10.4"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_95_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_95_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_95_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_95_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_95_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_95_text():
+    '''실측 잎'''
+    assert LEAF == "12.0"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_96_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_96_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_96_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_96_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_96_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_96_text():
+    '''실측 잎'''
+    assert LEAF == "9.1"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_97_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_97_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_97_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_97_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_97_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_97_text():
+    '''실측 잎'''
+    assert LEAF == "3.1"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_98_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_98_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_98_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_98_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_98_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_98_text():
+    '''실측 잎'''
+    assert LEAF == "6.0"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_99_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_99_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_99_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_99_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_99_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_99_text():
+    '''실측 잎'''
+    assert LEAF == "(163.9)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_100_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_100_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_100_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_100_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_100_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_100_text():
+    '''실측 잎'''
+    assert LEAF == "(△5.0)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_101_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_101_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_101_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_101_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_101_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_101_text():
+    '''실측 잎'''
+    assert LEAF == "(△72.3)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_102_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_102_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_102_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_102_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_102_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_102_text():
+    '''실측 잎'''
+    assert LEAF == "(23.6)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_103_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_103_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_103_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_103_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_103_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_103_text():
+    '''실측 잎'''
+    assert LEAF == "(61.8)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_104_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_104_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_104_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_104_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_104_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_104_text():
+    '''실측 잎'''
+    assert LEAF == "(33.1)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_105_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_105_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_105_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_105_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_105_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_105_text():
+    '''실측 잎'''
+    assert LEAF == "(627.5)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_106_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_106_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_106_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_106_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_106_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_106_text():
+    '''실측 잎'''
+    assert LEAF == "(△51.6)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_107_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_107_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_107_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_107_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_107_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_19_cells_107_text():
+    '''실측 잎'''
+    assert LEAF == "(△42.7)"
+
+def test_x0283_r_runs_2_stdout_tables_19_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_19_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_19_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_19_index():
+    '''실측 잎'''
+    assert LEAF == 19
+
+def test_x0283_r_runs_2_stdout_tables_19_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_19_paragraph():
+    '''실측 잎'''
+    assert LEAF == 81
+
+def test_x0283_r_runs_2_stdout_tables_19_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_19_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_20_cellCount():
+    '''실측 잎'''
+    assert LEAF == 146
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2024년"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "2분기"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "3분기"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "4분기"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "1분기"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "북미"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "80.7"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "73.9"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "67.7"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "49.6"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "86.0"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "70.3"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "71.6"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "56.3"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "61.1"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "(131.6)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "(16.7)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "(5.6)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "(△47.2)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(6.5)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△4.8)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(5.8)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(13.6)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△28.9)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "유럽"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "55.2"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "24.3"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "24.4"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "16.6"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "16.5"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "16.9"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "24.8"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "27.7"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "32.7"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(276.4)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(63.1)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(61.1)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(△67.8)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "(△70.1)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "(△30.5)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "(1.8)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "(67.0)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "(98.2)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "아시아"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "82.0"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "28.1"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "27.8"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "25.0"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "14.5"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "24.1"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "15.8"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "19.8"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "17.0"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "(517.9)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "(35.6)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "(△5.0)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "(△61.6)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "(△82.3)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(△14.0)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(△43.0)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(△20.8)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(17.0)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "중남미"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "17.8"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_72_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_72_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_72_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_72_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_72_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_72_text():
+    '''실측 잎'''
+    assert LEAF == "27.1"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_73_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_73_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_73_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_73_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_73_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_73_text():
+    '''실측 잎'''
+    assert LEAF == "20.5"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_74_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_74_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_74_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_74_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_74_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_74_text():
+    '''실측 잎'''
+    assert LEAF == "13.8"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_75_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_75_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_75_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_75_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_75_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_75_text():
+    '''실측 잎'''
+    assert LEAF == "22.8"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_76_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_76_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_76_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_76_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_76_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_76_text():
+    '''실측 잎'''
+    assert LEAF == "14.6"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_77_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_77_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_77_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_77_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_77_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_77_text():
+    '''실측 잎'''
+    assert LEAF == "14.6"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_78_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_78_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_78_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_78_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_78_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_78_text():
+    '''실측 잎'''
+    assert LEAF == "14.3"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_79_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_79_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_79_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_79_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_79_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_79_text():
+    '''실측 잎'''
+    assert LEAF == "12.0"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_80_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_80_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_80_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_80_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_80_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_80_text():
+    '''실측 잎'''
+    assert LEAF == "(253.1)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_81_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_81_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_81_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_81_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_81_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_81_text():
+    '''실측 잎'''
+    assert LEAF == "(48.5)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_82_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_82_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_82_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_82_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_82_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_82_text():
+    '''실측 잎'''
+    assert LEAF == "(19.9)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_83_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_83_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_83_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_83_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_83_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_83_text():
+    '''실측 잎'''
+    assert LEAF == "(△74.8)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_84_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_84_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_84_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_84_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_84_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_84_text():
+    '''실측 잎'''
+    assert LEAF == "(28.3)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_85_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_85_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_85_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_85_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_85_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_85_text():
+    '''실측 잎'''
+    assert LEAF == "(△46.3)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_86_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_86_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_86_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_86_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_86_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_86_text():
+    '''실측 잎'''
+    assert LEAF == "(△28.6)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_87_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_87_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_87_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_87_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_87_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_87_text():
+    '''실측 잎'''
+    assert LEAF == "(3.6)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_88_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_88_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_88_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_88_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_88_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_88_text():
+    '''실측 잎'''
+    assert LEAF == "(△47.2)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_89_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_89_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_89_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_89_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_89_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_89_text():
+    '''실측 잎'''
+    assert LEAF == "아프리카"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_90_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_90_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_90_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_90_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_90_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_90_text():
+    '''실측 잎'''
+    assert LEAF == "0.1"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_91_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_91_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_91_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_91_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_91_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_91_text():
+    '''실측 잎'''
+    assert LEAF == "0.4"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_92_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_92_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_92_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_92_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_92_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_92_text():
+    '''실측 잎'''
+    assert LEAF == "0.2"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_93_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_93_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_93_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_93_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_93_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_93_text():
+    '''실측 잎'''
+    assert LEAF == "0.2"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_94_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_94_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_94_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_94_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_94_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_94_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_95_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_95_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_95_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_95_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_95_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_95_text():
+    '''실측 잎'''
+    assert LEAF == "0.9"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_96_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_96_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_96_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_96_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_96_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_96_text():
+    '''실측 잎'''
+    assert LEAF == "0.6"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_97_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_97_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_97_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_97_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_97_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_97_text():
+    '''실측 잎'''
+    assert LEAF == "1.1"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_98_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_98_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_98_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_98_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_98_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_98_text():
+    '''실측 잎'''
+    assert LEAF == "2.5"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_99_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_99_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_99_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_99_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_99_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_99_text():
+    '''실측 잎'''
+    assert LEAF == "(△80.5)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_100_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_100_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_100_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_100_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_100_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_100_text():
+    '''실측 잎'''
+    assert LEAF == "(△74.5)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_101_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_101_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_101_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_101_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_101_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_101_text():
+    '''실측 잎'''
+    assert LEAF == "(△433.6)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_102_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_102_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_102_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_102_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_102_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_102_text():
+    '''실측 잎'''
+    assert LEAF == "(△194.0)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_103_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_103_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_103_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_103_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_103_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_103_text():
+    '''실측 잎'''
+    assert LEAF == "(116.3)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_104_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_104_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_104_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_104_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_104_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_104_text():
+    '''실측 잎'''
+    assert LEAF == "(106.2)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_105_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_105_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_105_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_105_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_105_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_105_text():
+    '''실측 잎'''
+    assert LEAF == "(264.7)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_106_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_106_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_106_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_106_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_106_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_106_text():
+    '''실측 잎'''
+    assert LEAF == "(361.9)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_107_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_107_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_107_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_107_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_107_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_107_text():
+    '''실측 잎'''
+    assert LEAF == "(854.0)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_108_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_108_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_108_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_108_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_108_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_108_text():
+    '''실측 잎'''
+    assert LEAF == "대양주"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_109_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_109_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_109_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_109_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_109_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_109_text():
+    '''실측 잎'''
+    assert LEAF == "4.8"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_110_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_110_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_110_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_110_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_110_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_110_text():
+    '''실측 잎'''
+    assert LEAF == "5.3"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_111_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_111_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_111_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_111_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_111_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_111_text():
+    '''실측 잎'''
+    assert LEAF == "2.6"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_112_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_112_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_112_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_112_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_112_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_112_text():
+    '''실측 잎'''
+    assert LEAF == "0.8"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_113_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_113_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_113_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_113_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_113_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_113_text():
+    '''실측 잎'''
+    assert LEAF == "-1.5"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_114_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_114_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_114_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_114_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_114_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_114_text():
+    '''실측 잎'''
+    assert LEAF == "2.7"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_115_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_115_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_115_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_115_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_115_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_115_text():
+    '''실측 잎'''
+    assert LEAF == "0.8"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_116_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_116_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_116_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_116_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_116_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_116_text():
+    '''실측 잎'''
+    assert LEAF == "0.2"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_117_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_117_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_117_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_117_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_117_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_117_text():
+    '''실측 잎'''
+    assert LEAF == "2.3"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_118_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_118_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_118_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_118_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_118_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_118_text():
+    '''실측 잎'''
+    assert LEAF == "(185.7)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_119_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_119_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_119_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_119_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_119_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_119_text():
+    '''실측 잎'''
+    assert LEAF == "(△4.2)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_120_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_120_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_120_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_120_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_120_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_120_text():
+    '''실측 잎'''
+    assert LEAF == "(△36.9)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_121_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_121_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_121_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_121_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_121_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_121_text():
+    '''실측 잎'''
+    assert LEAF == "(△152.0)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_122_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_122_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_122_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_122_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_122_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_122_text():
+    '''실측 잎'''
+    assert LEAF == "(△131.0)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_123_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_123_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_123_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_123_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_123_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_123_text():
+    '''실측 잎'''
+    assert LEAF == "(△49.0)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_124_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_124_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_124_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_124_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_124_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_124_text():
+    '''실측 잎'''
+    assert LEAF == "(△68.1)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_125_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_125_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_125_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_125_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_125_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_125_text():
+    '''실측 잎'''
+    assert LEAF == "(△71.3)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_126_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_126_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_126_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_126_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_126_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_126_text():
+    '''실측 잎'''
+    assert LEAF == "(△257.3)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_127_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_127_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_127_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_127_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_127_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_127_text():
+    '''실측 잎'''
+    assert LEAF == "중동"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_128_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_128_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_128_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_128_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_128_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_128_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_129_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_129_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_129_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_129_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_129_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_129_text():
+    '''실측 잎'''
+    assert LEAF == "0.0"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_130_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_130_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_130_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_130_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_130_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_130_text():
+    '''실측 잎'''
+    assert LEAF == "0.2"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_131_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_131_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_131_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_131_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_131_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_131_text():
+    '''실측 잎'''
+    assert LEAF == "-0.4"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_132_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_132_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_132_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_132_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_132_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_132_text():
+    '''실측 잎'''
+    assert LEAF == "-0.2"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_133_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_133_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_133_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_133_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_133_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_133_text():
+    '''실측 잎'''
+    assert LEAF == "0.4"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_134_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_134_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_134_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_134_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_134_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_134_text():
+    '''실측 잎'''
+    assert LEAF == "0.3"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_135_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_135_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_135_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_135_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_135_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_135_text():
+    '''실측 잎'''
+    assert LEAF == "0.1"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_136_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_136_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_136_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_136_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_136_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_136_text():
+    '''실측 잎'''
+    assert LEAF == "1.0"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_137_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_137_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_137_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_137_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_137_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_137_text():
+    '''실측 잎'''
+    assert LEAF == "(△24.4)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_138_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_138_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_138_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_138_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_138_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_138_text():
+    '''실측 잎'''
+    assert LEAF == "(△106.8)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_139_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_139_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_139_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_139_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_139_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_139_text():
+    '''실측 잎'''
+    assert LEAF == "(△145.1)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_140_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_140_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_140_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_140_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_140_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_140_text():
+    '''실측 잎'''
+    assert LEAF == "(△147.8)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_141_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_141_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_141_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_141_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_141_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_141_text():
+    '''실측 잎'''
+    assert LEAF == "(△154.4)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_142_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_142_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_142_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_142_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_142_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_142_text():
+    '''실측 잎'''
+    assert LEAF == "(△1,444.1)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_143_col():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_143_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_143_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_143_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_143_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_143_text():
+    '''실측 잎'''
+    assert LEAF == "(3.8)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_144_col():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_144_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_144_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_144_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_144_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_144_text():
+    '''실측 잎'''
+    assert LEAF == "(△118.1)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_145_col():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_145_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_145_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_145_row():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_145_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_20_cells_145_text():
+    '''실측 잎'''
+    assert LEAF == "(△788.6)"
+
+def test_x0283_r_runs_2_stdout_tables_20_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_20_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_20_index():
+    '''실측 잎'''
+    assert LEAF == 20
+
+def test_x0283_r_runs_2_stdout_tables_20_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_20_paragraph():
+    '''실측 잎'''
+    assert LEAF == 84
+
+def test_x0283_r_runs_2_stdout_tables_20_rows():
+    '''실측 잎'''
+    assert LEAF == 16
+
+def test_x0283_r_runs_2_stdout_tables_20_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_21_cellCount():
+    '''실측 잎'''
+    assert LEAF == 21
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2019년"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2020년"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2021년"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "2024년 1분기"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "투자액"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "516.0"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "433.6"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "589.0"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "648.8"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "516.5"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "128.7"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "증감률"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "(23.7)"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "(△16.0)"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "(35.8)"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "(10.2)"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "(△20.4)"
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_21_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "(△7.0)"
+
+def test_x0283_r_runs_2_stdout_tables_21_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_21_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_csvReady():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_tables_21_index():
+    '''실측 잎'''
+    assert LEAF == 21
+
+def test_x0283_r_runs_2_stdout_tables_21_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_21_paragraph():
+    '''실측 잎'''
+    assert LEAF == 89
+
+def test_x0283_r_runs_2_stdout_tables_21_rows():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_21_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_22_cellCount():
+    '''실측 잎'''
+    assert LEAF == 72
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2019년"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2020년"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2021년"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "2024년 1분기"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "금융\n보험업"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "216.2"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "134.9"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "235.0"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "241.5"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "216.3"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "43.4"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "(47.5)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "(△37.6)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "(74.3)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "(2.7)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "(△10.4)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "(△21.9)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "제조업"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "163.0"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "117.9"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "138.5"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "231.6"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "177.3"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "37.6"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(14.1)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△27.7)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(17.5)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(67.2)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△23.4)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "(△31.5)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "부동산업"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "56.1"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "50.5"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "47.8"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "45.7"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "32.3"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "17.7"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "(45.6)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "(△9.9)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(△5.5)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(△4.3)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(△29.3)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(152.1)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "전문과학\n기술업"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "9.7"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "7.3"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "25.8"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "25.5"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "15.8"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "9.2"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "(31.7)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "(△24.7)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "(252.0)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "(△1.1)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "(△38.2)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "(466.4)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "광업"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "5.3"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "10.2"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "9.4"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "4.8"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "26.0"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "6.2"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(△42.5)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(93.6)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(△8.0)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(△48.9)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "(441.5)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_22_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "(△45.4)"
+
+def test_x0283_r_runs_2_stdout_tables_22_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_22_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_22_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_22_index():
+    '''실측 잎'''
+    assert LEAF == 22
+
+def test_x0283_r_runs_2_stdout_tables_22_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_22_paragraph():
+    '''실측 잎'''
+    assert LEAF == 94
+
+def test_x0283_r_runs_2_stdout_tables_22_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_22_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_23_cellCount():
+    '''실측 잎'''
+    assert LEAF == 72
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2019년"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2020년"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2021년"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "2024년 1분기"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "미국"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "124.6"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "128.0"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "234.7"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "248.9"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "249.7"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "55.2"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "(37.7)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "(2.7)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "(83.4)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "(6.1)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "(0.3)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "(△26.9)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "룩셈부르크"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "30.5"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "23.9"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "32.4"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "41.4"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "41.9"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "13.7"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(17.0)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△21.7)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(35.5)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(27.9)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(1.2)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "(60.8)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "저지"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "8.9"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "0.6"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "0.2"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "12.6"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "2.1"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "9.2"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "(75.7)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "(△93.4)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(△59.3)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(5,165.2)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(△83.4)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(6,462.7)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "케이맨제도"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "63.2"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "42.0"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "78.8"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "63.6"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "41.8"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "6.4"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "(45.2)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "(△33.6)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "(87.6)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "(△19.2)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "(△34.2)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "(△14.1)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "캐나다"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "-0.2"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "23.1"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "21.5"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "23.0"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "34.5"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "6.0"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(△108.8)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(△12,428.3)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(△7.0)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(6.9)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "(50.2)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_23_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "(△42.7)"
+
+def test_x0283_r_runs_2_stdout_tables_23_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_23_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_23_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_23_index():
+    '''실측 잎'''
+    assert LEAF == 23
+
+def test_x0283_r_runs_2_stdout_tables_23_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_23_paragraph():
+    '''실측 잎'''
+    assert LEAF == 97
+
+def test_x0283_r_runs_2_stdout_tables_23_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_23_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_24_cellCount():
+    '''실측 잎'''
+    assert LEAF == 98
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "구 분"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == "2019년"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "2020년"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_3_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_3_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_3_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_3_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_3_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_3_text():
+    '''실측 잎'''
+    assert LEAF == "2021년"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_4_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_4_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_4_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_4_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_4_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_4_text():
+    '''실측 잎'''
+    assert LEAF == "2022년"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_5_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_5_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_5_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_5_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_5_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_5_text():
+    '''실측 잎'''
+    assert LEAF == "2023년"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_6_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_6_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_6_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_6_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_6_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_6_text():
+    '''실측 잎'''
+    assert LEAF == "2024년 1분기"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_7_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_7_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_7_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_7_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_7_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_7_text():
+    '''실측 잎'''
+    assert LEAF == "북미"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_8_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_8_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_8_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_8_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_8_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_8_text():
+    '''실측 잎'''
+    assert LEAF == "124.4"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_9_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_9_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_9_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_9_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_9_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_9_text():
+    '''실측 잎'''
+    assert LEAF == "151.1"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_10_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_10_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_10_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_10_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_10_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_10_text():
+    '''실측 잎'''
+    assert LEAF == "256.2"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_11_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_11_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_11_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_11_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_11_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_11_text():
+    '''실측 잎'''
+    assert LEAF == "271.9"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_12_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_12_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_12_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_12_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_12_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_12_text():
+    '''실측 잎'''
+    assert LEAF == "284.3"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_13_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_13_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_13_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_13_row():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_13_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_13_text():
+    '''실측 잎'''
+    assert LEAF == "61.1"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_14_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_14_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_14_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_14_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_14_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_14_text():
+    '''실측 잎'''
+    assert LEAF == "(34.3)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_15_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_15_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_15_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_15_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_15_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_15_text():
+    '''실측 잎'''
+    assert LEAF == "(21.4)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_16_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_16_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_16_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_16_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_16_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_16_text():
+    '''실측 잎'''
+    assert LEAF == "(69.6)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_17_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_17_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_17_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_17_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_17_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_17_text():
+    '''실측 잎'''
+    assert LEAF == "(6.1)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_18_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_18_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_18_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_18_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_18_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_18_text():
+    '''실측 잎'''
+    assert LEAF == "(4.5)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_19_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_19_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_19_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_19_row():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_19_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_19_text():
+    '''실측 잎'''
+    assert LEAF == "(△28.9)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_20_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_20_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_20_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_20_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_20_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_20_text():
+    '''실측 잎'''
+    assert LEAF == "유럽"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_21_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_21_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_21_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_21_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_21_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_21_text():
+    '''실측 잎'''
+    assert LEAF == "113.8"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_22_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_22_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_22_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_22_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_22_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_22_text():
+    '''실측 잎'''
+    assert LEAF == "73.3"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_23_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_23_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_23_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_23_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_23_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_23_text():
+    '''실측 잎'''
+    assert LEAF == "96.2"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_24_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_24_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_24_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_24_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_24_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_24_text():
+    '''실측 잎'''
+    assert LEAF == "120.4"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_25_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_25_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_25_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_25_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_25_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_25_text():
+    '''실측 잎'''
+    assert LEAF == "85.9"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_26_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_26_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_26_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_26_row():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_26_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_26_text():
+    '''실측 잎'''
+    assert LEAF == "32.7"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_27_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_27_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_27_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_27_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_27_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_27_text():
+    '''실측 잎'''
+    assert LEAF == "(9.3)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_28_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_28_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_28_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_28_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_28_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_28_text():
+    '''실측 잎'''
+    assert LEAF == "(△35.6)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_29_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_29_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_29_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_29_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_29_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_29_text():
+    '''실측 잎'''
+    assert LEAF == "(31.3)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_30_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_30_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_30_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_30_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_30_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_30_text():
+    '''실측 잎'''
+    assert LEAF == "(25.2)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_31_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_31_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_31_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_31_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_31_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_31_text():
+    '''실측 잎'''
+    assert LEAF == "(△28.7)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_32_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_32_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_32_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_32_row():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_32_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_32_text():
+    '''실측 잎'''
+    assert LEAF == "(98.2)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_33_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_33_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_33_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_33_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_33_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_33_text():
+    '''실측 잎'''
+    assert LEAF == "아시아"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_34_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_34_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_34_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_34_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_34_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_34_text():
+    '''실측 잎'''
+    assert LEAF == "180.4"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_35_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_35_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_35_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_35_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_35_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_35_text():
+    '''실측 잎'''
+    assert LEAF == "143.7"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_36_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_36_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_36_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_36_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_36_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_36_text():
+    '''실측 잎'''
+    assert LEAF == "128.3"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_37_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_37_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_37_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_37_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_37_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_37_text():
+    '''실측 잎'''
+    assert LEAF == "162.8"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_38_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_38_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_38_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_38_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_38_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_38_text():
+    '''실측 잎'''
+    assert LEAF == "74.3"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_39_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_39_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_39_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_39_row():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_39_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_39_text():
+    '''실측 잎'''
+    assert LEAF == "17.0"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_40_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_40_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_40_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_40_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_40_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_40_text():
+    '''실측 잎'''
+    assert LEAF == "(20.5)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_41_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_41_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_41_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_41_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_41_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_41_text():
+    '''실측 잎'''
+    assert LEAF == "(△20.4)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_42_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_42_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_42_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_42_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_42_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_42_text():
+    '''실측 잎'''
+    assert LEAF == "(△10.7)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_43_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_43_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_43_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_43_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_43_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_43_text():
+    '''실측 잎'''
+    assert LEAF == "(26.9)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_44_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_44_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_44_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_44_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_44_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_44_text():
+    '''실측 잎'''
+    assert LEAF == "(△54.4)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_45_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_45_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_45_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_45_row():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_45_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_45_text():
+    '''실측 잎'''
+    assert LEAF == "(17.0)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_46_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_46_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_46_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_46_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_46_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_46_text():
+    '''실측 잎'''
+    assert LEAF == "중남미"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_47_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_47_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_47_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_47_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_47_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_47_text():
+    '''실측 잎'''
+    assert LEAF == "83.2"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_48_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_48_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_48_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_48_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_48_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_48_text():
+    '''실측 잎'''
+    assert LEAF == "53.5"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_49_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_49_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_49_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_49_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_49_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_49_text():
+    '''실측 잎'''
+    assert LEAF == "95.4"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_50_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_50_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_50_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_50_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_50_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_50_text():
+    '''실측 잎'''
+    assert LEAF == "79.2"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_51_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_51_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_51_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_51_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_51_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_51_text():
+    '''실측 잎'''
+    assert LEAF == "66.3"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_52_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_52_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_52_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_52_row():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_52_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_52_text():
+    '''실측 잎'''
+    assert LEAF == "12.0"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_53_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_53_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_53_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_53_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_53_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_53_text():
+    '''실측 잎'''
+    assert LEAF == "(37.5)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_54_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_54_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_54_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_54_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_54_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_54_text():
+    '''실측 잎'''
+    assert LEAF == "(△35.7)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_55_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_55_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_55_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_55_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_55_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_55_text():
+    '''실측 잎'''
+    assert LEAF == "(78.4)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_56_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_56_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_56_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_56_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_56_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_56_text():
+    '''실측 잎'''
+    assert LEAF == "(△16.9)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_57_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_57_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_57_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_57_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_57_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_57_text():
+    '''실측 잎'''
+    assert LEAF == "(△16.3)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_58_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_58_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_58_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_58_row():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_58_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_58_text():
+    '''실측 잎'''
+    assert LEAF == "(△47.2)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_59_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_59_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_59_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_59_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_59_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_59_text():
+    '''실측 잎'''
+    assert LEAF == "아프리카"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_60_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_60_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_60_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_60_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_60_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_60_text():
+    '''실측 잎'''
+    assert LEAF == "4.7"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_61_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_61_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_61_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_61_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_61_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_61_text():
+    '''실측 잎'''
+    assert LEAF == "3.0"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_62_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_62_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_62_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_62_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_62_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_62_text():
+    '''실측 잎'''
+    assert LEAF == "2.0"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_63_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_63_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_63_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_63_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_63_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_63_text():
+    '''실측 잎'''
+    assert LEAF == "1.0"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_64_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_64_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_64_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_64_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_64_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_64_text():
+    '''실측 잎'''
+    assert LEAF == "2.9"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_65_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_65_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_65_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_65_row():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_65_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_65_text():
+    '''실측 잎'''
+    assert LEAF == "2.5"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_66_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_66_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_66_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_66_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_66_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_66_text():
+    '''실측 잎'''
+    assert LEAF == "(234.7)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_67_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_67_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_67_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_67_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_67_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_67_text():
+    '''실측 잎'''
+    assert LEAF == "(△36.7)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_68_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_68_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_68_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_68_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_68_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_68_text():
+    '''실측 잎'''
+    assert LEAF == "(△31.0)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_69_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_69_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_69_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_69_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_69_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_69_text():
+    '''실측 잎'''
+    assert LEAF == "(△52.4)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_70_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_70_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_70_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_70_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_70_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_70_text():
+    '''실측 잎'''
+    assert LEAF == "(198.2)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_71_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_71_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_71_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_71_row():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_71_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_71_text():
+    '''실측 잎'''
+    assert LEAF == "(854.0)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_72_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_72_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_72_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_72_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_72_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_72_text():
+    '''실측 잎'''
+    assert LEAF == "대양주"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_73_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_73_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_73_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_73_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_73_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_73_text():
+    '''실측 잎'''
+    assert LEAF == "6.6"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_74_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_74_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_74_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_74_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_74_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_74_text():
+    '''실측 잎'''
+    assert LEAF == "8.2"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_75_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_75_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_75_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_75_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_75_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_75_text():
+    '''실측 잎'''
+    assert LEAF == "9.8"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_76_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_76_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_76_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_76_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_76_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_76_text():
+    '''실측 잎'''
+    assert LEAF == "13.4"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_77_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_77_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_77_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_77_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_77_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_77_text():
+    '''실측 잎'''
+    assert LEAF == "2.3"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_78_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_78_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_78_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_78_row():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_78_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_78_text():
+    '''실측 잎'''
+    assert LEAF == "2.3"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_79_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_79_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_79_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_79_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_79_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_79_text():
+    '''실측 잎'''
+    assert LEAF == "(46.7)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_80_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_80_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_80_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_80_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_80_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_80_text():
+    '''실측 잎'''
+    assert LEAF == "(23.4)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_81_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_81_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_81_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_81_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_81_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_81_text():
+    '''실측 잎'''
+    assert LEAF == "(19.3)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_82_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_82_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_82_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_82_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_82_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_82_text():
+    '''실측 잎'''
+    assert LEAF == "(36.6)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_83_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_83_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_83_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_83_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_83_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_83_text():
+    '''실측 잎'''
+    assert LEAF == "(△83.1)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_84_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_84_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_84_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_84_row():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_84_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_84_text():
+    '''실측 잎'''
+    assert LEAF == "(△257.3)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_85_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_85_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_85_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_85_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_85_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_85_text():
+    '''실측 잎'''
+    assert LEAF == "중동"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_86_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_86_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_86_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_86_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_86_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_86_text():
+    '''실측 잎'''
+    assert LEAF == "2.9"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_87_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_87_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_87_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_87_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_87_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_87_text():
+    '''실측 잎'''
+    assert LEAF == "1.0"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_88_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_88_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_88_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_88_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_88_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_88_text():
+    '''실측 잎'''
+    assert LEAF == "1.0"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_89_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_89_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_89_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_89_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_89_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_89_text():
+    '''실측 잎'''
+    assert LEAF == "0.1"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_90_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_90_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_90_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_90_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_90_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_90_text():
+    '''실측 잎'''
+    assert LEAF == "0.6"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_91_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_91_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_91_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_91_row():
+    '''실측 잎'''
+    assert LEAF == 13
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_91_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_91_text():
+    '''실측 잎'''
+    assert LEAF == "1.0"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_92_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_92_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_92_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_92_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_92_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_92_text():
+    '''실측 잎'''
+    assert LEAF == "(△33.1)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_93_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_93_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_93_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_93_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_93_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_93_text():
+    '''실측 잎'''
+    assert LEAF == "(△66.1)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_94_col():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_94_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_94_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_94_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_94_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_94_text():
+    '''실측 잎'''
+    assert LEAF == "(4.8)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_95_col():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_95_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_95_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_95_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_95_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_95_text():
+    '''실측 잎'''
+    assert LEAF == "(△88.7)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_96_col():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_96_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_96_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_96_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_96_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_96_text():
+    '''실측 잎'''
+    assert LEAF == "(387.9)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_97_col():
+    '''실측 잎'''
+    assert LEAF == 6
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_97_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_97_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_97_row():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_97_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_24_cells_97_text():
+    '''실측 잎'''
+    assert LEAF == "(△788.6)"
+
+def test_x0283_r_runs_2_stdout_tables_24_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_24_control():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_24_csvReady():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_24_index():
+    '''실측 잎'''
+    assert LEAF == 24
+
+def test_x0283_r_runs_2_stdout_tables_24_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_2_stdout_tables_24_paragraph():
+    '''실측 잎'''
+    assert LEAF == 102
+
+def test_x0283_r_runs_2_stdout_tables_24_rows():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_2_stdout_tables_24_section():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_25_caption():
+    '''실측 잎'''
+    assert LEAF == null
+
+def test_x0283_r_runs_2_stdout_tables_25_cellCount():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_0_col():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_0_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_0_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_0_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_0_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_0_text():
+    '''실측 잎'''
+    assert LEAF == "참 고"
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_1_col():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_1_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_1_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_1_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_1_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_1_text():
+    '''실측 잎'''
+    assert LEAF == ""
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_2_col():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_2_colSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_2_isHeader():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_2_row():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_2_rowSpan():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_25_cells_2_text():
+    '''실측 잎'''
+    assert LEAF == "해외직접투자 개념 (외국환거래법 제3조, 시행령 제8조)"
+
+def test_x0283_r_runs_2_stdout_tables_25_cols():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_2_stdout_tables_25_control():
+    '''실측 잎'''
+    assert LEAF == 2
+
+def test_x0283_r_runs_2_stdout_tables_25_csvReady():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_tables_25_index():
+    '''실측 잎'''
+    assert LEAF == 25
+
+def test_x0283_r_runs_2_stdout_tables_25_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_25_paragraph():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_2_stdout_tables_25_rows():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tables_25_section():
+    '''실측 잎'''
+    assert LEAF == 1
+
+def test_x0283_r_runs_2_stdout_tool():
+    '''실측 잎'''
+    assert LEAF == "rhwp-agent"
+
+def test_x0283_r_runs_2_stdout_untrustedContent():
+    '''실측 잎'''
+    assert LEAF == true
+
+def test_x0283_r_runs_2_stdout_untrustedFields_0():
+    '''실측 잎'''
+    assert LEAF == "tables[].cells[].text"
+
+def test_x0283_r_runs_2_stdout_untrustedFields_1():
+    '''실측 잎'''
+    assert LEAF == "tables[].caption"
+
+def test_x0283_r_runs_2_stdout_version():
+    '''실측 잎'''
+    assert LEAF == "0.8.4"
+
+def test_x0283_r_runs_3_argv_0():
+    '''실측 잎'''
+    assert LEAF == "merged-tables"
+
+def test_x0283_r_runs_3_argv_1():
+    '''실측 잎'''
+    assert LEAF == "--json"
+
+def test_x0283_r_runs_3_exit():
+    '''실측 잎'''
+    assert LEAF == 0
+
+def test_x0283_r_runs_3_stdout_command():
+    '''실측 잎'''
+    assert LEAF == "merged-tables"
+
+def test_x0283_r_runs_3_stdout_mergedCount():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_3_stdout_schemaVersion():
+    '''실측 잎'''
+    assert LEAF == "1.0"
+
+def test_x0283_r_runs_3_stdout_source():
+    '''실측 잎'''
+    assert LEAF == "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\hwpx\\hwpx-h-01.hwpx"
+
+def test_x0283_r_runs_3_stdout_tableCount():
+    '''실측 잎'''
+    assert LEAF == 26
+
+def test_x0283_r_runs_3_stdout_tables_0_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_0_index():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_3_stdout_tables_0_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 3
+
+def test_x0283_r_runs_3_stdout_tables_0_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_3_stdout_tables_1_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_1_index():
+    '''실측 잎'''
+    assert LEAF == 9
+
+def test_x0283_r_runs_3_stdout_tables_1_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_3_stdout_tables_1_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_3_stdout_tables_2_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_2_index():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_2_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_3_stdout_tables_2_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_3_stdout_tables_3_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_3_index():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_3_stdout_tables_3_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_3_stdout_tables_3_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_3_stdout_tables_4_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_4_index():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_3_stdout_tables_4_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_4_rows():
+    '''실측 잎'''
+    assert LEAF == 16
+
+def test_x0283_r_runs_3_stdout_tables_5_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_3_stdout_tables_5_index():
+    '''실측 잎'''
+    assert LEAF == 14
+
+def test_x0283_r_runs_3_stdout_tables_5_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_3_stdout_tables_5_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_3_stdout_tables_6_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_3_stdout_tables_6_index():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_3_stdout_tables_6_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_3_stdout_tables_6_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_3_stdout_tables_7_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_3_stdout_tables_7_index():
+    '''실측 잎'''
+    assert LEAF == 16
+
+def test_x0283_r_runs_3_stdout_tables_7_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_3_stdout_tables_7_rows():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_3_stdout_tables_8_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_8_index():
+    '''실측 잎'''
+    assert LEAF == 17
+
+def test_x0283_r_runs_3_stdout_tables_8_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_3_stdout_tables_8_rows():
+    '''실측 잎'''
+    assert LEAF == 4
+
+def test_x0283_r_runs_3_stdout_tables_9_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_9_index():
+    '''실측 잎'''
+    assert LEAF == 18
+
+def test_x0283_r_runs_3_stdout_tables_9_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_3_stdout_tables_9_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_3_stdout_tables_10_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_10_index():
+    '''실측 잎'''
+    assert LEAF == 19
+
+def test_x0283_r_runs_3_stdout_tables_10_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 8
+
+def test_x0283_r_runs_3_stdout_tables_10_rows():
+    '''실측 잎'''
+    assert LEAF == 12
+
+def test_x0283_r_runs_3_stdout_tables_11_cols():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_11_index():
+    '''실측 잎'''
+    assert LEAF == 20
+
+def test_x0283_r_runs_3_stdout_tables_11_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 10
+
+def test_x0283_r_runs_3_stdout_tables_11_rows():
+    '''실측 잎'''
+    assert LEAF == 16
+
+def test_x0283_r_runs_3_stdout_tables_12_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_3_stdout_tables_12_index():
+    '''실측 잎'''
+    assert LEAF == 22
+
+def test_x0283_r_runs_3_stdout_tables_12_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_3_stdout_tables_12_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_3_stdout_tables_13_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_3_stdout_tables_13_index():
+    '''실측 잎'''
+    assert LEAF == 23
+
+def test_x0283_r_runs_3_stdout_tables_13_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 5
+
+def test_x0283_r_runs_3_stdout_tables_13_rows():
+    '''실측 잎'''
+    assert LEAF == 11
+
+def test_x0283_r_runs_3_stdout_tables_14_cols():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_3_stdout_tables_14_index():
+    '''실측 잎'''
+    assert LEAF == 24
+
+def test_x0283_r_runs_3_stdout_tables_14_mergeCount():
+    '''실측 잎'''
+    assert LEAF == 7
+
+def test_x0283_r_runs_3_stdout_tables_14_rows():
+    '''실측 잎'''
+    assert LEAF == 15
+
+def test_x0283_r_runs_3_stdout_tool():
+    '''실측 잎'''
+    assert LEAF == "rhwp-agent"
+
+def test_x0283_r_runs_3_stdout_untrustedContent():
+    '''실측 잎'''
+    assert LEAF == false
+
+def test_x0283_r_runs_3_stdout_version():
+    '''실측 잎'''
+    assert LEAF == "0.8.4"
+

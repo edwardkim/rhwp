@@ -1,0 +1,3454 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue3637\\press_release_split_cell_nested_table.hwpx",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue3637\\press_release_split_cell_nested_table.hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 7,
+            "index": 0,
+            "rows": 8
+          },
+          {
+            "cols": 3,
+            "index": 1,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 2,
+            "rows": 1
+          },
+          {
+            "cols": 1,
+            "index": 3,
+            "rows": 3
+          },
+          {
+            "cols": 3,
+            "index": 4,
+            "rows": 1
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue3637\\press_release_split_cell_nested_table.hwpx",
+        "tableCount": 5,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 5,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue3637\\press_release_split_cell_nested_table.hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 20,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 2,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "보 도 자 료"
+              },
+              {
+                "col": 5,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 2,
+                "text": "• 미래창조 금융\n\n • 따뜻한 금융\n\n • 튼튼한 금융"
+              },
+              {
+                "col": 2,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "11.5(목) 조간부터 보도 가능"
+              },
+              {
+                "col": 0,
+                "colSpan": 7,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "작성부서"
+              },
+              {
+                "col": 1,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "금융위원회 금융정책국 산업금융과"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "책 임 자"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "최용호 산업금융과장 (2156-9750)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "담 당 자"
+              },
+              {
+                "col": 4,
+                "colSpan": 3,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "이종림 사무관 (2156-9752)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "배 포 일"
+              },
+              {
+                "col": 1,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "’15. 11. 4(수)"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "배포부서"
+              },
+              {
+                "col": 4,
+                "colSpan": 2,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "대변인실(2156-9543∼48)"
+              },
+              {
+                "col": 6,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "총 12매"
+              }
+            ],
+            "cols": 7,
+            "control": 4,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 14,
+            "paragraph": 0,
+            "rows": 8,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "제 목"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ":"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "창의·혁신 기업 지원을 위한 금융개혁, 40년만의 정책보증 大 개편\n  중소기업「新 보증체계」구축"
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 1,
+            "mergeCount": 0,
+            "paragraph": 2,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 1,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "󰊱 창업·성장초기 기업을 전폭적으로 지원하겠습니다.\n\n ☞ 창업·성장초기 기업 보증공급을 대폭 확대(14.3조원 → 17.6조원, 23%↑)\n\n󰊲 창업·성장초기 기업 눈높이에서 보증이용 불편을 최소화하겠습니다.\n\n ☞ 창업·성장초기 기업에 대해서는 장기(5년이상)로 보증을 제공\n\n ☞ 창업 5년이내 기업에 대한 연대보증 전면 면제(1,400개 → 약 4만개)\n\n󰊳 보증을 장기로 이용하는 문제는 시장 원리에 따라 정비하겠습니다.\n\n ☞ 성숙기 이후 기업에 대한 보증대출은 은행이 종합적으로 심사하여 결정, 제공하는 「위탁보증」제도 도입 \n\n󰊴 보증시스템을 합리화하겠습니다.\n\n ☞ 기업의 성장단계별로 맞춤형 보증(창업 / 성장 / 위탁 / 안정)을 제공"
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 2,
+            "mergeCount": 0,
+            "paragraph": 4,
+            "rows": 1,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "Ⅰ. 추진배경"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 7
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "Ⅱ. 개선방안"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 28
+                      }
+                    ],
+                    "control": 0,
+                    "index": 1,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 6,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "【 기본방향 】"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 30
+                      }
+                    ],
+                    "control": 0,
+                    "index": 2,
+                    "paragraph": 5,
+                    "rows": 3,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 3,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "1"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "창업기·성장초기 기업 지원 강화"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 32
+                      }
+                    ],
+                    "control": 0,
+                    "index": 3,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "◈ 보증기관은 민간 자금 공급이 어려운 창업기·성장초기 기업 등 시장실패 부분에 역량을 집중"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 34
+                      }
+                    ],
+                    "control": 0,
+                    "index": 4,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 6,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "신보"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "기보"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "신·기보 종합 (’14년 → ’19년)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 52
+                      }
+                    ],
+                    "control": 0,
+                    "index": 5,
+                    "paragraph": 5,
+                    "rows": 2,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 12,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "보증비율"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "85%"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "90%"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "보증금액(보증수수료)"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "1.7억원(187만원)"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "1.8억원(198만원)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "대출금액(대출이자*)"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "2억(756만원)"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "2억(686만원)"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "총 비용부담"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "943만원"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "884만원"
+                              }
+                            ],
+                            "cols": 3,
+                            "containerPath": [
+                              {
+                                "cell": 1,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 70
+                              },
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 5
+                              }
+                            ],
+                            "control": 0,
+                            "index": 0,
+                            "paragraph": 5,
+                            "rows": 4,
+                            "section": 0
+                          }
+                        ],
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "☞ 장기보증으로 보증심사 부담이 경감되고 안정적 경영이 가능\n\n ☞ 보증비율 상향(85% → 90%)으로 자금조달 부담이 현행 수준보다 경감되고, 은행 대출이 보다 용이\n\n < 가상 사례 > BBB등급 기업이 2억원 대출 시(보증료율 1.1%가정)\n\n    ※ 보증비율 상향에 따라 은행 대출이자가 3.78% → 3.43%로 경감\n\n ☞ 보증계약시부터 거치와 상환기간이 정해짐에 따라 보증이용의 불확실성이 최소화되고 합리적 보증이용이 가능"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 70
+                      }
+                    ],
+                    "control": 0,
+                    "index": 6,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 6,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "< 개선시 기대효과 (가상사례) >"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "#1 지난해 ㅇㅇ보증기관으로부터 2억원의 보증대출을 받은 A씨는 보증받은지 1년이 되어 다시 보증기관으로부터 보증 연장을 위한 심사를 받아야 함. 재심사 받기 한달 전부터 기업의 경영 사정이 일부 악화됐는데 보증이 중단될까 노심초사\n\n ⇨ 앞으로 장기보증을 체결하게 되면 보증기간 동안에는 매년 보증심사를 받지 않아도 됨으로써 심사부담 및 불확실성 없이 계획적 자금운용이 가능\n\n#2 휴대폰 모바일 관련 부속품을 납부하는 8년차 제조업체 사장인 B씨는 ‘10년부터 보증대출 이용중. 올해도 당연히 보증이 연장될 것으로 예상하였으나, 보증기관은 B씨의 업체가 올해부터 원금을 20% 상환해야 한다고 통보. 갑작스런 상환 요구에 투자 등 시설확충 계획에 차질\n\n ⇨ 보증계약 체결 시부터 거치기간과 만기 상환구조가 약정됨에 따라 사전에 계획적으로 보증이용 및 상환이 가능"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 72
+                      }
+                    ],
+                    "control": 0,
+                    "index": 7,
+                    "paragraph": 5,
+                    "rows": 3,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 1,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "nested": [
+                                  {
+                                    "cellCount": 95,
+                                    "cells": [
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 2,
+                                        "text": "AA이상"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 9,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 11,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 12,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 13,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 9,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 11,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 12,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 4,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 13,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 2,
+                                        "text": "기존(현행)"
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 2,
+                                        "rowSpan": 3,
+                                        "text": "A"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 2,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 2,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 2,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 2,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 9,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 2,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 11,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 2,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 13,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 3,
+                                        "rowSpan": 2,
+                                        "text": "⦁3년이내 BBB"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 9,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 11,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 2,
+                                        "text": "BBB"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 9,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 11,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 12,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 13,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": "⦁3~5년 A"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 9,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 11,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 12,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 13,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 7,
+                                        "rowSpan": 3,
+                                        "text": "BB"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 7,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 7,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 7,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 7,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 9,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 7,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 11,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 7,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 12,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 7,
+                                        "rowSpan": 4,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 13,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 7,
+                                        "rowSpan": 2,
+                                        "text": "전면면제"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 8,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 8,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 8,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 8,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 9,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 8,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 11,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 8,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 13,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 9,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 10,
+                                        "rowSpan": 2,
+                                        "text": "B이하"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 10,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 10,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 10,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 10,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 9,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 10,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 11,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 10,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 11,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 11,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 11,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 11,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 9,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 11,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 11,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 11,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 12,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 11,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 13,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 11,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 12,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 12,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 2,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 12,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 4,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 12,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 6,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 12,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 12,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 8,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 12,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 9,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 12,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 10,
+                                        "colSpan": 4,
+                                        "isHeader": false,
+                                        "row": 12,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 13,
+                                        "rowSpan": 1,
+                                        "text": "창업기간"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 13,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 2,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 13,
+                                        "rowSpan": 1,
+                                        "text": "1년"
+                                      },
+                                      {
+                                        "col": 4,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 13,
+                                        "rowSpan": 1,
+                                        "text": "2년"
+                                      },
+                                      {
+                                        "col": 6,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 13,
+                                        "rowSpan": 1,
+                                        "text": "3년"
+                                      },
+                                      {
+                                        "col": 8,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 13,
+                                        "rowSpan": 1,
+                                        "text": "4년"
+                                      },
+                                      {
+                                        "col": 10,
+                                        "colSpan": 4,
+                                        "isHeader": false,
+                                        "row": 13,
+                                        "rowSpan": 1,
+                                        "text": "5년"
+                                      }
+                                    ],
+                                    "cols": 14,
+                                    "containerPath": [
+                                      {
+                                        "cell": 1,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 86
+                                      },
+                                      {
+                                        "cell": 0,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 2
+                                      },
+                                      {
+                                        "cell": 0,
+                                        "control": 4,
+                                        "kind": "tableCell",
+                                        "paragraph": 2
+                                      }
+                                    ],
+                                    "control": 0,
+                                    "index": 0,
+                                    "paragraph": 5,
+                                    "rows": 14,
+                                    "section": 0
+                                  }
+                                ],
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "< 창업기업(5년이내) 연대보증 면제 확대 효과>"
+                              }
+                            ],
+                            "cols": 1,
+                            "containerPath": [
+                              {
+                                "cell": 1,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 86
+                              },
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 2
+                              }
+                            ],
+                            "control": 4,
+                            "index": 0,
+                            "paragraph": 5,
+                            "rows": 1,
+                            "section": 0
+                          }
+                        ],
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "☞ ‘15.9월말 기준 1,400개에서 향후 약 4만개 내외 기업(보증잔액 약 17조원)이 혜택 예상\n\n\n\n ☞ 연대보증 폐지로 우수한 기술력이 모험형 창업으로 연계되어 활성화"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 86
+                      }
+                    ],
+                    "control": 0,
+                    "index": 8,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 6,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "< 개선시 기대효과 (가상사례) >"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "#3 대학생 C씨는 창업을 결심하고 보증기관을 방문했으나, 보증기관은 대표자인 C씨에 대해 연대보증을 요구함으로써 창업이 주저되는 상황. 가족들 역시 사업 실패후 연대보증채무로 살림이 어려워진 작은아버지 사례를 들며 창업을 만류\n\n ⇨ 앞으로 우수한 기술만 있다면 보증기관은 대표자 C씨를 포함 어느 누구에게라도 연대보증을 요구하지 않음. 따라서 C씨는 창업에 대한 실패 부담 없이 창업이 가능"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 88
+                      }
+                    ],
+                    "control": 0,
+                    "index": 9,
+                    "paragraph": 5,
+                    "rows": 3,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "☞ 보증기관~민간 협력을 통해 기업이 유치할 수 있는 자본규모 확대\n\n   * 신·기보 단독시보다 VC, 엔젤머니 등 통해 투자효과가 2배 이상 증가\n\n ☞ 투자기간 확대로 기업이 투자자(보증기관)를 대상으로 성장성을 어필하여 보다 많은 자금을 유치하는 것이 가능"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 109
+                      }
+                    ],
+                    "control": 0,
+                    "index": 10,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 6,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "< 개선시 기대효과 (가상사례) >"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "#4  D기업은 보증 계약시부터 보증기관과 투자옵션부 보증 계약을 체결. 보증 후 4년 3개월이 되는 해에 D기업의 성과가 가시화 되었으나 이미 옵션만기(보증후 3년)가 초과되어 D기업이 보증기관으로부터 투자를 유치할 기회를 놓침\n\n ⇨ 앞으로 보증이용후 5년이내 기업까지 보증기관이 투자옵션부 보증의 옵션을 행사할 수 있게 됨에 따라 기업은 보증기관으로부터 투자를 유치할 기회가 확대"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 111
+                      }
+                    ],
+                    "control": 0,
+                    "index": 11,
+                    "paragraph": 5,
+                    "rows": 3,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 3,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "2"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "성장후기·성숙기 기업의 보증이용 효율화"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 112
+                      }
+                    ],
+                    "control": 0,
+                    "index": 12,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "◈ 보증으로 연명했던 한계기업은 시장의 평가와 선택으로 정비"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 114
+                      }
+                    ],
+                    "control": 0,
+                    "index": 13,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 4,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "보증이용 기업 업력"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "보증이용 기간"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 120
+                      }
+                    ],
+                    "control": 0,
+                    "index": 14,
+                    "paragraph": 5,
+                    "rows": 2,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 4,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "현행"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "변경"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "nested": [
+                                  {
+                                    "cellCount": 16,
+                                    "cells": [
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": "보증"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 5,
+                                        "text": "② 보증심사·\n  보증발급"
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 5,
+                                        "text": "④ 대출실행"
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 2,
+                                        "text": "기관"
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 2,
+                                        "rowSpan": 2,
+                                        "text": "은행"
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 3,
+                                        "rowSpan": 2,
+                                        "text": "(보증심사)"
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": "① 보증신청"
+                                      },
+                                      {
+                                        "col": 2,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 4,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": "③ 보증대출신청"
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 2,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": "기업"
+                                      },
+                                      {
+                                        "col": 4,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      }
+                                    ],
+                                    "cols": 6,
+                                    "containerPath": [
+                                      {
+                                        "cell": 1,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 128
+                                      },
+                                      {
+                                        "cell": 0,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 2
+                                      },
+                                      {
+                                        "cell": 2,
+                                        "control": 1,
+                                        "kind": "tableCell",
+                                        "paragraph": 1
+                                      }
+                                    ],
+                                    "control": 0,
+                                    "index": 0,
+                                    "paragraph": 5,
+                                    "rows": 7,
+                                    "section": 0
+                                  }
+                                ],
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": ""
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "nested": [
+                                  {
+                                    "cellCount": 22,
+                                    "cells": [
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 2,
+                                        "text": "보증"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 4,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 3,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 6,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 3,
+                                        "text": "보증위탁(보증총량 부여)"
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 2,
+                                        "rowSpan": 4,
+                                        "text": "기관"
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 3,
+                                        "rowSpan": 4,
+                                        "text": "은행"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 4,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 5,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 3,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 2,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 3,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 4,
+                                        "colSpan": 3,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 3,
+                                        "text": "② 대출실행"
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 6,
+                                        "rowSpan": 2,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 7,
+                                        "rowSpan": 1,
+                                        "text": "(보증\n심사)"
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 3,
+                                        "isHeader": false,
+                                        "row": 8,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 3,
+                                        "isHeader": false,
+                                        "row": 8,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 6,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 8,
+                                        "rowSpan": 1,
+                                        "text": "① 보증대출신청"
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 9,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 2,
+                                        "isHeader": false,
+                                        "row": 9,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 3,
+                                        "isHeader": false,
+                                        "row": 9,
+                                        "rowSpan": 1,
+                                        "text": "기업"
+                                      },
+                                      {
+                                        "col": 6,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 9,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 7,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 9,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      }
+                                    ],
+                                    "cols": 8,
+                                    "containerPath": [
+                                      {
+                                        "cell": 1,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 128
+                                      },
+                                      {
+                                        "cell": 0,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 2
+                                      },
+                                      {
+                                        "cell": 3,
+                                        "control": 1,
+                                        "kind": "tableCell",
+                                        "paragraph": 1
+                                      }
+                                    ],
+                                    "control": 0,
+                                    "index": 0,
+                                    "paragraph": 5,
+                                    "rows": 10,
+                                    "section": 0
+                                  }
+                                ],
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": ""
+                              }
+                            ],
+                            "cols": 2,
+                            "containerPath": [
+                              {
+                                "cell": 1,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 128
+                              },
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 2
+                              }
+                            ],
+                            "control": 1,
+                            "index": 0,
+                            "paragraph": 5,
+                            "rows": 2,
+                            "section": 0
+                          }
+                        ],
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "<참고> 위탁보증 제도 도입"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 128
+                      }
+                    ],
+                    "control": 0,
+                    "index": 15,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "< 은행의 위탁보증 포트폴리오 구성(가상사례) >\n\n\n\n➊ ‘가’기업: 우수기업\n\n  - 리스크가 낮고 안정적으로 영업이 가능한 우수한 기업으로 보증비율과 보증잔액은 줄이면서 신용대출은 확대\n\n  ☞ 은행 총 대출은 1억원(보증비율 85%)에서 1.4억원(보증비율 50%)\n\n➋ ‘나’기업: 일반기업\n\n  - 기업의 성장성 여부가 아직 불분명한 신용위험도 중간단계인 기업으로 현행 수준의 보증비율과 보증잔액 유지\n\n➌ ‘다’기업: 성장기업\n\n  - 리스크가 어느 정도 있으나 우수한 기술력을 보유하고 있어 성장이 기대되는 기업으로 보증비율은 80%로 인하하고, 보증 규모도 확대\n\n  ☞ 은행 총 대출은 1억원(보증비율 85%)에서 2억원(보증비율 80%)\n\n➍ ‘라’기업: 한계기업\n\n  - 장기간 보증을 이용해 왔으나, 성장이 정체되고 신용도도 악화되는 한계기업으로 보증의 축소가 필요한 기업(0.7억원 상환)"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 136
+                      }
+                    ],
+                    "control": 0,
+                    "index": 16,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "☞ 그동안 지속적인 노력에도 불구하고 개선이 어려웠던 한계기업에 대한 과잉 보증공급 문제가 민간의 전문성을 통해 시정 가능\n\n   - 기업의 성장성에 맞게 다양한 보증비율(85~50%) 적용 과정에서 오히려 신용창출 여력이 확대\n\n     * (기존) 보증재원 4.25억원으로 보증비율 85% 적용시 5억원 대출 가능\n(변경) 보증재원 4.25억원으로 보증비율 50% 적용시 8.5억원 신용 창출\n\n ☞ (보증기업) 기업에 대한 이해가 높은 은행이 보증여부를 심사하게 됨에 따라 시중 자금의 적시 조달 가능\n\n   - 은행방문시 보증과 대출이 동시에 진행되어 이용편의 제고\n\n ☞ (은행·보증기관) 은행은 여신심사 능력이 제고되고, 보증기관은 창업·기술기업에 심사 여력을 확대"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 138
+                      }
+                    ],
+                    "control": 0,
+                    "index": 17,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 3,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "3"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "보증공급 시스템의 합리화"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 140
+                      }
+                    ],
+                    "control": 0,
+                    "index": 18,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "◈ 기업의 생애주기별로 필요한 자금 수요에 정책자금이 지원됨으로써 재원집행의 효율성을 제고"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 142
+                      }
+                    ],
+                    "control": 0,
+                    "index": 19,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "☞ 각 보증기관은 업종관련 전문성 축적이 가능하고, 관련분야의 높은 이해도를 바탕으로 보증 제공 가능"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 164
+                      }
+                    ],
+                    "control": 0,
+                    "index": 20,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "☞ 중소기업의 일시적 경영상 어려움을 해소하고 기업 경영의 정상화를 위한 환경 구축"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 178
+                      }
+                    ],
+                    "control": 0,
+                    "index": 21,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 6,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 2,
+                        "text": "< 개선시 기대효과 (가상사례) >"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": ""
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "#5 3대째 김치제조업을 운영하고 있는 L씨는 맛과 품질 등을 인정받아 외국에도 수출을 하고 있는 강소기업이나, 주요 수입국가의 정책 변화로 일시적으로 매출이 급감 \n\n ⇨ 경제환경 변화, 질병 등 위기시 제공되는 안정보증을 받음으로써 일시적 경영상 어려움을 극복하고 기업의 성장을 도모할 수 있음"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 179
+                      }
+                    ],
+                    "control": 0,
+                    "index": 22,
+                    "paragraph": 5,
+                    "rows": 3,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 5,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "현 행"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 2,
+                                "text": "➡"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "개 선"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "nested": [
+                                  {
+                                    "cellCount": 1,
+                                    "cells": [
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": "보증"
+                                      }
+                                    ],
+                                    "cols": 1,
+                                    "containerPath": [
+                                      {
+                                        "cell": 1,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 187
+                                      },
+                                      {
+                                        "cell": 0,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 0
+                                      },
+                                      {
+                                        "cell": 3,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 1
+                                      }
+                                    ],
+                                    "control": 0,
+                                    "index": 0,
+                                    "paragraph": 5,
+                                    "rows": 1,
+                                    "section": 0
+                                  }
+                                ],
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "성장단계, 업력 未고려"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "nested": [
+                                  {
+                                    "cellCount": 22,
+                                    "cells": [
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": "➊ 창업"
+                                      },
+                                      {
+                                        "col": 2,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": "➋ 성장"
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 0,
+                                        "rowSpan": 1,
+                                        "text": "➌ 위탁"
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 2,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 1,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 2,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 3,
+                                        "isHeader": false,
+                                        "row": 2,
+                                        "rowSpan": 1,
+                                        "text": "➍ 안정 (시장안전판 + 고용안정)"
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 3,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 3,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 2,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 3,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 3,
+                                        "rowSpan": 1,
+                                        "text": ""
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": "단계"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": "창업기"
+                                      },
+                                      {
+                                        "col": 2,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": "성장기"
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 4,
+                                        "rowSpan": 1,
+                                        "text": "성장후기‧성숙기"
+                                      },
+                                      {
+                                        "col": 0,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": "업력"
+                                      },
+                                      {
+                                        "col": 1,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": "~5년"
+                                      },
+                                      {
+                                        "col": 2,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": "6~15년"
+                                      },
+                                      {
+                                        "col": 3,
+                                        "colSpan": 1,
+                                        "isHeader": false,
+                                        "row": 5,
+                                        "rowSpan": 1,
+                                        "text": "(보증 10년이상)"
+                                      }
+                                    ],
+                                    "cols": 4,
+                                    "containerPath": [
+                                      {
+                                        "cell": 1,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 187
+                                      },
+                                      {
+                                        "cell": 0,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 0
+                                      },
+                                      {
+                                        "cell": 4,
+                                        "control": 0,
+                                        "kind": "tableCell",
+                                        "paragraph": 1
+                                      }
+                                    ],
+                                    "control": 0,
+                                    "index": 0,
+                                    "paragraph": 5,
+                                    "rows": 6,
+                                    "section": 0
+                                  }
+                                ],
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": ""
+                              }
+                            ],
+                            "cols": 3,
+                            "containerPath": [
+                              {
+                                "cell": 1,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 187
+                              },
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 0
+                              }
+                            ],
+                            "control": 0,
+                            "index": 0,
+                            "paragraph": 5,
+                            "rows": 2,
+                            "section": 0
+                          }
+                        ],
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": ""
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 187
+                      }
+                    ],
+                    "control": 0,
+                    "index": 23,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "☞ 보증기관간(신·기보, 신보·지신보) 역할 재정립으로 특화된 영역에서 보증공급이 보다 정교해질 것으로 기대"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 188
+                      }
+                    ],
+                    "control": 0,
+                    "index": 24,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "Ⅲ. 기대효과"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 190
+                      }
+                    ],
+                    "control": 0,
+                    "index": 25,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "◈ 금번「新 보증체계」구축 방안은 보증이 도입된지 40년만에 기업의 눈높이에서 보증체계를 전면 개편했다는데 의의"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 192
+                      }
+                    ],
+                    "control": 0,
+                    "index": 26,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "Ⅳ. 향후계획"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 218
+                      }
+                    ],
+                    "control": 0,
+                    "index": 27,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "◈ 필요한 제도개선은 조속히 추진함으로써 신속하게「新 보증체계 구축」방안을 시행"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 220
+                      }
+                    ],
+                    "control": 0,
+                    "index": 28,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  },
+                  {
+                    "cellCount": 26,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "내  용"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "일 정\n(조치사항)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 2,
+                        "text": "󰊱 창업·성장초기 기업 연대보증 전면 면제"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "‘16. 1분기"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "보증기관 내부 지침 개정"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 2,
+                        "text": "󰊲 보증연계투자 한도 자기자본의 10% → 20% 확대"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "‘16. 上"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "신·기보 법률 개정"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 2,
+                        "text": "󰊳 보증연계투자 보증금액의 2배이상 확대"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "‘16. 1분기"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "금융위 고시 마련"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 2,
+                        "text": "󰊴 투자옵션 행사요건 완화, 투자옵션 한도 상향"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 7,
+                        "rowSpan": 1,
+                        "text": "‘15. 末"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 8,
+                        "rowSpan": 1,
+                        "text": "보증기관 내부 지침 개정"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 2,
+                        "text": "󰊵 IPO 전담 조직 구성"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 9,
+                        "rowSpan": 1,
+                        "text": "‘16. 上"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 10,
+                        "rowSpan": 1,
+                        "text": "조직개편"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 11,
+                        "rowSpan": 2,
+                        "text": "󰊶 新 보증체계 도입\n\n  - ( 창업 / 성장 / 위탁 / 안정)\n\n  - 장기보증(창업), 분할상환(창업, 안정) 등"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 11,
+                        "rowSpan": 1,
+                        "text": "‘17년 부터"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 12,
+                        "rowSpan": 1,
+                        "text": "보증기관 내부 지침 개정"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 13,
+                        "rowSpan": 2,
+                        "text": "- 기존 장기보증이용자 위탁보증 제도 편입\n\n   * 5년에 걸쳐 단계적으로 편입"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 13,
+                        "rowSpan": 1,
+                        "text": "‘17 ~ ’21년"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 14,
+                        "rowSpan": 1,
+                        "text": "보증기관 내부 지침 개정"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 15,
+                        "rowSpan": 2,
+                        "text": "󰊷 보증 계정구분"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 15,
+                        "rowSpan": 1,
+                        "text": "‘17년 부터"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 16,
+                        "rowSpan": 1,
+                        "text": "시스템 개편"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 1,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 222
+                      }
+                    ],
+                    "control": 0,
+                    "index": 29,
+                    "paragraph": 5,
+                    "rows": 17,
+                    "section": 0
+                  }
+                ],
+                "row": 1,
+                "rowSpan": 1,
+                "text": "※ 금융위원회(위원장: 임종룡)는 10.29(목) 금융개혁회의(의장 : 민상기)에서 “창의‧혁신‧기술 기업의 창업과 성장 촉진을 위한「新 보증체계 마련」방안”을 의결․발표\n\n □ 금번 방안은 우리나라에 보증체계가 도입된지 약 40년만에 수요자인 중소기업의 눈높이에서 보증체계를 전면 개편한데 의의\n\n  ㅇ 이를 위해 지난 4월부터 금융위, 학계, 연구원, 정책금융기관, 금융업계, 산업계가 공동으로 T/F를 구성하여 협업‧추진(※ 10.8일 금융연구원 주관 공청회 개최)\n\n \n\n □ 70년대 초 정책보증이 도입된 이래 중소기업의 자금사정이 획기적으로 개선*되고, 창업 기회가 확대**되는 등 가시적 성과 창출\n\n     * 경영애로요인 중 자금조달난(%): (`05)23.6 → (`10)14.4 → (`14)12.6 (통계청)\n     ** 창업기업 수: (`08) 5만개 → (`14) 8.4만개\n\n □ 그러나 최근에는 기존 보증기업이 장기간 계속 이용하는 ‘기득권화’, 성숙기 이후 기업에 편중 지원되는 ‘안정기업 쏠림현상’ 등 문제*가 야기\n\n     * 전체 보증 中 10년이상 보증이용 기업 비중 25%, 업력 10년이상 기업 지원 비중 50%\n\n  ㅇ 한정된 재원이 한계기업 지원* 등 비효율적으로 사용되어 경제성장에 오히려 걸림돌이 되고 있다고 평가\n\n     * 중소 한계기업 비중(한국은행): (’12)13.3% → (’13)14.2% → (’14) 15.3%\n\n □ 한편, 우리의 경우 정책보증이 상대적으로 많이 공급되고 있으나, 창의·기술형 기업 등 창조경제를 견인할 혁신형 기업 지원은 여전히 미흡 \n\n     * 정책보증/중기대출(%): 한국 14.6%, 일본 13.2%, 프랑스 3.4%, 미국 2.1%\n\n  ⇨ 보증이 도입된지 40년이 지난 만큼 역할과 기능을 재조명하고, 창의·혁신 기업에 대한 지원이 확대될 수 있도록 방안을 모색할 시점\n\n \n\n\n\n \n\n \n\n 󰊱 창업기, 성장초기 기업 발굴 및 지원을 대폭 확대하겠습니다.\n\n  ㅇ (문제점) 시장실패 영역*인 창업·성장초기 기업에 대한 지원 미흡\n\n     * 창업·성장초기 기업의 높은 리스크로 인해 민간에서 자금 공급을 기피\n\n    - 창업 3년 후 기업 생존율이 OECD중 최하위권*으로 데스벨리(창업후 3~5년)에 진입한 기업 지원 확대 필요\n\n     * (호주) 62.8%, (미) 57.6%, (이스라엘) 55.4%, (이태리) 54.8%, (한) 41.0%\n\n  ㅇ (개선방안) 보증기관의 심사 인력과 조직을 ‘성숙기업 관리’에서 ‘창업·성장기업 지원’에 활용될 수 있도록 재편\n\n    - 신·기보의 창업지원 대폭 확대: 14.3조원 → 17.6조원 (3.3조원, 23%↑)\n\n     * 전체 보증 중 창업보증 차지 비중: (’14년) 20.8% → (’19년) 26.7%\n\n\n\n 󰊲 death valley의 어려움을 겪는 창업·성장초기 기업의 불편 사항을 기업의 눈높이에서 해소하겠습니다.\n\n  ㅇ (문제점) 공급자 중심의 보증공급 관행으로 인해 창업·성장초기 기업의 정책보증에 애로\n\n    - 기업에 부담을 주는 1년 단위 보증심사·연장 구조로 인해 창업기·성장초기 기업이 지속적인 보증상환 부담에 노출\n\n    - 보증 이용시부터 구체적인 상환시기가 사전에 약정되어 있지 않고 주먹구구식으로 상환됨에 따라 계획적인 경영이 곤란\n\n  ㅇ (개선방안) 창업기업의 보증이용 부담 완화\n\n    - 1년 단위로 보증기관이 보증연장 여부를 심사하던 방식을 5년이상(5~8년)의 장기보증으로 전환\n\n    - 창업기업의 보증이용 부담이 최소화되도록 일반보증(85%)보다 높은 90% 보증비율(창업 1년내 100%) 적용\n\n    - 사전에 (창업)보증 이용기간과, 상환구조(예: 3년거치 5년 분할상환)를 정하여 계획적으로 보증사용\n\n\n\n\n\n 󰊳 창업·성장초기 기업에 대한 연대보증은 완전 폐지됩니다.\n\n  ㅇ (문제점) 연대보증 면제 확대(창업 3년이내, BBB이상인 기업)에도 불구하고, 여전히 연대보증 면제가 확산되지 못하는 상황\n\n    - 창업기업 생존율이 낮은 상황(3년내 기업 생존율 41%)에서 연대보증제도는 창업을 기피하게 만드는 요인\n\n     * (창업기피원인) 실패가 두려워서(55%), 자본이 부족해서(20%), 정보 부족(15%), 기타(10%)\n\n  ㅇ (개선방안) 창업 5년이내 기업에 대해서는 연대보증을 전면 면제\n\n    - 우수한 기술력만 가지고 있으면 누구라도 창업 가능\n\n\n\n\n\n 󰊴 창업·성장초기 기업이 민간자금을 쉽게 이용할 수 있도록 하겠습니다.\n\n  ㅇ (문제점) 혁신·기술형 창업기업일수록 모험자본이 유입될 필요가 있으나, 창업·성장초기 기업은 높은 리스크로 보증외의 자금조달에 애로\n\n    - 이를 보완하고자 보증기관이 일부 직접투자*를 하고 있으나, 성과 미흡\n\n     * 보증연계투자(보증기업 중 우수기업에 보증기관이 투자): 10년간 약 2,500억원\n     * 투자옵션부 보증(보증시부터 일정기간 경과후 보증 →투자 전환 옵션체결): ’15.6말기준 120억원\n\n  ㅇ (개선방안) 보증기관의 투자기능을 확대하여 자금조달 경로 다변화\n\n    - ‘보증연계투자’를 보증기관 단독투자에서 민간자본과 공동투자로 확대하고, 투자한도도 보증기관 재산의 10% → 20%로 완화\n\n     * 보증기관이 기업 pool을 구성 ⇒ VC·엔젤머니가 투자기업을 발굴 ⇒ 보증기관과 VC·엔젤머니가 공동으로 심사·투자\n\n    - ‘투자옵션부 보증’의 취급기관을 확대(기보 → 신보추가)하고 투자 기간을 연장*하여 기업의 성장성을 보아가며 투자할 수 있는 기회 확대\n\n     * 창업후 3년내 기업, 보증후 3년내 옵션행사 → 창업후 5 년내 기업, 보증 후 5년내 옵션 행사\n\n\n\n\n \n\n \n\n □ 위탁보증을 통해 장기보증은 축소·효율화 하겠습니다.\n\n  ㅇ (문제점) 우량·장기기업(10년이상 보증이용 비율 25%)에 보증을 제공하는 보수적 보증운용 관행으로 신규, 성장기업 지원에 소홀\n\n\n\n  ㅇ (개선방안) 성숙기 이후 기업*의 보증은 은행이 심사해서 제공하는 ‘新 위탁보증’ 도입으로 보증이용 효율화\n\n     * 성장보증(시설 8년, 운전 5년) 약정기간 도래 기업, 기존 보증은 10년이상 이용 기업\n\n    - 장기 보증이용 기업이 보증연장, 추가보증이 필요한 경우에는 보증기관 대신 은행을 방문하여 보증대출 여부를 심사받고 대출시행\n\n\n\n    - 은행은 위탁보증 총량(보증기관 → 은행 설정) 내에서 기업을 심사 후 보증을 제공할 기업과 보증비율(85~50%)을 선택\n\n     · (우수기업) 기술력이 좋고 리스크가 적은 기업은 시장에서 자금조달이 가능하므로 은행은 보증비율 축소\n\n     · (한계기업) 장기로 보증을 이용했으나, 성장이 정체되고 리스크가 높은 경우 은행은 보증을 상환(축소)\n\n\n\n\n\n\n\n \n\n 󰊱 보증기관간 영역을 특화하여 보다 정밀하게 보증을 제공하겠습니다.\n\n  ㅇ (문제점) 복수의 보증기관간 업무중복 등 효율적인 기능 재정비 미흡\n\n    - (신·기보) 업무 중복*은 상당부분 축소되었으나, 기관간 업무 특화는 미흡\n\n     * 신·기보 복수거래 잔액(비중): (‘05년) 7.5조원(26.0%) → (‘14년) 1.6조원(4.0%)\n\n    - (신보·지신보) 지신보의 급격한 성장으로 인해 신보와 지신보 사이에 업무 중복도 심화*되는 추세\n\n     * 신보~지신보 복수거래 잔액(비중): (‘11년) 3.3조원(8.7%) → (‘14년) 3.8조원(9.2%)\n\n  ㅇ (개선방안) (신·기보) 신보는 기업 성장성 등 미래가치를, 기보는 기술평가를 바탕으로 하는 창의·혁신 기술기업 지원에 주력\n\n     * 신보는 지식서비스업, 고용안정형 제조업을, 기보는 혁신형 기술제조업, 서비스업(소프트웨어, 엔지니어링) 등 지원\n\n    - (신보·지신보) 신보는 향후 기업으로 성장 가능한 “모험형창업”을, 관계형 금융에 특화된 지신보는 영세한 “생계형 창업” 지원\n\n    - (개인사업자) 창업기에는 신·기보도 지원하되, 성장이 정체되는 성장단계 이후에는 신보와 지신보가 지원(기보는 지원 종료)\n\n\n\n 󰊲 보증이 시장안전판 기능을 든든하게 제공하겠습니다.\n\n  ㅇ (문제점) 재난, 질병, 경기침체 등 위기시 특례보증이 있으나, 임시방편적(특례)*으로 운용되고 있어 든든한 안전판으로 기능에 한계\n\n      * 메르스피해 특례보증(3개월 운용): 보증비율 90%, 보증수수료 1.0%(통상 1~2%) 우대\n\n    - 또한, 상환구조가 없어 특례보증의 취지와 달리 장기로 이용되는 문제\n\n  ㅇ (개선방안)「안정보증」을 통해 외부 충격에 대한 시장 안전판 기능을 제공하고, 일시적으로 고용유지에 어려움을 겪는 기업도 지원\n\n    - 거치후 분할상환(예: 2년거치, 3년상환) 방식을 도입하여 한시적 위험 대응이라는 본래의 취지에 맞게 운용\n\n\n\n\n 󰊳 기업 성장단계별로 특화된 보증상품 및 계정을 도입하겠습니다.\n\n  ㅇ (문제점) 기업의 성장 단계별로 자금수요와 부담여력 등이 상이함에도 이를 반영하지 못하는 단일한 보증(보증비율 85%, 매년심사) 체계로 운용\n\n  ㅇ (개선방안) 기업의 성장 단계별로 창업보증, 성장보증, 위탁보증, 안정보증으로 세분화(※ 계정도 보증에 맞게 구분)\n\n\n\n\n \n\n\n\n 1. 창업·성장초기 기업에 대한 지원 강화로 ‘창업하기 좋은 환경’ 조성\n\n □ 창업·성장초기 보증공급 확대로 우수한 기술력을 지닌 기업이 필요로 하는 자금이 충분하게 공급됨으로써 모험적 창업이 활성화\n\n □ 창업 5년내 기업에 대한 연대보증 면제를 통해 창업부담이 줄고, 우수한 기술력이 사장되지 않고 창업으로까지 연계\n\n 2. 기업의 눈높이에서 보증이용 편의 제고\n\n □ 창업·성장초기 기업에 대한 장기보증으로 보증의 심사와 상환부담 경감\n\n □ 보증비율 상향(85% → 90%)으로 조달비용 감소\n\n 3. 장기보증 이용 합리화로 신규·창업보증 강화 등 선순환 구축\n\n □ 위탁보증 도입으로 보수적인 보증구조에서 벗어나 한계기업 조정이 가속화되고 산업 경쟁력도 강화될 것으로 기대\n\n □ 기업의 특성을 반영한 다양한 보증조건(보증비율 85~50%)으로 맞춤형 보증 제공이 가능하고, 이 과정에서 신용창출 여력도 확대\n\n 4. 보증기관 역할 재정립으로 보증 시스템을 선진화\n\n □ 보증기관간(신·기보, 신보·지신보) 역할 재정립으로 특화된 영역에서 보증공급이 보다 정교해질 것으로 예상\n\n □ 안정보증으로 고용불안정 등 어려움 발생시에도 보증이 든든한 시장 안전판 기능으로 자리매김\n\n \n\n\n\n\n\n < 별첨 >중소기업「新 보증체계」구축 세부내용"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 1,
+            "control": 0,
+            "csvReady": true,
+            "index": 3,
+            "mergeCount": 0,
+            "paragraph": 5,
+            "rows": 3,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 3,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "☞ 본 자료를 인용하여 보도할 경우에는  출처를 표기하여 주시기 바랍니다.\nhttp://www.fsc.go.kr"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": ""
+              }
+            ],
+            "cols": 3,
+            "control": 0,
+            "csvReady": true,
+            "index": 4,
+            "mergeCount": 0,
+            "paragraph": 7,
+            "rows": 1,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\issue3637\\press_release_split_cell_nested_table.hwpx",
+        "tableCount": 5,
+        "tables": [
+          {
+            "cols": 7,
+            "index": 0,
+            "mergeCount": 14,
+            "rows": 8
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

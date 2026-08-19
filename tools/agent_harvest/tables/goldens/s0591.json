@@ -1,0 +1,423 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\1741000_project_application.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\1741000_project_application.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 6,
+            "index": 0,
+            "rows": 15
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\1741000_project_application.hwp",
+        "tableCount": 1,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\1741000_project_application.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 31,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "정책연구과제 심의 신청서"
+              },
+              {
+                "col": 0,
+                "colSpan": 6,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "※ [  ]에는 해당되는 곳에 √표를 합니다.                             ※ 2page 이상 작성"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "과제명"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "지방행정과 치안행정의 연계를 통한 자치경찰제 발전방안 연구"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "신청부서"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "자치분권제도과"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "사업담당자"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "김인경"
+              },
+              {
+                "col": 4,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "dBrain담당자\n(디지털예산회계시스템)"
+              },
+              {
+                "col": 5,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "연구방식"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "[V] 위탁형   [  ] 공동연구형   [  ] 자문형"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "연구기간"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "4  ~ 9월 (6개월)"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "예산항목"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "[V] 포괄 연구개발비   [  ] 사업별 연구개발비"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "예상금액"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "50백만원"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "계약방법"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "제한경쟁입찰"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "연구 필요성"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "▸(VIP 말씀, ‘20.9.21.) 자치경찰제 시행에 발맞춰 분권의 가치에 입각한 치안\n시스템을 안착시켜야 함\n▸(장관님 말씀, ’20.12.6.) 지방행정과 치안행정 간 유기적 연계 등 철학적 관점에서 자치경찰제 발전방안 연구 필요"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 21,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 7
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 0,
+                    "rows": 1,
+                    "section": 0
+                  }
+                ],
+                "row": 9,
+                "rowSpan": 1,
+                "text": "○ 자치경찰제 시행(‘21.1.1.~)으로 17개 시‧도별 자치경찰 출범 준비단 및 시‧도경찰청별 실무추진단 구성 완료(’21.1.6 기준), 시범운영(~‘21.6.30) 및 본격시행 준비중\n   ※ 경찰법‧경찰공무원법 전부개정(’20.12.22.), 대통령령 제‧개정(자치경찰위원회 운영규정 등, ’20.12.31.)\n○ 현재 도입된 자치경찰제는 기존의 시‧도경찰청에서 국가-자치경찰사무를 구분하여 운영하는 일원화모델로서, \n  - 현행 모델 및 해외사례에 대한 분석을 토대로 시범운영 성과 분석과 지방행정과 치안행정 간 연계방안 마련 필요\n○ 아울러,  코로나19 등 재정여건 등을 고려하여 과도기적 방안으로 도입한 현 제도에 대해 자치단체‧학계의 근본적 개선요구*가 지속되고 있고,\n   - 제주자치경찰의 사무‧인력 축소, 제주경찰청의 자치경찰사무 중복 수행 등 혼선 우려, 제도 개선 필요성도 제기됨에 따라 중장기 발전방향 모색 필요\n     * 시‧도지사 소속 자치경찰조직, 자치경찰공무원 신설 등 이원화 모델 도입"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 2,
+                "text": "연구의  유사ㆍ중복\n검토 결과"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "중복검토 방법 : 정책연구관리시스템(PRISM)"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "유사ㆍ중복 여부: [  ] 있다    [V] 없다"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "국민 의견\n수렴 여부"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "[ V ] 수렴    [  ] 미수렴"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "연구내용"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "▸(연계분야) 생활안전, 교통, 지역경비 등 자치경찰사무, 지방자치법상 자치사무 분석을 통한 주요 연계분야의 유형 도출\n▸(연계방식) 자치단체 조례, 기구‧조직 등 제도적 연계, 사업적 연계, 업무처리방식상 연계, 주민참여 등 효과적 연계방식 도출"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 28,
+                        "control": 2,
+                        "kind": "tableCell",
+                        "paragraph": 13
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 0,
+                    "rows": 1,
+                    "section": 0
+                  }
+                ],
+                "row": 13,
+                "rowSpan": 1,
+                "text": "○ 자치경찰제도의 개요\n  - 자치경찰의 정의 및 도입 취지, 역대정부별 도입 추진경과\n  - 제주자치경찰의 도입 경과 및 그간 성과, 문제점 등 분석\n  - 현행 자치경찰제도의 내용 및 지방행정-치안행정 간 연계사항 분석\n○ 자치경찰제도의 해외사례 분석을 통한 시사점 도출\n  - 미국, 유럽(영국‧프랑스‧스페인‧이탈리아‧일본) 등 자치경찰제도 및 비교\n  - 지방행정과 치안행정 간 연계제도 및 사례 분석\n    ※ 사무 분석을 통해 일반행정적 요소와 치안행정적 요소 구분\n○ 자치경찰 시범운영 성과분석 및 지방행정과 치안행정 간 연계방안\n  - ‘21.1.1 이후 현재(연구시점)까지 시범운영 성과 분석\n    ※ 주민, 시‧도공무원/경찰관, 전문가 의견수렴 병행\n    ※ 제주자치경찰은 타 시‧도와 달리 경찰법-제주특별법상 자치경찰사무가 \n혼재되어 있는 점 등 감안하여 별도 분석\n  - 지방행정-치안행정 간 주요 연계분야와 연계방식, 연계사례 등 제시\n\n○ 지방행정-치안행정 연계 관점에서 자치경찰제의 단계별 발전방안\n  - (단기) 자치경찰제에 부합하는 자치경찰위원회의 역할, 국가-자치경찰사무 간 구분, 자치경찰사무 수행을 위한 재정지원 및 사무기구 정원‧기능 등 개선방안\n  - (장기) 별도의 자치경찰조직‧공무원(지방직) 신설을 내용으로 하는 이원화모델 도입 등 중장기 발전방안 \n  - (제주자치경찰) 제주특별법상 제주자치경찰의 도입 취지 및 주민 관점에서 바람직한 제주자치경찰제의 발전방안 마련"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "연구결과 \n활용방안"
+              },
+              {
+                "col": 1,
+                "colSpan": 5,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "① 現 일원화 모델의 안정적 정착 및 단기적 개선방안 도출\n② 자치경찰제의 도입 취지 구현을 위한 중장기 발전방안 마련"
+              }
+            ],
+            "cols": 6,
+            "control": 2,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 15,
+            "paragraph": 0,
+            "rows": 15,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\1741000_project_application.hwp",
+        "tableCount": 1,
+        "tables": [
+          {
+            "cols": 6,
+            "index": 0,
+            "mergeCount": 15,
+            "rows": 15
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}

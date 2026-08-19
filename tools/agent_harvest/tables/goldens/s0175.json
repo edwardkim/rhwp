@@ -1,0 +1,45 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\HWP3-password-123456.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 1,
+      "stdout": null,
+      "stdoutRaw": "",
+      "stderr": "오류: 문서를 열 수 없습니다 - C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\HWP3-password-123456.hwp: 유효하지 않은 파일: 비밀번호가 필요한 암호 문서입니다 (parse_document_with_password 또는 parse_hwp_with_password 로 비밀번호를 전달하세요)\n"
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 1,
+      "stdout": null,
+      "stdoutRaw": "",
+      "stderr": "오류: 문서를 열 수 없습니다 - C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\HWP3-password-123456.hwp: 유효하지 않은 파일: 비밀번호가 필요한 암호 문서입니다 (parse_document_with_password 또는 parse_hwp_with_password 로 비밀번호를 전달하세요)\n"
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 1,
+      "stdout": null,
+      "stdoutRaw": "",
+      "stderr": "오류: 문서를 열 수 없습니다 - C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\HWP3-password-123456.hwp: 유효하지 않은 파일: 비밀번호가 필요한 암호 문서입니다 (parse_document_with_password 또는 parse_hwp_with_password 로 비밀번호를 전달하세요)\n"
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 1,
+      "stdout": null,
+      "stdoutRaw": "",
+      "stderr": "오류: 문서를 열 수 없습니다 - C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\HWP3-password-123456.hwp: 유효하지 않은 파일: 비밀번호가 필요한 암호 문서입니다 (parse_document_with_password 또는 parse_hwp_with_password 로 비밀번호를 전달하세요)\n"
+    }
+  ]
+}

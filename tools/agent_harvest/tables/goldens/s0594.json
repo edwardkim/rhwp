@@ -1,0 +1,4456 @@
+{
+  "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\21217935_simsa_jipyo.hwp",
+  "runs": [
+    {
+      "argv": [
+        "tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "tables",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\21217935_simsa_jipyo.hwp",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "rows": 17
+          },
+          {
+            "cols": 4,
+            "index": 1,
+            "rows": 14
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-count",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-count",
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\21217935_simsa_jipyo.hwp",
+        "tableCount": 2,
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "table-inspect",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "table-inspect",
+        "emittedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\21217935_simsa_jipyo.hwp",
+        "tableCount": 2,
+        "tables": [
+          {
+            "caption": null,
+            "cellCount": 57,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "항목"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "심사 기준"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "배점"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "점수"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 3,
+                "text": "1.\n설치·운영자 \n및 종사자의 서비스 제공 능력\n(35점)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 31,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "점수"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "사회복지사업법"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "노인복지법"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 2,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "노인장기요양보험법"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "15점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 4,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "행정처분 이력 없음"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "12점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "개선명령"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "경고"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "경고"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "-"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "9점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "시설장 교체 1회"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "사업정지 30일 이하"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "업무정지 30일 이하"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "급여제공제한 6개월 이하"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "6점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "시설장 교체 2회"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "사업정지 30일 초과 90일 이하"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "업무정지\n30일 초과 90일 이하"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "-"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "3점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "시설장 교체 3회 이상"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "사업정지 90일 초과"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "업무정지\n90일 초과"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "급여제공제한 6개월 초과"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "0점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "시설폐쇄"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "사업폐지"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "지정취소"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "-"
+                              }
+                            ],
+                            "cols": 5,
+                            "containerPath": [
+                              {
+                                "cell": 5,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 2
+                              },
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 2
+                              }
+                            ],
+                            "control": 0,
+                            "index": 0,
+                            "paragraph": 3,
+                            "rows": 7,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 8,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "점수"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "노인장기요양보험법"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "5점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "행정처분 이력 없음"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "3점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "장기요양기관 종사자가 급여제공제한 처분 6개월 이하"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "0점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "장기요양기관 종사자가 급여제공제한 처분 6개월 초과"
+                              }
+                            ],
+                            "cols": 2,
+                            "containerPath": [
+                              {
+                                "cell": 5,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 2
+                              },
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 7
+                              }
+                            ],
+                            "control": 0,
+                            "index": 1,
+                            "paragraph": 3,
+                            "rows": 4,
+                            "section": 0
+                          }
+                        ],
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "① 설치·운영자가 운영한 행정제재 처분 이력 (15점)\n : 대표자 및 시설장의 행정처분 중 가장 낮은 배점에 해당하는 처분을 적용\n \n  ※ 과징금 처분은 업무정지 일수로 환산\n\n② 종사자의 행정처분 이력 (5점)\n : 대표자 및 시설장을 제외한 모든 종사자의 급여제공제한 처분 중 가장 낮은 배점에 해당하는 처분을 적용\n\n ※ 설치‧운영자가 해당 종사자 처분내용을 사실상 인지할 수 없었던 경우는 제외 가능 (지자체에서 미통보 및 그 외 방법으로 전혀 인지할 수 없었던 경우 등)"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 5,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 1,
+                    "section": 0
+                  }
+                ],
+                "row": 1,
+                "rowSpan": 1,
+                "text": "1-1. 설치·운영자 및 종사자의 행정제재 처분 이력(20점)\n - 설치·운영자 및 그 기관에 종사하려는 자가 「노인장기요양보험법」, 「사회복지사업법」,「노인복지법」 등 장기요양기관 운영과 관련된 법에 따라 받은 행정처분 이력을 확인 (최근 6년 이내)\n - 설치·운영자(①, 15점)와 종사자(②, 5점)의 행정제재 처분을 각각 계산하여 합산"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "20"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 8,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "점수"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "① 휴·폐업 이력이 1회 이하이면서, 휴업기간이 6개월 이하인 경우"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "② 휴·폐업 이력이 2회이거나, 휴업기간의 총합이 6개월 초과 12개월 이하인 경우"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "③ 휴·폐업 이력이 3회 이상이거나, 휴업기간의 총합이 12개월 초과한 경우"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 8,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 3
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 4,
+                    "section": 0
+                  }
+                ],
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1-2. 설치·운영자의 급여 제공 이력(휴·폐업 이력)(5점)\n - 설치·운영자가 이전에 장기요양기관을 운영하며 잦은 휴·폐업으로 안정적인 급여 제공을 저해한 이력 (최근 6년 이내)\n - 휴업의 경우, 장기요양기관 전체 급여유형이 휴업일 때 해당"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "5"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 2,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "등급별 점수 환산표"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "① A등급(10점)     ② B등급(8점)     ③ C등급(6점)\n④ D등급(4점)      ⑤ E등급, 평가제외 등(0점) \n⑥ 이전에 장기요양기관을 운영한 이력이 없는 경우(6점)"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 11,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 4
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 2,
+                    "section": 0
+                  }
+                ],
+                "row": 3,
+                "rowSpan": 1,
+                "text": "1-3. 설치·운영자의 이전 장기요양기관 평가 결과(10점)\n - 설치·운영자가 이전에 장기요양기관을 운영하면서 국민건강보험공단으로부터 받은 정기·수시 평가 결과의 최초등급으로 확인\n - 최근 6년 이내의 정기·수시 평가 결과(최초등급)를 아래의 환산표에 따라 점수로 변환 후, 모든 점수를 평균하여 계산함(소수점 첫째자리 반올림)\n - 다만, 이전에 장기요양기관을 운영한 이력이 없는 경우 6점으로 배정"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "10"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 4,
+                "text": "2. \n서비스 제공 계획의 충실성 및 적절성\n(10점)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 16,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "4점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 충실하게 마련"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 적정하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "1점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 일부 미흡"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "매우미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 매우 미흡"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 15,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 6,
+                    "section": 0
+                  }
+                ],
+                "row": 4,
+                "rowSpan": 1,
+                "text": "2-1. 운영 규정 계획 수립(4점)\n - 「노인복지법 시행규칙」 [별표 5], [별표 10] 등에 따른 운영 규정 및 관련 계획서의 내용 적정성 검토"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "4"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 13,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 충실하게 수립"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 적절하게 수립"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "1점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류 수립"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 미흡하게 수립"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 18,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 4
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 5,
+                    "section": 0
+                  }
+                ],
+                "row": 5,
+                "rowSpan": 1,
+                "text": "2-2. 직원 교육 계획 수립(3점)\n - 질 높은 서비스 제공을 위해 연1회 이상 감염병 예방, 노인 인권 보호 등 서비스 제공 관련 직원교육 계획을 수립하였는지 확인\n   ① 인권교육(매년4시간이상, 인터넷교육 6시간이상)\n   ② 노인학대 예방교육(1시간 이상)  ③ 직원 역량강화 교육"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "3"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 13,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서 및 서식, 협조 체계가 충실하게 수립"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서 및 서식, 협조 체계가 적절하게 수립"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "1점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "계획서 및 서식, 협조 체계가 수립"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "계획서 및 서식, 협조 체계가 미흡"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 21,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 4
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 5,
+                    "section": 0
+                  }
+                ],
+                "row": 6,
+                "rowSpan": 1,
+                "text": "2-3. 이용자(수급자) 고충처리 계획 및 절차 마련(3점)\n - 이용자 고충 처리, 고충 신고 방법 및 절차 안내·비치 등 이용자 고충 처리 계획 및 운영 절차를 적정하게 마련하였는지 확인\n ① 장기요양급여를 계약한 이용자에 대한 고충처리 지침\n ② 수급자의 상해 등 법률상 손해를 배상하는 보험 가입"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "3"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 15,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 3,
+                        "text": "시설급여 \n(의료서비스\n질 제고)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계약의사 지정 및 간호사(RN) 배치"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "1점"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계약의사 지정 또는 간호사(RN) 배치"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "해당없음"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 3,
+                        "text": "재가급여\n(통합재가\n서비스 기반 마련)"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "주야간보호, 방문요양, 방문간호를 포함한 4종 이상 급여 제공"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "1점"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "주야간보호, 방문요양을 포함한 2∼3종 급여제공"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 6,
+                        "rowSpan": 1,
+                        "text": "1종 급여 제공"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 24,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 4
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 7,
+                    "section": 0
+                  }
+                ],
+                "row": 7,
+                "rowSpan": 1,
+                "text": "2-4. 서비스 질 개선 노력도(2점)\n - 시설 입소·이용자에게 질 높은 서비스 제공하기 위한 노력을 확인\n ① (시설급여 제공기관) 의료서비스 질 개선 노력\n ② (재가급여 제공기관) 통합적인 재가서비스 제공 노력"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "2"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 2,
+                "text": "3.\n자원관리의 건전성 및 성실성\n(13점)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 16,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서, 위원회 구성 등 충실하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "4점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서, 위원회 구성 등 적절하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "계획서, 위원회 구성 등  작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "계획서, 위원회 구성 등 일부 미흡"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "매우미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "계획서, 위원회 구성 등 매우 미흡"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 28,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 6,
+                    "section": 0
+                  }
+                ],
+                "row": 8,
+                "rowSpan": 1,
+                "text": "3-1. 운영위원회 구성, 개최, 활용 계획의 적정성(5점)\n - 「사회복지사업법」 제36조에 따라 사회복지시설 운영위원회 구성, 계획 및 운영 절차를 충실하게 마련하였는지 확인"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "5"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 13,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "8점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서가 충실히 작성 및 인건비 비율 적정"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "6점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서가 적정하게 작성 및 인건비 비율 적정"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "4점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "계획서 有, 인건비 비율 적정"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "계획서 작성 및 인건비 비율 미흡"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 31,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 5,
+                    "section": 0
+                  }
+                ],
+                "row": 9,
+                "rowSpan": 1,
+                "text": "3-2. 예산 수립의 적정성 등 재무 상태의 건전성(8점)\n - 사업계획에 따른 예산 수립 여부 등 세입·세출 예산 수립 및 재무 상태가 건전하여 장기요양기관이 정상 운영 가능한지 확인\n\n ※ 인건비 비율 판단 : 보건복지부 고시 인건비 지출비율 준수 여부"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "8"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 2,
+                "text": "4. \n인력 관리의 체계성 및 적절성\n(10점)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 7,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "충족"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "모든 종사자와 표준근로계약서로 근로계약 체결"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "미충족"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "일부라도 종사자의 근로계약이 표준근로계약서로 체결이 안 된 경우"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 35,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 3
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 3,
+                    "section": 0
+                  }
+                ],
+                "row": 10,
+                "rowSpan": 1,
+                "text": "4-1. 표준근로계약서 사용 등 고용계획 수립(5점)\n- 장기요양기관 전체 종사자 근로계약 체결 시에 표준근로계약서 등을 활용하였는지를 확인\n ※ 근로기준법 제17조 및 동법 시행령 제8조에 따른 근로조건 등이 필히 명시"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "5"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 16,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서가 모두 충실하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "4점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서가 모두 적정하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "계획서가 모두 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "계획서가 일부 미흡하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "매우미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "계획서를 제출하지 않거나, 매우 미흡하게 작성"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 38,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 6,
+                    "section": 0
+                  }
+                ],
+                "row": 11,
+                "rowSpan": 1,
+                "text": "4-2. 건강관리, 고충처리 등 직원 복지제도 운영 계획 수립(5점)\n직원 고충처리 제도, 처우개선을 위한 복지제도 운영과 건강관리 등을 위한 운영 계획 마련 여부를 확인"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "5"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 2,
+                "text": "5.\n지역사회\n연계계획 및 사회복지분야 활동이력\n(10점)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 16,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서 충실하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "4점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서 적정하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "계획서 모두 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "계획서 일부 미흡하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "매우미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "계획서를 제출하지 않거나, 매우 미흡하게 작성"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 42,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 6,
+                    "section": 0
+                  }
+                ],
+                "row": 12,
+                "rowSpan": 1,
+                "text": "5-1. 지역사회 보건·의료복지서비스 자원 연계 및 활용 계획(5점)\n자원봉사활동, 가족이나 지역주민이 참석하는 시설 내 행사(경로잔치, 생일잔치, 문화행사 등) 운영, 의료기관·치매안심센터·봉사단체 등 연계"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "5"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 11,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "7년 이상"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "4점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "5년 이상"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "3년 이상"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "2년 이상"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "2년 미만"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 45,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 6,
+                    "section": 0
+                  }
+                ],
+                "row": 13,
+                "rowSpan": 1,
+                "text": "5-2. 대표자의 사회복지 및 장기요양기관 근무경력(5점)\n ※ 개인시설은 대표자, 법인시설은 대표자 또는 시설장 평가"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "5"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "6. 설치‧운영자 대면평가\n(20점)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 9,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 배점"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "① 노인장기요양보험제도의 이해"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "② 설치기관의 운영이념 및 사업목표 공익성 등에 관한 사항"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "③ 수급자에 대한 서비스 제공 및 안전에 관한 사항"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "④ 인력 및 재정관리 등 기관 운영에 관한 사항"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 49,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 3,
+                    "rows": 5,
+                    "section": 0
+                  }
+                ],
+                "row": 14,
+                "rowSpan": 1,
+                "text": "6. 설치·운영자 대면평가(20점)\n- 면접 심사를 통해 설치·운영자(대표자)의 노인장기요양보험 제도에 대한 이해, 기관 운영 마인드, 사업 운영 계획 적절성 등을 확인"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": "20"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 14,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": "합계점수"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 15,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 16,
+                "rowSpan": 1,
+                "text": "※ 장기요양기관으로 지정하고자 하는 기관은 심사 점수 평균이 80점 이상이어야 함"
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 0,
+            "mergeCount": 6,
+            "paragraph": 3,
+            "rows": 17,
+            "section": 0
+          },
+          {
+            "caption": null,
+            "cellCount": 46,
+            "cells": [
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "항목"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "심사 기준"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "배점"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 0,
+                "rowSpan": 1,
+                "text": "점수"
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 3,
+                "text": "1.\n설치·운영자 \n및 종사자의 서비스 제공 능력\n(35점)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 1,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "nested": [
+                          {
+                            "cellCount": 31,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "점수"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "사회복지사업법"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "노인복지법"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 2,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "노인장기요양보험법"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "15점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 4,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "행정처분 이력 없음"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "12점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "개선명령"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "경고"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "경고"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "-"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "9점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "시설장 교체 1회"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "사업정지 30일 이하"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "업무정지 30일 이하"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "급여제공제한 6개월 이하"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "6점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "시설장 교체 2회"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "사업정지 30일 초과 90일 이하"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "업무정지\n30일 초과 90일 이하"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 4,
+                                "rowSpan": 1,
+                                "text": "-"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "3점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "시설장 교체 3회 이상"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "사업정지 90일 초과"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "업무정지\n90일 초과"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 5,
+                                "rowSpan": 1,
+                                "text": "급여제공제한 6개월 초과"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "0점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "시설폐쇄"
+                              },
+                              {
+                                "col": 2,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "사업폐지"
+                              },
+                              {
+                                "col": 3,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "지정취소"
+                              },
+                              {
+                                "col": 4,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 6,
+                                "rowSpan": 1,
+                                "text": "-"
+                              }
+                            ],
+                            "cols": 5,
+                            "containerPath": [
+                              {
+                                "cell": 5,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 3
+                              },
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 2
+                              }
+                            ],
+                            "control": 0,
+                            "index": 0,
+                            "paragraph": 5,
+                            "rows": 7,
+                            "section": 0
+                          },
+                          {
+                            "cellCount": 8,
+                            "cells": [
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "점수"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 0,
+                                "rowSpan": 1,
+                                "text": "노인장기요양보험법"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "5점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 1,
+                                "rowSpan": 1,
+                                "text": "행정처분 이력 없음"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "3점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 2,
+                                "rowSpan": 1,
+                                "text": "장기요양기관 종사자가 급여제공제한 처분 6개월 이하"
+                              },
+                              {
+                                "col": 0,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "0점"
+                              },
+                              {
+                                "col": 1,
+                                "colSpan": 1,
+                                "isHeader": false,
+                                "row": 3,
+                                "rowSpan": 1,
+                                "text": "장기요양기관 종사자가 급여제공제한 처분 6개월 초과"
+                              }
+                            ],
+                            "cols": 2,
+                            "containerPath": [
+                              {
+                                "cell": 5,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 3
+                              },
+                              {
+                                "cell": 0,
+                                "control": 0,
+                                "kind": "tableCell",
+                                "paragraph": 7
+                              }
+                            ],
+                            "control": 0,
+                            "index": 1,
+                            "paragraph": 5,
+                            "rows": 4,
+                            "section": 0
+                          }
+                        ],
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "① 설치·운영자가 운영한 행정제재 처분 이력 (15점)\n : 대표자 및 시설장의 행정처분 중 가장 낮은 배점에 해당하는 처분을 적용\n \n  ※ 과징금 처분은 업무정지 일수로 환산\n\n② 종사자의 행정처분 이력 (5점)\n : 대표자 및 시설장을 제외한 모든 종사자의 급여제공제한 처분 중 가장 낮은 배점에 해당하는 처분을 적용\n\n※ 설치‧운영자가 해당 종사자 처분내용을 사실상 인지할 수 없었던 경우는 제외 가능 (지자체에서 미통보 및 그 외 방법으로 전혀 인지할 수 없었던 경우 등)"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 5,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 3
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 1,
+                    "section": 0
+                  }
+                ],
+                "row": 1,
+                "rowSpan": 1,
+                "text": "1-1. 설치·운영자 및 종사자의 행정제재 처분이력(20점)\n - 설치·운영자 및 그 기관에 종사하려는 자가 「노인장기요양보험법」, 「사회복지사업법」,「노인복지법」 등 장기요양기관 운영과 관련된 법에 따라 받은 행정처분 이력을 확인 (최근 6년 이내)\n - 설치·운영자(①, 15점)와 종사자(②, 5점)의 행정제재 처분을 각각 계산하여 합산"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": "20"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 1,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 8,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "점수"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "① 휴·폐업 이력이 1회 이하이면서, 휴업기간이 6개월 이하인 경우"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "② 휴·폐업 이력이 2회이거나, 휴업기간의 총합이 6개월 초과 12개월 이하인 경우"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "③ 휴·폐업 이력이 3회 이상이거나, 휴업기간의 총합이 12개월 초과한 경우"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 8,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 3
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 4,
+                    "section": 0
+                  }
+                ],
+                "row": 2,
+                "rowSpan": 1,
+                "text": "1-2. 설치·운영자의 급여 제공 이력(휴·폐업 이력)(5점)\n - 설치·운영자가 이전에 장기요양기관을 운영하며 잦은 휴·폐업으로 안정적인 급여제공을 저해한 이력 (최근 6년 이내)\n - 휴업의 경우, 장기요양기관 전체 급여유형이 휴업일 때 해당"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": "5"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 2,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 2,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "등급별 점수 환산표"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "① A등급(10점)     ② B등급(8점)     ③ C등급(6점)\n④ D등급(4점)      ⑤ E등급, 평가제외 등(0점) \n⑥ 이전에 장기요양기관을 운영한 이력이 없는 경우(6점)"
+                      }
+                    ],
+                    "cols": 1,
+                    "containerPath": [
+                      {
+                        "cell": 11,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 4
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 2,
+                    "section": 0
+                  }
+                ],
+                "row": 3,
+                "rowSpan": 1,
+                "text": "1-3. 설치·운영자의 이전 장기요양기관 평가 결과(10점)\n - 설치·운영자가 이전에 장기요양기관을 운영하면서 국민건강보험공단으로부터 받은 정기·수시 평가 결과의 최초등급으로 확인\n - 최근 6년 이내의 정기·수시 평가 결과(최초등급)를 아래의 환산표에 따라 점수로 변환 후, 모든 점수를 평균하여 계산함(소수점 첫째자리 반올림)\n - 다만, 이전에 장기요양기관을 운영한 이력이 없는 경우 6점으로 배정"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": "10"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 3,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 3,
+                "text": "2. \n서비스 제공 계획의 충실성 및 적절성\n(20점)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 16,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "10점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 충실하게 마련"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "8점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 적정하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "6점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "4점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 일부 미흡"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "매우미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 매우 미흡"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 15,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 6,
+                    "section": 0
+                  }
+                ],
+                "row": 4,
+                "rowSpan": 1,
+                "text": "2-1. 운영 규정 계획 수립(10점)\n - 장기요양기관 운영 계획에 따라 복지용구사업소의 제품안내, 유통, 사후 관리에 관한 계획 마련 등 적정성 확인"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": "10"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 4,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 7,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 적절하게 수립"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서 및 매뉴얼 구비 서류가 미흡하게 수립"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 18,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 3
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 3,
+                    "section": 0
+                  }
+                ],
+                "row": 5,
+                "rowSpan": 1,
+                "text": "2-2. 직원 교육 계획 수립(2점)\n  - 「노인복지법 시행규칙」 [별표10]에 따라 연 1회 이상 노인 인권보호 관련 직원교육 계획을 수립하였는지 확인\n    ① 인권교육(매년4시간이상, 인터넷교육 6시간이상) \n    ② 노인학대예방교육(1시간이상)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": "2"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 5,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 16,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "8점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서 및 서식, 협조 체계가 충실하게 수립"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "6점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서 및 서식, 협조 체계가 적절하게 수립"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "4점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "계획서 및 서식, 협조 체계가 수립"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "계획서 및 서식, 협조 체계가 일부 미흡"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "매우미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "계획서 및 서식, 협조 체계가 매우 미흡"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 21,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 6,
+                    "section": 0
+                  }
+                ],
+                "row": 6,
+                "rowSpan": 1,
+                "text": "2-3. 이용자(수급자) 고충 처리 계획 및 절차 마련(8점)\n - 이용자 고충 처리, 고충 신고 방법 및 절차 안내·비치 등 이용자 고충 처리 계획 및 운영 절차를 적정하게 마련하였는지 확인"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": "8"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 6,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 2,
+                "text": "3.\n자원관리 및 인력관리의 체계성 ‧ 적절성\n(5점)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 13,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서가 충실하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서가 적정하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "1점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "계획서 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "계획서 미흡하게 작성"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 25,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 5,
+                    "section": 0
+                  }
+                ],
+                "row": 7,
+                "rowSpan": 1,
+                "text": "3-1. 예산 수립의 적정성 등 재무 상태의 건전성(3점)\n - 사업계획에 따른 예산 수립 여부 등 세입·세출 예산 수립 등 장기요양기관이 정상적으로 운영 가능한지 확인"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": "3"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 7,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 7,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "4점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서 충실하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "매우미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서 일부 미흡하게 작성"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 28,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 3,
+                    "section": 0
+                  }
+                ],
+                "row": 8,
+                "rowSpan": 1,
+                "text": "3-2. 직원 건강관리, 고충처리 등 직원 복지제도 운영 계획 수립(2점)\n - 직원 고충처리 제도, 처우개선을 위한 복지제도 운영과 건강관리 등을 위한 계획 마련 여부를 확인"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": "2"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 8,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 3,
+                "text": "4. \n제품관리의 체계성 및 적절성\n(20점)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 13,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "8점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "계획서 충실하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "6점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "계획서 적정하게 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "계획서 작성"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "계획서 미흡하게 작성"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 32,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 3
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 5,
+                    "section": 0
+                  }
+                ],
+                "row": 9,
+                "rowSpan": 1,
+                "text": "4-1. 복지용구 정기상담에 관한 사항(8점)\n- 「복지용구 급여범위 및 급여기준 등에 관한 고시」등에 따라 복지용구를 이용하는 수급자에게 매월 정기상담 실시에 대한 계획을 수립하고 정기상담 담당자를 지정하였는지 확인\n   ※ 대여제품은 반드시 정기상담을 실시"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": "8"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 9,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 16,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "8점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매뉴얼, 용구, 장비 충실히 마련 (위탁시설 : 증명서류 완벽히 구비)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "6점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "매뉴얼, 용구, 장비를 적정하게 마련 (위탁시설 : 증명서류 적정하게 구비)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "4점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "매뉴얼, 용구, 장비를 마련 (위탁시설 : 증명서류 구비)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "매뉴얼, 용구, 장비가 있으나 미흡 (위탁시설 : 증명서류 미흡)"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "매우미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 5,
+                        "rowSpan": 1,
+                        "text": "매뉴얼, 용구, 장비를 마련하지 않는 사업소\n(위탁시설 : 위탁서류가 없음)"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 35,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 4
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 6,
+                    "section": 0
+                  }
+                ],
+                "row": 10,
+                "rowSpan": 1,
+                "text": "4-2. 복지용구 소독지침에 관한 사항(8점)\n소독방법, 절차 등 소독지침에 따른 소독매뉴얼 작성여부\n소독에 필요한 용구(소독액, 소독장비 등) 및 보호장구 구비여부\n소독방법이 ‘위탁’ 또는 ‘자체+위탁’하는 경우 위탁계약서 등 이를 증명할 수 있는 서류구비여부(소독방법이 ‘자체·위탁’ 또는 ‘위탁’인 경우에 한함)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": "8"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 10,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 13,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 3,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 판단 기준"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "4점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "매우우수"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "①,② 모두 충실하게 마련"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "3점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "보통"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "①,② 모두 마련"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "2점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "① 또는 ② 중 한 가지는 미흡"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "0점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "매우미흡"
+                      },
+                      {
+                        "col": 2,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "①,②가 모두 매우 미흡함"
+                      }
+                    ],
+                    "cols": 3,
+                    "containerPath": [
+                      {
+                        "cell": 38,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 3
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 5,
+                    "section": 0
+                  }
+                ],
+                "row": 11,
+                "rowSpan": 1,
+                "text": "4-3. 복지용구 관리에 관한 사항(4점)\n① 복지용구 전시 · 체험 · 보관 등을 위한 충분한 공간 확보 \n② 복지용구 제품 관리를 위한 서류 구비 여부 확인(제품 수불대장 및 제품 A/S 대장 등)"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": "4"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 11,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "5. 설치‧운영자 대면평가\n(20점)"
+              },
+              {
+                "col": 1,
+                "colSpan": 1,
+                "isHeader": false,
+                "nested": [
+                  {
+                    "cellCount": 9,
+                    "cells": [
+                      {
+                        "col": 0,
+                        "colSpan": 2,
+                        "isHeader": false,
+                        "row": 0,
+                        "rowSpan": 1,
+                        "text": "확인 내용 및 배점"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 1,
+                        "rowSpan": 1,
+                        "text": "① 노인장기요양보험제도의 이해"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 2,
+                        "rowSpan": 1,
+                        "text": "② 설치기관의 운영이념 및 사업목표 공익성 등에 관한 사항"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 3,
+                        "rowSpan": 1,
+                        "text": "③ 수급자에 대한 서비스 제공 및 안전에 관한 사항"
+                      },
+                      {
+                        "col": 0,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "5점"
+                      },
+                      {
+                        "col": 1,
+                        "colSpan": 1,
+                        "isHeader": false,
+                        "row": 4,
+                        "rowSpan": 1,
+                        "text": "④ 인력 및 재정관리 등 기관 운영에 관한 사항"
+                      }
+                    ],
+                    "cols": 2,
+                    "containerPath": [
+                      {
+                        "cell": 42,
+                        "control": 0,
+                        "kind": "tableCell",
+                        "paragraph": 2
+                      }
+                    ],
+                    "control": 0,
+                    "index": 0,
+                    "paragraph": 5,
+                    "rows": 5,
+                    "section": 0
+                  }
+                ],
+                "row": 12,
+                "rowSpan": 1,
+                "text": "5. 설치·운영자 대면평가(20점)\n- 면접 심사를 통해 설치·운영자(대표자)의 노인장기요양보험 제도에 대한 이해, 기관 운영 마인드, 사업 운영 계획 적절성 등을 확인"
+              },
+              {
+                "col": 2,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": "20"
+              },
+              {
+                "col": 3,
+                "colSpan": 1,
+                "isHeader": false,
+                "row": 12,
+                "rowSpan": 1,
+                "text": ""
+              },
+              {
+                "col": 0,
+                "colSpan": 4,
+                "isHeader": false,
+                "row": 13,
+                "rowSpan": 1,
+                "text": "※ 장기요양기관으로 지정하고자 하는 기관은 심사 점수 평균이 80점 이상이어야 함"
+              }
+            ],
+            "cols": 4,
+            "control": 0,
+            "csvReady": false,
+            "index": 1,
+            "mergeCount": 5,
+            "paragraph": 5,
+            "rows": 14,
+            "section": 0
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "tables[].cells[].text",
+          "tables[].caption"
+        ],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "merged-tables",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": {
+        "command": "merged-tables",
+        "mergedCount": 2,
+        "schemaVersion": "1.0",
+        "source": "C:\\Users\\swsz9\\rhwp-agent-cli-pack\\samples\\task2097\\21217935_simsa_jipyo.hwp",
+        "tableCount": 2,
+        "tables": [
+          {
+            "cols": 4,
+            "index": 0,
+            "mergeCount": 6,
+            "rows": 17
+          },
+          {
+            "cols": 4,
+            "index": 1,
+            "mergeCount": 5,
+            "rows": 14
+          }
+        ],
+        "tool": "rhwp-agent",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "version": "0.8.4"
+      },
+      "stdoutRaw": null,
+      "stderr": ""
+    }
+  ]
+}
