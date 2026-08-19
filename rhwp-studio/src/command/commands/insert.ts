@@ -14,7 +14,8 @@ import type { ShapeType } from '@/ui/shape-picker';
 import type { CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { InputHandler } from '@/engine/input-handler';
-import type { RefreshPolicy } from '@/engine/command';
+import { SetObjectPropsCommand, type RefreshPolicy } from '@/engine/command';
+import { getObjectProps, setObjectProps, type ObjectPropsRef } from '@/engine/object-props';
 
 /** 스텁 커맨드 생성 헬퍼 */
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
@@ -615,39 +616,17 @@ export const insertCommands: CommandDef[] = [
   },
 ];
 
-/** 선택 개체 ref 타입 — cursor.selectedPictureRef 와 정합 (headerFooter optional, [Task #831]) */
-type PictureRef = {
-  sec: number;
-  ppi: number;
-  ci: number;
-  type: string;
-  cellPath?: CellPathLike;
-  headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
-};
+/**
+ * 선택 개체 ref 타입 — cursor.selectedPictureRef 와 정합 (headerFooter optional, [Task #831]).
+ *
+ * [Task #3230] 분기 본체는 `engine/object-props.ts` 로 옮겼다 — 역연산 커맨드가 undo 시점에
+ * 같은 분기를 써야 하는데, 커맨드는 `services` 가 아니라 `WasmBridge` 만 받기 때문이다.
+ */
+type PictureRef = ObjectPropsRef;
 
-/** 선택 개체의 속성을 조회/변경 헬퍼 (shape/picture 분기) */
+/** 선택 개체의 속성 조회 (shape/picture·셀·머리말꼬리말 분기). */
 function getProps(services: import('../types').CommandServices, ref: PictureRef): Record<string, unknown> {
-  if (ref.type === 'shape') {
-    if (ref.cellPath && ref.cellPath.length > 0) {
-      return services.wasm.getCellShapePropertiesByPath(ref.sec, ref.ppi, ref.cellPath, ref.ci) as unknown as Record<string, unknown>;
-    }
-    return services.wasm.getShapeProperties(ref.sec, ref.ppi, ref.ci) as unknown as Record<string, unknown>;
-  }
-  // [Task #831] 머리말/꼬리말 picture 의 경우 별도 API 호출 (PR #832 의 wasm-bridge).
-  // 미적용 시 본문 lookup 실패 → props 빈/stale → 회전/대칭 무동작.
-  if (ref.headerFooter) {
-    return services.wasm.getHeaderFooterPictureProperties(
-      ref.sec,
-      ref.headerFooter.outerParaIdx,
-      ref.headerFooter.outerControlIdx,
-      ref.ppi,
-      ref.ci,
-    ) as unknown as Record<string, unknown>;
-  }
-  if (ref.cellPath && ref.cellPath.length > 0) {
-    return services.wasm.getCellPicturePropertiesByPath(ref.sec, ref.ppi, ref.cellPath, ref.ci) as unknown as Record<string, unknown>;
-  }
-  return services.wasm.getPictureProperties(ref.sec, ref.ppi, ref.ci) as unknown as Record<string, unknown>;
+  return getObjectProps(services.wasm, ref);
 }
 
 /**
@@ -707,27 +686,33 @@ function changeZOrder(
 }
 
 function setProps(services: import('../types').CommandServices, ref: PictureRef, props: Record<string, unknown>): any {
-  if (ref.type === 'shape') {
-    if (ref.cellPath && ref.cellPath.length > 0) {
-      return services.wasm.setCellShapePropertiesByPath(ref.sec, ref.ppi, ref.cellPath, ref.ci, props);
-    }
-    return services.wasm.setShapeProperties(ref.sec, ref.ppi, ref.ci, props);
-  } else if (ref.headerFooter) {
-    // [Task #831] 머리말/꼬리말 picture setter — 5-tuple lookup 으로 IR 갱신.
-    return services.wasm.setHeaderFooterPictureProperties(
-      ref.sec,
-      ref.headerFooter.outerParaIdx,
-      ref.headerFooter.outerControlIdx,
-      ref.ppi,
-      ref.ci,
-      props,
-    );
-  } else {
-    if (ref.cellPath && ref.cellPath.length > 0) {
-      return services.wasm.setCellPicturePropertiesByPath(ref.sec, ref.ppi, ref.cellPath, ref.ci, props);
-    }
-    return services.wasm.setPictureProperties(ref.sec, ref.ppi, ref.ci, props);
-  }
+  return setObjectProps(services.wasm, ref, props);
+}
+
+/**
+ * [Task #3230] 절대 속성 하나를 바꾸고 **역연산으로** 기록한다.
+ *
+ * 스냅샷(`recordObjectMutation`)이 아니라 `kind:'record'` 를 쓴다 — 되돌릴 것이 스칼라 하나인데
+ * `Document` 통째 클론 2개(문서에 따라 최대 21 MB)를 스택에 얹을 이유가 없다. 호출부가 이미
+ * 적용 전 값을 읽어 두었으므로 before 가 정확하다.
+ *
+ * refresh 를 'full' 로 명시한다 — `kind:'record'` 의 기본은 'none' 이고, 종전 스냅샷 라우팅의
+ * 'full' 이 `afterEdit()` → `document-changed` 를 대신 emit 해 주고 있었다(그래서 호출부의 수동
+ * emit 이 [undo P3 정리] 에서 제거됐다). 명시하지 않으면 회전이 화면에 반영되지 않는다.
+ */
+function recordAbsolutePropChange(
+  services: import('../types').CommandServices,
+  ih: InputHandler,
+  ref: PictureRef,
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+): void {
+  setProps(services, ref, after);
+  ih.executeOperation({
+    kind: 'record',
+    command: new SetObjectPropsCommand(ref, before, after),
+    meta: { refresh: 'full' },
+  });
 }
 
 /** 현재 회전각에 delta(도)를 더한다 (shape + image 지원). */
@@ -743,9 +728,9 @@ function applyRotationDelta(services: import('../types').CommandServices, delta:
   // -180 ~ 180 범위로 정규화
   next = ((next % 360) + 360) % 360;
   if (next > 180) next -= 360;
-  // recordObjectMutation → executeOperation snapshot 의 'full' refresh 가 afterEdit()→
-  // 'document-changed' 를 이미 emit 한다. 수동 emit 은 중복(이중 렌더)이라 제거. [undo P3 정리]
-  recordObjectMutation(ih, 'rotateObject', () => setProps(services, ref, { rotationAngle: next }));
+  // [Task #3230] 스냅샷 → 역연산. `cur` 는 이미 위에서 읽은 적용 전 각도이고 setter 가
+  // 절대값이라 되돌리기가 자명하다.
+  recordAbsolutePropChange(services, ih, ref, { rotationAngle: cur }, { rotationAngle: next });
 }
 
 /** horzFlip/vertFlip을 토글한다 (shape + image 지원). */
@@ -757,6 +742,6 @@ function toggleFlip(services: import('../types').CommandServices, key: 'horzFlip
   const props = getProps(services, ref);
   if (props.sizeProtect) return;
   const cur = !!props[key];
-  // 위 rotate 와 동일 — snapshot 라우팅이 이미 refresh 하므로 수동 emit 제거. [undo P3 정리]
-  recordObjectMutation(ih, 'flipObject', () => setProps(services, ref, { [key]: !cur }));
+  // 위 rotate 와 동일 — 토글이지만 setter 에 넘기는 값은 절대값(`!cur`)이라 역연산이 자명하다.
+  recordAbsolutePropChange(services, ih, ref, { [key]: cur }, { [key]: !cur });
 }
