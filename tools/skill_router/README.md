@@ -13,3 +13,13 @@ python tools/skill_router/route.py "PR 올려" --json
 
 `executionGraph` 는 `{nodes, edges}` 다. 노드는 `id, skill, action, command`.
 가장자리가 `from → to`.
+
+## 새 스킬을 만들면 반드시 3회
+
+새 스킬을 만들면 아래 명령을 반드시 3회 실행한다.
+
+```bash
+python tools/skill_router/gate_new_skill.py
+python -m unittest tools/skill_router/test_route.py
+cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapture
+```
