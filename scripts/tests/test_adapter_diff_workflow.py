@@ -36,14 +36,17 @@ class AdapterDiffWorkflowTests(unittest.TestCase):
         self.assertIn("pull_request:", self.wf)
         self.assertIn("branches: [main, devel]", self.wf)
 
-    def test_mydocs_only_pr_skips_adapter_job_but_keeps_a_stable_check(self) -> None:
+    def test_mydocs_only_or_trusted_trailing_tail_skips_adapter_job_but_keeps_a_stable_check(self) -> None:
         self.assertIn("adapter-impact:", self.wf)
         self.assertIn("name: adapter inter-diff preflight", self.wf)
-        self.assertIn("fetch-depth: 0", self.wf)
-        self.assertIn('git diff --name-only "${BASE_SHA}" "${HEAD_SHA}"', self.wf)
-        self.assertIn("grep -qv '^mydocs/'", self.wf)
-        self.assertIn("adapter_required=false", self.wf)
-        self.assertIn("reason=fail-closed-pr-diff-unavailable", self.wf)
+        self.assertIn("uses: actions/github-script", self.wf)
+        self.assertIn("github.rest.pulls.listCommits", self.wf)
+        self.assertIn("github.rest.repos.getCommit", self.wf)
+        self.assertIn("workflow_id: 'adapter-diff.yml'", self.wf)
+        self.assertIn("github.rest.actions.listWorkflowRuns", self.wf)
+        self.assertIn("core.setOutput('adapter_required', required ? 'true' : 'false')", self.wf)
+        self.assertIn("skip-trusted-mydocs-tail:", self.wf)
+        self.assertIn("review-tail-candidate-run-unavailable", self.wf)
         self.assertIn("needs: adapter-impact", self.wf)
         self.assertIn(
             "needs.adapter-impact.outputs.adapter_required == 'true'", self.wf
@@ -76,7 +79,9 @@ class AdapterDiffWorkflowTests(unittest.TestCase):
         self.assertIn("expected 4 shard count files", self.ci)
 
     def test_read_only_permissions(self) -> None:
+        self.assertIn("actions: read", self.wf)
         self.assertIn("contents: read", self.wf)
+        self.assertIn("pull-requests: read", self.wf)
 
     def test_skips_missing_adapters_honestly(self) -> None:
         self.assertIn("png", RUNNER.read_text(encoding="utf-8"))

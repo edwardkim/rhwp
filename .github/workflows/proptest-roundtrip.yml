@@ -16,6 +16,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
   pull-requests: read
 
@@ -34,9 +35,10 @@ jobs:
       fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
       reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
     steps:
-      # 문서 전용 devel PR도 `prop roundtrip` check 이름은 남겨야 한다. workflow-level
-      # paths-ignore를 쓰면 required check가 사라질 수 있으므로 job 조건으로 skip한다.
-      - name: Detect mydocs-only devel PR
+      # 문서 전용 devel PR과 검증된 코드 후보 뒤의 mydocs review tail도 `prop roundtrip`
+      # check 이름은 남겨야 한다. workflow-level paths-ignore를 쓰면 required check가
+      # 사라질 수 있으므로 job 조건으로 skip한다.
+      - name: Detect mydocs-only or trusted trailing review tail
         id: detect
         continue-on-error: true
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -57,17 +59,78 @@ jobs:
               setResult(false, `non-devel-base:${pr?.base?.ref || 'unknown'}`);
               return;
             }
+
+            function isMydocsOnly(files) {
+              return files.length > 0 && files.every((file) => (
+                file.filename.startsWith('mydocs/')
+                && (!file.previous_filename || file.previous_filename.startsWith('mydocs/'))
+              ));
+            }
+
             const files = await github.paginate(github.rest.pulls.listFiles, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: pr.number,
               per_page: 100,
             });
-            const mydocsOnly = files.length > 0 && files.every((file) => (
-              file.filename.startsWith('mydocs/')
-              && (!file.previous_filename || file.previous_filename.startsWith('mydocs/'))
-            ));
-            setResult(mydocsOnly, mydocsOnly ? 'mydocs-only-devel-pr' : 'code-or-non-mydocs-change');
+            if (isMydocsOnly(files)) {
+              setResult(true, 'mydocs-only-devel-pr');
+              return;
+            }
+
+            const commits = await github.paginate(github.rest.pulls.listCommits, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+            let tailStart = commits.length;
+            for (let index = commits.length - 1; index >= 0; index -= 1) {
+              const commit = commits[index];
+              const detail = await github.rest.repos.getCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: commit.sha,
+              });
+              const commitFiles = detail.data.files || [];
+              if (commitFiles.length === 0 || commitFiles.length >= 300 || !isMydocsOnly(commitFiles)) {
+                break;
+              }
+              tailStart = index;
+            }
+
+            const tail = commits.slice(tailStart);
+            const candidate = commits[tailStart - 1];
+            const linearTail = tail.length > 0 && tail.length <= 20 && candidate && tail.every((commit, index) => {
+              const expectedParent = index === 0 ? candidate.sha : tail[index - 1].sha;
+              return (commit.parents || []).length === 1 && commit.parents[0].sha === expectedParent;
+            });
+            if (!linearTail) {
+              setResult(false, 'code-or-non-mydocs-change');
+              return;
+            }
+
+            const candidateRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'proptest-roundtrip.yml',
+              event: 'pull_request',
+              head_sha: candidate.sha,
+              per_page: 100,
+            });
+            const latestCandidateRun = candidateRuns
+              .filter((run) => (
+                run.event === 'pull_request'
+                && run.head_sha === candidate.sha
+                && (run.pull_requests || []).some((runPr) => Number(runPr.number) === Number(pr.number))
+              ))
+              .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0];
+            if (!latestCandidateRun || latestCandidateRun.status !== 'completed' || latestCandidateRun.conclusion !== 'success') {
+              setResult(false, 'review-tail-candidate-run-unavailable');
+              return;
+            }
+
+            setResult(true, `trusted-mydocs-tail:${candidate.sha}`);
 
       - name: Finalize fast pass
         id: finalize

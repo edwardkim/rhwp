@@ -13,7 +13,9 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
+  pull-requests: read
 
 concurrency:
   group: adapter-diff-${{ github.workflow }}-${{ github.ref }}
@@ -28,47 +30,100 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     outputs:
-      adapter_required: ${{ steps.classify.outputs.adapter_required }}
-      reason: ${{ steps.classify.outputs.reason }}
+      adapter_required: ${{ steps.classify.outputs.adapter_required || 'true' }}
+      reason: ${{ steps.classify.outputs.reason || 'preflight-unavailable' }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-
-      - name: Classify adapter inter-diff impact
+      # 문서 전용 PR 또는 검증된 코드 후보 뒤의 mydocs review tail에서는 stable check
+      # 이름을 유지하고 worker만 skip한다. API·계보·후보 run 판정은 fail-closed다.
+      - name: Classify documentation-only or trusted trailing review tail
         id: classify
-        shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          if [[ "${EVENT_NAME}" != "pull_request" || -z "${BASE_SHA}" || -z "${HEAD_SHA}" ]]; then
-            echo "adapter_required=true" >> "$GITHUB_OUTPUT"
-            echo "reason=full-non-pr-event" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            function setResult(required, reason) {
+              core.setOutput('adapter_required', required ? 'true' : 'false');
+              core.setOutput('reason', reason);
+              core.info(`adapter_required=${required} reason=${reason}`);
+            }
 
-          if ! changed_files="$(git diff --name-only "${BASE_SHA}" "${HEAD_SHA}")"; then
-            echo "adapter_required=true" >> "$GITHUB_OUTPUT"
-            echo "reason=fail-closed-pr-diff-unavailable" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+            const pr = context.payload.pull_request;
+            if (context.eventName !== 'pull_request' || !pr || pr.base.ref !== 'devel') {
+              setResult(true, `full-non-devel-pr:${pr?.base?.ref || context.eventName}`);
+              return;
+            }
 
-          if [[ -z "${changed_files}" ]]; then
-            echo "adapter_required=true" >> "$GITHUB_OUTPUT"
-            echo "reason=fail-closed-empty-pr-diff" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+            function isMydocsOnly(files) {
+              return files.length > 0 && files.every((file) => (
+                file.filename.startsWith('mydocs/')
+                && (!file.previous_filename || file.previous_filename.startsWith('mydocs/'))
+              ));
+            }
 
-          if printf '%s\n' "${changed_files}" | grep -qv '^mydocs/'; then
-            echo "adapter_required=true" >> "$GITHUB_OUTPUT"
-            echo "reason=full-non-documentation-change" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+            if (isMydocsOnly(files)) {
+              setResult(false, 'skip-mydocs-only-pr');
+              return;
+            }
 
-          echo "adapter_required=false" >> "$GITHUB_OUTPUT"
-          echo "reason=skip-mydocs-only-pr" >> "$GITHUB_OUTPUT"
+            const commits = await github.paginate(github.rest.pulls.listCommits, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+            let tailStart = commits.length;
+            for (let index = commits.length - 1; index >= 0; index -= 1) {
+              const commit = commits[index];
+              const detail = await github.rest.repos.getCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: commit.sha,
+              });
+              const commitFiles = detail.data.files || [];
+              if (commitFiles.length === 0 || commitFiles.length >= 300 || !isMydocsOnly(commitFiles)) {
+                break;
+              }
+              tailStart = index;
+            }
+
+            const tail = commits.slice(tailStart);
+            const candidate = commits[tailStart - 1];
+            const linearTail = tail.length > 0 && tail.length <= 20 && candidate && tail.every((commit, index) => {
+              const expectedParent = index === 0 ? candidate.sha : tail[index - 1].sha;
+              return (commit.parents || []).length === 1 && commit.parents[0].sha === expectedParent;
+            });
+            if (!linearTail) {
+              setResult(true, 'full-code-or-non-mydocs-change');
+              return;
+            }
+
+            const candidateRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'adapter-diff.yml',
+              event: 'pull_request',
+              head_sha: candidate.sha,
+              per_page: 100,
+            });
+            const latestCandidateRun = candidateRuns
+              .filter((run) => (
+                run.event === 'pull_request'
+                && run.head_sha === candidate.sha
+                && (run.pull_requests || []).some((runPr) => Number(runPr.number) === Number(pr.number))
+              ))
+              .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0];
+            if (!latestCandidateRun || latestCandidateRun.status !== 'completed' || latestCandidateRun.conclusion !== 'success') {
+              setResult(true, 'review-tail-candidate-run-unavailable');
+              return;
+            }
+
+            setResult(false, `skip-trusted-mydocs-tail:${candidate.sha}`);
 
   adapter-diff:
     name: adapter inter-diff
