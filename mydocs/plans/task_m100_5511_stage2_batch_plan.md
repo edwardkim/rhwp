@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Q1 완료, Q2 복잡도 분해안 승인 대기
+- 상태: 실행 승인 — Q1·Q2 완료, Q3 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -90,6 +90,12 @@ Q1은 완료했다. 기존 `thumbnail` 테스트의 빈틈이었던 내장 이�
 경로와 저장 실패를 보강하고, 파일 부작용을 명시하는 `cli/outputs/preview.rs`로 handler를
 이동했다. 세부 증거는
 [`task_m100_5511_stage2_batch_q1.md`](../working/task_m100_5511_stage2_batch_q1.md)에 기록했다.
+
+Q2도 완료했다. 미보호 상태였던 GPU feature stub 계약을 먼저 고정하고, CC 25를 넘던
+SVG·PNG·GPU·PDF handler를 parser와 준비 helper로 분해한 뒤 vector·raster·PDF output
+모듈로 이동했다. 세 모듈은 모두 1,200줄 이하이고 renderer 알고리즘과 관찰 가능한 출력은
+바뀌지 않았다. 세부 증거는
+[`task_m100_5511_stage2_batch_q2.md`](../working/task_m100_5511_stage2_batch_q2.md)에 기록했다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
