@@ -19,6 +19,7 @@ const DIAGNOSTICS_SOURCE: &str = include_str!("../src/cli/queries/diagnostics.rs
 const DIGEST_SOURCE: &str = include_str!("../src/cli/queries/digest.rs");
 const DOCUMENT_INVENTORY_SOURCE: &str = include_str!("../src/cli/queries/document_inventory.rs");
 const EXPLAIN_SOURCE: &str = include_str!("../src/cli/queries/explain.rs");
+const EXPLORE_SOURCE: &str = include_str!("../src/cli/queries/explore.rs");
 const STRUCTURED_OBJECTS_SOURCE: &str = include_str!("../src/cli/queries/structured_objects.rs");
 
 fn rhwp_bin() -> String {
@@ -315,6 +316,28 @@ fn explain_query_is_owned_by_the_query_module() {
             "Some(\"explain\")=>exit_with(cli::queries::explain::explain_document(&args[2..]))"
         ),
         "explain dispatch가 query 모듈 API를 사용해야 한다"
+    );
+}
+
+#[test]
+fn explore_query_is_owned_by_the_query_module() {
+    assert!(
+        EXPLORE_SOURCE.contains("pub(crate) fn explore_document("),
+        "explore_document 구현이 explore 모듈에 있어야 한다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn explore_document("),
+        "explore_document 구현이 main.rs로 되돌아가면 안 된다"
+    );
+    let compact_main: String = MAIN_SOURCE
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    assert!(
+        compact_main.contains(
+            "Some(\"explore\")=>exit_with(cli::queries::explore::explore_document(&args[2..]))"
+        ),
+        "explore dispatch가 query 모듈 API를 사용해야 한다"
     );
 }
 
