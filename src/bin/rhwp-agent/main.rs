@@ -26,6 +26,7 @@ mod doctor;
 mod envelope;
 mod envlint;
 mod evidence;
+mod explaincmd;
 mod explorecmd;
 mod fields;
 mod files;

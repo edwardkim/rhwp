@@ -81,6 +81,10 @@ fn capabilities_lists_new_commands() {
         "hidden-text",
         "unicode-scan",
         "explore",
+        "table-inspect",
+        "explain",
+        "notes",
+        "field-diff",
     ] {
         assert!(names.contains(&need), "missing {need} in {names:?}");
     }
@@ -359,4 +363,150 @@ fn explore_routes_form_sample_to_fill() {
         .collect();
     assert!(names.contains(&"form-fill"), "menu={names:?}");
     assert!(names.contains(&"triage-overview"), "menu={names:?}");
+}
+
+#[test]
+fn table_inspect_recipe_sample_header_row() {
+    let path = sample("samples/hwp_table_test.hwp");
+    let out = run(&[
+        "table-inspect",
+        "--json",
+        "--table",
+        "0",
+        path.to_str().unwrap(),
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "table-inspect");
+    assert_eq!(v["tableCount"], 10, "{v}");
+    assert_eq!(v["emittedCount"], 1, "{v}");
+    let t0 = &v["tables"][0];
+    assert_eq!(t0["rows"], 4, "{t0}");
+    assert_eq!(t0["cols"], 3, "{t0}");
+    assert_eq!(t0["csvReady"], true, "{t0}");
+    let texts: Vec<&str> = t0["cells"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|c| c["row"] == 0)
+        .filter_map(|c| c["text"].as_str())
+        .collect();
+    assert_eq!(texts, ["제목", "담당자", "세부 내용"], "{t0}");
+}
+
+#[test]
+fn table_inspect_hwp3_sample_count() {
+    let path = sample("samples/hwp3-sample.hwp");
+    let out = run(&["table-inspect", "--json", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "table-inspect");
+    assert_eq!(v["tableCount"], 6, "{v}");
+    assert_eq!(v["emittedCount"], 6, "{v}");
+}
+
+#[test]
+fn explain_describes_form_and_hwp3() {
+    let form = sample("samples/form-01.hwp");
+    let out = run(&["explain", "--json", form.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "explain");
+    assert_eq!(v["format"], "hwp5", "{v}");
+    assert!(v["fieldCount"].as_u64().unwrap() >= 1, "{v}");
+    assert_eq!(v["tableCount"], 0, "{v}");
+    assert!(v["summary"].as_str().unwrap().contains("누름틀"), "{v}");
+
+    let hwp3 = sample("samples/hwp3-sample.hwp");
+    let out = run(&["explain", "--json", hwp3.to_str().unwrap()]);
+    assert_eq!(out.status.code(), Some(0));
+    let v = stdout_json(&out);
+    assert_envelope(&v, "explain");
+    assert_eq!(v["format"], "hwp3", "{v}");
+    assert_eq!(v["tableCount"], 6, "{v}");
+    assert_eq!(v["fieldCount"], 0, "{v}");
+}
+
+#[test]
+fn notes_counts_on_real_samples() {
+    for rel in ["samples/form-01.hwp", "samples/hwp3-sample.hwp"] {
+        let path = sample(rel);
+        let out = run(&["notes", "--json", path.to_str().unwrap()]);
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "{rel} stderr {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let v = stdout_json(&out);
+        assert_envelope(&v, "notes");
+        assert!(v["footnoteCount"].is_number(), "{rel} {v}");
+        assert!(v["endnoteCount"].is_number(), "{rel} {v}");
+        assert_eq!(
+            v["noteCount"].as_u64().unwrap(),
+            v["footnoteCount"].as_u64().unwrap() + v["endnoteCount"].as_u64().unwrap(),
+            "{rel} {v}"
+        );
+    }
+}
+
+#[test]
+fn field_diff_form_vs_hwp3_and_self() {
+    let form = sample("samples/form-01.hwp");
+    let hwp3 = sample("samples/hwp3-sample.hwp");
+    let out = run(&[
+        "field-diff",
+        "--json",
+        form.to_str().unwrap(),
+        hwp3.to_str().unwrap(),
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(3),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "field-diff");
+    assert_eq!(v["equal"], false, "{v}");
+    assert!(v["countA"].as_u64().unwrap() >= 1, "{v}");
+    assert_eq!(v["countB"], 0, "{v}");
+    let only_a: Vec<&str> = v["onlyInA"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|n| n.as_str())
+        .collect();
+    assert!(
+        only_a.iter().any(|n| n.contains("myMsg")),
+        "expected myMsg field in {only_a:?}"
+    );
+
+    let out = run(&[
+        "field-diff",
+        "--json",
+        form.to_str().unwrap(),
+        form.to_str().unwrap(),
+    ]);
+    assert_eq!(out.status.code(), Some(0));
+    let v = stdout_json(&out);
+    assert_envelope(&v, "field-diff");
+    assert_eq!(v["equal"], true, "{v}");
+    assert!(v["onlyInA"].as_array().unwrap().is_empty(), "{v}");
+    assert!(v["onlyInB"].as_array().unwrap().is_empty(), "{v}");
 }

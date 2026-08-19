@@ -356,6 +356,16 @@ pub const COMMANDS: &[CommandSpec] = &[
         handler: crate::compare::run_compare_text,
     },
     CommandSpec {
+        name: "field-diff",
+        usage: "rhwp-agent field-diff <파일A> <파일B> [--json]",
+        summary: "두 서식의 누름틀 이름 차집합 — 개정판에서 칸이 바뀌었나 (시나리오 11)",
+        flags: &[("--json", "계약 봉투(JSON)로 출력")],
+        json_contract: true,
+        gate_exit3: Some("누름틀 이름 집합이 다름"),
+        untrusted_decl: &["onlyInA[]", "onlyInB[]", "shared[]"],
+        handler: crate::compare::run_field_diff,
+    },
+    CommandSpec {
         name: "fields",
         usage: "rhwp-agent fields <파일> [--json]",
         summary: "누름틀 이름 목록 (정렬·중복 제거)",
@@ -394,6 +404,19 @@ pub const COMMANDS: &[CommandSpec] = &[
         gate_exit3: None,
         untrusted_decl: &[],
         handler: crate::tables::run_table_count,
+    },
+    CommandSpec {
+        name: "table-inspect",
+        usage: "rhwp-agent table-inspect <파일> [--table <N>] [--json]",
+        summary: "표 격자·병합·셀 텍스트 — CSV 왕복 전에 구조를 본다 (레시피 2)",
+        flags: &[
+            ("--json", "계약 봉투(JSON)로 출력"),
+            ("--table <N>", "표 번호만 (기본 전 표)"),
+        ],
+        json_contract: true,
+        gate_exit3: None,
+        untrusted_decl: &["tables[].cells[].text", "tables[].caption"],
+        handler: crate::tables::run_table_inspect,
     },
     CommandSpec {
         name: "hangul-ratio",
@@ -651,6 +674,26 @@ pub const COMMANDS: &[CommandSpec] = &[
         gate_exit3: None,
         untrusted_decl: &[],
         handler: crate::explorecmd::run_explore,
+    },
+    CommandSpec {
+        name: "explain",
+        usage: "rhwp-agent explain <파일> [--json]",
+        summary: "문서가 무엇인지 한 줄 — 쪽·표·누름틀·각주 개수 (트리아지)",
+        flags: &[("--json", "계약 봉투(JSON)로 출력")],
+        json_contract: true,
+        gate_exit3: None,
+        untrusted_decl: &["summary"],
+        handler: crate::explaincmd::run_explain,
+    },
+    CommandSpec {
+        name: "notes",
+        usage: "rhwp-agent notes <파일> [--json]",
+        summary: "각주·미주 개수 (실무 예제집 시나리오 30)",
+        flags: &[("--json", "계약 봉투(JSON)로 출력")],
+        json_contract: true,
+        gate_exit3: None,
+        untrusted_decl: &[],
+        handler: crate::explaincmd::run_notes,
     },
 ];
 
