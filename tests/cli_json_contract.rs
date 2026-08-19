@@ -9,6 +9,9 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
+#[path = "../src/cli/catalog.rs"]
+mod cli_catalog;
+
 /// 파싱까지 성공하는 실제 샘플.
 const SAMPLE: &str = "samples/hwp3-sample.hwp";
 
@@ -849,20 +852,15 @@ fn help_command_tokens() -> Vec<String> {
 ///
 /// 여기 넣어도 되는 것은 "사용자가 부를 일이 없는 내부 프로브"뿐이다. 사유 없는
 /// 허용목록은 가치가 없으므로 각 항목이 이유 문자열을 동반한다.
-const HELP_HIDDEN: &[(&str, &str)] = &[
-    (
-        "core-pages",
-        "코어 페이지 수만 찍는 회귀 조사용 프로브 — 산출물도 --json 계약도 없다",
-    ),
-    (
-        "dump-extents",
-        "레이아웃 트리 extent 원시 덤프 — 렌더러 디버깅 전용이라 사용자 어휘가 아니다",
-    ),
-    (
-        "measure-width",
-        "파일이 아니라 문자열을 받는 글꼴 폭 계산기 — 문서 처리 명령이 아니다",
-    ),
-];
+fn help_hidden() -> Vec<(&'static str, &'static str)> {
+    cli_catalog::commands()
+        .iter()
+        .filter_map(|command| match command.visibility {
+            cli_catalog::Visibility::Hidden(reason) => Some((command.name, reason)),
+            _ => None,
+        })
+        .collect()
+}
 
 #[test]
 fn help_covers_every_capabilities_command() {
@@ -872,6 +870,7 @@ fn help_covers_every_capabilities_command() {
     // 그랬다 — --json 계약까지 가진 명령이 help 에 없었다).
     let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
     let help = help_command_tokens();
+    let hidden = help_hidden();
     assert!(
         help.len() > 10,
         "help 파서가 명령을 거의 못 찾았습니다 — 파서가 조용히 0건을 내면 이 가드가 \
@@ -884,7 +883,7 @@ fn help_covers_every_capabilities_command() {
         .iter()
         .filter_map(|c| c["name"].as_str())
         .filter(|n| !help.iter().any(|h| h.as_str() == *n))
-        .filter(|n| !HELP_HIDDEN.iter().any(|(hidden, _)| *hidden == *n))
+        .filter(|n| !hidden.iter().any(|(hidden, _)| *hidden == *n))
         .collect();
     assert!(
         missing.is_empty(),
@@ -894,7 +893,7 @@ fn help_covers_every_capabilities_command() {
 
     // 허용목록이 낡는 것도 같은 부류의 드리프트다 — help 에 실린 명령이 목록에 남아
     // 있으면 "감췄다"는 설명 자체가 거짓이 되므로 지우게 만든다.
-    let stale: Vec<&str> = HELP_HIDDEN
+    let stale: Vec<&str> = hidden
         .iter()
         .map(|(hidden, _)| *hidden)
         .filter(|hidden| help.iter().any(|h| h.as_str() == *hidden))
@@ -904,7 +903,7 @@ fn help_covers_every_capabilities_command() {
         "이미 --help 에 실린 명령이 HELP_HIDDEN 에 남아 있습니다: {stale:?}"
     );
 
-    for (hidden, why) in HELP_HIDDEN {
+    for (hidden, why) in hidden {
         assert!(
             !why.trim().is_empty(),
             "{hidden} 의 은닉 사유가 비었습니다."
