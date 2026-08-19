@@ -32,11 +32,17 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
         self.assertIn("pull_request:", self.wf)
         self.assertIn("branches: [main, devel]", self.wf)
 
-    def test_mydocs_only_devel_pr_skips_worker_without_hiding_check(self) -> None:
+    def test_mydocs_only_or_trusted_trailing_tail_skips_worker_without_hiding_check(self) -> None:
         self.assertIn("name: Proptest preflight", self.wf)
         self.assertIn("pr.base.ref !== 'devel'", self.wf)
         self.assertIn("file.filename.startsWith('mydocs/')", self.wf)
         self.assertIn("file.previous_filename.startsWith('mydocs/')", self.wf)
+        self.assertIn("github.rest.pulls.listCommits", self.wf)
+        self.assertIn("github.rest.repos.getCommit", self.wf)
+        self.assertIn("workflow_id: 'proptest-roundtrip.yml'", self.wf)
+        self.assertIn("github.rest.actions.listWorkflowRuns", self.wf)
+        self.assertIn("trusted-mydocs-tail:", self.wf)
+        self.assertIn("review-tail-candidate-run-unavailable", self.wf)
         self.assertIn("name: prop roundtrip", self.wf)
         self.assertIn("needs: preflight", self.wf)
         self.assertIn("needs.preflight.outputs.fast_pass != 'true'", self.wf)
@@ -68,6 +74,7 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
         self.assertIn("expected 4 shard count files", self.ci)
 
     def test_read_only_permissions(self) -> None:
+        self.assertIn("actions: read", self.wf)
         self.assertIn("contents: read", self.wf)
         self.assertIn("pull-requests: read", self.wf)
 
