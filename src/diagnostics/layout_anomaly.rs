@@ -399,6 +399,33 @@ fn check_overflow(
     }
 }
 
+/// [#5586] 노드와 그 가시 자손 전체의 **세로** 범위를 합친 bbox.
+///
+/// off-canvas 판정용 — 컨테이너(표 등)가 선언 크기로 배치되고 내용이 그 아래로
+/// 흘러나온 경우, 자기 bbox 는 쪽 안이라도 심층 세로 범위는 쪽 밖이다(00365).
+/// 가로는 자기 bbox 를 유지한다 — TextRun 의 말미 공백 advance 등 측정 폭이
+/// 쪽 우측을 스치는 무해한 초과가 흔해(표본 100문서에서 62건 위양성 실측),
+/// 가로까지 합치면 검출기의 신호가 잠긴다. 이 결함군(#5586·#4889)의 본질은
+/// 세로 유출이다.
+fn deep_vertical_union_bbox(node: &RenderNode) -> BoundingBox {
+    fn vertical_extent(node: &RenderNode, min_y: &mut f64, max_bottom: &mut f64) {
+        for child in &node.children {
+            if !child.visible || child.editor_only {
+                continue;
+            }
+            if child.bbox.height > 0.0 && child.bbox.width > 0.0 {
+                *min_y = min_y.min(child.bbox.y);
+                *max_bottom = max_bottom.max(child.bbox.y + child.bbox.height);
+            }
+            vertical_extent(child, min_y, max_bottom);
+        }
+    }
+    let mut min_y = node.bbox.y;
+    let mut max_bottom = node.bbox.y + node.bbox.height;
+    vertical_extent(node, &mut min_y, &mut max_bottom);
+    BoundingBox::new(node.bbox.x, min_y, node.bbox.width, max_bottom - min_y)
+}
+
 /// 페이지 상자 밖이거나 y<0 이면 off-canvas. overflow 와 같은 허용치를 쓰되
 /// 기준 상자는 Page bbox 이다. `y < 0` 은 page.y 가 0 이 아니어도 쪽 위로
 /// 소실된 노드를 놓치지 않기 위한 명시 조건이다.
@@ -509,7 +536,13 @@ fn walk(
     if is_checkable(&node.node_type) {
         let label = node_type_label(&node.node_type);
         if !off_canvas_suppress {
-            check_off_canvas(&node.bbox, &path, label, page, opts, off_canvas_out);
+            // [#5586] 자기 bbox 가 아니라 **자손까지 합친 심층 세로 범위**로 판정한다.
+            // 선언 높이를 신뢰해 배치된 1×1 래퍼 표는 자기 bbox(선언값)는 쪽 안인데
+            // 중첩 내용이 쪽 밖(00365: 최하단 1181 > 쪽 1122.5)으로 넘친다 — 자손
+            // 검사를 접는(suppress) 설계라 자기 bbox 만 보면 이 결함군 전체가
+            // 침묵한다. 보고는 종전처럼 컨테이너당 1회다.
+            let deep = deep_vertical_union_bbox(node);
+            check_off_canvas(&deep, &path, label, page, opts, off_canvas_out);
             next_off_canvas_suppress = true;
         }
         if !suppress && type_allowed(label, opts) {
@@ -1264,6 +1297,37 @@ mod tests {
             BoundingBox::new(x, y, w, h),
         )
         .with_layer(RenderLayerInfo::new(Some(wrap), 0, 0))
+    }
+
+    /// [#5586] 컨테이너 자기 bbox 는 쪽 안이지만 중첩 내용이 쪽 밖으로 흘러나온
+    /// 형상(선언 높이 신뢰 배치의 1×1 래퍼 표)을 심층 범위로 잡는다 — 종전에는
+    /// suppress 설계 때문에 자기 bbox 만 보고 전량 침묵했다(00365 실측).
+    #[test]
+    fn nested_content_past_page_box_is_off_canvas() {
+        // 쪽 200 높이. 표 자체는 y=100 h=80 (쪽 안), 그 안의 줄이 y=230 (쪽 밖).
+        let mut spilled = text_line(10.0, 230.0, 50.0, 12.0);
+        spilled.children.push(text_run("넘친 줄"));
+        let tbl = table(10.0, 100.0, 80.0, 80.0, vec![spilled]);
+        let body = body_node(BoundingBox::new(0.0, 0.0, 100.0, 190.0), vec![tbl]);
+        let root = page_root(100.0, 200.0, body);
+        let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
+        assert_eq!(pa.off_canvas.len(), 1, "심층 범위 off-canvas 1건: {pa:?}");
+        assert_eq!(pa.off_canvas[0].node_type, "Table");
+        // 보고 bbox 는 심층 범위(하단 242)를 담아야 근거가 된다.
+        let b = &pa.off_canvas[0].bbox;
+        assert!((b.y + b.height - 242.0).abs() < 0.01, "deep bottom: {b:?}");
+    }
+
+    /// 심층 범위가 전부 쪽 안이면 종전대로 무보고 — 확장이 위양성을 만들지 않는다.
+    #[test]
+    fn nested_content_inside_page_box_stays_clean() {
+        let mut inner = text_line(10.0, 150.0, 50.0, 12.0);
+        inner.children.push(text_run("정상"));
+        let tbl = table(10.0, 100.0, 80.0, 80.0, vec![inner]);
+        let body = body_node(BoundingBox::new(0.0, 0.0, 100.0, 190.0), vec![tbl]);
+        let root = page_root(100.0, 200.0, body);
+        let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
+        assert!(pa.off_canvas.is_empty(), "{pa:?}");
     }
 
     #[test]
