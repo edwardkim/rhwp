@@ -5552,16 +5552,40 @@ impl LayoutEngine {
                                 // 이미지 TAC 분기(L2231)와 동일하게 para_y_before_compose 에
                                 // (표 line_seg.vpos − 첫 line_seg.vpos) 상대 오프셋을 더한다.
                                 // (para_y_before_compose 에 이미 ls[0].vpos 가 누적되어 있음.)
+                                // [#5589] 표가 놓인 줄이 문단의 **마지막** 줄이라는 보장은
+                                // 없다. 표 뒤에 글자가 이어지는 문단은 [표 밴드, 글줄] 순서로
+                                // 저장된다(00398: 154.8px 밴드 + 16.0px 글줄). 마지막 줄을 표
+                                // 줄로 보면 표를 글줄 자리까지 158.8px 끌어내려, 표가 예약된
+                                // 빈 밴드만 남고 표는 그 아래 소제목과 겹친다.
+                                //
+                                // 표 밴드(표 높이 + 위·아래 바깥 여백)와 줄 높이가 **정확히**
+                                // 맞는 줄이 문단에 하나뿐일 때만 그 줄을 표 줄로 본다. 여러
+                                // 줄이 맞으면 어느 줄에 표가 놓였는지 줄 높이로는 못 가리므로
+                                // 종전대로 마지막 줄을 쓴다 — #1195 의 [빈 줄, 표 밴드] 배치가
+                                // 그 경우다(빈 줄 높이가 밴드와 같아 둘 다 걸린다).
+                                let table_band_hu = if nested_table.common.height < 0x8000_0000 {
+                                    i64::from(nested_table.common.height)
+                                        + i64::from(nested_table.outer_margin_top)
+                                        + i64::from(nested_table.outer_margin_bottom)
+                                } else {
+                                    0
+                                };
+                                let band_segs = || {
+                                    para.line_segs.iter().filter(move |s| {
+                                        (i64::from(s.line_height) - table_band_hu).abs() <= 10
+                                    })
+                                };
+                                let table_seg = (table_band_hu > 0 && band_segs().count() == 1)
+                                    .then(|| band_segs().next())
+                                    .flatten()
+                                    .or_else(|| para.line_segs.last());
                                 let table_anchor_y = if has_preceding_text
                                     && para.line_segs.len() > 1
                                 {
                                     let first_vpos =
                                         para.line_segs.first().map(|f| f.vertical_pos).unwrap_or(0);
-                                    let tbl_vpos = para
-                                        .line_segs
-                                        .last()
-                                        .map(|s| s.vertical_pos)
-                                        .unwrap_or(first_vpos);
+                                    let tbl_vpos =
+                                        table_seg.map(|s| s.vertical_pos).unwrap_or(first_vpos);
                                     para_y_before_compose
                                         + hwpunit_to_px(tbl_vpos - first_vpos, self.dpi)
                                 } else {
@@ -5573,7 +5597,7 @@ impl LayoutEngine {
                                 // 536.7px, 종전 anchor 는 om_top 소실로 3.8px 상향).
                                 let host_seg_lh = if has_preceding_text && para.line_segs.len() > 1
                                 {
-                                    para.line_segs.last().map(|s| s.line_height).unwrap_or(0)
+                                    table_seg.map(|s| s.line_height).unwrap_or(0)
                                 } else {
                                     para.line_segs.first().map(|s| s.line_height).unwrap_or(0)
                                 };
