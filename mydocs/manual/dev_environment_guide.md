@@ -112,8 +112,9 @@ node scripts/run-rust-test.mjs <확장자를_뺀_test_source_이름>
 
 제품 소스의 기존 `#[cfg(test)]`는 의존성에 따라 `integration_ready`, `test_support`, `white_box`로
 차등 관리한다. root `src/`와 내부 `crates/*/src/`를 모두 검사한다. 신규 소스 테스트 모듈과 test
-support 항목은 추가하지 않고 공개 API 회귀는 `tests/cases/`로 보낸다. 다음 계약 검사는 기존 기준선의
-증가를 차단하지만 테스트를 외부로 이동하거나 production crate와 함께 분리하는 변경은 허용한다.
+support 항목은 추가하지 않고 공개 API 회귀는 `tests/cases/`로 보낸다. source-side `#[cfg(test)]`를
+변경한 기여자는 다음 계약 검사를 실행할 수 있다. 이 검사는 manifest 준비와 별개로 source·정책만 읽는다.
+기존 기준선의 증가는 차단하지만 테스트를 외부로 이동하거나 production crate와 함께 분리하는 변경은 허용한다.
 
 ```bash
 node --test scripts/tests/rust-unit-test-tiers.test.mjs
