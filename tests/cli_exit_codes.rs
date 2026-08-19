@@ -315,3 +315,38 @@ fn export_png_without_native_skia_reports_usage_error() {
         describe(&args, &output)
     );
 }
+
+#[cfg(not(feature = "gpu"))]
+#[test]
+fn gpu_commands_without_feature_report_usage_error() {
+    for (command, expected) in [
+        (
+            "export-png-gpu",
+            "export-png-gpu 명령은 gpu feature 가 활성화되어야 합니다.",
+        ),
+        (
+            "gpu-info",
+            "gpu-info 명령은 gpu feature 가 활성화되어야 합니다.",
+        ),
+    ] {
+        let output = run_cli(&[command]);
+        assert_eq!(
+            output.status.code(),
+            Some(2),
+            "{command} exit code\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(
+            output.stdout.is_empty(),
+            "{command} stdout must stay empty: {}",
+            String::from_utf8_lossy(&output.stdout)
+        );
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(stderr.contains(expected), "{command} stderr: {stderr}");
+        assert!(
+            stderr.contains("cargo build --release --features gpu"),
+            "{command} build guidance: {stderr}"
+        );
+    }
+}
