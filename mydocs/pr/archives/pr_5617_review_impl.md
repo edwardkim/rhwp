@@ -19,7 +19,9 @@ pr: 5617
 
 ## CI preflight 보정
 
-통합 PR의 `agent_preflight`가 `core-pages`, `dump-extents`, `measure-width`가 capabilities에는 있으나 top-level `rhwp --help`에는 없음을 감지했다. 세 명령은 이미 dispatch와 capabilities에 등록돼 있었으므로, `print_help()`에 사용법과 설명만 추가했다. 전용 review binary로 다시 실행한 preflight에서 capabilities/help 98개 명령의 상호 커버가 통과했다.
+통합 PR의 첫 `agent_preflight`는 `core-pages`, `dump-extents`, `measure-width`가 capabilities에는 있으나 top-level `rhwp --help`에는 없음을 감지했다. 조사 결과 세 명령은 `src/cli/catalog.rs`의 `Visibility::Hidden` 내부 진단 명령이며, 당시 PR 기준이었던 이전 preflight가 이 catalog 정본을 아직 읽지 않은 것이 원인이었다.
+
+최신 `upstream/devel`의 `b96a1f5e5`는 preflight를 catalog 기반 hidden 목록으로 정렬한다. 통합 브랜치를 그 기준으로 rebase하고, 잘못 추가했던 top-level help 항목은 제거했다. 따라서 capabilities, catalog visibility, CI preflight가 같은 정본을 사용한다.
 
 ## 산출물 정책
 

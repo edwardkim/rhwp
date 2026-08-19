@@ -7175,15 +7175,6 @@ fn print_help() {
     println!("  dump-pages <파일.hwp> [-p <번호>] [--respect-vpos-reset] [--json]");
     println!("      페이지네이션 결과 덤프 (페이지별 문단/표 배치 목록)");
     println!();
-    println!("  dump-extents <파일.hwp> [-p <쪽번호>] [--min-h <px>] [--outside] [--gaps]");
-    println!("      레이아웃 트리 항목별 실제 extent 덤프 (쪽 밖 배치 조사용)");
-    println!();
-    println!("  measure-width --size <pt> [--font <이름>] [--ratio <백분율>] <텍스트>...");
-    println!("      지정한 글꼴·크기의 텍스트 폭을 TSV로 측정");
-    println!();
-    println!("  core-pages <파일.hwp>");
-    println!("      DocumentCore 기준 페이지네이션 결과를 진단용으로 출력");
-    println!();
     println!("  dump-records <파일.hwp>");
     println!("      HWP5 raw record 덤프 (DocInfo/BodyText 레코드 트리)");
     println!();
