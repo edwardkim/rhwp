@@ -7,6 +7,12 @@ use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{collect_field_records, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 
+/// [#4113 / #3918 승격 2호] `verify` — 편집 파이프라인의 독립 사후검증 게이트.
+///
+/// 기대 조건 집합을 문서 실측과 대조해 전부 만족이면 exit 0, 하나라도 어긋나면
+/// **봉투를 먼저 내고** exit 3(판정 — #2707) — 판정은 데이터다(규칙 3). 실행
+/// 실패는 stdout 을 비우고 exit 1, 조립 오류는 exit 2. 실측은 전부 기존 코어
+/// 재사용이다: `page_count`·`grep`·`collect_field_records`·`detect_format`(규칙 2).
 pub(crate) fn run(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp verify <파일.hwp|파일.hwpx> [--expect-pages N] \
 [--expect-min-pages N] [--expect-max-pages N] [--expect-min-chars N] \

@@ -628,13 +628,6 @@ fn ir_diff_paragraph_fields(
     diffs
 }
 
-/// [#4113 / #3918 승격 2호] `verify` — 편집 파이프라인의 독립 사후검증 게이트.
-///
-/// 기대 조건 집합을 문서 실측과 대조해 전부 만족이면 exit 0, 하나라도 어긋나면
-/// **봉투를 먼저 내고** exit 3(판정 — #2707) — 판정은 데이터다(규칙 3). 실행
-/// 실패는 stdout 을 비우고 exit 1, 조립 오류는 exit 2. 실측은 전부 기존 코어
-/// 재사용이다: `page_count`·`grep`·`collect_field_records`·`detect_format`(규칙 2).
-
 /// 두 문서의 IR 을 **전수** 대조한다 — `diagnostics::ir_field_sweep` 을 CLI 로 낸 것.
 ///
 /// `ir-diff` 와 갈리는 점은 **비교 대상이 손으로 나열되지 않는다**는 것이다. `ir-diff` 는
@@ -645,7 +638,6 @@ fn ir_diff_paragraph_fields(
 /// 쓰임새는 **편집 액션의 자취를 재는 것**이다. 어떤 API 도 결과를 안 비추는 액션이라도
 /// 저장본은 적으므로, 같은 문서의 앞뒤 저장본을 이걸로 대조하면 관측창이 생긴다
 /// (`tools/hwpctrl_compat` 의 L3).
-
 pub(crate) fn ir_sweep(args: &[String]) -> i32 {
     use rhwp::diagnostics::ir_field_sweep::{sweep_documents, tally};
 
