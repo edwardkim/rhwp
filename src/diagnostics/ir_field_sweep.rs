@@ -631,6 +631,8 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         style_id,
         column_type,
         raw_break_type,
+        // 합성 쪽나눔 표식 — 파일에 실리지 않는 파서 조판 힌트라 IR 비교 대상 아님.
+        page_break_synthesized: _,
         text,
         char_offsets,
         char_shapes,

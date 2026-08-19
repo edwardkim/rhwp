@@ -1921,11 +1921,29 @@ impl LayoutEngine {
                 // 그룹 내 그림: common이 비어있으므로 w, h(shape_attr 기반)를 직접 사용
                 let bin_data_id = pic.image_attr.bin_data_id;
                 let image_data = find_bin_data_bytes(bin_data_content, bin_data_id);
+                // [#5568] 그림 자르기(crop)를 본문 경로와 동일하게 싣는다. 묶음은
+                // 원본 하나를 imgClip 띠로 나눠 쓰는 문서가 있어(같은 bin_data 를
+                // 자식마다 다른 영역으로), 빠뜨리면 원본 전체가 대상 상자에
+                // 압착된다(비율 파괴). 렌더러의 crop 분기는 이 두 필드만 소비한다.
+                let crop = {
+                    let c = &pic.crop;
+                    if c.right > c.left
+                        && c.bottom > c.top
+                        && (c.left != 0 || c.top != 0 || c.right != 0 || c.bottom != 0)
+                    {
+                        Some((c.left, c.top, c.right, c.bottom))
+                    } else {
+                        None
+                    }
+                };
+                let original_size_hu = pic.crop_reference_size();
                 let img_id = tree.next_id();
                 let img_node = RenderNode::new(
                     img_id,
                     RenderNodeType::Image(ImageNode {
                         transform,
+                        crop,
+                        original_size_hu,
                         effect: pic.image_attr.effect,
                         brightness: pic.image_attr.brightness,
                         contrast: pic.image_attr.contrast,

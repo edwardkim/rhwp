@@ -674,6 +674,16 @@ fn convert_para_shape_with_layout_contract(
         _ => crate::model::style::Alignment::Justify,
     };
 
+    // [#5554] HWP3 에는 줄나눔 기준(어절/글자) 필드가 없고, 한글 2022 HWP3
+    // 임포터는 정렬에서 유도한다 — 양쪽 정렬 문단은 어절(KEEP_WORD, attr1 bit7=1),
+    // 그 외 정렬은 글자(BREAK_WORD). 한글 SaveAs HWPX 정답지 2건 6,097문단
+    // 전수에서 예외 0 으로 확인한 규칙이다(07615: JUSTIFY→KEEP 2,988·기타→BREAK
+    // 711, 교차검증 문서: 822/1,576). 배선하지 않으면 h2x 산출이 전량
+    // BREAK_WORD 로 나가 본문 줄바꿈이 정답지와 어긋난다.
+    if matches!(ps.alignment, crate::model::style::Alignment::Justify) {
+        ps.attr1 |= 1 << 7;
+    }
+
     // [#2976] 문단 테두리 연결(인접 문단끼리 테두리를 이어 그릴지) 플래그.
     // 접근자 border_connection()은 있었으나 attr1 bit 28(HWPX 직렬화기·편집
     // 커맨드가 공유하는 규약)로 배선되지 않아 항상 소실되었다.
@@ -1022,6 +1032,26 @@ fn read_hwp3_padding_scaled(mut bytes: &[u8]) -> i16 {
     (raw * 4) as i16
 }
 
+/// [#5557] HWP3 기본 셀 여백(35 hunit ×4 = 140 균일)을 한글 표준 셀 여백
+/// (좌우 0.18cm=510 · 상하 0.05cm=141)으로 사상한다.
+///
+/// 한글 2022 HWP3 임포터의 실측 규칙 — SaveAs HWPX 정답지 2개 문서 2,351셀
+/// 전수에서 예외 0. 510 은 hunit×4 로 표현이 불가능한 값(127.5)이라 파일 유래일
+/// 수 없고, 한글이 기본값 튜플을 자기 표준으로 대체하는 것이다. 기본값 튜플만
+/// 사상하고 사용자 지정 여백은 원값(×4)을 보존한다.
+fn map_hwp3_default_cell_padding(
+    left: i16,
+    right: i16,
+    top: i16,
+    bottom: i16,
+) -> (i16, i16, i16, i16) {
+    if left == 140 && right == 140 && top == 140 && bottom == 140 {
+        (510, 510, 141, 141)
+    } else {
+        (left, right, top, bottom)
+    }
+}
+
 fn parse_hwp3_object_dispatch(
     body_cursor: &mut Cursor<&[u8]>,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -1151,6 +1181,14 @@ fn parse_hwp3_object_dispatch(
         let cell_padding_right = read_hwp3_padding_scaled(&info_buf[36..38]);
         let cell_padding_top = read_hwp3_padding_scaled(&info_buf[38..40]);
         let cell_padding_bottom = read_hwp3_padding_scaled(&info_buf[40..42]);
+
+        let (cell_padding_left, cell_padding_right, cell_padding_top, cell_padding_bottom) =
+            map_hwp3_default_cell_padding(
+                cell_padding_left,
+                cell_padding_right,
+                cell_padding_top,
+                cell_padding_bottom,
+            );
 
         table.padding.left = cell_padding_left;
         table.padding.right = cell_padding_right;
@@ -3467,6 +3505,10 @@ pub(crate) fn parse_paragraph_list(
             let is_empty_no_ctrl = para.text.is_empty() && para.controls.is_empty();
             if !is_empty_no_ctrl {
                 para.column_type = crate::model::paragraph::ColumnBreakType::Page;
+                // pgy/break_flag 승격은 저장 당시 자연 쪽 경계일 뿐 사용자의 명시적
+                // 쪽나눔이 아니다. 합성 표시를 남겨 저장 포맷 방출에서 제외한다
+                // (명시 flags bit1 나눔만 실제 pageBreak 로 저장).
+                para.page_break_synthesized = !prev_para_had_flags_break;
             } else {
                 force_vpos_reset = true;
             }

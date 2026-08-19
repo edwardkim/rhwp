@@ -1202,15 +1202,30 @@ fn line_segs_within_text(
     layout_only_fill_lines: usize,
 ) -> &[LineSeg] {
     let real = line_segs.len().saturating_sub(layout_only_fill_lines);
-    let in_range = line_segs[..real]
-        .iter()
-        .position(|seg| seg.text_start > char_count)
-        .unwrap_or(real);
-    if in_range == 0 {
+    let in_range = line_segs_within_text_axis(&line_segs[..real], char_count);
+    if in_range.is_empty() {
         line_segs
     } else {
-        &line_segs[..in_range]
+        in_range
     }
+}
+
+/// [#5563] 문단 축을 넘어서지 않는 줄만 남긴 접두부.
+///
+/// 판정(`>` 경계·접두부만 남기는 이유)은 위 `line_segs_within_text` 주석이 정본이다.
+/// HWP5 저장기와 HWPX 저장기가 **같은 규칙**을 써야 하므로 그 판정만 여기로 떼어
+/// 둘이 공유한다 — HWPX 쪽은 조판 전용 보강 줄 계약(#4677)을 갖지 않으므로 축
+/// 판정만 필요하다.
+///
+/// 첫 줄부터 범위 밖이면 빈 슬라이스를 돌려준다. 무엇을 할지는 호출부가 정한다 —
+/// HWP5 는 원본을 그대로 두고(문단 자체가 비정상), HWPX 는 `linesegarray` 를 통째로
+/// 생략해 한글이 스스로 조판하게 한다(#1380 과 같은 계약).
+pub(crate) fn line_segs_within_text_axis(line_segs: &[LineSeg], char_count: u32) -> &[LineSeg] {
+    let in_range = line_segs
+        .iter()
+        .position(|seg| seg.text_start > char_count)
+        .unwrap_or(line_segs.len());
+    &line_segs[..in_range]
 }
 
 /// PARA_LINE_SEG 직렬화
