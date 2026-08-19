@@ -7,6 +7,7 @@ import type {
 import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry } from '@/core/types';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
+import { setObjectProps, type ObjectPropsRef } from './object-props';
 
 /** 편집 명령 공통 인터페이스 */
 export interface EditCommand {
@@ -1935,6 +1936,54 @@ export class MoveLineEndpointCommand implements EditCommand {
     return { sectionIndex: this.sec, paragraphIndex: this.ppi, charOffset: 0 };
   }
 
+  mergeWith(): null { return null; }
+}
+
+/**
+ * [Task #3230] 개체 속성 변경의 역연산 명령 (kind:'record' 용, #2337 계열).
+ *
+ * 스냅샷 대신 쓰는 이유는 비용이다. 스냅샷 1개는 `Document` 통째 클론이라 문서에 비례하고
+ * (실측: 30KB 공문 0.43 MB · 10MB 행정편람 10.59 MB), `SnapshotCommand` 는 before/after 로
+ * 2개를 쓴다. 회전 한 번에 최대 21 MB 를 스택에 얹는 셈인데, 실제로 되돌려야 하는 것은
+ * **스칼라 속성 하나**다.
+ *
+ * 역연산이 자명한 조건은 셋이고 회전·대칭은 셋을 다 만족한다.
+ *  - setter 가 **절대값**이다(누적·토글이 아니라 `rotationAngle = 30`, `horzFlip = true`).
+ *  - 호출부가 적용 **전에 현재 값을 이미 읽는다**(다음 각도·토글 반대값을 그것으로 만든다).
+ *  - 그 속성만 바뀐다 — 파생 상태(레이아웃·앵커)는 setter 가 다시 계산한다.
+ *
+ * 뮤테이션은 호출부가 적용하고 이 명령은 기록만 담당한다(`execute` 는 redo 경로에서만 재적용).
+ */
+export class SetObjectPropsCommand implements EditCommand {
+  readonly type = 'setObjectProps';
+  readonly timestamp: number;
+
+  constructor(
+    private ref: ObjectPropsRef,
+    private before: Record<string, unknown>,
+    private after: Record<string, unknown>,
+    timestamp?: number,
+  ) {
+    this.timestamp = timestamp ?? Date.now();
+  }
+
+  private apply(wasm: WasmBridge, props: Record<string, unknown>): DocumentPosition {
+    setObjectProps(wasm, this.ref, props);
+    return { sectionIndex: this.ref.sec, paragraphIndex: this.ref.ppi, charOffset: 0 };
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    return this.apply(wasm, this.after);
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    return this.apply(wasm, this.before);
+  }
+
+  /**
+   * 병합하지 않는다. 회전 15° 를 네 번 누른 것과 60° 를 한 번 누른 것은 한컴에서도 undo
+   * 횟수가 다르다 — 묶으면 되돌리기 단위가 사용자가 누른 단위와 어긋난다.
+   */
   mergeWith(): null { return null; }
 }
 

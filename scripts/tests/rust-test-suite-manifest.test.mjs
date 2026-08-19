@@ -136,6 +136,21 @@ test('경로 의존 case는 기존 target 이름을 유지한다', () => {
   assert.equal(nextestArguments(plan).includes('-E'), false);
 });
 
+test('Native Skia 함수 게이트 case는 독립 target으로 실행한다', () => {
+  const plan = resolveCasePlan('issue_2225_missing_picture_placeholder');
+  assert.deepEqual(plan, {
+    caseName: 'issue_2225_missing_picture_placeholder',
+    target: 'issue_2225_missing_picture_placeholder',
+    grouped: false,
+  });
+  assert.deepEqual(nextestArguments(plan), [
+    'nextest',
+    'run',
+    '--test',
+    'issue_2225_missing_picture_placeholder',
+  ]);
+});
+
 test('CI slow archive case는 독립 target과 nextest 우선순위를 함께 유지한다', () => {
   const manifest = loadManifest();
   assert.deepEqual(manifest.nextestPriorities, [
