@@ -8404,6 +8404,22 @@ impl LayoutEngine {
                 } else if let Some(anchor_y) = square_anchor_y {
                     table_visual_shift = (anchor_y - y_offset).max(0.0);
                     anchor_y
+                } else if !is_tac
+                    && tbl_is_square
+                    && matches!(t.common.vert_rel_to, VertRelTo::Para)
+                    && para_has_visible_text(para)
+                    && signed_hwpunit(t.common.vertical_offset) > 0
+                {
+                    // [#5566] 가시 텍스트 host 에 앵커된 어울림(Square) 표의 문단 기준
+                    // 양수 세로 오프셋. 종전에는 이 형상이 어느 분기에도 안 걸려
+                    // 폴백(y_offset = 앵커 줄 상단)으로 떨어져 표가 host 첫 줄 텍스트
+                    // 위에 얹혔다(가로 오프셋은 tbl_inline_x 로 적용돼 세로만 소실 —
+                    // 20180108093532000 8쪽, 10k 영향 64문서). 빈 host 는 위의
+                    // para_float_lane 경로가, 저장 사다리 신호가 있는 우측 다줄 wrap 은
+                    // square_anchor_y 가 이미 정합 처리하므로 여기 오지 않는다.
+                    // 음수 오프셋은 실측이 없어 종전(무시) 동작을 유지한다.
+                    para_y_for_table
+                        + hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi)
                 } else if tac_detached_line_shift > 0.0 {
                     y_offset + tac_detached_line_shift
                 } else {
