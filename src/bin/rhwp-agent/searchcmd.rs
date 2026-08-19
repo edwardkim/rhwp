@@ -1,23 +1,15 @@
 //! 본문 검색. 조회만 하고 문서를 고치지 않는다.
 
 use crate::envelope::{
-    envelope, load_core, one_file_value, page_texts, print_json, read_file, EXIT_GATE, EXIT_OK,
-    EXIT_RUNTIME, EXIT_USAGE,
+    envelope, one_file_value, open_core, page_texts, print_json, EXIT_GATE, EXIT_OK, EXIT_USAGE,
 };
 use serde_json::json;
 
 fn pages_of(path: &str) -> Result<Vec<String>, i32> {
-    let data = read_file(path).map_err(|m| {
-        eprintln!("오류: {m}");
-        EXIT_RUNTIME
-    })?;
-    let core = load_core(&data).map_err(|fail| {
-        eprintln!("오류: 문서를 열 수 없습니다 - {path}: {}", fail.message);
-        EXIT_RUNTIME
-    })?;
+    let core = open_core(path)?;
     page_texts(&core).map_err(|m| {
         eprintln!("오류: {m}");
-        EXIT_RUNTIME
+        crate::envelope::EXIT_RUNTIME
     })
 }
 
@@ -67,7 +59,38 @@ pub fn run_search(args: &[String]) -> i32 {
 }
 
 pub fn run_search_count(args: &[String]) -> i32 {
-    run_search(args)
+    let usage = "rhwp-agent search-count <파일> --q <문자열> [--json]";
+    let (opts, q) = match one_file_value(args, usage, "--q") {
+        Ok(v) => v,
+        Err(c) => return c,
+    };
+    let Some(q) = q.filter(|s| !s.is_empty()) else {
+        eprintln!("오류: --q 검색어가 필요합니다.");
+        return EXIT_USAGE;
+    };
+    let pages = match pages_of(&opts.path) {
+        Ok(p) => p,
+        Err(c) => return c,
+    };
+    let mut n = 0u64;
+    for text in &pages {
+        let mut start = 0usize;
+        while let Some(rel) = text[start..].find(&q) {
+            n += 1;
+            start += rel + q.len().max(1);
+        }
+    }
+    let payload = json!({
+        "source": opts.path,
+        "query": q,
+        "matchCount": n,
+    });
+    if opts.json {
+        print_json(&envelope("search-count", payload, &["query"]));
+    } else {
+        crate::outln!("{n}");
+    }
+    EXIT_OK
 }
 
 pub fn run_contains(args: &[String]) -> i32 {
