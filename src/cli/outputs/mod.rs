@@ -5,6 +5,8 @@
 pub(crate) mod pdf;
 pub(crate) mod preview;
 pub(crate) mod raster;
+pub(crate) mod tabular;
+pub(crate) mod text;
 pub(crate) mod vector;
 
 pub(crate) fn allows_implicit_sibling_resources(format: rhwp::parser::FileFormat) -> bool {
