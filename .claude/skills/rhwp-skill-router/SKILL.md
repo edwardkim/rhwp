@@ -79,7 +79,7 @@ rhwp export-svg <파일> -p 0 --profile print
 ```bash
 python tools/skill_router/gate_new_skill.py
 python -m unittest tools/skill_router/test_route.py
-cargo test --test regression_suite_015 skills_have_valid_frontmatter
+cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapture
 ```
 
 ## 권위
