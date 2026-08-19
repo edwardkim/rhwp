@@ -105,16 +105,66 @@ pub(crate) fn build_row_col_x(
             base_rx[c] + col_widths[c] + if c + 1 < col_count { cell_spacing } else { 0.0 };
     }
 
-    if table.common.treat_as_char {
-        return Ok(vec![base_rx; row_count]);
-    }
-
     let target_total = if table.common.width > 0 {
         hwpunit_to_px(table.common.width as i32, dpi) * width_scale
             + cell_spacing * col_count.saturating_sub(1) as f64
     } else {
         base_rx.last().copied().unwrap_or(0.0)
     };
+
+    // [Issue #5590] 행마다 다른 열 구획을 선언한 표.
+    //
+    // 전역 열 grid 하나로 모든 행을 그리면, 행별 선언 구획이 서로 어긋나는 표에서
+    // 어느 행인가는 반드시 진다. 실제로 00288(약장 배치표)은 **모든 행의 셀 폭 합이
+    // 표 폭과 정확히 같은데도** 마지막 열이 1,006HU(13.4px) 깎여 격자가 어긋났다 —
+    // 전역 grid 가 앞 열들을 다른 행 기준으로 풀고 남은 폭을 마지막 열에 떠넘긴 결과다.
+    //
+    // 그 행의 셀이 (1) 0열부터 빈틈없이 (2) 마지막 열까지 덮고 (3) 선언 폭 합이 표 폭과
+    // 일치하면, 그 행은 자기 구획을 스스로 완결한 것이다. 이때는 전역 grid 대신 선언
+    // 구획을 그대로 쓴다. 셋 중 하나라도 어긋나는 행은 종전대로 전역 grid 를 따른다.
+    //
+    // 아래 Studio 명시 힌트(`local_resize_rows`) 경로는 `local_resize_cell_widths` 라는
+    // 별도 폭 원본을 쓰므로 건드리지 않는다.
+    // 전역 grid 가 표 선언 폭과 이미 맞는 표는 건드리지 않는다. 그런 표에서는 행별
+    // 구획을 다시 세울 근거가 없고(한컴 정합 픽스처 form-002 의 부분 가로선이 짧아진다),
+    // 이 결함은 전역 grid 가 선언 폭과 어긋난 표에서만 나타난다.
+    let global_grid_matches_declared =
+        (base_rx.last().copied().unwrap_or(0.0) - target_total).abs() <= 0.5;
+    if table.local_resize_rows.is_empty() && !global_grid_matches_declared {
+        let mut declared = vec![base_rx.clone(); row_count];
+        let mut any_declared_row = false;
+        for (r, row_x) in declared.iter_mut().enumerate().take(row_count) {
+            let Some(candidate) = declared_row_col_x(
+                table,
+                r,
+                col_count,
+                cell_spacing,
+                dpi,
+                width_scale,
+                target_total,
+            ) else {
+                continue;
+            };
+            // 전역 grid 와 사실상 같은 행은 그대로 둔다. 누적 순서만 다른 값으로
+            // 갈아끼우면 부동소수 끝자리가 흔들려 SVG 골든이 의미 없이 깨진다.
+            if candidate
+                .iter()
+                .zip(base_rx.iter())
+                .all(|(a, b)| (a - b).abs() <= 0.01)
+            {
+                continue;
+            }
+            any_declared_row = true;
+            *row_x = candidate;
+        }
+        if any_declared_row {
+            return Ok(declared);
+        }
+    }
+
+    if table.common.treat_as_char {
+        return Ok(vec![base_rx; row_count]);
+    }
 
     let inferred_local_resize_rows = table.inferred_local_resize_rows();
     if !table.local_resize_rows.is_empty() || !inferred_local_resize_rows.is_empty() {
@@ -239,6 +289,65 @@ pub(crate) fn build_row_col_x(
         }
     }
     Ok(row_col_x)
+}
+
+/// [Issue #5590] 한 행이 자기 열 구획을 스스로 완결했는지 보고, 그렇다면 그 행의 x 경계를 만든다.
+///
+/// 조건 셋을 모두 만족해야 한다.
+/// 1. 그 행에서 시작하는(`row_span == 1`) 셀만으로 0열부터 빈틈없이 이어진다.
+/// 2. 마지막 열까지 덮는다.
+/// 3. 선언 폭 합이 표 폭(`target_total`)과 일치한다.
+///
+/// 병합 셀 안쪽 열 경계는 span 비율로 나눈다 — 그 경계를 쓰는 셀이 이 행에는 없고,
+/// 세로선 그리드가 열 개수를 맞춰야 하기 때문이다(기존 local-resize 경로와 같은 규약).
+#[allow(clippy::too_many_arguments)]
+fn declared_row_col_x(
+    table: &Table,
+    row: usize,
+    col_count: usize,
+    cell_spacing: f64,
+    dpi: f64,
+    width_scale: f64,
+    target_total: f64,
+) -> Option<Vec<f64>> {
+    use super::super::hwpunit_to_px;
+    let mut row_cells: Vec<_> = table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row && cell.row_span == 1 && cell.width > 0)
+        .collect();
+    if row_cells.is_empty() {
+        return None;
+    }
+    row_cells.sort_by_key(|cell| cell.col);
+
+    let mut candidate = vec![0.0f64; col_count + 1];
+    let mut cursor = 0.0f64;
+    let mut next_col = 0usize;
+    for cell in row_cells {
+        let c = cell.col as usize;
+        let span = cell.col_span.max(1) as usize;
+        let end = c + span;
+        if c != next_col || end > col_count {
+            return None;
+        }
+        candidate[c] = cursor;
+        let cell_w = hwpunit_to_px(cell.width as i32, dpi) * width_scale;
+        for inner_col in c + 1..end {
+            let ratio = (inner_col - c) as f64 / span as f64;
+            candidate[inner_col] = cursor + cell_w * ratio;
+        }
+        cursor += cell_w;
+        candidate[end] = cursor;
+        if end < col_count {
+            cursor += cell_spacing;
+        }
+        next_col = end;
+    }
+    if next_col != col_count || (cursor - target_total).abs() > 0.5 {
+        return None;
+    }
+    Some(candidate)
 }
 
 /// 셀 테두리를 엣지 그리드에 수집
