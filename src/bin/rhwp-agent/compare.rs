@@ -1,23 +1,16 @@
 //! 두 문서의 쪽수·텍스트를 비교한다.
 
 use crate::envelope::{
-    envelope, load_core, page_texts, print_json, read_file, text_hash, two_files, EXIT_GATE,
-    EXIT_OK, EXIT_RUNTIME,
+    envelope, field_display_name, open_core, page_texts, print_json, text_hash, two_files,
+    EXIT_GATE, EXIT_OK,
 };
 use serde_json::json;
 
 fn texts(path: &str) -> Result<Vec<String>, i32> {
-    let data = read_file(path).map_err(|m| {
-        eprintln!("오류: {m}");
-        EXIT_RUNTIME
-    })?;
-    let core = load_core(&data).map_err(|fail| {
-        eprintln!("오류: 문서를 열 수 없습니다 - {path}: {}", fail.message);
-        EXIT_RUNTIME
-    })?;
+    let core = open_core(path)?;
     page_texts(&core).map_err(|m| {
         eprintln!("오류: {m}");
-        EXIT_RUNTIME
+        crate::envelope::EXIT_RUNTIME
     })
 }
 
@@ -99,24 +92,11 @@ pub fn run_page_delta(args: &[String]) -> i32 {
 }
 
 fn field_names(path: &str) -> Result<Vec<String>, i32> {
-    let data = read_file(path).map_err(|m| {
-        eprintln!("오류: {m}");
-        EXIT_RUNTIME
-    })?;
-    let core = load_core(&data).map_err(|fail| {
-        eprintln!("오류: 문서를 열 수 없습니다 - {path}: {}", fail.message);
-        EXIT_RUNTIME
-    })?;
+    let core = open_core(path)?;
     let mut names: Vec<String> = core
         .collect_all_fields()
         .iter()
-        .map(|f| {
-            f.field
-                .ctrl_data_name
-                .clone()
-                .filter(|n| !n.is_empty())
-                .unwrap_or_else(|| f.field.command.clone())
-        })
+        .map(field_display_name)
         .filter(|n| !n.is_empty())
         .collect();
     names.sort();

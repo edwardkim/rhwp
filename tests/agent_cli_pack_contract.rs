@@ -100,6 +100,14 @@ fn capabilities_lists_new_commands() {
         "captions",
         "headers-footers",
         "batch-info",
+        "search-count",
+        "doc-info",
+        "page-info",
+        "section-def",
+        "field-get",
+        "page-pos",
+        "para-page",
+        "chart-data",
     ] {
         assert!(names.contains(&need), "missing {need} in {names:?}");
     }
@@ -855,6 +863,169 @@ fn outline_nav_and_headers_on_samples() {
         assert_envelope(&v, "headers-footers");
         assert!(v["itemCount"].is_number(), "{rel} {v}");
     }
+}
+
+#[test]
+fn search_count_linux_hwp3() {
+    let path = sample(SAMPLE);
+    let out = run(&[
+        "search-count",
+        "--json",
+        path.to_str().unwrap(),
+        "--q",
+        "Linux",
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "search-count");
+    assert!(v["matchCount"].as_u64().unwrap() >= 1, "{v}");
+    assert!(
+        v.get("matches").is_none(),
+        "search-count must not list matches: {v}"
+    );
+}
+
+#[test]
+fn page_pos_and_para_page_roundtrip() {
+    let path = sample(SAMPLE);
+    let out = run(&["page-pos", "--json", "--page", "0", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "page-pos");
+    assert_eq!(v["position"]["ok"], true, "{v}");
+    let sec = v["position"]["sec"].as_u64().unwrap().to_string();
+    let para = v["position"]["para"].as_u64().unwrap().to_string();
+
+    let out = run(&[
+        "para-page",
+        "--json",
+        "--section",
+        &sec,
+        "--para",
+        &para,
+        path.to_str().unwrap(),
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "para-page");
+    assert_eq!(v["page"], 0, "{v}");
+}
+
+#[test]
+fn page_info_and_section_def_hwp3() {
+    let path = sample(SAMPLE);
+    let out = run(&["page-info", "--json", "--page", "0", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "page-info");
+    assert!(v["info"].is_object() || v["info"].is_string(), "{v}");
+
+    let out = run(&[
+        "section-def",
+        "--json",
+        "--section",
+        "0",
+        path.to_str().unwrap(),
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "section-def");
+    assert!(v["def"].is_object(), "{v}");
+}
+
+#[test]
+fn doc_info_on_form() {
+    let path = sample("samples/form-01.hwp");
+    let out = run(&["doc-info", "--json", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "doc-info");
+    assert!(v["info"].is_object() || v["info"].is_string(), "{v}");
+}
+
+#[test]
+fn field_get_form_and_missing() {
+    let path = sample("samples/form-01.hwp");
+    let locate = run(&["field-locate", "--json", path.to_str().unwrap()]);
+    assert_eq!(locate.status.code(), Some(0));
+    let lv = stdout_json(&locate);
+    let name = lv["fields"][0]["name"].as_str().unwrap();
+
+    let out = run(&[
+        "field-get",
+        "--json",
+        "--name",
+        name,
+        path.to_str().unwrap(),
+    ]);
+    assert!(
+        matches!(out.status.code(), Some(0) | Some(3)),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "field-get");
+    assert_eq!(v["name"], name, "{v}");
+
+    let out = run(&[
+        "field-get",
+        "--json",
+        "--name",
+        "__no_such_field__",
+        path.to_str().unwrap(),
+    ]);
+    assert_eq!(out.status.code(), Some(3));
+    let v = stdout_json(&out);
+    assert_eq!(v["found"], false, "{v}");
+}
+
+#[test]
+fn chart_data_missing_on_form() {
+    let path = sample("samples/form-01.hwp");
+    let out = run(&[
+        "chart-data",
+        "--json",
+        "--chart",
+        "0",
+        path.to_str().unwrap(),
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(1),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert!(out.stdout.is_empty() || stdout_json(&out).get("schemaVersion").is_none());
 }
 
 #[test]

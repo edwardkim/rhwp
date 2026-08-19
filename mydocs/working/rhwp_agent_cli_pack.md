@@ -87,6 +87,11 @@ issue: 3918
 | `outline-nav` | 개요 번호 문단 | `get_outline_navigation_native` |
 | `headers-footers` | 머리말·꼬리말 목록 | `get_header_footer_list_native` |
 | `batch-info` | 여러 파일 요약 | `info` 와 같은 조회를 N개 |
+| `doc-info` | 폰트·치환 | `get_document_info` |
+| `page-info` | 쪽 여백·본문 상자 | `get_page_info_native` |
+| `section-def` | 구역 정의 | `get_section_def_native` |
+| `page-pos` / `para-page` | 쪽↔문단 주소 | `get_position_of_page_native` / `get_page_of_position_native` |
+| `chart-data` | 차트 숫자(원문) | `get_chart_data_by_index_native` |
 
 ### 5.2 쪽·본문
 
@@ -109,6 +114,7 @@ issue: 3918
 | 명령 | 하는 일 | exit 3 |
 |------|---------|--------|
 | `search` | 본문 부분 문자열, page/offset | — |
+| `search-count` | 등장 횟수만 | — |
 | `contains` | 포함 여부 | 없음 |
 | `grep-pages` | 등장 쪽 번호만 | — |
 | `grep` | 구역·문단·쪽 주소 + 문맥 | — |
@@ -120,6 +126,7 @@ issue: 3918
 | `fields` / `field-count` | 누름틀 이름 | 1 |
 | `field-values` | 이름과 현재 값 | 1 |
 | `field-locate` | 이름·값·구역·문단·리스트 좌표 | 1 |
+| `field-get` | 이름으로 값, 없으면 exit 3 | 1 |
 | `empty-fields` | 값이 빈 누름틀 | 1 |
 | `form-ready` | 누름틀이 있으면 채움 축 | 1, exit 3 = 대상 아님 |
 | `field-diff` | 두 서식 누름틀 이름 차집합 | 개정판, exit 3 = 집합 다름 |
