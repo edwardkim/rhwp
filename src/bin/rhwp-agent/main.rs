@@ -34,6 +34,7 @@ mod fingerprint;
 mod grepcmd;
 mod harvest;
 mod inspect;
+mod lookups;
 mod piiscan;
 mod planlint;
 mod safety;
