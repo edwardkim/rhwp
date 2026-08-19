@@ -73,9 +73,32 @@ test('services.wasm 을 별칭으로 빼내 가드를 우회할 수 없다', () 
   );
 });
 
-test('회전/대칭도 recordObjectMutation 으로 기록한다', () => {
+// [Task #3230] 회전/대칭은 스냅샷에서 **역연산**으로 옮겼다. 가드의 뜻은 그대로다 —
+// "히스토리를 우회하지 않는다". 우회 형태만 달라졌으므로(직접 setProps 호출) 그것을 본다.
+test('회전/대칭은 역연산으로 기록한다', () => {
   const rot = balancedFrom(insertSrc, 'function applyRotationDelta', '{');
-  assert.match(rot, /recordObjectMutation\(ih, 'rotateObject'/, '회전을 snapshot 으로 기록');
+  assert.match(rot, /recordAbsolutePropChange\(/, '회전을 히스토리에 기록');
+  assert.doesNotMatch(
+    rot,
+    /\bsetProps\s*\(/,
+    '적용은 기록 헬퍼 안에서만 — 직접 적용하면 히스토리를 우회한다',
+  );
   const flip = balancedFrom(insertSrc, 'function toggleFlip', '{');
-  assert.match(flip, /recordObjectMutation\(ih, 'flipObject'/, '대칭을 snapshot 으로 기록');
+  assert.match(flip, /recordAbsolutePropChange\(/, '대칭을 히스토리에 기록');
+  assert.doesNotMatch(
+    flip,
+    /\bsetProps\s*\(/,
+    '적용은 기록 헬퍼 안에서만 — 직접 적용하면 히스토리를 우회한다',
+  );
+});
+
+test('recordAbsolutePropChange 는 역연산 커맨드로 위임한다', () => {
+  const block = functionBodyFrom(insertSrc, 'function recordAbsolutePropChange');
+  assert.match(block, /kind:\s*'record'/, '스냅샷이 아니라 역연산 기록');
+  assert.match(block, /new SetObjectPropsCommand\(/, 'before/after 를 든 커맨드로 기록');
+  assert.match(
+    block,
+    /refresh:\s*'full'/,
+    "kind:'record' 의 기본 refresh 는 'none' — 명시하지 않으면 회전이 화면에 반영되지 않는다",
+  );
 });
