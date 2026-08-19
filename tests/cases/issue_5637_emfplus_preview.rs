@@ -117,11 +117,15 @@ fn issue_5637_resyncs_after_lying_emfplus_comment() {
 
     let records = rhwp::emf::parse_emf(&bytes).expect("resync parse");
     assert!(
-        records.iter().any(|record| matches!(record, rhwp::emf::Record::SaveDC)),
+        records
+            .iter()
+            .any(|record| matches!(record, rhwp::emf::Record::SaveDC)),
         "재동기로 SaveDC 를 살려야 한다: {records:?}"
     );
     assert!(
-        records.iter().any(|record| matches!(record, rhwp::emf::Record::Eof)),
+        records
+            .iter()
+            .any(|record| matches!(record, rhwp::emf::Record::Eof)),
         "EOF 까지 도달해야 한다"
     );
 }
@@ -134,15 +138,18 @@ fn issue_5637_does_not_resync_without_emfplus_comment() {
     plain_comment.extend_from_slice(b"GDIC");
     plain_comment.extend_from_slice(&[0u8; 4]);
     push_record(&mut bytes, 0x46, &plain_comment);
+    let mut rectangle = Vec::new();
+    for value in [1i32, 2, 30, 40] {
+        rectangle.extend_from_slice(&value.to_le_bytes());
+    }
+    push_record(&mut bytes, 0x2B, &rectangle);
     for _ in 0..6 {
         bytes.extend_from_slice(&0xBF00_0000u32.to_le_bytes());
     }
-    push_record(&mut bytes, 0x21, &[]);
-    push_eof(&mut bytes);
 
     assert!(
         rhwp::emf::parse_emf(&bytes).is_err(),
-        "EMF+ 없는 손상 스트림은 오류를 유지해야 한다"
+        "EMF+ 없는 손상 스트림은 그릴 프리픽스가 있어도 오류를 유지해야 한다"
     );
 }
 
@@ -194,13 +201,13 @@ fn issue_5637_keeps_a_paintable_emfplus_prefix() {
     }
 
     let records = rhwp::emf::parse_emf(&bytes).expect("salvage parse");
+    assert!(records
+        .iter()
+        .any(|record| matches!(record, rhwp::emf::Record::Rectangle(_))));
     assert!(
-        records
+        !records
             .iter()
-            .any(|record| matches!(record, rhwp::emf::Record::Rectangle(_)))
-    );
-    assert!(
-        !records.iter().any(|record| matches!(record, rhwp::emf::Record::Eof)),
+            .any(|record| matches!(record, rhwp::emf::Record::Eof)),
         "EOF 는 없어야 한다"
     );
 }
