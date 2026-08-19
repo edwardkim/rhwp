@@ -225,8 +225,14 @@ cargo build --features native-skia
 cargo build --release --features native-skia
 
 # native-skia 테스트
-cargo test --features native-skia skia --lib
+cargo test --features native-skia --lib
+
+# 동시성을 조정해야 할 때만 test harness 인자로 전달한다.
+cargo test --features native-skia --lib -- --test-threads <현재_환경에_맞는_값>
 ```
+
+`native-skia`만 Cargo feature다. `skia`를 feature 뒤에 쓰면 이름 filter가 되어 전체 lib 회귀 대신
+`skia`가 포함된 테스트만 실행한다.
 
 ## 비목표 (현재 단계)
 

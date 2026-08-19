@@ -315,13 +315,16 @@ cargo build
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --test-threads 12 --no-fail-fast
+  --tests --no-fail-fast
 wasm-pack build --target web --out-dir pkg
 
 # release 시 devel → main PR 생성
 gh pr create --repo edwardkim/rhwp --base main --head devel \
   --title "v0.7.3 릴리즈" --body-file <release-pr-body.md>
 ```
+
+release 검증도 고정 thread 수를 복사하지 않는다. nextest 기본 동시성을 먼저 사용하고, release host의
+CPU·메모리·동시 작업을 기준으로 사용자가 필요할 때만 `--test-threads <현재 환경에 맞는 값>`을 지정한다.
 
 > release 준비 변경도 `upstream/devel`에 직접 push하지 않는다. 작업 브랜치 PR과 CI를 거쳐 통합하고,
 > 검증된 `devel`을 `main` 대상 release PR로 올린다.

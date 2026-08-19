@@ -33,11 +33,17 @@ pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 전체 Rust 회귀의 기본 명령은 다음과 같다. 같은 `target/pr-review`를 사용하는 Cargo 계열 명령은 반드시
 앞 명령의 종료를 확인한 뒤 실행한다.
 
+문서의 명령은 고정 `--test-threads` 값을 쓰지 않는다. nextest 기본 동시성을 먼저 사용하고, 현재
+host의 논리 CPU·메모리·동시 작업을 확인한 뒤에만 `--test-threads <현재 환경에 맞는 값>`으로 조정한다.
+논리 CPU 확인은 macOS `sysctl -n hw.logicalcpu`, Linux `getconf _NPROCESSORS_ONLN`, PowerShell
+`[Environment]::ProcessorCount`를 사용한다. CPU 수를 그대로 쓰는 것도 의무가 아니며, 메모리가
+부족하거나 다른 작업이 있으면 더 낮은 값을 선택하고 실제 실행 시간을 기록한다.
+
 ~~~bash
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --test-threads 12 --no-fail-fast
+  --tests --no-fail-fast
 ~~~
 
 ### integration test source 추가와 자동 sharding
@@ -125,9 +131,9 @@ target cold run은 build 포함 17분 42초였다. 같은 target을 그대로 �
 test 자체의 실행 시간은 host 부하에 따라 달라지므로, 이 수치는 재컴파일 제거 효과와 해당 시점의 측정값을
 분리해 읽는다.
 
-macOS도 POSIX 명령은 동일하다. 다만 `--test-threads 12`는 12 이상 논리 CPU와 충분한 RAM이 있는 host의
-측정값이다. CPU·RAM이 더 작은 host에서는 `sysctl -n hw.ncpu`와 `sysctl -n hw.memsize`를 확인하고 thread
-수를 논리 CPU 이하로 낮춘다.
+macOS도 POSIX 명령은 동일하다. 과거의 `--test-threads 12` 측정값은 해당 host의 증적일 뿐 기본값이
+아니다. `sysctl -n hw.logicalcpu`와 `sysctl -n hw.memsize`로 현재 환경을 확인하고, 기본 동시성 또는
+사용자가 선택한 값을 쓴다.
 
 Windows는 cargo-nextest가 설치되어 있고 PowerShell 또는 cmd에서 Windows 경로만 일관되게 사용하면 같은
 방식으로 가능하다. 2026-08-09 `win10-ted`의 cmd 환경(4 logical CPU, RAM 8 GiB)에서
@@ -135,14 +141,14 @@ Windows는 cargo-nextest가 설치되어 있고 PowerShell 또는 cmd에서 Wind
 `overflow_cell_baseline` 선택 실행은 cold build 포함 18분 55초(build 12분 27초, test 363.036초), 같은
 target을 재사용한 warm 실행은 6분 11초(build 2.74초, test 359.563초)로 통과했다. Windows 전체 `--tests`
 실행 명령도 아래와 같지만, 이 확인에서는 target 재사용을 직접 검증할 수 있는 장시간 baseline만 실행했다.
-이 host에서는 4 thread를 상한으로 쓴다.
+이 host의 4 thread 측정값은 역사적 증적이며, 다른 Windows host의 기본값이나 상한이 아니다.
 
 ~~~powershell
 Set-Location 'C:\\Users\\admin\\Desktop\\rhwp\\rhwp'
 cargo nextest run `
   --cargo-profile release-test `
   --target-dir target/pr-review `
-  --tests --test-threads 4 --no-fail-fast
+  --tests --no-fail-fast
 ~~~
 
 PowerShell의 `target/pr-review`는 Windows에서 정상 경로로 해석된다. WSL 경로와 Windows 경로, 또는 서로
@@ -280,7 +286,7 @@ merge 판단에서는 다음 경계를 적용한다.
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --test-threads 12 --no-fail-fast
+  --tests --no-fail-fast
 cargo fmt --all -- --check
 cargo clippy --all-targets -- -D warnings
 ~~~
@@ -288,7 +294,7 @@ cargo clippy --all-targets -- -D warnings
 renderer 영향 PR의 Native Skia 공식 회귀 범위는 다음 3종이다.
 
 ~~~bash
-cargo test --profile release-test --target-dir target/pr-review --features native-skia skia --lib
+cargo test --profile release-test --target-dir target/pr-review --features native-skia --lib
 node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \\
   --cargo-profile release-test --target-dir target/pr-review --features native-skia
 node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \\
@@ -296,6 +302,11 @@ node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \\
 # 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
 docker compose --env-file .env.docker run --rm wasm
 ~~~
+
+`native-skia`가 Cargo feature이고 `skia`는 feature가 아니다. 따라서
+`cargo test --features native-skia skia --lib`의 `skia`는 test filter가 되어 전체 회귀를 실행하지 않는다.
+libtest 동시성을 현재 host에 맞춰 조정해야 하면 Cargo 옵션 뒤의 test harness 인자로
+`cargo test ... --features native-skia --lib -- --test-threads <현재 환경에 맞는 값>`을 쓴다.
 
 개별 Rust 통합 fixture는 `tests/generated/regression_suite_*.rs`에 묶이므로, 이전처럼 파일명을
 `cargo test --test`에 직접 넘기지 않는다. `run-rust-test.mjs`가 manifest에서 실제 suite와 테스트
@@ -371,8 +382,8 @@ cargo test --release --target-dir target/pr-review --lib
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --test-threads 12 --no-fail-fast
-cargo test --profile release-test --target-dir target/pr-review --features native-skia skia --lib
+  --tests --no-fail-fast
+cargo test --profile release-test --target-dir target/pr-review --features native-skia --lib
 node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
   --cargo-profile release-test --target-dir target/pr-review --features native-skia
 node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \

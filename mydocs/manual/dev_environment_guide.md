@@ -90,7 +90,7 @@ cargo test --release --lib
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --test-threads 12 --no-fail-fast
+  --tests --no-fail-fast
 ```
 
 새 Rust integration test는 `tests/cases/`에 원본 `.rs` 파일만 추가하고 suite를 직접 선택하지 않는다.
@@ -133,7 +133,9 @@ workspace의 `default-members`에는 root와 `crates/*`가 포함된다. 따라�
 
 `release-test`는 통합 테스트 시간을 줄이기 위한 프로필이며 실제 release 산출물은 계속
 `cargo build --release`로 만든다.
-`--test-threads 12`는 CPU·메모리가 충분한 host의 기본값이며, 작은 host에서는 논리 CPU 이하로 낮춘다.
+nextest 기본 동시성은 현재 host를 따른다. CPU·메모리·동시 작업을 확인해 조정할 때만
+`--test-threads <현재 환경에 맞는 값>`을 추가하며, 문서의 과거 측정값을 고정값으로 복사하지 않는다.
+선택 절차와 OS별 CPU 확인 명령은 [로컬 사전 검증](pr_review/local_validation.md#고정-review-target과-실행-환경)을 따른다.
 
 ## WASM 빌드
 
