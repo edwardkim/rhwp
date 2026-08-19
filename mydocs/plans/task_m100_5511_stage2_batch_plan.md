@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 방식 전환 승인 — 첫 기능군 배치 착수 승인 대기
+- 상태: 실행 승인 — Q1 완료, Q2 승인 대기
 
 ## 1. 전환 이유
 
@@ -86,10 +86,10 @@ characterization이 필요 없으면 테스트 커밋은 생략한다. 기능군
 | Q6 | convert·extract-pages·HWPX/HML·ingest·scaffold | parser/serializer 동작 변경 없이 adapter만 분리 | 2~3 |
 | Q7 | internal round-trip·IR diff/sweep·verify | 진단·검증 exit code와 diff 계약 보존 | 2~3 |
 
-Q1은 다음 실행 배치다. 기존 `thumbnail` 테스트가 파일 생성 성공 여부만 확인하는 일부 경로는
-내장 이미지 바이트 동등성, 기본 출력 경로와 저장 실패까지 보강한다. 계약이 확보되면 같은 배치
-안에서 `cli/outputs/preview.rs` 또는 동등한 부작용 명시 모듈로 이동한다. CQRS 판정이 해결되지
-않으면 이동하지 않고 배치를 중단한다.
+Q1은 완료했다. 기존 `thumbnail` 테스트의 빈틈이었던 내장 이미지 바이트 동등성, 기본 출력
+경로와 저장 실패를 보강하고, 파일 부작용을 명시하는 `cli/outputs/preview.rs`로 handler를
+이동했다. 세부 증거는
+[`task_m100_5511_stage2_batch_q1.md`](../working/task_m100_5511_stage2_batch_q1.md)에 기록했다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
