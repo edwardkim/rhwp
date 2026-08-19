@@ -365,6 +365,36 @@ fn hidden_text_query_is_owned_by_the_security_inspection_module() {
 }
 
 #[test]
+fn unicode_query_is_owned_by_the_security_inspection_module() {
+    assert!(
+        SECURITY_INSPECTION_SOURCE.contains("pub(crate) fn inspect_unicode("),
+        "inspect_unicode 구현이 security_inspection 모듈에 있어야 한다"
+    );
+    assert!(
+        SECURITY_INSPECTION_SOURCE.contains("fn inspect_unicode_scan_unit("),
+        "unicode scan helper가 handler와 같은 보안 조회 모듈에 있어야 한다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn inspect_unicode("),
+        "inspect_unicode 구현이 main.rs로 되돌아가면 안 된다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn inspect_unicode_scan_unit("),
+        "unicode scan helper가 main.rs로 되돌아가면 안 된다"
+    );
+    let compact_main: String = MAIN_SOURCE
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    assert!(
+        compact_main.contains(
+            "Some(\"unicode\")=>cli::queries::security_inspection::inspect_unicode(&args[1..])"
+        ),
+        "inspect unicode dispatch가 security query 모듈 API를 사용해야 한다"
+    );
+}
+
+#[test]
 fn structured_object_queries_are_owned_by_the_query_module() {
     let compact_main: String = MAIN_SOURCE
         .chars()
