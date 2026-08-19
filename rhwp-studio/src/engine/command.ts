@@ -1981,6 +1981,26 @@ export class SetObjectPropsCommand implements EditCommand {
   }
 
   /**
+   * 적용해도 달라질 것이 없으면 무변경이다 (#2370 규약).
+   *
+   * 히스토리는 커맨드에게 이 질문을 하고(`history.ts` 의 `command.isNoOp?.()`), 답하지 않으면
+   * "항상 바꾼다" 로 읽는다. before 와 after 가 같은데 침묵하면 그 자체가 거짓 응답이고,
+   * 팬텀 엔트리가 Ctrl+Z 한 번을 무효과로 소모하며 redo 스택까지 파기한다.
+   *
+   * 지금 호출부(±90° 회전·`!cur` 토글)는 항상 before ≠ after 라 이 분기를 타지 않는다. 그래도
+   * 답은 커맨드가 해야 한다 — before/after 를 아는 것은 이 객체뿐이고, 호출부마다 같은 비교를
+   * 되풀이하는 것은 판정을 소비자로 흘리는 일이다.
+   *
+   * `after` 의 키만 본다. `execute` 가 적용하는 것이 그것뿐이므로 `before` 에만 있는 키는
+   * 이 연산의 결과를 바꾸지 않는다.
+   */
+  isNoOp(): boolean {
+    const keys = Object.keys(this.after);
+    if (keys.length === 0) return true;
+    return keys.every((key) => Object.is(this.before[key], this.after[key]));
+  }
+
+  /**
    * 병합하지 않는다. 회전 15° 를 네 번 누른 것과 60° 를 한 번 누른 것은 한컴에서도 undo
    * 횟수가 다르다 — 묶으면 되돌리기 단위가 사용자가 누른 단위와 어긋난다.
    */
