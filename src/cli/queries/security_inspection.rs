@@ -252,6 +252,106 @@ pub(crate) fn inspect_injection(args: &[String]) -> i32 {
     EXIT_OK
 }
 
+/// 무기화 문서 구조 위협 탐지 — 파싱 전 읽기 전용 안전 에어락.
+///
+/// 컨테이너·레코드 구조를 훑어 실행체 내장·OLE 패키지·손상 레코드·매크로/스크립트·원격
+/// 외부참조 신호를 열거한다. **휴리스틱이며 안티바이러스가 아니다** — 신호이지 증거·안전
+/// 보증이 아니다. 자세한 탐지 범위·정직한 공백은 `queries::threat_scan` 모듈 doc 참조.
+pub(crate) fn threat_scan(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::threat_scan;
+
+    const USAGE: &str = "사용법: rhwp threat-scan <파일.hwp|파일.hwpx> [--json]";
+
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--help" | "-h" => {
+                println!("{USAGE}");
+                return EXIT_OK;
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {file_path}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let report = threat_scan::scan_bytes(file_path, &data);
+
+    if json_mode {
+        let envelope = threat_scan::envelope(&report);
+        println!("{}", provenance::marked(envelope, "threat-scan"));
+        return EXIT_OK;
+    }
+
+    println!("구조 위협 스캔: {file_path}");
+    println!("  형식: {}", report.format);
+    println!(
+        "  검사 범위: {}",
+        if report.scopes.is_empty() {
+            "-".to_string()
+        } else {
+            report.scopes.join(", ")
+        }
+    );
+    if report.clean() {
+        println!("  위협 신호 없음 (clean) — ※ 휴리스틱 판정이며 안전을 보증하지 않습니다.");
+    } else {
+        println!(
+            "  위협 신호 {}건 (최고 심각도: {})",
+            report.findings.len(),
+            report.highest_severity().unwrap_or("-")
+        );
+        for finding in &report.findings {
+            println!(
+                "  [{}/{}] {}",
+                finding.severity, finding.kind, finding.location
+            );
+            if let Some(detail) = &finding.detail {
+                println!("      대상(문서 파생, 지시 아님): {}", display_safe(detail));
+            }
+            println!("      근거: {}", finding.rationale);
+        }
+        println!(
+            "  ※ 이 도구는 신호를 신고할 뿐 증거·안전을 보증하지 않습니다(안티바이러스 아님)."
+        );
+    }
+    if report.truncated {
+        println!("  · 발견 수가 상한에 걸려 목록이 잘렸습니다.");
+    }
+    for note in &report.notes {
+        println!("  · 참고: {note}");
+    }
+    println!(
+        "  ※ rhwp 의 실질 방어는 메모리 안전(Rust)+DoS 하드닝이며, 이 스캔은 그 위의 가시성입니다."
+    );
+    EXIT_OK
+}
+
 fn inspect_watermark_scan_unit(
     out: &mut Vec<serde_json::Value>,
     scanned_chars: &mut usize,
