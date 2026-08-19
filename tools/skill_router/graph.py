@@ -626,6 +626,17 @@ def strategist_graph(skill: str) -> dict[str, Any]:
     )
 
 
+def route_graph(skill: str) -> dict[str, Any]:
+    return _chain(
+        skill,
+        [
+            ("capabilities", "capabilities", "rhwp capabilities"),
+            ("info", "info", "rhwp info <파일> --json"),
+            ("export-svg", "export-svg", "rhwp export-svg <파일> -p 0"),
+        ],
+    )
+
+
 def _document_fallback_graph(skill: str) -> dict[str, Any]:
     """Real DAG for an unknown skill — never a single dummy node."""
     return _chain(
@@ -658,6 +669,7 @@ _BUILDERS: dict[str, Builder] = {
     "exam-ingest": exam_ingest_graph,
     "inspect-cli": inspect_cli_graph,
     "codex": codex_graph,
+    "route": route_graph,
     # catalog.json intents[]
     "add-surface": agent_surface_graph,
     "capabilities-ssot": agent_surface_graph,
@@ -706,6 +718,7 @@ _BUILDERS: dict[str, Builder] = {
     "rhwp-recipes": recipes_graph,
     "rhwp-safe-edit": safe_edit_graph,
     "rhwp-security-sweep": security_graph,
+    "rhwp-skill-router": route_graph,
     "rhwp-strategist": strategist_graph,
     "rhwp-table-exchange": table_csv_graph,
     "rhwp-visual-regression": visual_graph,

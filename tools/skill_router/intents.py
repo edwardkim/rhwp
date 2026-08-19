@@ -112,6 +112,20 @@ INTENT_SPECS: tuple[dict[str, Any], ...] = (
         ),
     },
     {
+        "id": "route",
+        "label": "스킬 라우터",
+        "skill": "rhwp-skill-router",
+        "capability": "rhwp-skill-router",
+        "specificity": 88,
+        "patterns": (
+            r"어떤\s*스킬",
+            r"라우터",
+            r"execution\s*graph",
+            r"skill-route",
+            r"무슨\s*스킬\s*쓰",
+        ),
+    },
+    {
         "id": "provenance",
         "label": "출처 표지",
         "skill": "rhwp-provenance",

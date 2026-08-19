@@ -5,6 +5,10 @@ Mirrors tests/skills_contract.rs (frontmatter + executable `rhwp <cmd>`),
 re-scans every skill three times, checks catalog.json paths, and probes
 tools/skill_router/route.py three times per catalog skill.
 
+If target/release/rhwp.exe or PATH rhwp exists, every extracted `rhwp <cmd>`
+token (and group subcommand) must appear in `rhwp capabilities` ∪
+`rhwp --help` ∪ {help}. Missing binary skips that layer.
+
     python tools/skill_router/gate_new_skill.py
     python tools/skill_router/gate_new_skill.py --json
 
@@ -16,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -31,7 +36,10 @@ SCHEMA_VERSION = "1.0"
 SCAN_TIMES = 3
 ROUTE_PROBES = 3
 ROUTE_TIMEOUT_SEC = 20
+RHWP_TIMEOUT_SEC = 20
 MIN_DESCRIPTION_CHARS = 20
+MIN_KNOWN_COMMANDS = 20
+MIN_EDIT_SUBCOMMANDS = 4
 USAGE = "usage: python tools/skill_router/gate_new_skill.py [--json]"
 
 ENVELOPE_KEYS = (
@@ -346,6 +354,166 @@ def scan_skills(json_mode: bool) -> list[dict[str, Any]]:
     return last_records
 
 
+def find_rhwp_binary() -> Path | None:
+    """Prefer target/release/rhwp.exe, then PATH rhwp. None if neither exists."""
+    release_exe = REPO / "target" / "release" / "rhwp.exe"
+    if release_exe.is_file():
+        return release_exe
+    release = REPO / "target" / "release" / "rhwp"
+    if release.is_file():
+        return release
+    which = shutil.which("rhwp")
+    if which:
+        return Path(which)
+    return None
+
+
+def _run_rhwp(binary: Path, args: list[str]) -> str:
+    argv = [str(binary), *args]
+    try:
+        proc = subprocess.run(
+            argv,
+            cwd=str(REPO),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=RHWP_TIMEOUT_SEC,
+            env=_cli_env(),
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise GateFail(f"rhwp {' '.join(args)} hung after {RHWP_TIMEOUT_SEC}s") from exc
+    if proc.returncode != 0:
+        err = (proc.stderr or "").strip()[:400]
+        raise GateFail(f"rhwp {' '.join(args)} exit {proc.returncode} stderr={err!r}")
+    return proc.stdout or ""
+
+
+def _help_head_token(tok: str) -> bool:
+    return bool(tok) and all(_is_token_char(ch) for ch in tok)
+
+
+def parse_known_commands(caps_stdout: str, help_stdout: str) -> set[str]:
+    """capabilities names ∪ --help two-space heads ∪ {help}. Same as skills_contract.rs."""
+    known: set[str] = set()
+    try:
+        caps = json.loads(caps_stdout)
+    except json.JSONDecodeError as exc:
+        preview = caps_stdout.strip()[:240].replace("\n", "\\n")
+        raise GateFail(f"rhwp capabilities is not JSON: {exc}: {preview!r}") from exc
+    commands = caps.get("commands") if isinstance(caps, dict) else None
+    if not isinstance(commands, list):
+        raise GateFail("rhwp capabilities missing commands array")
+    for item in commands:
+        if not isinstance(item, dict):
+            continue
+        name = item.get("name")
+        if not isinstance(name, str) or not name:
+            continue
+        known.add(name)
+        head = name.split()[0] if name.split() else ""
+        if head:
+            known.add(head)
+    for line in help_stdout.splitlines():
+        if not line.startswith("  "):
+            continue
+        rest = line[2:]
+        parts = rest.split()
+        if not parts:
+            continue
+        tok = parts[0]
+        if _help_head_token(tok):
+            known.add(tok)
+    known.add("help")
+    if len(known) < MIN_KNOWN_COMMANDS:
+        raise GateFail(
+            f"real command set too small ({len(known)}) — self-description parse regression"
+        )
+    return known
+
+
+def parse_group_subcommands(help_stdout: str) -> dict[str, set[str]]:
+    """Harvest `rhwp <head> <sub>` names from --help, including `<a|b>` lists."""
+    groups: dict[str, set[str]] = {}
+    for line in help_stdout.splitlines():
+        if not line.startswith("  "):
+            continue
+        parts = line[2:].split()
+        if len(parts) < 2:
+            continue
+        head, sub = parts[0], parts[1]
+        if not _is_token(head):
+            continue
+        if _is_token(sub):
+            groups.setdefault(head, set()).add(sub)
+            continue
+        if sub.startswith("<") and "|" in sub:
+            for alt in sub.strip("<>").split("|"):
+                if _is_token(alt):
+                    groups.setdefault(head, set()).add(alt)
+    edit_subs = groups.get("edit")
+    if edit_subs is None or len(edit_subs) < MIN_EDIT_SUBCOMMANDS:
+        raise GateFail(f"edit subcommand harvest regression: {groups!r}")
+    return groups
+
+
+def check_real_commands(json_mode: bool) -> dict[str, Any]:
+    """If rhwp is on disk or PATH, every extracted token must be a live command."""
+    binary = find_rhwp_binary()
+    if binary is None:
+        _say(json_mode, "rhwp binary: skip (absent)")
+        return {
+            "present": False,
+            "ok": True,
+            "skipped": "no rhwp binary",
+            "checked": 0,
+            "dead": [],
+        }
+    _say(json_mode, f"rhwp binary: {binary}")
+    caps_stdout = _run_rhwp(binary, ["capabilities"])
+    help_stdout = _run_rhwp(binary, ["--help"])
+    known = parse_known_commands(caps_stdout, help_stdout)
+    groups = parse_group_subcommands(help_stdout)
+    dead: list[str] = []
+    seen: set[str] = set()
+    checked = 0
+    for dir_path in list_skill_dirs():
+        name = dir_path.name
+        refs = referenced_commands(read_skill(dir_path))
+        for tok, sub in refs:
+            checked += 1
+            if tok not in known:
+                msg = f"{name}: `rhwp {tok}`"
+                if msg not in seen:
+                    seen.add(msg)
+                    dead.append(msg)
+                    _say(json_mode, f"rhwp {name}: FAIL: unknown `{tok}`")
+                continue
+            if sub is None:
+                continue
+            subs = groups.get(tok)
+            if subs is None or sub in subs:
+                continue
+            listed = ",".join(sorted(subs))
+            msg = f"{name}: `rhwp {tok} {sub}` (real subs: {listed})"
+            if msg not in seen:
+                seen.add(msg)
+                dead.append(msg)
+                _say(json_mode, f"rhwp {name}: FAIL: unknown `{tok} {sub}`")
+    if dead:
+        raise GateFail("skills reference unknown rhwp commands:\n  " + "\n  ".join(dead))
+    _say(json_mode, f"rhwp commands: pass ({len(known)} known, {checked} refs)")
+    return {
+        "present": True,
+        "ok": True,
+        "binary": str(binary),
+        "knownCount": len(known),
+        "checked": checked,
+        "dead": [],
+    }
+
+
 def _as_catalog_entry(skill_id: str, payload: Any) -> dict[str, Any] | None:
     if isinstance(payload, str):
         return {"id": skill_id, "path": payload}
@@ -552,8 +720,10 @@ def run_gate(json_mode: bool) -> dict[str, Any]:
         "skills": [],
         "catalog": {"present": CATALOG_JSON.is_file(), "ok": False},
         "route": {"present": ROUTE_PY.is_file(), "ok": False},
+        "rhwp": {"present": find_rhwp_binary() is not None, "ok": False},
     }
     envelope["skills"] = scan_skills(json_mode)
+    envelope["rhwp"] = check_real_commands(json_mode)
     envelope["catalog"] = check_catalog_paths(json_mode)
     envelope["route"] = probe_router(json_mode)
     envelope["ok"] = True
@@ -561,10 +731,15 @@ def run_gate(json_mode: bool) -> dict[str, Any]:
     n_skills = len(envelope["skills"])
     n_catalog = envelope["catalog"].get("checked", 0)
     n_probes = len(envelope["route"].get("probes") or [])
+    rhwp_info = envelope["rhwp"]
+    if rhwp_info.get("present"):
+        rhwp_summary = str(rhwp_info.get("knownCount", 0))
+    else:
+        rhwp_summary = "skip"
     _say(
         json_mode,
         f"OK: {n_skills} skills x {SCAN_TIMES} scans, "
-        f"catalog={n_catalog}, route_probes={n_probes}",
+        f"catalog={n_catalog}, route_probes={n_probes}, rhwp={rhwp_summary}",
     )
     return envelope
 
