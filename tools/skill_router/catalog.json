@@ -442,6 +442,26 @@
       }
     },
     {
+      "id": "rhwp-skill-router",
+      "capabilityId": "rhwp-skill-router",
+      "registrationId": "CAP-5706",
+      "path": ".claude/skills/rhwp-skill-router/SKILL.md",
+      "authority": "mydocs/manual/agent_skill_router.md",
+      "triggers": [
+        "라우터",
+        "어떤 스킬을 쓰지",
+        "PR 올려",
+        "이 서식 채워줘",
+        "execution graph"
+      ],
+      "intents": ["route"],
+      "nonOverlap": "다른 스킬 본문 구현·재작성·새 rhwp CLI·리뷰·머지 판단·gym은 책임 밖이다.",
+      "probe": {
+        "sample": "samples/basic/english.hwp",
+        "render": "export-svg"
+      }
+    },
+    {
       "id": "rhwp-strategist",
       "capabilityId": "rhwp-strategist",
       "registrationId": "LEGACY-e79f11308",

@@ -45,6 +45,7 @@ DEFAULT_SKILL_PATHS: dict[str, str] = {
     "rhwp-contributor": ".claude/skills/rhwp-contributor/SKILL.md",
     "rhwp-cli": ".claude/skills/rhwp-cli/SKILL.md",
     "rhwp-codex": ".claude/skills/rhwp-codex/SKILL.md",
+    "rhwp-skill-router": ".claude/skills/rhwp-skill-router/SKILL.md",
 }
 
 ENVELOPE_KEYS = (

@@ -79,3 +79,21 @@ issue·pr. stdout 은 JSON 객체 하나.
 
 시각 PNG 는 `mydocs/report/task_m100_5706/` (verify-A/B 소유)에 산다. 이
 기록은 터미널 창을 찍었다고 주장하지 않는다.
+
+`.claude/skills/<name>/SKILL.md` 를 새로 쓰거나 고치면 PR 전에 세 번 더
+돌린다.
+
+```bash
+python tools/skill_router/gate_new_skill.py
+python -m unittest tools/skill_router/test_route.py
+cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapture
+```
+
+계약:
+
+- frontmatter `name` == 폴더명, `description` ≥ 20자
+- 본문에 실재 `rhwp <command>` (ASCII 소문자 토큰) 하나 이상.
+  `rhwp <명령>` 플레이스홀더는 `tests/skills_contract.rs` 가 세지 않는다.
+
+실측 실패: PR #5707 shard 3. `rhwp-skill-router` 에 `rhwp <cmd>` 가 없어
+`skills_have_valid_frontmatter_and_are_executable` 가 깨졌다.

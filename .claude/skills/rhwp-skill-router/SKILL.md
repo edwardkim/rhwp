@@ -72,6 +72,16 @@ rhwp export-svg <파일> -p 0 --profile print
 - gym 경로로 대체
 - `git add -A`
 
+## 새 스킬·SKILL.md 변경
+
+새 스킬을 만들거나 SKILL.md를 고치면 PR 전에 세 번:
+
+```bash
+python tools/skill_router/gate_new_skill.py
+python -m unittest tools/skill_router/test_route.py
+cargo test --test regression_suite_015 skills_have_valid_frontmatter
+```
+
 ## 권위
 
 - [`mydocs/manual/agent_skill_router.md`](../../../mydocs/manual/agent_skill_router.md)

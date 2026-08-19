@@ -1,0 +1,617 @@
+#!/usr/bin/env python3
+"""Gate for adding or editing a skill under .claude/skills/.
+
+Mirrors tests/skills_contract.rs (frontmatter + executable `rhwp <cmd>`),
+re-scans every skill three times, checks catalog.json paths, and probes
+tools/skill_router/route.py three times per catalog skill.
+
+    python tools/skill_router/gate_new_skill.py
+    python tools/skill_router/gate_new_skill.py --json
+
+Exit 0 pass, 1 fail, 2 usage. stdlib only.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any
+
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parent.parent
+SKILLS_DIR = REPO / ".claude" / "skills"
+CATALOG_JSON = HERE / "catalog.json"
+ROUTE_PY = HERE / "route.py"
+
+SCHEMA_VERSION = "1.0"
+SCAN_TIMES = 3
+ROUTE_PROBES = 3
+ROUTE_TIMEOUT_SEC = 20
+MIN_DESCRIPTION_CHARS = 20
+USAGE = "usage: python tools/skill_router/gate_new_skill.py [--json]"
+
+ENVELOPE_KEYS = (
+    "schemaVersion",
+    "request",
+    "intent",
+    "requiredCapabilities",
+    "skillSelection",
+    "executionGraph",
+    "untrustedContent",
+    "untrustedFields",
+)
+
+# Distinct Korean/English probes per catalog skill. Fallback generator covers
+# skills that appear later. Mapping to the same skill is best-effort; a valid
+# route.py JSON envelope is enough.
+PROBES: dict[str, tuple[str, str, str]] = {
+    "rhwp-agent-surface": (
+        "새 MCP 도구 추가해줘",
+        "add a new --json command to the agent surface",
+        "capabilities 가 SSOT 인지 확인해",
+    ),
+    "rhwp-bug-hunter": (
+        "버그 찾아줘 실사용 기준으로",
+        "compare against the ground truth playbook",
+        "playbook 여정 실행해",
+    ),
+    "rhwp-bulk-pipeline": (
+        "폴더 전체를 텍스트로 변환해",
+        "rhwp batch the whole corpus",
+        "여러 hwp 대량 처리해줘",
+    ),
+    "rhwp-chief": (
+        "요청 큐 돌려줘",
+        "run the chief request queue",
+        "needs-agent 수거해",
+    ),
+    "rhwp-cli": (
+        "이 hwp를 SVG로 내보내",
+        "dump pagination and the render tree",
+        "레이아웃 겹침 버그 디버깅해",
+    ),
+    "rhwp-codex": (
+        "rhwp 사용법 전체 명령 보여줘",
+        "navigate the rhwp command codex",
+        "뭘 쓸지 모르겠어",
+    ),
+    "rhwp-contributor": (
+        "PR 올려",
+        "open a pull request",
+        "기여 절차 알려줘",
+    ),
+    "rhwp-doc-triage": (
+        "이 hwp 뭔 문서야?",
+        "summarize this document without reading it all",
+        "목차 뽑아줘",
+    ),
+    "rhwp-exam-ingest": (
+        "한글 시험지로 변환해줘",
+        "exam ingest this paper to hwpx",
+        "시험문제 변환해",
+    ),
+    "rhwp-explore": (
+        "이 문서로 뭘 할 수 있어?",
+        "which rhwp tools should I use on this hwp",
+        "문서 탐색해봐",
+    ),
+    "rhwp-fde": (
+        "고객이 이 문서가 안 열린대",
+        "triage this customer symptom",
+        "필드가 안 채워진대 대응해줘",
+    ),
+    "rhwp-fidelity-compare": (
+        "한컴 PDF와 비교해줘",
+        "run fidelity_compare against the official PDF",
+        "한컴이 뽑은 PDF랑 rhwp가 같은지",
+    ),
+    "rhwp-form-fill": (
+        "이 서식 채워줘",
+        "fill this form",
+        "누름틀에 값 넣어줘",
+    ),
+    "rhwp-handoff": (
+        "세션 핸드오프 해줘",
+        "hand off this session with --parent capsule",
+        "작업 인수인계 result.json 읽어",
+    ),
+    "rhwp-knowledge-map": (
+        "지식 지도 어디 문서부터",
+        "what does this envelope field mean",
+        "llms.txt 다음이 뭐야",
+    ),
+    "rhwp-mcp-session": (
+        "rhwp 를 MCP로 붙여줘",
+        "start mcp-serve and list session tools",
+        "hwp_open 으로 문서 열어",
+    ),
+    "rhwp-onboarding": (
+        "rhwp 처음인데 온보딩해줘",
+        "set up rhwp and confirm it runs",
+        ".mcp.json 만들어줘",
+    ),
+    "rhwp-provenance": (
+        "이 값이 문서에서 온 건가",
+        "mark untrustedFields provenance",
+        "출처 모르는 문서 처리해",
+    ),
+    "rhwp-recipes": (
+        "어떤 레시피로 가?",
+        "pick a recipe for form fill then csv then redact",
+        "메일머지 레시피 보여줘",
+    ),
+    "rhwp-safe-edit": (
+        "안전하게 편집해줘",
+        "dry-run the replace-text plan first",
+        "여러 편집을 한 번에 원자적으로",
+    ),
+    "rhwp-security-sweep": (
+        "이 문서 보내도 돼?",
+        "inspect hidden text and redact PII",
+        "받은 첨부 안전한지 확인",
+    ),
+    "rhwp-skill-router": (
+        "어떤 스킬을 쓰지",
+        "route this request through the execution graph",
+        "라우터에 통과시켜줘",
+    ),
+    "rhwp-strategist": (
+        "이 문서들로 전략 보고서 만들어",
+        "build a strategy brief with page coordinates",
+        "정부과제 수주 근거 모아줘",
+    ),
+    "rhwp-table-exchange": (
+        "표를 CSV로 뽑아줘",
+        "put this csv back into the document table",
+        "표 셀 하나만 고쳐줘",
+    ),
+    "rhwp-visual-regression": (
+        "편집 전후 화면 비교해",
+        "run render-diff for visual regression",
+        "레이아웃 회귀 깨졌는지 확인",
+    ),
+    "rhwp-work-receipt": (
+        "이 작업 영수증 남겨",
+        "replay the work capsule and audit lineage",
+        "재현율 검증해줘",
+    ),
+}
+
+
+class GateFail(Exception):
+    """A contract check failed. exit 1."""
+
+
+class UsageError(Exception):
+    """Bad argv. exit 2."""
+
+
+def _configure_stdio() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass
+
+
+def _human_stream(json_mode: bool):
+    return sys.stderr if json_mode else sys.stdout
+
+
+def _say(json_mode: bool, line: str) -> None:
+    print(line, file=_human_stream(json_mode), flush=True)
+
+
+def _is_token_char(ch: str) -> bool:
+    return ch.isascii() and (ch.islower() or ch.isdigit() or ch == "-")
+
+
+def _is_token(s: str) -> bool:
+    return bool(s) and not s.startswith("-") and all(_is_token_char(ch) for ch in s)
+
+
+def referenced_commands(body: str) -> list[tuple[str, str | None]]:
+    """Extract `rhwp <token> [subtoken]` the same way skills_contract.rs does.
+
+    After each `rhwp `, take `[a-z0-9-]+` that starts with a-z. Placeholders
+    such as `rhwp <명령>` and Korean particles (`rhwp 를`) do not count.
+    """
+    pat = "rhwp "
+    refs: list[tuple[str, str | None]] = []
+    idx = 0
+    while True:
+        pos = body.find(pat, idx)
+        if pos < 0:
+            break
+        start = pos + len(pat)
+        tok_chars: list[str] = []
+        for ch in body[start:]:
+            if not _is_token_char(ch):
+                break
+            tok_chars.append(ch)
+        tok = "".join(tok_chars)
+        if tok and tok[0].islower():
+            after = start + len(tok)
+            sub: str | None = None
+            if body[after : after + 1] == " ":
+                sub_chars: list[str] = []
+                for ch in body[after + 1 :]:
+                    if not _is_token_char(ch):
+                        break
+                    sub_chars.append(ch)
+                candidate = "".join(sub_chars)
+                if _is_token(candidate):
+                    sub = candidate
+            refs.append((tok, sub))
+        idx = start
+    return refs
+
+
+def parse_frontmatter(body: str) -> tuple[str | None, str | None]:
+    """Read `name:` / `description:` from the opening YAML --- block."""
+    lines = body.splitlines()
+    if not lines or lines[0] != "---":
+        raise GateFail("frontmatter start (---) missing")
+    fm_name: str | None = None
+    fm_desc: str | None = None
+    for line in lines[1:]:
+        if line == "---":
+            break
+        if line.startswith("name:"):
+            fm_name = line[len("name:") :].strip()
+        if line.startswith("description:"):
+            fm_desc = line[len("description:") :].strip()
+    return fm_name, fm_desc
+
+
+def check_skill(folder_name: str, body: str) -> list[str]:
+    """Return referenced command tokens after validating frontmatter."""
+    fm_name, fm_desc = parse_frontmatter(body)
+    if fm_name != folder_name:
+        raise GateFail(
+            f"frontmatter name {fm_name!r} does not match folder {folder_name!r}"
+        )
+    desc_len = len(fm_desc or "")
+    if desc_len < MIN_DESCRIPTION_CHARS:
+        raise GateFail(f"description too short ({desc_len} chars, need {MIN_DESCRIPTION_CHARS})")
+    refs = referenced_commands(body)
+    if not refs:
+        raise GateFail(
+            "no executable `rhwp <ascii-lowercase-command>` "
+            "(placeholder `rhwp <명령>` does not count)"
+        )
+    return [tok for tok, _sub in refs]
+
+
+def list_skill_dirs() -> list[Path]:
+    if not SKILLS_DIR.is_dir():
+        raise GateFail(f"missing skills directory: {SKILLS_DIR}")
+    dirs = sorted(
+        path for path in SKILLS_DIR.iterdir() if path.is_dir() and not path.name.startswith(".")
+    )
+    if len(dirs) < 1:
+        raise GateFail("no skill folders under .claude/skills/")
+    return dirs
+
+
+def read_skill(dir_path: Path) -> str:
+    md = dir_path / "SKILL.md"
+    if not md.is_file():
+        raise GateFail(f"{dir_path.name}/SKILL.md missing")
+    try:
+        return md.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise GateFail(f"{dir_path.name}/SKILL.md read failed: {exc}") from exc
+    except UnicodeDecodeError as exc:
+        raise GateFail(f"{dir_path.name}/SKILL.md is not utf-8: {exc}") from exc
+
+
+def scan_skills(json_mode: bool) -> list[dict[str, Any]]:
+    """Run the full SKILL.md contract scan SCAN_TIMES times. Fail on first mismatch."""
+    snapshots: list[list[tuple[str, tuple[str, ...]]]] = []
+    last_records: list[dict[str, Any]] = []
+    for scan_i in range(1, SCAN_TIMES + 1):
+        rows: list[tuple[str, tuple[str, ...]]] = []
+        records: list[dict[str, Any]] = []
+        for dir_path in list_skill_dirs():
+            name = dir_path.name
+            try:
+                body = read_skill(dir_path)
+                commands = check_skill(name, body)
+            except GateFail as exc:
+                _say(json_mode, f"[{scan_i}/{SCAN_TIMES}] {name}: FAIL: {exc}")
+                raise
+            rows.append((name, tuple(commands)))
+            records.append(
+                {
+                    "id": name,
+                    "ok": True,
+                    "commandCount": len(commands),
+                    "commands": commands[:8],
+                }
+            )
+            _say(json_mode, f"[{scan_i}/{SCAN_TIMES}] {name}: pass")
+        if snapshots and rows != snapshots[0]:
+            _say(json_mode, f"[{scan_i}/{SCAN_TIMES}] SCAN: FAIL: mismatch vs scan 1")
+            raise GateFail(f"scan {scan_i} disagrees with scan 1")
+        snapshots.append(rows)
+        last_records = records
+    return last_records
+
+
+def _as_catalog_entry(skill_id: str, payload: Any) -> dict[str, Any] | None:
+    if isinstance(payload, str):
+        return {"id": skill_id, "path": payload}
+    if not isinstance(payload, dict):
+        return None
+    path = payload.get("path") or payload.get("skillPath") or payload.get("skill")
+    if not path:
+        return None
+    return {
+        "id": str(payload.get("id") or skill_id),
+        "path": str(path),
+        "triggers": payload.get("triggers") or [],
+    }
+
+
+def load_catalog_entries() -> list[dict[str, Any]] | None:
+    if not CATALOG_JSON.is_file():
+        return None
+    try:
+        raw = json.loads(CATALOG_JSON.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise GateFail(f"catalog.json unreadable: {exc}") from exc
+    entries: list[dict[str, Any]] = []
+    payload: Any = raw
+    if isinstance(raw, dict) and "skills" in raw:
+        payload = raw["skills"]
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            if key in ("schemaVersion", "catalogVersion", "version"):
+                continue
+            entry = _as_catalog_entry(str(key), value)
+            if entry is None:
+                raise GateFail(f"catalog skill {key!r} has no path")
+            entries.append(entry)
+        return entries
+    if isinstance(payload, list):
+        for item in payload:
+            if not isinstance(item, dict):
+                raise GateFail("catalog skills list contains a non-object")
+            skill_id = item.get("id") or item.get("skill") or item.get("name")
+            if not skill_id:
+                raise GateFail("catalog skill entry missing id")
+            entry = _as_catalog_entry(str(skill_id), item)
+            if entry is None:
+                raise GateFail(f"catalog skill {skill_id!r} has no path")
+            entries.append(entry)
+        return entries
+    raise GateFail("catalog.json has no skills map or list")
+
+
+def check_catalog_paths(json_mode: bool) -> dict[str, Any]:
+    entries = load_catalog_entries()
+    if entries is None:
+        _say(json_mode, "catalog.json: skip (absent)")
+        return {"present": False, "ok": True, "checked": 0, "missing": []}
+    missing: list[str] = []
+    for entry in entries:
+        rel = entry["path"].replace("\\", "/")
+        path = Path(rel)
+        if not path.is_absolute():
+            path = REPO / path
+        if path.is_file():
+            _say(json_mode, f"catalog {entry['id']}: pass")
+        else:
+            missing.append(rel)
+            _say(json_mode, f"catalog {entry['id']}: FAIL: missing path {rel}")
+            raise GateFail(f"catalog skill {entry['id']} path does not exist: {rel}")
+    return {"present": True, "ok": True, "checked": len(entries), "missing": missing}
+
+
+def _probe_requests(skill_id: str, entry: dict[str, Any]) -> list[str]:
+    seen: list[str] = []
+
+    def add(text: str) -> None:
+        cleaned = " ".join(text.split())
+        if cleaned and cleaned not in seen:
+            seen.append(cleaned)
+
+    hardcoded = PROBES.get(skill_id)
+    if hardcoded:
+        for item in hardcoded:
+            add(item)
+    triggers = entry.get("triggers") or []
+    if isinstance(triggers, list):
+        for trigger in triggers:
+            if isinstance(trigger, str):
+                add(trigger)
+    slug = skill_id.removeprefix("rhwp-").replace("-", " ")
+    add(f"{skill_id} 스킬로 처리해줘")
+    add(f"please use the {skill_id} skill")
+    add(f"run {slug}")
+    if len(seen) < ROUTE_PROBES:
+        raise GateFail(f"{skill_id}: could not build {ROUTE_PROBES} distinct route probes")
+    return seen[:ROUTE_PROBES]
+
+
+def _cli_env() -> dict[str, str]:
+    env = dict(os.environ)
+    env["PYTHONUTF8"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
+    return env
+
+
+def _parse_one_json(stdout: str) -> Any:
+    text = stdout.strip()
+    if not text:
+        raise GateFail("route.py stdout empty; expected one JSON object")
+    decoder = json.JSONDecoder()
+    try:
+        obj, idx = decoder.raw_decode(text)
+    except json.JSONDecodeError as exc:
+        preview = text[:240].replace("\n", "\\n")
+        raise GateFail(f"route.py stdout is not JSON: {exc}: {preview!r}") from exc
+    leftover = text[idx:].strip()
+    if leftover:
+        preview = leftover[:120].replace("\n", "\\n")
+        raise GateFail(f"route.py stdout had trailing non-JSON: {preview!r}")
+    return obj
+
+
+def _valid_envelope(obj: Any) -> None:
+    if not isinstance(obj, dict):
+        raise GateFail(f"route envelope is {type(obj).__name__}, expected object")
+    missing = [key for key in ENVELOPE_KEYS if key not in obj]
+    if missing:
+        raise GateFail(f"route envelope missing keys: {missing}")
+
+
+def probe_router(json_mode: bool) -> dict[str, Any]:
+    if not ROUTE_PY.is_file():
+        _say(json_mode, "route.py: skip (absent)")
+        return {"present": False, "ok": True, "probes": []}
+    entries = load_catalog_entries()
+    if not entries:
+        _say(json_mode, "route.py: skip (no catalog skill ids)")
+        return {"present": True, "ok": True, "probes": [], "skipped": "no catalog"}
+    probes: list[dict[str, Any]] = []
+    # Preserve first-seen id order; skip duplicate ids.
+    seen_ids: set[str] = set()
+    ordered: list[dict[str, Any]] = []
+    for entry in entries:
+        if entry["id"] in seen_ids:
+            continue
+        seen_ids.add(entry["id"])
+        ordered.append(entry)
+    ordered.sort(key=lambda item: item["id"])
+    for entry in ordered:
+        skill_id = entry["id"]
+        requests = _probe_requests(skill_id, entry)
+        for probe_i, request in enumerate(requests, start=1):
+            label = f"route {skill_id} [{probe_i}/{ROUTE_PROBES}] {request!r}"
+            try:
+                proc = subprocess.run(
+                    [sys.executable, str(ROUTE_PY), request, "--json"],
+                    cwd=str(REPO),
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=ROUTE_TIMEOUT_SEC,
+                    env=_cli_env(),
+                    check=False,
+                )
+            except subprocess.TimeoutExpired as exc:
+                _say(json_mode, f"{label}: FAIL: hung after {ROUTE_TIMEOUT_SEC}s")
+                raise GateFail(
+                    f"{skill_id} route probe hung after {ROUTE_TIMEOUT_SEC}s"
+                ) from exc
+            if proc.returncode != 0:
+                err = (proc.stderr or "").strip()[:400]
+                _say(json_mode, f"{label}: FAIL: exit {proc.returncode}")
+                raise GateFail(
+                    f"{skill_id} route.py exit {proc.returncode} stderr={err!r}"
+                )
+            try:
+                obj = _parse_one_json(proc.stdout)
+                _valid_envelope(obj)
+            except GateFail as exc:
+                _say(json_mode, f"{label}: FAIL: {exc}")
+                raise
+            selected = ""
+            selection = obj.get("skillSelection")
+            if isinstance(selection, list) and selection and isinstance(selection[0], dict):
+                selected = str(selection[0].get("id") or "")
+            probes.append(
+                {
+                    "skill": skill_id,
+                    "request": request,
+                    "ok": True,
+                    "selected": selected,
+                }
+            )
+            _say(json_mode, f"{label}: pass")
+    return {"present": True, "ok": True, "probes": probes}
+
+
+def run_gate(json_mode: bool) -> dict[str, Any]:
+    envelope: dict[str, Any] = {
+        "schemaVersion": SCHEMA_VERSION,
+        "kind": "skillGate",
+        "ok": False,
+        "exit": 1,
+        "scans": SCAN_TIMES,
+        "skills": [],
+        "catalog": {"present": CATALOG_JSON.is_file(), "ok": False},
+        "route": {"present": ROUTE_PY.is_file(), "ok": False},
+    }
+    envelope["skills"] = scan_skills(json_mode)
+    envelope["catalog"] = check_catalog_paths(json_mode)
+    envelope["route"] = probe_router(json_mode)
+    envelope["ok"] = True
+    envelope["exit"] = 0
+    n_skills = len(envelope["skills"])
+    n_catalog = envelope["catalog"].get("checked", 0)
+    n_probes = len(envelope["route"].get("probes") or [])
+    _say(
+        json_mode,
+        f"OK: {n_skills} skills x {SCAN_TIMES} scans, "
+        f"catalog={n_catalog}, route_probes={n_probes}",
+    )
+    return envelope
+
+
+def _parse_argv(argv: list[str] | None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="gate_new_skill.py",
+        description="Gate for new or edited .claude/skills/*/SKILL.md files.",
+        add_help=False,
+    )
+    parser.add_argument("--json", action="store_true", help="write a summary envelope to stdout")
+    parser.add_argument("-h", "--help", action="store_true", help="show usage")
+    args, unknown = parser.parse_known_args(argv)
+    if args.help or unknown:
+        raise UsageError(USAGE)
+    return args
+
+
+def main(argv: list[str] | None = None) -> int:
+    _configure_stdio()
+    try:
+        args = _parse_argv(argv)
+    except UsageError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    json_mode = bool(args.json)
+    envelope: dict[str, Any] | None = None
+    exit_code = 1
+    try:
+        envelope = run_gate(json_mode)
+        exit_code = 0
+    except GateFail as exc:
+        _say(json_mode, f"FAIL: {exc}")
+        envelope = {
+            "schemaVersion": SCHEMA_VERSION,
+            "kind": "skillGate",
+            "ok": False,
+            "exit": 1,
+            "error": str(exc),
+            "scans": SCAN_TIMES,
+        }
+        exit_code = 1
+    if json_mode and envelope is not None:
+        sys.stdout.write(json.dumps(envelope, ensure_ascii=False, indent=2))
+        sys.stdout.write("\n")
+    return exit_code
+
+
+if __name__ == "__main__":
+    sys.exit(main())
