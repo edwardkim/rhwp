@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Q1·Q2·Q3·Q4 완료, Q5 실행 중
+- 상태: 실행 승인 — Q1·Q2·Q3·Q4·Q5 완료, Q6 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -15,12 +15,12 @@ Stage 2 절편 24개 중 19개가 handler 이동, 4개가 선행 계약 보강, 
 
 | 지표 | #5511 시작 | 현재 | 최종 기준 |
 |---|---:|---:|---:|
-| `src/main.rs` 줄 수 | 42,370 | 38,561 | 1,200 이하 |
-| 최상위 함수 | 351 | 310 | entrypoint 조립에 필요한 최소 함수 |
-| 새 query 경로의 최상위 명령 | 0 | 19 | 모든 query adapter 물리 분리 |
+| `src/main.rs` 줄 수 | 42,370 | 31,095 | 1,200 이하 |
+| 최상위 함수 | 351 | 253 | entrypoint 조립에 필요한 최소 함수 |
+| 새 query 경로의 최상위 명령 | 0 | 23 | 모든 query adapter 물리 분리 |
 | 새 query 경로의 `inspect` 하위 명령 | 0 | 4 | 현재 전수 |
 | 편집 handler | 92 | 92 | command 모듈로 전수 이동 |
-| `wasm_api::HwpDocument` 직접 참조 | 42 | 42 | Stage 3에서 0 |
+| `wasm_api::HwpDocument` 직접 참조 | 42 | 27 | Stage 3에서 0 |
 | `rhwp::service` 참조 | 0 | 0 | Stage 3에서 전환 |
 
 1,200줄 목표까지 37,361줄이 남았다. 지금까지의 handler 이동 평균만 기계적으로 적용하면 약
@@ -116,6 +116,12 @@ Q5는 최신 `devel` `52d8bf8eb3`에서 시작했다. `show_info` CC 34와 `dump
 성공 stdout의 byte-level characterization과 분해 기준은
 [`task_m100_5511_stage2_batch_q5_inventory.md`](../working/task_m100_5511_stage2_batch_q5_inventory.md)에
 기록했다.
+
+Q5도 완료했다. info·page·control 진단을 일곱 책임 모듈로 이동하고, `dump_controls`를 순회,
+shape, table, story 출력으로 분해했다. 완료 직전 전진한 `devel`을 정상 merge한 뒤 #5542의
+의도된 HWP3 첫 문단 `SectionDef` 출력에 characterization 기준을 정합화했으며, 최신 결합 HEAD의
+전체·정적·정책 관문을 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_q5.md`](../working/task_m100_5511_stage2_batch_q5.md)에 기록했다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
