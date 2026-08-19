@@ -91,6 +91,28 @@ pub struct LoadFail {
     pub message: String,
 }
 
+/// 경로에서 DocumentCore 를 연다. 실패 메시지는 stderr, 종료 코드는 호출부가 쓴다.
+pub fn open_core(path: &str) -> Result<rhwp::document_core::DocumentCore, i32> {
+    let data = read_file(path).map_err(|m| {
+        eprintln!("오류: {m}");
+        EXIT_RUNTIME
+    })?;
+    load_core(&data).map_err(|fail| {
+        eprintln!("오류: 문서를 열 수 없습니다 - {path}: {}", fail.message);
+        EXIT_RUNTIME
+    })
+}
+
+/// 누름틀 표시 이름 — ctrl_data_name 이 비면 command.
+pub fn field_display_name(field: &rhwp::document_core::queries::field_query::FieldInfo) -> String {
+    field
+        .field
+        .ctrl_data_name
+        .clone()
+        .filter(|n| !n.is_empty())
+        .unwrap_or_else(|| field.field.command.clone())
+}
+
 /// 바이트에서 DocumentCore 를 연다.
 pub fn load_core(data: &[u8]) -> Result<rhwp::document_core::DocumentCore, LoadFail> {
     rhwp::document_core::DocumentCore::from_bytes(data).map_err(|e| {

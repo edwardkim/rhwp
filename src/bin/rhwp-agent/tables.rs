@@ -1,20 +1,7 @@
 //! 표 치수 조회. 표를 고치지 않는다.
 
-use crate::envelope::{
-    envelope, load_core, one_file, print_json, read_file, EXIT_OK, EXIT_RUNTIME,
-};
+use crate::envelope::{envelope, one_file, open_core, print_json, EXIT_OK};
 use serde_json::json;
-
-fn core_of(path: &str) -> Result<rhwp::document_core::DocumentCore, i32> {
-    let data = read_file(path).map_err(|m| {
-        eprintln!("오류: {m}");
-        EXIT_RUNTIME
-    })?;
-    load_core(&data).map_err(|fail| {
-        eprintln!("오류: 문서를 열 수 없습니다 - {path}: {}", fail.message);
-        EXIT_RUNTIME
-    })
-}
 
 pub fn run_tables(args: &[String]) -> i32 {
     let usage = "rhwp-agent tables <파일> [--json]";
@@ -22,7 +9,7 @@ pub fn run_tables(args: &[String]) -> i32 {
         Ok(v) => v,
         Err(c) => return c,
     };
-    let core = match core_of(&opts.path) {
+    let core = match open_core(&opts.path) {
         Ok(c) => c,
         Err(c) => return c,
     };
@@ -59,7 +46,7 @@ pub fn run_table_count(args: &[String]) -> i32 {
         Ok(v) => v,
         Err(c) => return c,
     };
-    let core = match core_of(&opts.path) {
+    let core = match open_core(&opts.path) {
         Ok(c) => c,
         Err(c) => return c,
     };
@@ -118,7 +105,7 @@ pub fn run_table_inspect(args: &[String]) -> i32 {
         eprintln!("사용법: {usage}");
         return crate::envelope::EXIT_USAGE;
     };
-    let core = match core_of(&path) {
+    let core = match open_core(&path) {
         Ok(c) => c,
         Err(c) => return c,
     };

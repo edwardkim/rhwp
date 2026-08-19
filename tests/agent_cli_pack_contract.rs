@@ -95,6 +95,11 @@ fn capabilities_lists_new_commands() {
         "armor",
         "stego-scan",
         "sweep",
+        "outline-nav",
+        "field-locate",
+        "captions",
+        "headers-footers",
+        "batch-info",
     ] {
         assert!(names.contains(&need), "missing {need} in {names:?}");
     }
@@ -752,4 +757,118 @@ fn digest_unknown_flag_is_usage() {
     let out = run(&["digest", path.to_str().unwrap(), "--nope"]);
     assert_eq!(out.status.code(), Some(2));
     assert!(out.stdout.is_empty());
+}
+
+#[test]
+fn field_locate_form_sample() {
+    let path = sample("samples/form-01.hwp");
+    let out = run(&["field-locate", "--json", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "field-locate");
+    assert!(v["fieldCount"].as_u64().unwrap() >= 1, "{v}");
+    let names: Vec<&str> = v["fields"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|f| f["name"].as_str())
+        .collect();
+    assert!(
+        names.iter().any(|n| n.contains("myMsg")),
+        "expected myMsg in {names:?}"
+    );
+    assert!(v["fields"][0]["section"].is_number(), "{v}");
+    assert!(v["fields"][0]["paragraph"].is_number(), "{v}");
+}
+
+#[test]
+fn table_csv_all_hwp3() {
+    let path = sample(SAMPLE);
+    let out = run(&["table-csv", "--json", "--all", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "table-csv");
+    assert_eq!(v["all"], true, "{v}");
+    assert_eq!(v["tableCount"], 6, "{v}");
+    assert_eq!(v["tables"].as_array().unwrap().len(), 6, "{v}");
+    assert!(v["tables"][0]["csv"].as_str().unwrap().contains(','), "{v}");
+}
+
+#[test]
+fn batch_info_two_samples() {
+    let a = sample("samples/form-01.hwp");
+    let b = sample(SAMPLE);
+    let out = run(&[
+        "batch-info",
+        "--json",
+        a.to_str().unwrap(),
+        b.to_str().unwrap(),
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "batch-info");
+    assert_eq!(v["fileCount"], 2, "{v}");
+    assert_eq!(v["okCount"], 2, "{v}");
+    assert_eq!(v["failCount"], 0, "{v}");
+    assert_eq!(v["files"][0]["format"], "hwp5", "{v}");
+    assert_eq!(v["files"][1]["format"], "hwp3", "{v}");
+}
+
+#[test]
+fn outline_nav_and_headers_on_samples() {
+    for rel in ["samples/form-01.hwp", "samples/hwp3-sample.hwp"] {
+        let path = sample(rel);
+        let out = run(&["outline-nav", "--json", path.to_str().unwrap()]);
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "{rel} outline stderr {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let v = stdout_json(&out);
+        assert_envelope(&v, "outline-nav");
+        assert!(v["outlineCount"].is_number(), "{rel} {v}");
+
+        let out = run(&["headers-footers", "--json", path.to_str().unwrap()]);
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "{rel} hf stderr {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let v = stdout_json(&out);
+        assert_envelope(&v, "headers-footers");
+        assert!(v["itemCount"].is_number(), "{rel} {v}");
+    }
+}
+
+#[test]
+fn captions_on_table_sample() {
+    let path = sample("samples/hwp_table_test.hwp");
+    let out = run(&["captions", "--json", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "captions");
+    assert_eq!(v["tableCount"], 10, "{v}");
+    assert!(v["captionCount"].is_number(), "{v}");
 }

@@ -1,23 +1,13 @@
 //! 실무 예제집 시나리오 1·2·17 — 필드 값·표 CSV·날짜/금액 수확. 읽기 전용.
 
 use crate::envelope::{
-    envelope, load_core, one_file, print_json, read_file, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
+    envelope, field_display_name, one_file, open_core, print_json, EXIT_OK, EXIT_RUNTIME,
+    EXIT_USAGE,
 };
 use rhwp::document_core::queries::extract_data::DataKind;
 use rhwp::document_core::queries::table_csv::grid_to_csv;
 use rhwp::document_core::queries::table_extract::extract_tables;
 use serde_json::json;
-
-fn core_of(path: &str) -> Result<rhwp::document_core::DocumentCore, i32> {
-    let data = read_file(path).map_err(|m| {
-        eprintln!("오류: {m}");
-        EXIT_RUNTIME
-    })?;
-    load_core(&data).map_err(|fail| {
-        eprintln!("오류: 문서를 열 수 없습니다 - {path}: {}", fail.message);
-        EXIT_RUNTIME
-    })
-}
 
 pub fn run_extract_data(args: &[String]) -> i32 {
     let usage =
@@ -78,7 +68,7 @@ pub fn run_extract_data(args: &[String]) -> i32 {
         };
         vec![k]
     };
-    let core = match core_of(&path) {
+    let core = match open_core(&path) {
         Ok(c) => c,
         Err(c) => return c,
     };
@@ -112,22 +102,14 @@ pub fn run_field_values(args: &[String]) -> i32 {
         Ok(v) => v,
         Err(c) => return c,
     };
-    let core = match core_of(&opts.path) {
+    let core = match open_core(&opts.path) {
         Ok(c) => c,
         Err(c) => return c,
     };
     let fields = core.collect_all_fields();
     let rows: Vec<serde_json::Value> = fields
         .iter()
-        .map(|f| {
-            let name = f
-                .field
-                .ctrl_data_name
-                .clone()
-                .filter(|n| !n.is_empty())
-                .unwrap_or_else(|| f.field.command.clone());
-            json!({ "name": name, "value": f.value })
-        })
+        .map(|f| json!({ "name": field_display_name(f), "value": f.value }))
         .collect();
     let empty = rows
         .iter()
@@ -158,15 +140,20 @@ pub fn run_field_values(args: &[String]) -> i32 {
 }
 
 pub fn run_table_csv(args: &[String]) -> i32 {
-    let usage = "rhwp-agent table-csv <파일> [--table <N>] [--json]";
+    let usage = "rhwp-agent table-csv <파일> [--table <N>|--all] [--json]";
     let mut json_mode = false;
     let mut path: Option<String> = None;
     let mut table: usize = 0;
+    let mut all = false;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--json" => {
                 json_mode = true;
+                i += 1;
+            }
+            "--all" => {
+                all = true;
                 i += 1;
             }
             "--table" => {
@@ -197,7 +184,7 @@ pub fn run_table_csv(args: &[String]) -> i32 {
         eprintln!("사용법: {usage}");
         return EXIT_USAGE;
     };
-    let core = match core_of(&path) {
+    let core = match open_core(&path) {
         Ok(c) => c,
         Err(c) => return c,
     };
@@ -205,6 +192,35 @@ pub fn run_table_csv(args: &[String]) -> i32 {
     if tables.is_empty() {
         eprintln!("오류: 표가 없습니다.");
         return EXIT_RUNTIME;
+    }
+    if all {
+        let rows: Vec<serde_json::Value> = tables
+            .iter()
+            .enumerate()
+            .map(|(i, t)| {
+                json!({
+                    "table": i,
+                    "rows": t.rows,
+                    "cols": t.cols,
+                    "csv": grid_to_csv(t),
+                })
+            })
+            .collect();
+        let payload = json!({
+            "source": path,
+            "all": true,
+            "tableCount": tables.len(),
+            "tables": rows,
+        });
+        if json_mode {
+            print_json(&envelope("table-csv", payload, &["tables[].csv"]));
+        } else {
+            for row in &rows {
+                crate::outln!("--- table {} ---", row["table"]);
+                crate::outp!("{}", row["csv"].as_str().unwrap_or(""));
+            }
+        }
+        return EXIT_OK;
     }
     if table >= tables.len() {
         eprintln!(
@@ -236,7 +252,7 @@ pub fn run_form_ready(args: &[String]) -> i32 {
         Ok(v) => v,
         Err(c) => return c,
     };
-    let core = match core_of(&opts.path) {
+    let core = match open_core(&opts.path) {
         Ok(c) => c,
         Err(c) => return c,
     };
