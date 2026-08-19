@@ -150,3 +150,18 @@ test('SnapshotCommand 는 점유 스냅샷 id 수를 보고한다(예산 계산�
   const block = methodBlock(command, 'snapshotResourceCount(): number {');
   assert.match(block, /beforeId !== null[\s\S]*afterId !== null/, 'before/after 살아있는 id 수 반환');
 });
+
+test('document-agent 미commit rollback은 exact 최신 snapshot만 폐기하고 redo에 남기지 않는다', () => {
+  const block = methodBlock(
+    history,
+    'rollbackUncommittedSnapshot(',
+  );
+  assert.match(block, /command\.type !== expectedType/, '다른 최신 명령을 되돌리면 안 됨');
+  assert.match(block, /snapshotResourceCount\?\.\(\) !== 2/, '완성된 before\/after snapshot만 대상');
+  const undoAt = block.indexOf('command.undo(wasm)');
+  const popAt = block.indexOf('this.undoStack.pop()');
+  const discardAt = block.indexOf('command.discard?.(wasm)');
+  assert.ok(undoAt !== -1 && undoAt < popAt && popAt < discardAt,
+    'restore → undo stack 제거 → snapshot 폐기 순서여야 함');
+  assert.doesNotMatch(block, /redoStack\.push/, '실패한 미commit 명령은 redo에 남기면 안 됨');
+});

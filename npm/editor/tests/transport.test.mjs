@@ -16,6 +16,11 @@ test('EditorTransport는 exact origin의 v1 port로 binary를 caller detach 없�
         'renderer-diagnostics-v1',
         'font-decision-trace-v1',
         'notify-saved-v1',
+        'document-state-v1',
+        'selection-context-v1',
+        'document-agent-command-v1',
+        'target-navigation-v1',
+        'document-change-events-v1',
       ]);
       const server = ports[0];
       server.onmessage = ({ data }) => {
@@ -156,6 +161,75 @@ test('EditorTransport.destroy는 pending request를 거부한다', async () => {
   const pending = transport.request('pageCount');
   transport.destroy();
   await assert.rejects(pending, /Editor destroyed/);
+});
+
+test('EditorTransport는 bound v1 session의 documentChanged event만 전달한다', async () => {
+  let server;
+  const contentWindow = {
+    postMessage(message, _targetOrigin, ports) {
+      server = ports[0];
+      server.start();
+      server.postMessage({
+        type: 'rhwp-connected', version: 1, sessionId: message.sessionId,
+        capabilities: ['transferable-array-buffer', 'document-change-events-v1'],
+      });
+      queueMicrotask(() => {
+        server.postMessage({
+          type: 'rhwp-event', version: 1, sessionId: 'forged',
+          event: 'documentChanged', payload: { changeSeq: 1 },
+        });
+        server.postMessage({
+          type: 'rhwp-event', version: 1, sessionId: message.sessionId,
+          event: 'documentChanged', payload: { changeSeq: 2 },
+        });
+      });
+    },
+  };
+  const transport = new EditorTransport(
+    { contentWindow },
+    'https://studio.example/app',
+    { window: { addEventListener() {}, removeEventListener() {} } },
+  );
+  const received = [];
+  transport.on('documentChanged', (payload) => received.push(payload));
+  await transport.connect();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(received, [{ changeSeq: 2 }]);
+  transport.destroy();
+  server.close();
+});
+
+test('EditorTransport는 document-agent recovered 오류 필드를 보존한다', async () => {
+  let server;
+  const contentWindow = {
+    postMessage(message, _targetOrigin, ports) {
+      server = ports[0];
+      server.onmessage = ({ data }) => {
+        server.postMessage({
+          type: 'rhwp-response', version: 1, sessionId: data.sessionId, id: data.id,
+          error: { code: 'RENDER_FAILED', message: 'render failed', recovered: true },
+        });
+      };
+      server.start();
+      server.postMessage({
+        type: 'rhwp-connected', version: 1, sessionId: message.sessionId,
+        capabilities: ['transferable-array-buffer', 'document-agent-command-v1'],
+      });
+    },
+  };
+  const transport = new EditorTransport(
+    { contentWindow },
+    'https://studio.example/app',
+    { window: { addEventListener() {}, removeEventListener() {} } },
+  );
+
+  await transport.connect();
+  await assert.rejects(
+    transport.request('applyTextCommand', { command: {} }),
+    (error) => error.code === 'RENDER_FAILED' && error.recovered === true,
+  );
+  transport.destroy();
+  server.close();
 });
 
 test('EditorTransport는 일반 요청 10초와 load/export 60초 기본 timeout을 구분한다', () => {

@@ -1,6 +1,6 @@
 {
   "name": "rhwp-studio",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -48,6 +48,7 @@
     "e2e:issue-4224": "node e2e/issue-4224-pua-f02fb-small-right-triangle-canvas2d.test.mjs --mode=headless",
     "e2e:canvaskit-font-coverage": "node e2e/canvaskit-font-coverage.test.mjs",
     "e2e:embed": "node e2e/embed-transport.test.mjs --mode=headless",
+    "e2e:document-agent": "node e2e/document-agent-command.test.mjs --mode=headless",
     "e2e:baseline:headless": "node e2e/renderer-baseline.mjs --mode=headless --manifest=../scripts/renderer_baseline_manifest.json --output=../output/renderer-baseline/studio-headless",
     "e2e:render-diff": "node e2e/canvas-render-diff.test.mjs --mode=headless",
     "e2e:pdf-render-diff": "node e2e/pdf-render-diff-report.mjs --mode=headless",

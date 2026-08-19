@@ -11,6 +11,11 @@ export const EMBED_CAPABILITIES = [
   'plugin-loader-v1',
   'hwpctrl-v1',
   'chrome-v1',
+  'document-state-v1',
+  'selection-context-v1',
+  'document-agent-command-v1',
+  'target-navigation-v1',
+  'document-change-events-v1',
 ] as const;
 
 export interface EmbedConnectAttempt {
@@ -58,6 +63,7 @@ export interface EmbedProtocolError {
   code: string;
   message: string;
   supportedVersions?: number[];
+  recovered?: boolean;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

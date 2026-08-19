@@ -171,6 +171,49 @@ await editor.loadFile(buffer, 'sample.hwpx', { suppressDialogs: false });
 const count = await editor.pageCount();
 ```
 
+### 문서 에이전트 exact command
+
+서버가 만든 HWP/HWPX 문단 교체 후보는 현재 문서의 epoch, change sequence, 전체 문서 SHA,
+target 원문·서식·인접 문맥 SHA를 모두 결속한 뒤 한 snapshot transaction으로 적용할 수 있습니다.
+
+```javascript
+const state = await editor.getDocumentState();
+const selection = await editor.getSelectionContext();
+if (!selection.editable || !selection.target) throw new Error('편집할 수 없는 target');
+
+const receipt = await editor.applyTextCommand({
+  schemaVersion: 1,
+  commandId: crypto.randomUUID(),
+  expectedDocumentEpoch: state.documentEpoch,
+  expectedChangeSeq: state.changeSeq,
+  expectedDocumentSha256: state.documentSha256,
+  target: selection.target,
+  expectedBeforeSha256: candidate.beforeSha256,
+  expectedFormatSha256: candidate.formatSha256,
+  expectedAdjacentContextSha256: candidate.adjacentContextSha256,
+  replacement: candidate.replacement,
+});
+
+await editor.focusTarget(receipt.target);
+const off = editor.onDocumentChanged(event => console.log(event.reason, event.changeSeq));
+
+await editor.revertTextCommand({
+  schemaVersion: 1,
+  commandId: receipt.commandId,
+  expectedDocumentEpoch: receipt.documentEpoch,
+  expectedChangeSeq: receipt.afterChangeSeq,
+  expectedAfterDocumentSha256: receipt.afterDocumentSha256,
+  expectedAfterSha256: receipt.afterTextSha256,
+});
+off();
+```
+
+v1 target은 control·field·혼합 글자 서식이 없는 본문 문단 전체(최대 4,000 Unicode code point)로
+제한됩니다. apply 뒤 다른 편집이 있으면 agent revert는 실패합니다. `TRANSACTION_FAILED`와
+`RENDER_FAILED`에는 snapshot 복구 여부인 `error.recovered`가 포함됩니다. SHA 정규형과 오류 계약은
+[`document_agent_command.md`](https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/wasm_agent_surface/document_agent_command.md)를
+참조하세요.
+
 ### editor.getPageSvg(page?)
 
 특정 페이지를 SVG 문자열로 렌더링합니다.

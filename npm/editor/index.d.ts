@@ -200,6 +200,90 @@ export interface LoadFileOptions {
   suppressDialogs?: boolean;
 }
 
+export interface RhwpBodyParagraphTargetV1 {
+  kind: 'body_paragraph';
+  section: number;
+  paragraph: number;
+  charOffset: 0;
+  length: number;
+}
+
+export interface RhwpDocumentStateV1 {
+  schemaVersion: 1;
+  format: 'hwp' | 'hwpx';
+  documentEpoch: number;
+  changeSeq: number;
+  dirty: boolean;
+  pageCount: number;
+  documentSha256: string;
+}
+
+export interface RhwpSelectionContextV1 {
+  schemaVersion: 1;
+  documentEpoch: number;
+  changeSeq: number;
+  /** 1부터 시작하는 UI 페이지 번호 */
+  page: number;
+  editable: boolean;
+  collapsed: boolean;
+  target: RhwpBodyParagraphTargetV1 | null;
+  selectedTextSha256: string | null;
+}
+
+export interface RhwpApplyTextCommandV1 {
+  schemaVersion: 1;
+  commandId: string;
+  expectedDocumentEpoch: number;
+  expectedChangeSeq: number;
+  expectedDocumentSha256: string;
+  target: RhwpBodyParagraphTargetV1;
+  expectedBeforeSha256: string;
+  expectedFormatSha256: string;
+  expectedAdjacentContextSha256: string;
+  replacement: string;
+}
+
+export interface RhwpRevertTextCommandV1 {
+  schemaVersion: 1;
+  commandId: string;
+  expectedDocumentEpoch: number;
+  expectedChangeSeq: number;
+  expectedAfterDocumentSha256: string;
+  expectedAfterSha256: string;
+}
+
+export interface RhwpTextCommandReceiptV1 {
+  schemaVersion: 1;
+  commandId: string;
+  operation: 'apply' | 'revert';
+  documentEpoch: number;
+  beforeChangeSeq: number;
+  afterChangeSeq: number;
+  beforeDocumentSha256: string;
+  afterDocumentSha256: string;
+  beforeTextSha256: string;
+  afterTextSha256: string;
+  formatSha256: string;
+  adjacentContextSha256: string;
+  pageCountBefore: number;
+  pageCountAfter: number;
+  target: RhwpBodyParagraphTargetV1;
+}
+
+export interface RhwpDocumentChangedEventV1 {
+  schemaVersion: 1;
+  reason: 'agent_apply' | 'agent_revert';
+  documentEpoch: number;
+  changeSeq: number;
+  commandId: string;
+}
+
+export interface RhwpDocumentAgentError extends Error {
+  code: string;
+  /** TRANSACTION_FAILED/RENDER_FAILED에서 snapshot 복구 성공 여부 */
+  recovered?: boolean;
+}
+
 export declare class RhwpEditor {
   private constructor();
   /** HWP 파일을 로드합니다 */
@@ -229,6 +313,18 @@ export declare class RhwpEditor {
    * 스튜디오가 notify-saved-v1 capability를 광고하지 않으면 요청 없이 실패합니다.
    */
   notifySaved(fileName?: string): Promise<{ ok: true; wasDirty: boolean }>;
+  /** 현재 문서의 에이전트 명령 fence와 SHA-256 상태 */
+  getDocumentState(): Promise<RhwpDocumentStateV1>;
+  /** 현재 캐럿/선택의 exact body paragraph 컨텍스트 */
+  getSelectionContext(): Promise<RhwpSelectionContextV1>;
+  /** exact preimage fence를 검증하고 문단 전체를 한 트랜잭션으로 교체 */
+  applyTextCommand(command: RhwpApplyTextCommandV1): Promise<RhwpTextCommandReceiptV1>;
+  /** 가장 최근에 성공한 exact command를 한 트랜잭션으로 되돌림 */
+  revertTextCommand(command: RhwpRevertTextCommandV1): Promise<RhwpTextCommandReceiptV1>;
+  /** exact body paragraph target으로 캐럿과 뷰포트 이동 */
+  focusTarget(target: RhwpBodyParagraphTargetV1): Promise<{ focused: boolean; page: number }>;
+  /** agent apply/revert가 commit된 뒤 strict v1 변경 이벤트 구독 */
+  onDocumentChanged(listener: (event: RhwpDocumentChangedEventV1) => void): () => void;
   /** iframe 엘리먼트를 반환합니다 */
   readonly element: HTMLIFrameElement;
   // ── 브리지 표면 ────────────────────────────────────────────────
