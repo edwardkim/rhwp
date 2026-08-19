@@ -9,10 +9,13 @@
 //! 판정은 HWP5 저장기의 #4677 계약과 같다 — 경계 `text_start == char_count` 는
 //! 한컴 자신이 쓰는 정상값이라 `>` 이고, 범위 밖이 나오면 그 앞까지만 남긴다.
 
+use rhwp::diagnostics::render_geom_diff::{roundtrip_geom, Via};
 use rhwp::model::document::{Document, Section};
 use rhwp::model::paragraph::{LineSeg, Paragraph};
 use rhwp::serializer::hwpx::context::SerializeContext;
 use rhwp::serializer::hwpx::section::write_section;
+use std::fs;
+use std::path::Path;
 
 fn seg(text_start: u32) -> LineSeg {
     LineSeg {
@@ -103,5 +106,23 @@ fn out_of_axis_line_segs_are_not_reported_as_ir_difference() {
     assert!(
         diffs.is_empty(),
         "저장 못 하는 줄은 비교 대상이 아니어야 함: {diffs:?}"
+    );
+}
+
+/// DocumentCore는 빈 누름틀의 안내문을 IR 본문에서 비울 수 있으나, HWPX 저장 때
+/// Field 슬롯과 안내문을 다시 방출한다. 이 경우 직렬화된 축은 `char_count`보다
+/// 길 수 있으므로, 그 뒤의 유효 lineseg를 잘라 셀 세로 정렬을 바꾸면 안 된다.
+#[test]
+fn field_slots_extend_the_serialized_axis() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue1893_clickhere_field_roundtrip.hwpx");
+    let data = fs::read(&path).unwrap_or_else(|e| panic!("{path:?}: {e}"));
+    let diff = roundtrip_geom(&data, Via::Hwpx).expect("HWPX 라운드트립");
+
+    assert_eq!(diff.page_count_a, 1);
+    assert_eq!(diff.page_count_a, diff.page_count_b);
+    assert!(
+        diff.max_disp <= 1.0 && diff.pages.iter().all(|page| !page.structure_mismatch),
+        "필드 슬롯 뒤 lineseg가 보존되어야 함: {diff:?}"
     );
 }

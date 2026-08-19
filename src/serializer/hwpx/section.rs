@@ -731,7 +731,7 @@ pub(crate) fn render_paragraph_parts(
     vert_start: u32,
     ctx: &mut SerializeContext,
 ) -> (String, String, u32) {
-    let (runs_xml, position_axis_intact) = render_runs(para, ctx);
+    let (runs_xml, position_axis_intact, serialized_axis_end) = render_runs(para, ctx);
 
     // [#4778] 위치 축이 무너진 문단(파서가 담지 못한 8유닛 슬롯 — 예: 차례표지
     // 0x0008 — 이 있거나 mismatch 폴백으로 컨트롤을 말미에 몰아쓴 문단)에는 저장
@@ -752,8 +752,13 @@ pub(crate) fn render_paragraph_parts(
     //
     // `char_count` 가 0 인 합성 IR(파서를 거치지 않은 문단)은 축 증거가 없으므로
     // 종전대로 원본 줄을 그대로 낸다.
-    let axis_line_segs = if para.char_count > 0 {
-        line_segs_within_text_axis(&para.line_segs, para.char_count)
+    // `DocumentCore`는 빈 누름틀의 안내문 텍스트를 IR에서 비울 수 있지만,
+    // 직렬화기는 그 Field 슬롯과 안내문을 다시 방출한다. 이때 IR `char_count`만
+    // 상한으로 쓰면 필드 뒤의 정상 lineseg까지 잘려 셀 세로 정렬이 달라진다
+    // (issue1893의 `textpos=25`). 실제 방출한 축 끝도 함께 써야 한다.
+    let line_seg_axis_end = para.char_count.max(serialized_axis_end);
+    let axis_line_segs = if line_seg_axis_end > 0 {
+        line_segs_within_text_axis(&para.line_segs, line_seg_axis_end)
     } else {
         &para.line_segs[..]
     };
@@ -1067,25 +1072,31 @@ fn emit_field_end(out: &mut String, para: &Paragraph, fr: &FieldRange) {
 /// `clear_initial_field_texts` 로 이를 빈 필드로 정규화하므로, 저장에서 되살리지 않으면
 /// 파일 차원에서 텍스트가 영구 소실된다(XSD 는 통과하는 조용한 내용 소실).
 ///
-/// IR 위치 축(`expected_utf16_pos`)은 건드리지 않고 **방출 XML 에만** 텍스트를 되돌린다.
+/// IR 위치는 바꾸지 않고 **방출 XML 에만** 텍스트를 되돌린다. 다만 호출자는 반환된
+/// UTF-16 길이를 직렬화 축에 반영해 뒤따르는 슬롯·lineseg를 실제 출력 위치에 맞춘다.
 /// 재적재하면 같은 정규화가 다시 지우므로 IR 은 저장→적재 고정점을 유지한다.
-fn emit_guide_residue(splitter: &mut RunSplitter, para: &Paragraph, fr: &FieldRange, pos: u32) {
+fn emit_guide_residue(
+    splitter: &mut RunSplitter,
+    para: &Paragraph,
+    fr: &FieldRange,
+    pos: u32,
+) -> u32 {
     // 값이 채워진 필드는 본문 run 이 이미 있다 — 중복 주입 금지.
     if fr.start_char_idx != fr.end_char_idx {
-        return;
+        return 0;
     }
     let Some(Control::Field(f)) = para.controls.get(fr.control_idx) else {
-        return;
+        return 0;
     };
     // 수정됨(bit 15) 표식이 선 필드는 초기 상태가 아니다 — 사용자가 비운 값을 되살리면 안 된다.
     if f.is_dirty() {
-        return;
+        return 0;
     }
     let Some(residue) = f.guide_residue.as_ref() else {
-        return;
+        return 0;
     };
     if residue.text.is_empty() {
-        return;
+        return 0;
     }
     // 잔재를 담던 run 의 경계까지만 먼저 끊는다 — 삭제 수술이 같은 위치에 접어 둔
     // zero-width run 들이 원본 서식(charPrIDRef)의 유일한 근거다.
@@ -1097,14 +1108,24 @@ fn emit_guide_residue(splitter: &mut RunSplitter, para: &Paragraph, fr: &FieldRa
     splitter
         .content
         .push_str(&render_hp_t_content(&residue.text, &[], &mut cursor));
+    residue.text.encode_utf16().count() as u32
 }
 
 /// `pos` 위치에서 경계를 적용하고 `fieldEnd` 를 방출한다.
 /// 0-length 필드면 그 직전에 안내문 잔재를 복원한다 (#3545).
-fn emit_field_end_at(splitter: &mut RunSplitter, para: &Paragraph, fr: &FieldRange, pos: u32) {
-    emit_guide_residue(splitter, para, fr, pos);
+///
+/// 반환값은 방출한 안내문 잔재의 UTF-16 축 길이다. 호출자는 fieldEnd의 8유닛에 이 값을
+/// 더해 뒤따르는 슬롯과 lineseg의 실제 직렬화 축을 맞춘다.
+fn emit_field_end_at(
+    splitter: &mut RunSplitter,
+    para: &Paragraph,
+    fr: &FieldRange,
+    pos: u32,
+) -> u32 {
+    let guide_units = emit_guide_residue(splitter, para, fr, pos);
     splitter.cut_before(pos);
     emit_field_end(&mut splitter.content, para, fr);
+    guide_units
 }
 
 /// 고아(다단락) fieldEnd 를 `<hp:ctrl><hp:fieldEnd .../></hp:ctrl>` 로 방출 (Task #1556).
@@ -1172,13 +1193,13 @@ fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, cursor: &mut In
 
 /// Paragraph 본문을 완전한 `<hp:run>` 시퀀스로 직렬화한다 (#1378 다중 run 분할).
 ///
-/// 반환: (run 시퀀스 XML, **위치 축 보존 여부**).
+/// 반환: (run 시퀀스 XML, **위치 축 보존 여부**, 실제 방출한 UTF-16 축 끝).
 ///
 /// [#4778] 두 번째 값이 `false` 면 방출된 텍스트 스트림이 원본 8유닛 슬롯 축과
 /// 어긋난 상태다(파서 미수용 슬롯 또는 mismatch 폴백). 호출부는 이때 저장
 /// lineseg 방출을 억제해야 한다 — textpos 사다리와 어긋난 lineseg 는 한글이
 /// 그 문단부터 본문을 통째 폐기하는 트리거다.
-fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
+fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u32) {
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
     // 직렬화를 깨지 않도록.
@@ -1199,7 +1220,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         && para.title_marks.is_empty()
     {
         // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
-        return (String::new(), true);
+        return (String::new(), true, 0);
     }
 
     let mut splitter = RunSplitter::new(para);
@@ -1324,6 +1345,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         return (
             splitter.finish(),
             slot_count == 0 || marker_count >= slot_count,
+            0,
         );
     }
 
@@ -1367,6 +1389,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         return (
             splitter.finish(),
             marker_count >= shortfall || text_unshifted_and_in_range,
+            0,
         );
     }
 
@@ -1400,8 +1423,11 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                     && fr.start_char_idx == fr.end_char_idx
                     && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
                 {
-                    emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-                    expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                    let guide_units =
+                        emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                    expected_utf16_pos = expected_utf16_pos
+                        .saturating_add(guide_units)
+                        .saturating_add(8);
                     field_end_emitted[i] = true;
                 }
             }
@@ -1504,8 +1530,11 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                     && fr.end_char_idx == idx
                     && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
                 {
-                    emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-                    expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                    let guide_units =
+                        emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                    expected_utf16_pos = expected_utf16_pos
+                        .saturating_add(guide_units)
+                        .saturating_add(8);
                     field_end_emitted[i] = true;
                 }
             }
@@ -1562,7 +1591,10 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                     &para.tab_extended,
                     &mut cursor,
                 );
-                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                expected_utf16_pos = expected_utf16_pos
+                    .saturating_add(guide_units)
+                    .saturating_add(8);
                 field_end_emitted[i] = true;
             }
         }
@@ -1632,11 +1664,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                     &para.tab_extended,
                     &mut cursor,
                 );
-                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
                 // [#1407] fieldEnd 는 8유닛 슬롯을 소비한다. expected 를 +8 진행하지
                 // 않으면 다음 idx 에서 텍스트-끝 슬롯(newNum 등)이 이 8유닛 갭을
                 // 가로채 텍스트가 +8 밀린다 (143E 문단 0.14: char_offsets[3] 27→35).
-                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                expected_utf16_pos = expected_utf16_pos
+                    .saturating_add(guide_units)
+                    .saturating_add(8);
                 field_end_emitted[i] = true;
             }
         }
@@ -1664,8 +1698,10 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
             if begin_slot_pending {
                 continue;
             }
-            emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-            expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+            let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+            expected_utf16_pos = expected_utf16_pos
+                .saturating_add(guide_units)
+                .saturating_add(8);
             field_end_emitted[i] = true;
         }
     }
@@ -1702,8 +1738,10 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                 && fr.start_char_idx == fr.end_char_idx
                 && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
             {
-                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                expected_utf16_pos = expected_utf16_pos
+                    .saturating_add(guide_units)
+                    .saturating_add(8);
                 field_end_emitted[i] = true;
             }
         }
@@ -1711,12 +1749,14 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
     // [Task #1893] 방어: 지연분이 슬롯 루프에서 매칭되지 못했으면 말미에 방출(종전 동작).
     for (i, fr) in para.field_ranges.iter().enumerate() {
         if !field_end_emitted[i] {
-            emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-            expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+            let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+            expected_utf16_pos = expected_utf16_pos
+                .saturating_add(guide_units)
+                .saturating_add(8);
             field_end_emitted[i] = true;
         }
     }
-    (splitter.finish(), axis_faithful)
+    (splitter.finish(), axis_faithful, expected_utf16_pos)
 }
 
 fn inferred_control_slot_count(para: &Paragraph) -> usize {
