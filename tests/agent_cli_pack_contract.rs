@@ -77,6 +77,10 @@ fn capabilities_lists_new_commands() {
         "threat-scan",
         "injection-scan",
         "structure",
+        "grep",
+        "hidden-text",
+        "unicode-scan",
+        "explore",
     ] {
         assert!(names.contains(&need), "missing {need} in {names:?}");
     }
@@ -250,4 +254,109 @@ fn threat_scan_runs() {
     let v = stdout_json(&out);
     assert_envelope(&v, "threat-scan");
     assert!(v["clean"].is_boolean(), "{v}");
+}
+
+#[test]
+fn grep_finds_linux_with_page_and_cell() {
+    let path = sample("samples/hwp3-sample.hwp");
+    let out = run(&[
+        "grep",
+        "--json",
+        "--limit",
+        "5",
+        path.to_str().unwrap(),
+        "--q",
+        "Linux",
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "grep");
+    assert!(v["untrustedContent"].as_bool().unwrap(), "{v}");
+    assert!(v["matchCount"].as_u64().unwrap() >= 1, "{v}");
+    let hit = &v["matches"][0];
+    assert_eq!(hit["section"], 0, "{hit}");
+    assert_eq!(hit["paragraph"], 0, "{hit}");
+    assert_eq!(hit["page"], 0, "{hit}");
+    assert!(hit["context"].as_str().unwrap().contains("Linux"), "{hit}");
+    assert!(
+        v["matches"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|m| m.get("cell").is_some()),
+        "expected a table-cell hit in {v}"
+    );
+}
+
+#[test]
+fn grep_unknown_flag_is_usage() {
+    let path = sample("samples/form-01.hwp");
+    let out = run(&["grep", path.to_str().unwrap(), "--q", "x", "--nope"]);
+    assert_eq!(out.status.code(), Some(2));
+    assert!(out.stdout.is_empty());
+}
+
+#[test]
+fn hidden_text_clean_on_real_samples() {
+    for rel in ["samples/form-01.hwp", "samples/hwp3-sample.hwp"] {
+        let path = sample(rel);
+        let out = run(&["hidden-text", "--json", path.to_str().unwrap()]);
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "{rel} stderr {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let v = stdout_json(&out);
+        assert_envelope(&v, "hidden-text");
+        assert_eq!(v["clean"], true, "{rel} {v}");
+        assert_eq!(v["hiddenCharCount"], 0, "{rel} {v}");
+        assert!(v["hiddenText"].as_array().unwrap().is_empty(), "{rel} {v}");
+    }
+}
+
+#[test]
+fn unicode_scan_on_hwp3_sample() {
+    let path = sample("samples/hwp3-sample.hwp");
+    let out = run(&["unicode-scan", "--json", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "unicode-scan");
+    assert_eq!(v["clean"], true, "{v}");
+    assert_eq!(v["findingCount"], 0, "{v}");
+    assert!(v["scannedChars"].as_u64().unwrap() > 0, "{v}");
+}
+
+#[test]
+fn explore_routes_form_sample_to_fill() {
+    let path = sample("samples/form-01.hwp");
+    let out = run(&["explore", "--json", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "explore");
+    assert_eq!(v["untrustedContent"], false, "{v}");
+    assert!(v["fieldCount"].as_u64().unwrap() >= 1, "{v}");
+    let names: Vec<&str> = v["menu"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|m| m["affordance"].as_str())
+        .collect();
+    assert!(names.contains(&"form-fill"), "menu={names:?}");
+    assert!(names.contains(&"triage-overview"), "menu={names:?}");
 }
