@@ -32,6 +32,16 @@ python tools/skill_router/route.py "이 서식 채워줘" --json
 python tools/skill_router/route.py "PR 올려" --json
 ```
 
+그래프의 `command` 는 실제 rhwp 호출이다. 라우터가 고른 뒤 에이전트가 그대로 친다.
+
+```bash
+rhwp capabilities
+rhwp info <파일> --json
+rhwp fields <서식> --json
+rhwp edit fill-fields <서식> --data <JSON> -o <출력> --verify --json
+rhwp export-svg <파일> -p 0 --profile print
+```
+
 ## 봉투를 읽고 실행한다
 
 고정 키: `schemaVersion`, `request`, `intent`, `requiredCapabilities`,
