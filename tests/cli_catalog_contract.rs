@@ -14,6 +14,7 @@ mod catalog;
 use catalog::{commands, Visibility};
 
 const MAIN_SOURCE: &str = include_str!("../src/main.rs");
+const DATA_EXTRACTION_SOURCE: &str = include_str!("../src/cli/queries/data_extraction.rs");
 const DIAGNOSTICS_SOURCE: &str = include_str!("../src/cli/queries/diagnostics.rs");
 const DOCUMENT_INVENTORY_SOURCE: &str = include_str!("../src/cli/queries/document_inventory.rs");
 const STRUCTURED_OBJECTS_SOURCE: &str = include_str!("../src/cli/queries/structured_objects.rs");
@@ -220,6 +221,32 @@ fn document_inventory_queries_are_owned_by_the_query_module() {
             "{command} dispatch가 query 모듈 API를 사용해야 한다"
         );
     }
+}
+
+#[test]
+fn data_extraction_query_is_owned_by_the_query_module() {
+    assert!(
+        DATA_EXTRACTION_SOURCE.contains("pub(crate) fn extract_data_command("),
+        "extract_data_command 구현이 data_extraction 모듈에 있어야 한다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn extract_data_command("),
+        "extract_data_command 구현이 main.rs로 되돌아가면 안 된다"
+    );
+    let compact_main: String = MAIN_SOURCE
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    assert!(
+        compact_main.contains(
+            "Some(\"extract-data\")=>exit_with(cli::queries::data_extraction::extract_data_command("
+        ),
+        "extract-data dispatch가 query 모듈 API를 사용해야 한다"
+    );
+    assert!(
+        compact_main.contains("data_extraction::extract_data_command(&args[2..]"),
+        "extract-data dispatch가 사용자 인자를 그대로 전달해야 한다"
+    );
 }
 
 #[test]
