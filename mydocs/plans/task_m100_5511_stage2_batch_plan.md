@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Q1·Q2·Q3 완료, Q4 inventory 중단 조건 발동·책임 분해안 승인 대기
+- 상태: 실행 승인 — Q1·Q2·Q3·Q4 완료, Q5 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -106,7 +106,10 @@ text·tabular output과 상태 변경 CSV import를 서로 다른 CQRS 모듈로
 Q4 inventory에서 `cmd_scan`의 CC 28을 확인해 중단 조건이 발동했다. batch의 ordered stream과
 query/write 책임 경계, 기존 92개 인접 계약, scan characterization 공백과 세 선택지는
 [`task_m100_5511_stage2_batch_q4_inventory.md`](../working/task_m100_5511_stage2_batch_q4_inventory.md)에
-기록했다. 책임 분해안을 승인하기 전에는 제품 코드를 변경하지 않는다.
+기록했다. 승인된 A안에 따라 scan의 사람 출력·symlink 비추적 계약을 먼저 고정하고, `cmd_scan`을
+CC 25 이하로 분해한 뒤 scan query, ordered runtime, batch query, fill·convert command를 분리했다.
+세부 증거는 [`task_m100_5511_stage2_batch_q4.md`](../working/task_m100_5511_stage2_batch_q4.md)에
+기록했다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
