@@ -64,6 +64,23 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
     if cfb_bytes.len() < 8 {
         return None;
     }
+    // [#5582] HWPX 의 `BinData/*.ole` 는 CFB 앞에 u32 LE 길이 프리픽스를 붙인다
+    // (00128 실측: `00 B8 02 00` = 178,176 = 뒤따르는 CFB 크기). HWPX 적재 경로는
+    // `normalize_ole_bytes`(#2263)가 이미 벗기지만, 이 함수는 다른 유입 경로
+    // (HWP5 bindata·도구성 호출)도 받으므로 방어적으로 같은 정규화를 둔다.
+    // 선언 길이가 실제 잔여 길이와 일치할 때만 벗긴다 — 우연히 D0CF 로 이어지는
+    // 다른 형식을 오인하지 않게.
+    const CFB_MAGIC: [u8; 4] = [0xD0, 0xCF, 0x11, 0xE0];
+    let cfb_bytes = if cfb_bytes[0..4] != CFB_MAGIC
+        && cfb_bytes.len() >= 12
+        && cfb_bytes[4..8] == CFB_MAGIC
+        && u32::from_le_bytes([cfb_bytes[0], cfb_bytes[1], cfb_bytes[2], cfb_bytes[3]]) as usize
+            == cfb_bytes.len() - 4
+    {
+        &cfb_bytes[4..]
+    } else {
+        cfb_bytes
+    };
     let cursor = Cursor::new(cfb_bytes);
     let mut comp = CompoundFile::open(cursor).ok()?;
 
@@ -96,7 +113,10 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
                     container.ooxml_chart = Some(buf);
                 }
             }
-        } else if name == "Contents" {
+        } else if name.eq_ignore_ascii_case("contents") {
+            // [#5582] 한컴 산출 변형은 대문자 `CONTENTS` 도 쓴다(00128 실측). 차트가
+            // 아닌 일반 내장 개체의 CONTENTS 는 차트 파싱이 실패하고, 렌더 경로가
+            // 그 실패를 폴백 사유로 강등해 EMF/WMF 미리보기로 내려간다.
             if let Ok(mut s) = comp.open_stream(&path) {
                 let mut buf = Vec::new();
                 if s.read_to_end(&mut buf).is_ok() && !buf.is_empty() {
@@ -353,6 +373,35 @@ fn strip_ole_presentation_header_wmf(data: &[u8]) -> Option<Vec<u8>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// [#5582] 길이 프리픽스가 붙은 CFB 도 컨테이너로 열린다 — HWPX 적재 경로는
+    /// `normalize_ole_bytes` 가 이미 벗기지만, 다른 유입 경로 대비 방어 정규화.
+    #[test]
+    fn length_prefixed_cfb_is_parsed() {
+        let cfb = crate::serializer::mini_cfb::build_cfb(&[("Contents", b"junk-not-a-chart")])
+            .expect("cfb");
+        assert!(parse_ole_container(&cfb).is_some(), "무프리픽스 기준선");
+        let mut prefixed = (cfb.len() as u32).to_le_bytes().to_vec();
+        prefixed.extend_from_slice(&cfb);
+        let container = parse_ole_container(&prefixed).expect("프리픽스 CFB 파싱");
+        assert!(container.raw_contents.is_some());
+        // 길이가 안 맞으면 벗기지 않는다(오인 방지) — CFB 매직이 없으니 None.
+        let mut wrong = 7u32.to_le_bytes().to_vec();
+        wrong.extend_from_slice(&cfb);
+        assert!(parse_ole_container(&wrong).is_none());
+    }
+
+    /// [#5582] 한컴 변형은 대문자 `CONTENTS` 를 쓴다(00128 실측) — 대소문자 무시 수집.
+    #[test]
+    fn uppercase_contents_stream_is_collected() {
+        let cfb = crate::serializer::mini_cfb::build_cfb(&[("CONTENTS", b"embedded-object")])
+            .expect("cfb");
+        let container = parse_ole_container(&cfb).expect("파싱");
+        assert_eq!(
+            container.raw_contents.as_deref(),
+            Some(b"embedded-object".as_slice())
+        );
+    }
 
     #[test]
     fn test_strip_no_emf_magic() {

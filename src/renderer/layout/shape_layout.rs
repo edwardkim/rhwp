@@ -1972,6 +1972,10 @@ impl LayoutEngine {
                     p
                 };
                 let mut rendered = false;
+                // [#5582] legacy 차트 `Contents` 파싱 실패는 최종 판정이 아니라 폴백
+                // 사유다 — 라벨만 기억하고 EMF/WMF/네이티브 이미지/hmapsi 폴백을
+                // 계속 시도한다. 전부 실패했을 때만 이 라벨로 자리표시를 그린다.
+                let mut chart_error_label: Option<String> = None;
                 // [#2550] 상한 로드 1회 — 이하 분기가 같은 바이트를 공유한다 (기존 3중
                 // 해제 제거 겸). 상한 초과는 아래 placeholder 폴백으로 접힌다.
                 if let Some((content, ole_bytes)) =
@@ -2053,24 +2057,16 @@ impl LayoutEngine {
                                             rendered = true;
                                         }
                                         Err(error) => {
-                                            push_ole_placeholder_render_node(
-                                                tree,
-                                                parent,
-                                                BoundingBox::new(
-                                                    render_x, render_y, render_w, render_h,
-                                                ),
-                                                0xFFFFF4E5,
-                                                0xFFB45F06,
-                                                ole_chart_fallback_label(
-                                                    error.stable_message(),
-                                                    ole.bin_data_id,
-                                                ),
-                                                section_index,
-                                                para_index,
-                                                control_index,
-                                                &ole_container_path,
-                                            );
-                                            rendered = true;
+                                            // [#5582] 종전에는 여기서 자리표시를 그리고
+                                            // 끝냈다 — `Contents` 를 가진 차트 아닌
+                                            // 일반 OLE 가 갖고 있는 EMF/WMF 미리보기에
+                                            // 도달하지 못해 개체가 화면에서 사라졌다
+                                            // (36494613 실측: 개체 2개 자리표시 →
+                                            // EMF 렌더 복원). 폴백 사유로 강등한다.
+                                            chart_error_label = Some(ole_chart_fallback_label(
+                                                error.stable_message(),
+                                                ole.bin_data_id,
+                                            ));
                                         }
                                     }
                                 }
@@ -2198,14 +2194,22 @@ impl LayoutEngine {
                 }
 
                 if !rendered {
-                    // 폴백: placeholder
-                    let label = format!("OLE 개체 (BinData #{})", ole.bin_data_id);
+                    // 폴백: placeholder. [#5582] 차트 `Contents` 파싱이 실패했고 다른
+                    // 미리보기 폴백도 전부 실패한 경우에만 그 사유 라벨(종전 색)을 쓴다.
+                    let (bg, fg, label) = match chart_error_label {
+                        Some(label) => (0xFFFFF4E5, 0xFFB45F06, label),
+                        None => (
+                            0xFFF0F0F0,
+                            0xFF707070,
+                            format!("OLE 개체 (BinData #{})", ole.bin_data_id),
+                        ),
+                    };
                     push_ole_placeholder_render_node(
                         tree,
                         parent,
                         BoundingBox::new(render_x, render_y, render_w, render_h),
-                        0xFFF0F0F0,
-                        0xFF707070,
+                        bg,
+                        fg,
                         label,
                         section_index,
                         para_index,
