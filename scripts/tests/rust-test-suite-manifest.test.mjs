@@ -136,19 +136,22 @@ test('경로 의존 case는 기존 target 이름을 유지한다', () => {
   assert.equal(nextestArguments(plan).includes('-E'), false);
 });
 
-test('Native Skia 함수 게이트 case는 독립 target으로 실행한다', () => {
+test('명시적으로 허용한 CLI module blocker는 generated suite에 배정한다', () => {
+  for (const caseName of ['cli_json_contract', 'cli_catalog_contract']) {
+    const plan = resolveCasePlan(caseName);
+    assert.equal(plan.grouped, true, caseName);
+    assert.match(plan.target, /^regression_suite_\d{3}$/);
+  }
+});
+
+test('Native Skia 함수 게이트 case는 generated suite에서 feature별로 실행한다', () => {
   const plan = resolveCasePlan('issue_2225_missing_picture_placeholder');
-  assert.deepEqual(plan, {
-    caseName: 'issue_2225_missing_picture_placeholder',
-    target: 'issue_2225_missing_picture_placeholder',
-    grouped: false,
-  });
-  assert.deepEqual(nextestArguments(plan), [
-    'nextest',
-    'run',
-    '--test',
-    'issue_2225_missing_picture_placeholder',
-  ]);
+  assert.equal(plan.grouped, true);
+  assert.match(plan.target, /^regression_suite_\d{3}$/);
+  assert.match(
+    nextestArguments(plan).join(' '),
+    /issue_2225_missing_picture_placeholder::/,
+  );
 });
 
 test('CI slow archive case는 독립 target과 nextest 우선순위를 함께 유지한다', () => {
@@ -285,7 +288,7 @@ test('PR base 검사도 커밋된 manifest 산출물을 실제 Git diff에서 �
   );
 });
 
-test('PR base 검사는 Cargo generated target block의 커밋도 거부한다', (t) => {
+test('PR base 검사는 manifest와 맞지 않는 Cargo generated target registry를 거부한다', (t) => {
   const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-suite-base-cargo-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   writeRepositoryFixture(root);
@@ -302,7 +305,7 @@ test('PR base 검사는 Cargo generated target block의 커밋도 거부한다',
 
   const validation = validateRepository(root, { baseRef: 'HEAD~1' });
   assert.ok(
-    validation.errors.some((error) => /Cargo\.toml의 generated test target 블록/.test(error)),
+    validation.errors.some((error) => /Cargo\.toml generated test target block drift/.test(error)),
     validation.errors.join('\n'),
   );
 });

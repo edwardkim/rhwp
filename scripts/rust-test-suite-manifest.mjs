@@ -110,6 +110,39 @@ export function loadManifest(root = ROOT) {
     }
   }
 
+  if (manifest.moduleIntegrationOverrides === undefined) {
+    manifest.moduleIntegrationOverrides = [];
+  }
+  if (!Array.isArray(manifest.moduleIntegrationOverrides)) {
+    throw new Error('moduleIntegrationOverrides는 배열이어야 합니다.');
+  }
+  const overridePaths = new Set();
+  for (const [index, override] of manifest.moduleIntegrationOverrides.entries()) {
+    assertRecord(override, `moduleIntegrationOverrides[${index}]`);
+    override.path = normalizeRelativePath(
+      override.path,
+      `moduleIntegrationOverrides[${index}].path`,
+    );
+    if (!override.path.endsWith('.rs')) {
+      throw new Error(
+        `moduleIntegrationOverrides[${index}].path는 Rust 파일이어야 합니다: ${override.path}`,
+      );
+    }
+    if (overridePaths.has(override.path)) {
+      throw new Error(`중복 moduleIntegrationOverride: ${override.path}`);
+    }
+    overridePaths.add(override.path);
+    if (
+      !Array.isArray(override.allowBlockers) ||
+      override.allowBlockers.length === 0 ||
+      override.allowBlockers.some((blocker) => typeof blocker !== 'string')
+    ) {
+      throw new Error(
+        `moduleIntegrationOverrides[${index}].allowBlockers는 비어 있지 않은 문자열 배열이어야 합니다.`,
+      );
+    }
+  }
+
   if (!Array.isArray(manifest.exceptions)) {
     throw new Error('exceptions는 배열이어야 합니다.');
   }
@@ -224,7 +257,11 @@ function addedPathsAgainstBase(root, ref) {
 
 export function validateDerivedArtifactChanges(
   changedPaths,
-  { baseCargoToml = null, headCargoToml = null } = {},
+  {
+    baseCargoToml = null,
+    headCargoToml = null,
+    allowCargoTargetRegistryChange = false,
+  } = {},
 ) {
   const errors = [];
   for (const changedPath of [...new Set(changedPaths)].sort()) {
@@ -246,10 +283,24 @@ export function validateDerivedArtifactChanges(
       const baseBlock = baseCargoToml.slice(baseBounds.start, baseBounds.end);
       const headBlock = headCargoToml.slice(headBounds.start, headBounds.end);
       if (baseBlock !== headBlock) {
-        errors.push(
-          'PR에는 Cargo.toml의 generated test target 블록 변경을 커밋하지 마세요 ' +
-            '(PR review/CI에서 --prepare로 생성)',
-        );
+        if (!allowCargoTargetRegistryChange) {
+          errors.push(
+            'PR에는 Cargo.toml의 generated test target 블록 변경을 커밋하지 마세요 ' +
+              '(명시적 --sync-cargo-targets 유지보수 PR만 허용)',
+          );
+        } else {
+          const baseOutsideBlock =
+            baseCargoToml.slice(0, baseBounds.start) +
+            baseCargoToml.slice(baseBounds.end);
+          const headOutsideBlock =
+            headCargoToml.slice(0, headBounds.start) +
+            headCargoToml.slice(headBounds.end);
+          if (baseOutsideBlock !== headOutsideBlock) {
+            errors.push(
+              'Cargo.toml generated test target registry 동기화에는 marker 블록 밖의 변경을 함께 커밋할 수 없습니다.',
+            );
+          }
+        }
       }
     } catch (error) {
       errors.push(
@@ -309,9 +360,14 @@ export function sourceMetrics(source, manifest, root = ROOT) {
   const caseAttributes = (text.match(CASE_ATTRIBUTE) ?? []).length;
   const staticTests = testAttributes + caseAttributes;
   const bytes = Buffer.byteLength(text);
-  const blockers = MODULE_BLOCKERS.filter(([, pattern]) => pattern.test(text)).map(
-    ([name]) => name,
+  const allowedBlockers = new Set(
+    (manifest.moduleIntegrationOverrides ?? [])
+      .find((override) => override.path === source)
+      ?.allowBlockers ?? [],
   );
+  const blockers = MODULE_BLOCKERS.filter(
+    ([name, pattern]) => !allowedBlockers.has(name) && pattern.test(text),
+  ).map(([name]) => name);
   return {
     source,
     caseName: caseNameForSource(source),
@@ -541,12 +597,19 @@ export function syncManifestSources(
   let removed = 0;
 
   manifest.exceptions = manifest.exceptions.filter((entry) => {
-    if (discovered.has(entry.path)) {
+    if (
+      discovered.has(entry.path) &&
+      (entry.manual || sourceMetrics(entry.path, manifest, root).blockers.length > 0)
+    ) {
       return true;
     }
     removed += 1;
     if (report) {
-      process.stdout.write(`[RustTestSuite] 제거 반영: ${entry.path}\n`);
+      process.stdout.write(
+        `[RustTestSuite] ${
+          discovered.has(entry.path) ? 'module 통합 전환' : '제거 반영'
+        }: ${entry.path}\n`,
+      );
     }
     return false;
   });
@@ -648,7 +711,7 @@ function cargoBlockBounds(cargoManifest) {
   return { start, end: endMarker + CARGO_BLOCK_END.length };
 }
 
-function updateCargoManifest(manifest, root = ROOT) {
+export function syncCargoTestTargets(manifest, root = ROOT) {
   const cargoPath = path.join(root, CARGO_MANIFEST_RELATIVE_PATH);
   const cargoManifest = readFileSync(cargoPath, 'utf8');
   const bounds = cargoBlockBounds(cargoManifest);
@@ -691,6 +754,7 @@ function inspectRepository(
           {
             baseCargoToml: textAtGitRef(root, baseRef, CARGO_MANIFEST_RELATIVE_PATH),
             headCargoToml: textAtGitRef(root, 'HEAD', CARGO_MANIFEST_RELATIVE_PATH),
+            allowCargoTargetRegistryChange: true,
           },
         ),
       );
@@ -884,7 +948,11 @@ export function validateRepository(
   }
 }
 
-export function generateArtifacts(manifest, root = ROOT) {
+export function generateArtifacts(
+  manifest,
+  root = ROOT,
+  { syncCargoTargets = false } = {},
+) {
   const inspection = inspectRepository(manifest, root, {
     checkGenerated: false,
     checkCargo: false,
@@ -914,7 +982,9 @@ export function generateArtifacts(manifest, root = ROOT) {
       'utf8',
     );
   }
-  updateCargoManifest(manifest, root);
+  if (syncCargoTargets) {
+    syncCargoTestTargets(manifest, root);
+  }
   process.stdout.write(
     `[RustTestSuite] 생성: ${Object.keys(manifest.suites).length} harnesses, ` +
       `${manifest.exceptions.length} exceptions\n`,
@@ -957,6 +1027,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
       const manifest = prepareManifest(loadManifest());
       generateArtifacts(manifest);
       printValidation(validateRepository());
+    } else if (command === '--sync-cargo-targets') {
+      const manifest = prepareManifest(loadManifest());
+      generateArtifacts(manifest, ROOT, { syncCargoTargets: true });
+      printValidation(validateRepository());
     } else if (command === '--sync') {
       const manifest = loadManifest();
       syncManifestSources(manifest);
@@ -981,8 +1055,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
     } else {
       process.stderr.write(
         '사용법: node scripts/rust-test-suite-manifest.mjs ' +
-          '--check [--base-ref <Git ref>]|--prepare|--generate|--sync|--rebalance|' +
-          '--adopt-new|--adopt <파일...>\n',
+        '--check [--base-ref <Git ref>]|--prepare|--generate|--sync|--rebalance|' +
+          '--adopt-new|--adopt <파일...>|--sync-cargo-targets\n',
       );
       process.exitCode = 2;
     }

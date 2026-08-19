@@ -159,7 +159,7 @@ cargo fmt --all -- --check                       # CI와 같은 포맷 검증 �
 node --test scripts/tests/rust-test-suite-manifest.test.mjs
 # `src/**`의 `#[cfg(test)]`를 변경한 경우에만 실행한다. 파생 파일은 생성하지 않는다.
 node scripts/rust-unit-test-tiers.mjs --check
-cargo nextest run \
+cargo nextest run --locked \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast                          # 통합 테스트 포함 전체
@@ -172,8 +172,10 @@ cargo clippy --all-targets --target-dir target/pr-review -- -D warnings # 린트
 
 새 통합 테스트는 `tests/cases/` 에만 둡니다. `tests/suites/suite-policy.json`,
 `tests/suites/unit-test-tier-policy.json`은 추적하는 정책이고, `tests/generated/`, `tests/suites/manifest.json`,
-`tests/generated/**`, Cargo의 generated test target 블록은 **PR에 넣지 않는 파생 산출물**입니다. 일반 기여자는 자신의 PR checkout에서 `--prepare`, `--generate`,
+`tests/generated/**`는 **PR에 넣지 않는 파생 산출물**입니다. 일반 기여자는 자신의 PR checkout에서 `--prepare`, `--generate`,
 `--sync`, `--rebalance`, 또는 `rust-test-suite-manifest.mjs --check`를 실행해 이를 등록하지 않습니다.
+`--prepare`는 root `Cargo.toml`을 수정하지 않습니다. Cargo의 generated test target 블록은 통합 불가 예외 target의
+추적 registry이므로, 예외 구조가 바뀌는 메인터너 전용 유지보수 PR에서만 `--sync-cargo-targets`로 동기화합니다.
 `rust-unit-test-tiers.mjs --check`는 source-side `#[cfg(test)]` 변경의 정책 검사로만 실행할 수 있으며
 파일을 생성하지 않습니다. 새 원본의 배정과 harness 검증은 PR review 전용 worktree 및 CI가
 `--prepare` 뒤 manifest `--check`로 수행합니다.
@@ -273,15 +275,20 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    않습니다. 검토자가 PR review 전용 worktree와 CI에서 `--prepare`를 실행하면, 생성기가 source
    weight를 계산해 기존 integration suite 중 가장 가벼운 곳에 자동 배정합니다.
 
-   `tests/generated/*.rs`, `tests/suites/manifest.json`, `Cargo.toml`의 generated test target 블록은
-   **PR에 포함하지 않습니다.** 이 파일들은 검토·CI checkout에서만 만드는 파생 산출물입니다. 이를
+   `tests/generated/*.rs`, `tests/suites/manifest.json`은 **PR에 포함하지 않습니다.** 이 파일들은 검토·CI
+   checkout에서만 만드는 파생 산출물입니다. 이를
    커밋하면 독립 PR끼리 같은 harness·manifest를 수정해 불필요한 충돌을 만들므로 CI가 거부합니다.
+   `Cargo.toml`의 generated test target 블록도 일반 PR에는 포함하지 않습니다. 단, 통합 불가 예외 target이
+   바뀐 메인터너 전용 registry 동기화 PR은 `--sync-cargo-targets`로 해당 marker 블록만 갱신할 수 있습니다.
+   `#[path]`·root `mod`·feature-gated test처럼 module harness와의 호환성을 판단해야 하는 원본은 일반 기여자가 registry를
+   늘리지 않습니다. 기존 source의 module 호환성이 확인된 경우에만 메인터너가 `suite-policy.json`의 좁은
+   `moduleIntegrationOverrides`에 blocker 이름을 명시해 suite 배정을 허용합니다.
    원본을 이름 변경·삭제해도 PR에는 `tests/cases/` 변경만 제출합니다. `--rebalance`는 일반 기여
    절차에 포함하지 않으며, 배정 정책 자체를 바꾸는 메인터너 전용 별도 작업에서만 검토합니다.
 
    원본을 커밋한 뒤 전체 integration 실행이 필요하면, PR branch와 분리된 review worktree에서만
-   `--prepare`와 `--check`를 차례로 실행합니다. 생성된 manifest·harness·Cargo 변경은 검증 증적일
-   뿐이므로 테스트가 끝나면 그 review worktree에서 복원하고 stage하지 않습니다.
+   `--prepare`와 `--check`를 차례로 실행합니다. 생성된 manifest·harness는 검증 증적일 뿐이므로 테스트가
+   끝나면 그 review worktree에서 복원하고 stage하지 않습니다. 이 기본 경로는 `Cargo.toml`을 변경하지 않습니다.
 
    제품 소스의 `#[cfg(test)]`에는 새 테스트 모듈이나 test support 항목을 추가하지 않습니다. 공개 API로
    재현할 수 있는 테스트는 `tests/cases/`에 작성하고, 기존 소스 테스트의 차등 이동 상태는 다음 명령으로
@@ -293,7 +300,8 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    ```
 
    CI는 PR base와 현재 source를 다시 비교하고, unit-tier inventory도 source에서 메모리로 재계산한다.
-   커밋된 generated harness·manifest·Cargo generated block도 거부한다. 새 integration source는 `tests/cases/`만 허용하며, source-side 테스트는 Git
+   커밋된 generated harness·manifest는 거부한다. Cargo generated block은 명시적 registry 동기화에서 marker
+   블록만 바꾼 경우에만 허용한다. 새 integration source는 `tests/cases/`만 허용하며, source-side 테스트는 Git
    rename으로 확인되는 순수 crate 이동처럼 개수가 늘지 않는 경로 변경만 허용한다.
 2. **수정 전 실패 증명 (권장)** — "수정 커밋만 원복한 상태에서 신규 테스트가 실제로 FAIL"
    함을 PR 본문에 기록해주세요. 테스트가 결함을 판별한다는 증명이 되어 리뷰 신뢰도가
