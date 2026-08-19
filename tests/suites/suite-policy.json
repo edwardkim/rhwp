@@ -27,6 +27,28 @@
       "recursive": false
     }
   ],
+  "moduleIntegrationOverrides": [
+    {
+      "path": "tests/cli_json_contract.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "path": "tests/cases/cli_catalog_contract.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "path": "tests/issue_2225_missing_picture_placeholder.rs",
+      "allowBlockers": [
+        "function_gated_native_skia"
+      ]
+    }
+  ],
   "exceptions": [
     {
       "target": "cli_exit_codes",

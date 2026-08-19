@@ -12,7 +12,7 @@ closes #
 ## 테스트
 
 - [ ] **`cargo fmt --all -- --check` 통과** (PR 생성·push 직전 필수. CI Lint Format check 와 동일. `cargo fmt --check` 만으로는 안 됨. 테스트만 고친 커밋도 다시 돌릴 것. 실패 시 `cargo fmt --all` 후 다시 `--check`)
-- [ ] 새 integration test는 원본을 `tests/cases/*.rs`에만 추가했고 `tests/generated/`, `tests/suites/manifest.json`, Cargo generated test target을 PR에 포함하지 않음
+- [ ] 새 integration test는 원본을 `tests/cases/*.rs`에만 추가했고 `tests/generated/`, `tests/suites/manifest.json`, 일반 PR의 Cargo generated test target을 포함하지 않음 (`--sync-cargo-targets` 메인터너 registry PR은 marker 블록만 예외)
 - [ ] `src/**`의 `#[cfg(test)]`를 변경한 경우 `node scripts/rust-unit-test-tiers.mjs --check` 통과 (파생 inventory 생성·stage 불필요)
 - [ ] `cargo test` 통과
 - [ ] `cargo clippy -- -D warnings` 통과

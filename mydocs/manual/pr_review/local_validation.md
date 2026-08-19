@@ -33,6 +33,10 @@ pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 전체 Rust 회귀의 기본 명령은 다음과 같다. 같은 `target/pr-review`를 사용하는 Cargo 계열 명령은 반드시
 앞 명령의 종료를 확인한 뒤 실행한다.
 
+검토 명령에는 `--locked`를 넣어 Cargo가 검토 checkout의 `Cargo.lock`을 갱신하지 못하게 한다.
+`run-rust-test.mjs`도 이를 기본 적용한다. lockfile 자체를 의도적으로 바꾸는 의존성 갱신 작업만 별도
+검증에서 이 규칙을 벗어날 수 있다.
+
 문서의 명령은 고정 `--test-threads` 값을 쓰지 않는다. nextest 기본 동시성을 먼저 사용하고, 현재
 host의 논리 CPU·메모리·동시 작업을 확인한 뒤에만 `--test-threads <현재 환경에 맞는 값>`으로 조정한다.
 논리 CPU 확인은 macOS `sysctl -n hw.logicalcpu`, Linux `getconf _NPROCESSORS_ONLN`, PowerShell
@@ -40,7 +44,7 @@ host의 논리 CPU·메모리·동시 작업을 확인한 뒤에만 `--test-thre
 부족하거나 다른 작업이 있으면 더 낮은 값을 선택하고 실제 실행 시간을 기록한다.
 
 ~~~bash
-cargo nextest run \
+cargo nextest run --locked \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
@@ -53,8 +57,8 @@ cargo nextest run \
 `--prepare`와 `--check`를 실행하지 않는다. `--check`는 준비된 파생 상태를 검사하므로 새 원본만 있는
 정상 PR checkout에서는 manifest 누락을 보고한다. Cargo는 이 원본 파일을 개별 binary로 자동 발견하지
 않으므로, **PR review 전용 worktree에서만** 다음 준비 단계를 실행한다. 이 단계는 삭제·이름변경을
-동기화하고 신규 source를 현재 weight가 가장 낮은 suite에 배정한 뒤 harness와 Cargo target 블록을 작업
-checkout에만 만든다.
+동기화하고 신규 source를 현재 weight가 가장 낮은 suite에 배정한 뒤 harness를 작업 checkout에만 만든다.
+기본 `--prepare`는 `Cargo.toml` registry를 바꾸지 않는다.
 
 ~~~bash
 node scripts/rust-test-suite-manifest.mjs --prepare
@@ -63,13 +67,16 @@ node scripts/run-rust-test.mjs issue_1234_short_description \
   -- --cargo-profile release-test --target-dir target/pr-review
 ~~~
 
-`tests/generated/*.rs`, unit-tier inventory, manifest·Cargo generated block은 직접 편집하거나 PR에 stage하지 않는다.
+`tests/generated/*.rs`, unit-tier inventory, manifest는 직접 편집하거나 PR에 stage하지 않는다. Cargo generated
+block은 통합 불가 예외 target이 바뀐 메인터너 전용 PR에서만 `--sync-cargo-targets`로 marker 블록만 동기화한다.
 검증이 끝나면 이 파생 변경은 review worktree에서 복원한다. `--prepare`가 이름 변경·삭제와 신규 source를
 함께 처리하므로 일반 PR에 `--generate`·`--sync`·`--rebalance` 결과를 포함하지 않는다. 기여자가
 PR 전 검증으로 실행할 명령은 `node --test scripts/tests/rust-test-suite-manifest.test.mjs`와 변경 범위의
 Rust test이며, source-side `#[cfg(test)]`를 바꾼 경우에는 `node scripts/rust-unit-test-tiers.mjs --check`도
 실행한다. 이 unit-tier 검사는 파생 파일을 만들지 않는다. 반면 manifest 파생 파일 일치 검사는 review
-worktree와 CI의 책임이다. 경로·crate-root 의존성이 탐지된 source는 생성기가 singleton exception으로 보존한다.
+worktree와 CI의 책임이다. 경로·crate-root·feature-gated 의존성이 탐지된 source는 기본적으로 singleton
+exception으로 보존한다. module harness 호환성을 실제 실행으로 확인한 경우에만 메인터너가
+`suite-policy.json`의 좁은 `moduleIntegrationOverrides`로 필요한 blocker만 허용해 suite에 배정한다.
 
 제품 소스의 `#[cfg(test)]`는 root `src/`와 내부 `crates/*/src/`의 기존 모듈별 테스트 수와 test
 support 항목을 기준선으로 관리한다.
@@ -283,18 +290,18 @@ merge 판단에서는 다음 경계를 적용한다.
 일반 Rust 검증 예시는 다음과 같다. 명령은 같은 checkout에서 동시에 실행하지 않는다.
 
 ~~~bash
-cargo nextest run \
+cargo nextest run --locked \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 cargo fmt --all -- --check
-cargo clippy --all-targets -- -D warnings
+cargo clippy --locked --all-targets -- -D warnings
 ~~~
 
 renderer 영향 PR의 Native Skia 공식 회귀 범위는 다음 3종이다.
 
 ~~~bash
-cargo test --profile release-test --target-dir target/pr-review --features native-skia --lib
+cargo test --locked --profile release-test --target-dir target/pr-review --features native-skia --lib
 node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \\
   --cargo-profile release-test --target-dir target/pr-review --features native-skia
 node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \\
@@ -320,7 +327,7 @@ draft 해제 전에 **두 baseline 절차**를 수행한다: ① IR field sweep(
 
 ~~~bash
 RHWP_IR_SWEEP_DUMP=/tmp/ir_field_sweep_current.tsv \
-  cargo test --profile release-test \
+  cargo test --locked --profile release-test \
   --test ir_field_sweep_baseline -- --nocapture
 diff -u tests/fixtures/ir_field_sweep_baseline.tsv /tmp/ir_field_sweep_current.tsv
 ~~~
@@ -340,7 +347,7 @@ diff -u tests/fixtures/ir_field_sweep_baseline.tsv /tmp/ir_field_sweep_current.t
 
 ~~~bash
 RHWP_OVERFLOW_CELL_DUMP=/tmp/overflow_cell_current.tsv \
-  cargo test --profile release-test \
+  cargo test --locked --profile release-test \
   --test overflow_cell_baseline -- --nocapture
 diff -u tests/fixtures/overflow_cell_baseline.tsv /tmp/overflow_cell_current.tsv
 ~~~
@@ -377,21 +384,21 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 diff check, clippy, doc test, TypeScript, npm test, 표준 Docker WASM build를 이 순서로 실행한다.
 
 ~~~bash
-cargo build --release --target-dir target/pr-review
-cargo test --release --target-dir target/pr-review --lib
-cargo nextest run \
+cargo build --locked --release --target-dir target/pr-review
+cargo test --locked --release --target-dir target/pr-review --lib
+cargo nextest run --locked \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
-cargo test --profile release-test --target-dir target/pr-review --features native-skia --lib
+cargo test --locked --profile release-test --target-dir target/pr-review --features native-skia --lib
 node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
   --cargo-profile release-test --target-dir target/pr-review --features native-skia
 node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
   --cargo-profile release-test --target-dir target/pr-review --features native-skia
 cargo fmt --all -- --check
 git diff --check
-cargo clippy --all-targets --target-dir target/pr-review -- -D warnings
-cargo test --doc --target-dir target/pr-review
+cargo clippy --locked --all-targets --target-dir target/pr-review -- -D warnings
+cargo test --locked --doc --target-dir target/pr-review
 (cd rhwp-studio && npx tsc --noEmit)
 npm --prefix rhwp-studio test
 docker compose --env-file .env.docker run --rm wasm
