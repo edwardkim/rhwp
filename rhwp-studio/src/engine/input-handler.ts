@@ -2508,7 +2508,8 @@ export class InputHandler {
     if (!sel) return;
     if (!this.canDeleteSelectionInFormMode()) return;
 
-    const cmd = new DeleteSelectionCommand(sel.start, sel.end);
+    // [Task #3416] F3 블록이면 확장 단계도 함께 기록한다 — 한컴은 undo 뒤 단계까지 되돌린다.
+    const cmd = new DeleteSelectionCommand(sel.start, sel.end, this.cursor.blockSelectionPhase());
     this.cursor.clearSelection();
     this.executeOperation({ kind: 'command', command: cmd });
   }
@@ -2666,7 +2667,9 @@ export class InputHandler {
     if (range.start.sectionIndex !== range.end.sectionIndex) return;
     // 범위가 현재 문서에 실재하는지는 `selectRange` 가 판정하고 거절한다(#2339 유령 범위
     // 차단은 anchor/focus 소유자의 계약이다). 거절되면 해제된 상태 그대로 둔다.
-    this.cursor.selectRange(range.start, range.end);
+    // 블록 단계는 범위와 같은 호출로 세운다 — `resetDerivedStateAfterHistoryJump` 의
+    // `exitBlockSelectionMode()` 가 방금 0 으로 되돌린 것을 여기서 되살린다.
+    this.cursor.selectRange(range.start, range.end, range.blockPhase);
   }
 
   /**
