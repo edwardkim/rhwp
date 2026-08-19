@@ -62,11 +62,21 @@ post_merge.md
 
 영향 정책상 Frontend unit gate와 WASM Build는 skipped였고, aggregate는 성공했다.
 
+### 옵션 B 문서 전용 검증
+
+[PR #5579](https://github.com/edwardkim/rhwp/pull/5579)는 review archive와 오늘할일만 바꾼
+`mydocs/**` 전용 PR이다. 최신 문서 head에서 다음 결과를 확인했다.
+
+- [CI workflow](https://github.com/edwardkim/rhwp/actions/runs/32224422771): preflight와 Build & Test aggregate는 성공하고 Lint, Native Skia, archive, nextest worker, frontend lane은 skipped
+- [CodeQL workflow](https://github.com/edwardkim/rhwp/actions/runs/32224422690): preflight 성공, language matrix skipped
+- [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/32224422677): preflight 성공, prop roundtrip skipped
+- [Adapter inter-diff workflow](https://github.com/edwardkim/rhwp/actions/runs/32224422692): `adapter inter-diff preflight` 48초 성공, 본 `adapter inter-diff` skipped
+
 ## 결론과 후속 처리
 
 **병합 완료.** 최신 head가 `MERGEABLE`·`CLEAN`이고 required check가 모두 성공한 뒤 squash merge했다.
 
 - issue [#5575](https://github.com/edwardkim/rhwp/issues/5575)는 `closes #5575`로 자동 종료된 것을 확인했다.
 - 사용자가 지정한 옵션 B에 따라 이 archive와 오늘할일은 별도 review-only 문서 PR로 보존한다.
-- 이 후속 문서 PR에서 `adapter inter-diff`가 `skipped`로 남는 것을 검증한다.
+- 이 후속 문서 PR에서 `adapter inter-diff`가 `skipped`로 남는 것을 검증했다.
 - 이 후속 기록 PR이 병합되면 원 PR·이슈 기록을 중복 게시하지 않고, 작업 branch 정리만 수행한다.
