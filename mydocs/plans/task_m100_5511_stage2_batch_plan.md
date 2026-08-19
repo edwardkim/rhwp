@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Q1·Q2·Q3·Q4·Q5 완료, Q6 진입 승인 대기
+- 상태: 실행 승인 — Q1·Q2·Q3·Q4·Q5 완료, Q6 실행 중
 
 ## 1. 전환 이유
 
@@ -122,6 +122,12 @@ shape, table, story 출력으로 분해했다. 완료 직전 전진한 `devel`�
 의도된 HWP3 첫 문단 `SectionDef` 출력에 characterization 기준을 정합화했으며, 최신 결합 HEAD의
 전체·정적·정책 관문을 통과했다. 세부 증거는
 [`task_m100_5511_stage2_batch_q5.md`](../working/task_m100_5511_stage2_batch_q5.md)에 기록했다.
+
+Q6는 최신 `devel` `980bf59e4`를 정상 merge한 뒤 시작했다. 변환·생성 handler 전부 CC 25 이하이고,
+기존 17개 계약 모듈 123/123이 JSON·exit·검증·원본 보호·생성물 재파싱을 이미 보호하므로 신규
+characterization 없이 책임별 물리 이동으로 진행한다. 대상과 공유 seam 판정은
+[`task_m100_5511_stage2_batch_q6_inventory.md`](../working/task_m100_5511_stage2_batch_q6_inventory.md)에
+기록했다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
