@@ -8996,10 +8996,17 @@ fn write_csv_file(path: &str, body: &str, bom: bool) -> std::io::Result<()> {
 /// `invalid[]` 로 보고하며 exit 2 다 — 조용히 잘라내면 "표는 그럴듯한데 뒤쪽 데이터가
 /// 통째로 사라진" 보고서가 나오고, 에이전트는 렌더를 보지 않으므로 알아채지 못한다.
 /// 선검증 → 인메모리 적용 → 단 한 번 저장은 `run`(#3703)의 원자 실행과 같은 규약이다.
-fn csv_to_table(args: &[String]) -> i32 {
-    use rhwp::document_core::queries::table_csv::parse_csv;
-    use rhwp::document_core::queries::table_extract::extract_tables;
+struct CsvToTableArgs<'a> {
+    file_path: &'a str,
+    csv_path: String,
+    table_no: usize,
+    out_path: Option<String>,
+    dry_run: bool,
+    verify_mode: bool,
+    json_mode: bool,
+}
 
+fn parse_csv_to_table_args(args: &[String]) -> Result<CsvToTableArgs<'_>, i32> {
     let mut file_path: Option<&str> = None;
     let mut csv_path: Option<String> = None;
     let mut table_arg: Option<usize> = None;
@@ -9020,7 +9027,7 @@ fn csv_to_table(args: &[String]) -> i32 {
                     Some(p) => csv_path = Some(p.clone()),
                     None => {
                         eprintln!("오류: --csv 뒤에 CSV 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
+                        return Err(EXIT_USAGE);
                     }
                 }
             }
@@ -9030,7 +9037,7 @@ fn csv_to_table(args: &[String]) -> i32 {
                     Some(Ok(value)) => table_arg = Some(value),
                     _ => {
                         eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다.");
-                        return EXIT_USAGE;
+                        return Err(EXIT_USAGE);
                     }
                 }
             }
@@ -9040,18 +9047,18 @@ fn csv_to_table(args: &[String]) -> i32 {
                     Some(p) => out_path = Some(p.clone()),
                     None => {
                         eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
+                        return Err(EXIT_USAGE);
                     }
                 }
             }
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
+                return Err(EXIT_USAGE);
             }
             other => {
                 if file_path.replace(other).is_some() {
                     eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
         }
@@ -9062,7 +9069,108 @@ fn csv_to_table(args: &[String]) -> i32 {
         eprintln!(
             "사용법: rhwp csv-to-table <파일.hwp|파일.hwpx> --csv <경로.csv> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]"
         );
-        return EXIT_USAGE;
+        return Err(EXIT_USAGE);
+    };
+
+    Ok(CsvToTableArgs {
+        file_path,
+        csv_path,
+        table_no,
+        out_path,
+        dry_run,
+        verify_mode,
+        json_mode,
+    })
+}
+
+fn validate_csv_table_records(
+    records: &[Vec<String>],
+    rows: u16,
+    cols: u16,
+    anchors: &[(u16, u16, String)],
+    table_no: usize,
+) -> Vec<serde_json::Value> {
+    let mut invalid = Vec::new();
+    if records.len() != rows as usize {
+        invalid.push(serde_json::json!({
+            "reason": "rowCountMismatch",
+            "expected": rows,
+            "actual": records.len(),
+            "message": format!(
+                "CSV 행 수 {} 가 표 {} 의 행 수 {} 와 다릅니다 — 표 크기는 바꾸지 않습니다.",
+                records.len(), table_no, rows
+            ),
+        }));
+    }
+    for (r, record) in records.iter().enumerate() {
+        if record.len() != cols as usize {
+            invalid.push(serde_json::json!({
+                "reason": "colCountMismatch",
+                "row": r,
+                "expected": cols,
+                "actual": record.len(),
+                "message": format!(
+                    "CSV {}행의 열 수 {} 가 표의 열 수 {} 와 다릅니다.",
+                    r, record.len(), cols
+                ),
+            }));
+        }
+    }
+
+    if !invalid.is_empty() {
+        return invalid;
+    }
+
+    for (r, record) in records.iter().enumerate() {
+        for (c, value) in record.iter().enumerate() {
+            let (row, col) = (r as u16, c as u16);
+            let is_anchor = anchors.iter().any(|(ar, ac, _)| *ar == row && *ac == col);
+            if !is_anchor {
+                // 병합으로 덮인 칸에는 쓸 수 없다. 값이 있으면 조용히 버리지 않고
+                // 거부한다 — 버리면 "썼다고 보고했는데 문서엔 없는" 데이터가 된다.
+                if !value.is_empty() {
+                    invalid.push(serde_json::json!({
+                        "reason": "coveredCellNotEmpty",
+                        "row": r,
+                        "col": c,
+                        "message": format!(
+                            "({},{}) 는 병합으로 덮인 칸이라 쓸 수 없습니다 — 값은 앵커 칸에 두고 이 칸은 비우세요.",
+                            r, c
+                        ),
+                    }));
+                }
+                continue;
+            }
+            // 셀 안 줄바꿈·탭은 set-cell 과 같은 판정으로 거부한다 (문단 골격을
+            // 바꾸는 쓰기는 v1 범위 밖). 내보내기 방향은 인용해서 그대로 낸다.
+            if let Some(message) = set_cell_control_char_rejection(value) {
+                invalid.push(serde_json::json!({
+                    "reason": "controlCharacter",
+                    "row": r,
+                    "col": c,
+                    "message": message,
+                }));
+            }
+        }
+    }
+    invalid
+}
+
+fn csv_to_table(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::table_csv::parse_csv;
+    use rhwp::document_core::queries::table_extract::extract_tables;
+
+    let CsvToTableArgs {
+        file_path,
+        csv_path,
+        table_no,
+        out_path,
+        dry_run,
+        verify_mode,
+        json_mode,
+    } = match parse_csv_to_table_args(args) {
+        Ok(parsed) => parsed,
+        Err(code) => return code,
     };
 
     let csv_bytes = match fs::read(&csv_path) {
@@ -9134,66 +9242,7 @@ fn csv_to_table(args: &[String]) -> i32 {
     };
 
     if invalid.is_empty() {
-        if records.len() != rows as usize {
-            invalid.push(serde_json::json!({
-                "reason": "rowCountMismatch",
-                "expected": rows,
-                "actual": records.len(),
-                "message": format!(
-                    "CSV 행 수 {} 가 표 {} 의 행 수 {} 와 다릅니다 — 표 크기는 바꾸지 않습니다.",
-                    records.len(), table_no, rows
-                ),
-            }));
-        }
-        for (r, record) in records.iter().enumerate() {
-            if record.len() != cols as usize {
-                invalid.push(serde_json::json!({
-                    "reason": "colCountMismatch",
-                    "row": r,
-                    "expected": cols,
-                    "actual": record.len(),
-                    "message": format!(
-                        "CSV {}행의 열 수 {} 가 표의 열 수 {} 와 다릅니다.",
-                        r, record.len(), cols
-                    ),
-                }));
-            }
-        }
-    }
-
-    if invalid.is_empty() {
-        for (r, record) in records.iter().enumerate() {
-            for (c, value) in record.iter().enumerate() {
-                let (row, col) = (r as u16, c as u16);
-                let is_anchor = anchors.iter().any(|(ar, ac, _)| *ar == row && *ac == col);
-                if !is_anchor {
-                    // 병합으로 덮인 칸에는 쓸 수 없다. 값이 있으면 조용히 버리지 않고
-                    // 거부한다 — 버리면 "썼다고 보고했는데 문서엔 없는" 데이터가 된다.
-                    if !value.is_empty() {
-                        invalid.push(serde_json::json!({
-                            "reason": "coveredCellNotEmpty",
-                            "row": r,
-                            "col": c,
-                            "message": format!(
-                                "({},{}) 는 병합으로 덮인 칸이라 쓸 수 없습니다 — 값은 앵커 칸에 두고 이 칸은 비우세요.",
-                                r, c
-                            ),
-                        }));
-                    }
-                    continue;
-                }
-                // 셀 안 줄바꿈·탭은 set-cell 과 같은 판정으로 거부한다 (문단 골격을
-                // 바꾸는 쓰기는 v1 범위 밖). 내보내기 방향은 인용해서 그대로 낸다.
-                if let Some(message) = set_cell_control_char_rejection(value) {
-                    invalid.push(serde_json::json!({
-                        "reason": "controlCharacter",
-                        "row": r,
-                        "col": c,
-                        "message": message,
-                    }));
-                }
-            }
-        }
+        invalid = validate_csv_table_records(&records, rows, cols, &anchors, table_no);
     }
 
     if !invalid.is_empty() {
@@ -9672,12 +9721,17 @@ fn csv_to_chart(args: &[String]) -> i32 {
     EXIT_OK
 }
 
-fn export_markdown(args: &[String]) -> i32 {
-    // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
+struct ExportMarkdownArgs<'a> {
+    file_path: &'a str,
+    output_dir: String,
+    target_page: Option<u32>,
+    json_mode: bool,
+}
+
+fn parse_export_markdown_args(args: &[String]) -> Result<ExportMarkdownArgs<'_>, i32> {
     let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
     let mut target_page: Option<u32> = None;
-    // [#3596] --json: 산출물 매니페스트를 stdout 순수 JSON 으로. 추출 동작 무변경.
     let mut json_mode = false;
 
     let mut i = 0;
@@ -9693,7 +9747,7 @@ fn export_markdown(args: &[String]) -> i32 {
                     i += 2;
                 } else {
                     eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             "--page" | "-p" => {
@@ -9702,23 +9756,23 @@ fn export_markdown(args: &[String]) -> i32 {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                            return EXIT_USAGE;
+                            return Err(EXIT_USAGE);
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
             }
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
+                return Err(EXIT_USAGE);
             }
             other => {
                 if file_path.replace(other).is_some() {
                     eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
+                    return Err(EXIT_USAGE);
                 }
                 i += 1;
             }
@@ -9728,7 +9782,89 @@ fn export_markdown(args: &[String]) -> i32 {
     let Some(file_path) = file_path else {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
         eprintln!("사용법: rhwp export-markdown <파일.hwp> [옵션] (rhwp --help 참조)");
-        return EXIT_USAGE;
+        return Err(EXIT_USAGE);
+    };
+
+    Ok(ExportMarkdownArgs {
+        file_path,
+        output_dir,
+        target_page,
+        json_mode,
+    })
+}
+
+fn markdown_bin_data_image(
+    doc: &rhwp::wasm_api::HwpDocument,
+    page_num: u32,
+    bin_data_id: u16,
+) -> Option<(String, Vec<u8>)> {
+    let mime = match doc.get_bin_data_image_mime_native(bin_data_id) {
+        Ok(mime) => mime,
+        Err(e) => {
+            eprintln!(
+                "경고: 페이지 {} 이미지 MIME fallback 실패 (bin={}): {:?}",
+                page_num, bin_data_id, e
+            );
+            return None;
+        }
+    };
+    let data = match doc.get_bin_data_image_data_native(bin_data_id) {
+        Ok(data) => data,
+        Err(e) => {
+            eprintln!(
+                "경고: 페이지 {} 이미지 데이터 fallback 실패 (bin={}): {:?}",
+                page_num, bin_data_id, e
+            );
+            return None;
+        }
+    };
+    Some((mime, data))
+}
+
+fn markdown_image_data(
+    doc: &rhwp::wasm_api::HwpDocument,
+    page_num: u32,
+    sec_idx: Option<usize>,
+    para_idx: Option<usize>,
+    control_idx: Option<usize>,
+    bin_data_id: u16,
+) -> Option<(String, Vec<u8>)> {
+    if let (Some(si), Some(pi), Some(ci)) = (sec_idx, para_idx, control_idx) {
+        if let (Ok(mime), Ok(data)) = (
+            doc.get_control_image_mime_native(si, pi, &[], ci),
+            doc.get_control_image_data_native(si, pi, &[], ci),
+        ) {
+            return Some((mime, data));
+        }
+        if bin_data_id == 0 {
+            eprintln!(
+                "경고: 페이지 {} 이미지 추출 실패 (s{} p{} c{}), fallback bin_data_id 없음",
+                page_num, si, pi, ci
+            );
+            return None;
+        }
+    } else if bin_data_id == 0 {
+        eprintln!(
+            "경고: 페이지 {} 이미지 추출 실패 (문서 좌표 없음, bin_data_id=0)",
+            page_num
+        );
+        return None;
+    }
+
+    markdown_bin_data_image(doc, page_num, bin_data_id)
+}
+
+fn export_markdown(args: &[String]) -> i32 {
+    // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
+    // [#3596] --json: 산출물 매니페스트를 stdout 순수 JSON 으로. 추출 동작 무변경.
+    let ExportMarkdownArgs {
+        file_path,
+        output_dir,
+        target_page,
+        json_mode,
+    } = match parse_export_markdown_args(args) {
+        Ok(parsed) => parsed,
+        Err(code) => return code,
     };
 
     let data = match fs::read(file_path) {
@@ -9811,85 +9947,16 @@ fn export_markdown(args: &[String]) -> i32 {
                 {
                     let token = format!("[[RHWP_IMAGE:{}]]", img_idx + 1);
 
-                    let try_control = match (sec_idx, para_idx, control_idx) {
-                        (Some(si), Some(pi), Some(ci)) => Some((*si, *pi, *ci)),
-                        _ => None,
-                    };
-
-                    let (mime, image_data) = if let Some((si, pi, ci)) = try_control {
-                        match (
-                            doc.get_control_image_mime_native(si, pi, &[], ci),
-                            doc.get_control_image_data_native(si, pi, &[], ci),
-                        ) {
-                            (Ok(m), Ok(d)) => (m, d),
-                            _ => {
-                                if *bin_data_id == 0 {
-                                    eprintln!(
-                                        "경고: 페이지 {} 이미지 추출 실패 (s{} p{} c{}), fallback bin_data_id 없음",
-                                        page_num, si, pi, ci
-                                    );
-                                    markdown = markdown.replace(&token, "");
-                                    continue;
-                                }
-                                let fb_mime = match doc.get_bin_data_image_mime_native(*bin_data_id)
-                                {
-                                    Ok(m) => m,
-                                    Err(e) => {
-                                        eprintln!(
-                                            "경고: 페이지 {} 이미지 MIME fallback 실패 (bin={}): {:?}",
-                                            page_num, bin_data_id, e
-                                        );
-                                        markdown = markdown.replace(&token, "");
-                                        continue;
-                                    }
-                                };
-                                let fb_data = match doc.get_bin_data_image_data_native(*bin_data_id)
-                                {
-                                    Ok(d) => d,
-                                    Err(e) => {
-                                        eprintln!(
-                                            "경고: 페이지 {} 이미지 데이터 fallback 실패 (bin={}): {:?}",
-                                            page_num, bin_data_id, e
-                                        );
-                                        markdown = markdown.replace(&token, "");
-                                        continue;
-                                    }
-                                };
-                                (fb_mime, fb_data)
-                            }
-                        }
-                    } else {
-                        if *bin_data_id == 0 {
-                            eprintln!(
-                                "경고: 페이지 {} 이미지 추출 실패 (문서 좌표 없음, bin_data_id=0)",
-                                page_num
-                            );
-                            markdown = markdown.replace(&token, "");
-                            continue;
-                        }
-                        let fb_mime = match doc.get_bin_data_image_mime_native(*bin_data_id) {
-                            Ok(m) => m,
-                            Err(e) => {
-                                eprintln!(
-                                    "경고: 페이지 {} 이미지 MIME fallback 실패 (bin={}): {:?}",
-                                    page_num, bin_data_id, e
-                                );
-                                markdown = markdown.replace(&token, "");
-                                continue;
-                            }
-                        };
-                        let fb_data = match doc.get_bin_data_image_data_native(*bin_data_id) {
-                            Ok(d) => d,
-                            Err(e) => {
-                                eprintln!(
-                                    "경고: 페이지 {} 이미지 데이터 fallback 실패 (bin={}): {:?}",
-                                    page_num, bin_data_id, e
-                                );
-                                markdown = markdown.replace(&token, "");
-                                continue;
-                            }
-                        };
-                        (fb_mime, fb_data)
+                    let Some((mime, image_data)) = markdown_image_data(
+                        &doc,
+                        *page_num,
+                        *sec_idx,
+                        *para_idx,
+                        *control_idx,
+                        *bin_data_id,
+                    ) else {
+                        markdown = markdown.replace(&token, "");
+                        continue;
                     };
 
                     if !assets_dir_path.exists() {
