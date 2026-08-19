@@ -202,6 +202,14 @@ fn caption_has_topbottom_picture(caption: &Caption) -> bool {
 /// horizontal viewport so the border exception cannot reveal a text tail.
 /// The vertical correction is separately bounded to a terminal border that
 /// misses the clip by at most six pixels.
+///
+/// [#5587] The exposure is for a nested table whose *stored width* still fits
+/// the host cell and only leaves the clip because it starts after the cell's
+/// left padding (42065: nested width <= host cell width).  A nested table that
+/// declares a width wider than its host cell is a different source shape —
+/// 00387's dotted 46,490HU box inside a 45,359HU cell — and 한글 paints it cut
+/// at the parent's edge.  Widening the clip for that shape would drag the
+/// dotted frame past the outer table border, so it keeps the host viewport.
 fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(cell_node: &mut RenderNode) {
     let RenderNodeType::TableCell(cell_meta) = &cell_node.node_type else {
         return;
@@ -212,6 +220,7 @@ fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(cell_node: &mut R
 
     let host_clip_left = cell_node.bbox.x;
     let host_clip_right = cell_node.bbox.x + cell_node.bbox.width;
+    let host_clip_width = host_clip_right - host_clip_left;
     let mut clip_left = host_clip_left;
     let mut clip_right = host_clip_right;
 
@@ -221,40 +230,44 @@ fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(cell_node: &mut R
         }
         let table_left = table_node.bbox.x;
         let table_right = table_node.bbox.x + table_node.bbox.width;
+        // [#5587] 부모 셀보다 넓게 저장된 중첩표는 clip 확장 대상이 아니다.
+        let over_wide = table_node.bbox.width > host_clip_width + NESTED_OVER_WIDE_EPSILON_PX;
         let mut found_outer_vertical_border = false;
 
-        for border_node in &table_node.children {
-            let RenderNodeType::Line(line) = &border_node.node_type else {
-                continue;
-            };
-            // Cell-content lines can be arbitrary.  Only a near-vertical
-            // table edge that sits on the nested table's left/right boundary
-            // is eligible to enlarge the clipping viewport.
-            if (line.x1 - line.x2).abs() > 0.01 || (line.y1 - line.y2).abs() < 1.0 {
-                continue;
+        if !over_wide {
+            for border_node in &table_node.children {
+                let RenderNodeType::Line(line) = &border_node.node_type else {
+                    continue;
+                };
+                // Cell-content lines can be arbitrary.  Only a near-vertical
+                // table edge that sits on the nested table's left/right boundary
+                // is eligible to enlarge the clipping viewport.
+                if (line.x1 - line.x2).abs() > 0.01 || (line.y1 - line.y2).abs() < 1.0 {
+                    continue;
+                }
+                let x = line.x1;
+                let outer_edge_tolerance = (line.style.width + 1.0).max(2.0);
+                if (x - table_left).abs() > outer_edge_tolerance
+                    && (x - table_right).abs() > outer_edge_tolerance
+                {
+                    continue;
+                }
+                let half_stroke = line.style.width / 2.0;
+                clip_left = clip_left.min(x - half_stroke);
+                clip_right = clip_right.max(x + half_stroke);
+                found_outer_vertical_border = true;
             }
-            let x = line.x1;
-            let outer_edge_tolerance = (line.style.width + 1.0).max(2.0);
-            if (x - table_left).abs() > outer_edge_tolerance
-                && (x - table_right).abs() > outer_edge_tolerance
-            {
-                continue;
-            }
-            let half_stroke = line.style.width / 2.0;
-            clip_left = clip_left.min(x - half_stroke);
-            clip_right = clip_right.max(x + half_stroke);
-            found_outer_vertical_border = true;
-        }
 
-        if !found_outer_vertical_border {
-            // 일부 normal/partial 표는 현재 부모 subtree가 최종 edge `Line`을
-            // 붙이기 전에도 직접 child Table bbox를 완성한다(42065 p2-p3). 이
-            // bbox는 table의 물리 stored-width 경계이므로 작은 stroke 여유만
-            // 포함해 가로 clip의 fallback으로 쓸 수 있다. 세로 bbox는 전혀
-            // 확장하지 않아 다음 쪽 continuation tail은 계속 가려진다.
-            const FALLBACK_BORDER_HALF_STROKE_PX: f64 = 1.0;
-            clip_left = clip_left.min(table_left - FALLBACK_BORDER_HALF_STROKE_PX);
-            clip_right = clip_right.max(table_right + FALLBACK_BORDER_HALF_STROKE_PX);
+            if !found_outer_vertical_border {
+                // 일부 normal/partial 표는 현재 부모 subtree가 최종 edge `Line`을
+                // 붙이기 전에도 직접 child Table bbox를 완성한다(42065 p2-p3). 이
+                // bbox는 table의 물리 stored-width 경계이므로 작은 stroke 여유만
+                // 포함해 가로 clip의 fallback으로 쓸 수 있다. 세로 bbox는 전혀
+                // 확장하지 않아 다음 쪽 continuation tail은 계속 가려진다.
+                const FALLBACK_BORDER_HALF_STROKE_PX: f64 = 1.0;
+                clip_left = clip_left.min(table_left - FALLBACK_BORDER_HALF_STROKE_PX);
+                clip_right = clip_right.max(table_right + FALLBACK_BORDER_HALF_STROKE_PX);
+            }
         }
 
         if table_left < host_clip_left - NESTED_FRAGMENT_EDGE_EPSILON_PX
@@ -395,6 +408,9 @@ fn extend_table_horizontal_bbox_to_direct_cell_paint(table_node: &mut RenderNode
 }
 
 const NESTED_FRAGMENT_EDGE_EPSILON_PX: f64 = 0.5;
+/// [#5587] 중첩표가 부모 셀보다 이만큼 넘게 넓으면 "부모보다 넓게 저장된 표"로
+/// 본다. 42065의 padding 이동 케이스는 저장 폭이 부모 셀 이하라 걸리지 않는다.
+const NESTED_OVER_WIDE_EPSILON_PX: f64 = 0.5;
 /// A table that leaks less than this distance into a clipped continuation cell
 /// is the terminal border of the previous fragment, not content for this page.
 /// Keeping it paints a stray horizontal line at the next page's top (42065
