@@ -23,10 +23,59 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  adapter-impact:
+    name: adapter inter-diff preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      adapter_required: ${{ steps.classify.outputs.adapter_required }}
+      reason: ${{ steps.classify.outputs.reason }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Classify adapter inter-diff impact
+        id: classify
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [[ "${EVENT_NAME}" != "pull_request" || -z "${BASE_SHA}" || -z "${HEAD_SHA}" ]]; then
+            echo "adapter_required=true" >> "$GITHUB_OUTPUT"
+            echo "reason=full-non-pr-event" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! changed_files="$(git diff --name-only "${BASE_SHA}" "${HEAD_SHA}")"; then
+            echo "adapter_required=true" >> "$GITHUB_OUTPUT"
+            echo "reason=fail-closed-pr-diff-unavailable" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -z "${changed_files}" ]]; then
+            echo "adapter_required=true" >> "$GITHUB_OUTPUT"
+            echo "reason=fail-closed-empty-pr-diff" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if printf '%s\n' "${changed_files}" | grep -qv '^mydocs/'; then
+            echo "adapter_required=true" >> "$GITHUB_OUTPUT"
+            echo "reason=full-non-documentation-change" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "adapter_required=false" >> "$GITHUB_OUTPUT"
+          echo "reason=skip-mydocs-only-pr" >> "$GITHUB_OUTPUT"
+
   adapter-diff:
     name: adapter inter-diff
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    needs: adapter-impact
+    if: ${{ always() && needs.adapter-impact.result == 'success' && needs.adapter-impact.outputs.adapter_required == 'true' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 

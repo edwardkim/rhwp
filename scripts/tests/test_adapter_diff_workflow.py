@@ -32,9 +32,23 @@ class AdapterDiffWorkflowTests(unittest.TestCase):
         self.assertTrue(CI_SCENE.is_file(), "CI 픽스처가 없다")
 
     def test_runs_on_pull_request(self) -> None:
-        """PR 마다 도는 always-on job. nightly 전용 스윕이 아니다."""
+        """PR마다 stable check를 남기되 문서 전용은 본 검증을 건너뛴다."""
         self.assertIn("pull_request:", self.wf)
         self.assertIn("branches: [main, devel]", self.wf)
+
+    def test_mydocs_only_pr_skips_adapter_job_but_keeps_a_stable_check(self) -> None:
+        self.assertIn("adapter-impact:", self.wf)
+        self.assertIn("name: adapter inter-diff preflight", self.wf)
+        self.assertIn("fetch-depth: 0", self.wf)
+        self.assertIn('git diff --name-only "${BASE_SHA}" "${HEAD_SHA}"', self.wf)
+        self.assertIn("grep -qv '^mydocs/'", self.wf)
+        self.assertIn("adapter_required=false", self.wf)
+        self.assertIn("reason=fail-closed-pr-diff-unavailable", self.wf)
+        self.assertIn("needs: adapter-impact", self.wf)
+        self.assertIn(
+            "needs.adapter-impact.outputs.adapter_required == 'true'", self.wf
+        )
+        self.assertNotIn("paths-ignore:", self.wf)
 
     def test_is_cheap(self) -> None:
         self.assertNotIn("--features native-skia", self.wf)
