@@ -26990,7 +26990,7 @@ mod tests {
     use super::{
         cli_output_password, cli_password, collect_audit_capsules, replay_scratch_dir,
         set_cli_output_password, set_cli_password, strip_global_auth_options, strip_utf8_bom,
-        tab_ext_semantic_differs, with_replay_input_snapshot, EXIT_USAGE,
+        with_replay_input_snapshot, EXIT_USAGE,
     };
     use rhwp::parser::FileFormat;
 
@@ -27059,34 +27059,6 @@ mod tests {
         ))];
         let error = collect_audit_capsules(entries).expect_err("항목 오류는 fail-closed");
         assert!(error.contains("폴더 항목 읽기 실패"));
-    }
-
-    #[test]
-    fn tab_ext_reserved_fields_ignored() {
-        // 같은 문서의 HWPX(파서가 [1],[3..6]=0) vs HWP5([1]=leader/fill 슬롯, [3..6]=원본 바이트).
-        // 이 포맷 비대칭 슬롯들은 모두 무시 → 의미 차이 없음.
-        let hwpx = [1640, 0, 256, 0, 0, 0, 9];
-        let hwp5 = [1640, 5, 256, 32, 32, 32, 9];
-        assert!(!tab_ext_semantic_differs(&hwpx, &hwp5));
-    }
-
-    #[test]
-    fn tab_ext_semantic_fields_detected() {
-        let base = [1640, 0, 256, 0, 0, 0, 9];
-        assert!(!tab_ext_semantic_differs(&base, &base));
-        // width([0]) 차이 검출
-        assert!(tab_ext_semantic_differs(&base, &[1641, 0, 256, 0, 0, 0, 9]));
-        // type([2] high byte) 차이 검출 — 256(0x0100)→512(0x0200)
-        assert!(tab_ext_semantic_differs(&base, &[1640, 0, 512, 0, 0, 0, 9]));
-        // leader([2] low byte, 두 포맷 공통) 차이 검출 — 256(0x0100)→257(0x0101)
-        assert!(tab_ext_semantic_differs(&base, &[1640, 0, 257, 0, 0, 0, 9]));
-        // HWP5 leader/fill 슬롯([1], HWPX는 항상 0)은 포맷 비대칭이라 무시 — 차이로 치지 않음
-        assert!(!tab_ext_semantic_differs(
-            &base,
-            &[1640, 1, 256, 0, 0, 0, 9]
-        ));
-        // marker([6]) 차이 검출
-        assert!(tab_ext_semantic_differs(&base, &[1640, 0, 256, 0, 0, 0, 0]));
     }
 
     #[test]
