@@ -34,7 +34,8 @@ export function resolveCase(caseName, root = ROOT) {
 }
 
 export function nextestArguments(plan, extraArguments = []) {
-  const arguments_ = ['nextest', 'run', '--test', plan.target];
+  const locked = extraArguments.includes('--locked') ? [] : ['--locked'];
+  const arguments_ = ['nextest', 'run', ...locked, '--test', plan.target];
   if (plan.grouped) {
     arguments_.push('-E', `test(/(^|::)${plan.caseName}::/)`);
   }
@@ -42,7 +43,8 @@ export function nextestArguments(plan, extraArguments = []) {
 }
 
 export function cargoTestArguments(plan, extraArguments = []) {
-  const arguments_ = ['test', ...extraArguments, '--test', plan.target];
+  const locked = extraArguments.includes('--locked') ? [] : ['--locked'];
+  const arguments_ = ['test', ...locked, ...extraArguments, '--test', plan.target];
   if (plan.grouped) {
     arguments_.push(`${plan.caseName}::`);
   }
