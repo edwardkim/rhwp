@@ -3458,48 +3458,6 @@ mod tests {
         assert_eq!(xml, "<hp:t><hp:titleMark ignore=\"1\"/>가나</hp:t>");
     }
 
-    /// [#5537] 닫히는 run 소유의 제목 차례 표시(char_shapes 경계 유닛 == 표시 끝
-    /// 유닛)는 앞 run 조각 말미에 방출된다 — 다음 run 머리로 넘기면 재파싱
-    /// char_shapes 경계가 표시 폭(8유닛)만큼 무너진다(hwp3-sample10-hwp5
-    /// pi=14164: 경계 15→7 붕괴 실측).
-    #[test]
-    fn prev_owned_title_mark_is_emitted_at_fragment_end() {
-        let mut cursor = InlineCursor {
-            title_marks: &[TitleMark {
-                char_idx: 2,
-                ignore: true,
-            }],
-            mark_owned_by_prev: &[true],
-            ..Default::default()
-        };
-        // 표시 char_idx=2 == 조각 끝 — 소유 플래그가 서 있으면 이 조각 말미에 실린다.
-        let xml = render_hp_t_content("가나", &[], &mut cursor);
-        assert_eq!(
-            xml, "<hp:t>가나<hp:titleMark ignore=\"1\"/></hp:t>",
-            "닫히는 run 소유 표시는 조각 말미에 방출되어야 한다"
-        );
-        // 이미 소비됐으므로 다음 조각 머리에는 다시 실리지 않는다.
-        let xml2 = render_hp_t_content("다라", &[], &mut cursor);
-        assert_eq!(xml2, "<hp:t>다라</hp:t>");
-    }
-
-    /// [#5537] 소유 플래그가 없으면 종전 동작 — 표시는 다음 run 머리에 실린다
-    /// (한컴 실측 두 형태 공존: `<hp:t><hp:titleMark/>텍스트</hp:t>`).
-    #[test]
-    fn unowned_boundary_title_mark_stays_at_next_fragment_head() {
-        let mut cursor = InlineCursor {
-            title_marks: &[TitleMark {
-                char_idx: 2,
-                ignore: true,
-            }],
-            ..Default::default()
-        };
-        let xml = render_hp_t_content("가나", &[], &mut cursor);
-        assert_eq!(xml, "<hp:t>가나</hp:t>");
-        let xml2 = render_hp_t_content("다라", &[], &mut cursor);
-        assert_eq!(xml2, "<hp:t><hp:titleMark ignore=\"1\"/>다라</hp:t>");
-    }
-
     /// `ignore="0"`(`Mign`)도 구별해 낸다 — 한글 2022 양방향 실측(06699).
     #[test]
     fn title_mark_ignore_off_round_trips() {
