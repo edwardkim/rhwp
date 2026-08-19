@@ -97,3 +97,80 @@ pub fn run_same_text(args: &[String]) -> i32 {
 pub fn run_page_delta(args: &[String]) -> i32 {
     run_compare_pages(args)
 }
+
+fn field_names(path: &str) -> Result<Vec<String>, i32> {
+    let data = read_file(path).map_err(|m| {
+        eprintln!("오류: {m}");
+        EXIT_RUNTIME
+    })?;
+    let core = load_core(&data).map_err(|fail| {
+        eprintln!("오류: 문서를 열 수 없습니다 - {path}: {}", fail.message);
+        EXIT_RUNTIME
+    })?;
+    let mut names: Vec<String> = core
+        .collect_all_fields()
+        .iter()
+        .map(|f| {
+            f.field
+                .ctrl_data_name
+                .clone()
+                .filter(|n| !n.is_empty())
+                .unwrap_or_else(|| f.field.command.clone())
+        })
+        .filter(|n| !n.is_empty())
+        .collect();
+    names.sort();
+    names.dedup();
+    Ok(names)
+}
+
+/// 실무 예제집 시나리오 11 — 두 서식의 누름틀 이름 차집합.
+pub fn run_field_diff(args: &[String]) -> i32 {
+    let usage = "rhwp-agent field-diff <파일A> <파일B> [--json]";
+    let (json_mode, a, b) = match two_files(args, usage) {
+        Ok(v) => v,
+        Err(c) => return c,
+    };
+    let na = match field_names(&a) {
+        Ok(v) => v,
+        Err(c) => return c,
+    };
+    let nb = match field_names(&b) {
+        Ok(v) => v,
+        Err(c) => return c,
+    };
+    let only_a: Vec<&String> = na.iter().filter(|n| !nb.contains(n)).collect();
+    let only_b: Vec<&String> = nb.iter().filter(|n| !na.contains(n)).collect();
+    let shared: Vec<&String> = na.iter().filter(|n| nb.contains(n)).collect();
+    let equal = only_a.is_empty() && only_b.is_empty();
+    let payload = json!({
+        "a": a,
+        "b": b,
+        "countA": na.len(),
+        "countB": nb.len(),
+        "sharedCount": shared.len(),
+        "onlyInA": only_a,
+        "onlyInB": only_b,
+        "shared": shared,
+        "equal": equal,
+    });
+    if json_mode {
+        print_json(&envelope(
+            "field-diff",
+            payload,
+            &["onlyInA[]", "onlyInB[]", "shared[]"],
+        ));
+    } else {
+        crate::outln!(
+            "equal={equal} onlyA={} onlyB={} shared={}",
+            only_a.len(),
+            only_b.len(),
+            shared.len()
+        );
+    }
+    if equal {
+        EXIT_OK
+    } else {
+        EXIT_GATE
+    }
+}
