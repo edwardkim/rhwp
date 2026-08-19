@@ -32,7 +32,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `dialog-theme.test.mjs` | 상시 | active | 다이얼로그 다크 테마 색상 정책 | — | 수동 |  |
 | `document-agent-command.test.mjs` | 상시 | active | HWP/HWPX exact command apply·strict render·revert·focus·native typing·일반 Ctrl+Z·modal 0회 | para-001.hwp, hwpx/para-001.hwpx | npm e2e:document-agent | fresh WASM 필수 |
 | `drag-selection-autoscroll.test.mjs` | 상시 | active | 텍스트 드래그 선택 edge 자동 스크롤 | — | npm e2e:drag-autoscroll |  |
-| `drop-confirm.test.mjs` | 상시 | active | #1439 드래그&드롭 로컬 파일 로딩 보안 게이트 | — | 수동 |  |
+| `drop-confirm.test.mjs` | 상시 | active | 드롭 확인 대화상자 경계 (문서=없음, 이미지=#1439 게이트) | — | 수동 |  |
 | `edit-pipeline.test.mjs` | 상시 | active | 편집 파이프라인 검증 (Issue #2) | — | 수동 |  |
 | `embed-save-ack.test.mjs` | 상시 | active | Task #2660 호스트 저장 완료 통지와 dirty/autosave 정리 계약 | footnote-01.hwp | 수동 |  |
 | `embed-transport.test.mjs` | 상시 | active | Issue #2186 @rhwp/editor MessageChannel v1 iframe transport | — | npm e2e:embed |  |
@@ -43,7 +43,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `form-control.test.mjs` | 상시 | active | 양식 컨트롤 — 셀 커서 진입(#111) + 체크박스 클릭 토글(#112) | form-002.hwpx | 수동 |  |
 | `form-edit-escape-cancel.test.mjs` | 상시 | active | #2375 Edit 양식 필드 Escape는 blur 뒤에도 취소·무기록 | form-01.hwp | npm e2e:form-edit-escape |  |
 | `gen-screenshot.mjs` | 유틸 | active | README 용 렌더 스크린샷 생성기 | basic/KTX.hwp | 수동 |  |
-| `global-shortcut.test.mjs` | 상시 | active | 전역 단축키 (문서 미로드 상태) | — | 수동 |  |
+| `global-shortcut.test.mjs` | 상시 | active | 시작 시 빈 문서 + 전역 단축키 | — | 수동 |  |
 | `grid-mode-click-coord.test.mjs` | 진단 | hold | 보류 ① 그리드 좌표 결함 — 정량 e2e 측정 | exam_kor.hwp | 수동 | legacy-name · 보류① 이슈 종속 |
 | `helpers.mjs` | 유틸 | active | E2E 테스트 헬퍼 — Puppeteer + Chrome CDP | — | 수동 |  |
 | `hml-equation-embed.test.mjs` | 상시 | active | PR #2219 HML equation canvas edit/undo/export/reload | — | 수동 |  |

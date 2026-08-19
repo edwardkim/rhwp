@@ -280,6 +280,11 @@ export class VirtualScroll {
     return this.maxPageWidth;
   }
 
+  /** 페이지 사이/위아래 여백(px). 빈 쪽 자리표시자도 같은 여백을 쓴다. */
+  getPageGap(): number {
+    return this.pageGap;
+  }
+
   getTotalHeight(): number {
     return this.totalHeight;
   }
