@@ -36,7 +36,6 @@ import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
 import { MODAL_DIALOG_CLOSED_EVENT } from '@/ui/dialog';
 import { showHmlImportWarning } from '@/ui/hml-import-warning';
-import { showLocalFontsModalIfNeeded } from '@/ui/local-fonts-modal';
 import { showToast } from '@/ui/toast';
 import { addRecentDoc, listRecentDocs } from '@/recent/recent-store';
 import { showDropConfirmDialog } from '@/ui/drop-confirm-dialog';
@@ -685,10 +684,15 @@ async function initialize(): Promise<void> {
     setupEventListeners();
     setupModalFocusRestore();
     setupGlobalShortcuts();
-    void loadFromUrlParam();
-    // embed 프로파일: 자동저장 복구 다이얼로그의 드래프트 복원도 호스트가 감지할 수
-    // 없는 문서 교체 경로이므로 띄우지 않는다 (드래프트 기록 자체는 유지).
-    if (chromeMode !== 'embed') void offerAutosaveRecoveryIfIdle();
+    // 시작 진입점은 순서를 지켜야 한다 — ?url= 로드와 자동저장 복구가 문서를 열 기회를
+    // 먼저 갖고, 아무도 열지 않았을 때만 빈 문서를 연다.
+    void (async () => {
+      await loadFromUrlParam();
+      // embed 프로파일: 자동저장 복구 다이얼로그의 드래프트 복원도 호스트가 감지할 수
+      // 없는 문서 교체 경로이므로 띄우지 않는다 (드래프트 기록 자체는 유지).
+      if (chromeMode !== 'embed') await offerAutosaveRecoveryIfIdle();
+      await openBlankDocumentIfIdle();
+    })();
     // embed 프로파일: PWA launch queue로 문서를 넘겨받는 진입도 문서 교체 경로이므로
     // 설치하지 않는다.
     if (chromeMode !== 'embed') {
@@ -825,12 +829,10 @@ function setupFileInput(): void {
       return;
     }
 
-    // [#1439] 보안: 드롭으로 로컬 파일을 읽는 동작은 기본에서 제외하고, 사용자가
-    // 명시적으로 [열기]를 눌러 동의한 경우에만 진행한다 (확장/웹 공통).
-    const confirmed = await showDropConfirmDialog(file.name);
-    if (!confirmed) return;
-
     if (isImage) {
+      // [#1439] 이미지 드롭은 로컬 파일을 읽어 편집 중인 문서에 끼워 넣는 편집 동작이므로
+      // 명시 동의를 유지한다. 문서 드롭은 열기 동작이라 확인 없이 바로 연다.
+      if (!await showDropConfirmDialog(file.name)) return;
       if (!inputHandler || wasm.pageCount === 0) return;
       const data = new Uint8Array(await file.arrayBuffer());
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
@@ -866,7 +868,9 @@ function setupFileInput(): void {
       return;
     }
 
-    // HWP/HWPX/HML — Finder/Explorer drop에서는 File System Access handle을 capture하지
+    // HWP/HWPX/HML — 드롭 열기는 확인 대화상자 없이 바로 연다. 드롭 자체가 명시적인
+    // 사용자 제스처이고, 파일을 열 때마다 확인을 받으면 열기 흐름이 끊긴다.
+    // Finder/Explorer drop에서는 File System Access handle을 capture하지
     // 않는다. macOS Chromium에서 encrypted HWPX drag/drop 시 해당 IPC가 renderer를 종료시키는
     // 사례가 있어, 열기에 충분한 File bytes만 사용한다. 저장은 이후 save-as 경로로 진행한다.
     await loadFile(file);
@@ -1175,41 +1179,18 @@ async function initializeDocument(
 async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: string): Promise<void> {
   if (!docInfo.fontsUsed?.length) return;
 
-  const msg = sbMessage();
+  // 문서를 열 때마다 로컬 글꼴 감지 안내 모달을 띄우면 열람 흐름이 끊긴다. 저장된 감지 결과가
+  // 있으면 그대로 재사용하고, 없으면 대체 글꼴로 조용히 표시한다. 수동 감지는 옵션 대화상자의
+  // '로컬 글꼴 감지하기'로 계속 실행할 수 있다.
   try {
     if (!getLocalFontState().loaded) await loadStoredLocalFonts();
     const report = analyzeDocumentFonts(docInfo.fontsUsed);
     if (!report.shouldPromptLocalAccess) return;
-
-    const choice = await showLocalFontsModalIfNeeded(report, {
-      disableExternalWebFonts: extensionViewerSettings.disableExternalWebFonts,
-    });
-    if (choice !== 'detect') return;
-
-    msg.textContent = '로컬 글꼴 감지 중...';
-    const fonts = await detectLocalFonts({
-      force: true,
-      includeRegistered: true,
-      candidateFamilies: docInfo.fontsUsed,
-    });
-    const nextReport = analyzeDocumentFonts(docInfo.fontsUsed);
-    eventBus.emit('local-fonts-changed', { fonts, report: nextReport });
-    const state = getLocalFontState();
-    const resultLabel = state.source === 'font-presence-probe'
-      ? '확인됨'
-      : (state.probedFamilies.length > 0 ? '열거·확인됨' : '열거됨');
-    msg.textContent = `${displayName} (로컬 글꼴 ${fonts.length}개 ${resultLabel})`;
-    showToast({
-      message: `로컬 글꼴 ${fonts.length}개를 ${resultLabel.replace('됨', '')}하고 저장했습니다.\n다음 문서 로드부터 감지 결과를 재사용합니다.`,
-      durationMs: 5000,
-    });
+    console.log(
+      `[local-fonts] 감지 안내 모달 생략 — 대체 글꼴로 표시 (확인 필요 ${report.summary.needsLocalCheck}개, 문서 ${displayName})`,
+    );
   } catch (error) {
-    console.warn('[local-fonts] 감지 안내/실행 실패 (치명적이지 않음):', error);
-    msg.textContent = displayName;
-    showToast({
-      message: '로컬 글꼴 감지에 실패했습니다.\n웹 대체 글꼴로 계속 표시합니다.',
-      durationMs: 8000,
-    });
+    console.warn('[local-fonts] 저장된 감지 결과 로드 실패 (치명적이지 않음):', error);
   }
 }
 
@@ -1292,9 +1273,21 @@ async function loadDocumentForOpen(data: Uint8Array, fileName: string): Promise<
   }
 }
 
+/**
+ * 문서 열기가 실패하면 빈 쪽 상태로 남는다. WASM이 아직 이전 문서를 쥐고 있으면 그 뷰를
+ * 되살려, 열기 실패가 이미 열어 둔 문서를 잃는 일로 번지지 않게 한다.
+ */
+function restoreViewAfterFailedOpen(): void {
+  if (!canvasView || wasm.pageCount === 0) return;
+  void canvasView.loadDocument().catch((error) => {
+    console.warn('[main] 열기 실패 후 이전 문서 뷰 복구 실패:', error);
+  });
+}
+
 function showLoadErrorUnlessCancelled(error: unknown): void {
   if (isDocumentOpenCancelled(error)) {
     sbMessage().textContent = '문서 열기를 취소했습니다.';
+    restoreViewAfterFailedOpen();
     return;
   }
   showLoadError(error);
@@ -1329,6 +1322,9 @@ async function loadBytes(
   startTime = performance.now(),
   options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean } = {},
 ): Promise<void> {
+  // 파싱 전에 먼저 빈 쪽 상태로 만든다 — 이전 문서를 붙잡고 있다가 한 번에 갈아치우면
+  // 화면이 튀어 보인다. 파싱이 실패하면 아래 catch가 이전 문서 뷰를 되살린다.
+  canvasView?.showBlankPage();
   if (!options.dataReadProgressShown) {
     await updateLoadProgress(0, '문서 데이터 준비 중...');
   }
@@ -1494,6 +1490,18 @@ async function createNewDocument(): Promise<void> {
     msg.textContent = `새 문서 생성 실패: ${error}`;
     console.error('[main] 새 문서 생성 실패:', error);
   }
+}
+
+/**
+ * WASM 초기화 뒤 아무 문서도 열리지 않았으면 빈 문서를 열어 바로 편집할 수 있게 한다.
+ * 회색 작업 영역만 남은 시작 화면은 편집기가 준비되지 않은 것처럼 보인다.
+ * 문서를 넘겨받는 진입점(?url=, 자동저장 복구, PWA launch queue)이 이미 문서를 열었으면
+ * 건드리지 않는다. embed 프로파일은 호스트가 문서 교체를 통제하므로 제외한다.
+ */
+async function openBlankDocumentIfIdle(): Promise<void> {
+  if (chromeMode === 'embed') return;
+  if (wasm.pageCount > 0 || documentState.isDirty()) return;
+  await createNewDocument();
 }
 
 async function canReplaceCurrentDocument(skipUnsavedGuard?: boolean): Promise<boolean> {
@@ -1671,6 +1679,7 @@ function showLoadError(error: unknown): void {
   const sb = sbMessage();
   if (sb) sb.textContent = errMsg;
   console.error('[main] 파일 로드 실패:', error);
+  restoreViewAfterFailedOpen();
   showToast({
     message: errMsg,
     durationMs: 0, // 에러는 자동 페이드 없음 — 사용자가 읽고 닫기
