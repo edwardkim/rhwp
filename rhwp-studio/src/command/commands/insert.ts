@@ -642,7 +642,15 @@ function recordObjectMutation(
   mutate: (wasm: WasmBridge) => boolean | void,
   opts?: { refresh?: RefreshPolicy },
 ): void {
-  const pos = ih.getCursorPosition();
+  // [Task #3351] 개체 선택은 `cursor.position` 을 옮기지 않는다. 그래서 여기서 그냥
+  // `getCursorPosition()` 을 잡으면 **개체를 선택하기 직전 캐럿**이 기록되고, undo/redo 가
+  // 조작과 무관한 자리(문서 상단일 수도 있다)로 착지한다.
+  //
+  // 한컴 2024 실측: 개체 선택은 캐럿을 앵커로 끌고 가고, 캐럿을 다른 문단으로 옮기면 선택이
+  // 풀린다 — "캐럿은 딴 곳, 개체는 선택" 이라는 상태 자체가 없다. 삭제·undo·redo 내내 캐럿은
+  // 개체 인접 문단에 머문다. Delete 키 경로(`performDelete`)가 이미 그렇게 하고 있으므로
+  // 메뉴 경로도 같은 자리를 기록한다.
+  const pos = ih.getPositionOutsideSelectedPicture() ?? ih.getCursorPosition();
   ih.executeOperation({
     kind: 'snapshot',
     operationType,
