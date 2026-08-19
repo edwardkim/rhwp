@@ -24,6 +24,7 @@ import {
 import { FlowImageUrlCache } from './flow-image-url-cache';
 import { drawPageMarginGuides, type PageSpaceRect } from './page-margin-guides';
 import type { RenderBackend } from './render-backend';
+import { isSameRenderDocument, type RenderDocumentIdentity } from './render-document-identity.ts';
 
 interface LayerPlaneSummary {
   hasBehind: boolean;
@@ -82,9 +83,9 @@ export class PageRenderer {
    * prefetch 를 끝낸 페이지의 그림 서명 (Task #3315).
    *
    * 내용에서 유도된 키라 스스로 무효화된다 — 편집 때 비우지 않는다. 비우면 서명을 두는
-   * 의미가 사라진다. 문서 경계는 서명이 들고 다니는 `documentDigest` 로 갈린다 —
-   * `PageRenderer` 는 문서보다 오래 살고 문서 로드 경로가 이 맵을 비우지 않으므로,
-   * 비우기에 기대지 않고 항목 자체가 어느 문서의 것인지 말하게 한다.
+   * 의미가 사라진다. 서명은 자기가 어느 문서의 것인지(`documentDigest`) 함께 들고 다니므로
+   * 옛 문서의 항목이 새 문서에서 잘못 맞아떨어지지 않는다. 다만 **맞지 않을 뿐 사라지지도
+   * 않으므로**, 수명은 `beginDocument` 가 문서 경계에서 거둔다.
    */
   private prefetchedImageSignatures = new Map<number, PrefetchSignature>();
   /**
@@ -94,6 +95,14 @@ export class PageRenderer {
    * `beginDocument` 가 가른다.
    */
   private flowImageUrls = new FlowImageUrlCache();
+  /**
+   * 위 페이지 단위 파생 상태가 어느 문서의 것인지 (Task #3315).
+   *
+   * `beginDocument` 가 이 값과 현재 문서를 견줘 거둘지 말지 정한다. 항목마다 신원이 박혀 있는
+   * 것과 별개로 필요하다 — 항목의 신원은 "새 문서에서 잘못 맞지 않게" 하고, 이 값은 "옛 문서의
+   * 항목을 언제 버릴지"를 정한다.
+   */
+  private documentScope: RenderDocumentIdentity | null = null;
   private prefetchRequestTokens = new Map<number, number>();
   private nextPrefetchRequestToken = 0;
   private flowSplitSupported: boolean | null = null;
@@ -129,17 +138,38 @@ export class PageRenderer {
   /**
    * 문서 (재)로드 경계 — `CanvasView.prepareDocumentLoad` 가 부른다 (Task #3315).
    *
-   * 문서 범위 자원 가운데 브라우저가 명시적 회수까지 붙들고 있는 것(flow 그림 object URL)을
-   * 여기서 넘긴다. 조회 시점으로 미루면 새 문서가 flow 그림을 한 장도 조회하지 않을 때
-   * (그림 없는 문서·CanvasKit 경로) 옛 문서의 URL 이 그대로 남는다.
+   * **문서 범위 파생 상태의 수명을 정하는 유일한 자리다.** `PageRenderer` 는 문서보다 오래
+   * 살므로, 여기서 거두지 않으면 세션이 끝날 때까지 남는다 — `dispose()` 는 문서 닫기·뷰 교체
+   * 기능이 생길 때를 위한 자리라 지금은 호출부가 없다(`CanvasView.dispose`).
    *
-   * 같은 문서를 다시 로드한 경우에는 캐시가 신원을 보고 그대로 둔다.
+   * 거두는 것은 셋이다.
+   *
+   * - flow 그림 object URL — 브라우저가 명시적 회수까지 붙들고 있다. 조회 시점으로 미루면 새
+   *   문서가 flow 그림을 한 장도 조회하지 않을 때(그림 없는 문서·CanvasKit 경로) 옛 문서의
+   *   URL 이 그대로 남는다.
+   * - 재시도 키(`imageRetryCounts`)·prefetch 서명(`prefetchedImageSignatures`) — 둘 다 키에
+   *   문서 신원이 박혀 있어 새 문서에서 **잘못 맞아떨어지지는 않는다.** 그래서 이건 정확성이
+   *   아니라 수명 문제다. 다시 읽히지 않을 항목이 문서를 열 때마다 페이지 수만큼 쌓인다.
+   *
+   * 편집(문서 revision 변화)으로는 거두지 않는다 — 그 경계는 `resetImageRetryState` 이고,
+   * 거기서 재시도 키를 비우면 페이지마다 재렌더가 한 번 더 돈다(#3672). 페이지가 풀에서
+   * 빠질 때도 거두지 않는다 — 같은 이유로 페이지를 다시 볼 때마다 재렌더가 한 번 더 돈다.
+   *
+   * 같은 문서를 다시 로드한 경우에는 신원이 같으므로 그대로 둔다.
    */
   beginDocument(): void {
-    this.flowImageUrls.beginDocument({
+    const identity: RenderDocumentIdentity = {
       digest: this.wasm.documentDigest,
       generation: this.wasm.documentGeneration,
-    });
+    };
+    this.flowImageUrls.beginDocument(identity);
+    if (isSameRenderDocument(this.documentScope, identity)) return;
+
+    this.imageRetryCounts.clear();
+    this.prefetchedImageSignatures.clear();
+    // 신원을 모르면(`digest === null`) 항목이 어느 문서 것인지 표시할 수 없다. 그 상태에서는
+    // `buildImageRetryKey` 도 서명 기록도 멈추므로 지킬 것이 없다 — 범위를 비워 둔다.
+    this.documentScope = identity.digest === null ? null : identity;
   }
 
   invalidateDocumentRevision(): void {
@@ -1252,8 +1282,11 @@ export class PageRenderer {
    * (`refreshPages` → `releaseAllRenderedPages`) 불리므로, 비우면 페이지마다 재렌더가 한 번 더
    * 돈다 — prefetch 가 서명으로 건너뛰어 `finish()` 가 즉시 불리고 다시 그린다.
    *
-   * 문서 경계와 그림 내용 변화는 재시도 키가 직접 든다(`buildImageRetryKey`). 그래서 바깥에서
-   * 비워 줄 시점을 맞출 필요가 없다 — 맞춰야 하는 계약이 #3648·P1 에서 깨진 그 계약이다.
+   * 문서 경계와 그림 내용 변화는 재시도 키가 직접 든다(`buildImageRetryKey`). 그래서 **편집
+   * 시점에** 비워 줄 필요가 없다 — 맞춰야 하는 계약이 #3648·P1 에서 깨진 그 계약이다.
+   *
+   * 다만 "잘못 맞지 않는다"와 "사라진다"는 다르다. 다시 읽히지 않을 항목을 거두는 자리는
+   * 문서 경계인 `beginDocument` 다.
    */
   resetImageRetryState(): void {
     this.prefetchRequestTokens.clear();
@@ -1269,6 +1302,7 @@ export class PageRenderer {
     this.layerSummaryCache.clear();
     this.canvaskitDiagnosticsByPage.clear();
     this.flowImageUrls.releaseAll();
+    this.documentScope = null;
     this.canvaskitRenderer = null;
   }
 }
