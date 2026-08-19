@@ -67,3 +67,32 @@ fn superscript_thin_space_also_preserved() {
     assert_ne!(spaced, parse("x^{2}"));
     assert!(base_ends_with_thin_space(&spaced), "{spaced:?}");
 }
+
+#[test]
+fn parenthesized_base_thin_space_before_scripts_stays_in_script_base() {
+    let subscript = parse("(a)`_{2}");
+    assert!(
+        base_ends_with_thin_space(&subscript),
+        "(a)`_{{2}} should keep the Thin space in the subscript base"
+    );
+    assert!(
+        matches!(
+            base_of(&subscript),
+            Some(EqNode::Row(children)) if matches!(children.first(), Some(EqNode::Paren { .. }))
+        ),
+        "(a)`_{{2}} should keep the parenthesized group as the subscript base"
+    );
+
+    let superscript = parse("(a)`^{2}");
+    assert!(
+        base_ends_with_thin_space(&superscript),
+        "(a)`^{{2}} should keep the Thin space in the superscript base"
+    );
+    assert!(
+        matches!(
+            base_of(&superscript),
+            Some(EqNode::Row(children)) if matches!(children.first(), Some(EqNode::Paren { .. }))
+        ),
+        "(a)`^{{2}} should keep the parenthesized group as the superscript base"
+    );
+}

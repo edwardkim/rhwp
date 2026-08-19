@@ -619,7 +619,8 @@ impl EqParser {
         self.tokens.len()
     }
 
-    /// 현재 LParen 의 매칭 RParen 다음 토큰이 첨자(`^`/`_`)인지 (#1305).
+    /// 현재 LParen 의 매칭 RParen 다음 첨자(`^`/`_`)인지 (#1305).
+    /// RParen 뒤의 Thin 공백(`) 하나는 첨자 결합 전에 보존되는 공백이므로 건너뛴다.
     /// 참이면 `(...)` 를 Paren 그룹으로 묶어 첨자를 결합해야 한다.
     /// 현재 토큰이 LParen 이라는 전제. 사전계산된 `paren_match` 로 O(1) 조회한다
     /// (원래는 매 호출 O(n) 전방 스캔 → 괄호 많은 입력에서 O(n^2) 행 유발).
@@ -629,8 +630,16 @@ impl EqParser {
             .get(self.pos)
             .copied()
             .unwrap_or(self.tokens.len());
+        let next = close + 1;
+        let script = if self.tokens.get(next).is_some_and(|token| {
+            token.ty == TokenType::Whitespace && token.value == "`"
+        }) {
+            next + 1
+        } else {
+            next
+        };
         matches!(
-            self.tokens.get(close + 1).map(|t| t.ty),
+            self.tokens.get(script).map(|t| t.ty),
             Some(TokenType::Subscript) | Some(TokenType::Superscript)
         )
     }
