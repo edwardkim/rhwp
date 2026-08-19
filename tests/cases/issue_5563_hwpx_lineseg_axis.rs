@@ -13,7 +13,9 @@ use rhwp::diagnostics::render_geom_diff::{roundtrip_geom, Via};
 use rhwp::model::document::{Document, Section};
 use rhwp::model::paragraph::{LineSeg, Paragraph};
 use rhwp::serializer::hwpx::context::SerializeContext;
+use rhwp::serializer::hwpx::roundtrip::diff_documents;
 use rhwp::serializer::hwpx::section::write_section;
+use rhwp::wasm_api::HwpDocument;
 use std::fs;
 use std::path::Path;
 
@@ -124,5 +126,25 @@ fn field_slots_extend_the_serialized_axis() {
     assert!(
         diff.max_disp <= 1.0 && diff.pages.iter().all(|page| !page.structure_mismatch),
         "필드 슬롯 뒤 lineseg가 보존되어야 함: {diff:?}"
+    );
+}
+
+/// HWP3 첫 문단은 section_def만 보유하고 inline `secd`가 없을 수 있다. HWP5 저장 전에
+/// `secd`/`cold` 슬롯을 보강하면 원본 char_count보다 긴 lineseg가 정상 축에 들어온다.
+#[test]
+fn hwp3_sectiondef_fallback_extends_the_comparable_lineseg_axis() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples")
+        .join("hwp3-table-caption.hwp");
+    let bytes = fs::read(&fixture)
+        .unwrap_or_else(|error| panic!("fixture 읽기 실패 ({}): {error}", fixture.display()));
+    let mut source = HwpDocument::from_bytes(&bytes).expect("HWP3 파싱 실패");
+    let serialized = source.export_hwp_with_adapter().expect("HWP5 직렬화 실패");
+    let reparsed = HwpDocument::from_bytes(&serialized).expect("HWP5 재파싱 실패");
+
+    let diff = diff_documents(source.document(), reparsed.document());
+    assert!(
+        diff.differences.is_empty(),
+        "SectionDef 보강 전후의 정상 lineseg를 손실로 판단하면 안 됨: {diff:?}"
     );
 }

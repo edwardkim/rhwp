@@ -1086,11 +1086,12 @@ pub fn diff_linesegs(a: &Document, b: &Document) -> Vec<LinesegDiff> {
 /// [#5563] 비교 대상이 되는 줄 — 저장기가 실제로 파일에 실을 수 있는 접두부.
 fn axis_comparable_line_segs(
     para: &crate::model::paragraph::Paragraph,
+    axis_end: u32,
 ) -> &[crate::model::paragraph::LineSeg] {
-    if para.char_count == 0 {
+    if axis_end == 0 {
         return &para.line_segs;
     }
-    crate::serializer::body_text::line_segs_within_text_axis(&para.line_segs, para.char_count)
+    crate::serializer::body_text::line_segs_within_text_axis(&para.line_segs, axis_end)
 }
 
 /// 문단 1쌍의 lineseg 비교 + 컨트롤 내부 문단 재귀 (`diff_paragraph_char_shapes` 와
@@ -1103,14 +1104,41 @@ fn diff_paragraph_linesegs(
     pa: &crate::model::paragraph::Paragraph,
     pb: &crate::model::paragraph::Paragraph,
 ) {
+    diff_paragraph_linesegs_with_axis(
+        out,
+        section,
+        paragraph,
+        path,
+        pa,
+        pb,
+        pa.char_count,
+        pb.char_count,
+    );
+}
+
+fn diff_paragraph_linesegs_with_axis(
+    out: &mut Vec<LinesegDiff>,
+    section: usize,
+    paragraph: usize,
+    path: &str,
+    pa: &crate::model::paragraph::Paragraph,
+    pb: &crate::model::paragraph::Paragraph,
+    a_axis_end: u32,
+    b_axis_end: u32,
+) {
     use crate::model::control::Control;
 
     // [#5563] 문단 축을 넘어서는 줄은 저장기가 파일에 싣지 않는다(HWPX·HWP5 공통
     // 계약 — `line_segs_within_text_axis`). 비교에서도 같은 규칙을 먼저 걸어야
     // "저장할 수 없는 줄"이 IR 차이로 잡히지 않는다. 축 증거가 없는 합성 IR
     // (`char_count == 0`)은 종전대로 전부 비교한다.
-    let la = axis_comparable_line_segs(pa);
-    let lb = axis_comparable_line_segs(pb);
+    // HWP3/HWPX adapter는 SectionDef·필드 안내문 슬롯을 저장 직전에 보강한다. live
+    // 원본 IR의 char_count는 그대로인 반면 재적재본은 늘어난 축을 보고한다. 한쪽만
+    // 작은 축으로 자르면 정상 lineseg가 새 손실로 보이므로, 두 문단이 공유하는 더 긴
+    // 저장 축을 양쪽에 적용한다 (#5563, hwp3-table-caption).
+    let comparable_axis_end = a_axis_end.max(b_axis_end);
+    let la = axis_comparable_line_segs(pa, comparable_axis_end);
+    let lb = axis_comparable_line_segs(pb, comparable_axis_end);
     if la.len() != lb.len() {
         out.push(LinesegDiff {
             section,

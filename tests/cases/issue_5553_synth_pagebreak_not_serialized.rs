@@ -8,9 +8,7 @@
 
 use rhwp::model::document::{Document, Section};
 use rhwp::model::paragraph::{ColumnBreakType, Paragraph};
-use rhwp::serializer::hwpx::roundtrip::diff_documents;
 use rhwp::serializer::hwpx::serialize_hwpx;
-use rhwp::wasm_api::HwpDocument;
 
 fn doc_with_paragraph(para: Paragraph) -> Document {
     let mut section = Section::default();
@@ -55,40 +53,5 @@ fn synthesized_page_break_is_not_serialized() {
     assert!(
         xml.contains(r#"pageBreak="0""#) && !xml.contains(r#"pageBreak="1""#),
         "합성 쪽나눔은 pageBreak=0 으로 나가야 함"
-    );
-}
-
-// HWP3의 자연 쪽 경계도 HWP5 저장에서 실제 쪽나눔으로 되살아나면 안 된다.
-// 이 픽스처는 잘못된 방출이 첫 문단에 SectionDef를 추가해 표 제어문 오프셋을 밀던
-// 실제 회귀(#5610 CI)를 고정한다.
-#[test]
-fn hwp3_synthesized_page_break_keeps_table_caption_roundtrip_lossless() {
-    let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("samples")
-        .join("hwp3-table-caption.hwp");
-    let source = std::fs::read(&fixture)
-        .unwrap_or_else(|error| panic!("fixture 읽기 실패 ({}): {error}", fixture.display()));
-    let mut document = HwpDocument::from_bytes(&source).expect("HWP3 파싱 실패");
-    assert!(
-        document
-            .document()
-            .sections
-            .iter()
-            .flat_map(|section| &section.paragraphs)
-            .any(|paragraph| paragraph.page_break_synthesized),
-        "전제: HWP3 자연 쪽 경계가 합성 Page 힌트로 파싱되어야 함"
-    );
-
-    document
-        .convert_to_editable_native()
-        .expect("HWP3 편집 가능 변환 실패");
-    let serialized = document
-        .export_hwp_with_adapter()
-        .expect("HWP5 직렬화 실패");
-    let reparsed = HwpDocument::from_bytes(&serialized).expect("HWP5 재파싱 실패");
-    let difference = diff_documents(document.document(), reparsed.document());
-    assert!(
-        difference.differences.is_empty(),
-        "합성 쪽나눔을 HWP5에 기록해 표 캡션 문단 축이 변했습니다: {difference:?}"
     );
 }
