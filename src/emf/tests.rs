@@ -841,3 +841,178 @@ fn preserves_unknown_records_as_payload() {
         other => panic!("expected Unknown, got {other:?}"),
     }
 }
+
+// ── [#5637] EMF+ 이중 스트림 재동기 ────────────────────────────────────────
+
+/// EMF+ 시그니처 코멘트 페이로드: [DataSize][b"EMF+"][filler].
+fn emfplus_comment_payload(filler: usize) -> Vec<u8> {
+    let mut p = Vec::new();
+    p.extend_from_slice(&((4 + filler) as u32).to_le_bytes());
+    p.extend_from_slice(b"EMF+");
+    p.resize(p.len() + filler, 0u8);
+    p
+}
+
+/// 자기-일관 STRETCHDIBITS 페이로드 (고정 72B + BMI 40B + bits 16B).
+fn stretch_dibits_payload() -> Vec<u8> {
+    let mut bmi = Vec::new();
+    bmi.extend_from_slice(&40u32.to_le_bytes()); // biSize
+    bmi.extend_from_slice(&2i32.to_le_bytes()); // biWidth
+    bmi.extend_from_slice(&2i32.to_le_bytes()); // biHeight
+    bmi.extend_from_slice(&1u16.to_le_bytes()); // biPlanes
+    bmi.extend_from_slice(&32u16.to_le_bytes()); // biBitCount
+    bmi.extend_from_slice(&[0u8; 24]); // 나머지 필드 0
+    let bits = [0xAAu8; 16];
+
+    let mut p = Vec::new();
+    for v in [0i32, 0, 2, 2] {
+        p.extend_from_slice(&v.to_le_bytes()); // Bounds
+    }
+    p.extend_from_slice(&0i32.to_le_bytes()); // xDest
+    p.extend_from_slice(&0i32.to_le_bytes()); // yDest
+    p.extend_from_slice(&[0u8; 16]); // xSrc..cySrc
+    p.extend_from_slice(&80u32.to_le_bytes()); // offBmi (record 기준)
+    p.extend_from_slice(&40u32.to_le_bytes()); // cbBmi
+    p.extend_from_slice(&120u32.to_le_bytes()); // offBits
+    p.extend_from_slice(&16u32.to_le_bytes()); // cbBits
+    p.extend_from_slice(&0u32.to_le_bytes()); // UsageSrc
+    p.extend_from_slice(&0x00CC_0020u32.to_le_bytes()); // SRCCOPY
+    p.extend_from_slice(&2i32.to_le_bytes()); // cxDest
+    p.extend_from_slice(&2i32.to_le_bytes()); // cyDest
+    p.extend_from_slice(&bmi);
+    p.extend_from_slice(&bits);
+    p
+}
+
+#[test]
+fn resyncs_after_lying_emfplus_comment() {
+    // EMF+ 코멘트 뒤에 프레이밍 밖 바이트(코멘트 Size 필드 거짓말 상황) →
+    // 4바이트 정렬 재동기로 뒤쪽 GDI 레코드(SaveDC + EOF)를 살린다.
+    let mut b = header_prefix();
+    push_record(&mut b, 0x46, &emfplus_comment_payload(8));
+    for _ in 0..6 {
+        b.extend_from_slice(&0xBF00_0000u32.to_le_bytes()); // 레코드로 안 읽히는 잔여
+    }
+    push_record(&mut b, 0x21, &[]); // SaveDC
+    push_eof(&mut b);
+
+    let records = parse_emf(&b).expect("resync parse");
+    assert!(
+        records.iter().any(|r| matches!(r, Record::SaveDC)),
+        "재동기로 SaveDC 를 살려야 함: {records:?}"
+    );
+    assert!(
+        records.iter().any(|r| matches!(r, Record::Eof)),
+        "EOF 까지 도달해야 함"
+    );
+}
+
+#[test]
+fn no_resync_without_emfplus_comment() {
+    // 음성 대조: EMF+ 코멘트가 없는 스트림의 같은 손상은 종전대로 오류.
+    let mut b = header_prefix();
+    let mut plain = Vec::new();
+    plain.extend_from_slice(&8u32.to_le_bytes());
+    plain.extend_from_slice(b"GDIC"); // EMF+ 아님
+    plain.extend_from_slice(&[0u8; 4]);
+    push_record(&mut b, 0x46, &plain);
+    for _ in 0..6 {
+        b.extend_from_slice(&0xBF00_0000u32.to_le_bytes());
+    }
+    push_record(&mut b, 0x21, &[]);
+    push_eof(&mut b);
+
+    assert!(parse_emf(&b).is_err(), "EMF+ 없는 손상 스트림은 오류 유지");
+}
+
+#[test]
+fn resync_accepts_self_consistent_stretch_dibits_without_chain() {
+    // 폴백 비트맵 레코드 뒤가 다시 깨진 스트림 — 연쇄 검증은 실패하지만
+    // STRETCHDIBITS 내부 필드 자기-일관성으로 단독 수용해야 한다.
+    let mut b = header_prefix();
+    push_record(&mut b, 0x46, &emfplus_comment_payload(8));
+    for _ in 0..6 {
+        b.extend_from_slice(&0xBF00_0000u32.to_le_bytes());
+    }
+    push_record(&mut b, 0x51, &stretch_dibits_payload());
+    for _ in 0..6 {
+        b.extend_from_slice(&0xFFFF_FFFFu32.to_le_bytes()); // 뒤쪽도 파단 — EOF 없음
+    }
+
+    let records = parse_emf(&b).expect("salvage parse");
+    assert!(
+        records
+            .iter()
+            .any(|r| matches!(r, Record::StretchDIBits(_))),
+        "자기-일관 STRETCHDIBITS 를 살려야 함: {records:?}"
+    );
+}
+
+#[test]
+fn wellformed_stream_with_emfplus_comment_is_unchanged() {
+    // EMF+ 코멘트가 있어도 구조가 온전하면 재동기가 개입하지 않는다.
+    let mut b = header_prefix();
+    push_record(&mut b, 0x46, &emfplus_comment_payload(8));
+    push_record(&mut b, 0x21, &[]); // SaveDC
+    push_eof(&mut b);
+
+    let records = parse_emf(&b).expect("parse");
+    assert_eq!(records.len(), 4, "Header+Comment+SaveDC+EOF: {records:?}");
+    assert!(matches!(records[2], Record::SaveDC));
+    assert!(matches!(records[3], Record::Eof));
+}
+
+#[test]
+fn resync_gives_up_gracefully_and_keeps_prefix() {
+    // 재동기 지점이 없으면 파단 전까지 모은 **그릴 내용 있는** 프리픽스로 Ok 마감한다.
+    let mut b = header_prefix();
+    push_record(&mut b, 0x46, &emfplus_comment_payload(8));
+    let mut rect = Vec::new();
+    for v in [1i32, 2, 30, 40] {
+        rect.extend_from_slice(&v.to_le_bytes());
+    }
+    push_record(&mut b, 0x2B, &rect); // Rectangle — 파단 전 내용
+    for _ in 0..8 {
+        b.extend_from_slice(&0xBF00_0000u32.to_le_bytes()); // 이후 전부 잔해
+    }
+
+    let records = parse_emf(&b).expect("salvage parse");
+    assert!(records.iter().any(|r| matches!(r, Record::Rectangle(_))));
+    assert!(
+        !records.iter().any(|r| matches!(r, Record::Eof)),
+        "EOF 는 없어야 함"
+    );
+}
+
+#[test]
+fn unpaintable_prefix_stays_error() {
+    // 그릴 내용이 전혀 없는 프리픽스는 EMF+ 여부와 무관하게 오류 유지 —
+    // 빈 SVG 보다 placeholder(오류 경로)가 정보량이 많다.
+    let mut b = header_prefix();
+    push_record(&mut b, 0x46, &emfplus_comment_payload(8));
+    push_record(&mut b, 0x21, &[]); // SaveDC — 상태 레코드만
+    for _ in 0..8 {
+        b.extend_from_slice(&0xBF00_0000u32.to_le_bytes());
+    }
+
+    assert!(parse_emf(&b).is_err());
+}
+
+#[test]
+fn salvages_paintable_prefix_without_emfplus_comment() {
+    // EMF+ 무관 대형 손상 스트림(코퍼스 특허청 계열): 파단 전에 그릴 내용이
+    // 있으면 프리픽스로 Ok 마감한다. (내용 없는 손상은 여전히 오류 — 위
+    // no_resync_without_emfplus_comment 가 그 대조군)
+    let mut b = header_prefix();
+    let mut p = Vec::new();
+    for v in [1i32, 2, 30, 40] {
+        p.extend_from_slice(&v.to_le_bytes());
+    }
+    push_record(&mut b, 0x2B, &p); // Rectangle
+    for _ in 0..6 {
+        b.extend_from_slice(&0xFFFF_FFFFu32.to_le_bytes());
+    }
+
+    let records = parse_emf(&b).expect("salvage parse");
+    assert!(records.iter().any(|r| matches!(r, Record::Rectangle(_))));
+}
