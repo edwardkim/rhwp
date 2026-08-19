@@ -38,6 +38,7 @@ use crate::model::shape::{
 };
 
 use crate::parser::tags;
+use crate::serializer::body_text::line_segs_within_text_axis;
 
 use super::context::SerializeContext;
 use super::field::{
@@ -734,16 +735,35 @@ pub(crate) fn render_paragraph_parts(
     // 한글 2022 가 만나면 **그 문단부터 문서 끝까지 본문을 통째로 폐기**한다
     // (성년후견 h2x: -112,075자 실측 — lineseg 억제만으로 전량 회복). 방출을
     // 생략하면 한글이 열 때 재계산한다(#1380 과 같은 계약).
-    if !para.line_segs.is_empty() && position_axis_intact {
+    // [#5563] 문단 축을 넘어서는 `textpos` 를 실은 줄은 내보내지 않는다. 원본이
+    // 들고 있던 낡은 줄나눔 캐시가 그대로 옮겨 실리면(07990: 5개 문단이 길이 15 에
+    // textpos 119 등) 한글 2022 가 "다음 줄은 119번째 글자에서 시작"을 14글자 문단에서
+    // 해소하려다 **파일 개방이 끝나지 않는다**(COM Open 3,663초 미반환 실측). rhwp 는
+    // 자기가 쓴 파일을 그대로 다시 읽으므로 `--verify` 로는 잡히지 않는다.
+    //
+    // 판정은 HWP5 저장기의 #4677 계약(`line_segs_within_text_axis`)을 그대로 쓴다 —
+    // 경계 `text_start == char_count` 는 정상(한컴 자신이 쓰는 값)이라 `>` 이고, 범위
+    // 밖이 나오면 그 앞까지만 남긴다. 첫 줄부터 범위 밖이면 요소를 통째로 생략해
+    // 한글이 스스로 조판하게 한다(#1380 과 같은 계약).
+    //
+    // `char_count` 가 0 인 합성 IR(파서를 거치지 않은 문단)은 축 증거가 없으므로
+    // 종전대로 원본 줄을 그대로 낸다.
+    let axis_line_segs = if para.char_count > 0 {
+        line_segs_within_text_axis(&para.line_segs, para.char_count)
+    } else {
+        &para.line_segs[..]
+    };
+
+    if !axis_line_segs.is_empty() && position_axis_intact {
         // IR 기반 출력 — 원본 lineseg 값 보존 (#177)
         //
         let linesegs = format!(
             "{}{}{}",
             LINESEG_SLOT_OPEN,
-            render_lineseg_array_from_ir(&para.line_segs),
+            render_lineseg_array_from_ir(axis_line_segs),
             LINESEG_SLOT_CLOSE
         );
-        let vert_end = next_vert_cursor_from_ir(&para.line_segs, vert_start);
+        let vert_end = next_vert_cursor_from_ir(axis_line_segs, vert_start);
         (runs_xml, linesegs, vert_end)
     } else {
         // IR 에 line_segs 없음 — linesegarray 방출 생략 (#1380)
