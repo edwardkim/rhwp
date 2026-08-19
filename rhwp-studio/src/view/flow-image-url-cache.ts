@@ -28,13 +28,7 @@
  * 그대로 둔다.
  */
 
-/** 캐시가 어느 문서의 것인지 — `WasmBridge` 의 문서 신원과 같은 재료를 쓴다. */
-export interface FlowImageDocumentIdentity {
-  /** `WasmBridge.documentDigest`. 문서를 모르는 상태(`null`)에서는 캐시하지 않는다. */
-  digest: string | null;
-  /** 같은 원본 파일을 다시 연 경우까지 구분하는 `WasmBridge.documentGeneration`. */
-  generation: number;
-}
+import { isSameRenderDocument, type RenderDocumentIdentity } from './render-document-identity.ts';
 
 export class FlowImageUrlCache {
   private urls = new Map<string, string>();
@@ -48,12 +42,8 @@ export class FlowImageUrlCache {
    * 둔다. 신원을 모르면(`digest === null`) 항목을 어느 문서 것이라고 표시할 수 없으므로 이후
    * 조회는 캐시하지 않고 되돌린다.
    */
-  beginDocument(document: FlowImageDocumentIdentity): void {
-    if (
-      this.identity !== null
-      && this.identity.digest === document.digest
-      && this.identity.generation === document.generation
-    ) return;
+  beginDocument(document: RenderDocumentIdentity): void {
+    if (isSameRenderDocument(this.identity, document)) return;
 
     this.releaseAll();
     if (document.digest === null) return;
