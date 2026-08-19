@@ -77,14 +77,14 @@ test('services.wasm 을 별칭으로 빼내 가드를 우회할 수 없다', () 
 // "히스토리를 우회하지 않는다". 우회 형태만 달라졌으므로(직접 setProps 호출) 그것을 본다.
 test('회전/대칭은 역연산으로 기록한다', () => {
   const rot = balancedFrom(insertSrc, 'function applyRotationDelta', '{');
-  assert.match(rot, /recordAbsolutePropChange\(/, '회전을 히스토리에 기록');
+  assert.match(rot, /executeAbsolutePropChange\(/, '회전을 히스토리에 기록');
   assert.doesNotMatch(
     rot,
     /\bsetProps\s*\(/,
     '적용은 기록 헬퍼 안에서만 — 직접 적용하면 히스토리를 우회한다',
   );
   const flip = balancedFrom(insertSrc, 'function toggleFlip', '{');
-  assert.match(flip, /recordAbsolutePropChange\(/, '대칭을 히스토리에 기록');
+  assert.match(flip, /executeAbsolutePropChange\(/, '대칭을 히스토리에 기록');
   assert.doesNotMatch(
     flip,
     /\bsetProps\s*\(/,
@@ -92,13 +92,14 @@ test('회전/대칭은 역연산으로 기록한다', () => {
   );
 });
 
-test('recordAbsolutePropChange 는 역연산 커맨드로 위임한다', () => {
-  const block = functionBodyFrom(insertSrc, 'function recordAbsolutePropChange');
-  assert.match(block, /kind:\s*'record'/, '스냅샷이 아니라 역연산 기록');
+test('executeAbsolutePropChange 는 라우터에서 역연산 커맨드를 실행한다', () => {
+  const block = functionBodyFrom(insertSrc, 'function executeAbsolutePropChange');
+  assert.match(block, /kind:\s*'command'/, '속성 적용도 편집 허용 검사를 거치는 command 라우터에서 실행');
   assert.match(block, /new SetObjectPropsCommand\(/, 'before/after 를 든 커맨드로 기록');
   assert.match(
     block,
     /refresh:\s*'full'/,
-    "kind:'record' 의 기본 refresh 는 'none' — 명시하지 않으면 회전이 화면에 반영되지 않는다",
+    '개체 회전/대칭 뒤 전체 화면 갱신을 유지한다',
   );
+  assert.doesNotMatch(block, /\bsetProps\s*\(/, 'setter를 라우터 전에 호출하면 양식 모드 편집 차단을 우회한다');
 });

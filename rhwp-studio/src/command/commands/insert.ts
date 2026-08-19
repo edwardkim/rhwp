@@ -15,7 +15,7 @@ import type { CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { InputHandler } from '@/engine/input-handler';
 import { SetObjectPropsCommand, type RefreshPolicy } from '@/engine/command';
-import { getObjectProps, setObjectProps, type ObjectPropsRef } from '@/engine/object-props';
+import { getObjectProps, type ObjectPropsRef } from '@/engine/object-props';
 
 /** 스텁 커맨드 생성 헬퍼 */
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
@@ -693,31 +693,26 @@ function changeZOrder(
   ih.exitPictureObjectSelectionAndAfterEdit();
 }
 
-function setProps(services: import('../types').CommandServices, ref: PictureRef, props: Record<string, unknown>): any {
-  return setObjectProps(services.wasm, ref, props);
-}
-
 /**
- * [Task #3230] 절대 속성 하나를 바꾸고 **역연산으로** 기록한다.
+ * [Task #3230] 절대 속성 하나를 **역연산 커맨드로** 적용하고 기록한다.
  *
- * 스냅샷(`recordObjectMutation`)이 아니라 `kind:'record'` 를 쓴다 — 되돌릴 것이 스칼라 하나인데
+ * 스냅샷(`recordObjectMutation`) 대신 `kind:'command'`를 쓴다 — 되돌릴 것이 스칼라 하나인데
  * `Document` 통째 클론 2개(문서에 따라 최대 21 MB)를 스택에 얹을 이유가 없다. 호출부가 이미
- * 적용 전 값을 읽어 두었으므로 before 가 정확하다.
+ * 적용 전 값을 읽어 두었으므로 before 가 정확하다. setter를 라우터 전에 직접 호출하지 않아야
+ * 양식 모드의 편집 허용 검사가 실제 변경보다 먼저 실행된다.
  *
- * refresh 를 'full' 로 명시한다 — `kind:'record'` 의 기본은 'none' 이고, 종전 스냅샷 라우팅의
- * 'full' 이 `afterEdit()` → `document-changed` 를 대신 emit 해 주고 있었다(그래서 호출부의 수동
- * emit 이 [undo P3 정리] 에서 제거됐다). 명시하지 않으면 회전이 화면에 반영되지 않는다.
+ * refresh 를 'full' 로 명시한다 — command 라우팅의 자동 판정에 맡기면 개체 회전/대칭의 화면 반영이
+ * 보장되지 않는다. 종전 스냅샷 라우팅의 'full' 이 `afterEdit()` → `document-changed` 를 대신
+ * emit 해 주고 있었다(그래서 호출부의 수동 emit 이 [undo P3 정리] 에서 제거됐다).
  */
-function recordAbsolutePropChange(
-  services: import('../types').CommandServices,
+function executeAbsolutePropChange(
   ih: InputHandler,
   ref: PictureRef,
   before: Record<string, unknown>,
   after: Record<string, unknown>,
 ): void {
-  setProps(services, ref, after);
   ih.executeOperation({
-    kind: 'record',
+    kind: 'command',
     command: new SetObjectPropsCommand(ref, before, after),
     meta: { refresh: 'full' },
   });
@@ -738,7 +733,7 @@ function applyRotationDelta(services: import('../types').CommandServices, delta:
   if (next > 180) next -= 360;
   // [Task #3230] 스냅샷 → 역연산. `cur` 는 이미 위에서 읽은 적용 전 각도이고 setter 가
   // 절대값이라 되돌리기가 자명하다.
-  recordAbsolutePropChange(services, ih, ref, { rotationAngle: cur }, { rotationAngle: next });
+  executeAbsolutePropChange(ih, ref, { rotationAngle: cur }, { rotationAngle: next });
 }
 
 /** horzFlip/vertFlip을 토글한다 (shape + image 지원). */
@@ -751,5 +746,5 @@ function toggleFlip(services: import('../types').CommandServices, key: 'horzFlip
   if (props.sizeProtect) return;
   const cur = !!props[key];
   // 위 rotate 와 동일 — 토글이지만 setter 에 넘기는 값은 절대값(`!cur`)이라 역연산이 자명하다.
-  recordAbsolutePropChange(services, ih, ref, { [key]: cur }, { [key]: !cur });
+  executeAbsolutePropChange(ih, ref, { [key]: cur }, { [key]: !cur });
 }
