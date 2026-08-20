@@ -158,6 +158,29 @@ pub(crate) fn build_row_col_x(
             *row_x = candidate;
         }
         if any_declared_row {
+            // [#5720] 선언 완결 행이 있는 표에서, 전역 grid 폴백으로 남은 행
+            // (세로 병합에 덮인 불완전 행 등)의 경계가 표 선언 폭을 넘으면 선언
+            // 폭으로 비례 축소한다. 행별 선언이 서로 어긋나는 표는 병합 셀 제약이
+            // 모순이라 전역 grid 의 결핍 보정("뒤쪽 열 확장")이 누적돼 선언 폭을
+            // 넘는데(2734559: 638.7px 선언 → 726.9px, 용지 밖 10.7px), 한글 2022
+            // 는 표를 선언 폭 그대로 그린다(COM PDF 실측 76.4~716.7px). 선언 완결
+            // 행은 그대로 두고 폴백 행만 줄여, 표 상자 폭 판정(#5590)이 선언 폭에
+            // 수렴하게 한다.
+            let base_total = base_rx.last().copied().unwrap_or(0.0);
+            if target_total > 0.0 && base_total > target_total + 0.5 {
+                let scale = target_total / base_total;
+                for row_x in declared.iter_mut() {
+                    let is_base_fallback = row_x
+                        .iter()
+                        .zip(base_rx.iter())
+                        .all(|(a, b)| (a - b).abs() <= 0.01);
+                    if is_base_fallback {
+                        for x in row_x.iter_mut() {
+                            *x *= scale;
+                        }
+                    }
+                }
+            }
             return Ok(declared);
         }
     }

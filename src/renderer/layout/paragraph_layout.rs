@@ -379,7 +379,9 @@ fn tac_owned_by_prior_empty_line(comp: &ComposedParagraph, line_idx: usize, pos:
     let Some(line) = comp.lines.get(line_idx) else {
         return false;
     };
-    if line.char_start != pos {
+    // 현재 줄이 **텍스트 줄**일 때만 적용 — 빈 줄 연쇄(빈 문단 + TAC 여러 개,
+    // 59043 p12 실측)는 기존 반복-빈-줄 기제가 소유를 배정하므로 건드리지 않는다.
+    if line.char_start != pos || line.runs.is_empty() {
         return false;
     }
     comp.lines
@@ -6464,7 +6466,7 @@ impl LayoutEngine {
         let owns_boundary_tac = composed
             .lines
             .get(vars.line_idx + 1)
-            .is_some_and(|next| next.char_start == comp_line.char_start);
+            .is_some_and(|next| next.char_start == comp_line.char_start && !next.runs.is_empty());
         let empty_line_tac_allowed =
             cell_ctx.is_none() || is_caption_cell_context(cell_ctx.as_ref()) || owns_boundary_tac;
         if empty_line_tac_allowed && !line_tac_offsets.is_empty() {

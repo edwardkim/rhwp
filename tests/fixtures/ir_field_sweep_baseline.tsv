@@ -223,7 +223,9 @@ hwp5rb	issue5169_viewtext_changetracking.hwp	sections[].paragraphs[].line_segs.l
 hwp5rb	issue5169_viewtext_changetracking.hwp	sections[].paragraphs[].raw_header_extra[]	5
 hwp5rb	issue5699/37787_regulatory_impact.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	854
 hwp5rb	issue5699/37787_regulatory_impact.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	50
+hwp5rb	issue5721/2568129_textbox_float_tables.hwp	sections[].paragraphs[].controls[].text_box.paragraphs[].controls[].cells[].list_header_width_ref	5
 hwp5rb	issue5724/2689441_wmf_contents_ole.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	11
+hwp5rb	issue5727/156732636_inline_logo_cell.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	44
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
