@@ -67,3 +67,6 @@ jobs:
 
       - name: Probe unit tests
         run: python -m unittest tools.skill_router.test_probes
+
+      - name: Precommit path tests
+        run: python -m unittest tools.skill_router.test_precommit

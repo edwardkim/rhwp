@@ -56,7 +56,9 @@ def _say(line: str) -> None:
 
 
 def _normalize_path(raw: str) -> str:
-    text = raw.strip().replace("\\", "/").lstrip("./")
+    text = raw.strip().replace("\\", "/")
+    while text.startswith("./"):
+        text = text[2:]
     if text.startswith("\""):
         text = text.strip("\"")
     return text

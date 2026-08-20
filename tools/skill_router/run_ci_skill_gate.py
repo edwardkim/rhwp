@@ -27,6 +27,7 @@ CATALOG_UNITTEST = "tools.skill_router.test_catalog_routes"
 AUTHOR_UNITTEST = "tools.skill_router.test_author_skill"
 CATALOG_SYNC_PY = "tools/skill_router/check_catalog_sync.py"
 PROBES_UNITTEST = "tools.skill_router.test_probes"
+PRECOMMIT_UNITTEST = "tools.skill_router.test_precommit"
 
 
 def _configure_stdio() -> None:
@@ -103,6 +104,12 @@ def main() -> int:
             [py, "-m", "unittest", PROBES_UNITTEST],
         )
     )
+    steps.append(
+        (
+            f"python -m unittest {PRECOMMIT_UNITTEST}",
+            [py, "-m", "unittest", PRECOMMIT_UNITTEST],
+        )
+    )
 
     passed = 0
     failed_label = ""
@@ -128,7 +135,8 @@ def main() -> int:
         f"PASS: gate {GATE_REPEATS}/{GATE_REPEATS}, "
         f"unittest {ROUTE_UNITTEST}, unittest {GATE_UNITTEST}, "
         f"unittest {CATALOG_UNITTEST}, unittest {AUTHOR_UNITTEST}, "
-        f"{CATALOG_SYNC_PY}, unittest {PROBES_UNITTEST} "
+        f"{CATALOG_SYNC_PY}, unittest {PROBES_UNITTEST}, "
+        f"unittest {PRECOMMIT_UNITTEST} "
         f"({elapsed:.1f}s)",
         flush=True,
     )
