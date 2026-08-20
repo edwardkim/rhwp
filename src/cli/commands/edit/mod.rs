@@ -1,25 +1,26 @@
 //! `edit` command dispatch and shared runtime boundary.
 
 use crate::{
-    edit_add_bookmark, edit_apply_cell_style, edit_apply_char_format,
-    edit_apply_char_format_in_cell, edit_apply_endnote_shape, edit_apply_hf_template,
-    edit_apply_para_format, edit_apply_para_format_in_cell, edit_apply_para_format_in_footnote,
-    edit_apply_para_format_in_hf, edit_apply_style, edit_delete_bookmark, edit_delete_control,
-    edit_delete_footnote, edit_delete_header_footer, edit_delete_hf_text,
-    edit_delete_text_in_footnote, edit_insert_endnote, edit_insert_field_in_hf,
-    edit_insert_footnote, edit_insert_footnote_text, edit_insert_header_footer,
-    edit_insert_header_footer_text, edit_merge_paragraph_in_cell, edit_merge_paragraph_in_footnote,
-    edit_merge_paragraph_in_hf, edit_rename_bookmark, edit_set_header_footer_text,
+    edit_apply_cell_style, edit_apply_char_format, edit_apply_char_format_in_cell,
+    edit_apply_endnote_shape, edit_apply_hf_template, edit_apply_para_format,
+    edit_apply_para_format_in_cell, edit_apply_para_format_in_footnote,
+    edit_apply_para_format_in_hf, edit_apply_style, edit_delete_header_footer, edit_delete_hf_text,
+    edit_delete_text_in_footnote, edit_insert_field_in_hf, edit_insert_footnote_text,
+    edit_insert_header_footer, edit_insert_header_footer_text, edit_merge_paragraph_in_cell,
+    edit_merge_paragraph_in_footnote, edit_merge_paragraph_in_hf, edit_set_header_footer_text,
     edit_set_hf_picture, edit_split_paragraph_in_cell, edit_split_paragraph_in_footnote,
     edit_split_paragraph_in_hf, edit_toggle_hide_hf, EXIT_USAGE,
 };
 
+mod bookmarks;
 mod cells;
+mod controls;
 mod document_objects;
 mod document_text;
 mod equations;
 mod fields;
 mod media;
+mod notes;
 mod page;
 mod privacy;
 pub(crate) mod runtime;
@@ -27,12 +28,14 @@ mod shapes;
 mod tables;
 mod text;
 
+use bookmarks::{edit_add_bookmark, edit_delete_bookmark, edit_rename_bookmark};
 use cells::{
     edit_delete_text_in_cell, edit_insert_text_in_cell, edit_set_cell, edit_set_cell_props,
 };
 pub(crate) use cells::{
     measure_cell_overflow, recolor_cell_text_black, set_cell_control_char_rejection,
 };
+use controls::edit_delete_control;
 use document_objects::{
     edit_insert_number, edit_set_chart_data, edit_set_form_value, edit_set_form_value_in_cell,
     edit_set_page_border_fill,
@@ -46,6 +49,7 @@ use equations::{edit_delete_equation, edit_insert_equation, edit_set_equation_pr
 use fields::edit_fill_fields;
 pub(crate) use fields::{fill_fields_core, parse_field_key};
 use media::{edit_delete_picture, edit_insert_image, edit_insert_picture, edit_set_picture};
+use notes::{edit_delete_footnote, edit_insert_endnote, edit_insert_footnote};
 use page::{edit_set_column_def, edit_set_page_def, edit_set_page_hide, edit_set_section_def};
 use privacy::{edit_redact, edit_sanitize};
 use shapes::{edit_delete_shape, edit_group_shapes, edit_insert_shape, edit_ungroup_shape};
