@@ -827,6 +827,23 @@ impl LayoutEngine {
                                         path,
                                     }
                                 });
+                            // [#5727] 문단 레이아웃(빈 줄 TAC 경로 등)이 이미 그리고
+                            // 등록한 그림은 다시 밀어넣지 않는다 — 이중 렌더 방지.
+                            if let (Some((sec_idx, outer_pi, _, _)), Some(cctx)) =
+                                (enclosing_ctx, cell_ctx.as_ref())
+                            {
+                                if tree
+                                    .get_inline_shape_position(
+                                        sec_idx,
+                                        outer_pi,
+                                        ctrl_idx,
+                                        Some(cctx),
+                                    )
+                                    .is_some()
+                                {
+                                    continue;
+                                }
+                            }
                             let img_node = RenderNode::new(
                                 img_node_id,
                                 RenderNodeType::Image(ImageNode {

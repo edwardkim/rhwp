@@ -158,6 +158,29 @@ pub(crate) fn build_row_col_x(
             *row_x = candidate;
         }
         if any_declared_row {
+            // [#5720] 선언 완결 행이 있는 표에서, 전역 grid 폴백으로 남은 행
+            // (세로 병합에 덮인 불완전 행 등)의 경계가 표 선언 폭을 넘으면 선언
+            // 폭으로 비례 축소한다. 행별 선언이 서로 어긋나는 표는 병합 셀 제약이
+            // 모순이라 전역 grid 의 결핍 보정("뒤쪽 열 확장")이 누적돼 선언 폭을
+            // 넘는데(2734559: 638.7px 선언 → 726.9px, 용지 밖 10.7px), 한글 2022
+            // 는 표를 선언 폭 그대로 그린다(COM PDF 실측 76.4~716.7px). 선언 완결
+            // 행은 그대로 두고 폴백 행만 줄여, 표 상자 폭 판정(#5590)이 선언 폭에
+            // 수렴하게 한다.
+            let base_total = base_rx.last().copied().unwrap_or(0.0);
+            if target_total > 0.0 && base_total > target_total + 0.5 {
+                let scale = target_total / base_total;
+                for row_x in declared.iter_mut() {
+                    let is_base_fallback = row_x
+                        .iter()
+                        .zip(base_rx.iter())
+                        .all(|(a, b)| (a - b).abs() <= 0.01);
+                    if is_base_fallback {
+                        for x in row_x.iter_mut() {
+                            *x *= scale;
+                        }
+                    }
+                }
+            }
             return Ok(declared);
         }
     }
@@ -344,8 +367,23 @@ fn declared_row_col_x(
         }
         next_col = end;
     }
-    if next_col != col_count || (cursor - target_total).abs() > 0.5 {
+    if next_col != col_count {
         return None;
+    }
+    let mismatch = cursor - target_total;
+    if mismatch.abs() > 0.5 {
+        // [#5720] 행 선언 폭 합이 표 폭과 근소하게(1% 이내) 어긋나는 행도 자기
+        // 구획으로 인정하고 표 폭에 맞춰 비례 정규화한다. 2734559 실측 — 0~18행
+        // 합 634.96px vs 표 638.72px(0.6%): 한글은 이 행들의 구획을 표 전폭으로
+        // 늘려 그린다(COM PDF 세로선 76.4~716.7px). 엄격 일치만 받으면 이 행들이
+        // 모순된 전역 grid 로 떨어져 표가 선언 밖으로 벌어진다.
+        if target_total <= 0.0 || cursor <= 0.0 || mismatch.abs() > target_total * 0.01 {
+            return None;
+        }
+        let scale = target_total / cursor;
+        for x in candidate.iter_mut() {
+            *x *= scale;
+        }
     }
     Some(candidate)
 }

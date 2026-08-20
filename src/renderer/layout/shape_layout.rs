@@ -2633,6 +2633,20 @@ impl LayoutEngine {
             .as_deref()
             .unwrap_or(&text_box.paragraphs);
 
+        // [#5721] page-기준 vpos 재기저화(origin 빼기)는 저장 vpos 스트림 **전체**가
+        // page 좌표일 때만 유효하다. box 좌표 스트림(첫 문단 vpos 가 origin 미만)
+        // 에서 줄 단위로 발동하면, origin 을 우연히 넘는 뒤쪽 문단만 재기저화되어
+        // 순서가 꺾인다 — 2568129 글상자 실측: 제목 표 문단 vpos 228.6px(17145HU) 가
+        // origin(~199px) 을 넘어 29.4px 로 내려앉아 앞의 발신처 표(110.3px) **위**에
+        // 그려졌다. 첫 유효 vpos 가 origin 이상인 스트림에만 origin 을 유지한다.
+        let textbox_vpos_origin_hu = textbox_vpos_origin_hu.filter(|origin| {
+            textbox_paragraphs
+                .iter()
+                .find_map(|p| p.line_segs.first())
+                .map(|seg| seg.vertical_pos >= *origin)
+                .unwrap_or(false)
+        });
+
         // 빈 텍스트박스에 오버플로우 문단이 매핑되어 있는지 확인 (가로/세로 공통)
         let key = (para_index, control_index);
         if let Some(overflow_paras) = overflow_map.get(&key) {

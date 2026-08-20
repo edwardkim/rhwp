@@ -363,6 +363,32 @@ fn char_pos_in_line(pos: usize, start: usize, end: usize) -> bool {
     }
 }
 
+/// [#5727] 이 TAC 위치를 **앞선 빈 composed 줄**이 이미 소유하는가.
+///
+/// 저장 lineseg 가 TAC 개체에 자기 줄을 배정하면(제어문자만 담아 텍스트 범위가
+/// 비는 줄) 그 빈 줄과 다음 줄의 `char_start` 가 같은 텍스트 인덱스로 붕괴한다
+/// (제어문자는 `text` 에 없고 `char_offsets` 갭으로만 남는다). 이때 다음 줄이
+/// 그 TAC 를 다시 집으면 개체가 다음 줄로 끌려 내려가고, 그 줄 텍스트는 개체
+/// 폭만큼 오른쪽에서 시작한다 — 156732636 로고 칸 실측: `노동부` 가 저장
+/// horzpos=0 인데 +172px(로고 폭)에서 시작. 빈 줄 소유 TAC 는 다음 줄 귀속에서
+/// 제외한다.
+fn tac_owned_by_prior_empty_line(comp: &ComposedParagraph, line_idx: usize, pos: usize) -> bool {
+    if line_idx == 0 {
+        return false;
+    }
+    let Some(line) = comp.lines.get(line_idx) else {
+        return false;
+    };
+    // 현재 줄이 **텍스트 줄**일 때만 적용 — 빈 줄 연쇄(빈 문단 + TAC 여러 개,
+    // 59043 p12 실측)는 기존 반복-빈-줄 기제가 소유를 배정하므로 건드리지 않는다.
+    if line.char_start != pos || line.runs.is_empty() {
+        return false;
+    }
+    comp.lines
+        .get(line_idx - 1)
+        .is_some_and(|prev| prev.runs.is_empty() && prev.char_start == pos)
+}
+
 fn line_has_tac_control(comp: &ComposedParagraph, line_idx: usize) -> bool {
     let Some(line) = comp.lines.get(line_idx) else {
         return false;
@@ -455,6 +481,8 @@ struct EmptyRunsLineVars {
     line_flow_height: f64,
     section_index: usize,
     para_index: usize,
+    /// [#5727] composed 줄 인덱스 — 경계 TAC 자기-줄 판정에 사용.
+    line_idx: usize,
 }
 /// [#2003] run 방출 루프의 줄-간 캐리오버 묶음 (Copy 스칼라 9종) — 값 전달 + 반환.
 #[derive(Clone, Copy)]
@@ -562,7 +590,11 @@ fn tac_offsets_for_line(
     tac_offsets_px
         .iter()
         .copied()
-        .filter(|(pos, _, _)| char_pos_in_line(*pos, start, end))
+        .filter(|(pos, _, _)| {
+            char_pos_in_line(*pos, start, end)
+                // [#5727] 앞선 빈 줄(개체 자기 줄)이 소유한 경계 TAC 는 제외
+                && !tac_owned_by_prior_empty_line(comp, line_idx, *pos)
+        })
         .collect()
 }
 
@@ -4215,6 +4247,7 @@ impl LayoutEngine {
                         line_flow_height,
                         section_index,
                         para_index,
+                        line_idx,
                     },
                     &mut current_line_reserved_tac_picture_height,
                 );
@@ -4949,6 +4982,10 @@ impl LayoutEngine {
                 .filter(|(pos, _, _)| {
                     *pos >= run_char_pos
                         && (*pos < run_char_end || (allow_end_tac && *pos == run_char_end))
+                        // [#5727] 저장 lineseg 가 개체에 배정한 빈 줄이 소유한 경계
+                        // TAC 는 다음 줄 run 에 다시 싣지 않는다 — 실으면 개체가 이
+                        // 줄로 끌려 내려오고 텍스트가 개체 폭만큼 오른쪽으로 밀린다.
+                        && !tac_owned_by_prior_empty_line(composed, line_idx, *pos)
                 })
                 .map(|(pos, w, ci)| (pos - run_char_pos, *w, *ci))
                 .collect();
@@ -6421,8 +6458,17 @@ impl LayoutEngine {
         // runs가 없는 빈 줄에서 treat_as_char 이미지 렌더링
         // 테이블 셀 내부에서는 table_layout.rs가 layout_picture로 이미 처리하므로 스킵.
         // 셀 외부에서 해당 줄 범위에 걸린 TAC만 여기서 렌더링.
+        //
+        // [#5727] 예외 — 저장 lineseg 가 TAC 개체에 배정한 자기 줄(빈 줄, 다음
+        // 줄과 char_start 동일)은 셀 안에서도 여기서 그린다. 이 줄 소유 TAC 는
+        // 다음 줄 run 귀속에서 제외되므로 여기서 그리지 않으면 개체가 사라진다.
+        // 이미 등록된 개체는 건너뛰어 다른 경로와의 이중 렌더를 막는다.
+        let owns_boundary_tac = composed
+            .lines
+            .get(vars.line_idx + 1)
+            .is_some_and(|next| next.char_start == comp_line.char_start && !next.runs.is_empty());
         let empty_line_tac_allowed =
-            cell_ctx.is_none() || is_caption_cell_context(cell_ctx.as_ref());
+            cell_ctx.is_none() || is_caption_cell_context(cell_ctx.as_ref()) || owns_boundary_tac;
         if empty_line_tac_allowed && !line_tac_offsets.is_empty() {
             if let (Some(p), Some(bdc)) = (para, bin_data_content) {
                 // TAC 이미지 전체 폭 계산 후 문단 정렬 적용
@@ -6458,6 +6504,23 @@ impl LayoutEngine {
                             continue;
                         }
                         if let Control::Picture(pic) = ctrl {
+                            // [#5727] 셀 안 경로는 다른 패스가 먼저 그렸을 수 있다 —
+                            // 등록된 개체는 건너뛰어 이중 렌더를 막는다.
+                            if cell_ctx.is_some()
+                                && tree
+                                    .get_inline_shape_position(
+                                        vars.section_index,
+                                        vars.para_index,
+                                        tac_ci,
+                                        cell_ctx.as_ref(),
+                                    )
+                                    .is_some()
+                            {
+                                img_x += tac_w;
+                                empty_line_mark_x = img_x;
+                                empty_line_logical_end += 1;
+                                continue;
+                            }
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                             // LINE_SEG vpos가 TopAndBottom 흐름 위치를 이미 담고 있으면
                             // sibling 예약 높이를 다시 더하지 않는다.
