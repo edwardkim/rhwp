@@ -49,6 +49,7 @@ import {
 import { initRhwpDev } from '@/core/rhwp-dev';
 import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
+import { maybeShowSkinOnboarding } from '@/ui/skin-onboarding-dialog';
 import { analyzeDocumentFonts } from '@/core/document-font-status';
 import { setDocumentFontSubstitutions } from '@/core/font-substitution';
 import {
@@ -1698,6 +1699,14 @@ function showLoadError(error: unknown): void {
 }
 
 const initPromise = initialize();
+// 첫 실행이면 스킨 선택을 안내한다 (초기화 성공 후, 임베드 모드 제외).
+// initialize() 는 실패해도 내부에서 삼키고 resolve 하므로, 렌더러가 실제로
+// 준비된 경우에만 띄운다 — 실패 화면 위에 안내가 겹치고 1회성 플래그가
+// 소모되는 것을 막는다.
+void initPromise.then(() => {
+  if (!rendererInitialized) return;
+  maybeShowSkinOnboarding();
+});
 
 installEmbedRuntime({
   hostWindow: window,

@@ -260,14 +260,60 @@ test('스킨 설정은 rhwp-settings에 저장되고 잘못된 값은 default로
   try {
     userSettings.setThemeSkin('flat');
     assert.equal(userSettings.getThemeSettings().skin, 'flat');
+    // 직접 선택은 첫 실행 안내 플래그를 확정한다.
+    assert.equal(userSettings.getThemeSettings().skinChosen, true);
     const stored = JSON.parse(store.get('rhwp-settings') ?? '{}');
     assert.equal(stored.theme.skin, 'flat');
+    assert.equal(stored.theme.skinChosen, true);
+
+    userSettings.setThemeSkin('oldschool');
+    assert.equal(userSettings.getThemeSettings().skin, 'oldschool');
 
     // 저장소에 없던 잘못된 값은 setter 정규화로 default가 된다.
     userSettings.setThemeSkin('neon' as never);
     assert.equal(userSettings.getThemeSettings().skin, 'default');
   } finally {
     userSettings.setThemeSkin('default');
+    (globalThis as { localStorage?: Storage }).localStorage = originalStorage;
+  }
+});
+
+test('skinChosen 도입 이전에 스킨을 고른 사용자는 첫 실행 안내 대상이 아니다', async () => {
+  const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+  const store = new Map<string, string>();
+  const mockStorage = {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key: string) {
+      return store.get(key) ?? null;
+    },
+    key(index: number) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      store.delete(key);
+    },
+    setItem(key: string, value: string) {
+      store.set(key, value);
+    },
+  } as Storage;
+
+  (globalThis as { localStorage?: Storage }).localStorage = mockStorage;
+  try {
+    const { normalizeThemeSettings } = await import('../src/core/user-settings.ts');
+    // skinChosen 키가 없던 구버전 저장값
+    assert.equal(normalizeThemeSettings({ skin: 'flat' }).skinChosen, true);
+    assert.equal(normalizeThemeSettings({ skin: 'oldschool' }).skinChosen, true);
+    // 기본 스킨이면 아직 고르지 않은 것으로 본다
+    assert.equal(normalizeThemeSettings({ skin: 'default' }).skinChosen, false);
+    assert.equal(normalizeThemeSettings({}).skinChosen, false);
+    // 명시적으로 저장된 값이 있으면 그대로 존중한다
+    assert.equal(normalizeThemeSettings({ skin: 'flat', skinChosen: false }).skinChosen, false);
+  } finally {
     (globalThis as { localStorage?: Storage }).localStorage = originalStorage;
   }
 });
