@@ -118,6 +118,10 @@ pub(crate) struct HeightCursor {
     pub prev_item_content_bottom_y: Option<f64>,
     /// 직전 `vpos_adjust`에서 새 미주 제목 gap을 저장 end_y보다 위로 compact했는지.
     pub(crate) last_compacted_endnote_title_gap: bool,
+    /// [#5699 H1] 저장 사다리가 자리차지 표 밴드를 계상하지 않은 문서에서, 흐름이
+    /// 페인트된 표 밴드 위로 되감기지 못하게 하는 바닥(절대 y px). 기본 `f64::MIN`
+    /// = 비활성. 표 아이템 배치 후 자기모순 판별이 참일 때만 호출자가 올린다.
+    pub min_flow_floor: f64,
 }
 
 impl HeightCursor {
@@ -150,6 +154,7 @@ impl HeightCursor {
             endnote_between_notes_hu: 0,
             prev_item_content_bottom_y: None,
             last_compacted_endnote_title_gap: false,
+            min_flow_floor: f64::MIN,
         }
     }
 
