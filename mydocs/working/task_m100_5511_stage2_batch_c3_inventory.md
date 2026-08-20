@@ -78,13 +78,14 @@ src/cli/commands/edit/
     ├── mod.rs
     ├── coordinates.rs
     ├── structure.rs
+    ├── grid.rs
     └── layout.rs
 ```
 
 `cells.rs`는 cell text·property command와 CLI·MCP·protocol이 공유하는 글자색·폭·overflow·
 control-character helper를 소유한다. `tables/coordinates.rs`가 주소 해석의 단일 원천이고,
-`structure.rs`와 `layout.rs`는
-구조 변경과 치수·속성 변경을 분리한다. `equations.rs`는 equation lifecycle을 소유한다.
+`structure.rs`, `grid.rs`, `layout.rs`는 table lifecycle, row·column·cell 격자 변경, 치수·속성
+변경을 분리한다. `equations.rs`는 equation lifecycle을 소유한다.
 handler만 edit parent에 `pub(super)`로 노출하고, C5가 임시로 필요한 cell resolver만
 `pub(crate)` seam으로 유지한다. root wrapper나 helper 복제를 만들지 않는다.
 

@@ -1,3 +1,23 @@
+/// 본문 최상위 표 번호 → (section, paragraph, control).
+pub(super) fn resolve_top_table(
+    document: &rhwp::model::document::Document,
+    table_no: usize,
+) -> Result<(usize, usize, usize), String> {
+    use rhwp::document_core::queries::table_extract::extract_tables;
+    let grids = extract_tables(document);
+    match grids
+        .iter()
+        .find(|g| g.index == table_no && g.container_path.is_empty())
+    {
+        Some(g) => Ok((g.section, g.paragraph, g.control)),
+        None => {
+            let n = grids.iter().filter(|g| g.container_path.is_empty()).count();
+            Err(format!(
+                "오류: 본문 최상위 표 {table_no} 번이 없습니다 (최상위 표 {n}개)."
+            ))
+        }
+    }
+}
 /// [#3603] 격자 주소(export-tables 좌표) → 모델 좌표 해석.
 /// CLI(edit set-cell)와 세션 도구(hwp_doc_set_cell)가 공유한다 — 병합으로 덮인 칸은
 /// 앵커 좌표를 안내하며 실패한다(보호 동작). 반환: (sec, para, ctrl, cell_idx,

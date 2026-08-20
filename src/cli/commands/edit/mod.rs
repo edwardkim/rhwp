@@ -4,22 +4,18 @@ use crate::{
     edit_add_bookmark, edit_apply_cell_style, edit_apply_char_format,
     edit_apply_char_format_in_cell, edit_apply_endnote_shape, edit_apply_hf_template,
     edit_apply_para_format, edit_apply_para_format_in_cell, edit_apply_para_format_in_footnote,
-    edit_apply_para_format_in_hf, edit_apply_style, edit_delete_bookmark, edit_delete_col,
-    edit_delete_control, edit_delete_equation, edit_delete_footnote, edit_delete_header_footer,
-    edit_delete_hf_text, edit_delete_paragraph, edit_delete_row, edit_delete_table,
-    edit_delete_text, edit_delete_text_in_footnote, edit_fit_table, edit_insert_col,
+    edit_apply_para_format_in_hf, edit_apply_style, edit_delete_bookmark, edit_delete_control,
+    edit_delete_equation, edit_delete_footnote, edit_delete_header_footer, edit_delete_hf_text,
+    edit_delete_paragraph, edit_delete_text, edit_delete_text_in_footnote,
     edit_insert_column_break, edit_insert_endnote, edit_insert_equation, edit_insert_field_in_hf,
     edit_insert_footnote, edit_insert_footnote_text, edit_insert_header_footer,
-    edit_insert_header_footer_text, edit_insert_page_break, edit_insert_paragraph, edit_insert_row,
-    edit_insert_table, edit_insert_text, edit_merge_cells, edit_merge_paragraph,
-    edit_merge_paragraph_in_cell, edit_merge_paragraph_in_footnote, edit_merge_paragraph_in_hf,
-    edit_merge_table, edit_move_table, edit_rename_bookmark, edit_resize_table,
-    edit_resize_table_cell, edit_set_column_def, edit_set_column_widths,
-    edit_set_equation_properties, edit_set_header_footer_text, edit_set_hf_picture,
-    edit_set_numbering_restart, edit_set_page_def, edit_set_page_hide, edit_set_section_def,
-    edit_set_table_props, edit_split_cell, edit_split_cell_into, edit_split_paragraph,
-    edit_split_paragraph_in_cell, edit_split_paragraph_in_footnote, edit_split_paragraph_in_hf,
-    edit_split_table, edit_toggle_hide_hf, edit_transpose_table, EXIT_USAGE,
+    edit_insert_header_footer_text, edit_insert_page_break, edit_insert_paragraph,
+    edit_insert_text, edit_merge_paragraph, edit_merge_paragraph_in_cell,
+    edit_merge_paragraph_in_footnote, edit_merge_paragraph_in_hf, edit_rename_bookmark,
+    edit_set_column_def, edit_set_equation_properties, edit_set_header_footer_text,
+    edit_set_hf_picture, edit_set_numbering_restart, edit_set_page_def, edit_set_page_hide,
+    edit_set_section_def, edit_split_paragraph, edit_split_paragraph_in_cell,
+    edit_split_paragraph_in_footnote, edit_split_paragraph_in_hf, edit_toggle_hide_hf, EXIT_USAGE,
 };
 
 mod cells;
@@ -47,6 +43,12 @@ pub(crate) use fields::{fill_fields_core, parse_field_key};
 use media::{edit_delete_picture, edit_insert_image, edit_insert_picture, edit_set_picture};
 use privacy::{edit_redact, edit_sanitize};
 use shapes::{edit_delete_shape, edit_group_shapes, edit_insert_shape, edit_ungroup_shape};
+use tables::{
+    edit_delete_col, edit_delete_row, edit_delete_table, edit_fit_table, edit_insert_col,
+    edit_insert_row, edit_insert_table, edit_merge_cells, edit_merge_table, edit_move_table,
+    edit_resize_table, edit_resize_table_cell, edit_set_column_widths, edit_set_table_props,
+    edit_split_cell, edit_split_cell_into, edit_split_table, edit_transpose_table,
+};
 pub(crate) use tables::{resolve_table_cell, CellResolveError};
 use text::edit_replace_text;
 
