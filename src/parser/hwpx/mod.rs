@@ -282,21 +282,41 @@ fn resolve_master_page_hrefs<'a, 'b>(
 /// 파서 내부 호출 사슬 전체에 매니페스트 맵을 배선하는 대신, 진입 시점에 참조 문자열만
 /// 정규화한다. 실제 바이트 적재(`id = 위치+1`)와 같은 기준을 쓰므로 결과가 일치하고,
 /// 이미 정규형인 문서는 문자열이 바뀌지 않아 무영향이다.
+/// [#5747] 치환은 **단일 패스**여야 한다. 종전에는 항목마다 전체 XML 을 순차
+/// 문자열 치환했는데, 산출 이름공간(`image1`, `image2`, …)이 아직 처리하지 않은
+/// 입력 이름과 겹쳐 앞 회차가 바꾼 참조를 뒤 회차가 또 바꿨다 — 매니페스트
+/// 이름 번호와 위치가 어긋난 문서(156532835: `image15, image14, image4, …`)에서
+/// 참조 19개 중 12개가 다른 BinData 로 착지해 그림이 통째로 뒤바뀌었다
+/// (10k HWPX 2,283건 중 34건 오배선 실측). id → 위치+1 맵을 먼저 만들고 각
+/// `binaryItemIDRef` 값을 정확히 한 번만 다시 쓴다. 맵에 없는 참조(BinData
+/// 항목이 아닌 것)는 그대로 둔다.
 fn canonicalize_bin_item_refs(xml: &str, bin_data_items: &[content::PackageItem]) -> String {
-    let mut out = xml.to_string();
-    for (i, item) in bin_data_items.iter().enumerate() {
-        let canonical_id = i + 1;
-        let digits: String = item.id.chars().filter(|c| c.is_ascii_digit()).collect();
-        if digits.parse::<usize>() == Ok(canonical_id) {
-            continue; // 이미 숫자 불변식을 만족 — 건드리지 않는다.
-        }
-        let from = format!("binaryItemIDRef=\"{}\"", item.id);
-        if !out.contains(&from) {
-            continue;
-        }
-        let to = format!("binaryItemIDRef=\"image{}\"", canonical_id);
-        out = out.replace(&from, &to);
+    let canonical: HashMap<&str, String> = bin_data_items
+        .iter()
+        .enumerate()
+        .map(|(i, item)| (item.id.as_str(), format!("image{}", i + 1)))
+        .collect();
+    if canonical.is_empty() {
+        return xml.to_string();
     }
+    const KEY: &str = "binaryItemIDRef=\"";
+    let mut out = String::with_capacity(xml.len());
+    let mut rest = xml;
+    while let Some(pos) = rest.find(KEY) {
+        let value_start = pos + KEY.len();
+        out.push_str(&rest[..value_start]);
+        rest = &rest[value_start..];
+        let Some(end) = rest.find('"') else {
+            break;
+        };
+        let value = &rest[..end];
+        match canonical.get(value) {
+            Some(canon) => out.push_str(canon),
+            None => out.push_str(value),
+        }
+        rest = &rest[end..]; // 닫는 따옴표부터 이어 붙인다.
+    }
+    out.push_str(rest);
     out
 }
 
