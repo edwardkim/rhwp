@@ -3,9 +3,10 @@
 - 이슈: [#5511](https://github.com/edwardkim/rhwp/issues/5511)
 - 작업 브랜치: `task_m100_5511`
 - 최초 기준선: `upstream/devel` `6eb4569a30eec88f742fe81084142c20cd48e31c`
-- 최종 통합 기준선: `upstream/devel` `8a8bdcf180251b8d902d4ecee9ebe432fd106bfb`
+- 최종 통합 기준선: `upstream/devel` `c1acbf97c803537322966cb3bb8c41f2db76fc40`
 - 작업 head: `011f19436527f6b1342d2de0a66fcd52788d1f14`
-- 통합 merge commit: `0a674165499bdb2e3150c3b9a3e6abb3c62b8046`
+- 작업 merge commit: `0a674165499bdb2e3150c3b9a3e6abb3c62b8046`
+- 최신 원격 결합 merge commit: `6a80dd8bb7b13998216e03789e3ce681c1df6d64`
 - 완료일: 2026-08-20
 - 상태: 완료 — 메인테이너가 Stage 0~2 결과를 현 기준선으로 수용
 
@@ -83,12 +84,15 @@ Q1~Q7·M1·P1·C0~C6를 모두 완료했고, `main.rs`의 편집 handler는 전�
 
 ## 5. 최종 통합 HEAD 검증
 
-최신 `upstream/devel@8a8bdcf180251b8d902d4ecee9ebe432fd106bfb`을 먼저 반영한 뒤 정상
-merge로 만든 `0a674165499bdb2e3150c3b9a3e6abb3c62b8046`에서 다음을 검증했다.
+작업 branch를 `0a674165499bdb2e3150c3b9a3e6abb3c62b8046`으로 정상 merge한 뒤 push 직전
+원격이 `c1acbf97c803537322966cb3bb8c41f2db76fc40`로 전진한 것을 발견했다. #5768의 renderer·
+Studio 통합과 소스 경로 중첩은 없었고 `mydocs/orders/20260820.md`의 독립된 두 기록을 모두
+보존했다. 최신 원격을 다시 정상 merge한 `6a80dd8bb7b13998216e03789e3ce681c1df6d64`에서
+다음 관문을 전부 재검증했다.
 
 | 관문 | 결과 |
 |---|---|
-| suite manifest prepare/check | 810 sources, 3,980 attributes, 32 suites + 9 exceptions |
+| suite manifest prepare/check | 817 sources, 3,995 attributes, 32 suites + 9 exceptions |
 | suite manifest policy test | 18/18 passed |
 | unit-tier check | 4,225 tests, 299 modules, ready 0 |
 | unit-tier policy test | 12/12 passed |
@@ -97,9 +101,9 @@ merge로 만든 `0a674165499bdb2e3150c3b9a3e6abb3c62b8046`에서 다음을 검�
 | `cargo check --locked --all-targets` | passed |
 | `cargo clippy --locked --all-targets --target-dir target/pr-review -- -D warnings` | passed |
 | `cargo test --locked --doc --target-dir target/pr-review` | 8 passed, 3 ignored |
-| 전체 release-test nextest | 8,212/8,212 passed, 3 slow, 39 skipped |
+| 전체 release-test nextest | 8,227/8,227 passed, 3 slow, 39 skipped |
 
-nextest 실행 시간은 186.083초였다. 로컬 nextest 0.9.137은 저장소 권장 0.9.140보다 낮다는
+최종 nextest 실행 시간은 202.063초였다. 로컬 nextest 0.9.137은 저장소 권장 0.9.140보다 낮다는
 경고를 냈지만 실행과 결과 판정은 성공했다.
 
 ## 6. 범위 조정과 후속 책임
