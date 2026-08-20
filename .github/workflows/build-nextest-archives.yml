@@ -12,9 +12,17 @@ on:
         required: true
         type: number
 
+      archive_label:
+        description: Stable A/B archive partition label.
+        required: true
+        type: string
+      filterset:
+        description: Binary-only nextest filterset assigned to this archive.
+        required: true
+        type: string
 jobs:
   build:
-    name: Build test archive
+    name: Build test archive (${{ inputs.archive_label }})
     runs-on: ubuntu-latest
     # [#4029] 빠른 release-test는 30분, cold release-grade는 60분을 caller가 전달한다.
     # 정상 소요시간 목표가 아니라 hang을 실패로 드러내는 상한이다.
@@ -125,6 +133,7 @@ jobs:
             --package rhwp \
             --cargo-profile "${{ inputs.cargo_profile }}" \
             --tests \
+            --filterset "${{ inputs.filterset }}" \
             --archive-file tests.tar.zst
           stat --printf='archive=%n bytes=%s\n' tests.tar.zst
 
@@ -132,6 +141,7 @@ jobs:
             --package rhwp \
             --cargo-profile "${{ inputs.cargo_profile }}" \
             --tests \
+            --filterset "${{ inputs.filterset }}" \
             --message-format json > nextest-list.json
           runnable=$(node .github/scripts/count_nextest_runnable.mjs --input nextest-list.json)
           if ! [[ "$runnable" =~ ^[0-9]+$ ]] || [[ "$runnable" == "0" ]]; then
@@ -139,12 +149,12 @@ jobs:
             exit 1
           fi
           printf '%s\n' "$runnable" > archive-expected-total.txt
-          echo "archive=all expected_runnable=${runnable}"
+          echo "archive=${{ inputs.archive_label }} expected_runnable=${runnable}"
 
       - name: Upload test archive
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: test-archive-${{ github.run_id }}
+          name: test-archive-${{ github.run_id }}-${{ inputs.archive_label }}
           path: tests.tar.zst
           compression-level: 0
           retention-days: 1
@@ -153,7 +163,7 @@ jobs:
       - name: Upload archive expected count
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: archive-expected-${{ github.run_id }}
+          name: archive-expected-${{ github.run_id }}-${{ inputs.archive_label }}
           path: archive-expected-total.txt
           retention-days: 1
           if-no-files-found: error

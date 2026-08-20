@@ -11,6 +11,10 @@ on:
         description: Unique worker count artifact suffix.
         required: true
         type: string
+      archive_label:
+        description: Stable A/B archive partition label.
+        required: true
+        type: string
       filterset:
         description: Nextest filterset applied before partitioning.
         required: true
@@ -47,7 +51,7 @@ jobs:
       - name: Download shared test archive
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: test-archive-${{ github.run_id }}
+          name: test-archive-${{ github.run_id }}-${{ inputs.archive_label }}
 
       # [#5164] 네 worker는 동일 archive에서 서로 배타적인 filter/partition만 실행한다.
       # 집계 job은 archive runnable 수와 네 Summary run 합계를 대조한다.

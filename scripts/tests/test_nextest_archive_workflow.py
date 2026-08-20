@@ -119,24 +119,15 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             preflight,
         )
 
-    def test_single_archive_builder_receives_the_selected_policy(self) -> None:
-        job = job_body(self.ci, "build-test-archive")
-        self.assertIn(
-            "cargo_profile: ${{ needs.preflight.outputs.test_profile "
-            "|| 'release' }}",
-            job,
-        )
-        self.assertIn(
-            "timeout_minutes: ${{ fromJSON("
-            "needs.preflight.outputs.test_archive_timeout_minutes || '60') }}",
-            job,
-        )
-        for obsolete in (
-            "build-test-archive-slow",
-            "build-test-archive-a",
-            "build-test-archive-b",
-        ):
-            self.assertNotIn(f"  {obsolete}:\n", self.ci)
+    def test_two_archive_builders_retire_the_slow_lane(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        ci = (root / ".github/workflows/ci.yml").read_text()
+        builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
+        runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
+        self.assertIn("build-test-archive-a:", ci); self.assertIn("build-test-archive-b:", ci)
+        self.assertNotIn("test-slow-shard:", ci); self.assertEqual(4, ci.count('partition: "hash:1/2"'))
+        self.assertIn('filterset: "binary(/.*[02468]$/)"', ci); self.assertIn('filterset: "not binary(/.*[02468]$/)"', ci)
 
     def test_native_skia_uses_the_same_test_profile_policy(self) -> None:
         native = job_body(self.ci, "native-skia-tests")
@@ -151,23 +142,16 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("Unknown test profile", step)
         self.assertNotIn('"${GITHUB_EVENT_NAME}" == "pull_request"', step)
 
-    def test_reusable_builder_accepts_explicit_policy_and_uses_dynamic_timeout(self) -> None:
-        self.assertIn("      cargo_profile:\n", self.builder)
-        self.assertIn("      timeout_minutes:\n", self.builder)
-        self.assertIn("        type: string", self.builder)
-        self.assertIn("        type: number", self.builder)
-        self.assertIn("    timeout-minutes: ${{ inputs.timeout_minutes }}", self.builder)
-        self.assertIn(
-            '--cargo-profile "${{ inputs.cargo_profile }}"',
-            self.builder,
-        )
-        self.assertNotIn("- name: Select cargo profile", self.builder)
-        self.assertNotIn("steps.profile.outputs.cargo_profile", self.builder)
-        self.assertNotIn("archive_labels:", self.builder)
-        self.assertNotIn("expected_count_suffix:", self.builder)
-        self.assertIn("--tests", self.builder)
-        self.assertIn("--archive-file tests.tar.zst", self.builder)
-        self.assertIn("name: test-archive-${{ github.run_id }}", self.builder)
+    def test_reusable_builder_isolates_partition_artifacts(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        ci = (root / ".github/workflows/ci.yml").read_text()
+        builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
+        runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
+        self.assertIn('--filterset "${{ inputs.filterset }}"', builder)
+        self.assertIn("test-archive-${{ github.run_id }}-${{ inputs.archive_label }}", builder)
+        self.assertIn("archive-expected-${{ github.run_id }}-${{ inputs.archive_label }}", builder)
+        self.assertIn("test-archive-${{ github.run_id }}-${{ inputs.archive_label }}", runner)
 
     def test_builder_prepares_derived_suites_before_compiling_the_archive(self) -> None:
         prepare = "node scripts/rust-test-suite-manifest.mjs --prepare"
@@ -176,12 +160,16 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn(archive, self.builder)
         self.assertLess(self.builder.index(prepare), self.builder.index(archive))
 
-    def test_workers_share_one_archive_and_partition_test_cases(self) -> None:
-        self.assertIn("name: test-archive-${{ github.run_id }}", self.runner)
-        self.assertIn('--filterset "${FILTERSET}"', self.runner)
-        self.assertIn('partition_args=(--partition "${PARTITION}")', self.runner)
-        self.assertIn("--no-tests fail", self.runner)
-        self.assertNotIn("archive_label:", self.runner)
+    def test_four_workers_validate_each_archive_coverage(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        ci = (root / ".github/workflows/ci.yml").read_text()
+        builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
+        runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
+        for name in ("test-archive-a-shard-1:", "test-archive-a-shard-2:", "test-archive-b-shard-1:", "test-archive-b-shard-2:"):
+            self.assertIn(name, ci)
+        self.assertIn("Archive A shard total mismatch", ci); self.assertIn("Archive B shard total mismatch", ci)
+        self.assertIn("name: Build & Test", ci)
 
     def test_reusable_builder_rejects_profile_timeout_mismatches(self) -> None:
         step = step_body(self.builder, "Validate test archive policy")
