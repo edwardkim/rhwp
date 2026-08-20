@@ -3222,6 +3222,17 @@ impl LayoutEngine {
                 if let Some(last) = col_widths.last_mut() {
                     *last += residual;
                 }
+            } else if residual < -0.5 && current > 0.0 {
+                // [#5720] 행마다 다른 열 구획을 선언한 표는 병합 셀 제약이 서로
+                // 모순이라 위 결핍 보정("뒤쪽 열 확장")이 누적돼 전역 grid 가
+                // 선언 폭을 넘을 수 있다 (2734559: 선언 638.7px → 726.9px, 용지
+                // 밖 10.7px). 한글 2022 는 표를 선언 폭 그대로 그린다(COM PDF
+                // 실측: 76.4~716.7px = 640.3px). 초과분은 비례 축소로 선언 폭에
+                // 맞춘다 — 부족분을 마지막 열에 채우는 위 분기와 대칭 원칙이다.
+                let scale = target_width / current;
+                for w in col_widths.iter_mut() {
+                    *w *= scale;
+                }
             }
         }
         col_widths

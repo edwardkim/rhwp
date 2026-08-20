@@ -344,8 +344,23 @@ fn declared_row_col_x(
         }
         next_col = end;
     }
-    if next_col != col_count || (cursor - target_total).abs() > 0.5 {
+    if next_col != col_count {
         return None;
+    }
+    let mismatch = cursor - target_total;
+    if mismatch.abs() > 0.5 {
+        // [#5720] 행 선언 폭 합이 표 폭과 근소하게(1% 이내) 어긋나는 행도 자기
+        // 구획으로 인정하고 표 폭에 맞춰 비례 정규화한다. 2734559 실측 — 0~18행
+        // 합 634.96px vs 표 638.72px(0.6%): 한글은 이 행들의 구획을 표 전폭으로
+        // 늘려 그린다(COM PDF 세로선 76.4~716.7px). 엄격 일치만 받으면 이 행들이
+        // 모순된 전역 grid 로 떨어져 표가 선언 밖으로 벌어진다.
+        if target_total <= 0.0 || cursor <= 0.0 || mismatch.abs() > target_total * 0.01 {
+            return None;
+        }
+        let scale = target_total / cursor;
+        for x in candidate.iter_mut() {
+            *x *= scale;
+        }
     }
     Some(candidate)
 }
