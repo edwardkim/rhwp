@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1 완료, C0 진입 승인 대기
+- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1·C0 완료, C1 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -182,6 +182,13 @@ helper로 분해했다. 범용 CAS seam은 이후 C0도 사용하는 불변식�
 C0에서 `EditContext` 또는 동등한 명시적 의존 묶음이 필요한지 결정한다. 이때 service 계층
 전환까지 선행하지 않고, Stage 2에서는 기존 동작을 전달할 최소 CLI runtime seam만 만든다.
 실제 `DocumentService`, typed error, 전역 인증 제거는 Stage 3 범위로 남긴다.
+
+C0도 완료했다. 88개 edit 하위 명령 dispatch와 공통 output format·serialize·verify·write를
+`cli/commands/edit/` 아래로 이동하고, edit와 protocol plan이 함께 쓰는 SHA-256·CAS path lock은
+`cli/integrity.rs`의 범용 seam으로 분리했다. 기능군별 의존이 확인되기 전에 god object가 되는
+광범위한 `EditContext`는 만들지 않았다. 직접 계약 101/101과 전체 release-test 8,005/8,005가
+통과했으며 최신 `devel`의 별도 Studio 변경을 정상 merge했다. 세부 증거는
+[`task_m100_5511_stage2_batch_c0.md`](../working/task_m100_5511_stage2_batch_c0.md)에 기록했다.
 
 ## 5. 중단 조건
 
