@@ -4517,6 +4517,7 @@ impl LayoutEngine {
                 &page_content.footnotes,
                 paragraphs,
                 footnote_shape,
+                styles,
             );
             footnote_layout.update_footnote_area(fn_height);
         }
