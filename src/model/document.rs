@@ -293,6 +293,14 @@ pub struct SectionDef {
     pub hide_border: bool,
     /// 배경 감추기
     pub hide_fill: bool,
+    /// [#5717] 구역 첫 쪽에만 테두리 표시 (HWP5 flags bit 8, HWPX visibility
+    /// `border="SHOW_FIRST"`). 한글 2022 실측 — 켜지면 쪽 테두리를 구역 첫 쪽에만
+    /// 그린다(꺼진 [X,1,1] 테두리 문서는 전 쪽에 그린다: 156494214 3/3쪽).
+    pub first_page_border: bool,
+    /// [#5717] 구역 첫 쪽에만 배경 표시 (HWP5 flags bit 9, HWPX visibility
+    /// `fill="SHOW_FIRST"`). 성북구 자원순환집행계획 실측: bit9 문서의 남색 배경을
+    /// 한글은 1쪽에만, rhwp 는 172쪽 전부에 칠했다.
+    pub first_page_fill: bool,
     /// 빈 줄 감추기 (bit 19): 페이지 시작 부분의 빈 줄 2개까지 높이 0 처리
     pub hide_empty_line: bool,
     /// 텍스트 방향 (0: 가로, 1: 세로)

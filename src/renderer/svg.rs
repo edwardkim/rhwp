@@ -3120,7 +3120,9 @@ impl Renderer for SvgRenderer {
             }
         }
 
-        // 밑줄 처리
+        // 밑줄 처리 — [#5730] 아래 밑줄은 기준선 + 0.17em (한글 2022 프로브 실측,
+        // 6개 크기 선형). 종전 고정 +2.0px 은 큰 글꼴에서 디센더를 가로질렀다.
+        // 이중/삼중선(shape 7~10)의 선별 위치·굵기도 em 비례 실측표를 따른다.
         if !matches!(style.underline, UnderlineType::None) {
             let text_width = *char_positions.last().unwrap_or(&0.0);
             let ul_color = if style.underline_color != 0 {
@@ -3128,18 +3130,38 @@ impl Renderer for SvgRenderer {
             } else {
                 color.to_string()
             };
-            let ul_y = match style.underline {
-                UnderlineType::Top => y - font_size + 1.0,
-                _ => y + 2.0,
+            let multi = if matches!(style.underline, UnderlineType::Top) {
+                None
+            } else {
+                crate::renderer::text_decoration::underline_multi_lines(style.underline_shape)
             };
-            self.draw_line_shape(
-                x,
-                ul_y,
-                x + text_width,
-                ul_y,
-                &ul_color,
-                style.underline_shape,
-            );
+            if let Some(lines) = multi {
+                for (dy_em, width_em) in lines {
+                    let ly = y + font_size * dy_em;
+                    self.output.push_str(&format!(
+                        "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
+                        x,
+                        ly,
+                        x + text_width,
+                        ly,
+                        ul_color,
+                        (font_size * width_em).max(0.3),
+                    ));
+                }
+            } else {
+                let ul_y = match style.underline {
+                    UnderlineType::Top => y - font_size + 1.0,
+                    _ => y + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO,
+                };
+                self.draw_line_shape(
+                    x,
+                    ul_y,
+                    x + text_width,
+                    ul_y,
+                    &ul_color,
+                    style.underline_shape,
+                );
+            }
         }
 
         // 취소선 처리

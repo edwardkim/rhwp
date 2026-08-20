@@ -822,6 +822,9 @@ fn parse_section_def(ctrl_data: &[u8], child_records: &[Record], ctrl_level: u16
     sd.hide_master_page = sd.flags & 0x0004 != 0; // bit 2 (HWP5 스펙, 첫쪽 바탕쪽 감춤)
     sd.hide_border = sd.flags & 0x0008 != 0;
     sd.hide_fill = sd.flags & 0x0010 != 0;
+    // [#5717] bit 8/9: 구역 첫 쪽에만 테두리/배경 표시 (HWPX visibility SHOW_FIRST 대응)
+    sd.first_page_border = sd.flags & 0x0100 != 0;
+    sd.first_page_fill = sd.flags & 0x0200 != 0;
     sd.hide_empty_line = sd.flags & 0x00080000 != 0; // bit 19: 빈 줄 감추기
     sd.page_num_type = ((sd.flags >> 20) & 0x03) as u8; // bit 20-21: 쪽 번호 종류 (0=이어서, 1=홀수, 2=짝수)
 

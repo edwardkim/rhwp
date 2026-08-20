@@ -972,7 +972,7 @@ fn diff_page_def(
 
 /// 섹션 `<hp:visibility>` 플래그 비교 (#1637) — secPr visibility 보존 게이트.
 ///
-/// IR(SectionDef)에 보존되는 6필드만 비교한다(hideFirstPageNum·showLineNumber 는
+/// IR(SectionDef)에 보존되는 8필드만 비교한다(hideFirstPageNum·showLineNumber 는
 /// 파서가 IR 에 적재하지 않으므로 제외). 직렬화기가 visibility 를 IR 로 방출하지 않으면
 /// (특히 hide_empty_line) 페이지네이션이 달라지는 IR-invisible 결함을 게이트화한다.
 fn diff_visibility(
@@ -997,6 +997,9 @@ fn diff_visibility(
     cmp_field!(hide_master_page);
     cmp_field!(hide_border);
     cmp_field!(hide_fill);
+    // [#5717] 구역 첫 쪽에만 테두리/배경 (visibility SHOW_FIRST) 보존 게이트
+    cmp_field!(first_page_border);
+    cmp_field!(first_page_fill);
     cmp_field!(hide_empty_line);
     if parts.is_empty() {
         None

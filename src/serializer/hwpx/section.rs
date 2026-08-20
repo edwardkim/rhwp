@@ -86,14 +86,24 @@ const TEMPLATE_VISIBILITY: &str = r#"<hp:visibility hideFirstHeader="0" hideFirs
 /// 템플릿 기본값("0")을 유지한다.
 fn render_visibility(sd: &SectionDef) -> String {
     let b = |v: bool| if v { "1" } else { "0" };
-    let bf = |v: bool| if v { "HIDE_ALL" } else { "SHOW_ALL" };
+    // [#5717] SHOW_FIRST(구역 첫 쪽에만 표시, flags bit 8/9)를 왕복 보존한다 —
+    // 한글 2022 가 같은 문서를 HWPX 로 저장할 때 쓰는 어휘 그대로다(성북구 실측).
+    let bf = |hide: bool, first: bool| {
+        if hide {
+            "HIDE_ALL"
+        } else if first {
+            "SHOW_FIRST"
+        } else {
+            "SHOW_ALL"
+        }
+    };
     format!(
         r#"<hp:visibility hideFirstHeader="{}" hideFirstFooter="{}" hideFirstMasterPage="{}" border="{}" fill="{}" hideFirstPageNum="0" hideFirstEmptyLine="{}" showLineNumber="0"/>"#,
         b(sd.hide_header),
         b(sd.hide_footer),
         b(sd.hide_master_page),
-        bf(sd.hide_border),
-        bf(sd.hide_fill),
+        bf(sd.hide_border, sd.first_page_border),
+        bf(sd.hide_fill, sd.first_page_fill),
         b(sd.hide_empty_line),
     )
 }

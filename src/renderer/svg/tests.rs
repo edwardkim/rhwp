@@ -605,7 +605,9 @@ fn test_svg_text_decoration() {
     );
     let output = renderer.output();
     // 밑줄: <line> 요소로 출력
-    let underline_count = output.matches("y1=\"22\"").count(); // y + 2.0
+    // [#5730] 밑줄은 기준선 + 0.17em (한글 2022 실측) — 16px 글꼴이면 20 + 2.72 = 22.72.
+    // (부동소수 표기 꼬리가 붙을 수 있어 닫는 따옴표 없이 접두 일치로 확인한다.)
+    let underline_count = output.matches("y1=\"22.72").count();
     assert!(underline_count > 0, "밑줄 <line> 요소가 있어야 함");
     // 취소선: <line> 요소로 출력
     let strike_count = output

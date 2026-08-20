@@ -2178,6 +2178,10 @@ pub struct LayoutEngine {
     /// 색/그라데이션 채우기·쪽 테두리선은 이 값과 무관하게 현행 유지.
     /// 기본값 true(=억제 없음)로 두어 렌더 경로 밖(테스트 등)의 기존 동작을 보존한다.
     current_page_is_section_first: std::cell::Cell<bool>,
+    /// [#5717] 구역정의 "첫 쪽에만 테두리/배경 표시" (HWP5 flags bit 8/9,
+    /// HWPX visibility SHOW_FIRST). (border, fill) 순. 기본 (false, false) =
+    /// 제한 없음 — 전 쪽 적용(한글 실측: 156494214 테두리 3/3쪽).
+    page_border_fill_first_page_only: std::cell::Cell<(bool, bool)>,
     /// 파일 이름 (머리말/꼬리말 필드 치환용)
     file_name: std::cell::RefCell<String>,
     /// 문단 테두리/배경 범위 수집
@@ -2340,6 +2344,7 @@ impl LayoutEngine {
             total_pages: std::cell::Cell::new(0),
             current_page_number: std::cell::Cell::new(0),
             current_page_is_section_first: std::cell::Cell::new(true),
+            page_border_fill_first_page_only: std::cell::Cell::new((false, false)),
             file_name: std::cell::RefCell::new(String::new()),
             para_border_ranges: std::cell::RefCell::new(Vec::new()),
             border_box_override: std::cell::Cell::new(None),
@@ -2818,6 +2823,13 @@ impl LayoutEngine {
     /// 쪽 배경 이미지 채우기를 구역 첫 쪽에만 적용하기 위한 페이지별 컨텍스트.
     pub fn set_current_page_is_section_first(&self, is_first: bool) {
         self.current_page_is_section_first.set(is_first);
+    }
+
+    /// [#5717] 구역정의 "첫 쪽에만 테두리/배경 표시" 플래그를 설정한다.
+    /// (HWP5 flags bit 8/9, HWPX visibility SHOW_FIRST). 켜진 축은
+    /// `current_page_is_section_first` 가 아닐 때 해당 쪽 테두리/배경을 그리지 않는다.
+    pub fn set_page_border_fill_first_page_only(&self, border: bool, fill: bool) {
+        self.page_border_fill_first_page_only.set((border, fill));
     }
 
     /// 파일 이름을 설정한다 (머리말/꼬리말 필드 치환용).
@@ -3680,6 +3692,12 @@ impl LayoutEngine {
         // [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용한다(한컴 실측 정합).
         // 색/그라데이션 채우기는 이 조건과 무관하게 모든 쪽에 유지한다.
         let allow_bg_image = self.current_page_is_section_first.get();
+        // [#5717] 구역정의 bit9(첫 쪽에만 배경)가 켜진 구역에서는 첫 쪽이 아니면
+        // 커스텀 채우기 전체를 hide_fill 과 동일하게 억제한다(흰 종이 바탕 유지).
+        // 성북구 실측: 한글은 남색 배경을 1쪽에만 칠한다 — rhwp 는 172쪽 전부였다.
+        let hide_fill = hide_fill
+            || (self.page_border_fill_first_page_only.get().1
+                && !self.current_page_is_section_first.get());
         let (page_bg_color, page_bg_gradient, page_bg_image) = if hide_fill {
             (Some(0x00FFFFFF), None, None)
         } else if let Some(pbf) = page_border_fill {
@@ -3796,6 +3814,14 @@ impl LayoutEngine {
         page_border_fill: Option<&PageBorderFill>,
         styles: &ResolvedStyleSet,
     ) {
+        // [#5717] 구역정의 bit8(첫 쪽에만 테두리)가 켜진 구역에서는 첫 쪽이 아니면
+        // 쪽 테두리를 그리지 않는다. 꺼진 문서(코퍼스 [X,1,1] 테두리 11건)는 한글도
+        // 전 쪽에 그리므로 현행 유지.
+        if self.page_border_fill_first_page_only.get().0
+            && !self.current_page_is_section_first.get()
+        {
+            return;
+        }
         if let Some(pbf) = page_border_fill.filter(|p| p.border_fill_id > 0) {
             let bf_idx = (pbf.border_fill_id - 1) as usize;
             if let Some(bs) = styles.border_styles.get(bf_idx) {

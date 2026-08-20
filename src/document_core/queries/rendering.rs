@@ -6462,6 +6462,22 @@ impl DocumentCore {
         self.layout_engine
             .set_current_page_is_section_first(is_section_first_page);
 
+        // [#5717] 구역정의 "첫 쪽에만 테두리/배경 표시" (flags bit 8/9,
+        // HWPX visibility SHOW_FIRST) — 켜진 구역은 첫 쪽 밖에서 억제한다.
+        let (first_page_border, first_page_fill) = self
+            .document
+            .sections
+            .get(page_content.section_index)
+            .map(|s| {
+                (
+                    s.section_def.first_page_border,
+                    s.section_def.first_page_fill,
+                )
+            })
+            .unwrap_or((false, false));
+        self.layout_engine
+            .set_page_border_fill_first_page_only(first_page_border, first_page_fill);
+
         let wrap_around_paras = self
             .pagination
             .get(sec_idx)
