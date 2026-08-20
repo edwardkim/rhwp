@@ -513,10 +513,11 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "IMPACT_REASON": "classified:studio-unit",
             "BUILD_ARCHIVE_A_RESULT": "skipped",
             "BUILD_ARCHIVE_B_RESULT": "skipped",
+            "BUILD_ARCHIVE_C_RESULT": "skipped",
             "TEST_ARCHIVE_A_1_RESULT": "skipped",
             "TEST_ARCHIVE_A_2_RESULT": "skipped",
             "TEST_ARCHIVE_B_1_RESULT": "skipped",
-            "TEST_ARCHIVE_B_2_RESULT": "skipped",
+            "TEST_ARCHIVE_C_1_RESULT": "skipped",
             "LINT_RESULT": "skipped",
             "NATIVE_SKIA_RESULT": "skipped",
             "FRONTEND_UNIT_RESULT": "success",
@@ -672,7 +673,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
             native_skia.index("- name: Prepare derived Rust test suites"),
             native_skia.index("- name: Native Skia tests"),
         )
-            self.assertEqual(
+        self.assertEqual(
             1,
             native_skia.count("node scripts/rust-test-suite-manifest.mjs --prepare"),
         )
@@ -997,6 +998,7 @@ mod support;
         for step_name in (
             "Download archive A expected count",
             "Download archive B expected count",
+            "Download archive C expected count",
             "Download shard counts",
             "Verify archive shard totals",
         ):
@@ -1012,10 +1014,11 @@ mod support;
             "LINT_RESULT": "success",
             "BUILD_ARCHIVE_A_RESULT": "success",
             "BUILD_ARCHIVE_B_RESULT": "success",
+            "BUILD_ARCHIVE_C_RESULT": "success",
             "TEST_ARCHIVE_A_1_RESULT": "success",
             "TEST_ARCHIVE_A_2_RESULT": "success",
             "TEST_ARCHIVE_B_1_RESULT": "success",
-            "TEST_ARCHIVE_B_2_RESULT": "success",
+            "TEST_ARCHIVE_C_1_RESULT": "success",
         }
         cases = {
             "frontend-only": {},
