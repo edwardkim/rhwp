@@ -2894,6 +2894,11 @@ impl LayoutEngine {
             .as_ref()
             .map(|ph| ph.hide_border)
             .unwrap_or(false);
+        // [#5717] 구역 정의 속성 bit 8("첫 쪽만 테두리")도 같은 규약이다.
+        let hide_border = hide_border
+            || page_border_fill.is_some_and(|pbf| {
+                pbf.first_page_only_border && !self.current_page_is_section_first.get()
+            });
         if !hide_border {
             self.build_page_borders(&mut tree, layout, page_border_fill, styles);
         }
@@ -3680,6 +3685,13 @@ impl LayoutEngine {
         // [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용한다(한컴 실측 정합).
         // 색/그라데이션 채우기는 이 조건과 무관하게 모든 쪽에 유지한다.
         let allow_bg_image = self.current_page_is_section_first.get();
+        // [#5717] 구역 정의 속성 bit 9("첫 쪽만 배경")가 선 구역은 첫 쪽에만 채우기를 그린다.
+        // 그 비트를 무시하면 표지 한 장짜리 배경색이 문서 전 쪽을 덮는다(성북구 자원순환
+        // 집행계획: 한글 172쪽 중 1쪽만 남색인데 rhwp 는 172쪽 모두 남색).
+        let hide_fill = hide_fill
+            || page_border_fill.is_some_and(|pbf| {
+                pbf.first_page_only_fill && !self.current_page_is_section_first.get()
+            });
         let (page_bg_color, page_bg_gradient, page_bg_image) = if hide_fill {
             (Some(0x00FFFFFF), None, None)
         } else if let Some(pbf) = page_border_fill {

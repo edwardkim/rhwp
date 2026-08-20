@@ -2736,6 +2736,13 @@ fn header_paper_relative_picture_uses_page_origin() {
 /// 이미지 채우기 + 색 채우기를 가진 쪽 테두리/배경으로 렌더 트리를 만든 뒤
 /// 루트 자식에서 PageBackground 노드를 찾아 (background_color, image 유무) 를 반환.
 fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
+    let (color, image) = page_bg_probe(is_section_first, false);
+    (color.is_some(), image)
+}
+
+/// [#5717] `first_page_only_fill` 까지 지정할 수 있는 확장 프로브.
+/// 반환값은 (배경색, 이미지 유무) — 색은 값 자체를 봐야 흰 종이 바탕과 구분된다.
+fn page_bg_probe(is_section_first: bool, first_page_only_fill: bool) -> (Option<u32>, bool) {
     use crate::model::bin_data::BinDataContent;
     use crate::model::image::ImageEffect;
     use crate::model::page::PageBorderFill;
@@ -2781,6 +2788,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     }];
     let page_border_fill = PageBorderFill {
         border_fill_id: 1,
+        first_page_only_fill,
         ..Default::default()
     };
 
@@ -2806,7 +2814,47 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
         _ => None,
     });
     let bg = bg.expect("PageBackground 노드가 있어야 함");
-    (bg.background_color.is_some(), bg.image.is_some())
+    (bg.background_color, bg.image.is_some())
+}
+
+/// [#5717] 구역 정의 속성 bit 9("첫 쪽만 배경")가 선 구역은 첫 쪽에만 채우기를 그린다.
+///
+/// 한글 2022 실측: 그 비트가 선 문서(성북구 자원순환집행계획, `flags=0x00300200`)는 172쪽 중
+/// 1쪽에만 배경색(#1c3d62)이 칠해지고, 꺼진 문서(환경부 보도자료, `flags=0x0`)는 쪽 테두리가
+/// 3쪽 모두에 그려진다. 이 비트를 무시하면 표지 한 장짜리 배경색이 문서 전 쪽을 덮는다.
+#[test]
+fn issue_5717_first_page_only_fill_limits_background_to_section_first_page() {
+    // 첫 쪽: 선언한 색(0x00F0F0F0)과 이미지 채우기를 모두 그린다.
+    let (color_first, image_first) = page_bg_probe(true, true);
+    assert_eq!(
+        color_first,
+        Some(0x00F0_F0F0),
+        "구역 첫 쪽에는 선언한 배경색이 그대로 나와야 한다"
+    );
+    assert!(image_first, "구역 첫 쪽에는 배경 이미지도 있어야 한다");
+
+    // 첫 쪽이 아니면 커스텀 채우기를 그리지 않고 흰 종이 바탕만 남긴다(#2083 계약).
+    let (color_rest, image_rest) = page_bg_probe(false, true);
+    assert_eq!(
+        color_rest,
+        Some(0x00FF_FFFF),
+        "첫 쪽만 배경 구역인데 둘째 쪽에도 선언 배경색이 칠해졌다 (#5717)"
+    );
+    assert!(
+        !image_rest,
+        "첫 쪽만 배경 구역인데 둘째 쪽에 배경 이미지가 남았다"
+    );
+}
+
+/// 비트가 꺼진 구역은 종전대로 전 쪽에 배경색을 그린다(대조군 계약).
+#[test]
+fn issue_5717_plain_section_keeps_background_on_every_page() {
+    let (color_rest, _) = page_bg_probe(false, false);
+    assert_eq!(
+        color_rest,
+        Some(0x00F0_F0F0),
+        "첫 쪽만 배경 비트가 꺼진 구역은 둘째 쪽에도 선언 배경색을 유지해야 한다"
+    );
 }
 
 #[test]

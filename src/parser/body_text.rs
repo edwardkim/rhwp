@@ -850,7 +850,12 @@ fn parse_section_def(ctrl_data: &[u8], child_records: &[Record], ctrl_level: u16
                 footnote_count += 1;
             }
             tags::HWPTAG_PAGE_BORDER_FILL => {
-                let pbf = parse_page_border_fill(&record.data);
+                let mut pbf = parse_page_border_fill(&record.data);
+                // [#5717] "첫 쪽만 테두리/배경" 은 레코드가 아니라 구역 속성에 있다.
+                // 레코드에는 그 구분을 담을 자리가 없어(attr 4바이트 = 위치 기준 ·
+                // 머리말/꼬리말 포함 · 채울 영역), 구역 플래그를 여기서 실어 넘긴다.
+                pbf.first_page_only_border = sd.flags & 0x0000_0100 != 0; // bit 8
+                pbf.first_page_only_fill = sd.flags & 0x0000_0200 != 0; // bit 9
                 if border_fill_count == 0 {
                     sd.page_border_fill = pbf;
                 } else {

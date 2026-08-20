@@ -142,6 +142,9 @@ fn hwp3_page_border_fill(
         border_fill_id,
         basis: crate::model::page::PageBorderBasis::BodyBased,
         ui_basis: crate::model::page::PageBorderUiBasis::Page,
+        // HWP3 원본에는 "첫 쪽만 테두리/배경" 선택이 없다.
+        first_page_only_border: false,
+        first_page_only_fill: false,
     }
 }
 
