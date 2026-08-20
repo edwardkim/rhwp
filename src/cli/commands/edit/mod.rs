@@ -9,9 +9,8 @@ use crate::{
     edit_delete_text_in_footnote, edit_insert_endnote, edit_insert_field_in_hf,
     edit_insert_footnote, edit_insert_footnote_text, edit_insert_header_footer,
     edit_insert_header_footer_text, edit_merge_paragraph_in_cell, edit_merge_paragraph_in_footnote,
-    edit_merge_paragraph_in_hf, edit_rename_bookmark, edit_set_column_def,
-    edit_set_header_footer_text, edit_set_hf_picture, edit_set_page_def, edit_set_page_hide,
-    edit_set_section_def, edit_split_paragraph_in_cell, edit_split_paragraph_in_footnote,
+    edit_merge_paragraph_in_hf, edit_rename_bookmark, edit_set_header_footer_text,
+    edit_set_hf_picture, edit_split_paragraph_in_cell, edit_split_paragraph_in_footnote,
     edit_split_paragraph_in_hf, edit_toggle_hide_hf, EXIT_USAGE,
 };
 
@@ -21,6 +20,7 @@ mod document_text;
 mod equations;
 mod fields;
 mod media;
+mod page;
 mod privacy;
 pub(crate) mod runtime;
 mod shapes;
@@ -46,6 +46,7 @@ use equations::{edit_delete_equation, edit_insert_equation, edit_set_equation_pr
 use fields::edit_fill_fields;
 pub(crate) use fields::{fill_fields_core, parse_field_key};
 use media::{edit_delete_picture, edit_insert_image, edit_insert_picture, edit_set_picture};
+use page::{edit_set_column_def, edit_set_page_def, edit_set_page_hide, edit_set_section_def};
 use privacy::{edit_redact, edit_sanitize};
 use shapes::{edit_delete_shape, edit_group_shapes, edit_insert_shape, edit_ungroup_shape};
 use tables::{
