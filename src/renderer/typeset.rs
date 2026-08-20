@@ -16155,7 +16155,7 @@ impl TypesetEngine {
             omit_untrusted_empty || strict_after_empty_host_float,
         );
         // [#3837] 저장 vpos 가 되돌아가면 한글은 거기서 쪽을 끊었다.
-        let stored_vpos_rewind_break = st.col_count == 1
+        let stored_vpos_rewind_base = st.col_count == 1
             && !st.current_items.is_empty()
             // 같은 문단이 이미 이 쪽에 놓였으면 걸지 않는다 — 되돌아감은 문단 시작 신호라
             // 이미 시작한 뒤 걸면 문단을 쪼갠다.
@@ -16163,8 +16163,16 @@ impl TypesetEngine {
                 .current_items
                 .iter()
                 .any(|it| page_item_para_index(it) == Some(para_idx))
-            && st.current_height >= available * STORED_VPOS_REWIND_MIN_FILL
             && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para);
+        let stored_vpos_rewind_break =
+            stored_vpos_rewind_base && st.current_height >= available * STORED_VPOS_REWIND_MIN_FILL;
+        // [#5755] 되돌아간 문단이 통째로는 안 들어가는 경우 — 어차피 전체 배치는 실패라
+        // 종전엔 split 경로로 흘러가 저장 좌표(새 쪽의 쪽-지역 좌표)를 현재 쪽 꼬리
+        // 적합 근거로 오독, 본문 밖·용지 밖까지 그렸다(156677324 pi=9: 996>934px).
+        // 한글은 이 문단을 통째로 다음 쪽에 둔다(2쪽 925.1≤933.6 정확 재현). 실제
+        // 넘침이 있을 때만 발동하므로 MIN_FILL 완화의 연쇄(+3쪽) 부작용과 무관하다.
+        let stored_vpos_rewind_overflow_break =
+            stored_vpos_rewind_base && st.current_height + page_end_fit_height > available;
         // [compat 2024] 앵커 줄 회수분이 있거나 앞선 경계를 이미 덮은 상태에서
         // 이 문단의 첫 줄이 (회수 보너스 포함) 들어가면 저장 되감김(=2022 조판의
         // 쪽 경계)을 덮는다. 회수도 선행 덮음도 없으면 종전 동작 그대로.
@@ -16517,7 +16525,10 @@ impl TypesetEngine {
         }
         if (st.current_height >= available
             || remaining < first_line_h
-            || (stored_whole_para_reset && !hangul2024_split_refit))
+            || (stored_whole_para_reset && !hangul2024_split_refit)
+            // [#5755] 저장 되감김 + 전체 fit 실패 = 한글이 이 문단을 통째로 다음 쪽에
+            // 둔 배치 — split 로 현재 쪽에 걸치지 말고 먼저 쪽을 넘긴다.
+            || stored_vpos_rewind_overflow_break)
             && !st.current_items.is_empty()
             && !hwp_first_line_before_reset_fits
         {

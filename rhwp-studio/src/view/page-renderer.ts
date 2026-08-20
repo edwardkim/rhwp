@@ -38,6 +38,11 @@ interface LayerPlaneSummary {
   // flow-static 분리는 그림만 canvas 아래 평면으로 내리고 그 채우기는 canvas 에 남기므로,
   // 분리하면 채우기가 그림을 덮어 그림이 통째로 사라진다. 그런 페이지는 분리하지 않는다.
   flowStaticOccluded: boolean;
+  // [#5780] 쪽 배경. DOM flow 그림 갈래(DIV)는 Background plane 을 실을 자리가 없어
+  // 단색 배경은 DIV background 로 실어 주고, 그라데이션/이미지 배경은 DOM 갈래를
+  // 포기하고 flow-static canvas(Background 포함 필터)로 폴백한다.
+  pageBackgroundCss: string | null;
+  pageBackgroundComplex: boolean;
   signature: string;
 }
 
@@ -218,7 +223,10 @@ export class PageRenderer {
       reuseStaticFlow &&
       layers.flowRawSvgCount === 0 &&
       flowImages.length === layers.flowImageCount &&
-      flowImages.length > 0;
+      flowImages.length > 0 &&
+      // [#5780] 그라데이션/이미지 쪽 배경은 DIV 로 못 싣는다 — Background plane 을
+      // 포함하는 flow-static canvas 갈래로 폴백한다.
+      !layers.pageBackgroundComplex;
 
     // 다층 layer 모드.
     // 1) 본문 Canvas 는 'flow' 필터로 BehindText/InFrontOfText plane 제외
@@ -528,7 +536,10 @@ export class PageRenderer {
     layer.dataset.rhwpFlowImagePage = String(pageIdx);
     layer.dataset.rhwpStaticOverlayKey = key;
     layer.style.pointerEvents = 'none';
-    layer.style.background = 'var(--doc-paper)';
+    // [#5780] 쪽 배경색이 선언된 쪽은 종이색이 아니라 그 색을 실어야 한다 — DIV 갈래는
+    // Background plane 을 canvas 로 싣지 못하므로 여기서 단색 배경을 대신 진다
+    // (그라데이션/이미지 배경은 usesDomFlowImages 게이트가 canvas 갈래로 폴백).
+    layer.style.background = summary.pageBackgroundCss ?? 'var(--doc-paper)';
 
     for (const image of images) {
       const visibleBbox = visibleFlowImageBbox(image);
@@ -927,6 +938,10 @@ export class PageRenderer {
       const flowStaticCount = flowImageCount + flowRawSvgCount;
       // [#5763] 구형 WASM 은 이 필드를 안 낸다 — 그때는 종전대로 분리를 허용한다.
       const flowStaticOccluded = wrapper.flowStaticOccluded === true;
+      // [#5780] 쪽 배경 요약 — 구형 WASM 은 필드가 없다(null/false 폴백).
+      const pageBackgroundCss =
+        typeof wrapper.pageBackgroundCss === 'string' ? wrapper.pageBackgroundCss : null;
+      const pageBackgroundComplex = wrapper.pageBackgroundComplex === true;
       return {
         hasBehind: wrapper.hasBehind,
         hasFront: wrapper.hasFront,
@@ -936,7 +951,9 @@ export class PageRenderer {
         flowRawSvgCount,
         flowStaticCount,
         flowStaticOccluded,
-        signature: `overlay:${wrapper.hasBehind ? 1 : 0}:${wrapper.hasFront ? 1 : 0}:${imageCount}:${rawSvgCount}:${flowImageCount}:${flowRawSvgCount}:${flowStaticOccluded ? 1 : 0}:${json.length}`,
+        pageBackgroundCss,
+        pageBackgroundComplex,
+        signature: `overlay:${wrapper.hasBehind ? 1 : 0}:${wrapper.hasFront ? 1 : 0}:${imageCount}:${rawSvgCount}:${flowImageCount}:${flowRawSvgCount}:${flowStaticOccluded ? 1 : 0}:${pageBackgroundCss ?? ''}:${pageBackgroundComplex ? 1 : 0}:${json.length}`,
       };
     } catch (e) {
       console.warn('[PageRenderer] OverlayImageSummary JSON parse 실패:', e);
@@ -959,7 +976,7 @@ export class PageRenderer {
       if (root) {
         collectLayerPlaneSummary(root, summary, null, { opaqueFlowFills: [] });
         summary.flowStaticCount = summary.flowImageCount + summary.flowRawSvgCount;
-        summary.signature = `tree:${summary.hasBehind ? 1 : 0}:${summary.hasFront ? 1 : 0}:${summary.imageCount}:${summary.rawSvgCount}:${summary.flowImageCount}:${summary.flowRawSvgCount}:${summary.flowStaticOccluded ? 1 : 0}`;
+        summary.signature = `tree:${summary.hasBehind ? 1 : 0}:${summary.hasFront ? 1 : 0}:${summary.imageCount}:${summary.rawSvgCount}:${summary.flowImageCount}:${summary.flowRawSvgCount}:${summary.flowStaticOccluded ? 1 : 0}:${summary.pageBackgroundCss ?? ''}:${summary.pageBackgroundComplex ? 1 : 0}`;
       }
     } catch (e) {
       console.warn('[PageRenderer] PageLayerTree JSON parse 실패:', e);
@@ -1328,6 +1345,8 @@ function emptyLayerPlaneSummary(): LayerPlaneSummary {
     flowRawSvgCount: 0,
     flowStaticCount: 0,
     flowStaticOccluded: false,
+    pageBackgroundCss: null,
+    pageBackgroundComplex: false,
     signature: 'empty',
   };
 }
@@ -1376,6 +1395,14 @@ function collectLayerPlaneSummary(
     for (const op of node.ops) {
       if (!op || typeof op !== 'object') continue;
       const plane = layerReplayPlane(op, activeLayer);
+      if (op.type === 'pageBackground') {
+        // [#5780] Rust overlay 요약과 같은 규칙 — 첫 pageBackground 만 취한다.
+        if (summary.pageBackgroundCss === null && !summary.pageBackgroundComplex) {
+          summary.pageBackgroundCss =
+            typeof op.backgroundColor === 'string' ? op.backgroundColor : null;
+          summary.pageBackgroundComplex = op.gradient != null || op.image != null;
+        }
+      }
       if (op.type === 'image') {
         summary.imageCount += 1;
         if (plane === 'flow') {
