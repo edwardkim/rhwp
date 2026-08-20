@@ -1,3 +1,5 @@
+use super::sink::println;
+
 pub(super) fn print() {
     println!("  export-ir-schema [--bare] [-o <파일>] [--json]");
     println!("      공개 IR 의 JSON Schema — 외부 바인딩 코드 생성의 단일 출처");
