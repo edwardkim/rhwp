@@ -6,6 +6,8 @@
  *
  * 종결 기준(#3315 Track 4): **JPEG 1장 문서의 타이핑·드래그가 그림 없음 대비 ×2 이내.**
  * #2520 원측정: 그림 없음 1.76 ms/키, JPEG 2.0MB ×177(311 ms/키), 드래그 ~305 ms/이동(~3fps).
+ * 기준과 비교값이 모두 브라우저 타이머 해상도 이하(0ms)이면 비율을 만들지 않고 통과로
+ * 기록한다. 기준만 0ms인데 비교값이 검출되면 회귀로 실패한다.
  *
  * 측정 경로는 #2520 본문의 프로브를 그대로 쓴다.
  *   - 타이핑: textarea `input` 이벤트 실제 경로
@@ -204,16 +206,33 @@ async function main() {
     console.log(`  document-changed ${fmt(out.jpegRefresh)}`);
     console.log(`  개체 이동 1틱  ${fmt(out.jpegMove)}`);
 
-    const rTyping = out.jpegTyping.mean / out.baselineTyping.mean;
-    const rRefresh = out.jpegRefresh.mean / out.baselineRefresh.mean;
-    out.ratioTyping = rTyping; out.ratioRefresh = rRefresh;
+    const compareAgainstBaseline = (measured, baseline) => {
+      if (baseline > 0) {
+        const ratio = measured / baseline;
+        return { ratio, pass: ratio <= 2, display: `×${ratio.toFixed(2)}` };
+      }
+      if (measured <= 0) {
+        return { ratio: null, pass: true, display: '해상도 이하 (양쪽 0.00 ms)' };
+      }
+      return { ratio: null, pass: false, display: '기준 0.00 ms 대비 측정값 검출' };
+    };
+    const typingComparison = compareAgainstBaseline(
+      out.jpegTyping.mean, out.baselineTyping.mean,
+    );
+    const refreshComparison = compareAgainstBaseline(
+      out.jpegRefresh.mean, out.baselineRefresh.mean,
+    );
+    out.ratioTyping = typingComparison.ratio;
+    out.ratioRefresh = refreshComparison.ratio;
+    out.typingComparison = typingComparison;
+    out.refreshComparison = refreshComparison;
     out.moveFps = 1000 / out.jpegMove.mean;
 
     console.log('\n=== 종결 판정 (기준: ×2 이내) ===');
-    console.log(`  타이핑 배율            ×${rTyping.toFixed(2)}  ${rTyping <= 2 ? 'PASS' : 'FAIL'}`);
-    console.log(`  document-changed 배율  ×${rRefresh.toFixed(2)}  ${rRefresh <= 2 ? 'PASS' : 'FAIL'}`);
+    console.log(`  타이핑 배율            ${typingComparison.display}  ${typingComparison.pass ? 'PASS' : 'FAIL'}`);
+    console.log(`  document-changed 배율  ${refreshComparison.display}  ${refreshComparison.pass ? 'PASS' : 'FAIL'}`);
     console.log(`  개체 이동              ${out.moveFps.toFixed(1)} fps (#2520 원측정 ~3fps)`);
-    out.verdict = (rTyping <= 2 && rRefresh <= 2) ? 'PASS' : 'FAIL';
+    out.verdict = typingComparison.pass && refreshComparison.pass ? 'PASS' : 'FAIL';
     console.log(`\n  종결 기준: ${out.verdict}`);
 
     console.log('');
@@ -222,8 +241,12 @@ async function main() {
     const flowInfo = await insertJpeg(page, '/samples/images/tiger01.jpg', true);
     if (!flowInfo) throw new Error('flow 그림 삽입 실패');
     out.flowTyping = await measureTyping(page, KEYS, WARMUP);
-    out.ratioFlowTyping = out.flowTyping.mean / out.baselineTyping.mean;
-    console.log(`  타이핑        ${fmt(out.flowTyping)}  (×${out.ratioFlowTyping.toFixed(2)})`);
+    const flowTypingComparison = compareAgainstBaseline(
+      out.flowTyping.mean, out.baselineTyping.mean,
+    );
+    out.ratioFlowTyping = flowTypingComparison.ratio;
+    out.flowTypingComparison = flowTypingComparison;
+    console.log(`  타이핑        ${fmt(out.flowTyping)}  (${flowTypingComparison.display})`);
 
     const dir = path.join(REPO_ROOT, 'output/issue-3315');
     mkdirSync(dir, { recursive: true });

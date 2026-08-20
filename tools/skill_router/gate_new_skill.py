@@ -5,12 +5,15 @@ Mirrors tests/skills_contract.rs (frontmatter + executable `rhwp <cmd>`),
 re-scans every skill three times, checks catalog.json paths, and probes
 tools/skill_router/route.py three times per catalog skill.
 
-If target/release/rhwp.exe or PATH rhwp exists, every extracted `rhwp <cmd>`
-token (and group subcommand) must appear in `rhwp capabilities` ∪
-`rhwp --help` ∪ {help}. Missing binary skips that layer.
+When `--rhwp-bin PATH` is supplied, every extracted `rhwp <cmd>` token (and
+group subcommand) must appear in `rhwp capabilities` ∪ `rhwp --help` ∪
+{help}. Without an explicitly selected candidate binary, that optional live
+command layer is skipped so a stale local Cargo artifact cannot change the
+gate result.
 
     python tools/skill_router/gate_new_skill.py
     python tools/skill_router/gate_new_skill.py --json
+    python tools/skill_router/gate_new_skill.py --rhwp-bin target/review/release/rhwp
 
 Exit 0 pass, 1 fail, 2 usage. stdlib only.
 """
@@ -20,7 +23,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -40,7 +42,7 @@ RHWP_TIMEOUT_SEC = 20
 MIN_DESCRIPTION_CHARS = 20
 MIN_KNOWN_COMMANDS = 20
 MIN_EDIT_SUBCOMMANDS = 4
-USAGE = "usage: python tools/skill_router/gate_new_skill.py [--json]"
+USAGE = "usage: python tools/skill_router/gate_new_skill.py [--json] [--rhwp-bin PATH]"
 
 ENVELOPE_KEYS = (
     "schemaVersion",
@@ -360,18 +362,21 @@ def scan_skills(json_mode: bool) -> list[dict[str, Any]]:
     return last_records
 
 
-def find_rhwp_binary() -> Path | None:
-    """Prefer target/release/rhwp.exe, then PATH rhwp. None if neither exists."""
-    release_exe = REPO / "target" / "release" / "rhwp.exe"
-    if release_exe.is_file():
-        return release_exe
-    release = REPO / "target" / "release" / "rhwp"
-    if release.is_file():
-        return release
-    which = shutil.which("rhwp")
-    if which:
-        return Path(which)
-    return None
+def find_rhwp_binary(candidate: str | None) -> Path | None:
+    """Return only an explicitly selected candidate binary.
+
+    Auto-discovering target/release or PATH makes this Python-only gate depend
+    on unrelated, often stale local build output. Callers that need the live
+    command contract must opt in with the exact candidate they built.
+    """
+    if candidate is None:
+        return None
+    binary = Path(candidate)
+    if not binary.is_absolute():
+        binary = REPO / binary
+    if not binary.is_file():
+        raise GateFail(f"selected rhwp binary does not exist: {binary}")
+    return binary
 
 
 def _run_rhwp(binary: Path, args: list[str]) -> str:
@@ -464,9 +469,9 @@ def parse_group_subcommands(help_stdout: str) -> dict[str, set[str]]:
     return groups
 
 
-def check_real_commands(json_mode: bool) -> dict[str, Any]:
-    """If rhwp is on disk or PATH, every extracted token must be a live command."""
-    binary = find_rhwp_binary()
+def check_real_commands(json_mode: bool, rhwp_bin: str | None) -> dict[str, Any]:
+    """Check every extracted token against an explicitly selected binary."""
+    binary = find_rhwp_binary(rhwp_bin)
     if binary is None:
         _say(json_mode, "rhwp binary: skip (absent)")
         return {
@@ -781,7 +786,7 @@ def probe_router(json_mode: bool) -> dict[str, Any]:
     return {"present": True, "ok": True, "probes": probes}
 
 
-def run_gate(json_mode: bool) -> dict[str, Any]:
+def run_gate(json_mode: bool, rhwp_bin: str | None = None) -> dict[str, Any]:
     envelope: dict[str, Any] = {
         "schemaVersion": SCHEMA_VERSION,
         "kind": "skillGate",
@@ -791,10 +796,10 @@ def run_gate(json_mode: bool) -> dict[str, Any]:
         "skills": [],
         "catalog": {"present": CATALOG_JSON.is_file(), "ok": False},
         "route": {"present": ROUTE_PY.is_file(), "ok": False},
-        "rhwp": {"present": find_rhwp_binary() is not None, "ok": False},
+        "rhwp": {"present": find_rhwp_binary(rhwp_bin) is not None, "ok": False},
     }
     envelope["skills"] = scan_skills(json_mode)
-    envelope["rhwp"] = check_real_commands(json_mode)
+    envelope["rhwp"] = check_real_commands(json_mode, rhwp_bin)
     envelope["catalog"] = check_catalog_paths(json_mode)
     require_catalog_probes(json_mode)
     envelope["route"] = probe_router(json_mode)
@@ -823,6 +828,11 @@ def _parse_argv(argv: list[str] | None) -> argparse.Namespace:
         add_help=False,
     )
     parser.add_argument("--json", action="store_true", help="write a summary envelope to stdout")
+    parser.add_argument(
+        "--rhwp-bin",
+        metavar="PATH",
+        help="check live commands against this explicitly built rhwp binary",
+    )
     parser.add_argument("-h", "--help", action="store_true", help="show usage")
     args, unknown = parser.parse_known_args(argv)
     if args.help or unknown:
@@ -841,7 +851,7 @@ def main(argv: list[str] | None = None) -> int:
     envelope: dict[str, Any] | None = None
     exit_code = 1
     try:
-        envelope = run_gate(json_mode)
+        envelope = run_gate(json_mode, args.rhwp_bin)
         exit_code = 0
     except GateFail as exc:
         _say(json_mode, f"FAIL: {exc}")

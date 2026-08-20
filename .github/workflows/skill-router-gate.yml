@@ -1,7 +1,8 @@
 name: Skill router gate
 
-# Cheap Python-only gate. A missing `rhwp <cmd>` in a new skill is caught
-# here even if ci.yml rust shards are still running. No cargo / rust / full suite.
+# Cheap Python-only structural gate for skills, catalog paths, and router
+# envelopes. Live `rhwp <cmd>` checks require an explicitly selected candidate
+# binary, so this job remains independent of Cargo and stale build artifacts.
 
 on:
   pull_request:

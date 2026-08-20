@@ -14,6 +14,8 @@ import sys
 import unittest
 from pathlib import Path
 
+from tools.skill_router import gate_new_skill
+
 # scripts/tests/this.py → parent of scripts/ is the repo root
 REPO_ROOT = Path(__file__).resolve().parents[2]
 GATE_PY = REPO_ROOT / "tools" / "skill_router" / "gate_new_skill.py"
@@ -72,6 +74,14 @@ def _unittest_cmd(module: str) -> list[str]:
 
 
 class SkillRouterGateTests(unittest.TestCase):
+    def test_live_command_binary_is_opt_in(self) -> None:
+        """A stale target/release artifact must not affect the Python-only gate."""
+        self.assertIsNone(gate_new_skill.find_rhwp_binary(None))
+        args = gate_new_skill._parse_argv(
+            ["--rhwp-bin", "target/pr-review/release/rhwp"]
+        )
+        self.assertEqual("target/pr-review/release/rhwp", args.rhwp_bin)
+
     def test_gate_new_skill_exits_zero_three_times(self) -> None:
         self.assertTrue(
             GATE_PY.is_file(),
