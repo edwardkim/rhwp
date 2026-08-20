@@ -935,10 +935,14 @@ mod support;
         self.assertEqual(release_test, release)
 
     def test_rust_workers_wait_only_for_their_archive_partition(self) -> None:
-        for archive_label in ("a", "b"):
-            for index in (1, 2):
-                job_name = f"test-archive-{archive_label}-shard-{index}"
-                with self.subTest(job=job_name):
+        for archive_label, index, partition in (
+            ("a", 1, "hash:1/2"),
+            ("a", 2, "hash:2/2"),
+            ("b", 1, "hash:1/1"),
+            ("c", 1, "hash:1/1"),
+        ):
+            job_name = f"test-archive-{archive_label}-shard-{index}"
+            with self.subTest(job=job_name):
                     job = self._job(job_name)
                     self.assertIn("needs.preflight.outputs.rust_required == 'true'", job)
                     self.assertIn(
@@ -950,7 +954,7 @@ mod support;
                     )
                     self.assertIn(f"archive_label: {archive_label}", job)
                     self.assertIn('filterset: "all()"', job)
-                    self.assertIn(f'partition: "hash:{index}/2"', job)
+                    self.assertIn(f'partition: "{partition}"', job)
                     self.assertNotIn("native-skia-tests", job)
                     self.assertNotIn("native_skia_required", job)
         self.assertNotIn("test-slow-shard:", self.workflow)

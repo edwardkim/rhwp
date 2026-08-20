@@ -13,7 +13,7 @@ on:
         type: number
 
       archive_label:
-        description: Stable A/B archive partition label.
+        description: Stable archive partition label.
         required: true
         type: string
       target_group:
@@ -48,7 +48,7 @@ jobs:
           esac
 
           case "${TARGET_GROUP}" in
-            lib|integration)
+            lib|integration-b|integration-c)
               ;;
             *)
               echo "::error::invalid test archive target group: ${TARGET_GROUP}"
@@ -134,8 +134,9 @@ jobs:
             printf "| cache_save_eligible | \`%s\` |\n" "${CACHE_SAVE_ELIGIBLE}"
           } >> "${GITHUB_STEP_SUMMARY}"
 
-      # [#5737] lib와 integration target을 별도 archive로 compile/link해 두 builder의
-      # 임계 경로를 병렬화한다. integration 목록은 파생 suite 준비 뒤 metadata에서 구한다.
+      # [#5737] lib는 별도 archive로, integration target은 두 archive로 교차 배정해
+      # compile/link 임계 경로를 병렬화한다. integration 목록은 파생 suite 준비 뒤
+      # metadata에서 구한다.
       - name: Build default-feature test archive
         run: |
           set -euo pipefail
@@ -147,7 +148,7 @@ jobs:
             lib)
               cargo_target_args+=(--lib)
               ;;
-            integration)
+            integration-b|integration-c)
               mapfile -t integration_targets < <(
                 cargo metadata --no-deps --format-version 1 | node -e '
                   let source = "";
@@ -172,10 +173,22 @@ jobs:
                 echo "::error::integration test target discovery returned no targets"
                 exit 1
               fi
-              for target in "${integration_targets[@]}"; do
+              selected_targets=()
+              for index in "${!integration_targets[@]}"; do
+                if [[ "${{ inputs.target_group }}" == "integration-b" ]] && (( index % 2 == 0 )); then
+                  selected_targets+=("${integration_targets[index]}")
+                elif [[ "${{ inputs.target_group }}" == "integration-c" ]] && (( index % 2 == 1 )); then
+                  selected_targets+=("${integration_targets[index]}")
+                fi
+              done
+              if (( ${#selected_targets[@]} == 0 )); then
+                echo "::error::integration target group selected no targets: ${{ inputs.target_group }}"
+                exit 1
+              fi
+              for target in "${selected_targets[@]}"; do
                 cargo_target_args+=(--test "${target}")
               done
-              printf 'integration_targets=%s\n' "${#integration_targets[@]}"
+              printf 'integration_targets=%s selected_targets=%s\n' "${#integration_targets[@]}" "${#selected_targets[@]}"
               ;;
           esac
 

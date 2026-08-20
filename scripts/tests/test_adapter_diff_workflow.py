@@ -73,12 +73,13 @@ class AdapterDiffWorkflowTests(unittest.TestCase):
         self.assertLess(prepare_at, run_at, "prepare 가 실행보다 먼저여야 한다")
 
     def test_does_not_add_a_fifth_nextest_shard(self) -> None:
-        """A/B archive의 worker 네 개 합 = runnable. 다섯 번째 worker는 깨진다."""
+        """A/B/C archive의 worker 네 개 합 = runnable. 다섯 번째 worker는 깨진다."""
         self.assertNotRegex(self.ci, r"(?m)^  adapter-diff:")
         self.assertNotIn("adapter_diff", RUN_ARCHIVE.read_text(encoding="utf-8"))
-        self.assertEqual(2, self.ci.count('partition: "hash:1/2"'))
-        self.assertEqual(2, self.ci.count('partition: "hash:2/2"'))
-        for count_label in ("a-1", "a-2", "b-1", "b-2"):
+        self.assertEqual(1, self.ci.count('partition: "hash:1/2"'))
+        self.assertEqual(1, self.ci.count('partition: "hash:2/2"'))
+        self.assertEqual(2, self.ci.count('partition: "hash:1/1"'))
+        for count_label in ("a-1", "a-2", "b-1", "c-1"):
             with self.subTest(count_label=count_label):
                 self.assertIn(f"shard-count-{count_label}", self.ci)
 
