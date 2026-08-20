@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1·C0·C1 완료, C2 진입 승인 대기
+- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1·C0·C1·C2 완료, C3 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -195,6 +195,12 @@ C1도 완료했다. 기존 1,380줄·11함수 계측에 field occurrence 정본 
 이동했다. `edit_replace_text`와 `edit_redact`는 option parsing과 실행을 나눠 CC 29·33을 모두
 상한 이하로 낮췄다. 직접 계약 113/113과 전체 release-test 8,005/8,005가 통과했다. 세부 증거는
 [`task_m100_5511_stage2_batch_c1.md`](../working/task_m100_5511_stage2_batch_c1.md)에 기록했다.
+
+C2도 완료했다. 분리되어 있던 insert-image 전용 helper까지 실범위에 포함해 chart·number·form·
+page border, shape lifecycle, image·picture command를 세 모듈로 이동했다. `edit_insert_image`는
+argument parsing과 실행을 나눠 CC 27을 상한 이하로 낮췄다. 최신 #5647 chart B2 계약을 포함한
+직접 계약 146/146과 전체 release-test 8,008/8,008이 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_c2.md`](../working/task_m100_5511_stage2_batch_c2.md)에 기록했다.
 
 ## 5. 중단 조건
 
