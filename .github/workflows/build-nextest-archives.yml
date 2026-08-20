@@ -16,8 +16,8 @@ on:
         description: Stable A/B archive partition label.
         required: true
         type: string
-      filterset:
-        description: Binary-only nextest filterset assigned to this archive.
+      target_group:
+        description: Cargo test target group assigned to this archive.
         required: true
         type: string
 jobs:
@@ -36,12 +36,22 @@ jobs:
         env:
           CARGO_PROFILE: ${{ inputs.cargo_profile }}
           TIMEOUT_MINUTES: ${{ inputs.timeout_minutes }}
+          TARGET_GROUP: ${{ inputs.target_group }}
         run: |
           case "${CARGO_PROFILE}:${TIMEOUT_MINUTES}" in
             release-test:30|release:60)
               ;;
             *)
               echo "::error::invalid test archive policy: profile=${CARGO_PROFILE} timeout=${TIMEOUT_MINUTES}"
+              exit 1
+              ;;
+          esac
+
+          case "${TARGET_GROUP}" in
+            lib|integration)
+              ;;
+            *)
+              echo "::error::invalid test archive target group: ${TARGET_GROUP}"
               exit 1
               ;;
           esac
@@ -106,6 +116,7 @@ jobs:
         env:
           CARGO_PROFILE: ${{ inputs.cargo_profile }}
           TIMEOUT_MINUTES: ${{ inputs.timeout_minutes }}
+          TARGET_GROUP: ${{ inputs.target_group }}
           CACHE_EXACT_HIT: ${{ steps.rust-cache.outputs.cache-hit || 'false' }}
           CACHE_SAVE_ELIGIBLE: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
         run: |
@@ -118,30 +129,67 @@ jobs:
             printf "| ref | \`%s\` |\n" "${GITHUB_REF}"
             printf "| cargo_profile | \`%s\` |\n" "${CARGO_PROFILE}"
             printf "| timeout_minutes | \`%s\` |\n" "${TIMEOUT_MINUTES}"
+            printf "| target_group | \`%s\` |\n" "${TARGET_GROUP}"
             printf "| cache_exact_hit | \`%s\` |\n" "${CACHE_EXACT_HIT}"
             printf "| cache_save_eligible | \`%s\` |\n" "${CACHE_SAVE_ELIGIBLE}"
           } >> "${GITHUB_STEP_SUMMARY}"
 
-      # [#5164] generated suite와 수동 예외 target을 한 번만 compile/link한다. slow와
-      # regular worker는 이 동일 archive를 filter와 test-case partition으로 나눠 실행한다.
+      # [#5737] lib와 integration target을 별도 archive로 compile/link해 두 builder의
+      # 임계 경로를 병렬화한다. integration 목록은 파생 suite 준비 뒤 metadata에서 구한다.
       - name: Build default-feature test archive
         run: |
           set -euo pipefail
-          echo "profile=${{ inputs.cargo_profile }} event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+          echo "profile=${{ inputs.cargo_profile }} target_group=${{ inputs.target_group }} event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
           node scripts/rust-test-suite-manifest.mjs --prepare
+
+          cargo_target_args=()
+          case "${{ inputs.target_group }}" in
+            lib)
+              cargo_target_args+=(--lib)
+              ;;
+            integration)
+              mapfile -t integration_targets < <(
+                cargo metadata --no-deps --format-version 1 | node -e '
+                  let source = "";
+                  process.stdin.setEncoding("utf8");
+                  process.stdin.on("data", (chunk) => { source += chunk; });
+                  process.stdin.on("end", () => {
+                    const metadata = JSON.parse(source);
+                    const manifestPath = `${process.cwd()}/Cargo.toml`;
+                    const root = metadata.packages.find((pkg) => pkg.manifest_path === manifestPath);
+                    if (!root) {
+                      throw new Error(`root package not found for ${manifestPath}`);
+                    }
+                    root.targets
+                      .filter((target) => target.kind.length === 1 && target.kind[0] === "test")
+                      .map((target) => target.name)
+                      .sort()
+                      .forEach((name) => console.log(name));
+                  });
+                '
+              )
+              if (( ${#integration_targets[@]} == 0 )); then
+                echo "::error::integration test target discovery returned no targets"
+                exit 1
+              fi
+              for target in "${integration_targets[@]}"; do
+                cargo_target_args+=(--test "${target}")
+              done
+              printf 'integration_targets=%s\n' "${#integration_targets[@]}"
+              ;;
+          esac
+
           cargo nextest archive \
             --package rhwp \
             --cargo-profile "${{ inputs.cargo_profile }}" \
-            --tests \
-            --filterset "${{ inputs.filterset }}" \
+            "${cargo_target_args[@]}" \
             --archive-file tests.tar.zst
           stat --printf='archive=%n bytes=%s\n' tests.tar.zst
 
           cargo nextest list \
             --package rhwp \
             --cargo-profile "${{ inputs.cargo_profile }}" \
-            --tests \
-            --filterset "${{ inputs.filterset }}" \
+            "${cargo_target_args[@]}" \
             --message-format json > nextest-list.json
           runnable=$(node .github/scripts/count_nextest_runnable.mjs --input nextest-list.json)
           if ! [[ "$runnable" =~ ^[0-9]+$ ]] || [[ "$runnable" == "0" ]]; then

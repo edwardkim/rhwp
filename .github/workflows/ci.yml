@@ -759,8 +759,8 @@ jobs:
 
   # [#2393] 기본 테스트 병렬화 — CI impact preflight가 frontend·Rust·Native Skia
   # gate와 worker 조건을 나누는 경계다.
-  # [#5164] archive는 preflight 직후 한 번만 compile/link하고 Lint와 병렬 실행한다.
-  # 네 worker는 동일 archive를 slow filter와 regular test-case partition으로 나눠 소비한다.
+  # [#5737] archive A는 source-side lib test, B는 integration target만 각각 compile/link한다.
+  # 각 archive의 두 worker가 test-case partition을 나눠 소비한다.
   # required check 는 집계 job "Build & Test" 로 불변이다.
   # [#5388] M04-4: tests/cases/prop_*_roundtrip.rs 는 정규 shard 가 archive 에서
   # 자동 실행한다. 전용 싼 job 은 .github/workflows/proptest-roundtrip.yml
@@ -781,7 +781,7 @@ jobs:
       cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
       timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
       archive_label: a
-      filterset: "binary(/.*[02468]$/)"
+      target_group: lib
 
 
   build-test-archive-b:
@@ -800,7 +800,7 @@ jobs:
       cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
       timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
       archive_label: b
-      filterset: "not binary(/.*[02468]$/)"
+      target_group: integration
 
   lint:
     name: Lint (fmt, clippy, WASM check)

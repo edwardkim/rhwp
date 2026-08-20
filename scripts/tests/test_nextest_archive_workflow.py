@@ -119,7 +119,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             preflight,
         )
 
-    def test_two_archive_builders_retire_the_slow_lane(self):
+    def test_two_archive_builders_split_lib_and_integration_targets(self):
         from pathlib import Path
         root = Path(__file__).resolve().parents[2]
         ci = (root / ".github/workflows/ci.yml").read_text()
@@ -127,7 +127,11 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
         self.assertIn("build-test-archive-a:", ci); self.assertIn("build-test-archive-b:", ci)
         self.assertNotIn("test-slow-shard:", ci); self.assertEqual(4, ci.count('partition: "hash:1/2"'))
-        self.assertIn('filterset: "binary(/.*[02468]$/)"', ci); self.assertIn('filterset: "not binary(/.*[02468]$/)"', ci)
+        self.assertIn("target_group: lib", ci); self.assertIn("target_group: integration", ci)
+        self.assertIn("cargo metadata --no-deps --format-version 1", builder)
+        self.assertIn("cargo_target_args+=(--lib)", builder)
+        self.assertIn('cargo_target_args+=(--test "${target}")', builder)
+        self.assertNotIn("--tests", builder)
 
     def test_native_skia_uses_the_same_test_profile_policy(self) -> None:
         native = job_body(self.ci, "native-skia-tests")
@@ -148,7 +152,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         ci = (root / ".github/workflows/ci.yml").read_text()
         builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
         runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
-        self.assertIn('--filterset "${{ inputs.filterset }}"', builder)
+        self.assertIn("inputs.target_group", builder)
         self.assertIn("test-archive-${{ github.run_id }}-${{ inputs.archive_label }}", builder)
         self.assertIn("archive-expected-${{ github.run_id }}-${{ inputs.archive_label }}", builder)
         self.assertIn("test-archive-${{ github.run_id }}-${{ inputs.archive_label }}", runner)
@@ -176,17 +180,22 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         script = step.split("        run: |\n", maxsplit=1)[1]
         script = "\n".join(line.removeprefix("          ") for line in script.splitlines())
 
-        for profile, timeout, expected in (
-            ("release-test", "30", 0),
-            ("release", "60", 0),
-            ("release-test", "60", 1),
-            ("release", "30", 1),
-            ("debug", "60", 1),
+        for profile, timeout, target_group, expected in (
+            ("release-test", "30", "lib", 0),
+            ("release", "60", "integration", 0),
+            ("release-test", "60", "lib", 1),
+            ("release", "30", "integration", 1),
+            ("debug", "60", "lib", 1),
+            ("release-test", "30", "unknown", 1),
         ):
-            with self.subTest(profile=profile, timeout=timeout):
+            with self.subTest(profile=profile, timeout=timeout, target_group=target_group):
                 result = run_script(
                     script,
-                    {"CARGO_PROFILE": profile, "TIMEOUT_MINUTES": timeout},
+                    {
+                        "CARGO_PROFILE": profile,
+                        "TIMEOUT_MINUTES": timeout,
+                        "TARGET_GROUP": target_group,
+                    },
                 )
                 self.assertEqual(result.returncode, expected, result.stderr)
 
@@ -198,6 +207,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             "ref",
             "cargo_profile",
             "timeout_minutes",
+            "target_group",
             "cache_exact_hit",
             "cache_save_eligible",
         ):

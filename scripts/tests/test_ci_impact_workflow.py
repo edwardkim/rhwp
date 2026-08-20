@@ -637,7 +637,10 @@ class CiImpactWorkflowTests(unittest.TestCase):
         lint = self._job("lint")
         self.assertIn("needs.preflight.outputs.rust_required == 'true'", lint)
 
-        for archive_name in ("build-test-archive-a", "build-test-archive-b"):
+        for archive_name, target_group in (
+            ("build-test-archive-a", "lib"),
+            ("build-test-archive-b", "integration"),
+        ):
             with self.subTest(archive=archive_name):
                 archive = self._job(archive_name)
                 self.assertIn("needs.preflight.outputs.rust_required == 'true'", archive)
@@ -645,6 +648,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
                 self.assertNotIn("needs.lint.result", archive)
                 self.assertNotIn("frontend-unit-gates", archive)
                 self.assertNotIn("frontend-package-gates", archive)
+                self.assertIn(f"target_group: {target_group}", archive)
 
     def test_lint_prepares_derived_test_targets_before_cargo_commands(self) -> None:
         lint = self._job("lint")
