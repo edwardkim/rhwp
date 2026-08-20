@@ -32,3 +32,9 @@ mydocs/report/task3798/trimcap_experiment.patch -whitespace
 gym/leaderboard/**/*.json    -text
 gym/leaderboard/**/*.ndjson  -text
 gym/leaderboard/*.ndjson     -text
+
+# [#5447] 한컴 판정 자산 — 한컴 2022 가 실제로 연 바이트이고, 그 SHA-256 이
+# samples/issue5447/MANIFEST.json 에 박혀 있다. 자동 감지에 맡기지 않고 못박는다.
+samples/issue5447/*.hwp   -text -diff
+samples/issue5447/*.hwpx  -text -diff
+pdf/issue5447/*.pdf       -text -diff

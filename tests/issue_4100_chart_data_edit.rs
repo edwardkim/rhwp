@@ -2343,6 +2343,12 @@ fn b2_write_variant(out_dir: &std::path::Path, v: &B2Variant, sheet: &mut String
 /// cargo test --profile release-test --test issue_4100_chart_data_edit \
 ///     generate_b2_structure_judgment_bundle -- --ignored --nocapture
 /// ```
+///
+/// **한컴이 실제로 판정한 산출은 `samples/issue5447/` 에 커밋돼 있다.** 그 38건의 변환
+/// PDF 는 `pdf/issue5447/`, 원장은 `samples/issue5447/MANIFEST.json` 이다. 여기서 다시
+/// 만든 것과 커밋본이 바이트로 같은지는 `sha256sum` 으로 직접 대조한다 — 어긋나더라도
+/// **커밋본이 정본**이다. 판정은 한컴이 연 그 바이트에 대한 관측이기 때문이다.
+/// 커밋본과 원장의 정합은 `b2_judgment_assets_match_the_manifest` 가 상시로 지킨다.
 #[test]
 #[ignore = "output/ 에 파일을 쓴다 — 한컴 판정 직전에만 실행"]
 fn generate_b2_structure_judgment_bundle() {
@@ -2445,4 +2451,144 @@ fn generate_b2_structure_judgment_bundle() {
     println!("\n  판정 번들: {}", out_dir.display());
     println!("  파일 {written}개 + 판정표 PANJEONG.md");
     assert_eq!(written, 38, "대조군 9 + 변종 14 × 2포맷 + 변환본 1");
+}
+
+/// Stage 8 — 판정 원장이 가리키는 자산이 지금도 그 바이트인가.
+///
+/// PR #5647 이 보류된 이유는 "판정을 재계산할 자산이 저장소에 없다" 였다. 자산을 커밋한
+/// 뒤에는 반대 위험이 생긴다 — 원장과 자산 중 **한쪽만 조용히 늙는 것**. 그래서 원장
+/// 38행이 가리키는 원본과 한컴 PDF 를 열어 SHA-256 을 다시 잰다.
+///
+/// 렌더러 의존성이 없어 CI 에서 상시로 돈다. 래스터 재계산과 불변식 재판정은
+/// `tools/hancom_chart_judgment_verify.py` 가 로컬에서 맡는다
+/// (`scripts/check_e2e_manifest.py` 와 같은 원장 트립와이어 운용).
+///
+/// 양방향으로 본다 — 원장 → 파일(빠진 자산)뿐 아니라 파일 → 원장(등재되지 않은 자산)도
+/// 본다. 뒤쪽을 **이름이 아니라 해시 집합**으로 맞추는 것은 판정 자산이 macOS↔Windows 를
+/// 오가며 파일명이 NFC/NFD 로 갈렸던 전례(#5447 보고서 §6-1) 때문이다.
+#[test]
+fn b2_judgment_assets_match_the_manifest() {
+    fn sha256_of(path: &std::path::Path) -> String {
+        use sha2::Digest as _;
+        let bytes = std::fs::read(path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        let mut hasher = sha2::Sha256::new();
+        hasher.update(&bytes);
+        hasher
+            .finalize()
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect()
+    }
+
+    let ledger_path = manifest("samples/issue5447/MANIFEST.json");
+    let ledger: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&ledger_path).expect("판정 원장 읽기"))
+            .expect("판정 원장 JSON");
+    let entries = ledger["entries"].as_array().expect("entries");
+    assert_eq!(entries.len(), 38, "대조군 9 + 변종 14 × 2포맷 + 변환본 1");
+
+    // 원장에 등재된 바이트 전부. 아래에서 디렉터리를 거꾸로 훑을 때 대조군이 된다.
+    let mut registered: std::collections::BTreeSet<String> = Default::default();
+    // 판정 단위(기준문서-변종) → 판정. 포맷 둘이 한 단위이므로 값이 갈리면 원장이 모순이다.
+    let mut verdict_of_unit: std::collections::BTreeMap<String, String> = Default::default();
+
+    for entry in entries {
+        let name = entry["name"].as_str().expect("name");
+        for (path_key, hash_key) in [
+            ("original_path", "original_sha256"),
+            ("hancom_pdf_path", "hancom_pdf_sha256"),
+        ] {
+            let rel = entry[path_key]
+                .as_str()
+                .unwrap_or_else(|| panic!("{name}: {path_key} 가 없다"));
+            let recorded = entry[hash_key]
+                .as_str()
+                .unwrap_or_else(|| panic!("{name}: {hash_key} 가 없다"));
+            assert_eq!(
+                recorded.len(),
+                64,
+                "{name}: {hash_key} 가 SHA-256 이 아니다"
+            );
+            let path = manifest(rel);
+            assert!(path.is_file(), "{name}: 원장이 가리키는 {rel} 이 없다");
+            assert_eq!(
+                sha256_of(&path),
+                recorded,
+                "{name}: {rel} 의 바이트가 원장과 다르다"
+            );
+            registered.insert(recorded.to_string());
+        }
+
+        if entry["role"] != "control" {
+            let unit = if entry["role"] == "conversion" {
+                name.rsplit_once('.')
+                    .map_or(name, |(stem, _)| stem)
+                    .to_string()
+            } else {
+                format!(
+                    "{}-{}",
+                    entry["base_document"].as_str().expect("base_document"),
+                    entry["variant"].as_str().expect("variant")
+                )
+            };
+            let verdict = entry["verdict"].as_str().expect("verdict").to_string();
+            if let Some(seen) = verdict_of_unit.insert(unit.clone(), verdict.clone()) {
+                assert_eq!(seen, verdict, "{unit}: 포맷 간 판정이 갈린다");
+            }
+        }
+    }
+
+    // 원장 머리의 집계가 본문에서 다시 세어도 같은가 — 보고서가 인용하는 숫자가 이것이다.
+    let counts = &ledger["counts"];
+    assert_eq!(
+        verdict_of_unit.len() as u64,
+        counts["judgment_units"].as_u64().expect("judgment_units"),
+        "판정 단위 수가 원장 머리와 다르다"
+    );
+    let mut tally: std::collections::BTreeMap<String, u64> = Default::default();
+    for verdict in verdict_of_unit.values() {
+        *tally.entry(verdict.clone()).or_default() += 1;
+    }
+    assert_eq!(
+        counts["tally"].as_object().expect("tally").len(),
+        tally.len(),
+        "판정 분포의 항목 수가 원장 머리와 다르다"
+    );
+    for (verdict, count) in &tally {
+        assert_eq!(
+            counts["tally"][verdict].as_u64(),
+            Some(*count),
+            "판정 분포 {verdict} 가 원장 머리와 다르다"
+        );
+    }
+
+    for (dir, ignored) in [
+        (
+            "samples/issue5447",
+            ["MANIFEST.json", "README.md", "PANJEONG.md"].as_slice(),
+        ),
+        ("pdf/issue5447", ["README.md"].as_slice()),
+    ] {
+        let mut counted = 0usize;
+        for item in std::fs::read_dir(manifest(dir)).expect("판정 자산 디렉터리") {
+            let path = item.expect("디렉터리 항목").path();
+            if !path.is_file() {
+                continue;
+            }
+            let file_name = path
+                .file_name()
+                .and_then(|s| s.to_str())
+                .unwrap_or_default()
+                .to_string();
+            if ignored.contains(&file_name.as_str()) {
+                continue;
+            }
+            assert!(
+                registered.contains(&sha256_of(&path)),
+                "{dir}/{file_name}: 원장에 등재되지 않은 자산이다"
+            );
+            counted += 1;
+        }
+        assert_eq!(counted, 38, "{dir}: 판정 자산이 38건이 아니다");
+    }
 }
