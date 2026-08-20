@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1·C0 완료, C1 진입 승인 대기
+- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1·C0·C1 완료, C2 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -189,6 +189,12 @@ C0도 완료했다. 88개 edit 하위 명령 dispatch와 공통 output format·s
 광범위한 `EditContext`는 만들지 않았다. 직접 계약 101/101과 전체 release-test 8,005/8,005가
 통과했으며 최신 `devel`의 별도 Studio 변경을 정상 merge했다. 세부 증거는
 [`task_m100_5511_stage2_batch_c0.md`](../working/task_m100_5511_stage2_batch_c0.md)에 기록했다.
+
+C1도 완료했다. 기존 1,380줄·11함수 계측에 field occurrence 정본 parser 20줄·1함수를 더해
+실범위를 1,400줄·12함수로 보정하고, field·문서 전역 replace·privacy command를 세 모듈로
+이동했다. `edit_replace_text`와 `edit_redact`는 option parsing과 실행을 나눠 CC 29·33을 모두
+상한 이하로 낮췄다. 직접 계약 113/113과 전체 release-test 8,005/8,005가 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_c1.md`](../working/task_m100_5511_stage2_batch_c1.md)에 기록했다.
 
 ## 5. 중단 조건
 
