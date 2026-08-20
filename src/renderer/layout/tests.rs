@@ -47,6 +47,7 @@ fn test_build_empty_page() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
     let styles = ResolvedStyleSet::default();
     let tree = engine.build_render_tree(
@@ -597,6 +598,7 @@ fn test_build_page_with_paragraph() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let tree = engine.build_render_tree(
@@ -679,6 +681,7 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     // 패닉 없이 반환하면 성공 (범위 밖 조각은 빈 렌더).
@@ -778,6 +781,7 @@ fn test_layout_with_composed_styles() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let tree = engine.build_render_tree(
@@ -907,6 +911,7 @@ fn test_layout_multi_run_x_position() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let tree = engine.build_render_tree(
@@ -1288,6 +1293,7 @@ fn test_layout_table_basic() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let tree = engine.build_render_tree(
@@ -1441,6 +1447,7 @@ fn test_layout_table_cell_positions() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let tree = engine.build_render_tree(
@@ -2658,6 +2665,7 @@ fn render_tree_with_header_control(control: Control) -> PageRenderTree {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
     engine.build_render_tree(
         &page_content,
@@ -2757,6 +2765,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let styles = ResolvedStyleSet {

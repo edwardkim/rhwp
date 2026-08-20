@@ -153,6 +153,11 @@ pub struct PageContent {
     pub active_master_page: Option<MasterPageRef>,
     /// 확장 바탕쪽 (임의 쪽 등, 기본 바탕쪽에 추가로 적용)
     pub extra_master_pages: Vec<MasterPageRef>,
+    /// [#5699 H1] 이 쪽에서 typeset 이 "사다리-미계상 표 밴드" 자기모순을 판별해
+    /// 실높이로 교정한 표들 `(para_index, control_index)`. 렌더러는 이 표들 뒤의
+    /// 저장 vpos 후방 스냅을 페인트된 밴드 아래로 막는다 — typeset 판정과 렌더
+    /// 판정이 갈라지지 않도록 신호를 명시 전달한다(tac-img-02 비대칭 발동 실측).
+    pub ladder_band_tables: Vec<(usize, usize)>,
 }
 
 /// 바탕쪽 참조
@@ -927,6 +932,7 @@ impl PaginationResult {
                     .collect(),
                 active_master_page: old_page.active_master_page.clone(),
                 extra_master_pages: old_page.extra_master_pages.clone(),
+                ladder_band_tables: old_page.ladder_band_tables.clone(),
             };
             // hidden_empty_paras는 별도 처리
             self.pages.push(new_page);

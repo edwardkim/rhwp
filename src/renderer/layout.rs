@@ -5141,6 +5141,7 @@ impl LayoutEngine {
             footnotes: Vec::new(),
             active_master_page: None,
             extra_master_pages: Vec::new(),
+            ladder_band_tables: Vec::new(),
         };
         // [#4277] 높이 측정 전용 — paint 트리가 아니라 흐름 상태만 만든다.
         let mut frame = PageLayoutContext::new(0, col_area.width, col_area.y + col_area.height);
@@ -5939,11 +5940,28 @@ impl LayoutEngine {
                 // ≤8px 백워드 클램프를 모두 캡슐화 (Stage A/B 함수 결합). 렌더러·페이지네이터 공유.
                 y_offset = hcursor.vpos_adjust(y_offset, item_para, paragraphs, styles);
             } // !shape_jumped
-              // Empty Square sibling 표 직전의 본문은 같은 물리 페이지의 raw LINE_SEG
-              // 좌표를 따른다. 일반 cursor가 앞선 표의 측정 높이만큼 늦어지면 본문이
-              // 다음 pair(표 2/그림 9) 위에 그려진다. 다음 항목이 정확히 이 pair이고,
-              // 저장 위치에서 현재 줄 조각 전체가 pair 상단 전에 끝나는 경우에만
-              // backward snap을 허용한다.
+              // [#5699 H1] 밴드-바닥 활성 단(사다리-미계상 표를 이 단에서 교정): 저장
+              // vpos 는 표 밴드를 모르는 좌표계다. 후방 스냅은 순차 흐름과 바닥 중
+              // 큰 쪽 아래로 내려가지 못한다 — 바닥 상수만으로 막으면 연속 문단이
+              // 같은 y 에 적층되고(9·※ 실측), 순차 흐름만으로 막으면 스냅이
+              // vpos_adjust 밖 경로에서 온 아이템을 놓친다.
+            if hcursor.min_flow_floor > f64::MIN {
+                let guard = y_before_vpos_adjust.max(hcursor.min_flow_floor);
+                if y_offset < guard {
+                    y_offset = guard;
+                }
+                if std::env::var("RHWP_5699_DBG").is_ok() {
+                    eprintln!(
+                        "DBG5699 pi={} y_before={:.1} y_now={:.1} floor={:.1}",
+                        item_para, y_before_vpos_adjust, y_offset, hcursor.min_flow_floor
+                    );
+                }
+            }
+            // Empty Square sibling 표 직전의 본문은 같은 물리 페이지의 raw LINE_SEG
+            // 좌표를 따른다. 일반 cursor가 앞선 표의 측정 높이만큼 늦어지면 본문이
+            // 다음 pair(표 2/그림 9) 위에 그려진다. 다음 항목이 정확히 이 pair이고,
+            // 저장 위치에서 현재 줄 조각 전체가 pair 상단 전에 끝나는 경우에만
+            // backward snap을 허용한다.
             let next_square_sibling_top = col_content
                 .items
                 .iter()
@@ -6674,6 +6692,8 @@ impl LayoutEngine {
             if let Some(floor) = endnote_sep_body_floor.take() {
                 y_offset = y_offset.max(floor);
             }
+            // [#5699 H1] 표 아이템의 시작 y — 아래 페인트 높이 산출용.
+            let item_start_y_for_band = y_offset;
             let (mut new_y, was_tac) = self.layout_column_item(
                 tree,
                 &mut col_node,
@@ -6724,6 +6744,48 @@ impl LayoutEngine {
                     new_y - _y_in,
                     col_area.height,
                 );
+            }
+            // [#5699 H2] TopAndBottom(위·아래 어울림) 비-tac 그림/도형 Shape 아이템은
+            // 단 흐름을 후퇴시키지 못한다 — Square 는 후속 텍스트가 개체 옆으로
+            // 흐르도록 앵커 y 로 되돌리는 것이 정당하지만, TopAndBottom 은 텍스트가
+            // 개체 아래에서만 이어지므로 후퇴는 이미 전진한 흐름(저장 앵커 줄)을
+            // 지운다. 베트남노동시장1125 p75 실측: host 문단의 TopAndBottom 차트
+            // Shape 아이템이 841.7→307.6 으로 흐름을 되감아 후속 문단들이 방금
+            // 페인트한 표(307..549)를 관통했다.
+            if new_y < _y_in {
+                if let PageItem::Shape {
+                    para_index,
+                    control_index,
+                } = item
+                {
+                    let topbottom_nontac = paragraphs
+                        .get(*para_index)
+                        .and_then(|p| p.controls.get(*control_index))
+                        .is_some_and(|c| {
+                            let common = match c {
+                                Control::Picture(pic) => Some(&pic.common),
+                                Control::Shape(shape) => Some(shape.common()),
+                                Control::Equation(eq) => Some(&eq.common),
+                                _ => None,
+                            };
+                            common.is_some_and(|cm| {
+                                !cm.treat_as_char
+                                    && matches!(
+                                        cm.text_wrap,
+                                        crate::model::shape::TextWrap::TopAndBottom
+                                    )
+                            })
+                        });
+                    if topbottom_nontac {
+                        if std::env::var("RHWP_5699_DBG").is_ok() {
+                            eprintln!(
+                                "DBG5699_H2 pi={} ci={} rewind {:.1}→{:.1} 금지",
+                                para_index, control_index, _y_in, new_y
+                            );
+                        }
+                        new_y = _y_in;
+                    }
+                }
             }
             y_offset = new_y;
             if was_tac {
@@ -6853,6 +6915,35 @@ impl LayoutEngine {
             if was_tac || (is_table_or_shape && !is_para_float_table && !is_inline_tac_object) {
                 hcursor.vpos_page_base = None;
                 hcursor.vpos_lazy_base = None;
+            }
+
+            // [#5699 H1] 저장 사다리가 자리차지 표 밴드를 계상하지 않은 자기모순
+            // 문서(자치법규 서식류): 페인트된 밴드 하단을 흐름 바닥으로 고정해,
+            // 후속 문단의 저장 vpos 스냅이 표 위로 되감아 겹치지 못하게 한다.
+            // typeset 의 계상 교정(stored_ladder_omits_tac_band)과 같은 판별 —
+            // 선언·페인트 정합 조건이 있어 발산 문서(#2237/#2148)에는 불발.
+            // [#5699 H1] typeset 이 "사다리-미계상 표 밴드" 자기모순을 판별해
+            // 실높이로 교정한 표(page_content.ladder_band_tables): 페인트된 밴드
+            // 하단을 흐름 바닥으로 고정해, 후속 문단의 저장 vpos 스냅이 표 위로
+            // 되감아 겹치지 못하게 한다. 판정은 typeset 한 곳에서만 한다 — 렌더가
+            // 근사식으로 재판정하면 두 판정이 갈라져 단독 발동한다(tac-img-02 실측).
+            if let PageItem::Table {
+                para_index,
+                control_index,
+            } = item
+            {
+                if page_content
+                    .ladder_band_tables
+                    .contains(&(*para_index, *control_index))
+                {
+                    let content_bottom = self.last_item_content_bottom.get();
+                    if content_bottom.is_finite() {
+                        if std::env::var("RHWP_5699_DBG").is_ok() {
+                            eprintln!("DBG5699_LY pi={} floor→{:.1}", para_index, content_bottom);
+                        }
+                        hcursor.min_flow_floor = hcursor.min_flow_floor.max(content_bottom);
+                    }
+                }
             }
 
             // [Task #1046 Stage 1] 렌더러 항목별 y_offset 진행 로그 (페이지네이터 cur_h 대조).
