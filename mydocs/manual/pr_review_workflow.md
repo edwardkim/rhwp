@@ -287,8 +287,10 @@ review 문서에는 계획형이나 미래형으로 쓰지 않는다. 실행한 
 
 review 문서 경로, review_impl 작성 조건, 사전 판단 report의 범위는 선택한 기본 경로와
 [PR 접수와 리뷰 기록](pr_review/intake_and_review.md)을 따른다. 시각 검증을 실제 판단 근거로 사용하면
-임시 output 경로만 남기지 말고, 대표 review PNG를 mydocs/pr/assets 아래 안정 경로에 보존한 뒤
-그 경로를 review 문서와 실제 GitHub comment에 사용한다.
+문서 비교 절차의 정본으로 [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md#github-merge-comment)를
+사용한다. 임시 output 경로만 남기지 말고, 대표 review PNG를 mydocs/pr/assets 아래 안정 경로에 보존한 뒤
+그 경로를 review 문서와 실제 GitHub comment에 사용한다. merge 후 comment에는 Visual Sweep 정본 link와
+review 문서의 실제 수치·결론을 함께 남기며, PNG는 merge commit SHA 고정 raw URL로 표시한다.
 
 ## 5. 기존 절 번호 대응
 
