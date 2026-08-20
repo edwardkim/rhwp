@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Q1·Q2·Q3·Q4·Q5·Q6 완료, Q7 inventory 중단·A안 승인 대기
+- 상태: 실행 승인 — Wave Q(Q1~Q7) 완료, M1 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -15,15 +15,15 @@ Stage 2 절편 24개 중 19개가 handler 이동, 4개가 선행 계약 보강, 
 
 | 지표 | #5511 시작 | 현재 | 최종 기준 |
 |---|---:|---:|---:|
-| `src/main.rs` 줄 수 | 42,370 | 29,944 | 1,200 이하 |
-| 최상위 함수 | 351 | 241 | entrypoint 조립에 필요한 최소 함수 |
-| 새 query 경로의 최상위 명령 | 0 | 23 | 모든 query adapter 물리 분리 |
+| `src/main.rs` 줄 수 | 42,370 | 28,295 | 1,200 이하 |
+| 최상위 함수 | 351 | 225 | entrypoint 조립에 필요한 최소 함수 |
+| 새 query 경로의 최상위 명령 | 0 | 28 | 모든 query adapter 물리 분리 |
 | 새 query 경로의 `inspect` 하위 명령 | 0 | 4 | 현재 전수 |
 | 편집 handler | 92 | 92 | command 모듈로 전수 이동 |
-| `wasm_api::HwpDocument` 직접 참조 | 42 | 23 | Stage 3에서 0 |
+| `wasm_api::HwpDocument` 직접 참조 | 42 | 22 | Stage 3에서 0 |
 | `rhwp::service` 참조 | 0 | 0 | Stage 3에서 전환 |
 
-1,200줄 목표까지 현재 28,744줄이 남았다. 배치 재기준화 당시에는 단일 handler 이동 평균을
+1,200줄 목표까지 현재 27,095줄이 남았다. 배치 재기준화 당시에는 단일 handler 이동 평균을
 기계적으로 적용하면 약 190개 이동 절편이 더 필요한 상태였다. 이는 실제 예측이 아니라 기존
 절차를 그대로 유지하면 생기는 비효율의 크기를 보여준 지표다. 큰 책임을 기능군으로 묶되 보호
 계약과 중단 조건은 유지한다.
@@ -141,6 +141,13 @@ Q7 inventory에서 `ir_diff_paragraph_fields` CC 28, `cmd_verify` CC 29, `ir_dif
 기존 직접 계약 104/104 기준선과 세 선택지는
 [`task_m100_5511_stage2_batch_q7_inventory.md`](../working/task_m100_5511_stage2_batch_q7_inventory.md)에
 기록했다. 권장안 A는 최소 characterization 뒤 세 함수를 책임 분해하고 Q7 전체를 이동한다.
+
+Q7도 완료했다. 미보호였던 내부 저장·position diagnostics·IR sweep 계약 6개를 먼저 고정하고,
+internal validation command와 position·verification·IR comparison query를 네 모듈로 이동했다.
+세 고복잡도 함수는 scalar/control, parsing/evaluation, load/compare/output 책임으로 분해해 Q7
+모듈의 CC 25 초과 경고를 0건으로 만들었다. 최종 focused 110/110과 전체 release-test
+8,005/8,005를 포함한 정적·정책 관문을 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_q7.md`](../working/task_m100_5511_stage2_batch_q7.md)에 기록했다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
