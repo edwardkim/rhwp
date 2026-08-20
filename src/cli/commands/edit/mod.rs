@@ -11,26 +11,30 @@ use crate::{
     edit_delete_text_in_footnote, edit_fit_table, edit_group_shapes, edit_insert_col,
     edit_insert_column_break, edit_insert_endnote, edit_insert_equation, edit_insert_field_in_hf,
     edit_insert_footnote, edit_insert_footnote_text, edit_insert_header_footer,
-    edit_insert_header_footer_text, edit_insert_image, edit_insert_number, edit_insert_page_break,
+    edit_insert_header_footer_text, edit_insert_image, edit_insert_page_break,
     edit_insert_paragraph, edit_insert_picture, edit_insert_row, edit_insert_shape,
     edit_insert_table, edit_insert_text, edit_insert_text_in_cell, edit_merge_cells,
     edit_merge_paragraph, edit_merge_paragraph_in_cell, edit_merge_paragraph_in_footnote,
     edit_merge_paragraph_in_hf, edit_merge_table, edit_move_table, edit_rename_bookmark,
     edit_resize_table, edit_resize_table_cell, edit_set_cell, edit_set_cell_props,
-    edit_set_chart_data, edit_set_column_def, edit_set_column_widths, edit_set_equation_properties,
-    edit_set_form_value, edit_set_form_value_in_cell, edit_set_header_footer_text,
-    edit_set_hf_picture, edit_set_numbering_restart, edit_set_page_border_fill, edit_set_page_def,
-    edit_set_page_hide, edit_set_picture, edit_set_section_def, edit_set_table_props,
-    edit_split_cell, edit_split_cell_into, edit_split_paragraph, edit_split_paragraph_in_cell,
-    edit_split_paragraph_in_footnote, edit_split_paragraph_in_hf, edit_split_table,
-    edit_toggle_hide_hf, edit_transpose_table, edit_ungroup_shape, EXIT_USAGE,
+    edit_set_column_def, edit_set_column_widths, edit_set_equation_properties,
+    edit_set_header_footer_text, edit_set_hf_picture, edit_set_numbering_restart,
+    edit_set_page_def, edit_set_page_hide, edit_set_picture, edit_set_section_def,
+    edit_set_table_props, edit_split_cell, edit_split_cell_into, edit_split_paragraph,
+    edit_split_paragraph_in_cell, edit_split_paragraph_in_footnote, edit_split_paragraph_in_hf,
+    edit_split_table, edit_toggle_hide_hf, edit_transpose_table, edit_ungroup_shape, EXIT_USAGE,
 };
 
+mod document_objects;
 mod fields;
 mod privacy;
 pub(crate) mod runtime;
 mod text;
 
+use document_objects::{
+    edit_insert_number, edit_set_chart_data, edit_set_form_value, edit_set_form_value_in_cell,
+    edit_set_page_border_fill,
+};
 use fields::edit_fill_fields;
 pub(crate) use fields::{fill_fields_core, parse_field_key};
 use privacy::{edit_redact, edit_sanitize};
