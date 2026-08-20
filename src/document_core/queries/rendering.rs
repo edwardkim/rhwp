@@ -2032,12 +2032,15 @@ impl DocumentCore {
     /// 파싱할 필요가 없다. 특히 그림이 본문 layer에만 있는 페이지에서는 빈 overlay 배열과
     /// imageCount/rawSvgCount/flowImageCount/flowRawSvgCount/hasBehind/hasFront만
     /// 반환하여 입력 중 대용량 JSON 직렬화/파싱을 피한다.
+    ///
+    /// [#5763] `flowStaticOccluded` 는 flow 그림 밑에 불투명 채우기가 깔려 있어 flow-static
+    /// 분리가 그림을 지우는 페이지 표시다 — 소비자는 이 값이 참이면 분리하지 않는다.
     pub fn get_page_overlay_images_native(&self, page_num: u32) -> Result<String, HwpError> {
         use crate::model::image::ImageEffect;
         use crate::model::shape::TextWrap;
         use crate::paint::{
-            paint_op_replay_plane_with_layer, LayerNode, LayerNodeKind, PaintOp, PaintReplayPlane,
-            ResolvedImageKind, ResolvedImagePayload,
+            paint_op_replay_plane_with_layer, FlowStaticOcclusion, LayerNode, LayerNodeKind,
+            PaintOp, PaintReplayPlane, ResolvedImageKind, ResolvedImagePayload,
         };
         use crate::renderer::render_tree::RenderLayerInfo;
         use crate::renderer::render_tree::{BoundingBox, ImageNode};
@@ -2187,6 +2190,7 @@ impl DocumentCore {
             flow_raw_svg_count: &mut usize,
             has_behind: &mut bool,
             has_front: &mut bool,
+            occlusion: &mut FlowStaticOcclusion,
             inherited_layer: Option<RenderLayerInfo>,
         ) {
             let active_layer = node.layer.or(inherited_layer);
@@ -2203,6 +2207,7 @@ impl DocumentCore {
                             flow_raw_svg_count,
                             has_behind,
                             has_front,
+                            occlusion,
                             active_layer,
                         );
                     }
@@ -2217,6 +2222,7 @@ impl DocumentCore {
                     flow_raw_svg_count,
                     has_behind,
                     has_front,
+                    occlusion,
                     active_layer,
                 ),
                 LayerNodeKind::Leaf { ops } => {
@@ -2227,6 +2233,9 @@ impl DocumentCore {
                             PaintReplayPlane::InFrontOfText => *has_front = true,
                             _ => {}
                         }
+                        // [#5763] flow-static 분리 가능 여부는 paint 순서에 달렸다 —
+                        // 여기서 순서대로 먹인다.
+                        occlusion.observe(plane, op);
                         match op {
                             PaintOp::Image {
                                 bbox,
@@ -2283,6 +2292,7 @@ impl DocumentCore {
         let mut flow_raw_svg_count = 0usize;
         let mut has_behind = false;
         let mut has_front = false;
+        let mut occlusion = FlowStaticOcclusion::default();
         collect(
             &tree.root,
             &mut behind,
@@ -2293,17 +2303,19 @@ impl DocumentCore {
             &mut flow_raw_svg_count,
             &mut has_behind,
             &mut has_front,
+            &mut occlusion,
             None,
         );
 
         Ok(format!(
-            "{{\"behind\":[{}],\"front\":[{}],\"imageCount\":{},\"rawSvgCount\":{},\"flowImageCount\":{},\"flowRawSvgCount\":{},\"hasBehind\":{},\"hasFront\":{}}}",
+            "{{\"behind\":[{}],\"front\":[{}],\"imageCount\":{},\"rawSvgCount\":{},\"flowImageCount\":{},\"flowRawSvgCount\":{},\"flowStaticOccluded\":{},\"hasBehind\":{},\"hasFront\":{}}}",
             behind,
             front,
             image_count,
             raw_svg_count,
             flow_image_count,
             flow_raw_svg_count,
+            occlusion.occluded(),
             has_behind,
             has_front
         ))

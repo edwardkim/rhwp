@@ -315,7 +315,22 @@ test('PageRenderer uses filtered canvas layers for background, behind, and front
   assert.match(source, /createOrReuseFilteredCanvasLayer\(\s*pageIdx,\s*canvas,\s*renderScale,\s*'front'/);
   assert.match(source, /createFilteredCanvasLayer\(\s*pageIdx,\s*sourceCanvas,\s*renderScale,\s*layerKind,/);
   assert.match(source, /layer\.style\.background\s*=\s*'transparent'/);
-  assert.match(source, /collectLayerPlaneSummary\(root,\s*summary,\s*null\)/);
+  // [#5763] 트리 폴백 경로도 flow-static 가림 판정을 함께 누적한다.
+  assert.match(source, /collectLayerPlaneSummary\(root,\s*summary,\s*null,\s*\{\s*opaqueFlowFills:\s*\[\]\s*\}\)/);
+});
+
+test('[#5763] PageRenderer skips the flow-static split when an opaque flow fill sits under a flow image', () => {
+  const source = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
+  // 요약에 판정 필드가 있고, 분리 결정이 그 값을 본다.
+  assert.match(source, /flowStaticOccluded: boolean;/);
+  assert.match(source, /!layers\.flowStaticOccluded/);
+  // 좁은 질의(WASM 요약)에서 읽고, 없으면(구형 WASM) 종전대로 분리를 허용한다.
+  assert.match(source, /wrapper\.flowStaticOccluded === true/);
+  // 캐시 서명에 포함돼야 판정이 바뀌었을 때 재계산된다.
+  assert.match(source, /flowStaticOccluded \? 1 : 0/);
+  // 트리 폴백도 같은 규칙(불투명 채우기 → 겹치는 그림)을 쓴다.
+  assert.match(source, /function opaqueFlowFillBbox\(/);
+  assert.match(source, /scan\.opaqueFlowFills\.some\(/);
 });
 
 test('CanvasKit and comparison canvas bitmap extents preserve fractional page edges', () => {
