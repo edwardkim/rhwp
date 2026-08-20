@@ -79,13 +79,16 @@ SKILL.md 는 라우터다. 단계에 맞는 자식을 **읽고 나서** 명령�
    - `cargo clippy -- -D warnings`
    - 관련 `cargo test`
    - 렌더링·레이아웃 변경은 시각 근거(PDF/SVG 전후)
+   - 변경 집합에 `.claude/skills/` 또는 `.agents/skills/` 가 있으면
+     **스킬 경로 게이트**(아래 절)를 PR 전에 명령마다 세 번
    `crates/` 가 있으면 fmt 는 반드시 통과해야 한다.
 6. **작업 영수증** — 문서를 실제로 편집·생성했으면
    `rhwp replay --capsule` / `rhwp audit` / `rhwp lineage` 포인터를 따른다.
    그 스킬 본문을 이 파동에서 다시 쓰지 않는다.
 7. **처리 결과 문서** — 규모 있는 변경은 `mydocs/working/` 에 무엇을·왜·어떻게·
    검증 실측을 남긴다.
-8. **한국어 PR** — fmt 게이트 통과 뒤에만 `gh pr create --base devel --body-file`.
+8. **한국어 PR** — fmt 게이트(그리고 스킬 경로가 있으면 스킬 경로 게이트)
+   통과 뒤에만 `gh pr create --base devel --body-file`.
    제목·본문 한국어. `closes #<이슈>`. PR 템플릿 **첫 체크박스 = fmt 게이트**.
 
 ## 판정 규약
@@ -98,6 +101,26 @@ SKILL.md 는 라우터다. 단계에 맞는 자식을 **읽고 나서** 명령�
   CI `FAILURE`(실제 빨간 검사) 를 혼동하지 않는다.
 - sparse 체크아웃에 `crates/` 가 없으면 fmt `--all` 이 워크스페이스 멤버를
   못 찾을 수 있다. 예외 경로: [exceptions.md](references/exceptions.md).
+- 스킬 경로가 있을 때 `skills_have_valid_frontmatter_and_are_executable`
+  실패(`rhwp <cmd>` 없음) = 기여 중단. 하드 페일이다.
+
+## 스킬 경로 게이트 (PR 직전 필수)
+
+변경 집합에 `.claude/skills/` 또는 `.agents/skills/` 가 있으면,
+`gh pr create` / push 전에 아래를 **명령마다 세 번** 돌린다.
+한 번이라도 실패하면 기여를 멈추고 PR/push 하지 않는다.
+
+```bash
+python tools/skill_router/gate_new_skill.py
+python -m unittest tools/skill_router/test_route.py
+cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapture
+```
+
+`cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapture` 의
+`skills_have_valid_frontmatter_and_are_executable` 가 실패하면 기여를
+멈춘다. 스킬 본문에 실행 가능한 `rhwp <cmd>` 가 없으면 하드 페일이다.
+새 rhwp CLI 를 만들지 않는다. 기존 예(`rhwp replay --capsule` /
+`rhwp audit` / `rhwp lineage`)를 지우지 않는다.
 
 ## 하지 않는 것
 

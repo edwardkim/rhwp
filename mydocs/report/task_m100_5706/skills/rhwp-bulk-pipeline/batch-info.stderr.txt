@@ -1,0 +1,3 @@
+LAYOUT_TABLE_OVERLAP: page=0, sec=0, para_a=14, para_b=14, a=294.4~312.6, b=294.4~312.6, overlap=18.2px
+LAYOUT_TABLE_OVERLAP: page=0, sec=0, para_a=14, para_b=14, a=294.4~312.6, b=294.4~312.6, overlap=18.2px
+batch: 3건 중 3 성공, 0 실패 (94ms, threads=12)

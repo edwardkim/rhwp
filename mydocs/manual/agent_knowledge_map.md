@@ -55,6 +55,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 
 | 하려는 일 | 명령 (MCP 도구) | 판정 필드 | 권위 |
 |---|---|---|---|
+| 요청에 어떤 스킬이 필요한가 | `python tools/skill_router/route.py "<요청>" --json` | `intent`·`requiredCapabilities`·`skillSelection`·`executionGraph` | [스킬 라우터](agent_skill_router.md) |
 | 규모·형식 파악 | `info --json` (`hwp_info`) | `format`·`pageCount`·`paraCount` | [CLI 매뉴얼](cli_commands.md) §info |
 | 한 호출로 전체 감 잡기 | `digest --json` (`hwp_digest`) | `outline`·`excerpt`·`nextStep` | [초소형 모델 매크로](../tech/tiny_model_macro_tools.md) |
 | 절 단위로 훑기 | `digest --sections --json` | `sections[]`·`sectionsMode` | 같은 문서 |

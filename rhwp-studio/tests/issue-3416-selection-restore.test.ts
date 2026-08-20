@@ -36,7 +36,7 @@ test('[#3416] 선택 삭제 커맨드가 지우기 전 범위를 들고 있다',
     const end = { sectionIndex: 0, paragraphIndex: 0, charOffset: 22 };
     const cmd: any = new DeleteSelectionCommand(start, end);
 
-    assert.deepEqual(cmd.selectionBefore(), { start, end });
+    assert.deepEqual(cmd.selectionBefore(), { start, end, blockPhase: null });
 
     // 호출부가 넘긴 객체를 그대로 들고 있으면 이후 변형이 기록을 오염시킨다.
     start.charOffset = 999;
@@ -63,7 +63,7 @@ test('[#3416] undo 경로가 선택을 되살린다 — redo 경로에는 없다
 
 test('[#3416] 유효성은 호출부가 아니라 selectRange 안에서 판정된다', () => {
   const cursor = src('src/engine/cursor.ts');
-  const select = functionBodyFrom(cursor, 'selectRange(start: DocumentPosition, end: DocumentPosition)');
+  const select = functionBodyFrom(cursor, 'selectRange(');
 
   // 확인이 대입보다 먼저여야 한다 — 뒤면 유령 범위가 이미 선 뒤다.
   const idxCheck = select.indexOf('isVerifiedBodyPosition');
