@@ -34,6 +34,10 @@ interface LayerPlaneSummary {
   flowImageCount: number;
   flowRawSvgCount: number;
   flowStaticCount: number;
+  // [#5763] flow 그림 밑에 불투명 채우기(그림을 담은 표 칸의 흰 배경 등)가 깔린 페이지.
+  // flow-static 분리는 그림만 canvas 아래 평면으로 내리고 그 채우기는 canvas 에 남기므로,
+  // 분리하면 채우기가 그림을 덮어 그림이 통째로 사라진다. 그런 페이지는 분리하지 않는다.
+  flowStaticOccluded: boolean;
   signature: string;
 }
 
@@ -732,6 +736,10 @@ export class PageRenderer {
   private shouldSplitStaticFlow(layers: LayerPlaneSummary): boolean {
     return (
       !layers.hasBehind &&
+      // [#5763] 그림 밑에 깔린 불투명 채우기는 canvas(flow-dynamic) 에 남아 아래 평면의
+      // 그림을 덮는다. 그런 페이지는 한 평면에 순서대로 그린다 — 분리 이득보다 그림
+      // 소실이 크다 (156550355 문서 3·4·11쪽이 빈 흰 상자로 보이던 원인).
+      !layers.flowStaticOccluded &&
       layers.flowStaticCount > 0 &&
       this.flowSplitSupported !== false
     );
@@ -917,6 +925,8 @@ export class PageRenderer {
           ? rawSvgCount
           : finiteCount(wrapper.flowRawSvgCount);
       const flowStaticCount = flowImageCount + flowRawSvgCount;
+      // [#5763] 구형 WASM 은 이 필드를 안 낸다 — 그때는 종전대로 분리를 허용한다.
+      const flowStaticOccluded = wrapper.flowStaticOccluded === true;
       return {
         hasBehind: wrapper.hasBehind,
         hasFront: wrapper.hasFront,
@@ -925,7 +935,8 @@ export class PageRenderer {
         flowImageCount,
         flowRawSvgCount,
         flowStaticCount,
-        signature: `overlay:${wrapper.hasBehind ? 1 : 0}:${wrapper.hasFront ? 1 : 0}:${imageCount}:${rawSvgCount}:${flowImageCount}:${flowRawSvgCount}:${json.length}`,
+        flowStaticOccluded,
+        signature: `overlay:${wrapper.hasBehind ? 1 : 0}:${wrapper.hasFront ? 1 : 0}:${imageCount}:${rawSvgCount}:${flowImageCount}:${flowRawSvgCount}:${flowStaticOccluded ? 1 : 0}:${json.length}`,
       };
     } catch (e) {
       console.warn('[PageRenderer] OverlayImageSummary JSON parse 실패:', e);
@@ -946,9 +957,9 @@ export class PageRenderer {
       const wrapper = JSON.parse(json);
       const root = wrapper?.root;
       if (root) {
-        collectLayerPlaneSummary(root, summary, null);
+        collectLayerPlaneSummary(root, summary, null, { opaqueFlowFills: [] });
         summary.flowStaticCount = summary.flowImageCount + summary.flowRawSvgCount;
-        summary.signature = `tree:${summary.hasBehind ? 1 : 0}:${summary.hasFront ? 1 : 0}:${summary.imageCount}:${summary.rawSvgCount}:${summary.flowImageCount}:${summary.flowRawSvgCount}`;
+        summary.signature = `tree:${summary.hasBehind ? 1 : 0}:${summary.hasFront ? 1 : 0}:${summary.imageCount}:${summary.rawSvgCount}:${summary.flowImageCount}:${summary.flowRawSvgCount}:${summary.flowStaticOccluded ? 1 : 0}`;
       }
     } catch (e) {
       console.warn('[PageRenderer] PageLayerTree JSON parse 실패:', e);
@@ -1316,6 +1327,7 @@ function emptyLayerPlaneSummary(): LayerPlaneSummary {
     flowImageCount: 0,
     flowRawSvgCount: 0,
     flowStaticCount: 0,
+    flowStaticOccluded: false,
     signature: 'empty',
   };
 }
@@ -1325,10 +1337,38 @@ function finiteCount(value: unknown): number {
   return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
 }
 
+/**
+ * [#5763] paint 순서대로 훑으며 "그림 밑에 깔린 불투명 flow 채우기" 를 모은다.
+ *
+ * Rust `FlowStaticOcclusion` 과 같은 규칙이다 — 이 경로는 좁은 질의(overlay summary)를 못 쓰는
+ * 구형 WASM·예외 상황의 폴백이라 판정이 갈리면 안 된다.
+ */
+interface FlowOcclusionScan {
+  opaqueFlowFills: Array<{ x: number; y: number; width: number; height: number }>;
+}
+
+function opaqueFlowFillBbox(op: any): FlowOcclusionScan['opaqueFlowFills'][number] | null {
+  if (op.type !== 'rectangle' && op.type !== 'ellipse' && op.type !== 'path') return null;
+  const style = op.style;
+  if (!style || typeof style !== 'object') return null;
+  if (typeof style.opacity === 'number' && style.opacity < 1) return null;
+  const filled = style.fillColor != null || style.pattern != null || op.gradient != null;
+  if (!filled) return null;
+  const b = op.bbox;
+  if (!b || typeof b.x !== 'number' || typeof b.width !== 'number') return null;
+  return { x: b.x, y: b.y, width: b.width, height: b.height };
+}
+
+function bboxIntersects(a: { x: number; y: number; width: number; height: number }, b: any): boolean {
+  if (!b || typeof b.x !== 'number' || typeof b.width !== 'number') return false;
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
 function collectLayerPlaneSummary(
   node: any,
   summary: LayerPlaneSummary,
   inheritedLayer: any,
+  scan: FlowOcclusionScan,
 ): void {
   if (!node || typeof node !== 'object') return;
   const activeLayer = node.layer ?? inheritedLayer;
@@ -1349,6 +1389,16 @@ function collectLayerPlaneSummary(
           summary.flowRawSvgCount += 1;
         }
       }
+      if (plane === 'flow') {
+        if (op.type === 'image' || op.type === 'rawSvg') {
+          if (scan.opaqueFlowFills.some((fill) => bboxIntersects(fill, op.bbox))) {
+            summary.flowStaticOccluded = true;
+          }
+        } else {
+          const fill = opaqueFlowFillBbox(op);
+          if (fill) scan.opaqueFlowFills.push(fill);
+        }
+      }
       if (plane === 'behindText') {
         summary.hasBehind = true;
       } else if (plane === 'inFrontOfText') {
@@ -1358,11 +1408,11 @@ function collectLayerPlaneSummary(
   }
   if (Array.isArray(node.children)) {
     for (const child of node.children) {
-      collectLayerPlaneSummary(child, summary, activeLayer);
+      collectLayerPlaneSummary(child, summary, activeLayer, scan);
     }
   }
   if (node.child) {
-    collectLayerPlaneSummary(node.child, summary, activeLayer);
+    collectLayerPlaneSummary(node.child, summary, activeLayer, scan);
   }
 }
 
