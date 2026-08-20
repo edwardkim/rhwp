@@ -77,6 +77,7 @@ import {
   type RenderBackendFallbackReason,
 } from '@/view/render-backend';
 import { calculateFitPageZoom, calculateFitWidthZoom } from '@/view/zoom-fit';
+import { withBusyCursor } from '@/view/busy-cursor';
 import { installEmbedRuntime } from '@/embed/runtime';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
@@ -1310,12 +1311,15 @@ async function loadFile(
 ): Promise<boolean> {
   try {
     if (!await canReplaceCurrentDocument(options.skipUnsavedGuard)) return false;
-    const startTime = performance.now();
-    await updateLoadProgress(0, '파일 읽는 중...');
-    const data = new Uint8Array(await file.arrayBuffer());
-    await updateLoadProgress(15, '파일 읽기 완료');
-    await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true });
-    return true;
+    // 대기 커서는 저장 여부 확인(모달) 다음부터 — 사용자가 답해야 하는 동안은 평소 커서다.
+    return await withBusyCursor(document.documentElement, async () => {
+      const startTime = performance.now();
+      await updateLoadProgress(0, '파일 읽는 중...');
+      const data = new Uint8Array(await file.arrayBuffer());
+      await updateLoadProgress(15, '파일 읽기 완료');
+      await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true });
+      return true;
+    });
   } catch (error) {
     showLoadErrorUnlessCancelled(error);
     return false;
@@ -1333,42 +1337,46 @@ async function loadBytes(
   startTime = performance.now(),
   options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean } = {},
 ): Promise<void> {
-  // 파싱 전에 먼저 빈 쪽 상태로 만든다 — 이전 문서를 붙잡고 있다가 한 번에 갈아치우면
-  // 화면이 튀어 보인다. 파싱이 실패하면 아래 catch가 이전 문서 뷰를 되살린다.
-  canvasView?.showBlankPage();
-  if (!options.dataReadProgressShown) {
-    await updateLoadProgress(0, '문서 데이터 준비 중...');
-  }
-  await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
-  const docInfo = await loadDocumentForOpen(data, fileName);
-  prepareCanvasRendererDocument();
-  // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
-  // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
-  plugins.notifyDocumentSwap();
-  await updateLoadProgress(45, '자동 저장 준비 중...');
-  forgetConvertedHmlSaveHandle(fileHandle);
-  wasm.currentFileHandle = fileHandle;
+  // 바이트로 여는 모든 경로(파일 열기 · ?url= · 자동저장 복구 · 호스트 API)의 공통 깔때기다.
+  // 파싱·쪽 계산 동안 빈 화면만 보이므로 여기서 대기 커서를 든다.
+  await withBusyCursor(document.documentElement, async () => {
+    // 파싱 전에 먼저 빈 쪽 상태로 만든다 — 이전 문서를 붙잡고 있다가 한 번에 갈아치우면
+    // 화면이 튀어 보인다. 파싱이 실패하면 아래 catch가 이전 문서 뷰를 되살린다.
+    canvasView?.showBlankPage();
+    if (!options.dataReadProgressShown) {
+      await updateLoadProgress(0, '문서 데이터 준비 중...');
+    }
+    await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
+    const docInfo = await loadDocumentForOpen(data, fileName);
+    prepareCanvasRendererDocument();
+    // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
+    // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
+    plugins.notifyDocumentSwap();
+    await updateLoadProgress(45, '자동 저장 준비 중...');
+    forgetConvertedHmlSaveHandle(fileHandle);
+    wasm.currentFileHandle = fileHandle;
 
-  // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
-  // 핸들이 있으면 라이브 재열기용으로 함께 기록하고, 없으면(드롭/input/URL 로드)
-  // 메타-only 로 기록한다 — 목록에는 남기되 자동 재열기는 핸들 있는 항목만 가능하다.
-  // 자동저장 복구본은 options.skipRecent 로 제외.
-  if (!options.skipRecent) {
-    void addRecentDoc({
-      fileName: wasm.fileName,
-      sourceFormat: wasm.getSourceFormat(),
-      handle: fileHandle,
-    }).catch((err) => console.warn('[recent] 최근 문서 기록 실패:', err));
-  }
+    // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
+    // 핸들이 있으면 라이브 재열기용으로 함께 기록하고, 없으면(드롭/input/URL 로드)
+    // 메타-only 로 기록한다 — 목록에는 남기되 자동 재열기는 핸들 있는 항목만 가능하다.
+    // 자동저장 복구본은 options.skipRecent 로 제외.
+    if (!options.skipRecent) {
+      void addRecentDoc({
+        fileName: wasm.fileName,
+        sourceFormat: wasm.getSourceFormat(),
+        handle: fileHandle,
+      }).catch((err) => console.warn('[recent] 최근 문서 기록 실패:', err));
+    }
 
-  await autosaveManager.beginDocument(
-    { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
-    { discardPreviousDraft: true },
-  );
-  await updateLoadProgress(50, '문서 초기화 중...');
-  const elapsed = performance.now() - startTime;
-  await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`, {
-    suppressDialogs: options.suppressDialogs,
+    await autosaveManager.beginDocument(
+      { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
+      { discardPreviousDraft: true },
+    );
+    await updateLoadProgress(50, '문서 초기화 중...');
+    const elapsed = performance.now() - startTime;
+    await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`, {
+      suppressDialogs: options.suppressDialogs,
+    });
   });
 }
 
@@ -1488,15 +1496,17 @@ async function restoreAutosaveDraft(draft: AutosaveDraft): Promise<void> {
 async function createNewDocument(): Promise<void> {
   const msg = sbMessage();
   try {
-    msg.textContent = '새 문서 생성 중...';
-    const docInfo = wasm.createNewDocument();
-    prepareCanvasRendererDocument();
-    plugins.notifyDocumentSwap();
-    await autosaveManager.beginDocument(
-      { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
-      { discardPreviousDraft: true },
-    );
-    await initializeDocument(docInfo, `새 문서.hwp — ${docInfo.pageCount}페이지`);
+    await withBusyCursor(document.documentElement, async () => {
+      msg.textContent = '새 문서 생성 중...';
+      const docInfo = wasm.createNewDocument();
+      prepareCanvasRendererDocument();
+      plugins.notifyDocumentSwap();
+      await autosaveManager.beginDocument(
+        { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
+        { discardPreviousDraft: true },
+      );
+      await initializeDocument(docInfo, `새 문서.hwp — ${docInfo.pageCount}페이지`);
+    });
   } catch (error) {
     msg.textContent = `새 문서 생성 실패: ${error}`;
     console.error('[main] 새 문서 생성 실패:', error);

@@ -34,3 +34,10 @@
 .rhwp-chrome-no-toolbar #icon-toolbar,
 .rhwp-chrome-no-toolbar #style-bar { display: none; }
 .rhwp-chrome-no-status #status-bar { display: none; }
+
+/* ── 처리 중 대기 커서 ────────────────────────────────────
+   큰 문서 로딩처럼 빈 화면이 오래 보이는 동안 "일하는 중"을 커서로 알린다.
+   편집 영역이 인라인 style 로 커서를 바꾸므로 !important 로 덮는다.
+   토글은 view/busy-cursor.ts. */
+:root.rhwp-busy,
+:root.rhwp-busy * { cursor: wait !important; }
