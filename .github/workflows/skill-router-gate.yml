@@ -1,0 +1,73 @@
+name: Skill router gate
+
+# Cheap Python-only structural gate for skills, catalog paths, and router
+# envelopes. Live `rhwp <cmd>` checks require an explicitly selected candidate
+# binary, so this job remains independent of Cargo and stale build artifacts.
+
+on:
+  pull_request:
+    branches: [main, devel]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.claude/skills/**'
+      - '.agents/skills/**'
+      - 'tools/skill_router/**'
+      - 'scripts/tests/test_skill_router_gate.py'
+      - '.github/workflows/skill-router-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skill-router-gate-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  PYTHONUTF8: '1'
+
+jobs:
+  gate:
+    name: Skill router gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Gate new skill (3×)
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            echo "gate_new_skill.py run ${i}/3"
+            python tools/skill_router/gate_new_skill.py
+          done
+
+      - name: Route unit tests
+        run: python -m unittest tools.skill_router.test_route
+
+      - name: Skill-router gate tests
+        run: python -m unittest scripts.tests.test_skill_router_gate
+
+      - name: Catalog route tests
+        run: python -m unittest tools.skill_router.test_catalog_routes
+
+      - name: Author-skill unit tests
+        run: python -m unittest tools.skill_router.test_author_skill
+
+      - name: Catalog sync
+        run: python tools/skill_router/check_catalog_sync.py
+
+      - name: Probe unit tests
+        run: python -m unittest tools.skill_router.test_probes
+
+      - name: Precommit path tests
+        run: python -m unittest tools.skill_router.test_precommit

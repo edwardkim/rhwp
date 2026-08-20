@@ -49,12 +49,19 @@ export interface EditCommand {
    *
    * 한컴 2024 실측: 선택을 지운 뒤 undo 하면 지우기 전 범위가 그대로 복원되고(캐럿은 선택 끝),
    * redo 하면 해제된다. 반면 선택 위에 타이핑해서 대체한 경우의 undo 는 복원하지 않는다.
+   * F3 블록 선택은 **확장 단계까지** 되돌아온다 — undo 뒤 F3 를 누르면 단어에서 문단으로
+   * 이어서 확장한다(단계가 초기화됐다면 다시 단어 범위에 머물렀을 것이다).
    * 그래서 이것은 **선택 삭제 계열만 구현한다** — 미구현이면 종전대로 해제된다.
    *
    * 반환값은 "그때 그랬다" 는 기록일 뿐 지금 유효하다는 보장이 아니다. 복원하는 쪽이 현재
    * 문서에서 유효한지 반드시 확인해야 한다(#2339).
    */
-  selectionBefore?(): { start: DocumentPosition; end: DocumentPosition } | null;
+  selectionBefore?(): {
+    start: DocumentPosition;
+    end: DocumentPosition;
+    /** F3 블록 선택이었으면 그 확장 단계, 아니면 `null` (실측: 한컴은 단계까지 되돌린다). */
+    blockPhase: number | null;
+  } | null;
 }
 
 /**
@@ -856,10 +863,14 @@ export class DeleteSelectionCommand implements EditCommand {
    * 양식 모드 선택 삭제가 게이트에서 드롭돼 무언 폐기가 된다.
    */
   private readonly snapshot: SnapshotCommand;
-  private readonly selection: { start: DocumentPosition; end: DocumentPosition };
+  private readonly selection: {
+    start: DocumentPosition;
+    end: DocumentPosition;
+    blockPhase: number | null;
+  };
 
-  constructor(start: DocumentPosition, end: DocumentPosition) {
-    this.selection = { start: { ...start }, end: { ...end } };
+  constructor(start: DocumentPosition, end: DocumentPosition, blockPhase: number | null = null) {
+    this.selection = { start: { ...start }, end: { ...end }, blockPhase };
     // 삭제 후 커서는 선택 시작으로 모이고, undo 후에는 선택 끝으로 되돌아간다.
     this.snapshot = new SnapshotCommand('deleteSelection', end, start, (wasm) => {
       if (isCell(start)) {
@@ -896,7 +907,7 @@ export class DeleteSelectionCommand implements EditCommand {
    * undo 가 돌려주는 커서가 이미 `end`(선택 끝)라, 여기에 anchor(`start`)만 더하면 한컴과
    * 같은 상태가 된다 — 실측에서 undo 후 선택은 `(0,0,18)~(0,0,22)`, 캐럿은 `(0,0,22)` 였다.
    */
-  selectionBefore(): { start: DocumentPosition; end: DocumentPosition } {
+  selectionBefore(): { start: DocumentPosition; end: DocumentPosition; blockPhase: number | null } {
     return this.selection;
   }
 

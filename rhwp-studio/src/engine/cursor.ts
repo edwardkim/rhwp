@@ -188,12 +188,31 @@ export class CursorState {
    * 맡기면 호출부가 하나 늘 때마다 유령 범위가 되살아난다. 세우지 못하면 아무것도 바꾸지
    * 않고 `false` 를 돌려준다(종전 선택 상태 그대로).
    */
-  selectRange(start: DocumentPosition, end: DocumentPosition): boolean {
+  selectRange(
+    start: DocumentPosition,
+    end: DocumentPosition,
+    blockPhase: number | null = null,
+  ): boolean {
     if (!this.isVerifiedBodyPosition(start) || !this.isVerifiedBodyPosition(end)) return false;
     this.anchor = { ...start };
     this.position = { ...end };
+    // 범위와 블록 상태를 **한 번에** 세운다. 따로 세우면 그 사이에 "단계는 있는데 범위가 없는"
+    // 상태가 생기고, 다음 F3 가 그 단계에서 이어 확장해 엉뚱한 범위를 만든다.
+    this._blockSelectionMode = blockPhase !== null;
+    this._expandPhase = blockPhase ?? 0;
     this.updateRect();
     return true;
+  }
+
+  /**
+   * 지금이 F3 블록 선택이면 그 확장 단계, 아니면 `null` (Task #3416).
+   *
+   * `null` 과 `0` 은 다르다 — `0` 은 "블록 모드인데 아직 확장 전"(F5 로 들어온 직후)이고
+   * `null` 은 "블록 모드가 아님"이다. 되살릴 때 이 둘을 같게 취급하면 평범한 드래그 선택이
+   * 블록 모드로 되살아난다.
+   */
+  blockSelectionPhase(): number | null {
+    return this._blockSelectionMode ? this._expandPhase : null;
   }
 
   /**
