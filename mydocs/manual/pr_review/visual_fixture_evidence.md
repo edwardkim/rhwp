@@ -18,6 +18,8 @@ merge를 보류하지 않는다.
 
 visual sweep을 실제 검토 근거로 쓰면 review 문서에 다음을 모두 기록한다.
 
+- 문서 비교 절차의 정본인 [PDF/SVG visual sweep 가이드](../verification/visual_sweep_guide.md#github-merge-comment)와
+  적용한 command·판정 범위
 - compare, overlay, review PNG의 임시 output 경로
 - 검토한 페이지 수와 자동 후보 수
 - pixel match, visual_accuracy_proxy_percent
@@ -60,11 +62,15 @@ visual sweep을 실제 merge 판단에 썼으면 merge 가능 또는 승인 요�
 - review 문서에는 임시 output 경로와 최종 asset 경로를 둘 다 적는다.
 - 여러 페이지를 검증해도 모든 PNG를 기계적으로 보존할 필요는 없다. 결론을 증명하는 정상 page와
   보완 요청·후속 issue 판단에 필요한 후보 page를 대표 asset으로 남긴다.
-- GitHub comment에는 output 경로 link만 남기지 않는다. devel에 반영된 asset의 raw URL을 Markdown image로
-  실제 표시되게 넣는다.
+- GitHub merge comment에는 [Visual Sweep 정본](../verification/visual_sweep_guide.md#github-merge-comment)을
+  direct link로 남긴다. output 경로 link만 남기지 않고, merge commit에 반영된 asset의 **commit SHA 고정**
+  raw URL을 Markdown image로 실제 표시한다. raw URL은 PNG 표시용 증적이며 문서 비교 방법의 인용은
+  Visual Sweep 정본과 review 문서가 담당한다.
 
 ~~~markdown
-![PR N visual review](https://raw.githubusercontent.com/edwardkim/rhwp/devel/mydocs/pr/assets/<file>.png)
+- 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 따름
+
+![PR N visual review](https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/<file>.png)
 ~~~
 
 ### asset 반영 경로
