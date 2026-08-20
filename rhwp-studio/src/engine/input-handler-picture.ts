@@ -5,6 +5,7 @@ import { MovePictureCommand, MoveShapeCommand, ResizeObjectCommand } from './com
 import type { ObjectResizeTarget } from './command';
 import { computeArrowResize, MIN_SIZE_HWP, type ArrowKey } from './picture-resize';
 import { computeRotationRecord } from './object-drag-record';
+import { isMasterPageDecoration } from './picture-hit-policy';
 import type { CellPathLike } from '@/core/types';
 import { showToast } from '@/ui/toast';
 
@@ -225,7 +226,7 @@ export function findPictureAtClick(this: any,
       let shapeHit = false;
       let nestedPic: any = null;
       for (const ctrl of layout.controls) {
-        if (ctrl.secIdx === undefined || ctrl.wrap === 'behindText') continue;
+        if (ctrl.secIdx === undefined || ctrl.wrap === 'behindText' || isMasterPageDecoration(ctrl)) continue;
         const inBox = pageX >= ctrl.x && pageX <= ctrl.x + ctrl.w &&
           pageY >= ctrl.y && pageY <= ctrl.y + ctrl.h;
         if (!inBox) continue;
@@ -249,6 +250,7 @@ export function findPictureAtClick(this: any,
     for (const ctrl of layout.controls) {
       if (ctrl.type !== 'image' && ctrl.type !== 'shape' && ctrl.type !== 'equation' && ctrl.type !== 'group' && ctrl.type !== 'line' && ctrl.type !== 'ole') continue;
       if (ctrl.secIdx === undefined || ctrl.paraIdx === undefined || ctrl.controlIdx === undefined) continue;
+      if (isMasterPageDecoration(ctrl)) continue;
       // [Task #825] 머리말/꼬리말 그림: headerFooter marker 가 함께 있어야 lookup 가능.
       // (없으면 본문 picture 동작 그대로.)
 
