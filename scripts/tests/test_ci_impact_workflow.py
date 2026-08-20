@@ -639,7 +639,8 @@ class CiImpactWorkflowTests(unittest.TestCase):
 
         for archive_name, target_group in (
             ("build-test-archive-a", "lib"),
-            ("build-test-archive-b", "integration"),
+            ("build-test-archive-b", "integration-b"),
+            ("build-test-archive-c", "integration-c"),
         ):
             with self.subTest(archive=archive_name):
                 archive = self._job(archive_name)
@@ -671,10 +672,24 @@ class CiImpactWorkflowTests(unittest.TestCase):
             native_skia.index("- name: Prepare derived Rust test suites"),
             native_skia.index("- name: Native Skia tests"),
         )
-        self.assertEqual(
+            self.assertEqual(
             1,
             native_skia.count("node scripts/rust-test-suite-manifest.mjs --prepare"),
         )
+
+    def test_native_skia_disk_cleanup_runs_only_below_the_archive_threshold(self) -> None:
+        native_skia = self._job("native-skia-tests")
+        cleanup = self._step(
+            "Free disk space (remove unused pre-installed toolchains)", native_skia
+        )
+        threshold = "if (( available_gb < 30 )); then"
+        removal = "sudo rm -rf /usr/local/lib/android /usr/share/dotnet"
+
+        self.assertIn("df -BG --output=avail /", cleanup)
+        self.assertIn(threshold, cleanup)
+        self.assertEqual(1, cleanup.count(removal))
+        self.assertLess(cleanup.index(threshold), cleanup.index(removal))
+        self.assertIn("Skip cleanup: ${available_gb}GB available", cleanup)
 
     def test_native_skia_apt_timeout_skips_only_the_unavailable_runtime_lane(self) -> None:
         native_skia = self._job("native-skia-tests")

@@ -1025,15 +1025,32 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
-      # 테스트 빌드 시 디스크 한도 초과를 줄인다.
-      # [#1192] 캐시 정상 작동 확인 후 "크고 빠른" 항목(android/dotnet)만 남기고 축소.
-      # 느린 docker prune --all / apt clean / ghc / CodeQL 정리는 제거. df -h 로 여유 확인.
+      # archive builder와 같은 30GB 임계치만 적용한다. 일반 ubuntu-latest의 충분한 여유에서는
+      # Android/dotnet 삭제가 약 1분을 쓰므로 건너뛴다.
       - name: Free disk space (remove unused pre-installed toolchains)
         run: |
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /usr/share/dotnet
-          df -h
+          set -euo pipefail
+          echo 'Disk space before cleanup:'
+          df -h /
+          df -B1 --output=source,size,used,avail,pcent,target /
+          available_gb=$(df -BG --output=avail / | tail -1 | tr -dc '0-9')
+          if (( available_gb < 30 )); then
+            echo "Low disk space: ${available_gb}GB available; inspecting and removing unused toolchains."
+            for path in /usr/local/lib/android /usr/share/dotnet; do
+              if [[ -e "${path}" ]]; then
+                sudo du -sh "${path}"
+              else
+                echo "${path}: absent"
+              fi
+            done
+            sudo rm -rf /usr/local/lib/android /usr/share/dotnet
+          else
+            echo "Skip cleanup: ${available_gb}GB available"
+          fi
+
+          echo 'Disk space after cleanup:'
+          df -h /
+          df -B1 --output=source,size,used,avail,pcent,target /
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
