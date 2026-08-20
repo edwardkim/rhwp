@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/manual/rhwp_studio_theming.md
-last_verified: 2026-08-13
+last_verified: 2026-08-20
 ---
 
 # rhwp-studio 테마 토큰과 스킨 제작
@@ -16,7 +16,7 @@ rhwp-studio의 색·형태 값은 전부 `src/styles/base.css`의 CSS 변수(토
 | 축 | 설정 키 | root 속성 | 값 |
 | --- | --- | --- | --- |
 | 모드 (밝기) | `theme.mode` | `data-theme-effective` | `light` \| `dark` (`system`은 OS 설정으로 해석) |
-| 스킨 (룩) | `theme.skin` | `data-theme-skin` | 기본 스킨은 속성 없음, 옵트인 스킨은 스킨명 (예: `flat`) |
+| 스킨 (룩) | `theme.skin` | `data-theme-skin` | 기본(클래식)은 속성 없음, 옵트인 스킨은 스킨명 (`flat`=모던, `oldschool`=올드스쿨) |
 
 두 축은 독립이다. 스킨은 밝기 축을 침범하지 않아야 하며(아래 다크 가드 규칙),
 다크 팔레트는 `:root[data-theme-effective="dark"]`가 항상 소유한다.
@@ -55,7 +55,9 @@ rhwp-studio의 색·형태 값은 전부 `src/styles/base.css`의 CSS 변수(토
 
 ## 새 스킨 추가 체크리스트
 
-`styles/theme-flat.css`(플랫 스킨)를 참조 구현으로 삼는다.
+`styles/theme-flat.css`(모던)·`styles/theme-oldschool.css`(올드스쿨)를 참조 구현으로 삼는다.
+스킨 내부 식별자(`flat` 등)는 저장값·명령 id 와 호환되도록 유지하고, 사용자 노출 이름은
+메뉴/온보딩 라벨에서 정한다 (클래식/모던/올드스쿨).
 
 1. `src/styles/theme-<name>.css`를 만들고 `src/style.css` 마지막에 import 한다.
 2. **모든 규칙을 `[data-theme-skin="<name>"]` 아래에 스코프한다.** 속성이 없으면
@@ -66,12 +68,21 @@ rhwp-studio의 색·형태 값은 전부 `src/styles/base.css`의 CSS 변수(토
    허용한다. 다크까지 재정의하는 스킨이라면
    `:root[data-theme-skin="<name>"][data-theme-effective="dark"]` 블록을 별도로 둔다.
 4. 표면 규칙(배경·보더)은 **토큰 참조만** 사용한다 — 다크에서 색이 자동으로 따라온다.
-5. 배선: `user-settings.ts`의 `ThemeSkin` 유니온·정규화, `theme.ts`, 보기 > 테마 메뉴에
-   `menuitemradio` + `data-theme-skin-choice` 항목, `theme-init.js`의 스킨 판독을 갱신한다.
+5. 배선: `user-settings.ts`의 `ThemeSkin` 유니온과 `THEME_SKINS`, `theme.ts`, 보기 > 테마
+   메뉴에 `menuitemradio` + `data-theme-skin-choice` 항목, `theme-init.js`의 스킨 판독,
+   첫 실행 안내(`ui/skin-onboarding-dialog.ts`)의 카드 목록을 갱신한다.
 6. UI 명칭·접두어는 [rhwp-studio UI 명칭과 CSS 접두어](rhwp_studio_ui_conventions.md)를
    따르고, 새 DOM을 추가하지 않는 것을 기본으로 한다.
 7. `tests/theme-skin.test.ts`의 정적 검사(스코프·다크 가드)와
    `tests/user-settings.test.ts`의 설정 왕복 테스트를 통과해야 한다.
+
+## 첫 실행 스킨 안내
+
+스킨을 한 번도 직접 선택하지 않은 사용자(`theme.skinChosen=false`)에게는 초기화 완료 후
+스킨 선택 대화상자(`ui/skin-onboarding-dialog.ts`)를 한 번 보여준다. 카드를 고르면 즉시
+적용·저장되고, [시작하기]/닫기 어느 쪽이든 `skinChosen` 이 확정되어 다시 묻지 않는다.
+이후 변경은 보기 > 테마 메뉴에서 한다. 임베드/브리지 모드(`rhwp-chrome-no-*`, iframe)에서는
+표시하지 않는다.
 
 ## 관련 파일
 
@@ -82,4 +93,5 @@ rhwp-studio의 색·형태 값은 전부 `src/styles/base.css`의 CSS 변수(토
 | FOUC 방지 초기화 | `rhwp-studio/public/theme-init.js` |
 | 런타임 전환 | `rhwp-studio/src/core/theme.ts` |
 | 설정 저장 | `rhwp-studio/src/core/user-settings.ts` |
+| 첫 실행 안내 | `rhwp-studio/src/ui/skin-onboarding-dialog.ts` |
 | 스킨 규칙 테스트 | `rhwp-studio/tests/theme-skin.test.ts` |
