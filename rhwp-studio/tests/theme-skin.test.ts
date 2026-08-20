@@ -72,3 +72,28 @@ test('첫 실행 스킨 안내는 skinChosen=false 일 때만 표시 대상이�
   assert.equal(shouldShowSkinOnboarding({ skinChosen: false }), true);
   assert.equal(shouldShowSkinOnboarding({ skinChosen: true }), false);
 });
+
+test('스킨 CSS 는 하드코딩 색 폴백 없이 토큰만 참조한다 (다크에서 밝은 값 노출 방지)', () => {
+  for (const { skin, file } of OPT_IN_SKINS) {
+    const css = source(file);
+    // var(--token, #fff) 처럼 색 리터럴을 폴백으로 두면 토큰이 없는 모드에서 그대로 그려진다.
+    const literalFallback = css.match(/var\(--[a-z0-9-]+,\s*(#[0-9a-fA-F]{3,8}|rgb|hsl|white|black)/);
+    assert.equal(
+      literalFallback,
+      null,
+      `${skin}: 색 리터럴 폴백 발견 — ${literalFallback?.[0]}`,
+    );
+  }
+});
+
+test('올드스쿨 스킨은 다크 모드용 베벨 토큰을 별도로 정의한다', () => {
+  const css = source('src/styles/theme-oldschool.css');
+  const darkBlock = css.match(
+    /:root\[data-theme-skin="oldschool"\]\[data-theme-effective="dark"\]\s*\{([\s\S]*?)\}/,
+  );
+  assert.ok(darkBlock, '다크 전용 --os-* 블록이 있어야 한다');
+  // 라이트 블록이 정의한 스킨 로컬 토큰은 다크에서도 모두 정의되어야 한다.
+  for (const token of ['--os-chrome', '--os-bevel-light', '--os-bevel-dark', '--os-bevel-darker']) {
+    assert.match(darkBlock[1], new RegExp(`${token}\\s*:`), `다크 블록에 ${token} 누락`);
+  }
+});

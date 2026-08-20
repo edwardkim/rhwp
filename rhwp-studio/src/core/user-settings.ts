@@ -175,6 +175,21 @@ function normalizeThemeSkin(value: unknown): ThemeSkin {
   return THEME_SKINS.includes(value as ThemeSkin) ? (value as ThemeSkin) : 'default';
 }
 
+/**
+ * 저장된 테마 설정을 정규화한다.
+ *
+ * `skinChosen` 이 없던 저장값(스킨 도입 초기 사용자)은 기본 스킨이 아니라는 사실로
+ * '직접 선택함'을 복원해 첫 실행 안내를 건너뛴다.
+ */
+export function normalizeThemeSettings(parsed: Partial<ThemeSettings> | undefined): ThemeSettings {
+  const skin = normalizeThemeSkin(parsed?.skin);
+  return {
+    mode: normalizeThemeMode(parsed?.mode),
+    skin,
+    skinChosen: normalizeBoolean(parsed?.skinChosen, skin !== 'default'),
+  };
+}
+
 function normalizeBoolean(value: unknown, fallback: boolean): boolean {
   return typeof value === 'boolean' ? value : fallback;
 }
@@ -209,13 +224,7 @@ class UserSettingsService {
           ...defaults.font,
           ...(parsed.font ?? {}),
         },
-        theme: {
-          ...defaults.theme,
-          ...(parsed.theme ?? {}),
-          mode: normalizeThemeMode(parsed.theme?.mode),
-          skin: normalizeThemeSkin(parsed.theme?.skin),
-          skinChosen: normalizeBoolean(parsed.theme?.skinChosen, false),
-        },
+        theme: normalizeThemeSettings(parsed.theme),
         dialog: {
           ...defaults.dialog,
           ...dialog,

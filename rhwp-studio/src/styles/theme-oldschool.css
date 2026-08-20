@@ -60,6 +60,16 @@
   --ruler-marker: #000080;
 }
 
+/* 다크 모드용 베벨 토큰 — 색 팔레트는 base.css 다크가 소유하고,
+   여기서는 스킨 로컬 --os-* 만 다크에 맞게 정의해 하드코딩 폴백을 없앤다. */
+:root[data-theme-skin="oldschool"][data-theme-effective="dark"] {
+  --os-chrome: var(--ui-bg);
+  --os-bevel-light: #4a505a;
+  --os-bevel-dark: #16191d;
+  --os-bevel-darker: #0e1013;
+  --os-select: var(--accent-primary);
+}
+
 /* 형태: 각진 모서리·하드 섀도·고전 글꼴 (라이트·다크 공통) */
 :root[data-theme-skin="oldschool"] {
   --radius-sm: 0px;
@@ -74,20 +84,20 @@
 
 /* ── 크롬 표면: 실버 + 3D 베벨 ─────────────────────────── */
 [data-theme-skin="oldschool"] #menu-bar {
-  background: var(--os-chrome, var(--ui-bg));
-  border-bottom: 1px solid var(--os-bevel-dark, var(--ui-border));
+  background: var(--os-chrome);
+  border-bottom: 1px solid var(--os-bevel-dark);
 }
 
 [data-theme-skin="oldschool"] #icon-toolbar,
 [data-theme-skin="oldschool"] #style-bar {
-  background: var(--os-chrome, var(--ui-bg));
-  border-top: 1px solid var(--os-bevel-light, var(--ui-border-light));
-  border-bottom: 1px solid var(--os-bevel-dark, var(--ui-border));
+  background: var(--os-chrome);
+  border-top: 1px solid var(--os-bevel-light);
+  border-bottom: 1px solid var(--os-bevel-dark);
 }
 
 [data-theme-skin="oldschool"] #status-bar {
-  background: var(--os-chrome, var(--ui-bg));
-  border-top: 1px solid var(--os-bevel-light, var(--ui-border-light));
+  background: var(--os-chrome);
+  border-top: 1px solid var(--os-bevel-light);
 }
 
 /* 도구 상자 버튼: 평평하다가 hover 시 튀어나오고 누르면 들어가는 고전 동작 */
@@ -96,27 +106,27 @@
 }
 
 [data-theme-skin="oldschool"] #icon-toolbar .tb-btn:hover {
-  background: var(--os-chrome, var(--ui-bg));
-  border-color: var(--os-bevel-light, #fff) var(--os-bevel-dark, #808080)
-    var(--os-bevel-dark, #808080) var(--os-bevel-light, #fff);
+  background: var(--os-chrome);
+  border-color: var(--os-bevel-light) var(--os-bevel-dark)
+    var(--os-bevel-dark) var(--os-bevel-light);
 }
 
 [data-theme-skin="oldschool"] #icon-toolbar .tb-btn:active {
-  border-color: var(--os-bevel-dark, #808080) var(--os-bevel-light, #fff)
-    var(--os-bevel-light, #fff) var(--os-bevel-dark, #808080);
+  border-color: var(--os-bevel-dark) var(--os-bevel-light)
+    var(--os-bevel-light) var(--os-bevel-dark);
 }
 
 [data-theme-skin="oldschool"] #icon-toolbar .tb-sep {
-  background: var(--os-bevel-dark, var(--ui-border));
-  box-shadow: 1px 0 0 var(--os-bevel-light, #fff);
+  background: var(--os-bevel-dark);
+  box-shadow: 1px 0 0 var(--os-bevel-light);
 }
 
 /* ── 메뉴 드롭다운: 베벨 패널 ──────────────────────────── */
 [data-theme-skin="oldschool"] #menu-bar .menu-dropdown,
 [data-theme-skin="oldschool"] #menu-bar .md-sub-panel {
-  background: var(--os-chrome, var(--ui-bg));
+  background: var(--os-chrome);
   border: 2px solid;
-  border-color: var(--os-bevel-light, #fff) var(--os-bevel-darker, #404040)
-    var(--os-bevel-darker, #404040) var(--os-bevel-light, #fff);
+  border-color: var(--os-bevel-light) var(--os-bevel-darker)
+    var(--os-bevel-darker) var(--os-bevel-light);
   padding: 2px;
 }
