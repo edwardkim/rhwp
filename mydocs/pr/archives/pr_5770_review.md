@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: local-validation-complete-pending-github-ci
+status: trailing-docs-pending-github-ci
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-20
 ---
@@ -27,10 +27,13 @@ last_verified: 2026-08-20
   box-relative stream 안의 표 순서 역전을 막는다.
 - #5727은 TAC picture가 앞선 빈 composed line에 이미 배정되었을 때 다음 text line이 같은 picture를
   다시 소유하지 않게 하고, cell 경로의 중복 picture emit을 막는다.
-- GitHub의 exact source head에서 Full Build & Test, Lint (fmt, clippy, WASM check), Native Skia,
+- contributor 원 source head에서 Full Build & Test, Lint (fmt, clippy, WASM check), Native Skia,
   CodeQL Rust/JavaScript/Python, Canvas visual diff, Proptest, adapter inter-diff와 모든 archive shard가
-  성공했다. renderer PR의 Full CI 재사용 조건을 충족하므로 로컬 전체 nextest와 Native Skia 전체는
-  중복 실행하지 않았다.
+  성공했다.
+- maintainer baseline commit과 증적 commit을 포함한 source head `568c4e4e1`에서도 Full Build & Test,
+  Lint, Native Skia, CodeQL Rust/JavaScript/Python, Canvas visual diff, Proptest, adapter inter-diff와
+  archive A/B/C shard가 모두 성공했다. 이 실행은 새 test-data 후보의 첫 Full CI이며, Frontend unit과
+  WASM Build의 skip은 변경 범위 분류에 따른 정상 결과다.
 
 ## 로컬 검증
 
@@ -77,9 +80,8 @@ server `run_status=0`, validation ok와 `pdfinfo` 페이지 수를 확인했다.
 
 ## 후속 처리
 
-1. 작업지시자 승인 뒤 동일 visibility branch의 maintainer code/test commit `b2a5f4920`을 원 PR source
-   branch에 push한다.
-2. 새 code head의 focused overflow test와 GitHub Full CI, CodeQL, 필요한 Render Diff가 녹색인지 확인한다.
-3. 이 증적 commit은 로컬에 준비된 상태다. 원격 code head가 녹색이 된 뒤 trailing review-only head의
-   aggregate 상태를 다시 확인한다.
-4. 최종 mergeability와 작업지시자 승인을 다시 확인한 뒤에만 merge 및 contributor/issue comment를 게시한다.
+1. 동일 visibility branch의 maintainer code/test commit `b2a5f4920`과 증적 commit `568c4e4e1`은 원 PR
+   source branch에 push됐고, `568c4e4e1`의 Full CI가 녹색이다.
+2. 최신 `devel`의 다른 오늘 기록은 source에 복사하지 않고, #5770 오늘할일만 별도 trailing commit으로
+   추가한다. 최신 `upstream/devel` merge simulation과 trailing head aggregate를 다시 확인한다.
+3. 최종 mergeability와 작업지시자 승인을 다시 확인한 뒤에만 merge 및 contributor/issue comment를 게시한다.
