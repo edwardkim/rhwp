@@ -1546,19 +1546,37 @@ fn parse_visibility(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef)
                 }
             }
             b"border" => {
-                sec_def.hide_border = attr_str(&attr) == "HIDE_ALL";
+                let v = attr_str(&attr);
+                sec_def.hide_border = v == "HIDE_ALL";
                 if sec_def.hide_border {
                     sec_def.flags |= 0x0008;
                 } else {
                     sec_def.flags &= !0x0008;
                 }
+                // [#5717] SHOW_FIRST = 구역 첫 쪽에만 테두리 (HWP5 flags bit 8)
+                sec_def.first_page_border = v == "SHOW_FIRST";
+                if sec_def.first_page_border {
+                    sec_def.flags |= 0x0100;
+                } else {
+                    sec_def.flags &= !0x0100;
+                }
             }
             b"fill" => {
-                sec_def.hide_fill = attr_str(&attr) == "HIDE_ALL";
+                let v = attr_str(&attr);
+                sec_def.hide_fill = v == "HIDE_ALL";
                 if sec_def.hide_fill {
                     sec_def.flags |= 0x0010;
                 } else {
                     sec_def.flags &= !0x0010;
+                }
+                // [#5717] SHOW_FIRST = 구역 첫 쪽에만 배경 (HWP5 flags bit 9).
+                // 성북구 실측: 한글 2022 가 bit9 HWP5 를 HWPX 로 저장하면
+                // fill="SHOW_FIRST" 로 내보낸다.
+                sec_def.first_page_fill = v == "SHOW_FIRST";
+                if sec_def.first_page_fill {
+                    sec_def.flags |= 0x0200;
+                } else {
+                    sec_def.flags &= !0x0200;
                 }
             }
             b"hideFirstEmptyLine" => {

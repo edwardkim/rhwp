@@ -52,6 +52,7 @@ pub mod style_resolver;
 pub mod svg;
 pub mod svg_fragment;
 pub mod svg_layer;
+pub(crate) mod text_decoration;
 pub mod typeset;
 #[cfg(target_arch = "wasm32")]
 pub mod web_canvas;
