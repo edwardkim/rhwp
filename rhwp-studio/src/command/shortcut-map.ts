@@ -17,9 +17,11 @@ export interface ShortcutDef {
 /** 기본 단축키 → 커맨드 ID 매핑 */
 export const defaultShortcuts: [ShortcutDef, string][] = [
   // 편집
-  [{ key: 'z', ctrl: true }, 'edit:undo'],
-  [{ key: 'z', ctrl: true, shift: true }, 'edit:redo'],
-  [{ key: 'y', ctrl: true }, 'edit:redo'],
+  // 한글 IME에서는 e.key가 자모('ㅋ' 등) 또는 조합 중 'Process'가 되므로 물리 키로 보정한다
+  // (#3950 select-all 과 동일한 결함 — undo/redo 도 같은 경로로 매칭이 실패했다).
+  [{ key: 'z', code: 'KeyZ', ctrl: true }, 'edit:undo'],
+  [{ key: 'z', code: 'KeyZ', ctrl: true, shift: true }, 'edit:redo'],
+  [{ key: 'y', code: 'KeyY', ctrl: true }, 'edit:redo'],
   // 한글 IME에서는 e.key가 'ㅁ' 또는 조합 중 'Process'가 되므로 물리 KeyA로 보정한다.
   [{ key: 'a', code: 'KeyA', ctrl: true }, 'edit:select-all'],
 
