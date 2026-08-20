@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1·C0·C1·C2 완료, C3 진입 승인 대기
+- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1·C0·C1·C2·C3 완료, C4 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -201,6 +201,12 @@ page border, shape lifecycle, image·picture command를 세 모듈로 이동했�
 argument parsing과 실행을 나눠 CC 27을 상한 이하로 낮췄다. 최신 #5647 chart B2 계약을 포함한
 직접 계약 146/146과 전체 release-test 8,008/8,008이 통과했다. 세부 증거는
 [`task_m100_5511_stage2_batch_c2.md`](../working/task_m100_5511_stage2_batch_c2.md)에 기록했다.
+
+C3도 완료했다. cell content·properties, table coordinate·lifecycle·grid·layout, equation lifecycle
+command를 일곱 파일로 이동했고 모두 1,200줄 이하이며 CC 25 초과 경고가 없다. 완료 직전 전진한
+`devel`의 renderer 변경을 정상 merge하고 새 integration source까지 파생 harness에 다시 모집해
+직접 계약 137/137과 전체 release-test 8,197/8,197을 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_c3.md`](../working/task_m100_5511_stage2_batch_c3.md)에 기록했다.
 
 ## 5. 중단 조건
 
