@@ -283,9 +283,19 @@ fn usage_runtime_and_help_paths_preserve_stdout_exit_contracts() {
             describe(&args, &output)
         );
         assert!(output.stderr.is_empty(), "{}", describe(&args, &output));
-        assert_eq!(
-            String::from_utf8_lossy(&output.stdout).trim(),
-            "사용법: rhwp threat-scan <파일.hwp|파일.hwpx> [--json]"
+        // [#5791] `--help` 는 이제 명령별 절을 낸다 — 사용법 한 줄에 설명·옵션까지
+        // 붙는다(같은 stdout·exit 0 계약 그대로). 한 줄 동일성 대신 호출 형태가
+        // 그 안에 있는지를 본다.
+        let text = String::from_utf8_lossy(&output.stdout);
+        assert!(
+            text.contains("threat-scan <파일.hwp|파일.hwpx> [--json]"),
+            "{}",
+            describe(&args, &output)
+        );
+        assert!(
+            text.contains("--json"),
+            "도움말에 옵션이 없습니다\n{}",
+            describe(&args, &output)
         );
     }
 }
