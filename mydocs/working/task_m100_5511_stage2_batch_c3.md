@@ -135,9 +135,10 @@ PR 제출로 바뀌면 Q7 테스트를 integration source로 옮기는 별도 �
 HEAD가 이를 조상으로 포함한다. 완료 보고서 작성 전 기준으로 브랜치는 원격보다 53개 커밋 앞,
 뒤처진 커밋은 없다.
 
-열린 devel 대상 PR은 #5689, #5691, #5695, #5707이다. 각 최신 head의 변경 경로를 다시
-조회했으며 C3의 `src/main.rs`, `src/cli/commands/edit/cells.rs`, `equations.rs`, `tables/**`, 직접
-계약과 #5511 C3 문서 경로에 겹침이 없다.
+열린 devel 대상 PR은 #5689, #5691, #5695, #5707, #5735이다. 완료 보고서 커밋 직후 열린
+#5735도 최신 head `2053cbc1d`의 변경 경로를 추가 조회했다. 각 PR은 C3의 `src/main.rs`,
+`src/cli/commands/edit/cells.rs`, `equations.rs`, `tables/**`, 직접 계약과 #5511 C3 문서 경로에
+겹침이 없다.
 
 이 판정은 시점 증거다. 향후 push 직전에 exact base SHA, 열린 PR head와 merge 가능성을 다시
 확인한다. 이 보고서 작성 시점에는 remote push를 수행하지 않았다.
