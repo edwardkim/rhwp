@@ -5,20 +5,19 @@ use crate::{
     edit_apply_char_format_in_cell, edit_apply_endnote_shape, edit_apply_hf_template,
     edit_apply_para_format, edit_apply_para_format_in_cell, edit_apply_para_format_in_footnote,
     edit_apply_para_format_in_hf, edit_apply_style, edit_delete_bookmark, edit_delete_control,
-    edit_delete_footnote, edit_delete_header_footer, edit_delete_hf_text, edit_delete_paragraph,
-    edit_delete_text, edit_delete_text_in_footnote, edit_insert_column_break, edit_insert_endnote,
-    edit_insert_field_in_hf, edit_insert_footnote, edit_insert_footnote_text,
-    edit_insert_header_footer, edit_insert_header_footer_text, edit_insert_page_break,
-    edit_insert_paragraph, edit_insert_text, edit_merge_paragraph, edit_merge_paragraph_in_cell,
-    edit_merge_paragraph_in_footnote, edit_merge_paragraph_in_hf, edit_rename_bookmark,
-    edit_set_column_def, edit_set_header_footer_text, edit_set_hf_picture,
-    edit_set_numbering_restart, edit_set_page_def, edit_set_page_hide, edit_set_section_def,
-    edit_split_paragraph, edit_split_paragraph_in_cell, edit_split_paragraph_in_footnote,
+    edit_delete_footnote, edit_delete_header_footer, edit_delete_hf_text,
+    edit_delete_text_in_footnote, edit_insert_endnote, edit_insert_field_in_hf,
+    edit_insert_footnote, edit_insert_footnote_text, edit_insert_header_footer,
+    edit_insert_header_footer_text, edit_merge_paragraph_in_cell, edit_merge_paragraph_in_footnote,
+    edit_merge_paragraph_in_hf, edit_rename_bookmark, edit_set_column_def,
+    edit_set_header_footer_text, edit_set_hf_picture, edit_set_page_def, edit_set_page_hide,
+    edit_set_section_def, edit_split_paragraph_in_cell, edit_split_paragraph_in_footnote,
     edit_split_paragraph_in_hf, edit_toggle_hide_hf, EXIT_USAGE,
 };
 
 mod cells;
 mod document_objects;
+mod document_text;
 mod equations;
 mod fields;
 mod media;
@@ -37,6 +36,11 @@ pub(crate) use cells::{
 use document_objects::{
     edit_insert_number, edit_set_chart_data, edit_set_form_value, edit_set_form_value_in_cell,
     edit_set_page_border_fill,
+};
+use document_text::{
+    edit_delete_paragraph, edit_delete_text, edit_insert_column_break, edit_insert_page_break,
+    edit_insert_paragraph, edit_insert_text, edit_merge_paragraph, edit_set_numbering_restart,
+    edit_split_paragraph,
 };
 use equations::{edit_delete_equation, edit_insert_equation, edit_set_equation_properties};
 use fields::edit_fill_fields;
