@@ -10,12 +10,14 @@ use std::path::Path;
 use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
+use crate::cli::integrity::{
+    cas_test_mark_checked_and_wait, cas_test_synchronize_before_lock, sha256_hex_of, CasPathLock,
+};
 use crate::{
-    anchor_log, audit_standard, capsule_sign, cas_test_mark_checked_and_wait,
-    cas_test_synchronize_before_lock, disclose, edit_output_format, edit_serialize,
+    anchor_log, audit_standard, capsule_sign, disclose, edit_output_format, edit_serialize,
     edit_verify_report, lineage_bundle, parse_field_key, paths_refer_to_same_file, policy_gate,
-    recolor_cell_text_black, resolve_table_cell, settle, sha256_hex_of, CasPathLock,
-    CellResolveError, EditOutputFormat, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
+    recolor_cell_text_black, resolve_table_cell, settle, CellResolveError, EditOutputFormat,
+    EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
 };
 
 mod capsule;

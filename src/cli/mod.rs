@@ -7,6 +7,7 @@
 pub(crate) mod batch;
 pub(crate) mod catalog;
 pub(crate) mod commands;
+pub(crate) mod integrity;
 pub(crate) mod metadata;
 pub(crate) mod outputs;
 pub(crate) mod protocol;

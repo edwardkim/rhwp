@@ -15,6 +15,9 @@ mod lineage_bundle;
 mod mcp_serve;
 mod policy_gate;
 mod settle;
+use cli::integrity::{
+    cas_test_mark_checked_and_wait, cas_test_synchronize_before_lock, sha256_hex_of, CasPathLock,
+};
 use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
@@ -3134,118 +3137,6 @@ fn cmd_export_agent_manifest(args: &[String]) -> i32 {
     println!("기계 계약은 --json 을 쓰세요 (--bare 로 최상위 표지 없이).");
     EXIT_OK
 }
-
-// ─── [#3703] 계획 실행기 — 명령(CLI)·도구(MCP) 위의 3층: 선언적 편집 계획 ───
-
-/// `rhwp run <계획.json>` — 계획서를 정적 선검증 → 원자 실행 → 저널로 수행한다.
-///
-/// 다단 체이닝(호출 사이 상태 유실, 중간 실패의 반편집 문서)이 에이전트 실패의
-/// 뿌리라서 절차 대신 **의도(계획서)** 를 받는다. 판정은 전부 데이터다:
-/// 선검증 위반 = invalid[] + exit 2(실행 0), verify 단언 실패 = exit 3(디스크
-/// 무변경), 성공 = step 저널 + verify + exit 0(단 한 번 저장).
-/// [#4378 R24] `--expect-sha256` CAS 대조. 불일치는 "검증 단언 실패" 계열(exit 3,
-/// #2707 사전)이다 — 문서가 기대 상태가 아니면 한 바이트도 쓰지 않는다.
-fn sha256_hex_of(bytes: &[u8]) -> String {
-    use sha2::{Digest, Sha256};
-    let out = Sha256::digest(bytes);
-    let mut hex = String::with_capacity(out.len() * 2);
-    for b in out {
-        use std::fmt::Write as _;
-        let _ = write!(hex, "{b:02x}");
-    }
-    hex
-}
-
-/// 같은 입력 경로를 다루는 rhwp writer 사이의 read-check-write 경계를 직렬화한다.
-/// 잠금 파일은 rename 뒤에도 같은 inode/handle을 유지해야 하므로 원본 파일이 아니라
-/// 정규화한 경로의 해시로 만든 안정적인 temp sidecar를 사용한다.
-struct CasPathLock {
-    _file: fs::File,
-}
-
-impl CasPathLock {
-    fn acquire(source: &Path) -> std::io::Result<Self> {
-        #[cfg(unix)]
-        use std::os::unix::fs::OpenOptionsExt;
-
-        let canonical = fs::canonicalize(source)?;
-        let key = sha256_hex_of(canonical.to_string_lossy().as_bytes());
-        let lock_path = std::env::temp_dir().join(format!("rhwp-cas-v1-{key}.lock"));
-        let mut options = fs::OpenOptions::new();
-        options.read(true).write(true).create(true);
-        #[cfg(unix)]
-        options.mode(0o600);
-        let file = options.open(lock_path)?;
-        file.lock()?;
-        Ok(Self { _file: file })
-    }
-}
-
-/// debug 통합 회귀에서 두 별도 프로세스를 잠금 시도 직전까지 모은다. release
-/// binary에는 환경변수 기반 파일 쓰기·대기 경로 자체를 컴파일하지 않는다.
-#[cfg(debug_assertions)]
-fn cas_test_synchronize_before_lock() -> Result<(), String> {
-    let Some(directory) = std::env::var_os("RHWP_INTERNAL_TEST_CAS_BARRIER") else {
-        return Ok(());
-    };
-    let directory = std::path::PathBuf::from(directory);
-    fs::write(
-        directory.join(format!("arrived-{}", std::process::id())),
-        b"",
-    )
-    .map_err(|e| e.to_string())?;
-    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
-    loop {
-        let arrived = fs::read_dir(&directory)
-            .map_err(|e| e.to_string())?
-            .filter_map(Result::ok)
-            .filter(|entry| entry.file_name().to_string_lossy().starts_with("arrived-"))
-            .count();
-        if arrived >= 2 {
-            return Ok(());
-        }
-        if std::time::Instant::now() >= deadline {
-            return Err("CAS test barrier 에 두 프로세스가 도착하지 않았습니다".to_string());
-        }
-        std::thread::sleep(std::time::Duration::from_millis(10));
-    }
-}
-
-#[cfg(not(debug_assertions))]
-fn cas_test_synchronize_before_lock() -> Result<(), String> {
-    Ok(())
-}
-
-/// 최초 해시 검사를 통과한 프로세스를 표시한다. 잠금이 사라진 mutation에서는 두
-/// marker가 생기고, 정상 구현에서는 첫 writer만 이 경계에 도달한다.
-#[cfg(debug_assertions)]
-fn cas_test_mark_checked_and_wait() {
-    let Some(directory) = std::env::var_os("RHWP_INTERNAL_TEST_CAS_BARRIER") else {
-        return;
-    };
-    let directory = std::path::PathBuf::from(directory);
-    let _ = fs::write(
-        directory.join(format!("checked-{}", std::process::id())),
-        b"",
-    );
-    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(1);
-    while std::time::Instant::now() < deadline {
-        let checked = fs::read_dir(&directory)
-            .ok()
-            .into_iter()
-            .flatten()
-            .filter_map(Result::ok)
-            .filter(|entry| entry.file_name().to_string_lossy().starts_with("checked-"))
-            .count();
-        if checked >= 2 {
-            break;
-        }
-        std::thread::sleep(std::time::Duration::from_millis(10));
-    }
-}
-
-#[cfg(not(debug_assertions))]
-fn cas_test_mark_checked_and_wait() {}
 
 /// 기대 해시가 주어졌을 때만 검사한다. 형식 오류는 exit 2, 불일치는 exit 3 을
 /// 돌려주고 봉투/진단을 직접 낸다. `None` 이면 통과.
