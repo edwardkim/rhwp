@@ -2383,7 +2383,7 @@ impl DocumentCore {
             .collect::<Vec<_>>()
             .join(",");
         Ok(format!(
-            "{{\"pageIndex\":{},\"width\":{:.1},\"height\":{:.1},\"sectionIndex\":{},\
+            "{{\"pageIndex\":{},\"pageNumber\":{},\"width\":{:.1},\"height\":{:.1},\"sectionIndex\":{},\
             \"marginLeft\":{:.1},\"marginRight\":{:.1},\"marginTop\":{:.1},\"marginBottom\":{:.1},\
             \"marginHeader\":{:.1},\"marginFooter\":{:.1},\
             \"bodyLeft\":{:.1},\"bodyRight\":{:.1},\"marginGutter\":{:.1},\
@@ -2391,6 +2391,9 @@ impl DocumentCore {
             \"pageBorderLeft\":{:.1},\"pageBorderRight\":{:.1},\"pageBorderTop\":{:.1},\"pageBorderBottom\":{:.1},\
             \"columns\":[{}]}}",
             page_content.page_index,
+            // 문서가 매기는 쪽번호 — `쪽 > 새 번호로 시작`(NewNumber)을 반영한 값이다.
+            // 물리 순번(pageIndex + 1)과 다를 수 있고, 상태 표시줄·인쇄물이 보여야 할 숫자는 이쪽이다.
+            page_content.page_number,
             page_content.layout.page_width,
             page_content.layout.page_height,
             page_content.section_index,

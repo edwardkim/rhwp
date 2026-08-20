@@ -25,6 +25,7 @@
     "e2e:form-edit-escape": "node e2e/form-edit-escape-cancel.test.mjs --mode=headless",
     "e2e:unsaved-guard": "node e2e/unsaved-changes-guard.test.mjs",
     "e2e:undo": "node e2e/undo-contracts.test.mjs",
+    "e2e:status-page-number": "node e2e/status-page-number.test.mjs --mode=headless",
     "e2e:undo-object-selection": "node e2e/undo-object-selection.test.mjs",
     "e2e:hwp-password-open": "node e2e/hwp-password-open.test.mjs --mode=headless",
     "e2e:clipboard-priority": "node e2e/task-871-clipboard-priority.test.mjs",
