@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1·C0·C1·C2·C3·C4·C5 완료, C6 진입 승인 대기
+- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1·C0~C6 완료, Stage 2 종료 inventory 승인 대기
 
 ## 1. 전환 이유
 
@@ -15,15 +15,15 @@ Stage 2 절편 24개 중 19개가 handler 이동, 4개가 선행 계약 보강, 
 
 | 지표 | #5511 시작 | 현재 | 최종 기준 |
 |---|---:|---:|---:|
-| `src/main.rs` 줄 수 | 42,370 | 4,499 | 1,200 이하 |
-| 최상위 함수 | 351 | 63 | entrypoint 조립에 필요한 최소 함수 |
+| `src/main.rs` 줄 수 | 42,370 | 2,089 | 1,200 이하 |
+| 최상위 함수 | 351 | 45 | entrypoint 조립에 필요한 최소 함수 |
 | 새 query 경로의 최상위 명령 | 0 | 28 | 모든 query adapter 물리 분리 |
 | 새 query 경로의 `inspect` 하위 명령 | 0 | 4 | 현재 전수 |
 | 편집 handler | 92 | 92 | command 모듈로 전수 이동 |
 | `wasm_api::HwpDocument` 직접 참조 | 42 | 9 | Stage 3에서 0 |
 | `rhwp::service` 참조 | 0 | 0 | Stage 3에서 전환 |
 
-1,200줄 목표까지 현재 3,299줄이 남았다. 배치 재기준화 당시에는 단일 handler 이동 평균을
+1,200줄 목표까지 현재 889줄이 남았다. 배치 재기준화 당시에는 단일 handler 이동 평균을
 기계적으로 적용하면 약 190개 이동 절편이 더 필요한 상태였다. 이는 실제 예측이 아니라 기존
 절차를 그대로 유지하면 생기는 비효율의 크기를 보여준 지표다. 큰 책임을 기능군으로 묶되 보호
 계약과 중단 조건은 유지한다.
@@ -221,6 +221,13 @@ command 8개·전용 helper 1개·1,289줄을 두 파일로 이동했고 모두 
 고정하고, 직접 계약 73/73과 전체 release-test 8,209/8,209를 통과했다. 세부 증거는
 [`task_m100_5511_stage2_batch_c5.md`](../working/task_m100_5511_stage2_batch_c5.md)에 기록했다.
 
+C6도 완료했다. 계획의 1,152줄·9함수 추정을 실제 story command 2,430줄·18 handler로 보정하고,
+header/footer content·properties와 note story를 세 파일로 이동했다. 모두 1,200줄 이하이고 CC 25
+초과 경고가 없다. 미보호였던 `set-hf-picture`의 실제 저장·재파싱 계약을 먼저 고정하고, 직접
+계약 113/113과 전체 release-test 8,212/8,212를 통과했다. `src/main.rs`의 `edit_*` handler는
+전수 이동됐으며 세부 증거는
+[`task_m100_5511_stage2_batch_c6.md`](../working/task_m100_5511_stage2_batch_c6.md)에 기록했다.
+
 ## 5. 중단 조건
 
 다음 중 하나가 생기면 같은 승인 배치 안에서 다음 handler로 진행하지 않는다.
@@ -249,6 +256,8 @@ Stage 3 진입 전 다음을 모두 만족한다.
 7. 남은 `HwpDocument`, parser/model/renderer/serializer, 전역 상태 직접 의존을 Stage 3 입력
    inventory로 고정한다.
 
-Stage 2의 예상 잔여량은 16개 기능군 승인 배치와 약 35~53개 구현 커밋이다. 이는 현재 코드
-기준 범위이며, 중단 조건이나 원격 통합에 따라 조정한다. Stage 3·4의 승인과 수행은 이 계획으로
-자동 개시하지 않는다.
+계획된 16개 기능군 배치는 모두 완료했다. 다만 `src/main.rs`가 2,089줄이고 metadata helper,
+generation/internal command, 전역 인증·load seam, entrypoint와 root 단위 테스트가 함께 남아
+있으므로 Stage 2 종료 조건을 아직 선언하지 않는다. 다음 승인 단위는 잔여 45개 함수와 root
+주석을 종료 조건에 따라 분류하는 inventory다. 그 결과로 필요한 최소 정정 배치와 커밋 수를
+확정한다. Stage 3·4의 승인과 수행은 이 계획으로 자동 개시하지 않는다.
