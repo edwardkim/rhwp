@@ -511,11 +511,13 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "NATIVE_SKIA_REQUIRED": "false",
             "FRONTEND_MODE": "unit",
             "IMPACT_REASON": "classified:studio-unit",
-            "BUILD_ARCHIVE_RESULT": "skipped",
-            "TEST_SLOW_RESULT": "skipped",
-            "TEST_REGULAR_1_RESULT": "skipped",
-            "TEST_REGULAR_2_RESULT": "skipped",
-            "TEST_REGULAR_3_RESULT": "skipped",
+            "BUILD_ARCHIVE_A_RESULT": "skipped",
+            "BUILD_ARCHIVE_B_RESULT": "skipped",
+            "BUILD_ARCHIVE_C_RESULT": "skipped",
+            "TEST_ARCHIVE_A_1_RESULT": "skipped",
+            "TEST_ARCHIVE_A_2_RESULT": "skipped",
+            "TEST_ARCHIVE_B_1_RESULT": "skipped",
+            "TEST_ARCHIVE_C_1_RESULT": "skipped",
             "LINT_RESULT": "skipped",
             "NATIVE_SKIA_RESULT": "skipped",
             "FRONTEND_UNIT_RESULT": "success",
@@ -636,12 +638,19 @@ class CiImpactWorkflowTests(unittest.TestCase):
         lint = self._job("lint")
         self.assertIn("needs.preflight.outputs.rust_required == 'true'", lint)
 
-        archive = self._job("build-test-archive")
-        self.assertIn("needs.preflight.outputs.rust_required == 'true'", archive)
-        self.assertIn("needs: [preflight]", archive)
-        self.assertNotIn("needs.lint.result", archive)
-        self.assertNotIn("frontend-unit-gates", archive)
-        self.assertNotIn("frontend-package-gates", archive)
+        for archive_name, target_group in (
+            ("build-test-archive-a", "lib"),
+            ("build-test-archive-b", "integration-b"),
+            ("build-test-archive-c", "integration-c"),
+        ):
+            with self.subTest(archive=archive_name):
+                archive = self._job(archive_name)
+                self.assertIn("needs.preflight.outputs.rust_required == 'true'", archive)
+                self.assertIn("needs: [preflight]", archive)
+                self.assertNotIn("needs.lint.result", archive)
+                self.assertNotIn("frontend-unit-gates", archive)
+                self.assertNotIn("frontend-package-gates", archive)
+                self.assertIn(f"target_group: {target_group}", archive)
 
     def test_lint_prepares_derived_test_targets_before_cargo_commands(self) -> None:
         lint = self._job("lint")
@@ -668,6 +677,20 @@ class CiImpactWorkflowTests(unittest.TestCase):
             1,
             native_skia.count("node scripts/rust-test-suite-manifest.mjs --prepare"),
         )
+
+    def test_native_skia_disk_cleanup_runs_only_below_the_archive_threshold(self) -> None:
+        native_skia = self._job("native-skia-tests")
+        cleanup = self._step(
+            "Free disk space (remove unused pre-installed toolchains)", native_skia
+        )
+        threshold = "if (( available_gb < 30 )); then"
+        removal = "sudo rm -rf /usr/local/lib/android /usr/share/dotnet"
+
+        self.assertIn("df -BG --output=avail /", cleanup)
+        self.assertIn(threshold, cleanup)
+        self.assertEqual(1, cleanup.count(removal))
+        self.assertLess(cleanup.index(threshold), cleanup.index(removal))
+        self.assertIn("Skip cleanup: ${available_gb}GB available", cleanup)
 
     def test_native_skia_apt_timeout_skips_only_the_unavailable_runtime_lane(self) -> None:
         native_skia = self._job("native-skia-tests")
@@ -927,30 +950,30 @@ mod support;
         self.assertTrue(release_test)
         self.assertEqual(release_test, release)
 
-    def test_rust_workers_wait_only_for_the_shared_test_archive(self) -> None:
-        for job_name in (
-            "test-slow-shard",
-            "test-regular-shard-1",
-            "test-regular-shard-2",
-            "test-regular-shard-3",
+    def test_rust_workers_wait_only_for_their_archive_partition(self) -> None:
+        for archive_label, index, partition in (
+            ("a", 1, "hash:1/2"),
+            ("a", 2, "hash:2/2"),
+            ("b", 1, "hash:1/1"),
+            ("c", 1, "hash:1/1"),
         ):
+            job_name = f"test-archive-{archive_label}-shard-{index}"
             with self.subTest(job=job_name):
-                job = self._job(job_name)
-                self.assertIn("needs.preflight.outputs.rust_required == 'true'", job)
-                self.assertIn("needs: [preflight, build-test-archive]", job)
-                self.assertIn("needs['build-test-archive'].result == 'success'", job)
-                self.assertNotIn("native-skia-tests", job)
-                self.assertNotIn("native_skia_required", job)
-        self.assertIn(
-            'filterset: "binary(=overflow_cell_baseline)"',
-            self._job("test-slow-shard"),
-        )
-        for index in (1, 2, 3):
-            regular = self._job(f"test-regular-shard-{index}")
-            self.assertIn(
-                'filterset: "not binary(=overflow_cell_baseline)"', regular
-            )
-            self.assertIn(f'partition: "hash:{index}/3"', regular)
+                    job = self._job(job_name)
+                    self.assertIn("needs.preflight.outputs.rust_required == 'true'", job)
+                    self.assertIn(
+                        f"needs: [preflight, build-test-archive-{archive_label}]", job
+                    )
+                    self.assertIn(
+                        f"needs['build-test-archive-{archive_label}'].result == 'success'",
+                        job,
+                    )
+                    self.assertIn(f"archive_label: {archive_label}", job)
+                    self.assertIn('filterset: "all()"', job)
+                    self.assertIn(f'partition: "{partition}"', job)
+                    self.assertNotIn("native-skia-tests", job)
+                    self.assertNotIn("native_skia_required", job)
+        self.assertNotIn("test-slow-shard:", self.workflow)
 
     def test_aggregate_validates_expected_success_and_skipped_states(self) -> None:
         aggregate = self._job("build-and-test")
@@ -973,9 +996,11 @@ mod support;
     def test_shard_count_artifacts_are_downloaded_only_for_rust_lane(self) -> None:
         aggregate = self._job("build-and-test")
         for step_name in (
+            "Download archive A expected count",
+            "Download archive B expected count",
+            "Download archive C expected count",
             "Download shard counts",
-            "Download archive expected counts",
-            "Verify shard totals",
+            "Verify archive shard totals",
         ):
             with self.subTest(step=step_name):
                 self.assertIn(
@@ -987,11 +1012,13 @@ mod support;
         rust_success = {
             "RUST_REQUIRED": "true",
             "LINT_RESULT": "success",
-            "BUILD_ARCHIVE_RESULT": "success",
-            "TEST_SLOW_RESULT": "success",
-            "TEST_REGULAR_1_RESULT": "success",
-            "TEST_REGULAR_2_RESULT": "success",
-            "TEST_REGULAR_3_RESULT": "success",
+            "BUILD_ARCHIVE_A_RESULT": "success",
+            "BUILD_ARCHIVE_B_RESULT": "success",
+            "BUILD_ARCHIVE_C_RESULT": "success",
+            "TEST_ARCHIVE_A_1_RESULT": "success",
+            "TEST_ARCHIVE_A_2_RESULT": "success",
+            "TEST_ARCHIVE_B_1_RESULT": "success",
+            "TEST_ARCHIVE_C_1_RESULT": "success",
         }
         cases = {
             "frontend-only": {},

@@ -119,24 +119,19 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             preflight,
         )
 
-    def test_single_archive_builder_receives_the_selected_policy(self) -> None:
-        job = job_body(self.ci, "build-test-archive")
-        self.assertIn(
-            "cargo_profile: ${{ needs.preflight.outputs.test_profile "
-            "|| 'release' }}",
-            job,
-        )
-        self.assertIn(
-            "timeout_minutes: ${{ fromJSON("
-            "needs.preflight.outputs.test_archive_timeout_minutes || '60') }}",
-            job,
-        )
-        for obsolete in (
-            "build-test-archive-slow",
-            "build-test-archive-a",
-            "build-test-archive-b",
-        ):
-            self.assertNotIn(f"  {obsolete}:\n", self.ci)
+    def test_two_archive_builders_split_lib_and_integration_targets(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        ci = (root / ".github/workflows/ci.yml").read_text()
+        builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
+        runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
+        self.assertIn("build-test-archive-a:", ci); self.assertIn("build-test-archive-b:", ci); self.assertIn("build-test-archive-c:", ci)
+        self.assertNotIn("test-slow-shard:", ci); self.assertEqual(1, ci.count('partition: "hash:1/2"')); self.assertEqual(1, ci.count('partition: "hash:2/2"')); self.assertEqual(2, ci.count('partition: "hash:1/1"'))
+        self.assertIn("target_group: lib", ci); self.assertIn("target_group: integration-b", ci); self.assertIn("target_group: integration-c", ci)
+        self.assertIn("cargo metadata --no-deps --format-version 1", builder)
+        self.assertIn("cargo_target_args+=(--lib)", builder)
+        self.assertIn('cargo_target_args+=(--test "${target}")', builder)
+        self.assertNotIn("--tests", builder)
 
     def test_native_skia_uses_the_same_test_profile_policy(self) -> None:
         native = job_body(self.ci, "native-skia-tests")
@@ -151,23 +146,16 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("Unknown test profile", step)
         self.assertNotIn('"${GITHUB_EVENT_NAME}" == "pull_request"', step)
 
-    def test_reusable_builder_accepts_explicit_policy_and_uses_dynamic_timeout(self) -> None:
-        self.assertIn("      cargo_profile:\n", self.builder)
-        self.assertIn("      timeout_minutes:\n", self.builder)
-        self.assertIn("        type: string", self.builder)
-        self.assertIn("        type: number", self.builder)
-        self.assertIn("    timeout-minutes: ${{ inputs.timeout_minutes }}", self.builder)
-        self.assertIn(
-            '--cargo-profile "${{ inputs.cargo_profile }}"',
-            self.builder,
-        )
-        self.assertNotIn("- name: Select cargo profile", self.builder)
-        self.assertNotIn("steps.profile.outputs.cargo_profile", self.builder)
-        self.assertNotIn("archive_labels:", self.builder)
-        self.assertNotIn("expected_count_suffix:", self.builder)
-        self.assertIn("--tests", self.builder)
-        self.assertIn("--archive-file tests.tar.zst", self.builder)
-        self.assertIn("name: test-archive-${{ github.run_id }}", self.builder)
+    def test_reusable_builder_isolates_partition_artifacts(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        ci = (root / ".github/workflows/ci.yml").read_text()
+        builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
+        runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
+        self.assertIn("inputs.target_group", builder)
+        self.assertIn("test-archive-${{ github.run_id }}-${{ inputs.archive_label }}", builder)
+        self.assertIn("archive-expected-${{ github.run_id }}-${{ inputs.archive_label }}", builder)
+        self.assertIn("test-archive-${{ github.run_id }}-${{ inputs.archive_label }}", runner)
 
     def test_builder_prepares_derived_suites_before_compiling_the_archive(self) -> None:
         prepare = "node scripts/rust-test-suite-manifest.mjs --prepare"
@@ -176,29 +164,40 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn(archive, self.builder)
         self.assertLess(self.builder.index(prepare), self.builder.index(archive))
 
-    def test_workers_share_one_archive_and_partition_test_cases(self) -> None:
-        self.assertIn("name: test-archive-${{ github.run_id }}", self.runner)
-        self.assertIn('--filterset "${FILTERSET}"', self.runner)
-        self.assertIn('partition_args=(--partition "${PARTITION}")', self.runner)
-        self.assertIn("--no-tests fail", self.runner)
-        self.assertNotIn("archive_label:", self.runner)
+    def test_four_workers_validate_each_archive_coverage(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        ci = (root / ".github/workflows/ci.yml").read_text()
+        builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
+        runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
+        for name in ("test-archive-a-shard-1:", "test-archive-a-shard-2:", "test-archive-b-shard-1:", "test-archive-c-shard-1:"):
+            self.assertIn(name, ci)
+        self.assertIn("Archive A shard total mismatch", ci); self.assertIn("Archive B shard total mismatch", ci); self.assertIn("Archive C shard total mismatch", ci)
+        self.assertIn("name: Build & Test", ci)
 
     def test_reusable_builder_rejects_profile_timeout_mismatches(self) -> None:
         step = step_body(self.builder, "Validate test archive policy")
         script = step.split("        run: |\n", maxsplit=1)[1]
         script = "\n".join(line.removeprefix("          ") for line in script.splitlines())
 
-        for profile, timeout, expected in (
-            ("release-test", "30", 0),
-            ("release", "60", 0),
-            ("release-test", "60", 1),
-            ("release", "30", 1),
-            ("debug", "60", 1),
+        for profile, timeout, target_group, expected in (
+            ("release-test", "30", "lib", 0),
+            ("release", "60", "integration-b", 0),
+            ("release", "60", "integration-c", 0),
+            ("release-test", "60", "lib", 1),
+            ("release", "30", "integration-b", 1),
+            ("debug", "60", "lib", 1),
+            ("release", "60", "integration", 1),
+            ("release-test", "30", "unknown", 1),
         ):
-            with self.subTest(profile=profile, timeout=timeout):
+            with self.subTest(profile=profile, timeout=timeout, target_group=target_group):
                 result = run_script(
                     script,
-                    {"CARGO_PROFILE": profile, "TIMEOUT_MINUTES": timeout},
+                    {
+                        "CARGO_PROFILE": profile,
+                        "TIMEOUT_MINUTES": timeout,
+                        "TARGET_GROUP": target_group,
+                    },
                 )
                 self.assertEqual(result.returncode, expected, result.stderr)
 
@@ -210,6 +209,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             "ref",
             "cargo_profile",
             "timeout_minutes",
+            "target_group",
             "cache_exact_hit",
             "cache_save_eligible",
         ):
