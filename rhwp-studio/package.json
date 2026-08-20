@@ -22,6 +22,7 @@
     "e2e:bridge-perf": "node e2e/bridge-perf.test.mjs --mode=headless",
     "gate:bridge:quick": "node ../scripts/gate_bridge.mjs --no-e2e --no-hwpctrl-gate",
     "e2e": "node e2e/text-flow.test.mjs",
+    "e2e:toolbox-visibility": "node e2e/toolbox-visibility.test.mjs --mode=headless",
     "e2e:form-edit-escape": "node e2e/form-edit-escape-cancel.test.mjs --mode=headless",
     "e2e:unsaved-guard": "node e2e/unsaved-changes-guard.test.mjs",
     "e2e:undo": "node e2e/undo-contracts.test.mjs",

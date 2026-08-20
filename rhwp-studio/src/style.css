@@ -34,3 +34,9 @@
 .rhwp-chrome-no-toolbar #icon-toolbar,
 .rhwp-chrome-no-toolbar #style-bar { display: none; }
 .rhwp-chrome-no-status #status-bar { display: none; }
+
+/* ── 도구 상자 보이기/숨기기 (보기 > 도구 상자) ──────────────
+   숨김만 표현한다. 값은 저장된 설정에서 오고, public/theme-init.js 가 번들보다 먼저
+   찍어 첫 페인트부터 숨긴 상태로 그린다(깜빡임 방지). 동기화는 view/toolbox-visibility.ts. */
+:root[data-toolbox-basic="hidden"] #icon-toolbar { display: none; }
+:root[data-toolbox-format="hidden"] #style-bar { display: none; }
