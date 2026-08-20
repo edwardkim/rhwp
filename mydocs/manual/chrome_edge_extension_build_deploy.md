@@ -165,12 +165,13 @@ npm --prefix rhwp-chrome run test:e2e:smoke
 - options 설정 hydration과 입력 활성화
 - viewer와 같은 extension origin의 `print.html` surface
 - loopback 페이지의 content script 주입과 HWP 배지 1개
-- console/page/worker 오류, 404, 외부 HTTP(S), 예기치 않은 탭 생성
+- console/page/worker 오류, 404, 외부 HTTP(S), 예기치 않은 탭 생성 즉시 진행 중 surface 중단
 - 실행별 임시 Chrome profile·download 디렉터리 생성과 종료 후 정리
 
 사용자 Chrome profile, Web Store 설치 또는 외부 네트워크는 사용하지 않는다. 설정·다운로드 수명주기
 상세 E2E는 #3513, CI 선택 실행과 브라우저 cache는 #3515가 담당한다. flake 확인은 build를 한 번만
-수행한 뒤 실행별 새 profile로 smoke를 반복한다.
+수행한 뒤 실행별 새 profile로 smoke를 반복한다. 명령은 실제 Chrome 실행 전에 탭 예산 계약 테스트도
+실행해, 끝나지 않는 surface가 있어도 예상 밖 page target만으로 즉시 실패하는지 확인한다.
 
 ```bash
 RHWP_EXTENSION_SMOKE_REPEAT=10 npm --prefix rhwp-chrome run test:e2e:smoke

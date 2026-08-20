@@ -9,7 +9,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
+const CURRENT_FILE = fileURLToPath(import.meta.url);
+const HERE = path.dirname(CURRENT_FILE);
 const EXTENSION_DIR = path.resolve(HERE, '..');
 const ROOT = path.resolve(EXTENSION_DIR, '..');
 const DIST_DIR = path.join(EXTENSION_DIR, 'dist');
@@ -32,7 +33,9 @@ const SETTINGS = Object.freeze({
   disableExternalWebFonts: true,
 });
 
-await main();
+if (process.argv[1] && path.resolve(process.argv[1]) === CURRENT_FILE) {
+  await main();
+}
 
 async function main() {
   assert.ok(existsSync(path.join(DIST_DIR, 'manifest.json')), '먼저 rhwp-chrome dist를 빌드해야 합니다.');
@@ -54,6 +57,7 @@ async function runOnce(prefix) {
   let browser = null;
   let server = null;
   let workerSession = null;
+  let pageBudget = null;
   let failure = null;
 
   await mkdir(userDataDir, { recursive: true });
@@ -79,60 +83,61 @@ async function runOnce(prefix) {
     page.setDefaultTimeout(SURFACE_TIMEOUT_MS);
     page.setDefaultNavigationTimeout(SURFACE_TIMEOUT_MS);
     attachPageDiagnostics(page, diagnostics, fixture.origin);
-    attachPageBudget(browser, page, diagnostics);
+    pageBudget = attachPageBudget(browser, page, diagnostics);
+    const guard = operation => pageBudget.guard(operation);
 
-    const browserSession = await browser.target().createCDPSession();
-    await browserSession.send('Browser.setDownloadBehavior', {
+    const browserSession = await guard(browser.target().createCDPSession());
+    await guard(browserSession.send('Browser.setDownloadBehavior', {
       behavior: 'allow',
       downloadPath: downloadDir,
       eventsEnabled: true,
-    });
-    await browserSession.detach();
+    }));
+    await guard(browserSession.detach());
 
     diagnostics.surface = 'service-worker';
-    const workerTarget = await browser.waitForTarget(
+    const workerTarget = await guard(browser.waitForTarget(
       target => target.type() === 'service_worker'
         && target.url().startsWith('chrome-extension://')
         && target.url().endsWith('/background.js'),
       { timeout: SURFACE_TIMEOUT_MS },
-    );
+    ));
     const extensionId = new URL(workerTarget.url()).hostname;
     assert.match(extensionId, /^[a-p]{32}$/, `잘못된 extension ID: ${extensionId}`);
     diagnostics.extensionId = extensionId;
     diagnostics.workerUrl = workerTarget.url();
 
-    workerSession = await attachWorkerDiagnostics(
+    workerSession = await guard(attachWorkerDiagnostics(
       workerTarget,
       diagnostics,
       fixture.origin,
       extensionId,
-    );
-    const worker = await workerTarget.worker();
+    ));
+    const worker = await guard(workerTarget.worker());
     assert.ok(worker, 'MV3 service worker 실행 컨텍스트를 얻지 못했습니다.');
-    const workerIdentity = await worker.evaluate(async (settings) => {
+    const workerIdentity = await guard(worker.evaluate(async (settings) => {
       await chrome.storage.sync.set(settings);
       return {
         id: chrome.runtime.id,
         manifestVersion: chrome.runtime.getManifest().manifest_version,
       };
-    }, SETTINGS);
+    }, SETTINGS));
     assert.equal(workerIdentity.id, extensionId);
     assert.equal(workerIdentity.manifestVersion, 3);
-    await assertPageBudget(browser, page, diagnostics);
+    await guard(assertPageBudget(browser, page, diagnostics));
     assertNoSurfaceErrors(diagnostics, 'service-worker');
 
     diagnostics.surface = 'viewer-dark';
-    await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'dark' }]);
+    await guard(page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'dark' }]));
     const viewerUrl = new URL(`chrome-extension://${extensionId}/viewer.html`);
     viewerUrl.searchParams.set('url', `${fixture.origin}/smoke.hwp`);
     viewerUrl.searchParams.set('filename', 'extension-smoke.hwp');
-    await page.goto(viewerUrl.href, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#scroll-container canvas', { visible: true });
-    await page.waitForFunction(() => {
+    await guard(page.goto(viewerUrl.href, { waitUntil: 'domcontentloaded' }));
+    await guard(page.waitForSelector('#scroll-container canvas', { visible: true }));
+    await guard(page.waitForFunction(() => {
       const message = document.getElementById('sb-message')?.textContent?.trim() ?? '';
       return /extension-smoke\.hwp/.test(message);
-    });
-    const viewerState = await page.evaluate(async (fixtureUrl) => {
+    }));
+    const viewerState = await guard(page.evaluate(async (fixtureUrl) => {
       const root = document.documentElement;
       const rawIconUrl = getComputedStyle(root).getPropertyValue('--ui-icon-sprite-url').trim();
       const match = /^url\(["']?(.*?)["']?\)$/.exec(rawIconUrl);
@@ -150,7 +155,7 @@ async function runOnce(prefix) {
         iconBytes,
         workerProbeError: workerProbe?.error ?? null,
       };
-    }, `${fixture.origin}/smoke.hwp`);
+    }, `${fixture.origin}/smoke.hwp`));
     assert.equal(viewerState.origin, `chrome-extension://${extensionId}`);
     assert.equal(viewerState.theme, 'dark');
     assert.ok(viewerState.canvasCount >= 1, 'viewer 문서 canvas가 생성되지 않았습니다.');
@@ -163,11 +168,11 @@ async function runOnce(prefix) {
       /로컬 또는 내부 네트워크 URL은 차단됩니다/,
       'service worker fetch-file 정책 응답을 받지 못했습니다.',
     );
-    await assertPageBudget(browser, page, diagnostics);
+    await guard(assertPageBudget(browser, page, diagnostics));
     assertNoSurfaceErrors(diagnostics, 'viewer-dark');
 
     diagnostics.surface = 'print';
-    const printState = await page.evaluate(async () => {
+    const printState = await guard(page.evaluate(async () => {
       const frame = document.createElement('iframe');
       frame.title = 'extension smoke print surface';
       frame.src = new URL('print.html', document.baseURI).href;
@@ -200,53 +205,53 @@ async function runOnce(prefix) {
       } finally {
         frame.remove();
       }
-    });
+    }));
     assert.equal(printState.url, `chrome-extension://${extensionId}/print.html`);
     assert.equal(printState.origin, `chrome-extension://${extensionId}`);
     assert.equal(printState.title, 'rhwp 인쇄 미리보기');
     assert.equal(printState.statusRole, 'status');
     assert.ok(printState.message?.length > 0, 'print surface 상태 문구가 없습니다.');
-    await assertPageBudget(browser, page, diagnostics);
+    await guard(assertPageBudget(browser, page, diagnostics));
     assertNoSurfaceErrors(diagnostics, 'print');
 
     diagnostics.surface = 'options';
-    await page.goto(`chrome-extension://${extensionId}/options.html`, { waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(() => {
+    await guard(page.goto(`chrome-extension://${extensionId}/options.html`, { waitUntil: 'domcontentloaded' }));
+    await guard(page.waitForFunction(() => {
       const ids = ['autoOpen', 'showBadges', 'hoverPreview', 'disableExternalWebFonts'];
       return ids.every((id) => {
         const input = document.getElementById(id);
         return input instanceof HTMLInputElement && !input.disabled && input.offsetParent !== null;
       });
-    });
-    const optionsState = await page.evaluate(() => ({
+    }));
+    const optionsState = await guard(page.evaluate(() => ({
       title: document.getElementById('title')?.textContent?.trim() ?? '',
       version: document.getElementById('version')?.textContent?.trim() ?? '',
       values: Object.fromEntries(
         ['autoOpen', 'showBadges', 'hoverPreview', 'disableExternalWebFonts']
           .map(id => [id, document.getElementById(id)?.checked]),
       ),
-    }));
+    })));
     assert.ok(optionsState.title.length > 0, 'options i18n 제목이 비어 있습니다.');
     assert.match(optionsState.version, /^\d+\.\d+\.\d+$/);
     assert.deepEqual(optionsState.values, SETTINGS);
-    await assertPageBudget(browser, page, diagnostics);
+    await guard(assertPageBudget(browser, page, diagnostics));
     assertNoSurfaceErrors(diagnostics, 'options');
 
     diagnostics.surface = 'content-script';
-    await page.goto(`${fixture.origin}/fixture.html`, { waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(() => document.documentElement.dataset.hwpExtension === 'rhwp');
-    await page.waitForSelector('.rhwp-badge');
-    const contentState = await page.evaluate(() => ({
+    await guard(page.goto(`${fixture.origin}/fixture.html`, { waitUntil: 'domcontentloaded' }));
+    await guard(page.waitForFunction(() => document.documentElement.dataset.hwpExtension === 'rhwp'));
+    await guard(page.waitForSelector('.rhwp-badge'));
+    const contentState = await guard(page.evaluate(() => ({
       marker: document.documentElement.dataset.hwpExtension,
       version: document.documentElement.dataset.hwpExtensionVersion,
       badgeCount: document.querySelectorAll('.rhwp-badge').length,
       processedCount: document.querySelectorAll('a[data-rhwp-processed="true"]').length,
-    }));
+    })));
     assert.equal(contentState.marker, 'rhwp');
     assert.match(contentState.version ?? '', /^\d+\.\d+\.\d+$/);
     assert.equal(contentState.badgeCount, 1);
     assert.equal(contentState.processedCount, 1);
-    await assertPageBudget(browser, page, diagnostics);
+    await guard(assertPageBudget(browser, page, diagnostics));
     assertNoSurfaceErrors(diagnostics, 'content-script');
 
     assert.equal(diagnostics.errors.length, 0, formatDiagnostics(diagnostics));
@@ -256,6 +261,7 @@ async function runOnce(prefix) {
     failure = new Error(`${error.message ?? error}\n${formatDiagnostics(diagnostics)}`, { cause: error });
   } finally {
     const cleanupErrors = [];
+    if (pageBudget) pageBudget.detach();
     if (workerSession) await workerSession.detach().catch(error => cleanupErrors.push(error));
     if (browser) await browser.close().catch(error => cleanupErrors.push(error));
     if (server) await closeServer(server).catch(error => cleanupErrors.push(error));
@@ -387,12 +393,32 @@ function attachPageDiagnostics(page, diagnostics, fixtureOrigin) {
   });
 }
 
-function attachPageBudget(browser, ownedPage, diagnostics) {
-  browser.on('targetcreated', target => {
-    if (target.type() === 'page' && target !== ownedPage.target()) {
-      diagnostics.unexpectedPageTargets.push(target.url() || '(blank page)');
-    }
+export function attachPageBudget(browser, ownedPage, diagnostics) {
+  let rejectUnexpectedPage;
+  let firstFailure = null;
+  const unexpectedPageFailure = new Promise((_, reject) => {
+    rejectUnexpectedPage = reject;
   });
+  const onTargetCreated = (target) => {
+    if (target.type() === 'page' && target !== ownedPage.target()) {
+      const url = target.url() || '(blank page)';
+      diagnostics.unexpectedPageTargets.push(url);
+      if (!firstFailure) {
+        firstFailure = new Error(`예기치 않은 page target이 생성되었습니다: ${url}`);
+        rejectUnexpectedPage(firstFailure);
+      }
+    }
+  };
+  browser.on('targetcreated', onTargetCreated);
+
+  return {
+    guard(operation) {
+      return Promise.race([Promise.resolve(operation), unexpectedPageFailure]);
+    },
+    detach() {
+      browser.off('targetcreated', onTargetCreated);
+    },
+  };
 }
 
 async function attachWorkerDiagnostics(workerTarget, diagnostics, fixtureOrigin, extensionId) {

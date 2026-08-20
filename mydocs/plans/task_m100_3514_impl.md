@@ -4,7 +4,7 @@
 - 수행계획서: `mydocs/plans/task_m100_3514.md`
 - 브랜치: `codex/issue-3514-extension-smoke`
 - 작성일: 2026-08-20
-- 현재 게이트: Stage 3 승인 완료, remote push 승인 대기
+- 현재 게이트: Stage 4 승인 완료, remote push 승인 대기
 
 ## 1. Hyper-Waterfall 단계
 
@@ -44,6 +44,22 @@ Stage 1 커밋 뒤 위 구현만 stage하고 focused 검증과 코드 diff를 St
 Stage 2 커밋을 기준으로 전체 회귀와 새 profile 10회 smoke를 다시 실행한다. 최종 승인과 커밋 뒤에도
 remote push와 draft PR 생성은 GitHub 권한 경계에 따라 각각 명시적 승인을 확인한다.
 
+### Stage 4 — 탭 예산 즉시 중단 보강
+
+PR 전 자체 검토에서 `targetcreated`가 예상 밖 page를 기록만 하고 실제 실패는 다음
+`assertPageBudget` checkpoint까지 늦춘다는 완료 조건 불일치를 확인했다. 작업지시자의 Stage 4 진행
+승인에 따라 다음을 보강한다.
+
+- 예상 밖 page target 최초 생성 시 공유 실패 promise를 reject한다.
+- worker/viewer/options/print/content-script의 모든 비동기 surface 작업을 이 실패 promise와 race한다.
+- 정상 owned page와 service worker target은 허용한다.
+- controller listener는 `finally` 정리 전에 detach한다.
+- 끝나지 않는 surface도 page 이벤트만으로 실패하는 Node 계약 테스트를 smoke 명령에 포함한다.
+- 새 profile 10회 실제 packaged smoke로 정상 경로 오탐이 없음을 확인한다.
+
+Stage 4 변경과 검증 보고는 작업지시자 승인 전 커밋하지 않으며, 승인 뒤에도 push와 PR 생성은 별도
+GitHub 경계로 남긴다.
+
 ## 2. 파일별 변경
 
 ### `rhwp-chrome/package.json`·`package-lock.json`
@@ -64,6 +80,7 @@ remote push와 draft PR 생성은 GitHub 권한 경계에 따라 각각 명시�
 - print page의 same-origin, title, loading status DOM을 확인한다.
 - fixture page에서 extension-ready marker와 `.rhwp-badge` 정확히 1개를 확인한다.
 - 예상 page budget과 외부 HTTP(S) request allowlist를 매 단계 검사한다.
+- 예상 밖 page target은 공유 실패 gate로 진행 중 surface를 즉시 중단한다.
 - 실패 시 surface별 오류·열린 page URL·worker URL을 한 번에 출력한다.
 
 ### `mydocs/manual/chrome_edge_extension_build_deploy.md`
@@ -84,6 +101,8 @@ remote push와 draft PR 생성은 GitHub 권한 경계에 따라 각각 명시�
 - worker `Runtime.exceptionThrown`, error-level console, `Log.entryAdded`
 - allowlist 밖의 page HTTP(S) request
 - page budget 초과와 단계 timeout
+- page-budget 계약 테스트는 끝나지 않는 surface를 두고 예상 밖 page 이벤트만으로 즉시 reject되는지
+  검증한다.
 
 ### 허용 네트워크
 
