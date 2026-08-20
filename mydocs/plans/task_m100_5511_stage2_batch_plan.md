@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1 완료, P1 진입 승인 대기
+- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1 완료, C0 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -160,7 +160,12 @@ M1도 완료했다. MCP 도구 정의 7개, capabilities projection 2개, help p
 각 조립 모듈로 나눴으며 전 파일이 1,200줄 이하이다. catalog 정본은 이동·복제하지 않았고 여섯
 공개 출력의 byte hash와 8,005개 전체 계약이 유지됐다. 세부 증거는
 [`task_m100_5511_stage2_batch_m1.md`](../working/task_m100_5511_stage2_batch_m1.md)에 기록했다.
-P1은 명령 이름이 아니라 capsule, anchor/gate, disclosure/settlement, harness 책임으로 나눈다.
+
+P1도 완료했다. agent protocol 구현을 명령 이름이 아니라 capsule, trust, exchange, harness,
+plan 책임으로 나눴고, 이동 전 CC 25를 넘던 6개 함수는 관찰 가능한 계약을 유지한 채 책임별
+helper로 분해했다. 범용 CAS seam은 이후 C0도 사용하는 불변식이므로 root에 유지했다. 새 파일은
+모두 1,200줄 이하이고 직접 계약 97/97과 전체 release-test 8,005/8,005가 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_p1.md`](../working/task_m100_5511_stage2_batch_p1.md)에 기록했다.
 
 ### Wave C — 상태 변경 command 분리
 
