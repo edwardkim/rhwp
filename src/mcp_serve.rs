@@ -2265,7 +2265,7 @@ fn session_fill_fields(args: &serde_json::Value, sessions: &mut Sessions) -> ser
             serde_json::Value::String(s) => s.clone(),
             other => other.to_string(),
         };
-        let (name, occurrence) = crate::parse_field_key(key);
+        let (name, occurrence) = crate::cli::commands::edit::parse_field_key(key);
         let total = name_counts.get(name).copied().unwrap_or(0);
         if total == 0 || occurrence >= total {
             not_found.push(key.clone());
