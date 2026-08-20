@@ -3,6 +3,7 @@
 use std::fs;
 use std::path::Path;
 
+use rhwp::model::document::Document;
 use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
@@ -433,11 +434,21 @@ impl IrDiffEmitter {
 fn ir_diff_paragraph_fields(
     pa: &rhwp::model::paragraph::Paragraph,
     pb: &rhwp::model::paragraph::Paragraph,
-    doc_a: &rhwp::model::document::Document,
-    doc_b: &rhwp::model::document::Document,
 ) -> Vec<String> {
     let mut diffs: Vec<String> = Vec::new();
 
+    ir_diff_paragraph_scalars(&mut diffs, pa, pb);
+    ir_diff_line_segs(&mut diffs, pa, pb);
+    ir_diff_controls(&mut diffs, pa, pb);
+    ir_diff_char_shapes(&mut diffs, pa, pb);
+    diffs
+}
+
+fn ir_diff_paragraph_scalars(
+    diffs: &mut Vec<String>,
+    pa: &rhwp::model::paragraph::Paragraph,
+    pb: &rhwp::model::paragraph::Paragraph,
+) {
     // 텍스트 비교
     if pa.text != pb.text {
         diffs.push(format!(
@@ -499,7 +510,13 @@ fn ir_diff_paragraph_fields(
             }
         }
     }
+}
 
+fn ir_diff_line_segs(
+    diffs: &mut Vec<String>,
+    pa: &rhwp::model::paragraph::Paragraph,
+    pb: &rhwp::model::paragraph::Paragraph,
+) {
     // LINE_SEG 비교
     if pa.line_segs.len() != pb.line_segs.len() {
         diffs.push(format!(
@@ -559,7 +576,13 @@ fn ir_diff_paragraph_fields(
             }
         }
     }
+}
 
+fn ir_diff_controls(
+    diffs: &mut Vec<String>,
+    pa: &rhwp::model::paragraph::Paragraph,
+    pb: &rhwp::model::paragraph::Paragraph,
+) {
     // 컨트롤 식별 비교
     if pa.controls.len() != pb.controls.len() {
         diffs.push(format!(
@@ -576,16 +599,16 @@ fn ir_diff_paragraph_fields(
             let cb = &pb.controls[ci];
             match (ca, cb) {
                 (Control::Table(ta), Control::Table(tb)) => {
-                    diff_table(&mut diffs, ci, ta, tb);
+                    diff_table(diffs, ci, ta, tb);
                 }
                 (Control::Picture(pic_a), Control::Picture(pic_b)) => {
-                    diff_common_obj(&mut diffs, ci, "pic", &pic_a.common, &pic_b.common);
+                    diff_common_obj(diffs, ci, "pic", &pic_a.common, &pic_b.common);
                 }
                 (Control::Shape(sa), Control::Shape(sb)) => {
-                    diff_common_obj(&mut diffs, ci, "shape", sa.common(), sb.common());
+                    diff_common_obj(diffs, ci, "shape", sa.common(), sb.common());
                     // [#1807] 글상자 내부 문단 재귀 비교 — 직렬화 결함이
                     // 글상자 안에서 발생해도 검출되도록 (#1795 소거망 구멍)
-                    diff_shape_textbox(&mut diffs, &format!("ctrl[{}] shape", ci), sa, sb);
+                    diff_shape_textbox(diffs, &format!("ctrl[{}] shape", ci), sa, sb);
                 }
                 _ if control_tag(ca) != control_tag(cb) => {
                     diffs.push(format!(
@@ -599,7 +622,13 @@ fn ir_diff_paragraph_fields(
             }
         }
     }
+}
 
+fn ir_diff_char_shapes(
+    diffs: &mut Vec<String>,
+    pa: &rhwp::model::paragraph::Paragraph,
+    pb: &rhwp::model::paragraph::Paragraph,
+) {
     // char_shapes 비교
     if pa.char_shapes.len() != pb.char_shapes.len() {
         diffs.push(format!(
@@ -625,7 +654,6 @@ fn ir_diff_paragraph_fields(
             }
         }
     }
-    diffs
 }
 
 /// 두 문서의 IR 을 **전수** 대조한다 — `diagnostics::ir_field_sweep` 을 CLI 로 낸 것.
@@ -722,130 +750,89 @@ pub(crate) fn ir_sweep(args: &[String]) -> i32 {
     EXIT_OK
 }
 
-pub(crate) fn ir_diff(args: &[String]) -> i32 {
-    if args.len() < 2 {
-        eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>] [--json]");
-        // [#3274] 인자 부족은 사용법 오류다 — 종전엔 0 으로 끝나 스크립트가 감지 못했다.
-        return EXIT_USAGE;
+struct IrDiffArgs {
+    file_a: String,
+    file_b: String,
+    section_filter: Option<usize>,
+    para_filter: Option<usize>,
+    summary_mode: bool,
+    max_lines: Option<usize>,
+    json_mode: bool,
+}
+
+impl IrDiffArgs {
+    fn parse(args: &[String]) -> Result<Self, i32> {
+        if args.len() < 2 {
+            eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>] [--json]");
+            return Err(EXIT_USAGE);
+        }
+
+        let mut parsed = Self {
+            file_a: args[0].clone(),
+            file_b: args[1].clone(),
+            section_filter: None,
+            para_filter: None,
+            summary_mode: false,
+            max_lines: None,
+            json_mode: false,
+        };
+        let is_value = |idx: usize| idx < args.len() && !args[idx].starts_with('-');
+        let mut i = 2;
+        while i < args.len() {
+            match args[i].as_str() {
+                "-s" | "--section" if is_value(i + 1) => {
+                    parsed.section_filter = args[i + 1].parse().ok();
+                    i += 2;
+                }
+                "-p" | "--para" if is_value(i + 1) => {
+                    parsed.para_filter = args[i + 1].parse().ok();
+                    i += 2;
+                }
+                "--summary" => {
+                    parsed.summary_mode = true;
+                    i += 1;
+                }
+                "--max-lines" if is_value(i + 1) => {
+                    parsed.max_lines = args[i + 1].parse().ok();
+                    i += 2;
+                }
+                "--json" => {
+                    parsed.json_mode = true;
+                    i += 1;
+                }
+                _ => i += 1,
+            }
+        }
+        Ok(parsed)
     }
+}
 
-    let file_a = &args[0];
-    let file_b = &args[1];
-    let mut section_filter: Option<usize> = None;
-    let mut para_filter: Option<usize> = None;
-    // [Task #653 보강] 출력 가드 옵션
-    let mut summary_mode = false;
-    let mut max_lines: Option<usize> = None;
-    // [#3274] --json: 계약 봉투 한 줄(카테고리 요약 포함), 차이 발견 시 exit 3.
-    let mut json_mode = false;
-
-    // [#3274] 값을 받는 옵션은 다음 토큰이 플래그(`-` 시작)면 값으로 삼키지 않는다.
-    // 종전엔 `--max-lines --json` 처럼 값을 빠뜨리면 "--json" 이 값으로 소비돼
-    // json 모드가 조용히 꺼지고, 게이트를 기대한 스크립트가 차이를 통과로 오판했다.
-    // (-s/-p/--max-lines 는 모두 비음수만 받으므로 `-` 로 시작하는 값은 없다.)
-    let is_value = |idx: usize| idx < args.len() && !args[idx].starts_with('-');
-    let mut i = 2;
-    while i < args.len() {
-        match args[i].as_str() {
-            "-s" | "--section" if is_value(i + 1) => {
-                section_filter = args[i + 1].parse().ok();
-                i += 2;
-            }
-            "-p" | "--para" if is_value(i + 1) => {
-                para_filter = args[i + 1].parse().ok();
-                i += 2;
-            }
-            "--summary" => {
-                summary_mode = true;
-                i += 1;
-            }
-            "--max-lines" if is_value(i + 1) => {
-                max_lines = args[i + 1].parse().ok();
-                i += 2;
-            }
-            "--json" => {
-                json_mode = true;
-                i += 1;
-            }
-            _ => {
-                i += 1;
-            }
-        }
-    }
-
-    // [#3274] 읽기·파싱 실패는 exit 1 (#2707 정렬) — 종전엔 0 으로 끝나
-    // "비교했고 차이 없음"과 "비교 자체를 못 함"을 구별할 수 없었다.
-    let data_a = match fs::read(file_a) {
-        Ok(d) => d,
+fn load_ir_diff_document(path: &str, password: Option<&str>) -> Result<Document, i32> {
+    let data = match fs::read(path) {
+        Ok(data) => data,
         Err(e) => {
-            eprintln!("오류: {} 읽기 실패: {}", file_a, e);
-            return EXIT_RUNTIME;
+            eprintln!("오류: {} 읽기 실패: {}", path, e);
+            return Err(EXIT_RUNTIME);
         }
     };
-    let data_b = match fs::read(file_b) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: {} 읽기 실패: {}", file_b, e);
-            return EXIT_RUNTIME;
-        }
+    let parsed = match password {
+        Some(password) => rhwp::parser::parse_document_with_password(&data, password.as_bytes()),
+        None => rhwp::parser::parse_document(&data),
     };
+    parsed.map_err(|e| {
+        eprintln!("오류: {} 파싱 실패", path);
+        classify_hwp_error(&e.to_string()).report()
+    })
+}
 
-    // 일반 열기·내보내기 명령과 동일하게 전역 --password/--password-stdin을
-    // 적용한다. 종전에는 ir-diff만 parse_document를 직접 호출해, 암호 문서가
-    // 비교 대상이면 복호화 지원이 있어도 EncryptedDocument로 즉시 종료했다.
-    // 비암호 문서는 parse_document_with_password가 비밀번호를 무시하므로, 암호/
-    // 평문 counterpart 비교에도 하나의 입력 경로를 사용할 수 있다.
-    let password = cli_password();
-    let parse_for_ir_diff = |data: &[u8]| match password.as_deref() {
-        Some(password) => rhwp::parser::parse_document_with_password(data, password.as_bytes()),
-        None => rhwp::parser::parse_document(data),
-    };
-
-    let doc_a = match parse_for_ir_diff(&data_a) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: {} 파싱 실패", file_a);
-            return classify_hwp_error(&e.to_string()).report();
-        }
-    };
-    let doc_b = match parse_for_ir_diff(&data_b) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: {} 파싱 실패", file_b);
-            return classify_hwp_error(&e.to_string()).report();
-        }
-    };
-
-    let name_a = Path::new(file_a)
-        .file_name()
-        .unwrap_or_default()
-        .to_string_lossy();
-    let name_b = Path::new(file_b)
-        .file_name()
-        .unwrap_or_default()
-        .to_string_lossy();
-    if !summary_mode && !json_mode {
-        println!("=== IR 비교: {} vs {} ===", name_a, name_b);
-    }
-
-    // [Task #653 보강] 출력 가드 상태 — IrDiffEmitter 로 통합 (#2122)
-    // [#3274] json 모드는 summary 와 같은 수집 전용 경로(버킷만 쌓고 무출력)를 탄다 —
-    // stdout 순수성을 위해 텍스트 라인을 한 줄도 내면 안 된다.
-    let mut em = IrDiffEmitter {
-        summary_mode: summary_mode || json_mode,
-        max_lines,
-        printed_lines: 0,
-        truncated: false,
-        summary_buckets: std::collections::BTreeMap::new(),
-    };
-
-    let mut total_diffs = 0u32;
-
-    // 구역 수 비교
-    // [#3274] 종전엔 total_diffs 선언이 이 블록 뒤에 있어 구역 수 차이가 집계되지
-    // 않았다. 텍스트 모드에선 차이 라인이 화면에 보여 무해했으나, --json 게이트에서는
-    // 구역 하나가 덧붙은 변환본이 diffCount=0·identical:true·exit 0 으로 통과하는
-    // 치명적 누락이었다(봉투 자기모순). 선언을 앞으로 올리고 여기서도 집계한다.
+fn compare_ir_sections(
+    doc_a: &Document,
+    doc_b: &Document,
+    section_filter: Option<usize>,
+    para_filter: Option<usize>,
+    em: &mut IrDiffEmitter,
+) -> u32 {
+    let mut total_diffs = 0;
     if doc_a.sections.len() != doc_b.sections.len() {
         em.diff(format!(
             "구역 수: A={} vs B={}",
@@ -856,17 +843,12 @@ pub(crate) fn ir_diff(args: &[String]) -> i32 {
     }
 
     let sec_count = doc_a.sections.len().min(doc_b.sections.len());
-
     for sec_idx in 0..sec_count {
-        if let Some(sf) = section_filter {
-            if sec_idx != sf {
-                continue;
-            }
+        if section_filter.is_some_and(|filter| sec_idx != filter) {
+            continue;
         }
-
         let sec_a = &doc_a.sections[sec_idx];
         let sec_b = &doc_b.sections[sec_idx];
-
         if sec_a.paragraphs.len() != sec_b.paragraphs.len() {
             em.diff(format!(
                 "구역 {}: 문단 수 A={} vs B={}",
@@ -879,122 +861,116 @@ pub(crate) fn ir_diff(args: &[String]) -> i32 {
 
         let para_count = sec_a.paragraphs.len().min(sec_b.paragraphs.len());
         for pi in 0..para_count {
-            if let Some(pf) = para_filter {
-                if pi != pf {
-                    continue;
-                }
+            if para_filter.is_some_and(|filter| pi != filter) {
+                continue;
             }
-
             let pa = &sec_a.paragraphs[pi];
             let pb = &sec_b.paragraphs[pi];
-            let diffs = ir_diff_paragraph_fields(pa, pb, &doc_a, &doc_b);
-
-            if !diffs.is_empty() {
-                let text_preview: String = pa.text.chars().take(30).collect();
-                em.header(format!(
-                    "\n--- 문단 {}.{} --- \"{}\"",
-                    sec_idx, pi, text_preview
-                ));
-                for d in &diffs {
-                    em.diff(format!("{}", d));
-                }
-                total_diffs += diffs.len() as u32;
+            let diffs = ir_diff_paragraph_fields(pa, pb);
+            if diffs.is_empty() {
+                continue;
             }
+            let text_preview: String = pa.text.chars().take(30).collect();
+            em.header(format!(
+                "\n--- 문단 {}.{} --- \"{}\"",
+                sec_idx, pi, text_preview
+            ));
+            for diff in &diffs {
+                em.diff(diff.clone());
+            }
+            total_diffs += diffs.len() as u32;
         }
     }
+    total_diffs
+}
 
-    // doc_info 비교: ParaShape
-    {
-        let ps_a = &doc_a.doc_info.para_shapes;
-        let ps_b = &doc_b.doc_info.para_shapes;
-        if ps_a.len() != ps_b.len() {
+fn compare_ir_para_shapes(doc_a: &Document, doc_b: &Document, em: &mut IrDiffEmitter) -> u32 {
+    let ps_a = &doc_a.doc_info.para_shapes;
+    let ps_b = &doc_b.doc_info.para_shapes;
+    let mut total_diffs = 0;
+    if ps_a.len() != ps_b.len() {
+        em.diff(format!(
+            "ParaShape 수: A={} vs B={}",
+            ps_a.len(),
+            ps_b.len()
+        ));
+        total_diffs += 1;
+    }
+    for (i, (a, b)) in ps_a.iter().zip(ps_b.iter()).enumerate() {
+        let mut diffs = Vec::new();
+        if a.margin_left != b.margin_left {
+            diffs.push(format!("ml: {}vs{}", a.margin_left, b.margin_left));
+        }
+        if a.margin_right != b.margin_right {
+            diffs.push(format!("mr: {}vs{}", a.margin_right, b.margin_right));
+        }
+        if a.indent != b.indent {
+            diffs.push(format!("indent: {}vs{}", a.indent, b.indent));
+        }
+        if a.tab_def_id != b.tab_def_id {
+            diffs.push(format!("tab_def: {}vs{}", a.tab_def_id, b.tab_def_id));
+        }
+        if a.spacing_before != b.spacing_before {
+            diffs.push(format!("sb: {}vs{}", a.spacing_before, b.spacing_before));
+        }
+        if a.spacing_after != b.spacing_after {
+            diffs.push(format!("sa: {}vs{}", a.spacing_after, b.spacing_after));
+        }
+        if a.line_spacing != b.line_spacing {
+            diffs.push(format!("ls: {}vs{}", a.line_spacing, b.line_spacing));
+        }
+        if !diffs.is_empty() {
+            em.diff(format!("PS[{}] {}", i, diffs.join(", ")));
+            total_diffs += diffs.len() as u32;
+        }
+    }
+    total_diffs
+}
+
+fn compare_ir_tab_defs(doc_a: &Document, doc_b: &Document, em: &mut IrDiffEmitter) -> u32 {
+    let td_a = &doc_a.doc_info.tab_defs;
+    let td_b = &doc_b.doc_info.tab_defs;
+    let mut total_diffs = 0;
+    if td_a.len() != td_b.len() {
+        em.diff(format!("TabDef 수: A={} vs B={}", td_a.len(), td_b.len()));
+        total_diffs += 1;
+    }
+    for (i, (a, b)) in td_a.iter().zip(td_b.iter()).enumerate() {
+        if a.tabs.len() != b.tabs.len() {
             em.diff(format!(
-                "ParaShape 수: A={} vs B={}",
-                ps_a.len(),
-                ps_b.len()
+                "TD[{}] 탭 수: A={} vs B={}",
+                i,
+                a.tabs.len(),
+                b.tabs.len()
             ));
             total_diffs += 1;
+            continue;
         }
-        let ps_count = ps_a.len().min(ps_b.len());
-        for i in 0..ps_count {
-            let a = &ps_a[i];
-            let b = &ps_b[i];
-            let mut ps_diffs: Vec<String> = Vec::new();
-            if a.margin_left != b.margin_left {
-                ps_diffs.push(format!("ml: {}vs{}", a.margin_left, b.margin_left));
-            }
-            if a.margin_right != b.margin_right {
-                ps_diffs.push(format!("mr: {}vs{}", a.margin_right, b.margin_right));
-            }
-            if a.indent != b.indent {
-                ps_diffs.push(format!("indent: {}vs{}", a.indent, b.indent));
-            }
-            if a.tab_def_id != b.tab_def_id {
-                ps_diffs.push(format!("tab_def: {}vs{}", a.tab_def_id, b.tab_def_id));
-            }
-            if a.spacing_before != b.spacing_before {
-                ps_diffs.push(format!("sb: {}vs{}", a.spacing_before, b.spacing_before));
-            }
-            if a.spacing_after != b.spacing_after {
-                ps_diffs.push(format!("sa: {}vs{}", a.spacing_after, b.spacing_after));
-            }
-            if a.line_spacing != b.line_spacing {
-                ps_diffs.push(format!("ls: {}vs{}", a.line_spacing, b.line_spacing));
-            }
-            if !ps_diffs.is_empty() {
-                em.diff(format!("PS[{}] {}", i, ps_diffs.join(", ")));
-                total_diffs += ps_diffs.len() as u32;
-            }
-        }
-    }
-
-    // doc_info 비교: TabDef
-    {
-        let td_a = &doc_a.doc_info.tab_defs;
-        let td_b = &doc_b.doc_info.tab_defs;
-        if td_a.len() != td_b.len() {
-            em.diff(format!("TabDef 수: A={} vs B={}", td_a.len(), td_b.len()));
-            total_diffs += 1;
-        }
-        let td_count = td_a.len().min(td_b.len());
-        for i in 0..td_count {
-            let a = &td_a[i];
-            let b = &td_b[i];
-            if a.tabs.len() != b.tabs.len() {
+        for (ti, (ta, tb)) in a.tabs.iter().zip(b.tabs.iter()).enumerate() {
+            if ta.position != tb.position
+                || ta.tab_type != tb.tab_type
+                || ta.fill_type != tb.fill_type
+            {
                 em.diff(format!(
-                    "TD[{}] 탭 수: A={} vs B={}",
+                    "TD[{}][{}] pos: {}vs{}, type: {}vs{}, fill: {}vs{}",
                     i,
-                    a.tabs.len(),
-                    b.tabs.len()
+                    ti,
+                    ta.position,
+                    tb.position,
+                    ta.tab_type,
+                    tb.tab_type,
+                    ta.fill_type,
+                    tb.fill_type
                 ));
                 total_diffs += 1;
-            } else {
-                for (ti, (ta, tb)) in a.tabs.iter().zip(b.tabs.iter()).enumerate() {
-                    if ta.position != tb.position
-                        || ta.tab_type != tb.tab_type
-                        || ta.fill_type != tb.fill_type
-                    {
-                        em.diff(format!(
-                            "TD[{}][{}] pos: {}vs{}, type: {}vs{}, fill: {}vs{}",
-                            i,
-                            ti,
-                            ta.position,
-                            tb.position,
-                            ta.tab_type,
-                            tb.tab_type,
-                            ta.fill_type,
-                            tb.fill_type
-                        ));
-                        total_diffs += 1;
-                    }
-                }
             }
         }
     }
+    total_diffs
+}
 
-    // [Task #653 보강] 요약 모드 출력 — 카테고리별 카운트 (내림차순 → 알파벳)
-    // [#3274] --summary --json 병용 시 JSON 이 이긴다 — stdout 순수성 우선.
-    if summary_mode && !json_mode {
+fn finish_ir_diff(args: &IrDiffArgs, em: IrDiffEmitter, total_diffs: u32) -> i32 {
+    if args.summary_mode && !args.json_mode {
         println!("=== 카테고리별 차이 요약 ===");
         let mut entries: Vec<(String, u32)> = em.summary_buckets.clone().into_iter().collect();
         entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
@@ -1002,24 +978,65 @@ pub(crate) fn ir_diff(args: &[String]) -> i32 {
             println!("  {:>5}건  {}", count, cat);
         }
     }
-
-    if json_mode {
-        // [#3274] 계약 봉투 한 줄 — 카테고리 버킷(BTreeMap)은 키 정렬이 결정적이다.
+    if args.json_mode {
         let envelope = serde_json::json!({
             "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "a": file_a,
-            "b": file_b,
+            "a": args.file_a,
+            "b": args.file_b,
             "identical": total_diffs == 0,
             "diffCount": total_diffs,
             "categories": em.summary_buckets,
         });
         println!("{}", provenance::marked(envelope, "ir-diff"));
-        // 차이 발견 = 3: #2707 의 "--verify IR 차이" 코드와 같은 의미의 게이트 신호.
         return if total_diffs == 0 { EXIT_OK } else { 3 };
     }
-
     println!("\n=== 비교 완료: 차이 {} 건 ===", total_diffs);
     EXIT_OK
+}
+
+pub(crate) fn ir_diff(args: &[String]) -> i32 {
+    let args = match IrDiffArgs::parse(args) {
+        Ok(args) => args,
+        Err(exit) => return exit,
+    };
+    let password = cli_password();
+    let doc_a = match load_ir_diff_document(&args.file_a, password.as_deref()) {
+        Ok(doc) => doc,
+        Err(exit) => return exit,
+    };
+    let doc_b = match load_ir_diff_document(&args.file_b, password.as_deref()) {
+        Ok(doc) => doc,
+        Err(exit) => return exit,
+    };
+
+    let name_a = Path::new(&args.file_a)
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy();
+    let name_b = Path::new(&args.file_b)
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy();
+    if !args.summary_mode && !args.json_mode {
+        println!("=== IR 비교: {} vs {} ===", name_a, name_b);
+    }
+    let mut em = IrDiffEmitter {
+        summary_mode: args.summary_mode || args.json_mode,
+        max_lines: args.max_lines,
+        printed_lines: 0,
+        truncated: false,
+        summary_buckets: std::collections::BTreeMap::new(),
+    };
+    let mut total_diffs = compare_ir_sections(
+        &doc_a,
+        &doc_b,
+        args.section_filter,
+        args.para_filter,
+        &mut em,
+    );
+    total_diffs += compare_ir_para_shapes(&doc_a, &doc_b, &mut em);
+    total_diffs += compare_ir_tab_defs(&doc_a, &doc_b, &mut em);
+    finish_ir_diff(&args, em, total_diffs)
 }
 
 #[cfg(test)]

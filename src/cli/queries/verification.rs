@@ -7,6 +7,164 @@ use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{collect_field_records, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 
+const USAGE: &str = "사용법: rhwp verify <파일.hwp|파일.hwpx> [--expect-pages N] \
+[--expect-min-pages N] [--expect-max-pages N] [--expect-min-chars N] \
+[--expect-min-tables N] [--expect-table-count N] \
+[--expect-contains 문자열]... [--expect-not-contains 문자열]... [--expect-field 이름=값]... \
+[--expect-format hwp5|hwpx|hwp3|hml] [--json] — 기대 조건이 최소 1개 필요합니다";
+
+struct VerifyArgs {
+    path: String,
+    json_mode: bool,
+    expect_pages: Option<u64>,
+    expect_min_pages: Option<u64>,
+    expect_max_pages: Option<u64>,
+    expect_min_chars: Option<u64>,
+    expect_min_tables: Option<u64>,
+    expect_table_count: Option<u64>,
+    expect_format: Option<String>,
+    expect_contains: Vec<String>,
+    expect_not_contains: Vec<String>,
+    expect_fields: Vec<(String, String)>,
+}
+
+impl VerifyArgs {
+    fn parse(args: &[String]) -> Result<Self, i32> {
+        let mut parsed = Self {
+            path: String::new(),
+            json_mode: false,
+            expect_pages: None,
+            expect_min_pages: None,
+            expect_max_pages: None,
+            expect_min_chars: None,
+            expect_min_tables: None,
+            expect_table_count: None,
+            expect_format: None,
+            expect_contains: Vec::new(),
+            expect_not_contains: Vec::new(),
+            expect_fields: Vec::new(),
+        };
+        let mut i = 0;
+        while i < args.len() {
+            match args[i].as_str() {
+                "--json" => parsed.json_mode = true,
+                flag @ ("--expect-pages"
+                | "--expect-min-pages"
+                | "--expect-max-pages"
+                | "--expect-min-chars"
+                | "--expect-min-tables"
+                | "--expect-table-count") => {
+                    i += 1;
+                    let Some(n) = args.get(i).and_then(|value| value.parse::<u64>().ok()) else {
+                        eprintln!("오류: {flag} 뒤에 숫자가 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return Err(EXIT_USAGE);
+                    };
+                    *match flag {
+                        "--expect-pages" => &mut parsed.expect_pages,
+                        "--expect-min-pages" => &mut parsed.expect_min_pages,
+                        "--expect-max-pages" => &mut parsed.expect_max_pages,
+                        "--expect-min-chars" => &mut parsed.expect_min_chars,
+                        "--expect-min-tables" => &mut parsed.expect_min_tables,
+                        _ => &mut parsed.expect_table_count,
+                    } = Some(n);
+                }
+                "--expect-contains" => {
+                    i += 1;
+                    let Some(value) = args.get(i) else {
+                        eprintln!("오류: --expect-contains 뒤에 문자열이 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return Err(EXIT_USAGE);
+                    };
+                    parsed.expect_contains.push(value.clone());
+                }
+                "--expect-not-contains" => {
+                    i += 1;
+                    let Some(value) = args.get(i) else {
+                        eprintln!("오류: --expect-not-contains 뒤에 문자열이 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return Err(EXIT_USAGE);
+                    };
+                    parsed.expect_not_contains.push(value.clone());
+                }
+                "--expect-field" => {
+                    i += 1;
+                    let Some((name, value)) = args.get(i).and_then(|value| value.split_once('='))
+                    else {
+                        eprintln!("오류: --expect-field 는 이름=값 형식입니다.");
+                        eprintln!("{USAGE}");
+                        return Err(EXIT_USAGE);
+                    };
+                    if name.is_empty() {
+                        eprintln!("오류: --expect-field 는 이름=값 형식입니다.");
+                        eprintln!("{USAGE}");
+                        return Err(EXIT_USAGE);
+                    }
+                    parsed
+                        .expect_fields
+                        .push((name.to_string(), value.to_string()));
+                }
+                "--expect-format" => {
+                    i += 1;
+                    match args.get(i).map(String::as_str) {
+                        Some(value @ ("hwp5" | "hwpx" | "hwp3" | "hml")) => {
+                            parsed.expect_format = Some(value.to_string());
+                        }
+                        Some(value) => {
+                            eprintln!(
+                                "오류: --expect-format 은 hwp5|hwpx|hwp3|hml 중 하나입니다 - {value}"
+                            );
+                            eprintln!("{USAGE}");
+                            return Err(EXIT_USAGE);
+                        }
+                        None => {
+                            eprintln!("오류: --expect-format 뒤에 형식이 필요합니다.");
+                            eprintln!("{USAGE}");
+                            return Err(EXIT_USAGE);
+                        }
+                    }
+                }
+                other if other.starts_with('-') => {
+                    eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                    eprintln!("{USAGE}");
+                    return Err(EXIT_USAGE);
+                }
+                other if parsed.path.is_empty() => parsed.path = other.to_string(),
+                other => {
+                    eprintln!("오류: 파일 경로는 하나여야 합니다 - {other}");
+                    eprintln!("{USAGE}");
+                    return Err(EXIT_USAGE);
+                }
+            }
+            i += 1;
+        }
+        if parsed.path.is_empty() {
+            eprintln!("오류: 파일 경로가 필요합니다.");
+            eprintln!("{USAGE}");
+            return Err(EXIT_USAGE);
+        }
+        if parsed.expectation_count() == 0 {
+            eprintln!("오류: 기대 조건이 없습니다 — --expect-* 로 최소 1개를 지정하세요.");
+            eprintln!("{USAGE}");
+            return Err(EXIT_USAGE);
+        }
+        Ok(parsed)
+    }
+
+    fn expectation_count(&self) -> usize {
+        usize::from(self.expect_pages.is_some())
+            + usize::from(self.expect_min_pages.is_some())
+            + usize::from(self.expect_max_pages.is_some())
+            + usize::from(self.expect_min_chars.is_some())
+            + usize::from(self.expect_min_tables.is_some())
+            + usize::from(self.expect_table_count.is_some())
+            + usize::from(self.expect_format.is_some())
+            + self.expect_contains.len()
+            + self.expect_not_contains.len()
+            + self.expect_fields.len()
+    }
+}
+
 /// [#4113 / #3918 승격 2호] `verify` — 편집 파이프라인의 독립 사후검증 게이트.
 ///
 /// 기대 조건 집합을 문서 실측과 대조해 전부 만족이면 exit 0, 하나라도 어긋나면
@@ -14,148 +172,27 @@ use crate::{collect_field_records, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 /// 실패는 stdout 을 비우고 exit 1, 조립 오류는 exit 2. 실측은 전부 기존 코어
 /// 재사용이다: `page_count`·`grep`·`collect_field_records`·`detect_format`(규칙 2).
 pub(crate) fn run(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp verify <파일.hwp|파일.hwpx> [--expect-pages N] \
-[--expect-min-pages N] [--expect-max-pages N] [--expect-min-chars N] \
-[--expect-min-tables N] [--expect-table-count N] \
-[--expect-contains 문자열]... [--expect-not-contains 문자열]... [--expect-field 이름=값]... \
-[--expect-format hwp5|hwpx|hwp3|hml] [--json] — 기대 조건이 최소 1개 필요합니다";
-
-    let mut file_path: Option<&str> = None;
-    let mut json_mode = false;
-    let mut expect_pages: Option<u64> = None;
-    let mut expect_min_pages: Option<u64> = None;
-    let mut expect_max_pages: Option<u64> = None;
-    let mut expect_min_chars: Option<u64> = None;
-    let mut expect_min_tables: Option<u64> = None;
-    let mut expect_table_count: Option<u64> = None;
-    let mut expect_format: Option<String> = None;
-    let mut expect_contains: Vec<String> = Vec::new();
-    let mut expect_not_contains: Vec<String> = Vec::new();
-    let mut expect_fields: Vec<(String, String)> = Vec::new();
-
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--json" => json_mode = true,
-            flag @ ("--expect-pages"
-            | "--expect-min-pages"
-            | "--expect-max-pages"
-            | "--expect-min-chars"
-            | "--expect-min-tables"
-            | "--expect-table-count") => {
-                i += 1;
-                let n = args.get(i).and_then(|v| v.parse::<u64>().ok());
-                match n {
-                    Some(n) => {
-                        *match flag {
-                            "--expect-pages" => &mut expect_pages,
-                            "--expect-min-pages" => &mut expect_min_pages,
-                            "--expect-max-pages" => &mut expect_max_pages,
-                            "--expect-min-chars" => &mut expect_min_chars,
-                            "--expect-min-tables" => &mut expect_min_tables,
-                            _ => &mut expect_table_count,
-                        } = Some(n);
-                    }
-                    None => {
-                        eprintln!("오류: {flag} 뒤에 숫자가 필요합니다.");
-                        eprintln!("{USAGE}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--expect-contains" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => expect_contains.push(v.clone()),
-                    None => {
-                        eprintln!("오류: --expect-contains 뒤에 문자열이 필요합니다.");
-                        eprintln!("{USAGE}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--expect-not-contains" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => expect_not_contains.push(v.clone()),
-                    None => {
-                        eprintln!("오류: --expect-not-contains 뒤에 문자열이 필요합니다.");
-                        eprintln!("{USAGE}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--expect-field" => {
-                i += 1;
-                match args.get(i).and_then(|v| v.split_once('=')) {
-                    Some((k, val)) if !k.is_empty() => {
-                        expect_fields.push((k.to_string(), val.to_string()))
-                    }
-                    _ => {
-                        eprintln!("오류: --expect-field 는 이름=값 형식입니다.");
-                        eprintln!("{USAGE}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--expect-format" => {
-                i += 1;
-                match args.get(i).map(String::as_str) {
-                    Some(v @ ("hwp5" | "hwpx" | "hwp3" | "hml")) => {
-                        expect_format = Some(v.to_string())
-                    }
-                    Some(v) => {
-                        eprintln!(
-                            "오류: --expect-format 은 hwp5|hwpx|hwp3|hml 중 하나입니다 - {v}"
-                        );
-                        eprintln!("{USAGE}");
-                        return EXIT_USAGE;
-                    }
-                    None => {
-                        eprintln!("오류: --expect-format 뒤에 형식이 필요합니다.");
-                        eprintln!("{USAGE}");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            other if other.starts_with('-') => {
-                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
-                eprintln!("{USAGE}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.is_some() {
-                    eprintln!("오류: 파일 경로는 하나여야 합니다 - {other}");
-                    eprintln!("{USAGE}");
-                    return EXIT_USAGE;
-                }
-                file_path = Some(other);
-            }
-        }
-        i += 1;
-    }
-    let Some(path) = file_path else {
-        eprintln!("오류: 파일 경로가 필요합니다.");
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
+    let parsed = match VerifyArgs::parse(args) {
+        Ok(parsed) => parsed,
+        Err(exit) => return exit,
     };
-    let expectation_count = usize::from(expect_pages.is_some())
-        + usize::from(expect_min_pages.is_some())
-        + usize::from(expect_max_pages.is_some())
-        + usize::from(expect_min_chars.is_some())
-        + usize::from(expect_min_tables.is_some())
-        + usize::from(expect_table_count.is_some())
-        + usize::from(expect_format.is_some())
-        + expect_contains.len()
-        + expect_not_contains.len()
-        + expect_fields.len();
-    if expectation_count == 0 {
-        eprintln!("오류: 기대 조건이 없습니다 — --expect-* 로 최소 1개를 지정하세요.");
-        eprintln!("{USAGE}");
-        return EXIT_USAGE;
-    }
+    let expectation_count = parsed.expectation_count();
+    let VerifyArgs {
+        path,
+        json_mode,
+        expect_pages,
+        expect_min_pages,
+        expect_max_pages,
+        expect_min_chars,
+        expect_min_tables,
+        expect_table_count,
+        expect_format,
+        expect_contains,
+        expect_not_contains,
+        expect_fields,
+    } = parsed;
 
-    let data = match fs::read(path) {
+    let data = match fs::read(&path) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", path, e);
