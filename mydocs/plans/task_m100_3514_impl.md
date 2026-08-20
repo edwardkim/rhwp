@@ -4,7 +4,7 @@
 - 수행계획서: `mydocs/plans/task_m100_3514.md`
 - 브랜치: `codex/issue-3514-extension-smoke`
 - 작성일: 2026-08-20
-- 현재 게이트: Stage 4 승인 완료, remote push 승인 대기
+- 현재 게이트: Stage 5 승인 완료, remote push·PR 생성 승인 대기
 
 ## 1. Hyper-Waterfall 단계
 
@@ -59,6 +59,28 @@ PR 전 자체 검토에서 `targetcreated`가 예상 밖 page를 기록만 하�
 
 Stage 4 변경과 검증 보고는 작업지시자 승인 전 커밋하지 않으며, 승인 뒤에도 push와 PR 생성은 별도
 GitHub 경계로 남긴다.
+
+### Stage 5 — 최신 `devel` 정합화·재검증
+
+PR 생성 전 장기간 경과한 작업 브랜치를 최신 `upstream/devel@f26c2e7ca`에 리베이스하고 다음을
+확인한다.
+
+- 리베이스 전·후 네 Stage 커밋의 대응 관계를 `git range-diff`로 검토한다.
+- 충돌은 당일 작업 목록의 최신 항목을 보존하면서 #3514 행을 합치는 문서 충돌로 한정한다.
+- 최신 Rust 기준으로 네이티브 `wasm-pack --no-opt` package를 새로 만들고 frontend 전체 회귀를
+  다시 실행한다.
+- 실제 packaged Chrome smoke를 retry 없이 새 profile 10개로 다시 실행한다.
+- Docker daemon, review-only 파생 파일처럼 로컬에서 충족되지 않은 표준 gate는 성공으로 오인하지
+  않고 Stage 5 보고서에 검증 경계로 기록한다.
+
+Stage 5에서는 기능 코드를 추가하지 않는다. 다음 문서만 갱신해 작업지시자 승인 뒤 별도 커밋하며,
+remote push와 draft PR 생성은 계속 별도 GitHub 승인 경계로 남긴다.
+
+- `mydocs/orders/20260820.md`
+- `mydocs/plans/task_m100_3514.md`
+- `mydocs/plans/task_m100_3514_impl.md`
+- `mydocs/working/task_m100_3514_stage5.md`
+- `mydocs/report/task_m100_3514_report.md`
 
 ## 2. 파일별 변경
 
