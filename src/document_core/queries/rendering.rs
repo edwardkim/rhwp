@@ -2180,6 +2180,7 @@ impl DocumentCore {
             );
         }
 
+        #[allow(clippy::too_many_arguments)]
         fn collect(
             node: &LayerNode,
             behind: &mut String,
@@ -2191,6 +2192,7 @@ impl DocumentCore {
             has_behind: &mut bool,
             has_front: &mut bool,
             occlusion: &mut FlowStaticOcclusion,
+            page_background: &mut Option<(Option<String>, bool)>,
             inherited_layer: Option<RenderLayerInfo>,
         ) {
             let active_layer = node.layer.or(inherited_layer);
@@ -2208,6 +2210,7 @@ impl DocumentCore {
                             has_behind,
                             has_front,
                             occlusion,
+                            page_background,
                             active_layer,
                         );
                     }
@@ -2223,6 +2226,7 @@ impl DocumentCore {
                     has_behind,
                     has_front,
                     occlusion,
+                    page_background,
                     active_layer,
                 ),
                 LayerNodeKind::Leaf { ops } => {
@@ -2236,6 +2240,19 @@ impl DocumentCore {
                         // [#5763] flow-static 분리 가능 여부는 paint 순서에 달렸다 —
                         // 여기서 순서대로 먹인다.
                         occlusion.observe(plane, op);
+                        // [#5780] DOM flow 그림 갈래는 canvas 대신 DIV 라 Background
+                        // plane 을 실을 자리가 없다 — 쪽 배경을 요약으로 넘겨 소비자가
+                        // DIV 배경(단색) 또는 canvas 폴백(그라데이션/이미지)을 고른다.
+                        if let PaintOp::PageBackground { background, .. } = op {
+                            if page_background.is_none() {
+                                let css = background
+                                    .background_color
+                                    .map(crate::document_core::helpers::color_ref_to_css);
+                                let complex =
+                                    background.gradient.is_some() || background.image.is_some();
+                                *page_background = Some((css, complex));
+                            }
+                        }
                         match op {
                             PaintOp::Image {
                                 bbox,
@@ -2293,6 +2310,7 @@ impl DocumentCore {
         let mut has_behind = false;
         let mut has_front = false;
         let mut occlusion = FlowStaticOcclusion::default();
+        let mut page_background: Option<(Option<String>, bool)> = None;
         collect(
             &tree.root,
             &mut behind,
@@ -2304,11 +2322,23 @@ impl DocumentCore {
             &mut has_behind,
             &mut has_front,
             &mut occlusion,
+            &mut page_background,
             None,
         );
 
+        // [#5780] 쪽 배경 요약: 단색이면 css 문자열, 그라데이션/이미지 배경이면
+        // complex 플래그 — DOM flow 그림 갈래가 배경을 잃지 않게 한다.
+        let (page_background_css, page_background_complex) = match &page_background {
+            Some((css, complex)) => (css.clone(), *complex),
+            None => (None, false),
+        };
+        let page_background_css_json = match &page_background_css {
+            Some(css) => format!("\"{}\"", crate::document_core::helpers::json_escape(css)),
+            None => "null".to_string(),
+        };
+
         Ok(format!(
-            "{{\"behind\":[{}],\"front\":[{}],\"imageCount\":{},\"rawSvgCount\":{},\"flowImageCount\":{},\"flowRawSvgCount\":{},\"flowStaticOccluded\":{},\"hasBehind\":{},\"hasFront\":{}}}",
+            "{{\"behind\":[{}],\"front\":[{}],\"imageCount\":{},\"rawSvgCount\":{},\"flowImageCount\":{},\"flowRawSvgCount\":{},\"flowStaticOccluded\":{},\"hasBehind\":{},\"hasFront\":{},\"pageBackgroundCss\":{},\"pageBackgroundComplex\":{}}}",
             behind,
             front,
             image_count,
@@ -2317,7 +2347,9 @@ impl DocumentCore {
             flow_raw_svg_count,
             occlusion.occluded(),
             has_behind,
-            has_front
+            has_front,
+            page_background_css_json,
+            page_background_complex
         ))
     }
 

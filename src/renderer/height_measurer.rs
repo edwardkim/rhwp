@@ -2299,6 +2299,56 @@ impl HeightMeasurer {
             common_h
         } else if !table.common.treat_as_char
             && common_h > 0.0
+            && raw_table_height > common_h + 0.5
+            // 경미 모순(≤5%)만 축소한다 — 쪽보다 큰 RowBreak 표(59043: raw/선언
+            // 1.24)는 여러 쪽에 걸쳐야 하므로 단일쪽 선언 sz 가 권위일 수 없다.
+            && raw_table_height <= common_h * 1.05
+            && {
+                // [#5757] 비-TAC 표의 **선언끼리 모순** 축소: Σ셀선언(cellSz)이 표
+                // 선언높이(hp:sz)를 넘는 문서에서 한글은 행을 비례 축소해 표 선언을
+                // 지킨다 (156739836 일러두기 3×3: Σ셀선언 981.8 > 표선언 966.2,
+                // 오라클 괘선 실측 ×0.984 균일 축소 → 한 쪽에 통째 배치. rhwp 는
+                // 983.7px 로 12.4px 넘겨 불필요한 쪽나눔 → 전 문서 +1쪽).
+                //
+                // 콘텐츠가 선언을 밀어 키운 표(#5714 행 성장 축)는 건드리면 안 되므로,
+                // 측정 합이 셀 선언 합을 사실상 넘지 않는 경우(성장분 ≤ 축소 임계)로
+                // 한정한다 — 축소 근거가 측정이 아니라 문서의 선언 모순일 때만 발동.
+                // 모순 폭도 1% 초과일 때만 인정한다 — 반올림 급(≤1%) 불일치는 정상
+                // 저장 문서에도 흔해, 발동하면 knife-edge 조판 핀이 깨진다
+                // (59043 쪽수 핀 5건 실측). 156739836 은 1.61% 로 발동한다.
+                let mut per_row = vec![0.0f64; row_count];
+                for cell in &table.cells {
+                    if cell.row_span == 1
+                        && (cell.row as usize) < row_count
+                        && cell.height < 0x8000_0000
+                    {
+                        let h = hwpunit_to_px(cell.height as i32, self.dpi);
+                        if h > per_row[cell.row as usize] {
+                            per_row[cell.row as usize] = h;
+                        }
+                    }
+                }
+                let declared_rows_sum: f64 = per_row.iter().sum::<f64>()
+                    + cell_spacing * (row_count.saturating_sub(1) as f64);
+                let fire = declared_rows_sum > common_h * 1.01
+                    && per_row.iter().all(|h| *h > 0.0)
+                    && raw_table_height - declared_rows_sum <= shrink_threshold;
+                if fire && std::env::var("RHWP_DIAG_5757").is_ok() {
+                    eprintln!(
+                        "DIAG5757 fire rows={row_count} common={common_h:.1} declared={declared_rows_sum:.1} raw={raw_table_height:.1} wrap={:?} pb={:?}",
+                        table.common.text_wrap, table.page_break,
+                    );
+                }
+                fire
+            }
+        {
+            let scale = common_h / raw_table_height;
+            for h in &mut row_heights {
+                *h *= scale;
+            }
+            common_h
+        } else if !table.common.treat_as_char
+            && common_h > 0.0
             && raw_table_height > 0.0
             && common_h > raw_table_height + 0.5
             && {
