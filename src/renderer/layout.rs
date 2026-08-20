@@ -6745,6 +6745,48 @@ impl LayoutEngine {
                     col_area.height,
                 );
             }
+            // [#5699 H2] TopAndBottom(위·아래 어울림) 비-tac 그림/도형 Shape 아이템은
+            // 단 흐름을 후퇴시키지 못한다 — Square 는 후속 텍스트가 개체 옆으로
+            // 흐르도록 앵커 y 로 되돌리는 것이 정당하지만, TopAndBottom 은 텍스트가
+            // 개체 아래에서만 이어지므로 후퇴는 이미 전진한 흐름(저장 앵커 줄)을
+            // 지운다. 베트남노동시장1125 p75 실측: host 문단의 TopAndBottom 차트
+            // Shape 아이템이 841.7→307.6 으로 흐름을 되감아 후속 문단들이 방금
+            // 페인트한 표(307..549)를 관통했다.
+            if new_y < _y_in {
+                if let PageItem::Shape {
+                    para_index,
+                    control_index,
+                } = item
+                {
+                    let topbottom_nontac = paragraphs
+                        .get(*para_index)
+                        .and_then(|p| p.controls.get(*control_index))
+                        .is_some_and(|c| {
+                            let common = match c {
+                                Control::Picture(pic) => Some(&pic.common),
+                                Control::Shape(shape) => Some(shape.common()),
+                                Control::Equation(eq) => Some(&eq.common),
+                                _ => None,
+                            };
+                            common.is_some_and(|cm| {
+                                !cm.treat_as_char
+                                    && matches!(
+                                        cm.text_wrap,
+                                        crate::model::shape::TextWrap::TopAndBottom
+                                    )
+                            })
+                        });
+                    if topbottom_nontac {
+                        if std::env::var("RHWP_5699_DBG").is_ok() {
+                            eprintln!(
+                                "DBG5699_H2 pi={} ci={} rewind {:.1}→{:.1} 금지",
+                                para_index, control_index, _y_in, new_y
+                            );
+                        }
+                        new_y = _y_in;
+                    }
+                }
+            }
             y_offset = new_y;
             if was_tac {
                 tac_seg_applied_para = Some(item_para);
