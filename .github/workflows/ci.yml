@@ -1277,7 +1277,7 @@ jobs:
       count_label: a-2
       archive_label: a
       filterset: "all()"
-      partition: "hash:1/2"
+      partition: "hash:2/2"
 
 
   test-archive-b-shard-1:
@@ -1319,7 +1319,7 @@ jobs:
       count_label: b-2
       archive_label: b
       filterset: "all()"
-      partition: "hash:1/2"
+      partition: "hash:2/2"
 
 
   build-and-test:

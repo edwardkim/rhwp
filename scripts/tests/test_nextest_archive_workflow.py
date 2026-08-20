@@ -126,7 +126,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
         runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
         self.assertIn("build-test-archive-a:", ci); self.assertIn("build-test-archive-b:", ci)
-        self.assertNotIn("test-slow-shard:", ci); self.assertEqual(4, ci.count('partition: "hash:1/2"'))
+        self.assertNotIn("test-slow-shard:", ci); self.assertEqual(2, ci.count('partition: "hash:1/2"')); self.assertEqual(2, ci.count('partition: "hash:2/2"'))
         self.assertIn("target_group: lib", ci); self.assertIn("target_group: integration", ci)
         self.assertIn("cargo metadata --no-deps --format-version 1", builder)
         self.assertIn("cargo_target_args+=(--lib)", builder)
