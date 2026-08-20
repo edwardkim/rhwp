@@ -3040,6 +3040,11 @@ impl LayoutEngine {
         let mut endnote_line_vpos_y_end: Option<f64> = None;
         let mut endnote_auto_wrap_y_end: Option<f64> = None;
         let mut prev_line_reserved_tac_picture_height: Option<f64> = None;
+        // [#5711] 마지막으로 그린 줄 상자의 아래 경계. 문단 테두리의 아래 변은 이 값을
+        // 따라야 한다 — 줄간격이 음수인 문단에서는 전진값 `y` 가 줄 상자 아래보다 위로
+        // 올라가, 테두리가 글자를 가로지른다(3143955 제목: 줄 상자 아래 171.6px, 전진 y
+        // 162.0px, 실제로 그려진 선 159.7/163.7).
+        let mut last_line_box_bottom: Option<f64> = None;
         for line_idx in start_line..end {
             let comp_line = &composed.lines[line_idx];
             let mut current_line_reserved_tac_picture_height: Option<f64> = None;
@@ -4449,10 +4454,12 @@ impl LayoutEngine {
                 }
                 y = next_y;
             } else if is_cell_last_line && cell_ctx.is_some() {
+                last_line_box_bottom = Some(y + line_flow_height);
                 y += line_flow_height;
             } else if skip_advance_empty_line {
                 // no advance
             } else {
+                last_line_box_bottom = Some(y + render_line_flow_height);
                 y += render_line_flow_height + render_line_spacing_px + tac_picture_label_extra;
             }
             prev_line_reserved_tac_picture_height = current_line_reserved_tac_picture_height;
@@ -4464,7 +4471,11 @@ impl LayoutEngine {
         // 셀 외곽선은 별도 경로(table_layout/border_rendering)에서 처리되므로
         // 본문 단락의 연속 외곽선 merge 가 셀 단락 좌표/시그니처에 의해 깨지지 않게 한다.
         if para_border_fill_id > 0 && cell_ctx.is_none() {
-            let bg_height = y - bg_y_start;
+            // [#5711] 줄간격이 음수인 문단은 전진값 `y` 가 마지막 줄 상자 아래보다 위에
+            // 있다. 그 값을 테두리 아래 변으로 쓰면 테두리가 글자를 가로지른다. 다음 문단
+            // 시작 y 는 종전대로 두어 문단 간 간격 계약은 바꾸지 않는다.
+            let border_bottom = last_line_box_bottom.map_or(y, |bottom| y.max(bottom));
+            let bg_height = border_bottom - bg_y_start;
             if bg_height > 0.0 {
                 // margin_left/margin_right는 이미 px 단위 (style_resolver에서 변환됨)
                 // border_spacing[2]/[3] (top/bottom) 을 inset 으로 전달 — 병합 그룹의 첫/마지막 range 에서만 적용됨.
@@ -4493,7 +4504,7 @@ impl LayoutEngine {
                     box_x,
                     bg_y_start,
                     box_w,
-                    y,
+                    border_bottom,
                     top_inset,
                     bottom_inset,
                     is_partial_start,
