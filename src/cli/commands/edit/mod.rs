@@ -6,13 +6,13 @@ use crate::{
     edit_apply_para_format_in_cell, edit_apply_para_format_in_footnote,
     edit_apply_para_format_in_hf, edit_apply_style, edit_delete_header_footer, edit_delete_hf_text,
     edit_delete_text_in_footnote, edit_insert_field_in_hf, edit_insert_footnote_text,
-    edit_insert_header_footer, edit_insert_header_footer_text, edit_merge_paragraph_in_cell,
-    edit_merge_paragraph_in_footnote, edit_merge_paragraph_in_hf, edit_set_header_footer_text,
-    edit_set_hf_picture, edit_split_paragraph_in_cell, edit_split_paragraph_in_footnote,
-    edit_split_paragraph_in_hf, edit_toggle_hide_hf, EXIT_USAGE,
+    edit_insert_header_footer, edit_insert_header_footer_text, edit_merge_paragraph_in_footnote,
+    edit_merge_paragraph_in_hf, edit_set_header_footer_text, edit_set_hf_picture,
+    edit_split_paragraph_in_footnote, edit_split_paragraph_in_hf, edit_toggle_hide_hf, EXIT_USAGE,
 };
 
 mod bookmarks;
+mod cell_paragraphs;
 mod cells;
 mod controls;
 mod document_objects;
@@ -29,6 +29,7 @@ mod tables;
 mod text;
 
 use bookmarks::{edit_add_bookmark, edit_delete_bookmark, edit_rename_bookmark};
+use cell_paragraphs::{edit_merge_paragraph_in_cell, edit_split_paragraph_in_cell};
 use cells::{
     edit_delete_text_in_cell, edit_insert_text_in_cell, edit_set_cell, edit_set_cell_props,
 };
