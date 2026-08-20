@@ -371,8 +371,11 @@ fn test_svg_draw_text_script_scales_text_length_by_glyph_size() {
         renderer.begin_page(800.0, 600.0);
         renderer.draw_text("1", 10.0, 100.0, &style);
         let script_length = text_length_of(renderer.output(), "1");
+        // [#5756] 이후 첨자 advance 는 측정 단계에서 0.7 배 글꼴로 계산된다 —
+        // 글자 폭이 픽셀 반올림을 거치므로 정확 0.7 배 대신 반올림 오차(≤0.05px)를
+        // 허용한다.
         assert!(
-            (script_length - base_length * 0.7).abs() < 0.001,
+            (script_length - base_length * 0.7).abs() < 0.05,
             "첨자 textLength 는 본문의 0.7 배여야 함: base={base_length}, script={script_length}"
         );
     }

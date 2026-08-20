@@ -2244,9 +2244,57 @@ impl HeightMeasurer {
             && raw_table_height > common_h + shrink_threshold
             && raw_table_height <= common_h * TAC_SHRINK_MAX_OVERFLOW_RATIO
         {
-            let scale = common_h / raw_table_height;
-            for h in &mut row_heights {
-                *h *= scale;
+            // [#5748] 비례 축소가 '내용이 딱 맞는 행'까지 누르면 그 행의 글자가
+            // 칸 클립에 잘린다(156682735 제목 셋째 줄 8.3px 잘림). 한글은 저장
+            // 좌표에 여유가 있는 행에서만 부족분을 흡수한다 — 행별 하한을 저장
+            // lineseg 내용 높이(pad_top + max(vertpos+vertsize) + pad_bottom)로
+            // 잡고, 여유(slack) 비례로만 줄인다. 하한 합이 이미 선언을 넘는
+            // 형상은 종전 비례 축소로 폴백한다.
+            let mut floors = vec![0.0f64; row_count];
+            for cell in &table.cells {
+                let r = cell.row as usize;
+                if cell.row_span != 1 || r >= row_count || cell.paragraphs.is_empty() {
+                    continue;
+                }
+                if cell
+                    .paragraphs
+                    .iter()
+                    .any(crate::renderer::para_has_no_stored_line_segs)
+                {
+                    continue;
+                }
+                let content_hu = cell
+                    .paragraphs
+                    .iter()
+                    .flat_map(|p| p.line_segs.iter())
+                    .map(|seg| i64::from(seg.vertical_pos) + i64::from(seg.line_height))
+                    .max()
+                    .unwrap_or(0);
+                let pad = hwpunit_to_px(
+                    (cell.padding.top as i32).saturating_add(cell.padding.bottom as i32),
+                    self.dpi,
+                );
+                let floor = (hwpunit_to_px(content_hu as i32, self.dpi) + pad).min(row_heights[r]);
+                if floor > floors[r] {
+                    floors[r] = floor;
+                }
+            }
+            let deficit = raw_table_height - common_h;
+            let total_slack: f64 = row_heights
+                .iter()
+                .zip(floors.iter())
+                .map(|(h, f)| (h - f).max(0.0))
+                .sum();
+            if total_slack >= deficit && total_slack > 0.0 {
+                for (h, f) in row_heights.iter_mut().zip(floors.iter()) {
+                    let slack = (*h - f).max(0.0);
+                    *h -= deficit * slack / total_slack;
+                }
+            } else {
+                let scale = common_h / raw_table_height;
+                for h in &mut row_heights {
+                    *h *= scale;
+                }
             }
             common_h
         } else if !table.common.treat_as_char
