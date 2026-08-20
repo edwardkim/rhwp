@@ -1,6 +1,6 @@
 //! 그림/캡션 레이아웃 + 각주 영역 레이아웃
 
-use super::super::composer::{compose_paragraph, ComposedParagraph};
+use super::super::composer::{compose_paragraph, ComposedLine, ComposedParagraph};
 use super::super::page_layout::LayoutRect;
 use super::super::pagination::{FootnoteFragment, FootnoteRef, FootnoteSource};
 use super::super::render_tree::*;
@@ -22,7 +22,7 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo,
 };
-use crate::model::style::Alignment;
+use crate::model::style::{Alignment, LineSpacingType};
 
 fn fragment_line_bounds(fragment: Option<FootnoteFragment>, total_lines: usize) -> (usize, usize) {
     match fragment {
@@ -833,11 +833,47 @@ impl LayoutEngine {
         }
     }
 
+    /// [#5708] 저장 LINE_SEG 가 없는 각주 문단의 합성 폴백 줄높이(400 HWPUNIT = 5.33px)를
+    /// 문단 줄간격 설정으로 보정한다.
+    ///
+    /// 폴백값을 그대로 쓰면 줄 전진(5.3px)이 글자 크기(9pt = 12px)보다 작아 각주 줄이 서로
+    /// 겹쳐 그려진다(00464 1쪽 하단 주석 8줄). 본문·표 경로는 #674 로 같은 보정을 이미
+    /// 하고 있고, 각주 경로만 빠져 있었다. `corrected_line_metrics` 는 `raw_lh < max_fs`
+    /// 일 때만 개입하므로 저장 LINE_SEG 를 가진 각주는 종전 그대로다(#2112 계약).
+    fn footnote_line_metrics(
+        &self,
+        comp_line: &ComposedLine,
+        para_style_id: u16,
+        styles: &ResolvedStyleSet,
+    ) -> (f64, f64) {
+        let raw_lh = hwpunit_to_px(comp_line.line_height, self.dpi);
+        let raw_ls = hwpunit_to_px(comp_line.line_spacing, self.dpi);
+        let max_fs = comp_line
+            .runs
+            .iter()
+            .map(|run| {
+                let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                if ts.font_size > 0.0 {
+                    ts.font_size
+                } else {
+                    12.0
+                }
+            })
+            .fold(0.0f64, f64::max);
+        let para_style = styles.para_styles.get(para_style_id as usize);
+        let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
+        let ls_type = para_style
+            .map(|s| s.line_spacing_type)
+            .unwrap_or(LineSpacingType::Percent);
+        crate::renderer::corrected_line_metrics(raw_lh, raw_ls, max_fs, ls_type, ls_val)
+    }
+
     pub(crate) fn estimate_footnote_area_height(
         &self,
         footnotes: &[FootnoteRef],
         paragraphs: &[Paragraph],
         shape: &FootnoteShape,
+        styles: &ResolvedStyleSet,
     ) -> f64 {
         if footnotes.is_empty() {
             return 0.0;
@@ -874,10 +910,13 @@ impl LayoutEngine {
                     for line in &composed.lines {
                         let is_selected = (start_line..end_line).contains(&flat_line);
                         if is_selected {
-                            total += hwpunit_to_px(line.line_height, self.dpi);
+                            // [#5708] layout 경로와 같은 보정 산식을 쓴다.
+                            let (line_height, line_spacing_px) =
+                                self.footnote_line_metrics(line, composed.para_style_id, styles);
+                            total += line_height;
                             let is_last_selected_line = flat_line + 1 == end_line;
                             if !is_last_selected_line {
-                                total += hwpunit_to_px(line.line_spacing, self.dpi);
+                                total += line_spacing_px;
                             }
                         }
                         flat_line += 1;
@@ -1068,9 +1107,22 @@ impl LayoutEngine {
         let line_end = line_end.min(composed.lines.len()).max(line_start);
 
         for (offset, comp_line) in composed.lines[line_start..line_end].iter().enumerate() {
-            // LineSeg.line_height는 HWP에서 줄간격이 이미 반영된 값
-            let line_height = hwpunit_to_px(comp_line.line_height, self.dpi);
-            let baseline = hwpunit_to_px(comp_line.baseline_distance, self.dpi);
+            // LineSeg.line_height는 HWP에서 줄간격이 이미 반영된 값.
+            // [#5708] 저장 LINE_SEG 가 없는 문단의 폴백(400 HWPUNIT = 5.33px)은 글자보다
+            // 작아 줄이 겹치므로 문단 줄간격 설정으로 보정한다.
+            let (line_height, corrected_line_spacing) =
+                self.footnote_line_metrics(comp_line, composed.para_style_id, styles);
+            let raw_baseline = hwpunit_to_px(comp_line.baseline_distance, self.dpi);
+            // 베이스라인도 같은 비율로 따라간다 — 줄 상자만 키우면 글자가 상자 위로 뜬다.
+            let baseline = if line_height > 0.0
+                && raw_baseline > 0.0
+                && hwpunit_to_px(comp_line.line_height, self.dpi) > 0.0
+            {
+                (raw_baseline * line_height / hwpunit_to_px(comp_line.line_height, self.dpi))
+                    .min(line_height)
+            } else {
+                raw_baseline
+            };
 
             let line_id = tree.next_id();
             let mut line_node = RenderNode::new(
@@ -1164,7 +1216,7 @@ impl LayoutEngine {
             if is_last_selected_line && is_last_line {
                 y += line_height;
             } else {
-                let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
+                let line_spacing_px = corrected_line_spacing;
                 y += line_height + line_spacing_px;
             }
         }
