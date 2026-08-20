@@ -217,9 +217,9 @@ export const viewCommands: CommandDef[] = [
   themeModeCommand('system', '시스템 설정'),
   themeModeCommand('light', '밝게'),
   themeModeCommand('dark', '어둡게'),
+  themeSkinCommand('oldschool', '올드스쿨'),
   themeSkinCommand('default', '클래식'),
   themeSkinCommand('flat', '모던'),
-  themeSkinCommand('oldschool', '올드스쿨'),
   // ─── 보기 메뉴: 표시/숨기기 ─────────────────────────
   {
     id: 'view:form-mode',

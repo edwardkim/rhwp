@@ -20,6 +20,12 @@ interface SkinChoice {
 
 const SKIN_CHOICES: readonly SkinChoice[] = [
   {
+    skin: 'oldschool',
+    name: '올드스쿨',
+    description: '한글 97 시절의 고전 데스크톱 감성',
+    swatch: ['#c0c0c0', '#000080', '#808080'],
+  },
+  {
     skin: 'default',
     name: '클래식',
     description: '기존 rhwp-studio 기본 모습',
@@ -30,12 +36,6 @@ const SKIN_CHOICES: readonly SkinChoice[] = [
     name: '모던',
     description: '화이트 크롬과 블루 액센트의 플랫 스킨',
     swatch: ['#ffffff', '#2b7de9', '#eef0f4'],
-  },
-  {
-    skin: 'oldschool',
-    name: '올드스쿨',
-    description: '한글 97 시절의 고전 데스크톱 감성',
-    swatch: ['#c0c0c0', '#000080', '#808080'],
   },
 ];
 
