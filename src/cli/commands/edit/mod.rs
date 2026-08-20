@@ -1,13 +1,6 @@
 //! `edit` command dispatch and shared runtime boundary.
 
-use crate::{
-    edit_apply_endnote_shape, edit_apply_hf_template, edit_apply_para_format_in_footnote,
-    edit_apply_para_format_in_hf, edit_delete_header_footer, edit_delete_hf_text,
-    edit_delete_text_in_footnote, edit_insert_field_in_hf, edit_insert_footnote_text,
-    edit_insert_header_footer, edit_insert_header_footer_text, edit_merge_paragraph_in_footnote,
-    edit_merge_paragraph_in_hf, edit_set_header_footer_text, edit_set_hf_picture,
-    edit_split_paragraph_in_footnote, edit_split_paragraph_in_hf, edit_toggle_hide_hf, EXIT_USAGE,
-};
+use crate::EXIT_USAGE;
 
 mod bookmarks;
 mod cell_paragraphs;
@@ -18,7 +11,10 @@ mod document_text;
 mod equations;
 mod fields;
 mod formatting;
+mod header_footer_content;
+mod header_footer_properties;
 mod media;
+mod note_content;
 mod notes;
 mod page;
 mod privacy;
@@ -52,7 +48,19 @@ use formatting::{
     edit_apply_cell_style, edit_apply_char_format, edit_apply_char_format_in_cell,
     edit_apply_para_format, edit_apply_para_format_in_cell, edit_apply_style,
 };
+use header_footer_content::{
+    edit_delete_header_footer, edit_delete_hf_text, edit_insert_field_in_hf,
+    edit_insert_header_footer, edit_insert_header_footer_text, edit_merge_paragraph_in_hf,
+    edit_set_header_footer_text, edit_split_paragraph_in_hf,
+};
+use header_footer_properties::{
+    edit_apply_hf_template, edit_apply_para_format_in_hf, edit_set_hf_picture, edit_toggle_hide_hf,
+};
 use media::{edit_delete_picture, edit_insert_image, edit_insert_picture, edit_set_picture};
+use note_content::{
+    edit_apply_endnote_shape, edit_apply_para_format_in_footnote, edit_delete_text_in_footnote,
+    edit_insert_footnote_text, edit_merge_paragraph_in_footnote, edit_split_paragraph_in_footnote,
+};
 use notes::{edit_delete_footnote, edit_insert_endnote, edit_insert_footnote};
 use page::{edit_set_column_def, edit_set_page_def, edit_set_page_hide, edit_set_section_def};
 use privacy::{edit_redact, edit_sanitize};
