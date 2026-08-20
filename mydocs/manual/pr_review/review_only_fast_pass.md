@@ -20,6 +20,11 @@ review-only인 경우에 적용하는 공용 modifier다. maintainer·collaborat
 기존 samples 또는 세 PDF 디렉터리 파일의 수정·삭제·rename, source, test, workflow, Cargo.lock,
 golden, baseline은 허용 범위가 아니다.
 
+Proptest roundtrip과 Adapter inter-diff도 같은 허용 경로 정책을 사용한다. 이 두 required check가 code
+candidate의 결과를 재사용할 때는 PR 번호 배열 유무가 아니라 candidate SHA, 현재 PR head branch, source
+repository id와 PR 생성 이후 실행 여부를 함께 확인한다. 따라서 fork PR의 `listWorkflowRuns` 응답에
+`pull_requests` 배열이 비어 있어도, 다른 PR·다른 fork·PR 생성 전 실행 결과는 재사용하지 않는다.
+
 ## A. code PR 뒤의 trailing review-only commit
 
 contributor code PR의 뒤에 review 문서·오늘할일·허용된 신규 기준 자료를 추가하면 workflow는 현재 head에서

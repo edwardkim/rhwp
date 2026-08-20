@@ -6,6 +6,7 @@ ci.yml 배선을 강제한다(#4080). 배선을 잊으면 그 테스트가 실�
 
 from __future__ import annotations
 
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -32,21 +33,44 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
         self.assertIn("pull_request:", self.wf)
         self.assertIn("branches: [main, devel]", self.wf)
 
-    def test_mydocs_only_or_trusted_trailing_tail_skips_worker_without_hiding_check(self) -> None:
+    def test_review_only_or_trusted_trailing_tail_skips_worker_without_hiding_check(self) -> None:
         self.assertIn("name: Proptest preflight", self.wf)
         self.assertIn("pr.base.ref !== 'devel'", self.wf)
-        self.assertIn("file.filename.startsWith('mydocs/')", self.wf)
-        self.assertIn("file.previous_filename.startsWith('mydocs/')", self.wf)
+        self.assertIn("function isAllowedReviewPath(file)", self.wf)
+        self.assertIn("filename.startsWith('mydocs/')", self.wf)
+        self.assertIn("file.status !== 'added'", self.wf)
+        self.assertIn("const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];", self.wf)
+        self.assertIn("filename.endsWith('.pdf')", self.wf)
         self.assertIn("github.rest.pulls.listCommits", self.wf)
         self.assertIn("github.rest.repos.getCommit", self.wf)
         self.assertIn("workflow_id: 'proptest-roundtrip.yml'", self.wf)
         self.assertIn("github.rest.actions.listWorkflowRuns", self.wf)
+        self.assertIn("run.head_branch === pr.head.ref", self.wf)
+        self.assertIn("run.head_repository?.id === pr.head.repo?.id", self.wf)
+        self.assertNotIn("run.pull_requests", self.wf)
         self.assertIn("trusted-mydocs-tail:", self.wf)
         self.assertIn("review-tail-candidate-run-unavailable", self.wf)
         self.assertIn("name: prop roundtrip", self.wf)
         self.assertIn("needs: preflight", self.wf)
         self.assertIn("needs.preflight.outputs.fast_pass != 'true'", self.wf)
         self.assertNotRegex(self.wf, r"(?m)^\\s{2,4}paths-ignore:")
+
+    def test_review_only_preflight_script_parses(self) -> None:
+        script = self.wf.split("script: |\n", maxsplit=1)[1].split(
+            "\n\n      - name: Finalize fast pass", maxsplit=1
+        )[0]
+        script = "\n".join(
+            line.removeprefix("            ") for line in script.splitlines()
+        )
+        completed = subprocess.run(
+            ["node", "--check"],
+            input=f"(async () => {{\n{script}\n}})();\n",
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
 
     def test_is_not_a_long_fuzz(self) -> None:
         self.assertNotIn("cargo-fuzz", self.wf)
