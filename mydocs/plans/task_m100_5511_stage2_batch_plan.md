@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1·C0·C1·C2·C3·C4 완료, C5 진입 승인 대기
+- 상태: 실행 승인 — Wave Q(Q1~Q7)·M1·P1·C0·C1·C2·C3·C4·C5 완료, C6 진입 승인 대기
 
 ## 1. 전환 이유
 
@@ -15,15 +15,15 @@ Stage 2 절편 24개 중 19개가 handler 이동, 4개가 선행 계약 보강, 
 
 | 지표 | #5511 시작 | 현재 | 최종 기준 |
 |---|---:|---:|---:|
-| `src/main.rs` 줄 수 | 42,370 | 5,788 | 1,200 이하 |
-| 최상위 함수 | 351 | 72 | entrypoint 조립에 필요한 최소 함수 |
+| `src/main.rs` 줄 수 | 42,370 | 4,499 | 1,200 이하 |
+| 최상위 함수 | 351 | 63 | entrypoint 조립에 필요한 최소 함수 |
 | 새 query 경로의 최상위 명령 | 0 | 28 | 모든 query adapter 물리 분리 |
 | 새 query 경로의 `inspect` 하위 명령 | 0 | 4 | 현재 전수 |
 | 편집 handler | 92 | 92 | command 모듈로 전수 이동 |
 | `wasm_api::HwpDocument` 직접 참조 | 42 | 9 | Stage 3에서 0 |
 | `rhwp::service` 참조 | 0 | 0 | Stage 3에서 전환 |
 
-1,200줄 목표까지 현재 4,588줄이 남았다. 배치 재기준화 당시에는 단일 handler 이동 평균을
+1,200줄 목표까지 현재 3,299줄이 남았다. 배치 재기준화 당시에는 단일 handler 이동 평균을
 기계적으로 적용하면 약 190개 이동 절편이 더 필요한 상태였다. 이는 실제 예측이 아니라 기존
 절차를 그대로 유지하면 생기는 비효율의 크기를 보여준 지표다. 큰 책임을 기능군으로 묶되 보호
 계약과 중단 조건은 유지한다.
@@ -214,6 +214,12 @@ C4도 완료했다. 본문 text·paragraph·break, page·section·column, note, 
 117/117과 전체 release-test 8,205/8,205를 통과했다. `set-column-def`의 기존 raw attribute 저장
 결함은 move-only 범위에 섞지 않고 후속 이슈 후보로 기록했다. 세부 증거는
 [`task_m100_5511_stage2_batch_c4.md`](../working/task_m100_5511_stage2_batch_c4.md)에 기록했다.
+
+C5도 완료했다. cell paragraph split·merge와 body·cell char/paragraph/style formatting
+command 8개·전용 helper 1개·1,289줄을 두 파일로 이동했고 모두 1,200줄 이하이며 CC 25 초과
+경고가 없다. 미보호였던 `apply-cell-style` 저장값·dry-run·오류·MCP 계약 4건을 이동 전에
+고정하고, 직접 계약 73/73과 전체 release-test 8,209/8,209를 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_c5.md`](../working/task_m100_5511_stage2_batch_c5.md)에 기록했다.
 
 ## 5. 중단 조건
 
