@@ -122,3 +122,17 @@ Studio 통합과 소스 경로 중첩은 없었고 `mydocs/orders/20260820.md`�
 최종 이행은 메인테이너가 승인한 예외 절차에 따라 PR을 만들지 않고, 최신 원격과 동기화한 로컬
 `devel`에 작업 브랜치를 `--no-ff` 정상 merge한 뒤 보호 브랜치에 직접 push한다. 원격 반영과
 GitHub Actions 성공을 확인한 뒤 #5511에 이 merge SHA와 검증 결과를 남기고 이슈를 닫는다.
+
+## 8. 원격 Lint 후속 보정
+
+첫 원격 이행 head `5f5ce5e65cc133bee5dd89909fb9da7ec228c85e`의
+[CI run 32362191294](https://github.com/edwardkim/rhwp/actions/runs/32362191294)에서
+`Validate LLM verifier tool contracts`가 실패했다. `shadow_agree`의 실존 명령·출력 필드 검사가
+모든 dispatch와 envelope producer가 `src/main.rs` 한 파일에 있다고 가정해, Q7에서
+`ir-diff`의 `identical` 생산자를 `src/cli/queries/ir_comparison.rs`로 옮긴 뒤의 구조를 따라가지
+못한 것이 원인이었다.
+
+`tools/llm_verifier/shadow_agree/tests/test_checks.py`가 production Rust source 전체에서 top-level·
+중첩 dispatch와 출력 필드를 확인하도록 보정했다. CLI 명령, envelope, 생성 코퍼스는 바꾸지
+않았다. 실패한 shadow suite 31/31과 CI의 `Validate LLM verifier tool contracts` 7개 명령을
+그대로 재실행해 모두 통과했다. 보정 head의 새 Actions 성공을 확인한 뒤 이슈를 닫는다.
