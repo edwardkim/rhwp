@@ -5,7 +5,7 @@
 - 재계측 기준: `cb337e70cd4febbd7028a28d4d56ec49aba23ea9`
 - 통합 기준선: `upstream/devel` `1a6ce79fd56e3cdf5813c7938338fcb5b7d0a859`
 - 작성일: 2026-08-19
-- 상태: 실행 승인 — Q1·Q2·Q3·Q4 완료, Q5 진입 승인 대기
+- 상태: 완료 — Wave Q(Q1~Q7)·M1·P1·C0~C6 및 `main.rs` 리팩토링 종료
 
 ## 1. 전환 이유
 
@@ -15,17 +15,18 @@ Stage 2 절편 24개 중 19개가 handler 이동, 4개가 선행 계약 보강, 
 
 | 지표 | #5511 시작 | 현재 | 최종 기준 |
 |---|---:|---:|---:|
-| `src/main.rs` 줄 수 | 42,370 | 38,561 | 1,200 이하 |
-| 최상위 함수 | 351 | 310 | entrypoint 조립에 필요한 최소 함수 |
-| 새 query 경로의 최상위 명령 | 0 | 19 | 모든 query adapter 물리 분리 |
+| `src/main.rs` 줄 수 | 42,370 | 2,075 | 현 기준선 수용·#5767에서 증가 방지 |
+| 최상위 함수 | 351 | 45 | entrypoint 조립에 필요한 최소 함수 |
+| 새 query 경로의 최상위 명령 | 0 | 28 | 모든 query adapter 물리 분리 |
 | 새 query 경로의 `inspect` 하위 명령 | 0 | 4 | 현재 전수 |
 | 편집 handler | 92 | 92 | command 모듈로 전수 이동 |
-| `wasm_api::HwpDocument` 직접 참조 | 42 | 42 | Stage 3에서 0 |
+| `wasm_api::HwpDocument` 직접 참조 | 42 | 9 | Stage 3에서 0 |
 | `rhwp::service` 참조 | 0 | 0 | Stage 3에서 전환 |
 
-1,200줄 목표까지 37,361줄이 남았다. 지금까지의 handler 이동 평균만 기계적으로 적용하면 약
-190개 이동 절편이 더 필요하다. 이는 실제 예측이 아니라 현재 절차를 그대로 유지하면 생기는
-비효율의 크기를 보여주는 지표다. 큰 책임을 기능군으로 묶되 보호 계약과 중단 조건은 유지한다.
+초기 1,200줄 목표까지는 875줄이 남았다. 배치 재기준화 당시에는 단일 handler 이동 평균을
+기계적으로 적용하면 약 190개 이동 절편이 더 필요한 상태였다. 이는 실제 예측이 아니라 기존
+절차를 그대로 유지하면 생기는 비효율의 크기를 보여준 지표다. 큰 책임을 기능군으로 묶되 보호
+계약과 중단 조건은 유지한다.
 
 ## 2. 배치 실행 규약
 
@@ -111,6 +112,43 @@ CC 25 이하로 분해한 뒤 scan query, ordered runtime, batch query, fill·co
 세부 증거는 [`task_m100_5511_stage2_batch_q4.md`](../working/task_m100_5511_stage2_batch_q4.md)에
 기록했다.
 
+Q5는 최신 `devel` `52d8bf8eb3`에서 시작했다. `show_info` CC 34와 `dump_controls` CC 68을
+재현했고, 기존 1,096줄 `diagnostics.rs`에 합치지 않는 책임별 모듈 경계를 확정했다. 사람용
+성공 stdout의 byte-level characterization과 분해 기준은
+[`task_m100_5511_stage2_batch_q5_inventory.md`](../working/task_m100_5511_stage2_batch_q5_inventory.md)에
+기록했다.
+
+Q5도 완료했다. info·page·control 진단을 일곱 책임 모듈로 이동하고, `dump_controls`를 순회,
+shape, table, story 출력으로 분해했다. 완료 직전 전진한 `devel`을 정상 merge한 뒤 #5542의
+의도된 HWP3 첫 문단 `SectionDef` 출력에 characterization 기준을 정합화했으며, 최신 결합 HEAD의
+전체·정적·정책 관문을 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_q5.md`](../working/task_m100_5511_stage2_batch_q5.md)에 기록했다.
+
+Q6는 최신 `devel` `980bf59e4`를 정상 merge한 뒤 시작했다. 변환·생성 handler 전부 CC 25 이하이고,
+기존 17개 계약 모듈 123/123이 JSON·exit·검증·원본 보호·생성물 재파싱을 이미 보호하므로 신규
+characterization 없이 책임별 물리 이동으로 진행한다. 대상과 공유 seam 판정은
+[`task_m100_5511_stage2_batch_q6_inventory.md`](../working/task_m100_5511_stage2_batch_q6_inventory.md)에
+기록했다.
+
+Q6도 완료했다. 변환 command, 문서 generation, DocLang output을 세 모듈로 이동했고 모두
+1,200줄 이하이며 CC 25 초과 경고가 없다. 완료 직전 전진한 `devel`의 별도 q-pack 변경을 정상
+merge하고, 결합 HEAD에서 Q6·q-pack focused 127/127과 전체 release-test 7,999/7,999를 포함한
+정적·정책 관문을 다시 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_q6.md`](../working/task_m100_5511_stage2_batch_q6.md)에 기록했다.
+
+Q7 inventory에서 `ir_diff_paragraph_fields` CC 28, `cmd_verify` CC 29, `ir_diff` CC 38과
+`test-field` 성공·position diagnostics·`ir-sweep` 계약 공백을 확인해 중단 조건이 발동했다.
+기존 직접 계약 104/104 기준선과 세 선택지는
+[`task_m100_5511_stage2_batch_q7_inventory.md`](../working/task_m100_5511_stage2_batch_q7_inventory.md)에
+기록했다. 권장안 A는 최소 characterization 뒤 세 함수를 책임 분해하고 Q7 전체를 이동한다.
+
+Q7도 완료했다. 미보호였던 내부 저장·position diagnostics·IR sweep 계약 6개를 먼저 고정하고,
+internal validation command와 position·verification·IR comparison query를 네 모듈로 이동했다.
+세 고복잡도 함수는 scalar/control, parsing/evaluation, load/compare/output 책임으로 분해해 Q7
+모듈의 CC 25 초과 경고를 0건으로 만들었다. 최종 focused 110/110과 전체 release-test
+8,005/8,005를 포함한 정적·정책 관문을 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_q7.md`](../working/task_m100_5511_stage2_batch_q7.md)에 기록했다.
+
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
 | 배치 | 범위 | 핵심 관문 | 예상 구현 커밋 |
@@ -118,9 +156,16 @@ CC 25 이하로 분해한 뒤 scan query, ordered runtime, batch query, fill·co
 | M1 | MCP definitions·capabilities payload·help projection | catalog 정본 유지, byte/semantic 동등성 | 3~5 |
 | P1 | replay·audit·lineage·anchor·gate·bundle·disclose·settle·harness | capsule 계보와 보안 경계별 모듈 분리 | 4~6 |
 
-M1은 7,569줄을 하나의 새 God module로 옮기지 않는다. schema, capabilities projection, help
-projection을 각각 1,200줄 이하 모듈로 나누고 catalog와 기계적으로 동형임을 유지한다. P1도
-명령 이름이 아니라 capsule, anchor/gate, disclosure/settlement, harness 책임으로 나눈다.
+M1도 완료했다. MCP 도구 정의 7개, capabilities projection 2개, help projection 3개 기능군과
+각 조립 모듈로 나눴으며 전 파일이 1,200줄 이하이다. catalog 정본은 이동·복제하지 않았고 여섯
+공개 출력의 byte hash와 8,005개 전체 계약이 유지됐다. 세부 증거는
+[`task_m100_5511_stage2_batch_m1.md`](../working/task_m100_5511_stage2_batch_m1.md)에 기록했다.
+
+P1도 완료했다. agent protocol 구현을 명령 이름이 아니라 capsule, trust, exchange, harness,
+plan 책임으로 나눴고, 이동 전 CC 25를 넘던 6개 함수는 관찰 가능한 계약을 유지한 채 책임별
+helper로 분해했다. 범용 CAS seam은 이후 C0도 사용하는 불변식이므로 root에 유지했다. 새 파일은
+모두 1,200줄 이하이고 직접 계약 97/97과 전체 release-test 8,005/8,005가 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_p1.md`](../working/task_m100_5511_stage2_batch_p1.md)에 기록했다.
 
 ### Wave C — 상태 변경 command 분리
 
@@ -137,6 +182,51 @@ projection을 각각 1,200줄 이하 모듈로 나누고 catalog와 기계적으
 C0에서 `EditContext` 또는 동등한 명시적 의존 묶음이 필요한지 결정한다. 이때 service 계층
 전환까지 선행하지 않고, Stage 2에서는 기존 동작을 전달할 최소 CLI runtime seam만 만든다.
 실제 `DocumentService`, typed error, 전역 인증 제거는 Stage 3 범위로 남긴다.
+
+C0도 완료했다. 88개 edit 하위 명령 dispatch와 공통 output format·serialize·verify·write를
+`cli/commands/edit/` 아래로 이동하고, edit와 protocol plan이 함께 쓰는 SHA-256·CAS path lock은
+`cli/integrity.rs`의 범용 seam으로 분리했다. 기능군별 의존이 확인되기 전에 god object가 되는
+광범위한 `EditContext`는 만들지 않았다. 직접 계약 101/101과 전체 release-test 8,005/8,005가
+통과했으며 최신 `devel`의 별도 Studio 변경을 정상 merge했다. 세부 증거는
+[`task_m100_5511_stage2_batch_c0.md`](../working/task_m100_5511_stage2_batch_c0.md)에 기록했다.
+
+C1도 완료했다. 기존 1,380줄·11함수 계측에 field occurrence 정본 parser 20줄·1함수를 더해
+실범위를 1,400줄·12함수로 보정하고, field·문서 전역 replace·privacy command를 세 모듈로
+이동했다. `edit_replace_text`와 `edit_redact`는 option parsing과 실행을 나눠 CC 29·33을 모두
+상한 이하로 낮췄다. 직접 계약 113/113과 전체 release-test 8,005/8,005가 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_c1.md`](../working/task_m100_5511_stage2_batch_c1.md)에 기록했다.
+
+C2도 완료했다. 분리되어 있던 insert-image 전용 helper까지 실범위에 포함해 chart·number·form·
+page border, shape lifecycle, image·picture command를 세 모듈로 이동했다. `edit_insert_image`는
+argument parsing과 실행을 나눠 CC 27을 상한 이하로 낮췄다. 최신 #5647 chart B2 계약을 포함한
+직접 계약 146/146과 전체 release-test 8,008/8,008이 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_c2.md`](../working/task_m100_5511_stage2_batch_c2.md)에 기록했다.
+
+C3도 완료했다. cell content·properties, table coordinate·lifecycle·grid·layout, equation lifecycle
+command를 일곱 파일로 이동했고 모두 1,200줄 이하이며 CC 25 초과 경고가 없다. 완료 직전 전진한
+`devel`의 renderer 변경을 정상 merge하고 새 integration source까지 파생 harness에 다시 모집해
+직접 계약 137/137과 전체 release-test 8,197/8,197을 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_c3.md`](../working/task_m100_5511_stage2_batch_c3.md)에 기록했다.
+
+C4도 완료했다. 본문 text·paragraph·break, page·section·column, note, bookmark, generic control
+구조 command 20개·2,306줄을 다섯 파일로 이동했고 모두 1,200줄 이하이며 CC 25 초과 경고가
+없다. 최신 `devel`의 q-more·skill-router·Studio 누적 통합을 정상 merge한 뒤 직접 계약
+117/117과 전체 release-test 8,205/8,205를 통과했다. `set-column-def`의 기존 raw attribute 저장
+결함은 move-only 범위에 섞지 않고 후속 이슈 후보로 기록했다. 세부 증거는
+[`task_m100_5511_stage2_batch_c4.md`](../working/task_m100_5511_stage2_batch_c4.md)에 기록했다.
+
+C5도 완료했다. cell paragraph split·merge와 body·cell char/paragraph/style formatting
+command 8개·전용 helper 1개·1,289줄을 두 파일로 이동했고 모두 1,200줄 이하이며 CC 25 초과
+경고가 없다. 미보호였던 `apply-cell-style` 저장값·dry-run·오류·MCP 계약 4건을 이동 전에
+고정하고, 직접 계약 73/73과 전체 release-test 8,209/8,209를 통과했다. 세부 증거는
+[`task_m100_5511_stage2_batch_c5.md`](../working/task_m100_5511_stage2_batch_c5.md)에 기록했다.
+
+C6도 완료했다. 계획의 1,152줄·9함수 추정을 실제 story command 2,430줄·18 handler로 보정하고,
+header/footer content·properties와 note story를 세 파일로 이동했다. 모두 1,200줄 이하이고 CC 25
+초과 경고가 없다. 미보호였던 `set-hf-picture`의 실제 저장·재파싱 계약을 먼저 고정하고, 직접
+계약 113/113과 전체 release-test 8,212/8,212를 통과했다. `src/main.rs`의 `edit_*` handler는
+전수 이동됐으며 세부 증거는
+[`task_m100_5511_stage2_batch_c6.md`](../working/task_m100_5511_stage2_batch_c6.md)에 기록했다.
 
 ## 5. 중단 조건
 
@@ -166,6 +256,8 @@ Stage 3 진입 전 다음을 모두 만족한다.
 7. 남은 `HwpDocument`, parser/model/renderer/serializer, 전역 상태 직접 의존을 Stage 3 입력
    inventory로 고정한다.
 
-Stage 2의 예상 잔여량은 16개 기능군 승인 배치와 약 35~53개 구현 커밋이다. 이는 현재 코드
-기준 범위이며, 중단 조건이나 원격 통합에 따라 조정한다. Stage 3·4의 승인과 수행은 이 계획으로
-자동 개시하지 않는다.
+계획된 16개 기능군 배치는 모두 완료했다. `src/main.rs`에는 2,075줄·45개 최상위 함수가 남지만,
+메인테이너는 향후 기능 PR의 재증가 가능성과 추가 분해 비용을 고려해 현 기준선을 수용하고
+#5511의 리팩토링을 종료했다. 초기 1,200줄 목표의 미달분을 위한 추가 C7이나 종료 inventory는
+만들지 않는다. 재증가 방지는 별도 이슈 #5767의 기여자 가이드라인과 base/head 증분 CI로
+다룬다. Stage 3·4의 승인과 수행은 이 계획으로 자동 개시하지 않는다.

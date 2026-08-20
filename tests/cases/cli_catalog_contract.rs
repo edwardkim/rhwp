@@ -53,7 +53,7 @@ fn dispatch_names() -> Vec<&'static str> {
         .split_once("fn main() {")
         .expect("main 시작")
         .1
-        .split_once("/// [#3263]")
+        .split_once("// [#5511] 최상위 dispatch 끝")
         .expect("main 다음 경계")
         .0;
     let mut names = Vec::new();

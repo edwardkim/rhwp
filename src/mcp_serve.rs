@@ -1,7 +1,7 @@
 //! [#3140] `mcp-serve` — rhwp 를 MCP(Model Context Protocol) 서버로 노출한다.
 //!
 //! 전송은 MCP 표준 stdio(줄 단위 JSON-RPC 2.0)다. `capabilities --mcp`(#3263)가
-//! 도구 **선언**을 냈다면, 본 모듈은 그 선언을 단일 출처(`crate::mcp_tool_definitions`)로
+//! 도구 **선언**을 냈다면, 본 모듈은 그 선언을 단일 출처(`crate::cli::metadata::mcp::mcp_tool_definitions`)로
 //! 공유하면서 **실행**까지 잇는다:
 //!
 //! - 무상태 도구(`hwp_info` 등 13종): 선언의 `cli.args` 배선을 그대로 해석해 자기 자신을
@@ -517,7 +517,7 @@ pub fn run(args: &[String]) -> i32 {
     }
     let stdin = std::io::stdin();
     let stdout = std::io::stdout();
-    let mut tool_defs = crate::mcp_tool_definitions();
+    let mut tool_defs = crate::cli::metadata::mcp::mcp_tool_definitions();
     if let Some(p) = profile {
         tool_defs.retain(|t| {
             t["name"]
@@ -1004,7 +1004,7 @@ fn read_resource(
         // 단일 출처: `capabilities --mcp` 의 stdout 과 같은 함수가 낸 값이다.
         (
             "application/json",
-            crate::mcp_manifest_value(profile).to_string(),
+            crate::cli::metadata::mcp::mcp_manifest_value(profile).to_string(),
         )
     } else if let Some(r) = SCHEMA_RESOURCES.iter().find(|r| r.uri == uri) {
         ("application/json", (r.generate)().to_string())
@@ -1140,7 +1140,7 @@ fn session_tool_annotations(name: &str, writes_file: bool) -> serde_json::Value 
     let read_only = read_axis && !writes_file;
     let destructive = name == "hwp_doc_save";
     let idempotent = !matches!(name, "hwp_open" | "hwp_ws_open" | "hwp_doc_replace_text");
-    crate::mcp_annotations(read_only, destructive, idempotent)
+    crate::cli::metadata::mcp::mcp_annotations(read_only, destructive, idempotent)
 }
 
 /// tools/list 응답: 선언 도구(MCP 필수 3종 + annotations 노출) + 세션 도구.
@@ -1437,9 +1437,10 @@ fn handle_tool_call(
                     .iter()
                     .filter_map(|t| t["name"].as_str())
                     .collect();
-                let did_you_mean: Vec<String> = crate::closest_name(name, candidates.into_iter())
-                    .into_iter()
-                    .collect();
+                let did_you_mean: Vec<String> =
+                    crate::cli::metadata::capabilities::closest_name(name, candidates.into_iter())
+                        .into_iter()
+                        .collect();
                 let mut body = serde_json::json!({ "error": error, "didYouMean": did_you_mean });
                 if let Some(best) = body["didYouMean"][0].as_str() {
                     body["nextCall"] = serde_json::json!({
@@ -2264,7 +2265,7 @@ fn session_fill_fields(args: &serde_json::Value, sessions: &mut Sessions) -> ser
             serde_json::Value::String(s) => s.clone(),
             other => other.to_string(),
         };
-        let (name, occurrence) = crate::parse_field_key(key);
+        let (name, occurrence) = crate::cli::commands::edit::parse_field_key(key);
         let total = name_counts.get(name).copied().unwrap_or(0);
         if total == 0 || occurrence >= total {
             not_found.push(key.clone());
@@ -2355,20 +2356,21 @@ fn session_save(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
 
     // [버그] `output` 경로의 확장자를 무시하고 원본 포맷(source_is_hwpx)만으로 직렬화
     // 형식을 정했다 — HWPX 핸들을 `.hwp` 경로로 저장해도 zip(HWPX) 바이트를 그대로
-    // 써 버려 확장자와 실제 내용이 어긋났다. CLI의 `edit_output_format`(main.rs)은
+    // 써 버려 확장자와 실제 내용이 어긋났다. CLI edit runtime의 형식 판정은
     // 명시적 출력 확장자를 우선하는데, MCP 세션 경로만 비동형이었다. 같은 규칙을 쓴다.
     let explicit_ext = std::path::Path::new(output)
         .extension()
         .map(|ext| ext.to_string_lossy().to_ascii_lowercase());
     let format = match (sd.source_is_hwpx, explicit_ext.as_deref()) {
-        (true, Some("hwp")) => crate::EditOutputFormat::Hwp,
-        (true, _) => crate::EditOutputFormat::Hwpx,
-        (false, _) => crate::EditOutputFormat::Hwp,
+        (true, Some("hwp")) => crate::cli::commands::edit::runtime::EditOutputFormat::Hwp,
+        (true, _) => crate::cli::commands::edit::runtime::EditOutputFormat::Hwpx,
+        (false, _) => crate::cli::commands::edit::runtime::EditOutputFormat::Hwp,
     };
     // HWP5 산출 경로의 어댑터(`convert_if_hwpx_source`)는 `Hwpx | Hwp3` 양쪽에서 돌며
     // 살아 있는 IR 을 제자리에서 고친다. 도구 계약이 "핸들은 저장 후에도 열려 있다"
     // 이므로 세션은 복제본에 어댑터를 태우는 스냅숏 경로를 쓴다.
-    let bytes = match crate::edit_serialize_snapshot(&sd.doc, format) {
+    let bytes = match crate::cli::commands::edit::runtime::edit_serialize_snapshot(&sd.doc, format)
+    {
         Ok(b) => b,
         Err(e) => return tool_error(format!("직렬화 실패: {e}")),
     };
@@ -2382,7 +2384,8 @@ fn session_save(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
         .and_then(|v| v.as_bool())
         .unwrap_or(false)
     {
-        let (report, _failed) = crate::edit_verify_report(&sd.doc, &bytes, false);
+        let (report, _failed) =
+            crate::cli::commands::edit::runtime::edit_verify_report(&sd.doc, &bytes, false);
         report
     } else {
         serde_json::Value::Null
@@ -2504,33 +2507,34 @@ fn run_cli_tool(def: &serde_json::Value, args: &serde_json::Value) -> serde_json
     // 프레임을 자식 batch 가 "파일 경로"로 읽어가고(응답 없는 요청), 서버는 자식이
     // EOF 를 볼 때까지 wait_with_output 에서 멈춘다. 그래서 stdin 도구는 자식을
     // 띄우기 전에 paths 를 선검증해 즉시 도구 오류로 돌려준다.
-    let stdin_paths: Option<String> =
-        if crate::MCP_STDIN_TOOLS.contains(&def["name"].as_str().unwrap_or_default()) {
-            let Some(arr) = args.get("paths").and_then(|p| p.as_array()) else {
-                return tool_error(
-                    "paths 는 문자열 배열이어야 합니다 (예: {\"paths\":[\"a.hwp\"]})".into(),
-                );
-            };
-            let mut paths = Vec::with_capacity(arr.len());
-            for v in arr {
-                match v.as_str() {
-                    Some(s) => paths.push(s),
-                    // 비문자열을 조용히 걸러내면 "3건을 보냈는데 0건 스윕"이 성공처럼
-                    // 보인다 — 형태 오류는 실행 전에 그대로 알려준다.
-                    None => {
-                        return tool_error(format!("paths 항목은 문자열이어야 합니다: {v}"));
-                    }
+    let stdin_paths: Option<String> = if crate::cli::metadata::mcp::MCP_STDIN_TOOLS
+        .contains(&def["name"].as_str().unwrap_or_default())
+    {
+        let Some(arr) = args.get("paths").and_then(|p| p.as_array()) else {
+            return tool_error(
+                "paths 는 문자열 배열이어야 합니다 (예: {\"paths\":[\"a.hwp\"]})".into(),
+            );
+        };
+        let mut paths = Vec::with_capacity(arr.len());
+        for v in arr {
+            match v.as_str() {
+                Some(s) => paths.push(s),
+                // 비문자열을 조용히 걸러내면 "3건을 보냈는데 0건 스윕"이 성공처럼
+                // 보인다 — 형태 오류는 실행 전에 그대로 알려준다.
+                None => {
+                    return tool_error(format!("paths 항목은 문자열이어야 합니다: {v}"));
                 }
             }
-            if paths.is_empty() {
-                return tool_error(
-                    "paths 가 비어 있습니다 — 대상 문서 경로를 1개 이상 넣어 주세요".into(),
-                );
-            }
-            Some(paths.join("\n"))
-        } else {
-            None
-        };
+        }
+        if paths.is_empty() {
+            return tool_error(
+                "paths 가 비어 있습니다 — 대상 문서 경로를 1개 이상 넣어 주세요".into(),
+            );
+        }
+        Some(paths.join("\n"))
+    } else {
+        None
+    };
 
     let exe = match std::env::current_exe() {
         Ok(p) => p,
