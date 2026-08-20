@@ -10,7 +10,7 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
-use rhwp::model::style::{BorderFill, Fill, FillType, SolidFill};
+use rhwp::model::style::{BorderFill, BorderLine, BorderLineType, Fill, FillType, SolidFill};
 use rhwp::parser::hwpx::parse_hwpx;
 use rhwp::serializer::hwpx::serialize_hwpx;
 
@@ -142,5 +142,66 @@ fn issue_5717_without_show_first_fill_paints_every_page() {
     assert!(
         second.contains("#1c3d62"),
         "SHOW_FIRST 가 아닌 쪽 배경은 종전대로 전 쪽에 칠해져야 한다 (156494214 계약)"
+    );
+}
+
+/// 남색 실선 4방향 테두리 BorderFill 을 추가하고 1-based id 를 돌려준다.
+fn push_navy_border_lines(doc: &mut rhwp::model::document::Document) -> u16 {
+    let line = BorderLine {
+        line_type: BorderLineType::Solid,
+        width: 2,
+        color: NAVY,
+    };
+    doc.doc_info.border_fills.push(BorderFill {
+        borders: [line.clone(), line.clone(), line.clone(), line],
+        ..Default::default()
+    });
+    doc.doc_info.border_fills.len() as u16
+}
+
+/// 렌더 게이트 — border=SHOW_FIRST 문서는 쪽 테두리가 구역 첫 쪽에만 그려진다.
+///
+/// 배경 축(bit 9)과 달리 테두리 축(bit 8)은 `build_page_borders` 게이트를 탄다.
+/// 두 축이 같은 구역 정의 상태에서 갈라져 나오는지를 여기서 잠근다.
+#[test]
+fn issue_5717_border_show_first_paints_first_page_only() {
+    let mut doc = parse_hwpx(FIXTURE_MULTI).expect("parse fixture");
+    let navy_bfid = push_navy_border_lines(&mut doc);
+    {
+        let sd = &mut doc.sections[0].section_def;
+        sd.page_border_fill.border_fill_id = navy_bfid;
+        sd.first_page_border = true;
+        sd.flags |= 0x0100;
+    }
+    grow_to_multiple_pages(&mut doc);
+
+    let bytes = serialize_hwpx(&doc).expect("serialize");
+    let core = DocumentCore::from_bytes(&bytes).expect("open");
+    let first = core.render_page_svg_native(0).expect("page 1 svg");
+    assert!(
+        first.contains("#1c3d62"),
+        "구역 첫 쪽에는 남색 쪽 테두리가 그려져야 한다"
+    );
+    let second = core.render_page_svg_native(1).expect("page 2 svg");
+    assert!(
+        !second.contains("#1c3d62"),
+        "border=SHOW_FIRST 문서의 2쪽에는 쪽 테두리가 없어야 한다 (#5717)"
+    );
+}
+
+/// 회귀 가드 — bit 8 이 꺼진 문서(156494214 계약)는 쪽 테두리를 전 쪽에 유지한다.
+#[test]
+fn issue_5717_without_show_first_border_paints_every_page() {
+    let mut doc = parse_hwpx(FIXTURE_MULTI).expect("parse fixture");
+    let navy_bfid = push_navy_border_lines(&mut doc);
+    doc.sections[0].section_def.page_border_fill.border_fill_id = navy_bfid;
+    grow_to_multiple_pages(&mut doc);
+
+    let bytes = serialize_hwpx(&doc).expect("serialize");
+    let core = DocumentCore::from_bytes(&bytes).expect("open");
+    let second = core.render_page_svg_native(1).expect("page 2 svg");
+    assert!(
+        second.contains("#1c3d62"),
+        "SHOW_FIRST 가 아닌 쪽 테두리는 종전대로 전 쪽에 그려져야 한다 (156494214 계약)"
     );
 }
