@@ -950,7 +950,7 @@ mod support;
                     )
                     self.assertIn(f"archive_label: {archive_label}", job)
                     self.assertIn('filterset: "all()"', job)
-                    self.assertIn(f'partition: "hash:{shard}/2"', job)
+                    self.assertIn(f'partition: "hash:{index}/2"', job)
                     self.assertNotIn("native-skia-tests", job)
                     self.assertNotIn("native_skia_required", job)
         self.assertNotIn("test-slow-shard:", self.workflow)
