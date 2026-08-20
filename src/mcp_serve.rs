@@ -2356,20 +2356,21 @@ fn session_save(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
 
     // [버그] `output` 경로의 확장자를 무시하고 원본 포맷(source_is_hwpx)만으로 직렬화
     // 형식을 정했다 — HWPX 핸들을 `.hwp` 경로로 저장해도 zip(HWPX) 바이트를 그대로
-    // 써 버려 확장자와 실제 내용이 어긋났다. CLI의 `edit_output_format`(main.rs)은
+    // 써 버려 확장자와 실제 내용이 어긋났다. CLI edit runtime의 형식 판정은
     // 명시적 출력 확장자를 우선하는데, MCP 세션 경로만 비동형이었다. 같은 규칙을 쓴다.
     let explicit_ext = std::path::Path::new(output)
         .extension()
         .map(|ext| ext.to_string_lossy().to_ascii_lowercase());
     let format = match (sd.source_is_hwpx, explicit_ext.as_deref()) {
-        (true, Some("hwp")) => crate::EditOutputFormat::Hwp,
-        (true, _) => crate::EditOutputFormat::Hwpx,
-        (false, _) => crate::EditOutputFormat::Hwp,
+        (true, Some("hwp")) => crate::cli::commands::edit::runtime::EditOutputFormat::Hwp,
+        (true, _) => crate::cli::commands::edit::runtime::EditOutputFormat::Hwpx,
+        (false, _) => crate::cli::commands::edit::runtime::EditOutputFormat::Hwp,
     };
     // HWP5 산출 경로의 어댑터(`convert_if_hwpx_source`)는 `Hwpx | Hwp3` 양쪽에서 돌며
     // 살아 있는 IR 을 제자리에서 고친다. 도구 계약이 "핸들은 저장 후에도 열려 있다"
     // 이므로 세션은 복제본에 어댑터를 태우는 스냅숏 경로를 쓴다.
-    let bytes = match crate::edit_serialize_snapshot(&sd.doc, format) {
+    let bytes = match crate::cli::commands::edit::runtime::edit_serialize_snapshot(&sd.doc, format)
+    {
         Ok(b) => b,
         Err(e) => return tool_error(format!("직렬화 실패: {e}")),
     };
@@ -2383,7 +2384,8 @@ fn session_save(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
         .and_then(|v| v.as_bool())
         .unwrap_or(false)
     {
-        let (report, _failed) = crate::edit_verify_report(&sd.doc, &bytes, false);
+        let (report, _failed) =
+            crate::cli::commands::edit::runtime::edit_verify_report(&sd.doc, &bytes, false);
         report
     } else {
         serde_json::Value::Null

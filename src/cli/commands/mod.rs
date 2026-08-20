@@ -5,6 +5,7 @@
 pub(crate) mod batch_convert;
 pub(crate) mod batch_fill;
 pub(crate) mod conversion;
+pub(crate) mod edit;
 pub(crate) mod generation;
 pub(crate) mod internal_validation;
 pub(crate) mod tabular_import;

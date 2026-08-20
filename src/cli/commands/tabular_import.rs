@@ -7,9 +7,11 @@ use std::process;
 use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
+use crate::cli::commands::edit::runtime::{
+    edit_output_format, edit_serialize, edit_verify_report, EditOutputFormat,
+};
 use crate::{
-    edit_output_format, edit_serialize, edit_verify_report, resolve_table_cell,
-    set_cell_control_char_rejection, CellResolveError, EditOutputFormat, EXIT_OK, EXIT_RUNTIME,
+    resolve_table_cell, set_cell_control_char_rejection, CellResolveError, EXIT_OK, EXIT_RUNTIME,
     EXIT_USAGE,
 };
 
