@@ -402,8 +402,25 @@ export class PageRenderer {
     const left = canvas.style.left;
     const transform = canvas.style.transform;
 
+    // [#5780] DOM 그림 갈래는 flow-static canvas 대신 DIV 를 깐다. 위 canvas 는
+    // 'flow-dynamic' 이라 Background plane 이 빠지므로, 이 갈래에서는 쪽 배경(색·그라데이션·
+    // 배경 이미지)을 실을 평면이 하나도 없다. 그래서 배경 canvas 를 DIV 아래에 함께 깐다.
+    const usesDomFlowImages = reuseStaticFlow && flowImages.length > 0;
+
     if (reuseStaticFlow) {
-      if (flowImages.length > 0) {
+      if (usesDomFlowImages) {
+        const background = this.createOrReuseFilteredCanvasLayer(
+          pageIdx,
+          canvas,
+          renderScale,
+          'background',
+          layers,
+          allowReuse,
+        );
+        this.applyPageLayerBox(background, top, left, transform, cssWidth, cssHeight);
+        background.style.zIndex = '0';
+        parent.insertBefore(background, canvas);
+
         const flowImageLayer = this.createOrReuseFlowImageLayer(
           pageIdx,
           canvas,
@@ -413,6 +430,8 @@ export class PageRenderer {
           flowImages,
         );
         this.applyPageLayerBox(flowImageLayer, top, left, transform, cssWidth, cssHeight);
+        // 배경 canvas 와 같은 z-index 를 쓰고 DOM 순서로 위에 온다 — 뒤따르는
+        // behind/front layer 의 z 계약(1·2·3)을 건드리지 않는다.
         flowImageLayer.style.zIndex = '0';
         parent.insertBefore(flowImageLayer, canvas);
       } else {
@@ -463,7 +482,9 @@ export class PageRenderer {
       background.style.zIndex = '0';
       parent.insertBefore(background, canvas);
     } else {
-      this.removeOverlayLayer(parent, pageIdx, 'background');
+      // [#5780] DOM 그림 갈래가 방금 깐 배경 layer 는 지우지 않는다 — 지우면 그 쪽만
+      // 쪽 배경을 잃는다(hasFront 인 쪽에서 이 가지를 탄다).
+      if (!usesDomFlowImages) this.removeOverlayLayer(parent, pageIdx, 'background');
       this.removeOverlayLayer(parent, pageIdx, 'behind');
       canvas.style.background = reuseStaticFlow ? 'transparent' : '';
       canvas.style.zIndex = layers.hasFront || reuseStaticFlow ? '1' : '';
@@ -524,7 +545,10 @@ export class PageRenderer {
     layer.dataset.rhwpFlowImagePage = String(pageIdx);
     layer.dataset.rhwpStaticOverlayKey = key;
     layer.style.pointerEvents = 'none';
-    layer.style.background = 'var(--doc-paper)';
+    // [#5780] 종이색을 여기서 칠하지 않는다. 이 layer 바로 아래에 Background plane 을 그린
+    // canvas 가 깔리므로(`applyOverlays`), 여기서 칠하면 쪽 배경색·그라데이션·배경 이미지를
+    // 가린다. 배경이 없는 쪽의 흰 종이도 그 canvas 가 그린다.
+    layer.style.background = 'transparent';
 
     for (const image of images) {
       const visibleBbox = visibleFlowImageBbox(image);

@@ -318,6 +318,24 @@ test('PageRenderer uses filtered canvas layers for background, behind, and front
   assert.match(source, /collectLayerPlaneSummary\(root,\s*summary,\s*null\)/);
 });
 
+test('[#5780] DOM flow-image pages still get a Background plane layer under the images', () => {
+  const source = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
+  // DOM 그림 갈래는 flow-static canvas 를 쓰지 않으므로, 배경 layer 를 스스로 깔아야 한다.
+  // 'flow-dynamic' 본문 canvas 는 Background plane 을 그리지 않는다.
+  assert.match(source, /const usesDomFlowImages = reuseStaticFlow && flowImages\.length > 0;/);
+  assert.match(
+    source,
+    /if \(usesDomFlowImages\) \{[\s\S]{0,400}?createOrReuseFilteredCanvasLayer\([\s\S]{0,120}?'background'/,
+  );
+  // hasFront 인 쪽은 !hasBehind 가지를 타는데, 거기서 방금 깐 배경 layer 를 지우면 안 된다.
+  assert.match(
+    source,
+    /if \(!usesDomFlowImages\) this\.removeOverlayLayer\(parent, pageIdx, 'background'\);/,
+  );
+  // 그림 layer 가 종이색을 칠하면 그 아래 배경 canvas 를 가린다.
+  assert.doesNotMatch(source, /layer\.style\.background = 'var\(--doc-paper\)';/);
+});
+
 test('CanvasKit and comparison canvas bitmap extents preserve fractional page edges', () => {
   const pageRenderer = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
   const compareResult = readFileSync(new URL('../src/ui/compare-result-window.ts', import.meta.url), 'utf8');
