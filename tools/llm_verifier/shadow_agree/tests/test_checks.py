@@ -21,13 +21,18 @@ class CheckCatalogTests(unittest.TestCase):
         self.assertEqual(len(keys), len(set(keys)))
 
     def test_commands_are_existing_rhwp_verbs(self) -> None:
-        src = (REPO / "src" / "main.rs").read_text(encoding="utf-8")
+        # CHECKS contains both top-level verbs and nested edit subcommands. Their
+        # dispatch and envelope producers no longer all live in the entrypoint.
+        producers = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted((REPO / "src").rglob("*.rs"))
+        )
         for item in CHECKS:
             self.assertTrue(item.command.startswith("rhwp "), item.check_id)
             verb = item.command.split()[1]
-            self.assertIn(f'Some("{verb}")', src, item.command)
+            self.assertIn(f'Some("{verb}")', producers, item.command)
             if item.pass_field not in {"pageCount"}:
-                self.assertIn(item.pass_field.split(".")[-1], src)
+                self.assertIn(item.pass_field.split(".")[-1], producers)
 
     def test_no_invented_cli(self) -> None:
         catalog = " ".join(item.command for item in CHECKS)

@@ -35,10 +35,10 @@ jobs:
       fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
       reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
     steps:
-      # 문서 전용 devel PR과 검증된 코드 후보 뒤의 mydocs review tail도 `prop roundtrip`
+      # 문서 전용 devel PR과 검증된 코드 후보 뒤의 review-only tail도 `prop roundtrip`
       # check 이름은 남겨야 한다. workflow-level paths-ignore를 쓰면 required check가
       # 사라질 수 있으므로 job 조건으로 skip한다.
-      - name: Detect mydocs-only or trusted trailing review tail
+      - name: Detect review-only or trusted trailing review tail
         id: detect
         continue-on-error: true
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -60,11 +60,31 @@ jobs:
               return;
             }
 
-            function isMydocsOnly(files) {
-              return files.length > 0 && files.every((file) => (
-                file.filename.startsWith('mydocs/')
-                && (!file.previous_filename || file.previous_filename.startsWith('mydocs/'))
-              ));
+            function isAllowedReviewPath(file) {
+              const filename = file.filename;
+              if (filename.startsWith('mydocs/')) {
+                return true;
+              }
+              if (file.status !== 'added') {
+                return false;
+              }
+              return isReviewReferencePath(filename);
+            }
+
+            function isReviewReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              return (
+                filename.startsWith('samples/')
+                && (
+                  filename.endsWith('.hwp')
+                  || filename.endsWith('.hwpx')
+                  || filename.endsWith('.pdf')
+                  || filename.endsWith('.png')
+                )
+              ) || (
+                pdfPrefixes.some((prefix) => filename.startsWith(prefix))
+                && filename.endsWith('.pdf')
+              );
             }
 
             const files = await github.paginate(github.rest.pulls.listFiles, {
@@ -73,8 +93,8 @@ jobs:
               pull_number: pr.number,
               per_page: 100,
             });
-            if (isMydocsOnly(files)) {
-              setResult(true, 'mydocs-only-devel-pr');
+            if (files.length > 0 && files.every((file) => isAllowedReviewPath(file))) {
+              setResult(true, 'review-only-devel-pr');
               return;
             }
 
@@ -93,7 +113,8 @@ jobs:
                 ref: commit.sha,
               });
               const commitFiles = detail.data.files || [];
-              if (commitFiles.length === 0 || commitFiles.length >= 300 || !isMydocsOnly(commitFiles)) {
+              if (commitFiles.length === 0 || commitFiles.length >= 300
+                || !commitFiles.every((file) => isAllowedReviewPath(file))) {
                 break;
               }
               tailStart = index;
@@ -115,17 +136,23 @@ jobs:
               repo: context.repo.repo,
               workflow_id: 'proptest-roundtrip.yml',
               event: 'pull_request',
-              head_sha: candidate.sha,
               per_page: 100,
             });
             const latestCandidateRun = candidateRuns
               .filter((run) => (
                 run.event === 'pull_request'
                 && run.head_sha === candidate.sha
-                && (run.pull_requests || []).some((runPr) => Number(runPr.number) === Number(pr.number))
+                && run.head_branch === pr.head.ref
+                && run.head_repository?.id === pr.head.repo?.id
               ))
               .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0];
-            if (!latestCandidateRun || latestCandidateRun.status !== 'completed' || latestCandidateRun.conclusion !== 'success') {
+            const runCreatedAt = Date.parse(latestCandidateRun?.created_at || '');
+            const pullCreatedAt = Date.parse(pr.created_at || '');
+            if (!latestCandidateRun || latestCandidateRun.status !== 'completed'
+              || latestCandidateRun.conclusion !== 'success'
+              || !Number.isFinite(runCreatedAt)
+              || !Number.isFinite(pullCreatedAt)
+              || runCreatedAt < pullCreatedAt) {
               setResult(false, 'review-tail-candidate-run-unavailable');
               return;
             }

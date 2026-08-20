@@ -52,6 +52,7 @@ pub mod style_resolver;
 pub mod svg;
 pub mod svg_fragment;
 pub mod svg_layer;
+pub(crate) mod text_decoration;
 pub mod typeset;
 #[cfg(target_arch = "wasm32")]
 pub mod web_canvas;
@@ -244,21 +245,15 @@ impl TextStyle {
         }
     }
 
-    /// 글자폭 맞춤(fit) 대상 advance 에 적용할 배율 (#2771).
+    /// 글자폭 맞춤(fit) 대상 advance 에 적용할 배율 (#2771, #5756).
     ///
     /// SVG `textLength` 와 Canvas `fit_scale` 은 "레이아웃 advance 에 글리프 폭을
-    /// 맞춘다". 그런데 첨자 글리프는 `script_draw_metrics` 로 0.7 배 축소되어
-    /// 그려지므로, 대상 advance 를 같은 배율로 줄이지 않으면 브라우저가 축소된
-    /// 글리프를 본문 폭까지 되늘려 1/0.7 ≈ 1.43 배 가로 확대가 발생한다.
-    ///
-    /// 비첨자는 **정확히 1.0** 을 돌려준다. `advance * 1.0` 은 IEEE-754 상
-    /// 반올림이 없는 항등 연산이라 기존 `textLength` 값이 비트 단위로 불변이다.
+    /// 맞춘다". [#5756] 이후 첨자 run 의 **레이아웃 advance 자체**가 그리기
+    /// 배율(0.7)로 측정되므로(`text_measurement::style_params`), 대상 advance 는
+    /// 이미 축소 글리프의 자연 폭과 일치한다 — 여기서 또 줄이면 이중 축소로
+    /// 글리프가 0.49 배까지 눌린다. 항상 1.0(항등)을 돌려준다.
     pub fn script_advance_scale(&self) -> f64 {
-        if self.superscript || self.subscript {
-            SCRIPT_FONT_SCALE
-        } else {
-            1.0
-        }
+        1.0
     }
 
     /// 브라우저 렌더러가 실제 glyph 폭을 맞출 때 사용할 advance 를 반환한다.
@@ -1973,8 +1968,8 @@ mod tests {
             );
         }
 
-        // 첨자 배율은 그리기 글꼴 축소율과 반드시 같은 값이어야 한다.
-        // (다르면 글리프가 textLength 로 되늘어나는 #2771 결함이 재발한다.)
+        // [#5756] 첨자 run 의 레이아웃 advance 가 그리기 배율(0.7)로 측정되므로
+        // fit 배율은 첨자에서도 항등(1.0)이다 — 0.7 을 또 곱하면 이중 축소.
         let sup = TextStyle {
             superscript: true,
             ..base.clone()
@@ -1984,10 +1979,9 @@ mod tests {
             ..base.clone()
         };
         for style in [&sup, &sub] {
-            assert_eq!(
-                style.script_draw_metrics(20.0, 0.0).0,
-                20.0 * style.script_advance_scale()
-            );
+            assert_eq!(style.script_advance_scale(), 1.0);
+            // 그리기 글꼴은 여전히 0.7 배 축소다.
+            assert_eq!(style.script_draw_metrics(20.0, 0.0).0, 20.0 * 0.7);
         }
     }
 

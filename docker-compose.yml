@@ -64,7 +64,7 @@ services:
         trap 'exit 143' TERM
         trap finish EXIT
         rm -f pkg/*-opt.wasm
-        wasm-pack build --target web
+        scripts/wasm-pack-locked.sh --target web
 
 volumes:
   cargo-cache:

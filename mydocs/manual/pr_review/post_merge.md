@@ -166,16 +166,24 @@ close 체크리스트: ① sub-issue close ② 가드 테스트 PR merge ③ 판
 원 PR에는 감사, merge 사실, 실제 검증 결과, 필요하면 후속 issue를 남긴다. issue·PR·comment는 평문 번호
 대신 Markdown direct link로 쓴다.
 
-시각 검증을 merge 판단 근거로 썼다면 실제 devel asset을 보이게 포함한다.
+시각 검증을 merge 판단 근거로 썼다면 [Visual Sweep의 GitHub merge comment 정본](../verification/visual_sweep_guide.md#github-merge-comment)을
+direct link로 남기고, merge commit에 포함된 실제 asset을 보이게 포함한다. raw URL은 이미지 표시용 증적이며,
+문서 비교 방법의 정본은 Visual Sweep 가이드다.
 
 ~~~markdown
 검토 및 머지 완료했습니다. 감사합니다.
 
 - CI: Build & Test, CodeQL, Render Diff의 최신 head 결과 확인
 - 로컬 검증: 실제 실행한 focused/release-test/Native Skia 등
+- 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 따름
 - visual sweep: pN, flagged=0/N, pixel match NN.NNNNN%
 
-![PR N pN visual review](https://raw.githubusercontent.com/edwardkim/rhwp/devel/mydocs/pr/assets/<review>.png)
+코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 약 NN.NN%.
+높을수록 좋음: 기준 PDF와 rhwp PNG가 더 비슷함
+낮을수록 나쁨/검토 필요: 잉크 위치나 형태 차이가 큼
+단, 사람 판정 정확도가 아니라 내용 픽셀 중심 자동 일치율 보조값입니다
+
+![PR N pN visual review](https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/<review>.png)
 ~~~
 
 이미지 link만 쓰거나 output 임시 경로만 남기지 않는다. review 문서에 기록된 실제 수치·페이지·결론만

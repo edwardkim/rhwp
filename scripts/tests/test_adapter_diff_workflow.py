@@ -6,6 +6,7 @@ ci.yml 배선을 강제한다(#4080). 배선을 잊으면 그 테스트가 실�
 
 from __future__ import annotations
 
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -36,14 +37,21 @@ class AdapterDiffWorkflowTests(unittest.TestCase):
         self.assertIn("pull_request:", self.wf)
         self.assertIn("branches: [main, devel]", self.wf)
 
-    def test_mydocs_only_or_trusted_trailing_tail_skips_adapter_job_but_keeps_a_stable_check(self) -> None:
+    def test_review_only_or_trusted_trailing_tail_skips_adapter_job_but_keeps_a_stable_check(self) -> None:
         self.assertIn("adapter-impact:", self.wf)
         self.assertIn("name: adapter inter-diff preflight", self.wf)
         self.assertIn("uses: actions/github-script", self.wf)
+        self.assertIn("function isAllowedReviewPath(file)", self.wf)
+        self.assertIn("file.status !== 'added'", self.wf)
+        self.assertIn("const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];", self.wf)
+        self.assertIn("filename.endsWith('.pdf')", self.wf)
         self.assertIn("github.rest.pulls.listCommits", self.wf)
         self.assertIn("github.rest.repos.getCommit", self.wf)
         self.assertIn("workflow_id: 'adapter-diff.yml'", self.wf)
         self.assertIn("github.rest.actions.listWorkflowRuns", self.wf)
+        self.assertIn("run.head_branch === pr.head.ref", self.wf)
+        self.assertIn("run.head_repository?.id === pr.head.repo?.id", self.wf)
+        self.assertNotIn("run.pull_requests", self.wf)
         self.assertIn("core.setOutput('adapter_required', required ? 'true' : 'false')", self.wf)
         self.assertIn("skip-trusted-mydocs-tail:", self.wf)
         self.assertIn("review-tail-candidate-run-unavailable", self.wf)
@@ -53,12 +61,30 @@ class AdapterDiffWorkflowTests(unittest.TestCase):
         )
         self.assertNotIn("paths-ignore:", self.wf)
 
+    def test_review_only_preflight_script_parses(self) -> None:
+        script = self.wf.split("script: |\n", maxsplit=1)[1].split(
+            "\n\n  adapter-diff:", maxsplit=1
+        )[0]
+        script = "\n".join(
+            line.removeprefix("            ") for line in script.splitlines()
+        )
+        completed = subprocess.run(
+            ["node", "--check"],
+            input=f"(async () => {{\n{script}\n}})();\n",
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+
     def test_is_cheap(self) -> None:
-        self.assertNotIn("--features native-skia", self.wf)
-        self.assertNotIn("samples/", self.wf)
-        self.assertNotIn("cargo-fuzz", self.wf)
-        self.assertIn("timeout-minutes: 25", self.wf)
-        self.assertIn("tools/adapter_diff/harness.py --ci --strict", self.wf)
+        worker = self.wf.split("  adapter-diff:\n", maxsplit=1)[1]
+        self.assertNotIn("--features native-skia", worker)
+        self.assertNotIn("samples/", worker)
+        self.assertNotIn("cargo-fuzz", worker)
+        self.assertIn("timeout-minutes: 25", worker)
+        self.assertIn("tools/adapter_diff/harness.py --ci --strict", worker)
 
     def test_uses_debug_cargo_test_not_release_archive(self) -> None:
         self.assertIn("run-adapter-diff.mjs --cargo-test", self.wf)

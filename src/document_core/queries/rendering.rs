@@ -2395,7 +2395,7 @@ impl DocumentCore {
             .collect::<Vec<_>>()
             .join(",");
         Ok(format!(
-            "{{\"pageIndex\":{},\"width\":{:.1},\"height\":{:.1},\"sectionIndex\":{},\
+            "{{\"pageIndex\":{},\"pageNumber\":{},\"width\":{:.1},\"height\":{:.1},\"sectionIndex\":{},\
             \"marginLeft\":{:.1},\"marginRight\":{:.1},\"marginTop\":{:.1},\"marginBottom\":{:.1},\
             \"marginHeader\":{:.1},\"marginFooter\":{:.1},\
             \"bodyLeft\":{:.1},\"bodyRight\":{:.1},\"marginGutter\":{:.1},\
@@ -2403,6 +2403,9 @@ impl DocumentCore {
             \"pageBorderLeft\":{:.1},\"pageBorderRight\":{:.1},\"pageBorderTop\":{:.1},\"pageBorderBottom\":{:.1},\
             \"columns\":[{}]}}",
             page_content.page_index,
+            // 문서가 매기는 쪽번호 — `쪽 > 새 번호로 시작`(NewNumber)을 반영한 값이다.
+            // 물리 순번(pageIndex + 1)과 다를 수 있고, 상태 표시줄·인쇄물이 보여야 할 숫자는 이쪽이다.
+            page_content.page_number,
             page_content.layout.page_width,
             page_content.layout.page_height,
             page_content.section_index,
@@ -6473,6 +6476,22 @@ impl DocumentCore {
             .unwrap_or(true);
         self.layout_engine
             .set_current_page_is_section_first(is_section_first_page);
+
+        // [#5717] 구역정의 "첫 쪽에만 테두리/배경 표시" (flags bit 8/9,
+        // HWPX visibility SHOW_FIRST) — 켜진 구역은 첫 쪽 밖에서 억제한다.
+        let (first_page_border, first_page_fill) = self
+            .document
+            .sections
+            .get(page_content.section_index)
+            .map(|s| {
+                (
+                    s.section_def.first_page_border,
+                    s.section_def.first_page_fill,
+                )
+            })
+            .unwrap_or((false, false));
+        self.layout_engine
+            .set_page_border_fill_first_page_only(first_page_border, first_page_fill);
 
         let wrap_around_paras = self
             .pagination

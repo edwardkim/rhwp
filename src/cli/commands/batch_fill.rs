@@ -4,7 +4,8 @@ use std::fs;
 use std::path::Path;
 
 use crate::cli::batch::{fail_record, ordered::stream_records};
-use crate::{edit_output_format, fill_fields_core, EXIT_RUNTIME, EXIT_USAGE};
+use crate::cli::commands::edit::{fill_fields_core, runtime::edit_output_format};
+use crate::{EXIT_RUNTIME, EXIT_USAGE};
 
 /// 데이터 파일의 한 행. 읽지 못한 행도 **버리지 않고** 들고 간다 — 스트림에서 조용히
 /// 사라지면 소비자는 N행을 넣고 N-1건을 받고도 그것을 성공으로 읽는다.

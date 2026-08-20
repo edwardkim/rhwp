@@ -99,7 +99,7 @@ if (!fs.existsSync(opts.rhwp)) {
 }
 const wasmJs = path.join(opts.pkg, 'rhwp.js');
 if (!fs.existsSync(wasmJs)) {
-  console.error(`wasm pkg 없음: ${wasmJs} — wasm-pack build --target web --out-dir pkg 먼저 실행`);
+  console.error(`wasm pkg 없음: ${wasmJs} — scripts/wasm-pack-locked.sh --target web --out-dir pkg 먼저 실행`);
   process.exit(2);
 }
 

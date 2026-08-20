@@ -787,6 +787,22 @@ impl LayoutEngine {
 
                             let bin_id = pic.image_attr.bin_data_id;
                             let img_data = find_bin_data_bytes(bin_data_content, bin_id);
+                            // [#5728] 그림 자르기(imgClip)를 본문/묶음 경로(#5568)와
+                            // 동일하게 싣는다 — 빠뜨리면 원본 전체가 대상 상자에
+                            // 압착된다(비율 파괴). 렌더러 crop 분기는 이 두 필드만
+                            // 소비한다.
+                            let crop = {
+                                let c = &pic.crop;
+                                if c.right > c.left
+                                    && c.bottom > c.top
+                                    && (c.left != 0 || c.top != 0 || c.right != 0 || c.bottom != 0)
+                                {
+                                    Some((c.left, c.top, c.right, c.bottom))
+                                } else {
+                                    None
+                                }
+                            };
+                            let original_size_hu = pic.crop_reference_size();
                             let img_node_id = tree.next_id();
                             // [Task #1151 v4] 셀 안 inline picture 의 cell context + outer
                             // 정보 보존. rendering.rs:1495 의 Image JSON 직렬화 에 cellIdx/
@@ -811,6 +827,23 @@ impl LayoutEngine {
                                         path,
                                     }
                                 });
+                            // [#5727] 문단 레이아웃(빈 줄 TAC 경로 등)이 이미 그리고
+                            // 등록한 그림은 다시 밀어넣지 않는다 — 이중 렌더 방지.
+                            if let (Some((sec_idx, outer_pi, _, _)), Some(cctx)) =
+                                (enclosing_ctx, cell_ctx.as_ref())
+                            {
+                                if tree
+                                    .get_inline_shape_position(
+                                        sec_idx,
+                                        outer_pi,
+                                        ctrl_idx,
+                                        Some(cctx),
+                                    )
+                                    .is_some()
+                                {
+                                    continue;
+                                }
+                            }
                             let img_node = RenderNode::new(
                                 img_node_id,
                                 RenderNodeType::Image(ImageNode {
@@ -822,8 +855,8 @@ impl LayoutEngine {
                                     fill_mode: None,
                                     original_size: None,
                                     transform: extract_shape_transform(&pic.shape_attr),
-                                    crop: None,
-                                    original_size_hu: None,
+                                    crop,
+                                    original_size_hu,
                                     effect: pic.image_attr.effect,
                                     brightness: pic.image_attr.brightness,
                                     contrast: pic.image_attr.contrast,

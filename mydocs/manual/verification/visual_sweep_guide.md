@@ -311,6 +311,36 @@ jq '.pages[] | select(.page == 22) | {page, overlay_png, visual_accuracy_proxy_p
   output/task1274/<target>/overlay/overlay_metrics.json
 ```
 
+## GitHub merge comment
+
+renderer, layout, paint처럼 **문서 비교 결과를 merge 판단 근거로 쓴 PR**의 공식 비교 절차는 이
+Visual Sweep 가이드다. merge 후 GitHub comment는 이미지 하나 또는 raw URL만으로 판정하지 않고, 이 절의
+절차와 review 문서에 기록한 실제 결과를 함께 가리킨다.
+
+comment에는 다음을 포함한다.
+
+- 이 절의 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)
+  direct link
+- review 문서에 기록된 실제 페이지, 후보 수, `pixel match`와 `visual_accuracy_proxy_percent`
+- 수치가 자동 일치율 보조값이며 사람의 최종 판정을 대체하지 않는다는 설명
+- merge commit SHA에 고정한 representative review PNG
+
+`raw.githubusercontent.com` URL은 GitHub comment에서 PNG를 표시하는 증적 전달 수단일 뿐, 문서 비교 절차의
+정본 링크가 아니다. branch URL 대신 asset을 포함한 merge commit SHA를 사용해, 이후 `devel`이 전진해도
+comment가 가리키는 증적을 고정한다.
+
+~~~markdown
+- 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 따름
+- 대상: pN, flagged=0/N, pixel match NN.NNNNN%
+
+코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 약 NN.NN%.
+높을수록 좋음: 기준 PDF와 rhwp PNG가 더 비슷함
+낮을수록 나쁨/검토 필요: 잉크 위치나 형태 차이가 큼
+단, 사람 판정 정확도가 아니라 내용 픽셀 중심 자동 일치율 보조값입니다
+
+![PR N pN visual review](https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/<review>.png)
+~~~
+
 ## PNG overlay 비교
 
 스크립트는 각 페이지에 대해 `rhwp_png`와 `pdf_png`를 같은 canvas 크기로 padding한 뒤, RGB 채널 차이가

@@ -204,6 +204,37 @@ cargo build --profile release-test --target-dir target/pr-review
 아래 범위에서 검증합니다. 메인터너용 PR review 문서를 읽거나 저장소에 검토 기록을 추가할 필요는 없습니다.
 PR 본문에 실제로 실행한 명령, 통과 결과, 수동 확인한 동작과 사용한 공개 sample만 적어주세요.
 
+WASM package를 다시 만들 때는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니다. `wasm-pack`의 사전
+metadata 호출까지 `--locked`로 고정하므로, 검증 과정에서 루트 `Cargo.lock`이 갱신되는 것을 막습니다.
+
+```bash
+CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg
+```
+
+반복 실행할 때는 macOS/Linux 셸에서 아래 alias를 둘 수 있습니다.
+
+```bash
+alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
+rhwp-wasm-build
+```
+
+Windows에서는 native wrapper를 사용합니다.
+
+```powershell
+$env:CARGO_TARGET_DIR = 'target\pr-review'
+.\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg
+Remove-Item Env:CARGO_TARGET_DIR
+```
+
+`cmd.exe`에서는 아래처럼 `doskey` macro를 현재 세션에 등록할 수 있습니다. macro는 세션 종료 시 사라집니다.
+
+```bat
+doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg $*
+set "CARGO_TARGET_DIR=target\pr-review"
+rhwp-wasm-build
+set "CARGO_TARGET_DIR="
+```
+
 먼저 의존성을 설치한 뒤 Studio의 타입·단위·번들을 확인합니다.
 
 ```bash
