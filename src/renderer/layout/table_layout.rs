@@ -4308,7 +4308,46 @@ impl LayoutEngine {
                 if allow_rowbreak_object_bottom_bleed || overlay_multirow_rowbreak {
                     pushed.max(min_y)
                 } else {
-                    pushed.clamp(min_y, body_bottom.max(min_y))
+                    let clamped = pushed.clamp(min_y, body_bottom.max(min_y));
+                    // [#5699 J3] 자리차지(TopAndBottom) 표를 body_bottom 클램프가
+                    // 흐름 위치(y_start) 위로 끌어올리면 이미 페인트된 직전 줄과
+                    // 반드시 겹친다(37787 규제영향분석서 p6: 1017.6→990.8 상향으로
+                    // 직전 줄 983..1003 침범). 자리차지는 텍스트가 겹칠 수 없는
+                    // 계약이므로 이때만 클램프를 풀어 하단 여백 bleed 로 둔다
+                    // (#4514 overlay 계열과 같은 페인트 단계 보정). 흐름을 침범하지
+                    // 않는 클램프는 종전대로 유지하며, 해제는 다음 형상으로 한정한다.
+                    //
+                    // ① Top 정렬 + offset 0 (앵커가 곧 흐름 위치인 순수 흐름 표):
+                    //    offset 배치 표(결재·발신명의 하단 고정 틀, off≈2500~3400HU)는
+                    //    이 클램프가 "쪽 하단 핀 고정" 의미를 겸한다(#1658/#1858 —
+                    //    흐름이 지나갔어도 body 하단 밀착이 정답).
+                    // ② 흐름이 아직 본문 영역 안 (y_start ≤ 본문 하단): 흐름이 이미
+                    //    본문 밖까지 밀린 과적 쪽에서는 클램프가 쪽 안으로 되끌어오는
+                    //    안전망을 겸하고, 해제는 후속 아이템 꼬리를 쪽 밖으로 밀어낸다
+                    //    (issue1891 fixture p39 실측: 해제 +33px 가 다음 표 2줄을
+                    //    쪽 밖으로 추가 이탈시킴).
+                    // ③ 표 전체가 용지 안에 그려지는 소폭 하단-여백 bleed 만 허용.
+                    if matches!(table_text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                        && matches!(
+                            table.common.vert_align,
+                            crate::model::shape::VertAlign::Top
+                                | crate::model::shape::VertAlign::Inside
+                        )
+                        && signed_hwpunit(table.common.vertical_offset) == 0
+                        && clamped < y_start - 0.5
+                        && y_start <= body_bottom + table_height + 0.5
+                        && y_start + table_height <= page_h_approx + 0.5
+                    {
+                        if std::env::var("RHWP_5699_DBG").is_ok() {
+                            eprintln!(
+                                "DBG5699_J3 bodybottom-clamp release: clamped={clamped:.1} < y_start={y_start:.1}, keep pushed={:.1}",
+                                pushed.max(min_y)
+                            );
+                        }
+                        pushed.max(min_y)
+                    } else {
+                        clamped
+                    }
                 }
             } else {
                 raw_y

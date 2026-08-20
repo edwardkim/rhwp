@@ -4,114 +4,7 @@
 
 mod envelope;
 mod inventory;
-mod gen {
-    mod s00;
-    mod s01;
-    mod s02;
-    mod s03;
-    mod s04;
-    mod s05;
-    mod s06;
-    mod s07;
-    mod s08;
-    mod s09;
-    mod s10;
-    mod s11;
-    mod s12;
-    mod s13;
-    mod s14;
-    mod s15;
-    mod s16;
-    mod s17;
-    mod s18;
-    mod s19;
-    mod s20;
-    mod s21;
-    mod s22;
-    mod s23;
-    mod s24;
-    mod s25;
-    mod s26;
-    mod s27;
-    mod s28;
-    mod s29;
-    mod s30;
-    mod s31;
-    mod s32;
-    mod s33;
-    mod s34;
-    mod s35;
-    mod s36;
-    mod s37;
-    mod s38;
-    mod s39;
-    mod s40;
-    mod s41;
-    mod s42;
-    mod s43;
-    mod s44;
-    mod s45;
-    mod s46;
-    mod s47;
-    mod s48;
-    mod s49;
-
-    pub fn probe_slot(slot: u32, doc: &rhwp::model::document::Document) -> u64 {
-        const FNS: [fn(&rhwp::model::document::Document) -> u64; 50] = [
-            s00::probe,
-            s01::probe,
-            s02::probe,
-            s03::probe,
-            s04::probe,
-            s05::probe,
-            s06::probe,
-            s07::probe,
-            s08::probe,
-            s09::probe,
-            s10::probe,
-            s11::probe,
-            s12::probe,
-            s13::probe,
-            s14::probe,
-            s15::probe,
-            s16::probe,
-            s17::probe,
-            s18::probe,
-            s19::probe,
-            s20::probe,
-            s21::probe,
-            s22::probe,
-            s23::probe,
-            s24::probe,
-            s25::probe,
-            s26::probe,
-            s27::probe,
-            s28::probe,
-            s29::probe,
-            s30::probe,
-            s31::probe,
-            s32::probe,
-            s33::probe,
-            s34::probe,
-            s35::probe,
-            s36::probe,
-            s37::probe,
-            s38::probe,
-            s39::probe,
-            s40::probe,
-            s41::probe,
-            s42::probe,
-            s43::probe,
-            s44::probe,
-            s45::probe,
-            s46::probe,
-            s47::probe,
-            s48::probe,
-            s49::probe,
-        ];
-        FNS[slot as usize](doc)
-    }
-}
+mod probe;
 
 use envelope::{envelope, load_core, parse_slot, print_json, write_stdout, EXIT_OK, EXIT_USAGE};
 use serde_json::json;
@@ -136,7 +29,7 @@ fn volume_probe(args: &[String]) -> i32 {
         Ok(c) => c,
         Err(c) => return c,
     };
-    let acc = gen::probe_slot(slot, core.document());
+    let acc = probe::probe_slot(slot, core.document());
     let payload = json!({"source": path, "slot": slot, "acc": acc});
     if json_mode {
         print_json(&envelope("volume-probe", payload, &[]))
