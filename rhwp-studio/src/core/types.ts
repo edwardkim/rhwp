@@ -14,7 +14,10 @@ export interface DocumentInfo {
 /** WASM getPageInfo() 반환 타입 */
 export interface PageInfo {
   pageIndex: number;
-  /** 조판 기준으로 계산된 표시용 쪽 번호(구역 설정 반영) */
+  /** 문서가 매기는 쪽번호 (1-based, `쪽 > 새 번호로 시작` 반영).
+   *
+   * 물리 순번(pageIndex + 1)과 다를 수 있다 — 상태 표시줄이 보여야 할 숫자는 이쪽이다.
+   * 구 WASM 은 이 필드를 내보내지 않으므로 optional 이다 (#5749). */
   pageNumber?: number;
   width: number;
   height: number;

@@ -1,5 +1,5 @@
 import { WasmBridge } from '@/core/wasm-bridge';
-import type { DocumentInfo } from '@/core/types';
+import type { DocumentInfo, PageInfo } from '@/core/types';
 import { EventBus } from '@/core/event-bus';
 import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
@@ -78,6 +78,7 @@ import {
 } from '@/view/render-backend';
 import { calculateFitPageZoom, calculateFitWidthZoom } from '@/view/zoom-fit';
 import { withBusyCursor } from '@/view/busy-cursor';
+import { formatPageIndicator } from '@/view/page-indicator';
 import { installEmbedRuntime } from '@/embed/runtime';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
@@ -968,14 +969,21 @@ function setupEventListeners(): void {
 
   eventBus.on('current-page-changed', (page, _total) => {
     const pageIdx = page as number;
-    sbPage().textContent = `${pageIdx + 1} / ${_total} 쪽`;
-
-    // 구역 정보: 현재 페이지의 sectionIndex로 갱신
+    // 쪽 정보 한 번으로 쪽번호와 구역을 함께 갱신한다.
+    let pageInfo: PageInfo | null = null;
     if (wasm.pageCount > 0) {
       try {
-        const pageInfo = wasm.getPageInfo(pageIdx);
-        sbSection().textContent = `구역: ${pageInfo.sectionIndex + 1} / ${totalSections}`;
+        pageInfo = wasm.getPageInfo(pageIdx);
       } catch { /* 무시 */ }
+    }
+    // 현재 쪽은 문서가 매기는 쪽번호를 쓴다 — 한글과 같은 규칙이다 (#5749).
+    sbPage().textContent = formatPageIndicator({
+      pageIndex: pageIdx,
+      totalPages: _total as number,
+      documentPageNumber: pageInfo?.pageNumber,
+    });
+    if (pageInfo) {
+      sbSection().textContent = `구역: ${pageInfo.sectionIndex + 1} / ${totalSections}`;
     }
   });
 
