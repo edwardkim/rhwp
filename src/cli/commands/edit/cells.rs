@@ -482,7 +482,6 @@ pub(super) fn edit_set_cell(args: &[String]) -> i32 {
     }
     EXIT_OK
 }
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
 /// `edit insert-text-in-cell` — 표 셀 문단에 텍스트 삽입. 코어 `insert_text_in_cell_native`.
 pub(super) fn edit_insert_text_in_cell(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-text-in-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [--offset N] [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]";

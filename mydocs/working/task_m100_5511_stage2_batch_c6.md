@@ -5,7 +5,7 @@
 - 최종 통합 기준: `upstream/devel` `d5a99a6f726afeb0aa71503c80bb4128a88bacae`
 - 최종 코드 HEAD: `b36508b462c1119a2d0495e2336ffc274ddf18d1`
 - 수행일: 2026-08-20
-- 상태: 완료 — C6·계획된 Wave C 종료, Stage 2 종료 inventory 승인 대기
+- 상태: 완료 — C6·계획된 Wave C·`main.rs` 리팩토링 종료
 
 ## 1. 결과
 
@@ -21,12 +21,12 @@ src/cli/commands/edit/
 | 책임 | 최종 파일 | 줄 수 |
 |---|---|---:|
 | header/footer lifecycle·text·paragraph·field | `src/cli/commands/edit/header_footer_content.rs` | 1,158 |
-| header/footer picture·template·visibility·format | `src/cli/commands/edit/header_footer_properties.rs` | 567 |
-| footnote/endnote text·paragraph·shape·format | `src/cli/commands/edit/note_content.rs` | 701 |
+| header/footer picture·template·visibility·format | `src/cli/commands/edit/header_footer_properties.rs` | 531 |
+| footnote/endnote text·paragraph·shape·format | `src/cli/commands/edit/note_content.rs` | 689 |
 
 세 파일은 모두 1,200줄 상한 이하다. 마스터 계획의 1,152줄·9함수 추정은 실제 root에 남은
 story command를 절반만 포착했다. inventory에서 실범위를 2,430 source line·18 handler로
-보정하고 그 전부를 이동했다. `src/main.rs`는 C6 시작의 4,499줄에서 2,089줄로 2,410줄
+보정하고 그 전부를 이동했다. `src/main.rs`는 C6 시작의 4,499줄에서 2,075줄로 2,424줄
 줄었으며 최상위 함수는 63개에서 45개로 줄었다. 함수 본문 2,430줄과 root의 순감소량 차이는
 module dispatch 조립과 기존 주석·공백의 재배치에서 생긴다. 이제 root에 `edit_*` handler는
 남지 않는다.
@@ -43,6 +43,11 @@ C4의 `notes.rs`에는 본문 control을 만들고 지우는 `insert-footnote`, 
 C0의 load·serialize·verify·write runtime을 그대로 재사용했고 공개 schema, core mutation,
 parser·serializer·renderer 알고리즘은 바꾸지 않았다. `DocumentService`, typed error와 전역 인증
 제거는 Stage 3 입력으로 유지했다.
+
+완료 검토에서 기존 `main.rs` 끝과 이동된 일부 무관 handler 앞에 `insert-image`·
+`delete-control` 설명의 고아 사본이 남은 것을 확인했다. 설명 자체를 폐기하지 않고 실제 소유자인
+`media.rs::edit_insert_image`와 `controls.rs::edit_delete_control`의 doc comment를 정본으로
+유지했으며, 다른 위치의 중복 사본만 제거했다.
 
 ## 3. 커밋 계보와 최신 기준선
 
@@ -126,14 +131,14 @@ Studio·Docker·renderer·parser·model·serializer 경로이고, 새 #5766은 q
 이 판정은 시점 증거다. 향후 push 직전에 exact base SHA, 열린 PR head와 merge 가능성을 다시
 확인한다. 이 보고서 작성 시점에는 remote push를 수행하지 않았다.
 
-## 8. 다음 승인 단위
+## 8. 메인테이너 종료 결정과 후속
 
-C6로 계획된 Wave C 기능군과 편집 handler 92개의 물리 분리가 끝났다. 그러나 Stage 2 자체의
-종료 조건은 아직 충족하지 않았다. `src/main.rs`는 2,089줄로 1,200줄 상한까지 889줄이 남고,
-45개 최상위 함수 중 metadata JSON helper, generation/internal command, 전역 인증·load seam,
-entrypoint와 root 단위 테스트가 섞여 있다.
+C6로 계획된 Wave C 기능군과 편집 handler 92개의 물리 분리가 끝났다. `src/main.rs`에는 45개
+최상위 함수와 metadata JSON helper, generation/internal command, 전역 인증·load seam,
+entrypoint와 root 단위 테스트가 남아 있다.
 
-따라서 다음 승인 단위는 임의의 C7이나 Stage 3 구현이 아니다. 먼저 Stage 2 종료 inventory에서
-잔여 45개 함수와 root 주석을 entrypoint 필수 조립, 기존 모듈로 귀속할 adapter, Stage 3 입력
-seam으로 분류한다. 그 결과로 최소 정정 배치를 확정하고 Stage 2 종료 조건을 다시 판정한다.
-이 inventory와 후속 구현은 별도 승인 전 시작하지 않는다.
+메인테이너는 향후 PR에서 다시 증가할 가능성과 추가 분해의 비용을 함께 고려해 2,075줄의 현재
+기준선을 수용하고 #5511의 `main.rs` 리팩토링을 여기서 종료하기로 결정했다. 남은 875줄을 줄이기
+위한 C7이나 종료 inventory는 만들지 않는다. 재증가 방지는 별도 이슈
+[#5767](https://github.com/edwardkim/rhwp/issues/5767)의 기여자 코드 복잡도 가이드라인과 base/head
+증분 CI로 다룬다.
