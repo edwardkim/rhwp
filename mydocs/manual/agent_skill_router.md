@@ -276,3 +276,25 @@ cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapt
 - `gym/`
 - 카탈로그에 없는 capability 이름 발명
 - 터미널 창 스크린샷을 검증 증적으로 제출
+
+## 새 스킬 만들어 — rhwp-skill-author
+
+`"새 스킬 만들어"` 도 예외 없이 같은 5단 파이프다.
+
+`request → intent → requiredCapabilities → skillSelection → executionGraph`
+
+경로 스킬은 **rhwp-skill-author** 다. `skillSelection` 은
+[`.claude/skills/rhwp-skill-author/SKILL.md`](../../.claude/skills/rhwp-skill-author/SKILL.md).
+스킬 본문을 추측해 쓰지 않는다. CAP ID 를 발명하지 않는다.
+
+새 스킬은 아래 세 명령을 **반드시 3회** 통과해야 끝이다. 카탈로그에 넣은
+스킬에 `PROBES` 세 줄이 없으면 `gate_new_skill.py` 가 실패한다.
+
+```bash
+python tools/skill_router/gate_new_skill.py
+python -m unittest tools.skill_router.test_route
+cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapture
+```
+
+CI 는 [`.github/workflows/skill-router-gate.yml`](../../.github/workflows/skill-router-gate.yml)
+이 같은 Python 게이트를 스킬·라우터 경로 PR 에 돌린다.

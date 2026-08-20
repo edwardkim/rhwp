@@ -97,3 +97,21 @@ cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapt
 
 실측 실패: PR #5707 shard 3. `rhwp-skill-router` 에 `rhwp <cmd>` 가 없어
 `skills_have_valid_frontmatter_and_are_executable` 가 깨졌다.
+
+## 새 스킬 만들어 — rhwp-skill-author
+
+`"새 스킬 만들어"` 도 `request → intent → requiredCapabilities →
+skillSelection → executionGraph` 를 탄다. 경로 스킬은 `rhwp-skill-author`
+(`.claude/skills/rhwp-skill-author/SKILL.md`). CAP ID 를 발명하지 않는다.
+
+카탈로그 스킬에 `PROBES` 가 없으면 `gate_new_skill.py` 가 실패한다.
+
+명령마다 3회:
+
+```bash
+python tools/skill_router/gate_new_skill.py
+python -m unittest tools.skill_router.test_route
+cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapture
+```
+
+CI: `.github/workflows/skill-router-gate.yml`.
