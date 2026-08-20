@@ -1437,9 +1437,10 @@ fn handle_tool_call(
                     .iter()
                     .filter_map(|t| t["name"].as_str())
                     .collect();
-                let did_you_mean: Vec<String> = crate::closest_name(name, candidates.into_iter())
-                    .into_iter()
-                    .collect();
+                let did_you_mean: Vec<String> =
+                    crate::cli::metadata::capabilities::closest_name(name, candidates.into_iter())
+                        .into_iter()
+                        .collect();
                 let mut body = serde_json::json!({ "error": error, "didYouMean": did_you_mean });
                 if let Some(best) = body["didYouMean"][0].as_str() {
                     body["nextCall"] = serde_json::json!({
