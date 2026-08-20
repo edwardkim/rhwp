@@ -7,12 +7,11 @@ use crate::{
     edit_apply_para_format_in_hf, edit_apply_style, edit_delete_bookmark, edit_delete_col,
     edit_delete_control, edit_delete_equation, edit_delete_footnote, edit_delete_header_footer,
     edit_delete_hf_text, edit_delete_paragraph, edit_delete_picture, edit_delete_row,
-    edit_delete_shape, edit_delete_table, edit_delete_text, edit_delete_text_in_cell,
-    edit_delete_text_in_footnote, edit_fit_table, edit_group_shapes, edit_insert_col,
-    edit_insert_column_break, edit_insert_endnote, edit_insert_equation, edit_insert_field_in_hf,
-    edit_insert_footnote, edit_insert_footnote_text, edit_insert_header_footer,
-    edit_insert_header_footer_text, edit_insert_image, edit_insert_page_break,
-    edit_insert_paragraph, edit_insert_picture, edit_insert_row, edit_insert_shape,
+    edit_delete_table, edit_delete_text, edit_delete_text_in_cell, edit_delete_text_in_footnote,
+    edit_fit_table, edit_insert_col, edit_insert_column_break, edit_insert_endnote,
+    edit_insert_equation, edit_insert_field_in_hf, edit_insert_footnote, edit_insert_footnote_text,
+    edit_insert_header_footer, edit_insert_header_footer_text, edit_insert_image,
+    edit_insert_page_break, edit_insert_paragraph, edit_insert_picture, edit_insert_row,
     edit_insert_table, edit_insert_text, edit_insert_text_in_cell, edit_merge_cells,
     edit_merge_paragraph, edit_merge_paragraph_in_cell, edit_merge_paragraph_in_footnote,
     edit_merge_paragraph_in_hf, edit_merge_table, edit_move_table, edit_rename_bookmark,
@@ -22,13 +21,14 @@ use crate::{
     edit_set_page_def, edit_set_page_hide, edit_set_picture, edit_set_section_def,
     edit_set_table_props, edit_split_cell, edit_split_cell_into, edit_split_paragraph,
     edit_split_paragraph_in_cell, edit_split_paragraph_in_footnote, edit_split_paragraph_in_hf,
-    edit_split_table, edit_toggle_hide_hf, edit_transpose_table, edit_ungroup_shape, EXIT_USAGE,
+    edit_split_table, edit_toggle_hide_hf, edit_transpose_table, EXIT_USAGE,
 };
 
 mod document_objects;
 mod fields;
 mod privacy;
 pub(crate) mod runtime;
+mod shapes;
 mod text;
 
 use document_objects::{
@@ -38,6 +38,7 @@ use document_objects::{
 use fields::edit_fill_fields;
 pub(crate) use fields::{fill_fields_core, parse_field_key};
 use privacy::{edit_redact, edit_sanitize};
+use shapes::{edit_delete_shape, edit_group_shapes, edit_insert_shape, edit_ungroup_shape};
 use text::edit_replace_text;
 
 /// `edit` — 문서 편집 명령군 (로드맵 #2659 Stage 3).
