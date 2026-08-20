@@ -1,10 +1,8 @@
 //! `edit` command dispatch and shared runtime boundary.
 
 use crate::{
-    edit_apply_cell_style, edit_apply_char_format, edit_apply_char_format_in_cell,
-    edit_apply_endnote_shape, edit_apply_hf_template, edit_apply_para_format,
-    edit_apply_para_format_in_cell, edit_apply_para_format_in_footnote,
-    edit_apply_para_format_in_hf, edit_apply_style, edit_delete_header_footer, edit_delete_hf_text,
+    edit_apply_endnote_shape, edit_apply_hf_template, edit_apply_para_format_in_footnote,
+    edit_apply_para_format_in_hf, edit_delete_header_footer, edit_delete_hf_text,
     edit_delete_text_in_footnote, edit_insert_field_in_hf, edit_insert_footnote_text,
     edit_insert_header_footer, edit_insert_header_footer_text, edit_merge_paragraph_in_footnote,
     edit_merge_paragraph_in_hf, edit_set_header_footer_text, edit_set_hf_picture,
@@ -19,6 +17,7 @@ mod document_objects;
 mod document_text;
 mod equations;
 mod fields;
+mod formatting;
 mod media;
 mod notes;
 mod page;
@@ -49,6 +48,10 @@ use document_text::{
 use equations::{edit_delete_equation, edit_insert_equation, edit_set_equation_properties};
 use fields::edit_fill_fields;
 pub(crate) use fields::{fill_fields_core, parse_field_key};
+use formatting::{
+    edit_apply_cell_style, edit_apply_char_format, edit_apply_char_format_in_cell,
+    edit_apply_para_format, edit_apply_para_format_in_cell, edit_apply_style,
+};
 use media::{edit_delete_picture, edit_insert_image, edit_insert_picture, edit_set_picture};
 use notes::{edit_delete_footnote, edit_insert_endnote, edit_insert_footnote};
 use page::{edit_set_column_def, edit_set_page_def, edit_set_page_hide, edit_set_section_def};
