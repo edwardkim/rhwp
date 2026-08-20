@@ -11,6 +11,7 @@ import {
 } from '../../view/grid-settings';
 import { HWPUNIT_PER_MM } from '../../core/hwp-constants';
 import { calculateFitPageZoom, calculateFitWidthZoom } from '../../view/zoom-fit';
+import { applyToolboxVisibility } from '../../view/toolbox-visibility';
 
 const PX_TO_MM = 25.4 / 96;
 
@@ -77,6 +78,15 @@ export function syncClipMenu(enabled: boolean): void {
   document.querySelectorAll('[data-cmd="view:toggle-clip"]').forEach(el => {
     el.classList.toggle('active', !enabled);
   });
+}
+
+/**
+ * 저장된 도구 상자(기본/서식) 보이기·숨기기 설정을 도구 모음과 메뉴 체크 표시에 반영한다.
+ * 시작 시 설정 복원과 토글 직후 양쪽이 같은 경로를 쓴다.
+ */
+export function syncToolboxMenu(): void {
+  const view = userSettings.getViewSettings();
+  applyToolboxVisibility(document, { basic: view.toolbarBasic, format: view.toolbarFormat });
 }
 
 function refreshCaretAfterViewChange(services: Parameters<CommandDef['execute']>[0]): void {
@@ -329,38 +339,20 @@ export const viewCommands: CommandDef[] = [
       ).show();
     },
   },
-  (() => {
-    let visible: boolean | null = null;
-    return {
-      id: 'view:toolbox-basic',
-      label: '기본',
-      execute() {
-        const el = document.getElementById('icon-toolbar');
-        if (!el) return;
-        if (visible === null) visible = getComputedStyle(el).display !== 'none';
-        visible = !visible;
-        el.style.display = visible ? '' : 'none';
-        document.querySelectorAll('[data-cmd="view:toolbox-basic"]').forEach(btn => {
-          btn.classList.toggle('active', visible!);
-        });
-      },
-    } satisfies CommandDef;
-  })(),
-  (() => {
-    let visible: boolean | null = null;
-    return {
-      id: 'view:toolbox-format',
-      label: '서식',
-      execute() {
-        const el = document.getElementById('style-bar');
-        if (!el) return;
-        if (visible === null) visible = getComputedStyle(el).display !== 'none';
-        visible = !visible;
-        el.style.display = visible ? '' : 'none';
-        document.querySelectorAll('[data-cmd="view:toolbox-format"]').forEach(btn => {
-          btn.classList.toggle('active', visible!);
-        });
-      },
-    } satisfies CommandDef;
-  })(),
+  {
+    id: 'view:toolbox-basic',
+    label: '기본',
+    execute() {
+      userSettings.setToolbarBasic(!userSettings.getViewSettings().toolbarBasic);
+      syncToolboxMenu();
+    },
+  } satisfies CommandDef,
+  {
+    id: 'view:toolbox-format',
+    label: '서식',
+    execute() {
+      userSettings.setToolbarFormat(!userSettings.getViewSettings().toolbarFormat);
+      syncToolboxMenu();
+    },
+  } satisfies CommandDef,
 ];

@@ -62,6 +62,10 @@ export interface ViewSettings {
   showControlCodes: boolean;
   /** 짤림보기(잘림 보기) 켜짐 여부. true = 편집용지 경계 밖 오버플로 내용을 보임(잘림 미적용). */
   clipView: boolean;
+  /** 기본 도구 상자(아이콘 도구 모음) 표시 여부 */
+  toolbarBasic: boolean;
+  /** 서식 도구 상자(서식 도구 모음) 표시 여부 */
+  toolbarFormat: boolean;
 }
 
 /** 복구용 자동저장 설정 */
@@ -152,6 +156,8 @@ function defaultSettings(): AppSettings {
       showParagraphMarks: false,
       showControlCodes: false,
       clipView: true,
+      toolbarBasic: true,
+      toolbarFormat: true,
     },
     autosave: {
       recoveryEnabled: true,
@@ -251,6 +257,14 @@ class UserSettingsService {
           clipView: normalizeBoolean(
             view.clipView,
             defaults.view.clipView,
+          ),
+          toolbarBasic: normalizeBoolean(
+            view.toolbarBasic,
+            defaults.view.toolbarBasic,
+          ),
+          toolbarFormat: normalizeBoolean(
+            view.toolbarFormat,
+            defaults.view.toolbarFormat,
           ),
         },
         autosave: {
@@ -375,6 +389,18 @@ class UserSettingsService {
   /** 짤림보기(잘림 보기) 켜짐 설정. true = 오버플로 내용 표시(잘림 미적용). */
   setClipView(value: boolean): void {
     this.data.view.clipView = value;
+    this.save();
+  }
+
+  /** 기본 도구 상자 표시 설정 */
+  setToolbarBasic(value: boolean): void {
+    this.data.view.toolbarBasic = value;
+    this.save();
+  }
+
+  /** 서식 도구 상자 표시 설정 */
+  setToolbarFormat(value: boolean): void {
+    this.data.view.toolbarFormat = value;
     this.save();
   }
 
