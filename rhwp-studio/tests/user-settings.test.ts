@@ -260,8 +260,14 @@ test('스킨 설정은 rhwp-settings에 저장되고 잘못된 값은 default로
   try {
     userSettings.setThemeSkin('flat');
     assert.equal(userSettings.getThemeSettings().skin, 'flat');
+    // 직접 선택은 첫 실행 안내 플래그를 확정한다.
+    assert.equal(userSettings.getThemeSettings().skinChosen, true);
     const stored = JSON.parse(store.get('rhwp-settings') ?? '{}');
     assert.equal(stored.theme.skin, 'flat');
+    assert.equal(stored.theme.skinChosen, true);
+
+    userSettings.setThemeSkin('oldschool');
+    assert.equal(userSettings.getThemeSettings().skin, 'oldschool');
 
     // 저장소에 없던 잘못된 값은 setter 정규화로 default가 된다.
     userSettings.setThemeSkin('neon' as never);

@@ -13,7 +13,9 @@
     const settings = JSON.parse(localStorage.getItem('rhwp-settings') || '{}');
     const storedMode = settings && settings.theme && settings.theme.mode;
     if (isThemeMode(storedMode)) mode = storedMode;
-    if (settings && settings.theme && settings.theme.skin === 'flat') skin = 'flat';
+    var storedSkin = settings && settings.theme && settings.theme.skin;
+    // 스킨 목록은 core/user-settings.ts 의 THEME_SKINS 와 함께 갱신한다.
+    if (storedSkin === 'flat' || storedSkin === 'oldschool') skin = storedSkin;
   } catch {
     mode = 'system';
   }

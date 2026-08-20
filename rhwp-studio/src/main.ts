@@ -49,6 +49,7 @@ import {
 import { initRhwpDev } from '@/core/rhwp-dev';
 import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
+import { maybeShowSkinOnboarding } from '@/ui/skin-onboarding-dialog';
 import { analyzeDocumentFonts } from '@/core/document-font-status';
 import { setDocumentFontSubstitutions } from '@/core/font-substitution';
 import {
@@ -1698,6 +1699,10 @@ function showLoadError(error: unknown): void {
 }
 
 const initPromise = initialize();
+// 첫 실행이면 스킨 선택을 안내한다 (초기화 성공 후, 임베드 모드 제외).
+void initPromise.then(() => {
+  maybeShowSkinOnboarding();
+});
 
 installEmbedRuntime({
   hostWindow: window,

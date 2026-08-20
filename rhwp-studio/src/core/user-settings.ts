@@ -30,8 +30,11 @@ export interface FontSettings {
 /** 앱 UI 테마 설정값 */
 export type ThemeMode = 'system' | 'light' | 'dark';
 
-/** 앱 UI 스킨 설정값 — 'flat' 은 옵트인 플랫 스킨(theme-flat.css) */
-export type ThemeSkin = 'default' | 'flat';
+/** 앱 UI 스킨 설정값 — 'flat'/'oldschool' 은 옵트인 스킨(theme-*.css) */
+export type ThemeSkin = 'default' | 'flat' | 'oldschool';
+
+/** 정규화가 참조하는 스킨 전체 목록 (theme-init.js 의 목록과 함께 갱신한다) */
+export const THEME_SKINS: readonly ThemeSkin[] = ['default', 'flat', 'oldschool'];
 
 /** 앱 UI 테마 설정 */
 export interface ThemeSettings {
@@ -39,6 +42,8 @@ export interface ThemeSettings {
   mode: ThemeMode;
   /** 사용자가 선택한 스킨 */
   skin: ThemeSkin;
+  /** 스킨을 한 번이라도 직접 선택했는지 — false 면 첫 실행 스킨 선택을 안내한다 */
+  skinChosen: boolean;
 }
 
 /** 대화상자 UI 설정 */
@@ -137,6 +142,7 @@ function defaultSettings(): AppSettings {
     theme: {
       mode: 'system',
       skin: 'default',
+      skinChosen: false,
     },
     dialog: {
       picturePropsKeepRatio: true,
@@ -156,12 +162,17 @@ function defaultSettings(): AppSettings {
   };
 }
 
+/** 첫 실행 스킨 안내를 보여줄지 판단한다 (한 번도 직접 선택하지 않은 경우만). */
+export function shouldShowSkinOnboarding(theme: Pick<ThemeSettings, 'skinChosen'>): boolean {
+  return !theme.skinChosen;
+}
+
 function normalizeThemeMode(value: unknown): ThemeMode {
   return value === 'light' || value === 'dark' || value === 'system' ? value : 'system';
 }
 
 function normalizeThemeSkin(value: unknown): ThemeSkin {
-  return value === 'flat' ? value : 'default';
+  return THEME_SKINS.includes(value as ThemeSkin) ? (value as ThemeSkin) : 'default';
 }
 
 function normalizeBoolean(value: unknown, fallback: boolean): boolean {
@@ -203,6 +214,7 @@ class UserSettingsService {
           ...(parsed.theme ?? {}),
           mode: normalizeThemeMode(parsed.theme?.mode),
           skin: normalizeThemeSkin(parsed.theme?.skin),
+          skinChosen: normalizeBoolean(parsed.theme?.skinChosen, false),
         },
         dialog: {
           ...defaults.dialog,
@@ -293,9 +305,17 @@ class UserSettingsService {
     this.save();
   }
 
-  /** 스킨 설정 */
+  /** 스킨 설정 — 직접 선택이므로 첫 실행 안내 플래그도 함께 확정한다 */
   setThemeSkin(skin: ThemeSkin): void {
     this.data.theme.skin = normalizeThemeSkin(skin);
+    this.data.theme.skinChosen = true;
+    this.save();
+  }
+
+  /** 스킨 선택을 확정 처리한다 (첫 실행 안내를 닫기만 한 경우 포함) */
+  markSkinChosen(): void {
+    if (this.data.theme.skinChosen) return;
+    this.data.theme.skinChosen = true;
     this.save();
   }
 
