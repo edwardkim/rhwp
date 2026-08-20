@@ -8,9 +8,11 @@
   "scripts": {
     "dev": "vite",
     "build": "node build.mjs",
+    "test:e2e:smoke": "npm run build && node e2e/extension-smoke.test.mjs",
     "clean": "rm -rf dist"
   },
   "devDependencies": {
+    "puppeteer": "^25.7.0",
     "typescript": "^7.0.2",
     "vite": "^8.2.1"
   }

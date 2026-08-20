@@ -4,7 +4,7 @@
 - 수행계획서: `mydocs/plans/task_m100_3514.md`
 - 브랜치: `codex/issue-3514-extension-smoke`
 - 작성일: 2026-08-20
-- 현재 게이트: Stage 1 승인 완료, Stage 2 준비
+- 현재 게이트: Stage 2 승인 완료, Stage 3 준비
 
 ## 1. Hyper-Waterfall 단계
 
@@ -34,6 +34,7 @@ Stage 1 커밋 뒤 위 구현만 stage하고 focused 검증과 코드 diff를 St
 ### Stage 3 — 최종 검증·운영 문서
 
 - `mydocs/manual/chrome_edge_extension_build_deploy.md`
+- `mydocs/feedback/task_m100_3514_hyper_waterfall_recovery.md` 복구 완료 갱신
 - `mydocs/plans/task_m100_3514.md` 상태 갱신
 - `mydocs/plans/task_m100_3514_impl.md` 상태 갱신
 - `mydocs/working/task_m100_3514_stage3.md`
