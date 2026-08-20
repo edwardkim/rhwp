@@ -4,7 +4,7 @@
 - 수행계획서: `mydocs/plans/task_m100_3514.md`
 - 브랜치: `codex/issue-3514-extension-smoke`
 - 작성일: 2026-08-20
-- 현재 게이트: Stage 2 승인 완료, Stage 3 준비
+- 현재 게이트: Stage 3 승인 완료, remote push 승인 대기
 
 ## 1. Hyper-Waterfall 단계
 
