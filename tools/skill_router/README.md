@@ -23,3 +23,27 @@ python tools/skill_router/gate_new_skill.py
 python -m unittest tools/skill_router/test_route.py
 cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapture
 ```
+
+## git pre-commit
+
+Skill-path changes (`.claude/skills/`, `.agents/skills/`, `tools/skill_router/`)
+run the 3-pass gate automatically on commit.
+
+```bash
+python tools/skill_router/install_git_hook.py
+python tools/skill_router/precommit_skill_gate.py
+```
+
+The hook execs `precommit_skill_gate.py` with the same Python. That script
+runs `gate_new_skill.py` three times and
+`python -m unittest tools.skill_router.test_route` once. Unrelated commits
+skip the gate (exit 0). Linked worktrees install into that worktree's
+git-dir hooks, not the main repo common hooks.
+
+## Catalog PROBES and CI
+
+- The gate fails if a PROBE selects a different skill.
+- Every catalog skill needs 3 unique PROBES.
+- `python tools/skill_router/check_catalog_sync.py`
+- `python tools/skill_router/precommit_skill_gate.py`
+- CI: `.github/workflows/skill-router-gate.yml`

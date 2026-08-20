@@ -637,6 +637,42 @@ def route_graph(skill: str) -> dict[str, Any]:
     )
 
 
+def author_skill_graph(skill: str) -> dict[str, Any]:
+    """scaffold SKILL.md → catalog row → gate 3x → unittest 3x."""
+    return _chain(
+        skill,
+        [
+            (
+                "scaffold",
+                "scaffold SKILL.md",
+                "write .claude/skills/<id>/SKILL.md "
+                "(name+description; rhwp capabilities; "
+                "rhwp info <파일> --json; rhwp export-svg <파일> -p 0)",
+            ),
+            (
+                "catalog",
+                "add catalog row",
+                "append unique id to tools/skill_router/catalog.json "
+                "and one INTENT_SPEC plus one graph builder",
+            ),
+            (
+                "gate-3x",
+                "gate 3x",
+                "python tools/skill_router/gate_new_skill.py; "
+                "python tools/skill_router/gate_new_skill.py; "
+                "python tools/skill_router/gate_new_skill.py",
+            ),
+            (
+                "unittest-3x",
+                "unittest 3x",
+                "python -m unittest tools/skill_router/test_route.py; "
+                "python -m unittest tools/skill_router/test_route.py; "
+                "python -m unittest tools/skill_router/test_route.py",
+            ),
+        ],
+    )
+
+
 def _document_fallback_graph(skill: str) -> dict[str, Any]:
     """Real DAG for an unknown skill — never a single dummy node."""
     return _chain(
@@ -670,6 +706,7 @@ _BUILDERS: dict[str, Builder] = {
     "inspect-cli": inspect_cli_graph,
     "codex": codex_graph,
     "route": route_graph,
+    "author-skill": author_skill_graph,
     # catalog.json intents[]
     "add-surface": agent_surface_graph,
     "capabilities-ssot": agent_surface_graph,
@@ -718,6 +755,7 @@ _BUILDERS: dict[str, Builder] = {
     "rhwp-recipes": recipes_graph,
     "rhwp-safe-edit": safe_edit_graph,
     "rhwp-security-sweep": security_graph,
+    "rhwp-skill-author": author_skill_graph,
     "rhwp-skill-router": route_graph,
     "rhwp-strategist": strategist_graph,
     "rhwp-table-exchange": table_csv_graph,

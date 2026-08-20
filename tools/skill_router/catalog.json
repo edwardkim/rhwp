@@ -442,6 +442,25 @@
       }
     },
     {
+      "id": "rhwp-skill-author",
+      "capabilityId": "rhwp-skill-author",
+      "registrationId": "CAP-5706",
+      "path": ".claude/skills/rhwp-skill-author/SKILL.md",
+      "authority": "tools/skill_router/README.md",
+      "triggers": [
+        "새 스킬",
+        "스킬 만들어",
+        "create a skill",
+        "SKILL.md 작성"
+      ],
+      "intents": ["author-skill"],
+      "nonOverlap": "새 rhwp CLI·이웃 스킬 본문·test_route.py·리뷰·머지 판단·gym은 책임 밖이다.",
+      "probe": {
+        "sample": "samples/basic/english.hwp",
+        "render": "export-svg"
+      }
+    },
+    {
       "id": "rhwp-skill-router",
       "capabilityId": "rhwp-skill-router",
       "registrationId": "CAP-5706",
