@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import tempfile
+import textwrap
 import unittest
 from pathlib import Path
 
@@ -12,6 +14,22 @@ WORKFLOWS = {
     "ci": ROOT / ".github/workflows/ci.yml",
     "codeql": ROOT / ".github/workflows/codeql.yml",
     "render-diff": ROOT / ".github/workflows/render-diff.yml",
+}
+WORKER_PREFLIGHTS = {
+    "proptest": (
+        ROOT / ".github/workflows/proptest-roundtrip.yml",
+        "\n\n      - name: Finalize fast pass",
+        "fast_pass",
+        "true",
+        "false",
+    ),
+    "adapter": (
+        ROOT / ".github/workflows/adapter-diff.yml",
+        "\n\n  adapter-diff:",
+        "adapter_required",
+        "false",
+        "true",
+    ),
 }
 RESOLUTION_CHECK = ROOT / "scripts/verify_review_only_merge_resolution.py"
 
@@ -163,6 +181,195 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         )
         self.assertNotEqual(wrong_base.returncode, 0)
         self.assertIn("current-base-merge-resolution-invalid-merge", wrong_base.stderr)
+
+    def test_worker_preflights_skip_added_review_pdf(self) -> None:
+        files = [
+            {"filename": "mydocs/pr/archives/pr_5772_review.md", "status": "added"},
+            {"filename": "pdf/pr_5772_reference.pdf", "status": "added"},
+        ]
+        for name, (_, _, output_name, skip_value, _) in WORKER_PREFLIGHTS.items():
+            with self.subTest(workflow=name):
+                output = self._run_worker_preflight(name, files=files)
+                self.assertEqual(output[output_name], skip_value)
+
+    def test_worker_preflights_reuse_matching_fork_candidate_after_pdf_and_mydocs_tail(
+        self,
+    ) -> None:
+        code_candidate = "c" * 40
+        evidence_commit = "e" * 40
+        review_commit = "r" * 40
+        files = [
+            {"filename": "src/renderer/layout.rs", "status": "modified"},
+            {"filename": "pdf/pr_5772_reference.pdf", "status": "added"},
+            {"filename": "mydocs/orders/20260820.md", "status": "modified"},
+        ]
+        commits = [
+            {
+                "sha": code_candidate,
+                "parents": [{"sha": "b" * 40}],
+                "files": [{"filename": "src/renderer/layout.rs", "status": "modified"}],
+            },
+            {
+                "sha": evidence_commit,
+                "parents": [{"sha": code_candidate}],
+                "files": [{"filename": "pdf/pr_5772_reference.pdf", "status": "added"}],
+            },
+            {
+                "sha": review_commit,
+                "parents": [{"sha": evidence_commit}],
+                "files": [{"filename": "mydocs/orders/20260820.md", "status": "modified"}],
+            },
+        ]
+        runs = [
+            {
+                "event": "pull_request",
+                "head_sha": code_candidate,
+                "head_branch": "fix/bughunt-batch-r3",
+                "head_repository": {"id": 7},
+                "status": "completed",
+                "conclusion": "success",
+                "created_at": "2026-08-20T12:00:00Z",
+            }
+        ]
+        for name, (_, _, output_name, skip_value, _) in WORKER_PREFLIGHTS.items():
+            with self.subTest(workflow=name):
+                output = self._run_worker_preflight(
+                    name, files=files, commits=commits, runs=runs
+                )
+                self.assertEqual(output[output_name], skip_value)
+
+    def test_worker_preflights_reject_modified_pdf_and_wrong_fork_candidate(self) -> None:
+        code_candidate = "c" * 40
+        modified_pdf = "m" * 40
+        modified_pdf_commits = [
+            {
+                "sha": code_candidate,
+                "parents": [{"sha": "b" * 40}],
+                "files": [{"filename": "src/renderer/layout.rs", "status": "modified"}],
+            },
+            {
+                "sha": modified_pdf,
+                "parents": [{"sha": code_candidate}],
+                "files": [{"filename": "pdf/existing_reference.pdf", "status": "modified"}],
+            },
+        ]
+        trailing_review = "r" * 40
+        trusted_tail = [
+            modified_pdf_commits[0],
+            {
+                "sha": trailing_review,
+                "parents": [{"sha": code_candidate}],
+                "files": [{"filename": "mydocs/orders/20260820.md", "status": "modified"}],
+            },
+        ]
+        wrong_fork_run = {
+            "event": "pull_request",
+            "head_sha": code_candidate,
+            "head_branch": "fix/bughunt-batch-r3",
+            "head_repository": {"id": 999},
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-08-20T12:00:00Z",
+        }
+        for name, (_, _, output_name, _, full_value) in WORKER_PREFLIGHTS.items():
+            with self.subTest(workflow=name, case="modified-pdf"):
+                output = self._run_worker_preflight(
+                    name,
+                    files=[
+                        {"filename": "src/renderer/layout.rs", "status": "modified"},
+                        {"filename": "pdf/existing_reference.pdf", "status": "modified"},
+                    ],
+                    commits=modified_pdf_commits,
+                )
+                self.assertEqual(output[output_name], full_value)
+            with self.subTest(workflow=name, case="wrong-fork"):
+                output = self._run_worker_preflight(
+                    name,
+                    files=[
+                        {"filename": "src/renderer/layout.rs", "status": "modified"},
+                        {"filename": "mydocs/orders/20260820.md", "status": "modified"},
+                    ],
+                    commits=trusted_tail,
+                    runs=[wrong_fork_run],
+                )
+                self.assertEqual(output[output_name], full_value)
+
+    def _run_worker_preflight(
+        self,
+        name: str,
+        *,
+        files: list[dict[str, object]],
+        commits: list[dict[str, object]] | None = None,
+        runs: list[dict[str, object]] | None = None,
+    ) -> dict[str, str]:
+        workflow_path, end_marker, _, _, _ = WORKER_PREFLIGHTS[name]
+        workflow = workflow_path.read_text(encoding="utf-8")
+        script = workflow.split("script: |\n", maxsplit=1)[1].split(end_marker, maxsplit=1)[0]
+        script = "\n".join(
+            line.removeprefix("            ") for line in script.splitlines()
+        )
+        fixture = {
+            "files": files,
+            "commits": commits or [],
+            "runs": runs or [],
+        }
+        harness = textwrap.dedent(
+            """
+            const fixture = %(fixture)s;
+            const outputs = {};
+            const listFiles = Symbol('pulls.listFiles');
+            const listCommits = Symbol('pulls.listCommits');
+            const listWorkflowRuns = Symbol('actions.listWorkflowRuns');
+            const commits = new Map(fixture.commits.map((commit) => [commit.sha, commit]));
+            const github = {
+              rest: {
+                pulls: { listFiles, listCommits },
+                repos: {
+                  getCommit: async ({ ref }) => ({ data: { files: commits.get(ref).files } }),
+                },
+                actions: { listWorkflowRuns },
+              },
+              paginate: async (endpoint) => {
+                if (endpoint === listFiles) return fixture.files;
+                if (endpoint === listCommits) return fixture.commits;
+                if (endpoint === listWorkflowRuns) return fixture.runs;
+                throw new Error('unexpected paginate endpoint');
+              },
+            };
+            const context = {
+              eventName: 'pull_request',
+              repo: { owner: 'edwardkim', repo: 'rhwp' },
+              payload: {
+                pull_request: {
+                  number: 5772,
+                  created_at: '2026-08-20T00:00:00Z',
+                  base: { ref: 'devel' },
+                  head: { ref: 'fix/bughunt-batch-r3', repo: { id: 7 } },
+                },
+              },
+            };
+            const core = {
+              setOutput: (key, value) => { outputs[key] = String(value); },
+              info: () => {},
+            };
+            (async () => {
+            %(script)s
+            })().then(
+              () => process.stdout.write(JSON.stringify(outputs)),
+              (error) => { process.stderr.write(String(error.stack || error)); process.exitCode = 1; },
+            );
+            """
+        ) % {"fixture": json.dumps(fixture), "script": textwrap.indent(script, "  ")}
+        completed = subprocess.run(
+            ["node"],
+            input=harness,
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        return json.loads(completed.stdout)
 
     def _run_resolution_check(
         self,
