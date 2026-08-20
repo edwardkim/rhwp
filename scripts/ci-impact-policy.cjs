@@ -135,36 +135,41 @@ const RENDER_DIFF_PULL_REQUEST_PATHS = [
 
 const CI_RUST_JOBS = [
   'Lint (fmt, clippy, WASM check)',
-  'build-test-archive',
-  'test-slow-shard',
-  'test-regular-shard-1',
-  'test-regular-shard-2',
-  'test-regular-shard-3',
+  'build-test-archive-a',
+  'build-test-archive-b',
+  'test-archive-a-shard-1',
+  'test-archive-a-shard-2',
+  'test-archive-b-shard-1',
+  'test-archive-b-shard-2',
 ];
 // Reusable workflow calls have two observed REST job names: a skipped call keeps only
 // its caller job id, while an executed call is reported as "caller / called job name".
 // Audit one logical lane across both representations without accepting duplicates.
 const CI_JOB_ALIASES = {
   'Lint (fmt, clippy, WASM check)': ['Lint (fmt, clippy, WASM check)'],
-  'build-test-archive': [
-    'build-test-archive',
-    'build-test-archive / Build test archive',
+  'build-test-archive-a': [
+    'build-test-archive-a',
+    'build-test-archive-a / Build test archive (a)',
   ],
-  'test-slow-shard': [
-    'test-slow-shard',
-    'test-slow-shard / Default-feature tests (slow shard)',
+  'build-test-archive-b': [
+    'build-test-archive-b',
+    'build-test-archive-b / Build test archive (b)',
   ],
-  'test-regular-shard-1': [
-    'test-regular-shard-1',
-    'test-regular-shard-1 / Default-feature tests (shard 1/3)',
+  'test-archive-a-shard-1': [
+    'test-archive-a-shard-1',
+    'test-archive-a-shard-1 / Default-feature tests (Archive A shard 1)',
   ],
-  'test-regular-shard-2': [
-    'test-regular-shard-2',
-    'test-regular-shard-2 / Default-feature tests (shard 2/3)',
+  'test-archive-a-shard-2': [
+    'test-archive-a-shard-2',
+    'test-archive-a-shard-2 / Default-feature tests (Archive A shard 2)',
   ],
-  'test-regular-shard-3': [
-    'test-regular-shard-3',
-    'test-regular-shard-3 / Default-feature tests (shard 3/3)',
+  'test-archive-b-shard-1': [
+    'test-archive-b-shard-1',
+    'test-archive-b-shard-1 / Default-feature tests (Archive B shard 1)',
+  ],
+  'test-archive-b-shard-2': [
+    'test-archive-b-shard-2',
+    'test-archive-b-shard-2 / Default-feature tests (Archive B shard 2)',
   ],
 };
 const CI_NATIVE_JOB = 'Native Skia tests';
@@ -173,11 +178,12 @@ const CI_FRONTEND_JOBS = ['Frontend unit gates', 'Frontend package gates'];
 // below. Tests derive every impact-conditioned ci.yml job and require this map to stay
 // complete, so adding a new selectable lane cannot silently escape the controller.
 const CI_AUDITED_JOB_IDS = {
-  'build-test-archive': 'build-test-archive',
-  'test-slow-shard': 'test-slow-shard',
-  'test-regular-shard-1': 'test-regular-shard-1',
-  'test-regular-shard-2': 'test-regular-shard-2',
-  'test-regular-shard-3': 'test-regular-shard-3',
+  'build-test-archive-a': 'build-test-archive-a',
+  'build-test-archive-b': 'build-test-archive-b',
+  'test-archive-a-shard-1': 'test-archive-a-shard-1',
+  'test-archive-a-shard-2': 'test-archive-a-shard-2',
+  'test-archive-b-shard-1': 'test-archive-b-shard-1',
+  'test-archive-b-shard-2': 'test-archive-b-shard-2',
   lint: 'Lint (fmt, clippy, WASM check)',
   'native-skia-tests': CI_NATIVE_JOB,
   'frontend-unit-gates': CI_FRONTEND_JOBS[0],
