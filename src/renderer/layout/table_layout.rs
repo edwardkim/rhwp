@@ -5800,10 +5800,29 @@ impl LayoutEngine {
                                 false,
                             );
                             if !hwpx_nested_behind_text_overlay {
+                                // [#5702] 어울림(Square/Tight/Through) 중첩표는 글이 옆으로
+                                // 흐른다. 줄 흐름에서 차지하는 높이는 표 높이가 아니라 그
+                                // 앵커 줄 높이다 — 00317 `당직근무 일지` 의 저장 좌표가 앵커
+                                // 줄 10.7px, 다음 글줄 11.2px 인데 표는 28.9px 다. 표 높이를
+                                // 더하면 다음 글줄이 19.3px 밀려 칸(48.5px) 밖으로 나간다.
+                                // 저장 앵커 줄이 있을 때만 그 높이를 쓰고, 없으면 종전대로
+                                // 표 높이를 쓴다.
+                                let square_wrap_anchor_h = (!is_tac_table
+                                    && nested_table.common.flow_with_text
+                                    && matches!(
+                                        nested_table.common.text_wrap,
+                                        TextWrap::Square | TextWrap::Tight | TextWrap::Through
+                                    ))
+                                .then(|| para.line_segs.first())
+                                .flatten()
+                                .map(|seg| hwpunit_to_px(seg.line_height, self.dpi))
+                                .filter(|h| *h > 0.0);
                                 para_y = nested_y
-                                    + nested_split
-                                        .map(|split| split.flow_height)
-                                        .unwrap_or(table_h);
+                                    + square_wrap_anchor_h.unwrap_or_else(|| {
+                                        nested_split
+                                            .map(|split| split.flow_height)
+                                            .unwrap_or(table_h)
+                                    });
                             }
                         }
                         has_preceding_text = true;
