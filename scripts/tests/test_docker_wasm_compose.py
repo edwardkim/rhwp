@@ -24,7 +24,7 @@ class DockerWasmComposeContractTests(unittest.TestCase):
 
     def test_stale_wasm_opt_is_removed_before_build(self) -> None:
         cleanup = self.compose.index("rm -f pkg/*-opt.wasm")
-        build = self.compose.index("wasm-pack build --target web")
+        build = self.compose.index("scripts/wasm-pack-locked.sh --target web")
         self.assertLess(cleanup, build)
 
     def test_host_pkg_ownership_is_restored_even_after_a_failed_build(self) -> None:
@@ -38,7 +38,7 @@ class DockerWasmComposeContractTests(unittest.TestCase):
 
     def test_guide_makes_docker_primary_and_no_opt_diagnostic_only(self) -> None:
         docker = self.guide.index("docker compose --env-file .env.docker run --rm wasm")
-        native = self.guide.index("wasm-pack build --target web --out-dir pkg --no-opt")
+        native = self.guide.index(".\\scripts\\wasm-pack-locked.ps1 --target web --out-dir pkg --no-opt")
         self.assertLess(docker, native)
         self.assertIn("진단용", self.guide)
         self.assertIn("최적화된 배포 산출물을 대체하지 않는다", self.guide)

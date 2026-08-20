@@ -173,8 +173,37 @@ Docker를 사용할 수 없는 호스트에서 원인을 분리하는 **진단�
 ```powershell
 Remove-Item -Force -ErrorAction SilentlyContinue pkg\*-opt.wasm
 $env:CARGO_TARGET_DIR = 'target\pr-review'
-wasm-pack build --target web --out-dir pkg --no-opt
+.\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg --no-opt
 Remove-Item Env:CARGO_TARGET_DIR
+```
+
+macOS/Linux의 native WASM 검증은 `wasm-pack`을 직접 실행하지 않는다. 아래 wrapper는
+`cargo metadata`와 `cargo build` 모두에 `--locked`를 적용해 루트 `Cargo.lock`을
+갱신하지 못하게 한다.
+
+```bash
+CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg
+```
+
+반복 실행은 macOS/Linux 셸의 alias로 줄일 수 있습니다. alias는 현재 셸에만 적용하며, 영구 적용이 필요하면
+사용 중인 셸의 초기화 파일에 같은 줄을 넣습니다.
+
+```bash
+alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
+rhwp-wasm-build
+# 예: 최적화를 생략한 진단 빌드
+rhwp-wasm-build --no-opt
+```
+
+Windows에서는 native PowerShell wrapper를 사용합니다. `cmd.exe`에서는 아래 `doskey` macro를 현재 세션에
+등록할 수 있습니다. 새 `cmd.exe`를 열면 다시 등록해야 합니다.
+
+```bat
+doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg $*
+set "CARGO_TARGET_DIR=target\pr-review"
+rhwp-wasm-build
+rhwp-wasm-build --no-opt
+set "CARGO_TARGET_DIR="
 ```
 
 네이티브 `wasm-pack build`를 최적화까지 포함해 반복 검증해야 하면 먼저 표준 Docker 경로를
