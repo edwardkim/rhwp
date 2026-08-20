@@ -2193,6 +2193,175 @@ impl LayoutEngine {
                                     rendered = true;
                                 }
                             }
+
+                            // [#5725] 미리보기 없는 한글 수식 OLE — `Contents` 봉투의
+                            // 수식 스크립트를 기존 수식 렌더러(Control::Equation 경로와
+                            // 동일)로 그린다. 코퍼스의 수식 OLE `OlePres000` 은 전부
+                            // 28바이트 스텁이라 미리보기 폴백으로는 그릴 것이 없다 —
+                            // 스크립트가 유일한 출처다 (10k 실측 8문서/39개체).
+                            if !rendered {
+                                if let Some(script) = container.raw_contents.as_deref().and_then(
+                                    crate::parser::ole_container::parse_equation_contents_script,
+                                ) {
+                                    let tokens =
+                                        super::super::equation::tokenizer::tokenize(&script);
+                                    let ast = super::super::equation::parser::EqParser::new(tokens)
+                                        .parse();
+                                    // 글자 크기는 개체 크기에 맞춘다 — 기준 10px 레이아웃의
+                                    // 높이 비로 역산. (SVG/Skia 는 수식을 bbox 폭에만 맞춰
+                                    // 가로 스케일하므로 세로는 여기서 맞아야 한다.)
+                                    let base_layout =
+                                        super::super::equation::layout::EqLayout::new(10.0)
+                                            .layout(&ast);
+                                    let font_size_px = if base_layout.height > 0.0 && render_h > 0.0
+                                    {
+                                        (10.0 * render_h / base_layout.height).clamp(2.0, 400.0)
+                                    } else {
+                                        10.0
+                                    };
+                                    let layout_box =
+                                        super::super::equation::layout::EqLayout::new(font_size_px)
+                                            .layout(&ast);
+                                    let color_str =
+                                        super::super::equation::svg_render::eq_color_to_svg(0);
+                                    let svg_content =
+                                        super::super::equation::svg_render::render_equation_svg(
+                                            &layout_box,
+                                            &color_str,
+                                            font_size_px,
+                                        );
+                                    let eq_node = RenderNode::new(
+                                        tree.next_id(),
+                                        RenderNodeType::Equation(EquationNode {
+                                            svg_content,
+                                            layout_box,
+                                            color_str,
+                                            color: 0,
+                                            script,
+                                            font_size: font_size_px,
+                                            section_index: Some(section_index),
+                                            para_index: Some(para_index),
+                                            control_index: Some(control_index),
+                                            cell_index: table_cell_ref.map(|(c, _, _)| c),
+                                            cell_para_index: table_cell_ref.map(|(_, p, _)| p),
+                                            note_ref: None,
+                                        }),
+                                        BoundingBox::new(render_x, render_y, render_w, render_h),
+                                    );
+                                    parent.children.push(eq_node);
+                                    rendered = true;
+                                }
+                            }
+
+                            // [#5724] 미리보기 없는 그림(메타파일/비트맵) OLE —
+                            // `CONTENTS` 가 곧 그림이다 (CompObj UserType=`그림 (메타
+                            // 파일)`, ProgID=StaticMetafile 실측). 미리보기가 있으면 위
+                            // EMF/WMF 폴백이 이미 소비했으므로, 이 갈래는 미리보기가
+                            // 아예 없는 잔여만 구제한다 (10k 실측 WMF 8문서/11개체 +
+                            // BMP 1문서/2개체). 기존 WMF 재생기가 placeable 헤더까지
+                            // 자체 처리한다.
+                            if !rendered {
+                                if let Some(raw) = container.raw_contents.as_deref() {
+                                    if crate::parser::ole_container::raw_contents_is_wmf(raw) {
+                                        if let Some(svg_bytes) =
+                                            crate::renderer::svg::convert_wmf_to_svg(raw)
+                                        {
+                                            use base64::Engine;
+                                            let b64 = base64::engine::general_purpose::STANDARD
+                                                .encode(&svg_bytes);
+                                            let href = format!("data:image/svg+xml;base64,{}", b64);
+                                            let svg_fragment = format!(
+                                                "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
+                                                render_x, render_y, render_w, render_h, href, href
+                                            );
+                                            push_ole_raw_svg_render_node(
+                                                tree,
+                                                parent,
+                                                BoundingBox::new(
+                                                    render_x, render_y, render_w, render_h,
+                                                ),
+                                                svg_fragment,
+                                                section_index,
+                                                para_index,
+                                                control_index,
+                                                &ole_container_path,
+                                            );
+                                            rendered = true;
+                                        }
+                                    } else if crate::parser::ole_container::raw_contents_is_emf(raw)
+                                    {
+                                        let render_rect = (
+                                            render_x as f32,
+                                            render_y as f32,
+                                            render_w as f32,
+                                            render_h as f32,
+                                        );
+                                        if let Ok(svg_fragment) =
+                                            crate::emf::convert_to_svg(raw, render_rect)
+                                        {
+                                            push_ole_raw_svg_render_node(
+                                                tree,
+                                                parent,
+                                                BoundingBox::new(
+                                                    render_x, render_y, render_w, render_h,
+                                                ),
+                                                svg_fragment,
+                                                section_index,
+                                                para_index,
+                                                control_index,
+                                                &ole_container_path,
+                                            );
+                                            rendered = true;
+                                        }
+                                    } else if let Some((kind, bytes)) =
+                                        crate::parser::ole_container::detect_native_image(raw)
+                                    {
+                                        use base64::Engine;
+                                        // BMP → PNG 재인코딩 (SVG <image>는 data:image/bmp 미지원)
+                                        let (render_bytes, render_mime): (
+                                            std::borrow::Cow<[u8]>,
+                                            &str,
+                                        ) = if kind.mime() == "image/bmp" {
+                                            match crate::renderer::svg::bmp_bytes_to_png_bytes(
+                                                &bytes,
+                                            ) {
+                                                Some(png) => {
+                                                    (std::borrow::Cow::Owned(png), "image/png")
+                                                }
+                                                None => (
+                                                    std::borrow::Cow::Borrowed(bytes.as_slice()),
+                                                    kind.mime(),
+                                                ),
+                                            }
+                                        } else {
+                                            (
+                                                std::borrow::Cow::Borrowed(bytes.as_slice()),
+                                                kind.mime(),
+                                            )
+                                        };
+                                        let b64 = base64::engine::general_purpose::STANDARD
+                                            .encode(&*render_bytes);
+                                        let href = format!("data:{};base64,{}", render_mime, b64);
+                                        let svg_fragment = format!(
+                                            "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
+                                            render_x, render_y, render_w, render_h, href, href
+                                        );
+                                        push_ole_raw_svg_render_node(
+                                            tree,
+                                            parent,
+                                            BoundingBox::new(
+                                                render_x, render_y, render_w, render_h,
+                                            ),
+                                            svg_fragment,
+                                            section_index,
+                                            para_index,
+                                            control_index,
+                                            &ole_container_path,
+                                        );
+                                        rendered = true;
+                                    }
+                                }
+                            }
                         }
                         if !rendered
                             && self.push_hwpx_hmapsi_preview_clip_node(

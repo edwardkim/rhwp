@@ -241,6 +241,62 @@ fn contains_bytes(haystack: &[u8], needle: &[u8]) -> bool {
     !needle.is_empty() && haystack.windows(needle.len()).any(|w| w == needle)
 }
 
+/// [#5725] `Contents` 가 한글 수식 편집기 봉투면 수식 스크립트를 꺼낸다.
+///
+/// 봉투 구조 (2921145 `BinData/ole1.ole` 실측):
+/// - offset 0..32: 시그니처 `Hwp 5.0 Equation Editor(HwpEq5x)` (정확히 32바이트)
+/// - offset 52: u32 LE 버전 (실측 5)
+/// - offset 68: u32 LE 스크립트 바이트 길이
+/// - offset 72: UTF-16LE 수식 스크립트
+///
+/// 이 OLE 들의 `\x02OlePres000` 은 전부 28바이트 스텁(헤더만)이라 미리보기
+/// 폴백으로는 그릴 것이 없다 — 스크립트가 유일한 출처다.
+pub fn parse_equation_contents_script(data: &[u8]) -> Option<String> {
+    const SIG: &[u8] = b"Hwp 5.0 Equation Editor";
+    if data.len() < 72 || !data.starts_with(SIG) {
+        return None;
+    }
+    let len = u32::from_le_bytes([data[68], data[69], data[70], data[71]]) as usize;
+    if len == 0 || !len.is_multiple_of(2) || data.len() < 72 + len {
+        return None;
+    }
+    let units: Vec<u16> = data[72..72 + len]
+        .chunks_exact(2)
+        .map(|c| u16::from_le_bytes([c[0], c[1]]))
+        .collect();
+    let script = String::from_utf16_lossy(&units)
+        .trim_end_matches('\0')
+        .to_string();
+    if script.trim().is_empty() {
+        None
+    } else {
+        Some(script)
+    }
+}
+
+/// [#5724] `Contents` 페이로드가 선두 매직 기준으로 WMF(placeable/표준)인지 판별.
+pub fn raw_contents_is_wmf(data: &[u8]) -> bool {
+    if data.len() < 18 {
+        return false;
+    }
+    // Aldus placeable metafile
+    if data.starts_with(&[0xD7, 0xCD, 0xC6, 0x9A]) {
+        return true;
+    }
+    // 표준 WMF: mtType(1|2) + mtHeaderSize=9 + mtVersion(0x0100|0x0300)
+    let mt_type = u16::from_le_bytes([data[0], data[1]]);
+    let header_size = u16::from_le_bytes([data[2], data[3]]);
+    let version = u16::from_le_bytes([data[4], data[5]]);
+    (mt_type == 1 || mt_type == 2) && header_size == 9 && (version == 0x0100 || version == 0x0300)
+}
+
+/// [#5724] `Contents` 페이로드가 EMF 인지 판별 (EMR_HEADER: type=1, offset 40 `" EMF"`).
+pub fn raw_contents_is_emf(data: &[u8]) -> bool {
+    data.len() >= 44
+        && u32::from_le_bytes([data[0], data[1], data[2], data[3]]) == 1
+        && &data[40..44] == b" EMF"
+}
+
 /// 바이트 슬라이스의 선두 매직으로 이미지 포맷을 판별
 pub fn detect_native_image(data: &[u8]) -> Option<(NativeImageKind, Vec<u8>)> {
     if data.len() < 4 {

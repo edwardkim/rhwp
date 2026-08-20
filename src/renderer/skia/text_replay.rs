@@ -566,17 +566,45 @@ impl SkiaTextReplay<'_> {
                     } else {
                         colorref_to_skia(style.color, 1.0)
                     };
-                    let line_y = match style.underline {
-                        UnderlineType::Top => y as f32 - font_size + 1.0,
-                        _ => y as f32 + 2.0,
+                    // [#5730] 아래 밑줄은 기준선 + 0.17em (한글 2022 프로브 실측) —
+                    // 이중/삼중선(shape 7~10)은 em 비례 실측표를 따른다.
+                    // SVG 백엔드(renderer/svg.rs)와 같은 표(text_decoration)를 소비한다.
+                    let multi = if matches!(style.underline, UnderlineType::Top) {
+                        None
+                    } else {
+                        crate::renderer::text_decoration::underline_multi_lines(
+                            style.underline_shape,
+                        )
                     };
-                    draw_line_shape(
-                        bbox.x as f32,
-                        line_y,
-                        bbox.x as f32 + text_width,
-                        color,
-                        style.underline_shape,
-                    );
+                    if let Some(lines) = multi {
+                        for (dy_em, width_em) in lines {
+                            draw_styled_line(
+                                bbox.x as f32,
+                                y as f32 + font_size * *dy_em as f32,
+                                bbox.x as f32 + text_width,
+                                color,
+                                (font_size * *width_em as f32).max(0.3),
+                                &[],
+                                false,
+                            );
+                        }
+                    } else {
+                        let line_y =
+                            match style.underline {
+                                UnderlineType::Top => y as f32 - font_size + 1.0,
+                                _ => y as f32
+                                    + font_size
+                                        * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
+                                            as f32,
+                            };
+                        draw_line_shape(
+                            bbox.x as f32,
+                            line_y,
+                            bbox.x as f32 + text_width,
+                            color,
+                            style.underline_shape,
+                        );
+                    }
                 }
                 if style.strikethrough && text_width > 0.0 {
                     let color = if style.strike_color != 0 {
