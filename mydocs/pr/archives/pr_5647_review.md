@@ -57,3 +57,15 @@ issue: 5447
 **보류.** 최신 `devel`에서 Rust 회귀와 정책 호환은 확인했고 코드 수준 차단 결함은 발견하지 못했다.
 다만 한컴 판정 자산이 보존되기 전에는 정책 3종과 fail-closed 경계의 사용자-visible 결론을 merge
 근거로 승인하지 않는다. #5447은 B2 본구현 추적 이슈이므로 닫지 않는다.
+## 2026-08-20 최종 검토
+
+- 최신 `upstream/devel` 위 병합 시뮬레이션이 충돌 없이 통과했다. 원 PR head의 녹색 CI와 함께,
+  검토 전용 재적용 head에서 `cargo fmt --all -- --check`, manifest/unit-tier 정책, `git diff --check`를
+  통과했다.
+- #5683의 Cargo 격리 계약 4건을 통과했고, review worktree의 `--prepare` 전후 `Cargo.toml`과
+  `Cargo.lock` SHA-256은 동일했다. 파생 suite 준비가 원 PR source manifest를 변경하지 않는다.
+- `issue_4100_chart_data_edit`는 38 passed, 2 ignored였다. `pdftoppm` 144dpi로 한컴 PDF 판정 원장을
+  재계산해 38개 파일, 262개 검사를 전건 일치로 확인했고, 정상 행 추가·원형 계열 무시·주식형 의미 깨짐의
+  시각 근거도 원장 판정과 일치한다.
+
+**승인.** 이 기록보다 앞선 증적 보류 판정은 추가 증적 이전 상태이며, 본 절이 최종 검토 결과다.
