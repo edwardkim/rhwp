@@ -1446,6 +1446,36 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
 }
 
 export function handleSelectAll(this: any): void {
+  // 한컴 정합: 표 셀 안에서는 셀 내용만 전체 선택하고, 본문에서는 문서 전체를 선택한다.
+  // 중첩 표(표 안의 표)는 cellPath(ByPath) 경유 — moveToParagraphBoundary 의 셀 분기와
+  // 동일한 이중 모드 패턴.
+  const pos = this.cursor.getPosition();
+  if (this.cursor.isInCell() && pos.parentParaIndex !== undefined) {
+    try {
+      const sec = pos.sectionIndex;
+      const ppi = pos.parentParaIndex;
+      const cellPath = pos.cellPath;
+      const useCellPath = (cellPath?.length ?? 0) > 0;
+      const n = useCellPath
+        ? this.wasm.getCellParagraphCountByPath(sec, ppi, JSON.stringify(cellPath))
+        : this.wasm.getCellParagraphCount(sec, ppi, pos.controlIndex!, pos.cellIndex!);
+      const pathAt = (cpi: number) => useCellPath
+        ? cellPath!.map((e: any, i: number) => i < cellPath!.length - 1 ? e : { ...e, cellParaIndex: cpi })
+        : cellPath;
+      const lastLen = useCellPath
+        ? this.wasm.getCellParagraphLengthByPath(sec, ppi, JSON.stringify(pathAt(n - 1)))
+        : this.wasm.getCellParagraphLength(sec, ppi, pos.controlIndex!, pos.cellIndex!, n - 1);
+      this.cursor.moveTo({
+        ...pos, paragraphIndex: 0, cellParaIndex: 0, cellPath: pathAt(0), charOffset: 0,
+      });
+      this.cursor.setAnchor();
+      this.cursor.moveTo({
+        ...pos, paragraphIndex: n - 1, cellParaIndex: n - 1, cellPath: pathAt(n - 1), charOffset: lastLen,
+      });
+      this.updateCaret();
+      return;
+    } catch { /* 셀 정보 조회 실패 → 문서 전체 선택으로 계속 */ }
+  }
   // anchor를 문서 시작, focus를 문서 끝으로 설정
   this.cursor.moveTo({ sectionIndex: 0, paragraphIndex: 0, charOffset: 0 });
   this.cursor.setAnchor();
