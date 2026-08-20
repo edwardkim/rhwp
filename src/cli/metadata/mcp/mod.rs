@@ -91,9 +91,6 @@ fn inspect_watermark_kind_enum() -> Vec<String> {
         .collect()
 }
 
-/// [#3263→#3140] MCP 도구 정의의 단일 출처 — `capabilities --mcp`(선언 출력)와
-/// `mcp-serve`(실행 서버)가 같은 목록을 쓴다. 여기에만 추가하면 양쪽이 함께 갱신된다.
-
 /// 문서 경로 하나를 받는 도구의 표준 입력 스키마.
 fn path_schema(extra: serde_json::Value) -> serde_json::Value {
     let mut props = serde_json::json!({
