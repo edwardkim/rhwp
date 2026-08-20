@@ -175,6 +175,91 @@ test('짤림보기(clipView) 설정은 rhwp-settings에 저장되고 기본값�
   }
 });
 
+test('도구 상자(기본/서식) 표시 설정은 rhwp-settings에 저장되고 기본값은 보임이다', () => {
+  const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+  const store = new Map<string, string>();
+  const mockStorage = {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key: string) {
+      return store.get(key) ?? null;
+    },
+    key(index: number) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      store.delete(key);
+    },
+    setItem(key: string, value: string) {
+      store.set(key, value);
+    },
+  } as Storage;
+
+  (globalThis as { localStorage?: Storage }).localStorage = mockStorage;
+  try {
+    assert.equal(userSettings.getViewSettings().toolbarBasic, true);
+    assert.equal(userSettings.getViewSettings().toolbarFormat, true);
+
+    userSettings.setToolbarBasic(false);
+    userSettings.setToolbarFormat(false);
+    let stored = JSON.parse(store.get('rhwp-settings') ?? '{}');
+    assert.equal(stored.view.toolbarBasic, false);
+    assert.equal(stored.view.toolbarFormat, false);
+
+    userSettings.setToolbarFormat(true);
+    stored = JSON.parse(store.get('rhwp-settings') ?? '{}');
+    assert.equal(stored.view.toolbarBasic, false);
+    assert.equal(stored.view.toolbarFormat, true);
+  } finally {
+    userSettings.setToolbarBasic(true);
+    userSettings.setToolbarFormat(true);
+    (globalThis as { localStorage?: Storage }).localStorage = originalStorage;
+  }
+});
+
+test('저장된 도구 상자 설정은 다시 시작해도 복원된다', async () => {
+  const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+  const store = new Map<string, string>([
+    ['rhwp-settings', JSON.stringify({ view: { toolbarBasic: false } })],
+  ]);
+  const mockStorage = {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key: string) {
+      return store.get(key) ?? null;
+    },
+    key(index: number) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      store.delete(key);
+    },
+    setItem(key: string, value: string) {
+      store.set(key, value);
+    },
+  } as Storage;
+
+  (globalThis as { localStorage?: Storage }).localStorage = mockStorage;
+  try {
+    // 새 모듈 인스턴스 = 새 실행. 생성자의 load() 가 저장값을 읽는 경로를 그대로 태운다.
+    const fresh = await import('../src/core/user-settings.ts?restart=toolbox');
+    const view = fresh.userSettings.getViewSettings();
+    assert.equal(view.toolbarBasic, false);
+    // 저장값에 없는 항목은 기본값(보임)으로 채운다.
+    assert.equal(view.toolbarFormat, true);
+  } finally {
+    (globalThis as { localStorage?: Storage }).localStorage = originalStorage;
+  }
+});
+
 test('복구용 자동저장 설정은 rhwp-settings에 저장된다', () => {
   const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
   const store = new Map<string, string>();

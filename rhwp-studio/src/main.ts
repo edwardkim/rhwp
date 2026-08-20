@@ -20,7 +20,7 @@ import type { EditorContext, CommandServices, EditorEditMode } from '@/command/t
 import { defaultShortcuts, matchShortcut } from '@/command/shortcut-map';
 import { confirmSaveBeforeReplacingDocument, fileCommands } from '@/command/commands/file';
 import { editCommands } from '@/command/commands/edit';
-import { syncClipMenu, syncTextMarkMenu, viewCommands } from '@/command/commands/view';
+import { syncClipMenu, syncTextMarkMenu, syncToolboxMenu, viewCommands } from '@/command/commands/view';
 import { formatCommands } from '@/command/commands/format';
 import { insertCommands } from '@/command/commands/insert';
 import { tableCommands } from '@/command/commands/table';
@@ -96,6 +96,9 @@ initThemeSync((effective, mode) => {
   eventBus.emit('theme-changed', { mode, effective });
   eventBus.emit('command-state-changed');
 });
+// 저장된 도구 상자(기본/서식) 보이기·숨기기 복원 — 문서 로드와 무관하고, WASM 초기화보다
+// 먼저 반영해야 숨긴 도구 모음이 잠깐 보였다 사라지지 않는다(모듈 스크립트라 DOM 은 이미 파싱됨).
+syncToolboxMenu();
 
 /**
  * 호스트 저장 완료 통지 (#2660).
