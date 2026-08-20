@@ -1,9 +1,9 @@
 # PR 5707 CI status
 
-Source: `gh pr view 5707 --repo edwardkim/rhwp --json statusCheckRollup,commits`  
+Source: `gh pr view 5707 --repo edwardkim/rhwp --json statusCheckRollup,commits`
 Fetched: 2026-08-19T23:22Z (UTC)
 
-HEAD: `d3da49359235b33c64ba8b5ea4ced406fd9f347c`  
+HEAD: `d3da49359235b33c64ba8b5ea4ced406fd9f347c`
 (`test(agent): 스킬마다 계약 게이트 3회, 생성 시 필수 (#5706)`)
 
 ## Commits

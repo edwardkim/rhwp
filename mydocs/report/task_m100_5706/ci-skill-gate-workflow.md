@@ -10,7 +10,7 @@ This workflow runs only that Python surface, on PRs that touch it, so the hole i
 
 ## File
 
-`.github/workflows/skill-router-gate.yml`  
+`.github/workflows/skill-router-gate.yml`
 Workflow name: `Skill router gate`
 
 ## Triggers
