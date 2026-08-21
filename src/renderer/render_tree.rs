@@ -28,6 +28,34 @@ pub const MIDDLE_DOT_RADIUS_EM: f64 = 0.060;
 /// 실측 중앙값 0.3520~0.3559 로 종전 값이 정확해 유지한다.
 pub const MIDDLE_DOT_CY_OFFSET_EM: f64 = 0.35;
 
+/// [#5698 계열] 탭 점선 리더(채움 종류 3)의 점 간격 / em.
+///
+/// 한글 2022 정본 실측 — `samples/KTX.hwp` 2쪽 목차의 점 1,435개를 글자 좌표로 뽑아
+/// 줄마다 이웃 간격을 셌다: 글꼴 14.04pt 줄에서 3.48pt, 15.00pt 줄에서 3.72pt →
+/// **두 크기 모두 0.248 em** 이다(잔여 폭을 채우느라 줄마다 3.48~3.84 로 늘어난다).
+///
+/// 종전 렌더는 `stroke-dasharray="0.1 3"` 로 **폰트 크기와 무관한 3.1px 고정**이라
+/// 14pt 기준 4.64px 여야 할 간격이 33% 촘촘했고, 점 지름도 1.0px 고정이라
+/// 가운뎃점 실측(지름 = 2 × [`MIDDLE_DOT_RADIUS_EM`] = 0.12 em ≈ 2.24px)의 절반이
+/// 안 됐다. 결과적으로 목차 점선이 점이 아니라 가는 실선으로 보였다.
+pub const TAB_DOT_LEADER_PITCH_EM: f64 = 0.248;
+
+/// 탭 점선 리더 한 점의 지름 / em — 가운뎃점과 **같은 실측 크기**를 쓴다.
+/// 둘 다 한글이 그리는 `·` 이므로 상수를 따로 두면 서로 어긋난다.
+pub const TAB_DOT_LEADER_DIAMETER_EM: f64 = MIDDLE_DOT_RADIUS_EM * 2.0;
+
+/// 점 하나를 찍기 위한 dash 길이(px). 0 길이 subpath 를 round cap 으로 그리는 것이
+/// 정공법이지만 렌더러마다 처리가 갈려, 눈에 안 띄는 최소 길이를 쓰고 간격에서 뺀다.
+pub const TAB_DOT_LEADER_DASH_PX: f64 = 0.1;
+
+/// 탭 점선 리더의 (선 두께, dash, gap) — 세 렌더 경로가 같은 값을 쓰도록 한 곳에서 낸다.
+pub fn tab_dot_leader_stroke(font_size: f64) -> (f64, f64, f64) {
+    let width = font_size * TAB_DOT_LEADER_DIAMETER_EM;
+    let pitch = font_size * TAB_DOT_LEADER_PITCH_EM;
+    let dash = TAB_DOT_LEADER_DASH_PX.min(pitch * 0.5);
+    (width, dash, (pitch - dash).max(0.1))
+}
+
 pub const REAL_PICTURE_WATERMARK_PAGE_OPACITY: f64 = 0.26;
 pub const REAL_PICTURE_WATERMARK_FILL_OPACITY: f64 = 0.15;
 pub const REAL_PICTURE_WATERMARK_OPACITY: f64 = REAL_PICTURE_WATERMARK_PAGE_OPACITY;
