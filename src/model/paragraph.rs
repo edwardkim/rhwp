@@ -43,6 +43,16 @@ pub struct Paragraph {
     /// 파일에 실리는 값이 아니라 IR 안에서만 의미가 있다. `line_segs` 를 통째로 다시
     /// 계산하는 경로(reflow)는 이 값을 0 으로 되돌린다.
     pub layout_only_fill_lines: usize,
+    /// [#5847] 원본 파일이 싣고 있던 `line_segs[*].vertical_pos` 스냅샷 (쪽-상대
+    /// 좌표). 구역 안에 캐시 없는 문단이 하나라도 있으면 reflow 의 구역 단위 vpos
+    /// 재계산이 **원본 캐시 보유 문단까지** 문서 누적 좌표로 덮어쓰는데, 그 내부
+    /// 좌표가 HWPX 로 그대로 나가면 한글 2022 가 캐시를 신뢰해 조판이 무너진다
+    /// (08818: 81쪽 → 5쪽). 렌더러는 재계산 좌표를 계속 쓰고, HWPX 직렬화기만
+    /// 이 스냅샷으로 원본 좌표를 되돌린다. 합성(reflow) 문단·합성 lineseg 보유
+    /// 문단은 None. 파일에 실리는 값이 아니라 IR 안에서만 의미가 있다.
+    /// (`serde(skip)` — IR dump/ir-sweep 축의 필드 집합을 바꾸지 않는다.)
+    #[serde(skip_serializing)]
+    pub source_line_seg_vertical_pos: Option<Vec<i32>>,
     /// 영역 태그 정보
     pub range_tags: Vec<RangeTag>,
     /// 필드 텍스트 범위 (0x03~0x04 사이 텍스트 인덱스 + 컨트롤 인덱스)
@@ -1310,6 +1320,8 @@ impl Paragraph {
             line_segs: new_line_segs,
             // 분리된 문단의 줄은 새로 계산된 것이라 조판 전용 보강 줄이 없다 (#4677).
             layout_only_fill_lines: 0,
+            // 편집으로 갈라진 문단의 원본 vertpos 스냅샷은 무효다 (#5847).
+            source_line_seg_vertical_pos: None,
             range_tags: new_range_tags,
             field_ranges: new_field_ranges, // 새 문단으로 이관된 필드 범위
             orphan_field_ends: Vec::new(),

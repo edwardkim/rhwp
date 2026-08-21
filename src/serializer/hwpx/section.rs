@@ -773,16 +773,36 @@ pub(crate) fn render_paragraph_parts(
         &para.line_segs[..]
     };
 
-    if !axis_line_segs.is_empty() && position_axis_intact {
+    // [#5847] 줄 전체가 reflow 합성(bit31)인 문단 — 원본에 linesegarray 가 없어
+    // rhwp 가 조판용으로 만든 줄이다. 파일로 내면 구역 누적 vertpos 와 bit31
+    // 플래그가 그대로 실려 한글 2022 가 캐시를 신뢰하다 조판을 폐기한다
+    // (08818: 81쪽 → 5쪽). 원본과 같게 방출을 생략해 한글이 재계산하게 한다
+    // (#1380 계약). HWP5→HWPX materialize 는 별도 placeholder 를 쓰므로 무관.
+    let all_synthetic = !axis_line_segs.is_empty()
+        && axis_line_segs
+            .iter()
+            .all(|s| s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
+
+    if !axis_line_segs.is_empty() && position_axis_intact && !all_synthetic {
         // IR 기반 출력 — 원본 lineseg 값 보존 (#177)
         //
+        // [#5847] reflow 의 구역 단위 vpos 재계산이 원본 캐시 보유 문단의
+        // vertpos 를 문서 누적 좌표로 덮어쓴 경우, 파싱 때 스냅샷해 둔 원본
+        // 쪽-상대 좌표로 되돌려 낸다 — 누적 좌표가 파일로 나가면 한글 2022 가
+        // 캐시를 신뢰해 조판을 폐기한다(08818: 81쪽 → 5쪽). axis 절단은 앞
+        // 접두 슬라이스라 인덱스가 그대로 대응한다.
+        let source_vpos = para
+            .source_line_seg_vertical_pos
+            .as_deref()
+            .filter(|v| v.len() == para.line_segs.len())
+            .map(|v| &v[..axis_line_segs.len()]);
         let linesegs = format!(
             "{}{}{}",
             LINESEG_SLOT_OPEN,
-            render_lineseg_array_from_ir(axis_line_segs),
+            render_lineseg_array_from_ir(axis_line_segs, source_vpos),
             LINESEG_SLOT_CLOSE
         );
-        let vert_end = next_vert_cursor_from_ir(axis_line_segs, vert_start);
+        let vert_end = next_vert_cursor_from_ir(axis_line_segs, source_vpos, vert_start);
         (runs_xml, linesegs, vert_end)
     } else {
         // IR 에 line_segs 없음 — linesegarray 방출 생략 (#1380)
@@ -3222,20 +3242,25 @@ fn horz_align_to_hwpx(align: HorzAlign) -> &'static str {
 /// rhwp 는 자신의 문서에서 비표준 lineseg 를 **새로 생산하지 않는다**.
 /// 원본 한컴 파일의 lineseg 값이 파서에 의해 `Paragraph.line_segs` 에 담겼다면,
 /// 저장 시 그 값을 훼손 없이 보존한다.
-fn render_lineseg_array_from_ir(segs: &[LineSeg]) -> String {
+/// [#5847] `vpos_override` 가 있으면 각 줄의 `vertpos` 를 그 값(원본 쪽-상대
+/// 좌표 스냅샷)으로 낸다 — reflow 재계산이 덮어쓴 IR 값 대신.
+fn render_lineseg_array_from_ir(segs: &[LineSeg], vpos_override: Option<&[i32]>) -> String {
     let mut out = String::new();
-    for seg in segs {
-        out.push_str(&render_one_lineseg(seg, seg.text_start));
+    for (i, seg) in segs.iter().enumerate() {
+        let vpos = vpos_override
+            .and_then(|v| v.get(i).copied())
+            .unwrap_or(seg.vertical_pos);
+        out.push_str(&render_one_lineseg(seg, seg.text_start, vpos));
     }
     out
 }
 
 /// `<hp:lineseg>` 한 줄 — `textpos` 만 호출부가 정하고 나머지 8필드는 IR 값 그대로.
-fn render_one_lineseg(seg: &LineSeg, text_start: u32) -> String {
+fn render_one_lineseg(seg: &LineSeg, text_start: u32, vertical_pos: i32) -> String {
     format!(
         r#"<hp:lineseg textpos="{}" vertpos="{}" vertsize="{}" textheight="{}" baseline="{}" spacing="{}" horzpos="{}" horzsize="{}" flags="{}"/>"#,
         text_start,
-        seg.vertical_pos,
+        vertical_pos,
         seg.line_height,
         seg.text_height,
         seg.baseline_distance,
@@ -3247,15 +3272,23 @@ fn render_one_lineseg(seg: &LineSeg, text_start: u32) -> String {
 }
 
 /// IR 기반 다음 문단의 vert_start 계산 — 마지막 lineseg 의 vpos + lh 사용.
-fn next_vert_cursor_from_ir(segs: &[LineSeg], vert_start: u32) -> u32 {
+/// [#5847] `vpos_override` 는 방출 vertpos 와 커서를 일치시키기 위한 원본 스냅샷.
+fn next_vert_cursor_from_ir(
+    segs: &[LineSeg],
+    vpos_override: Option<&[i32]>,
+    vert_start: u32,
+) -> u32 {
     if segs.len() == 1 && segs[0].is_missing_lineseg_placeholder() {
         return vert_start;
     }
 
     if let Some(last) = segs.last() {
+        let last_vpos = vpos_override
+            .and_then(|v| v.last().copied())
+            .unwrap_or(last.vertical_pos);
         // vertical_pos 는 섹션 시작 기준 절대값일 수도, 문단 기준 상대값일 수도 있음.
         // 현재 rhwp 는 섹션 절대값이므로 그대로 + lh 로 다음 커서 산출.
-        let next = (last.vertical_pos as i64) + (last.line_height.max(0) as i64);
+        let next = (last_vpos as i64) + (last.line_height.max(0) as i64);
         if next > vert_start as i64 {
             next as u32
         } else {
