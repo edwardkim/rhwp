@@ -2,7 +2,7 @@ use rhwp::document_core::DocumentCore;
 
 fn coverage(core: &DocumentCore) -> (String, serde_json::Value) {
     let raw = core
-        .get_font_metric_coverage_analysis_native()
+        .get_font_metric_coverage_analysis_native("{}")
         .expect("font metric coverage aggregate");
     let value = serde_json::from_str(&raw).expect("font metric coverage JSON");
     (raw, value)
@@ -52,6 +52,17 @@ fn assert_reconciled(value: &serde_json::Value) {
     );
     assert_eq!(count(value, "/documents/attempted"), 1);
     assert_eq!(count(value, "/documents/success"), 1);
+    for status in [
+        "cancelled",
+        "drm",
+        "empty",
+        "encrypted",
+        "parser",
+        "resource-limit",
+        "unsupported",
+    ] {
+        assert_eq!(count(value, &format!("/documents/failures/{status}")), 0);
+    }
     assert_eq!(count(value, "/backends/requested"), 0);
     for status in ["complete", "failed", "notObserved", "unsupported"] {
         assert_eq!(count(value, &format!("/backends/{status}")), 0);
@@ -159,4 +170,66 @@ fn coverage_query_does_not_mutate_existing_w2_trace() {
         .get_font_decision_trace_native(0, r#"{"maxCharacters":64}"#)
         .expect("W2 trace after coverage");
     assert_eq!(before, after);
+}
+
+#[test]
+fn resource_budgets_and_cancellation_fail_without_partial_success() {
+    use std::sync::{atomic::AtomicBool, Arc};
+
+    let core = DocumentCore::from_bytes(include_bytes!("../../samples/task-001.hwp"))
+        .expect("public fixture parses");
+    for options in [
+        r#"{"maxWorkUnits":1}"#,
+        r#"{"maxAggregateRows":1}"#,
+        r#"{"maxOutputBytes":1024}"#,
+    ] {
+        let error = core
+            .get_font_metric_coverage_analysis_native(options)
+            .expect_err("resource policy must stop the whole document");
+        let message = error.to_string();
+        assert!(message.contains("[RESOURCE_LIMIT_EXCEEDED]"), "{message}");
+        assert!(!message.contains("\"status\":\"complete\""), "{message}");
+    }
+
+    let cancelled = Arc::new(AtomicBool::new(true));
+    let error = core
+        .get_font_metric_coverage_analysis_with_cancel_native("{}", &cancelled)
+        .expect_err("pre-cancelled analysis must not start");
+    assert!(error.to_string().contains("[ANALYSIS_CANCELLED]"));
+
+    assert!(core
+        .get_font_metric_coverage_analysis_native(r#"{"unknown":1}"#)
+        .is_err());
+    assert!(core
+        .get_font_metric_coverage_analysis_native(r#"{"maxWorkUnits":0}"#)
+        .is_err());
+}
+
+#[test]
+fn many_char_shape_boundaries_use_a_linear_merge_walk() {
+    use rhwp::model::paragraph::CharShapeRef;
+
+    let mut core = DocumentCore::from_bytes(include_bytes!("../../samples/task-001.hwp"))
+        .expect("public fixture parses");
+    let inserted = "가".repeat(10_000);
+    core.insert_text_native(0, 0, 0, &inserted)
+        .expect("adversarial paragraph insertion");
+    let mut document = core.document().clone();
+    let paragraph = &mut document.sections[0].paragraphs[0];
+    paragraph.char_shapes = (0..10_000)
+        .map(|start_pos| CharShapeRef {
+            start_pos,
+            char_shape_id: 0,
+        })
+        .collect();
+    core.set_document(document);
+
+    let raw = core
+        .get_font_metric_coverage_analysis_native(
+            r#"{"maxWorkUnits":100000,"deadlineMillis":10000}"#,
+        )
+        .expect("linear walker remains inside deterministic work budget");
+    let value: serde_json::Value = serde_json::from_str(&raw).expect("aggregate JSON");
+    assert!(count(&value, "/counts/layoutCharacters") >= 10_000);
+    assert_reconciled(&value);
 }

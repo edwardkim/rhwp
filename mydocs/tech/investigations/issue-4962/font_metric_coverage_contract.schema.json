@@ -14,6 +14,7 @@
     "provenance",
     "denominators",
     "collectorRequirements",
+    "resourcePolicy",
     "reusedPocFields",
     "deltaFields",
     "privacy",
@@ -113,6 +114,30 @@
         "sourceJoinStates": { "$ref": "#/$defs/stringSet" },
         "documentFailureStates": { "$ref": "#/$defs/stringSet" },
         "backendStates": { "$ref": "#/$defs/stringSet" }
+      }
+    },
+    "resourcePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "failureMode",
+        "partialAggregateAccepted",
+        "deadlineChecks",
+        "cancellationChecks",
+        "workUnitBudget",
+        "aggregateRowBudget",
+        "outputByteBudget",
+        "corpusWorkerIsolation"
+      ],
+      "properties": {
+        "failureMode": { "const": "explicit-document-failure" },
+        "partialAggregateAccepted": { "const": false },
+        "deadlineChecks": { "const": true },
+        "cancellationChecks": { "const": true },
+        "workUnitBudget": { "const": true },
+        "aggregateRowBudget": { "const": true },
+        "outputByteBudget": { "const": true },
+        "corpusWorkerIsolation": { "const": "required" }
       }
     },
     "reusedPocFields": { "$ref": "#/$defs/stringSet" },

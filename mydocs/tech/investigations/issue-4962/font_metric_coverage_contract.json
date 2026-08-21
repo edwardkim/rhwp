@@ -108,10 +108,12 @@
       "layoutOnly"
     ],
     "documentFailureStates": [
+      "cancelled",
       "drm",
       "empty",
       "encrypted",
       "parser",
+      "resource-limit",
       "unsupported"
     ],
     "backendStates": [
@@ -120,6 +122,16 @@
       "notObserved",
       "unsupported"
     ]
+  },
+  "resourcePolicy": {
+    "failureMode": "explicit-document-failure",
+    "partialAggregateAccepted": false,
+    "deadlineChecks": true,
+    "cancellationChecks": true,
+    "workUnitBudget": true,
+    "aggregateRowBudget": true,
+    "outputByteBudget": true,
+    "corpusWorkerIsolation": "required"
   },
   "reusedPocFields": [
     "alignment",

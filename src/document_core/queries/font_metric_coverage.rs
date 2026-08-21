@@ -3,9 +3,14 @@
 //! This is a read-only, native-only analysis surface. It deliberately has no CLI,
 //! WASM or npm binding: corpus orchestration and publication remain separate stages.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
+use std::time::{Duration, Instant};
 
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
@@ -47,6 +52,152 @@ const CATEGORY_IDS: [&str; 7] = [
 
 const LANGUAGE_NAMES: [&str; 7] = ["ko", "latin", "hanja", "ja", "other", "symbol", "user"];
 
+const DEFAULT_MAX_WORK_UNITS: u64 = 10_000_000;
+const MAX_MAX_WORK_UNITS: u64 = 2_000_000_000;
+const DEFAULT_MAX_AGGREGATE_ROWS: usize = 200_000;
+const MAX_MAX_AGGREGATE_ROWS: usize = 1_000_000;
+const DEFAULT_MAX_OUTPUT_BYTES: usize = 64 * 1024 * 1024;
+const MAX_MAX_OUTPUT_BYTES: usize = 256 * 1024 * 1024;
+const DEFAULT_DEADLINE_MILLIS: u64 = 60_000;
+const MAX_DEADLINE_MILLIS: u64 = 3_600_000;
+const MAX_DIMENSION_STRING_BYTES: usize = 4096;
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct CoverageOptions {
+    max_work_units: Option<u64>,
+    max_aggregate_rows: Option<usize>,
+    max_output_bytes: Option<usize>,
+    deadline_millis: Option<u64>,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct CoverageLimits {
+    max_work_units: u64,
+    max_aggregate_rows: usize,
+    max_output_bytes: usize,
+    deadline: Duration,
+}
+
+impl CoverageLimits {
+    fn parse(options_json: &str) -> Result<Self, HwpError> {
+        let options: CoverageOptions = if options_json.trim().is_empty() {
+            CoverageOptions::default()
+        } else {
+            serde_json::from_str(options_json)
+                .map_err(|error| coverage_error(format!("options: {error}")))?
+        };
+        let max_work_units = options.max_work_units.unwrap_or(DEFAULT_MAX_WORK_UNITS);
+        let max_aggregate_rows = options
+            .max_aggregate_rows
+            .unwrap_or(DEFAULT_MAX_AGGREGATE_ROWS);
+        let max_output_bytes = options.max_output_bytes.unwrap_or(DEFAULT_MAX_OUTPUT_BYTES);
+        let deadline_millis = options.deadline_millis.unwrap_or(DEFAULT_DEADLINE_MILLIS);
+        if !(1..=MAX_MAX_WORK_UNITS).contains(&max_work_units) {
+            return Err(coverage_error(format!(
+                "maxWorkUnits must be in 1..={MAX_MAX_WORK_UNITS}"
+            )));
+        }
+        if !(1..=MAX_MAX_AGGREGATE_ROWS).contains(&max_aggregate_rows) {
+            return Err(coverage_error(format!(
+                "maxAggregateRows must be in 1..={MAX_MAX_AGGREGATE_ROWS}"
+            )));
+        }
+        if !(1024..=MAX_MAX_OUTPUT_BYTES).contains(&max_output_bytes) {
+            return Err(coverage_error(format!(
+                "maxOutputBytes must be in 1024..={MAX_MAX_OUTPUT_BYTES}"
+            )));
+        }
+        if !(1..=MAX_DEADLINE_MILLIS).contains(&deadline_millis) {
+            return Err(coverage_error(format!(
+                "deadlineMillis must be in 1..={MAX_DEADLINE_MILLIS}"
+            )));
+        }
+        Ok(Self {
+            max_work_units,
+            max_aggregate_rows,
+            max_output_bytes,
+            deadline: Duration::from_millis(deadline_millis),
+        })
+    }
+}
+
+struct CoverageBudget<'a> {
+    limits: CoverageLimits,
+    started: Instant,
+    work_units: u64,
+    aggregate_rows: usize,
+    cancellation: Option<&'a AtomicBool>,
+}
+
+impl<'a> CoverageBudget<'a> {
+    fn new(limits: CoverageLimits, cancellation: Option<&'a AtomicBool>) -> Self {
+        Self {
+            limits,
+            started: Instant::now(),
+            work_units: 0,
+            aggregate_rows: 0,
+            cancellation,
+        }
+    }
+
+    fn consume(&mut self, units: usize) -> Result<(), HwpError> {
+        if self
+            .cancellation
+            .is_some_and(|cancelled| cancelled.load(Ordering::Relaxed))
+        {
+            return Err(coverage_cancelled_error());
+        }
+        if self.started.elapsed() > self.limits.deadline {
+            return Err(coverage_resource_error("deadline exceeded"));
+        }
+        self.work_units = self
+            .work_units
+            .checked_add(units as u64)
+            .ok_or_else(|| coverage_resource_error("work unit counter overflow"))?;
+        if self.work_units > self.limits.max_work_units {
+            return Err(coverage_resource_error(format!(
+                "work unit budget exceeded: {} > {}",
+                self.work_units, self.limits.max_work_units
+            )));
+        }
+        Ok(())
+    }
+
+    fn add_row(&mut self) -> Result<(), HwpError> {
+        self.aggregate_rows = self
+            .aggregate_rows
+            .checked_add(1)
+            .ok_or_else(|| coverage_resource_error("aggregate row counter overflow"))?;
+        if self.aggregate_rows > self.limits.max_aggregate_rows {
+            return Err(coverage_resource_error(format!(
+                "aggregate row budget exceeded: {} > {}",
+                self.aggregate_rows, self.limits.max_aggregate_rows
+            )));
+        }
+        Ok(())
+    }
+
+    fn check_dimension(&self, value: &str) -> Result<(), HwpError> {
+        if value.len() > MAX_DIMENSION_STRING_BYTES {
+            return Err(coverage_resource_error(format!(
+                "dimension string exceeds {MAX_DIMENSION_STRING_BYTES} bytes"
+            )));
+        }
+        Ok(())
+    }
+
+    fn check_output(&self, bytes: usize) -> Result<(), HwpError> {
+        if bytes > self.limits.max_output_bytes {
+            return Err(coverage_resource_error(format!(
+                "output byte budget exceeded: {bytes} > {}",
+                self.limits.max_output_bytes
+            )));
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 struct UsageCounts {
     documents: u64,
@@ -57,8 +208,8 @@ struct UsageCounts {
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 struct LegacyUsageKey {
-    font: String,
-    metric_face: Option<String>,
+    font: Arc<str>,
+    metric_face: Option<Arc<str>>,
     language: u8,
     ratio: u8,
     spacing: i8,
@@ -73,19 +224,19 @@ struct LegacyUsageKey {
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 struct DecisionUsageKey {
     legacy: LegacyUsageKey,
-    normalized_face: Option<String>,
-    subst_font: Option<String>,
+    normalized_face: Option<Arc<str>>,
+    subst_font: Option<Arc<str>>,
     alt_type: Option<u8>,
-    layout_family: String,
-    metric_requested_face: Option<String>,
-    metric_resolved_face: Option<String>,
-    match_kind: String,
+    layout_family: Arc<str>,
+    metric_requested_face: Option<Arc<str>>,
+    metric_resolved_face: Option<Arc<str>>,
+    match_kind: &'static str,
     metric_entry: Option<usize>,
-    character_match: String,
-    width_source: String,
-    relation_type: Option<String>,
-    relation_evidence_status: Option<String>,
-    coverage_category: Option<String>,
+    character_match: &'static str,
+    width_source: &'static str,
+    relation_type: Option<&'static str>,
+    relation_evidence_status: Option<&'static str>,
+    coverage_category: Option<&'static str>,
 }
 
 #[derive(Debug, Default)]
@@ -180,6 +331,14 @@ struct DecisionUsageRecord {
 
 fn coverage_error(message: impl Into<String>) -> HwpError {
     HwpError::RenderError(format!("font metric coverage: {}", message.into()))
+}
+
+fn coverage_resource_error(message: impl Into<String>) -> HwpError {
+    coverage_error(format!("[RESOURCE_LIMIT_EXCEEDED] {}", message.into()))
+}
+
+fn coverage_cancelled_error() -> HwpError {
+    coverage_error("[ANALYSIS_CANCELLED] cancellation requested")
 }
 
 fn format_name(format: FileFormat) -> &'static str {
@@ -334,15 +493,17 @@ fn classify_decision(
 }
 
 fn legacy_key(
-    font: String,
+    font: Arc<str>,
     char_shape: &CharShape,
     language: usize,
     context: u16,
     alignment: u8,
     stored_lineseg: bool,
 ) -> LegacyUsageKey {
+    let metric_face =
+        layout_metric_face_name(&font, char_shape.bold, char_shape.italic).map(Arc::<str>::from);
     LegacyUsageKey {
-        metric_face: layout_metric_face_name(&font, char_shape.bold, char_shape.italic),
+        metric_face,
         font,
         language: language as u8,
         ratio: char_shape.ratios[language],
@@ -360,13 +521,18 @@ fn finish_run<K: Clone + Ord>(
     current: &mut Option<(K, u64)>,
     usage: &mut BTreeMap<K, UsageCounts>,
     paragraph_keys: &mut BTreeSet<K>,
-) {
+    budget: &mut CoverageBudget<'_>,
+) -> Result<(), HwpError> {
     if let Some((key, chars)) = current.take() {
+        if !usage.contains_key(&key) {
+            budget.add_row()?;
+        }
         let counts = usage.entry(key.clone()).or_default();
         counts.runs += 1;
         counts.chars += chars;
         paragraph_keys.insert(key);
     }
+    Ok(())
 }
 
 fn push_run<K: Clone + Ord>(
@@ -374,13 +540,15 @@ fn push_run<K: Clone + Ord>(
     current: &mut Option<(K, u64)>,
     usage: &mut BTreeMap<K, UsageCounts>,
     paragraph_keys: &mut BTreeSet<K>,
-) {
+    budget: &mut CoverageBudget<'_>,
+) -> Result<(), HwpError> {
     if current.as_ref().is_some_and(|(active, _)| active == &key) {
         current.as_mut().expect("active usage run").1 += 1;
     } else {
-        finish_run(current, usage, paragraph_keys);
+        finish_run(current, usage, paragraph_keys, budget)?;
         *current = Some((key, 1));
     }
+    Ok(())
 }
 
 fn analyze_paragraph(
@@ -388,7 +556,13 @@ fn analyze_paragraph(
     para: &Paragraph,
     context: u16,
     stats: &mut CoverageStats,
+    budget: &mut CoverageBudget<'_>,
 ) -> Result<(), HwpError> {
+    // Charge decoded bytes before materializing any collector-owned vectors. This is a
+    // resource budget, not a successful-result truncation boundary.
+    budget.consume(1)?;
+    budget.consume(para.text.len())?;
+    budget.consume(para.char_shapes.len())?;
     stats.paragraphs_seen += 1;
     let stored_lineseg = !para.line_segs.is_empty()
         && !para
@@ -430,21 +604,29 @@ fn analyze_paragraph(
     let mut legacy_paragraph_keys = BTreeSet::new();
     let mut decision_paragraph_keys = BTreeSet::new();
 
+    // `chars` and `refs` are both ordered by UTF-16 position. Keep one monotonic cursor
+    // instead of rescanning every character for every CharShapeRef (old O(N*R) path).
+    let mut char_cursor = 0usize;
     for (ref_index, shape_ref) in refs.iter().enumerate() {
         let end = refs
             .get(ref_index + 1)
             .map(|next| next.start_pos)
             .unwrap_or(u32::MAX);
-        let segment: Vec<char> = chars
+        while char_cursor < chars.len() && chars[char_cursor].0 < shape_ref.start_pos {
+            char_cursor += 1;
+        }
+        let segment_start = char_cursor;
+        while char_cursor < chars.len() && chars[char_cursor].0 < end {
+            char_cursor += 1;
+        }
+        let segment: Vec<char> = chars[segment_start..char_cursor]
             .iter()
-            .filter(|(offset, ch)| {
-                *offset >= shape_ref.start_pos && *offset < end && visible_layout_char(*ch)
-            })
-            .map(|(_, ch)| *ch)
+            .filter_map(|(_, ch)| visible_layout_char(*ch).then_some(*ch))
             .collect();
         if segment.is_empty() {
             continue;
         }
+        budget.consume(segment.len())?;
         let Some(char_shape) = core
             .document
             .doc_info
@@ -480,8 +662,27 @@ fn analyze_paragraph(
                 continue;
             };
 
+            budget.check_dimension(requested_face)?;
+            let requested_face = Arc::<str>::from(requested_face);
+            let normalized_face = name_decision
+                .normalized_face
+                .as_deref()
+                .map(|face| {
+                    budget.check_dimension(face)?;
+                    Ok::<Arc<str>, HwpError>(Arc::from(face))
+                })
+                .transpose()?;
+            let subst_font = name_decision
+                .subst_font
+                .as_deref()
+                .map(|face| {
+                    budget.check_dimension(face)?;
+                    Ok::<Arc<str>, HwpError>(Arc::from(face))
+                })
+                .transpose()?;
+
             let legacy = legacy_key(
-                requested_face.to_string(),
+                requested_face,
                 char_shape,
                 language,
                 context,
@@ -490,11 +691,27 @@ fn analyze_paragraph(
             );
             let style =
                 resolved_to_text_style(&core.styles, shape_ref.char_shape_id as u32, language);
+            budget.check_dimension(&style.font_family)?;
+            let layout_family = Arc::<str>::from(style.font_family.as_str());
             let text: String = segment[group_start..group_end].iter().collect();
             let decisions = trace_char_width_decisions(&text, &style);
             if decisions.len() != group_end - group_start {
                 return Err(coverage_error("character decision join length mismatch"));
             }
+            budget.consume(decisions.len())?;
+
+            let metric_names = decisions
+                .iter()
+                .find_map(|decision| decision.metric)
+                .map(|metric| {
+                    budget.check_dimension(metric.requested_name)?;
+                    budget.check_dimension(metric.alias_resolved_name)?;
+                    Ok::<(Arc<str>, Arc<str>), HwpError>((
+                        Arc::from(metric.requested_name),
+                        Arc::from(metric.alias_resolved_name),
+                    ))
+                })
+                .transpose()?;
 
             let mut legacy_run: Option<(LegacyUsageKey, u64)> = None;
             let mut decision_run: Option<(DecisionUsageKey, u64)> = None;
@@ -505,9 +722,7 @@ fn analyze_paragraph(
                     .map(|metric| {
                         metric_alias_relation(metric.requested_name, metric.alias_resolved_name)
                     })
-                    .map(|(relation, evidence)| {
-                        (Some(relation.to_string()), Some(evidence.to_string()))
-                    })
+                    .map(|(relation, evidence)| (Some(relation), Some(evidence)))
                     .unwrap_or((None, None));
                 let classification = classify_decision(
                     &decision,
@@ -521,7 +736,7 @@ fn analyze_paragraph(
                             .get_mut(category)
                             .expect("contract category") += 1;
                         stats.coverage_characters += 1;
-                        Some(category.to_string())
+                        Some(category)
                     }
                     CoverageClassification::NotApplicable => {
                         stats.not_applicable_characters += 1;
@@ -533,18 +748,20 @@ fn analyze_paragraph(
 
                 let decision_key = DecisionUsageKey {
                     legacy: legacy.clone(),
-                    normalized_face: name_decision.normalized_face.clone(),
-                    subst_font: name_decision.subst_font.clone(),
+                    normalized_face: normalized_face.clone(),
+                    subst_font: subst_font.clone(),
                     alt_type: name_decision.alt_type,
-                    layout_family: style.font_family.clone(),
-                    metric_requested_face: metric.map(|entry| entry.requested_name.to_string()),
-                    metric_resolved_face: metric.map(|entry| entry.alias_resolved_name.to_string()),
+                    layout_family: layout_family.clone(),
+                    metric_requested_face: metric
+                        .and_then(|_| metric_names.as_ref().map(|names| names.0.clone())),
+                    metric_resolved_face: metric
+                        .and_then(|_| metric_names.as_ref().map(|names| names.1.clone())),
                     match_kind: metric
-                        .map(|entry| entry.match_kind.as_str().to_string())
-                        .unwrap_or_else(|| "none".to_string()),
+                        .map(|entry| entry.match_kind.as_str())
+                        .unwrap_or("none"),
                     metric_entry: metric.map(|entry| entry.entry_index),
-                    character_match: decision.character_match.to_string(),
-                    width_source: decision.width_source.to_string(),
+                    character_match: decision.character_match,
+                    width_source: decision.width_source,
                     relation_type,
                     relation_evidence_status,
                     coverage_category: category,
@@ -554,24 +771,28 @@ fn analyze_paragraph(
                     &mut legacy_run,
                     &mut stats.legacy_usage,
                     &mut legacy_paragraph_keys,
-                );
+                    budget,
+                )?;
                 push_run(
                     decision_key,
                     &mut decision_run,
                     &mut stats.decision_usage,
                     &mut decision_paragraph_keys,
-                );
+                    budget,
+                )?;
             }
             finish_run(
                 &mut legacy_run,
                 &mut stats.legacy_usage,
                 &mut legacy_paragraph_keys,
-            );
+                budget,
+            )?;
             finish_run(
                 &mut decision_run,
                 &mut stats.decision_usage,
                 &mut decision_paragraph_keys,
-            );
+                budget,
+            )?;
             group_start = group_end;
         }
     }
@@ -590,27 +811,53 @@ fn walk_shape(
     shape: &ShapeObject,
     context: u16,
     stats: &mut CoverageStats,
+    budget: &mut CoverageBudget<'_>,
 ) -> Result<(), HwpError> {
+    budget.consume(1)?;
     if let Some(drawing) = shape.drawing() {
         if let Some(text_box) = &drawing.text_box {
-            walk_paragraphs(core, &text_box.paragraphs, context | CTX_TEXT_BOX, stats)?;
+            walk_paragraphs(
+                core,
+                &text_box.paragraphs,
+                context | CTX_TEXT_BOX,
+                stats,
+                budget,
+            )?;
         }
         if let Some(caption) = &drawing.caption {
-            walk_paragraphs(core, &caption.paragraphs, context | CTX_CAPTION, stats)?;
+            walk_paragraphs(
+                core,
+                &caption.paragraphs,
+                context | CTX_CAPTION,
+                stats,
+                budget,
+            )?;
         }
     }
     match shape {
         ShapeObject::Group(group) => {
             if let Some(caption) = &group.caption {
-                walk_paragraphs(core, &caption.paragraphs, context | CTX_CAPTION, stats)?;
+                walk_paragraphs(
+                    core,
+                    &caption.paragraphs,
+                    context | CTX_CAPTION,
+                    stats,
+                    budget,
+                )?;
             }
             for child in &group.children {
-                walk_shape(core, child, context, stats)?;
+                walk_shape(core, child, context, stats, budget)?;
             }
         }
         ShapeObject::Picture(picture) => {
             if let Some(caption) = &picture.caption {
-                walk_paragraphs(core, &caption.paragraphs, context | CTX_CAPTION, stats)?;
+                walk_paragraphs(
+                    core,
+                    &caption.paragraphs,
+                    context | CTX_CAPTION,
+                    stats,
+                    budget,
+                )?;
             }
         }
         _ => {}
@@ -623,45 +870,90 @@ fn walk_paragraphs(
     paragraphs: &[Paragraph],
     context: u16,
     stats: &mut CoverageStats,
+    budget: &mut CoverageBudget<'_>,
 ) -> Result<(), HwpError> {
     for para in paragraphs {
-        analyze_paragraph(core, para, context, stats)?;
+        analyze_paragraph(core, para, context, stats, budget)?;
+        budget.consume(para.controls.len())?;
         for control in &para.controls {
             match control {
                 Control::Table(table) => {
                     if let Some(caption) = &table.caption {
-                        walk_paragraphs(core, &caption.paragraphs, context | CTX_CAPTION, stats)?;
+                        walk_paragraphs(
+                            core,
+                            &caption.paragraphs,
+                            context | CTX_CAPTION,
+                            stats,
+                            budget,
+                        )?;
                     }
                     for cell in &table.cells {
-                        walk_paragraphs(core, &cell.paragraphs, context | CTX_TABLE_CELL, stats)?;
+                        walk_paragraphs(
+                            core,
+                            &cell.paragraphs,
+                            context | CTX_TABLE_CELL,
+                            stats,
+                            budget,
+                        )?;
                     }
                 }
-                Control::Shape(shape) => walk_shape(core, shape, context, stats)?,
+                Control::Shape(shape) => walk_shape(core, shape, context, stats, budget)?,
                 Control::Picture(picture) => {
                     if let Some(caption) = &picture.caption {
-                        walk_paragraphs(core, &caption.paragraphs, context | CTX_CAPTION, stats)?;
+                        walk_paragraphs(
+                            core,
+                            &caption.paragraphs,
+                            context | CTX_CAPTION,
+                            stats,
+                            budget,
+                        )?;
                     }
                 }
                 Control::Header(header) => {
-                    walk_paragraphs(core, &header.paragraphs, context | CTX_HEADER, stats)?;
+                    walk_paragraphs(
+                        core,
+                        &header.paragraphs,
+                        context | CTX_HEADER,
+                        stats,
+                        budget,
+                    )?;
                 }
                 Control::Footer(footer) => {
-                    walk_paragraphs(core, &footer.paragraphs, context | CTX_FOOTER, stats)?;
+                    walk_paragraphs(
+                        core,
+                        &footer.paragraphs,
+                        context | CTX_FOOTER,
+                        stats,
+                        budget,
+                    )?;
                 }
                 Control::Footnote(note) => {
-                    walk_paragraphs(core, &note.paragraphs, context | CTX_FOOTNOTE, stats)?;
+                    walk_paragraphs(
+                        core,
+                        &note.paragraphs,
+                        context | CTX_FOOTNOTE,
+                        stats,
+                        budget,
+                    )?;
                 }
                 Control::Endnote(note) => {
-                    walk_paragraphs(core, &note.paragraphs, context | CTX_ENDNOTE, stats)?;
+                    walk_paragraphs(core, &note.paragraphs, context | CTX_ENDNOTE, stats, budget)?;
                 }
                 Control::HiddenComment(comment) => walk_paragraphs(
                     core,
                     &comment.paragraphs,
                     context | CTX_HIDDEN_COMMENT,
                     stats,
+                    budget,
                 )?,
                 Control::Field(field) if !field.memo_paragraphs.is_empty() => {
-                    walk_paragraphs(core, &field.memo_paragraphs, context | CTX_MEMO, stats)?;
+                    walk_paragraphs(
+                        core,
+                        &field.memo_paragraphs,
+                        context | CTX_MEMO,
+                        stats,
+                        budget,
+                    )?;
                 }
                 _ => {}
             }
@@ -670,12 +962,21 @@ fn walk_paragraphs(
     Ok(())
 }
 
-fn analyze_document(core: &DocumentCore) -> Result<CoverageStats, HwpError> {
+fn analyze_document(
+    core: &DocumentCore,
+    budget: &mut CoverageBudget<'_>,
+) -> Result<CoverageStats, HwpError> {
     let mut stats = CoverageStats::new();
     for section in &core.document.sections {
-        walk_paragraphs(core, &section.paragraphs, 0, &mut stats)?;
+        walk_paragraphs(core, &section.paragraphs, 0, &mut stats, budget)?;
         for master in &section.section_def.master_pages {
-            walk_paragraphs(core, &master.paragraphs, CTX_MASTER_PAGE, &mut stats)?;
+            walk_paragraphs(
+                core,
+                &master.paragraphs,
+                CTX_MASTER_PAGE,
+                &mut stats,
+                budget,
+            )?;
         }
     }
     for counts in stats.legacy_usage.values_mut() {
@@ -692,8 +993,8 @@ fn legacy_records(stats: &CoverageStats) -> Vec<LegacyUsageRecord> {
         .legacy_usage
         .iter()
         .map(|(key, counts)| LegacyUsageRecord {
-            font: key.font.clone(),
-            metric_face: key.metric_face.clone(),
+            font: key.font.to_string(),
+            metric_face: key.metric_face.as_deref().map(str::to_string),
             language: LANGUAGE_NAMES[key.language as usize].to_string(),
             ratio: key.ratio,
             spacing: key.spacing,
@@ -725,8 +1026,8 @@ fn decision_records(stats: &CoverageStats) -> Vec<DecisionUsageRecord> {
         .decision_usage
         .iter()
         .map(|(key, counts)| DecisionUsageRecord {
-            font: key.legacy.font.clone(),
-            metric_face: key.legacy.metric_face.clone(),
+            font: key.legacy.font.to_string(),
+            metric_face: key.legacy.metric_face.as_deref().map(str::to_string),
             language: LANGUAGE_NAMES[key.legacy.language as usize].to_string(),
             ratio: key.legacy.ratio,
             spacing: key.legacy.spacing,
@@ -736,19 +1037,19 @@ fn decision_records(stats: &CoverageStats) -> Vec<DecisionUsageRecord> {
             context: context_name(key.legacy.context),
             alignment: alignment_name(key.legacy.alignment),
             stored_line_seg: key.legacy.stored_lineseg,
-            normalized_face: key.normalized_face.clone(),
-            subst_font: key.subst_font.clone(),
+            normalized_face: key.normalized_face.as_deref().map(str::to_string),
+            subst_font: key.subst_font.as_deref().map(str::to_string),
             alt_type: key.alt_type,
-            layout_family: key.layout_family.clone(),
-            metric_requested_face: key.metric_requested_face.clone(),
-            metric_resolved_face: key.metric_resolved_face.clone(),
-            match_kind: key.match_kind.clone(),
+            layout_family: key.layout_family.to_string(),
+            metric_requested_face: key.metric_requested_face.as_deref().map(str::to_string),
+            metric_resolved_face: key.metric_resolved_face.as_deref().map(str::to_string),
+            match_kind: key.match_kind.to_string(),
             metric_entry: key.metric_entry,
-            character_match: key.character_match.clone(),
-            width_source: key.width_source.clone(),
-            relation_type: key.relation_type.clone(),
-            relation_evidence_status: key.relation_evidence_status.clone(),
-            coverage_category: key.coverage_category.clone(),
+            character_match: key.character_match.to_string(),
+            width_source: key.width_source.to_string(),
+            relation_type: key.relation_type.map(str::to_string),
+            relation_evidence_status: key.relation_evidence_status.map(str::to_string),
+            coverage_category: key.coverage_category.map(str::to_string),
             source_join_status: "joined",
             document_count: counts.documents,
             paragraph_count: counts.paragraphs,
@@ -793,9 +1094,33 @@ impl DocumentCore {
     /// The JSON contains only aggregated usage keys; it never persists raw characters,
     /// document paths, file names or per-character records.
     #[doc(hidden)]
-    pub fn get_font_metric_coverage_analysis_native(&self) -> Result<String, HwpError> {
-        let stats = analyze_document(self)?;
+    pub fn get_font_metric_coverage_analysis_native(
+        &self,
+        options_json: &str,
+    ) -> Result<String, HwpError> {
+        self.get_font_metric_coverage_analysis_inner(options_json, None)
+    }
+
+    /// Same read-only analysis with cooperative cancellation for an isolated worker.
+    #[doc(hidden)]
+    pub fn get_font_metric_coverage_analysis_with_cancel_native(
+        &self,
+        options_json: &str,
+        cancellation: &AtomicBool,
+    ) -> Result<String, HwpError> {
+        self.get_font_metric_coverage_analysis_inner(options_json, Some(cancellation))
+    }
+
+    fn get_font_metric_coverage_analysis_inner(
+        &self,
+        options_json: &str,
+        cancellation: Option<&AtomicBool>,
+    ) -> Result<String, HwpError> {
+        let limits = CoverageLimits::parse(options_json)?;
+        let mut budget = CoverageBudget::new(limits, cancellation);
+        let stats = analyze_document(self, &mut budget)?;
         reconcile(&stats)?;
+        budget.consume(stats.legacy_usage.len() + stats.decision_usage.len())?;
         let legacy_usage = legacy_records(&stats);
         let decision_usage = decision_records(&stats);
         let source_runs_seen: u64 = stats.legacy_usage.values().map(|counts| counts.runs).sum();
@@ -835,10 +1160,12 @@ impl DocumentCore {
                 "attempted": 1,
                 "success": 1,
                 "failures": {
+                    "cancelled": 0,
                     "drm": 0,
                     "empty": 0,
                     "encrypted": 0,
                     "parser": 0,
+                    "resource-limit": 0,
                     "unsupported": 0,
                 },
             },
@@ -863,7 +1190,10 @@ impl DocumentCore {
         let aggregate_hash = sha256_canonical(report.clone(), true)
             .map_err(|error| coverage_error(format!("hash aggregate: {error}")))?;
         report["aggregateHash"]["value"] = Value::String(aggregate_hash);
-        serde_json::to_string(&report)
-            .map_err(|error| coverage_error(format!("serialize aggregate: {error}")))
+        let serialized = serde_json::to_vec(&report)
+            .map_err(|error| coverage_error(format!("serialize aggregate: {error}")))?;
+        budget.check_output(serialized.len())?;
+        String::from_utf8(serialized)
+            .map_err(|error| coverage_error(format!("serialize UTF-8 aggregate: {error}")))
     }
 }

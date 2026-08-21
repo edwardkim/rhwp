@@ -174,13 +174,33 @@ export function validateCoverageContract(contract) {
   }
   for (const [field, expected] of Object.entries({
     sourceJoinStates: ['excluded', 'joined', 'layoutOnly'],
-    documentFailureStates: ['drm', 'empty', 'encrypted', 'parser', 'unsupported'],
+    documentFailureStates: [
+      'cancelled',
+      'drm',
+      'empty',
+      'encrypted',
+      'parser',
+      'resource-limit',
+      'unsupported',
+    ],
     backendStates: ['complete', 'failed', 'notObserved', 'unsupported'],
   })) {
     const actual = [...(collector?.[field] ?? [])].sort(compareText);
     if (canonicalJson(actual) !== canonicalJson(expected)) {
       errors.push(`collectorRequirements.${field} does not match the contract inventory`);
     }
+  }
+
+  const resource = contract.resourcePolicy;
+  if (resource?.failureMode !== 'explicit-document-failure'
+      || resource.partialAggregateAccepted !== false
+      || resource.deadlineChecks !== true
+      || resource.cancellationChecks !== true
+      || resource.workUnitBudget !== true
+      || resource.aggregateRowBudget !== true
+      || resource.outputByteBudget !== true
+      || resource.corpusWorkerIsolation !== 'required') {
+    errors.push('resourcePolicy must fail closed with bounded work, rows, output and isolation');
   }
 
   const poc = contract.existingPoc;

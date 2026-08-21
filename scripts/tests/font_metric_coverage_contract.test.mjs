@@ -62,6 +62,16 @@ test('W3 contract has seven exclusive categories and disjoint reuse/delta fields
   );
   const overlap = CONTRACT.reusedPocFields.filter(field => CONTRACT.deltaFields.includes(field));
   assert.deepEqual(overlap, []);
+  assert.deepEqual(CONTRACT.resourcePolicy, {
+    failureMode: 'explicit-document-failure',
+    partialAggregateAccepted: false,
+    deadlineChecks: true,
+    cancellationChecks: true,
+    workUnitBudget: true,
+    aggregateRowBudget: true,
+    outputByteBudget: true,
+    corpusWorkerIsolation: 'required',
+  });
 });
 
 test('classification priority produces every W3 category exactly once', () => {
@@ -160,7 +170,15 @@ test('layout, coverage, join, parse and backend denominators reconcile independe
     documents: {
       attempted: 4,
       success: 3,
-      failures: { drm: 1, empty: 0, encrypted: 0, unsupported: 0, parser: 0 },
+      failures: {
+        cancelled: 0,
+        drm: 1,
+        empty: 0,
+        encrypted: 0,
+        unsupported: 0,
+        parser: 0,
+        'resource-limit': 0,
+      },
     },
     backends: { requested: 4, complete: 1, unsupported: 1, notObserved: 1, failed: 1 },
   };
@@ -188,7 +206,14 @@ test('truncation and silently omitted join, parser or backend states fail reconc
     documents: {
       attempted: 4,
       success: 3,
-      failures: { drm: 1, empty: 0, encrypted: 0, unsupported: 0 },
+      failures: {
+        cancelled: 0,
+        drm: 1,
+        empty: 0,
+        encrypted: 0,
+        unsupported: 0,
+        'resource-limit': 0,
+      },
     },
     backends: { requested: 4, complete: 1, unsupported: 1, notObserved: 1, failed: 1 },
   };
