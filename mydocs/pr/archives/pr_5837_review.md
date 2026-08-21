@@ -16,3 +16,8 @@ last_verified: 2026-08-21
 
 - `issue_5249_section_def_ctrl_tail` 2/2(한컴 oracle 비교 포함), 통합 전체 nextest 8,109/8,109 통과.
 - native-Skia library 3,950 passed/13 ignored과 focused native-Skia 두 test도 통과했다.
+
+## 최종 판단과 GitHub 기록
+
+- **수용**: #5844 전체 CI와 Hancom oracle tail 계약이 성공했다. 추가 메인터너 보정과 보류 항목은 없다.
+- merge 뒤 원 PR에는 저장 버전 tail 수용 근거와 #5844 통합 완료를 comment로 남기고 close한다.

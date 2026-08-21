@@ -17,3 +17,8 @@ last_verified: 2026-08-21
 - `issue_5797_hwpx_shape_self_closing_child` 5/5, 통합 전체 nextest 8,109/8,109 통과.
 - 같은 통합 후보의 #5787/#5788 관련 HWP 2020 기준도 확인했다. PDF는 각각 `nested_square_table_horz_offset-2020.pdf`(job `ad7aa2d5-1741-46ad-96cf-faa517efdc76`, SHA-256 `4acecce15598ac9cc962d01a0c7e0c6b1415f49fb0f17d922df6e261694b0860`) 및 `tac_table_missing_anchor_line_spacing-2020.pdf`(job `dbb4d6ec-0f4c-4b55-8328-8479172028bb`, SHA-256 `911122f759d1962246e258d707c0c8820f3710155f4212da1fa3b053747e20d1`)다.
 - 대표 검토 이미지는 `mydocs/pr/assets/pr_5824_issue5787_review_001.png`, `mydocs/pr/assets/pr_5824_issue5788_review_001.png`에 보존했다.
+
+## 최종 판단과 GitHub 기록
+
+- **수용**: #5844 전체 CI와 자기닫힘 도형 형제 보존 계약이 성공했다. 추가 메인터너 보정과 보류 항목은 없다.
+- merge 뒤 원 PR에는 #5844 통합 수용과 5개 parser regression 통과를 comment로 남기고 close한다.

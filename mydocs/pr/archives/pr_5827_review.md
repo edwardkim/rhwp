@@ -16,3 +16,8 @@ last_verified: 2026-08-21
 
 - `issue_5751_dense_table_row_growth` 2/2, `overflow_cell_baseline` 1/1, 통합 전체 nextest 8,109/8,109 통과.
 - 이번 통합에서는 tests/cases lint 정책도 유지하며, generated suite/manifest 산출물은 CI 관리 범위로 staging하지 않았다.
+
+## 최종 판단과 GitHub 기록
+
+- **수용**: #5844 전체 CI, row growth 계약, overflow baseline이 모두 성공했다. 추가 메인터너 보정과 보류 항목은 없다.
+- merge 뒤 원 PR에는 #5844 통합 수용과 조밀한 행 높이 regression 통과를 comment로 남기고 close한다.
