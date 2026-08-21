@@ -1853,6 +1853,18 @@ export class InputHandler {
     _keyboard.onKeyDown.call(this, e);
   }
 
+  /**
+   * PgUp/PgDn·Home/End 를 포커스 주인과 무관하게 편집기 경로로 처리한다.
+   *
+   * 편집기 textarea 가 포커스를 잃으면(툴바 버튼·서식 콤보) keydown 이 오지 않아 이
+   * 키들이 통째로 무동작이 된다. 전역 폴백(main.ts)이 그때 keydown 을 그대로 넘기는
+   * 진입점이다 — 분기 로직을 복제하지 않고 같은 경로를 태워 동작을 하나로 유지한다.
+   */
+  handleDocumentNavigationKey(e: KeyboardEvent): void {
+    if (!this.active) return;
+    _keyboard.onKeyDown.call(this, e);
+  }
+
   /** Ctrl/Meta 단축키 처리 */
   private handleCtrlKey(e: KeyboardEvent): void {
     _keyboard.handleCtrlKey.call(this, e);

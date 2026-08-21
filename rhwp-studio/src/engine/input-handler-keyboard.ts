@@ -11,9 +11,10 @@ import {
   type NavigationAction,
   type NavigationKeyInput,
 } from './navigation-keymap';
-import type { DocumentPosition, CellBbox, CellPathLike } from '@/core/types';
+import type { DocumentPosition, CursorRect, CellBbox, CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
+import { scrollByPageStep, type PageScrollDirection } from '@/view/page-scroll';
 
 const RHWP_CLIPBOARD_MARKER_RE = /<!--\s*rhwp-studio-clipboard:([A-Za-z0-9._:-]+)\s*-->/;
 const PAGINATION_BOUNDARY_KEYS = new Set([
@@ -412,20 +413,137 @@ const chordMapG: Record<string, string> = {
 };
 
 /**
+ * PgUp/PgDn 처리 — 화면을 쪽 단위로 옮기고, 캐럿을 **화면상 같은 자리**에 남긴다.
+ *
+ * 한글은 PgUp/PgDn 이 캐럿도 함께 옮긴다. 화면만 옮기면 다음 방향키·타이핑 한 번에
+ * 원래 쪽으로 되튀어, 사용자 눈에는 이동이 취소된 것처럼 보인다.
+ *
+ * 캐럿이 없거나(문서 미배치) 캐럿 소유자가 본문이 아닌 하위 모드(머리말/꼬리말·각주·
+ * 개체/셀 선택·서식 모드)일 때는 화면만 옮긴다 — 그 모드들의 캐럿은 본문 좌표계로
+ * hit-test 할 수 없고, 옮기면 편집 문맥이 바뀌어 버린다.
+ *
+ * @returns 실제로 스크롤이 일어났으면 true.
+ */
+export function scrollByPageKey(
+  this: any,
+  direction: PageScrollDirection,
+  extendSelection: boolean,
+): boolean {
+  const beforeRect: CursorRect | null = caretRectForPageScroll.call(this);
+  const result = scrollByPageStep(this.virtualScroll, this.viewportManager, direction);
+  if (!result.moved) return false;
+  if (beforeRect) moveCaretWithPageScroll.call(this, beforeRect, result.delta, extendSelection);
+  return true;
+}
+
+/**
+ * Ctrl+Home/Ctrl+End 뒤 화면을 문서 처음/끝에 붙인다.
+ *
+ * `updateCaret` 의 caret-into-view 는 캐럿이 보이기만 하면 멈추므로, 문서 처음으로
+ * 갔는데도 첫 쪽 위 여백이 잘린 채(실측 122px 내려간 채) 남는다. 사용자가 Ctrl+Home 에
+ * 기대하는 것은 "문서 맨 위" 지 "첫 줄이 어딘가 보이는 화면" 이 아니다.
+ *
+ * 단, 끝 화면에 캐럿이 들어올 때만 붙인다 — 확대해서 첫 줄이 한 화면 아래에 있는
+ * 경우까지 맨 위로 붙이면 방금 옮긴 캐럿을 화면 밖으로 밀어낸다.
+ */
+function snapViewToDocumentEdge(this: any, edge: -1 | 1): void {
+  const rect: CursorRect | null = this.cursor.getRect?.() ?? null;
+  if (!rect) return;
+
+  const zoom = this.viewportManager.getZoom();
+  const viewportHeight = this.viewportManager.getViewportSize().height;
+  const limit = Math.max(0, this.virtualScroll.getTotalHeight() - viewportHeight);
+  const caretTop = this.virtualScroll.getPageOffset(rect.pageIndex) + rect.y * zoom;
+
+  if (edge < 0) {
+    if (caretTop + rect.height * zoom <= viewportHeight) this.viewportManager.setScrollTop(0);
+  } else if (caretTop >= limit) {
+    this.viewportManager.setScrollTop(limit);
+  }
+}
+
+/** 화면과 함께 옮겨도 되는 캐럿이면 그 rect 를, 아니면 null 을 준다. */
+function caretRectForPageScroll(this: any): CursorRect | null {
+  const cursor = this.cursor;
+  if (this.isFormMode?.()) return null;
+  if (cursor.isInHeaderFooter?.() || cursor.isInFootnote?.()) return null;
+  if (cursor.isInPictureObjectSelection?.() || cursor.isInTableObjectSelection?.()) return null;
+  if (cursor.isInBlockSelectionMode?.() || cursor.isInCellSelectionMode?.()) return null;
+  return cursor.getRect?.() ?? null;
+}
+
+/**
+ * 스크롤 뒤, 스크롤 전 캐럿이 있던 **화면 위치**에 해당하는 문서 위치로 캐럿을 옮긴다.
+ * 내용이 `delta` 만큼 위로 흘렀으니, 같은 화면 자리는 문서 좌표로 `delta` 만큼 아래다.
+ */
+function moveCaretWithPageScroll(
+  this: any,
+  beforeRect: CursorRect,
+  delta: number,
+  extendSelection: boolean,
+): void {
+  const hit = hitTestAfterPageScroll.call(this, beforeRect, delta);
+  // hit 이 없으면(여백·빈 쪽에 떨어짐) 캐럿을 그대로 둔다 — 화면 이동만으로도
+  // 읽기는 되고, 엉뚱한 위치로 옮기는 것보다 낫다.
+  if (!hit) return;
+
+  if (extendSelection) {
+    this.cursor.setAnchor();
+  } else {
+    this.cursor.clearSelection();
+  }
+  this.cursor.moveToHit(hit);
+  this.cursor.resetPreferredX();
+  // 캐럿은 이미 화면 안(스크롤 전과 같은 자리)이라 다시 스크롤할 이유가 없다.
+  // updateCaret() 을 쓰면 caret-into-view 가 방금 맞춘 화면을 흔든다.
+  this.updateCaretNoScroll();
+  if (extendSelection) this.updateSelection();
+}
+
+/** 스크롤 전 캐럿 rect + 스크롤 변화량 → 스크롤 후 같은 화면 자리의 문서 위치. */
+function hitTestAfterPageScroll(
+  this: any,
+  beforeRect: CursorRect,
+  delta: number,
+): DocumentPosition | null {
+  const scrollContent = this.container.querySelector('#scroll-content');
+  if (!scrollContent) return null;
+
+  const zoom = this.viewportManager.getZoom();
+  const pageLeft = this.virtualScroll.getPageLeftResolved(
+    beforeRect.pageIndex,
+    scrollContent.clientWidth,
+  );
+  const contentX = pageLeft + beforeRect.x * zoom;
+  // 캐럿 세로 중앙을 기준점으로 삼는다 — 줄 경계에 딱 걸려 이웃 줄로 새지 않게.
+  const contentY = this.virtualScroll.getPageOffset(beforeRect.pageIndex)
+    + (beforeRect.y + beforeRect.height / 2) * zoom;
+
+  // scroll-content 의 화면 좌표는 이미 스크롤이 반영된 값이라, 문서 좌표에 그대로 더하면
+  // 스크롤 후의 화면 좌표가 된다.
+  const contentRect = scrollContent.getBoundingClientRect();
+  return this.hitTestFromClientPoint(
+    contentRect.left + contentX,
+    contentRect.top + contentY + delta,
+  );
+}
+
+/**
  * 키보드 이벤트 처리 순서:
  *
 
  * 1. 코드 단축키 2번째 키 (Ctrl+K → ? / Ctrl+M → ?)
  * 2. 특수 모드 탈출 (연결선/다각형/이미지/글상자 배치 모드 → Escape)
  * 3. IME 조합 중 네비게이션 키 보류
- * 4. 편집 모드별 키 처리 (머리말꼬리말 / 각주)
- * 5. F5 셀 선택 모드
- * 6. 셀 선택 모드 키 처리
- * 7. 그림/표 객체 선택 모드 키 처리
- * 8. 플랫폼별 navigation shortcut 처리
- * 9. Ctrl/Meta 조합 → handleCtrlKey() → shortcut-map.ts 단축키 테이블 경유
- * 10. Alt 조합 → shortcut-map.ts 단축키 테이블 경유
- * 11. 본문 키 처리 (Esc, Backspace, Enter, Arrow 등)
+ * 4. PgUp/PgDn 화면 이동 — 아래 편집 모드 분기(5~8)가 삼키기 전에 먼저 소비한다
+ * 5. 편집 모드별 키 처리 (머리말꼬리말 / 각주)
+ * 6. F5 셀 선택 모드
+ * 7. 셀 선택 모드 키 처리
+ * 8. 그림/표 객체 선택 모드 키 처리
+ * 9. 플랫폼별 navigation shortcut 처리
+ * 10. Ctrl/Meta 조합 → handleCtrlKey() → shortcut-map.ts 단축키 테이블 경유
+ * 11. Alt 조합 → shortcut-map.ts 단축키 테이블 경유
+ * 12. 본문 키 처리 (Esc, Backspace, Enter, Arrow 등)
  *
  * 새 단축키 추가 시: shortcut-map.ts의 defaultShortcuts 테이블에 등록
  */
@@ -590,6 +708,15 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     }
   }
 
+  // ─── 4. PgUp/PgDn 화면 이동 ───────────────────────────────
+  // 편집 위치가 아니라 화면을 옮기는 키다. 아래 모드별 분기(머리말/꼬리말·각주·개체
+  // 선택·셀 선택 등)가 키를 삼켜 무동작이 되지 않도록 여기서 먼저 처리한다.
+  if ((e.key === 'PageUp' || e.key === 'PageDown') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    scrollByPageKey.call(this, e.key === 'PageUp' ? -1 : 1, e.shiftKey);
+    return;
+  }
+
   // ─── 머리말/꼬리말 편집 모드 키보드 처리 ──────────────────
   if (this.cursor.isInHeaderFooter()) {
     if (dispatchSubmodeGlobalShortcut.call(this, e)) return;
@@ -621,6 +748,16 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       e.preventDefault();
       const delta = e.key === 'ArrowLeft' ? -1 : 1;
       this.cursor.moveHorizontalInHf(delta);
+      this.updateCaret();
+      return;
+    }
+
+    // Home/End → 머리말/꼬리말 내 줄 처음·끝. 이 분기가 없으면 키가 여기서 삼켜져
+    // 아래 본문 navigation 경로에 닿지 못하고 무동작이 된다.
+    // Ctrl 조합(문서 처음/끝)은 본문 명령이라 이 모드에서 가로채지 않는다.
+    if ((e.key === 'Home' || e.key === 'End') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      this.cursor.moveToParagraphEdgeInHf(e.key === 'Home' ? -1 : 1);
       this.updateCaret();
       return;
     }
@@ -692,6 +829,14 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       e.preventDefault();
       const delta = e.key === 'ArrowLeft' ? -1 : 1;
       this.cursor.moveHorizontalInFn(delta);
+      this.updateCaret();
+      return;
+    }
+
+    // Home/End → 각주 내 줄 처음·끝. 머리말/꼬리말과 같은 이유로 여기서 처리한다.
+    if ((e.key === 'Home' || e.key === 'End') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      this.cursor.moveToParagraphEdgeInFn(e.key === 'Home' ? -1 : 1);
       this.updateCaret();
       return;
     }
@@ -1204,27 +1349,6 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       if (e.shiftKey) this.updateSelection();
       break;
     }
-    case 'PageUp':
-    case 'PageDown': {
-      e.preventDefault();
-      const vpSize = this.viewportManager.getViewportSize();
-      const scrollY = this.viewportManager.getScrollY();
-      const vpCenter = scrollY + vpSize.height / 2;
-      // [#2560] 그리드 모드에서는 한 행의 쪽들이 같은 offset 을 갖는다. 행의
-      // 마지막 쪽에서 ±1 하면 같은 행에 머물러 스크롤이 움직이지 않으므로
-      // (PageUp 이 무동작), 행의 첫 쪽 기준으로 행 단위(±열수)로 이동한다.
-      // 단일 컬럼에서는 pagesPerRow=1 이라 종전 동작과 동일하다.
-      const currentPage = this.virtualScroll.getRowFirstPageAtY(vpCenter);
-      const step = this.virtualScroll.pagesPerRow;
-      const targetPage = e.key === 'PageUp'
-        ? Math.max(0, currentPage - step)
-        : Math.min(this.virtualScroll.pageCount - 1, currentPage + step);
-      if (targetPage !== currentPage) {
-        const targetOffset = this.virtualScroll.getPageOffset(targetPage);
-        this.viewportManager.setScrollTop(targetOffset - this.virtualScroll.gap);
-      }
-      break;
-    }
     case 'Home': {
       e.preventDefault();
       if (e.shiftKey) {
@@ -1383,6 +1507,7 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
         this.cursor.moveToDocumentStart();
       }
       this.updateCaret();
+      snapViewToDocumentEdge.call(this, -1);
       break;
     }
     case 'end': {
@@ -1395,6 +1520,7 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
         this.cursor.moveToDocumentEnd();
       }
       this.updateCaret();
+      snapViewToDocumentEdge.call(this, 1);
       break;
     }
     case 'arrowleft': {
