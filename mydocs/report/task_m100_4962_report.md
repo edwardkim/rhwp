@@ -196,8 +196,31 @@ subset font name, glyph outline digest, `hmtx` advance, 첫 조판 divergence와
 `6947e9e8a6c67a60a54b04dc6f1abf75e3cc66d9096a978d301ba2c10bb4ee3a`로 exact다. canonical output hash는
 `95e7a41d1ed92a60cb66e1705b038c3e9086829b3c8aee48af57e8c2da111a68`이다.
 
-최종 검증은 W4 test, W3 contract·checkpoint 회귀, JSON Schema strict validation, `.mjs` syntax,
-Markdown 링크, `cargo fmt --all -- --check`, `git diff --check`를 포함한다.
+### 8.1 PR 제출 전 전체 검증
+
+2026-08-22 `1513d8fc9`를 detached review worktree에서 최신
+`upstream/devel@0f9ceeb19`과 대사했다. devel은 후보의 조상이고 merge simulation은 충돌이 없었다.
+integration 파생물은 review worktree에서만 준비했으며 source branch에는 남기지 않았다.
+
+| 검증 | 결과 |
+| --- | --- |
+| integration manifest | 863 sources / 4,081 static test attrs / 32 suites + 9 exceptions |
+| unit-tier policy | 4,225 tests / 299 modules, 통과 |
+| W3·W4 Node focused | 45 pass / 1 의도적 skip / 0 fail |
+| #4962·#4961 Rust focused | 8/8, 4/4 통과 |
+| release build | 통과, 10분 14초 |
+| release lib | 4,075 pass / 13 ignore / 0 fail |
+| release-test 전체 nextest | 8,129/8,129 pass / 39 skip / 4 slow |
+| Native Skia lib | 4,132 pass / 13 ignore / 0 fail |
+| Native Skia missing-picture·direct-PDF | 2/2, 4/4 통과 |
+| clippy `-D warnings` | 통과 |
+| Rust doc test | 8 pass / 3 ignore / 0 fail |
+| 표준 Docker WASM | 통과, 6분 19초, `rhwp_bg.wasm` 8,784,473 bytes |
+| fmt·diff·변경 Markdown 24개 링크 | 통과 |
+
+로컬 `cargo-nextest`는 권장 0.9.140보다 낮은 0.9.137 경고를 냈지만 전체 실행과 결과 수집은 정상
+완료했다. 제품 metric DB·fallback·paint·layout을 바꾸지 않았으므로 시각 sweep은 적용하지 않았고,
+이미 결정성이 고정된 private 10k 계측도 반복하지 않았다.
 
 ## 9. GitHub 후속 후보
 
