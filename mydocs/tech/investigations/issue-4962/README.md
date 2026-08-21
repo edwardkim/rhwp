@@ -1,11 +1,11 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4962.md
-last_verified: 2026-08-21
+canonical: mydocs/plans/task_m100_4962_w4.md
+last_verified: 2026-08-22
 ---
 
-# Issue #4962 W3 font metric coverage 계약
+# Issue #4962 W3 font metric coverage·W4 조판 위험 계약
 
 이 디렉터리는 기존 10k 폰트 편집 습관 POC를 재사용하면서, 그 집계에서 복원할 수 없는 실제 renderer
 문자 결정만 delta로 측정하기 위한 계약을 보존한다. 이 JSON은 조사·계측 계약이며 제품 runtime의
@@ -22,6 +22,9 @@ last_verified: 2026-08-21
 | `font_metric_coverage_full_manifest_policy.json` | local-only 10k 발견·BLAKE3·저장공간 preflight 정책 |
 | `scripts/font_metric_coverage_contract.mjs` | 분류·대사·hash·privacy·POC/W1 drift 검사 |
 | `scripts/tests/font_metric_coverage_contract.test.mjs` | 정상·변이·누락을 다루는 Stage 1 계약 test |
+| `font_typesetting_risk_contract.schema.json` | W4 입력·identity·proxy·lane·risk mass·privacy schema |
+| `font_typesetting_risk_contract.json` | W3 동결 입력과 조판 위험 순위 규칙의 실행 전 계약 |
+| `scripts/tests/font_typesetting_risk_rank.test.mjs` | W4 ranker의 의도된 RED 계약 test |
 
 ## 권위와 경계
 
@@ -113,3 +116,29 @@ worker가 HWP3·HML·unknown을 `unsupported` 문서 실패로 기록한다. 지
 엇갈린 문서는 corpus를 이름 변경하지 않고 컨테이너 형식으로 실행하며, worker aggregate와 다르면
 checkpoint runner가 계속 fail-closed 한다. preflight에는 경로·파일명 없이 지원 형식 수,
 미인식 수, 입력 분류 불일치 수만 남긴다.
+
+## W4 조판 위험 순위 경계
+
+W4는 W3가 보존한 `decisionUsage`를 읽기 전용으로 사용한다. document face는 `font` 문자열을 exact
+identity로 유지하고 `metricRequestedFace`는 별도 원인 cluster로만 집계한다. 위험 category는
+`face-miss`·`char-miss`·`heuristic`뿐이며 장평·자간과 문맥은 같은 usage row에서 관찰된 경우에만 risk
+mass에 반영한다.
+
+`fixedFrameContextProxy`는 historical generator의 context bit 집합을 재사용하는 proxy일 뿐 geometry나
+overflow 판정이 아니다. `storedLineSeg`도 유효성 판정이 아니므로 `stored-line-lane`과
+`fresh-candidate-lane`으로만 나누고 점수 배수에는 사용하지 않는다. 계약과 schema는 다음 파일에 있다.
+
+```text
+mydocs/tech/investigations/issue-4962/font_typesetting_risk_contract.json
+mydocs/tech/investigations/issue-4962/font_typesetting_risk_contract.schema.json
+```
+
+Stage W4-1의 test는 다음 ranker 구현 전 요구사항을 RED로 고정한다. `ERR_MODULE_NOT_FOUND`는 현재 단계의
+의도된 실패이며 W4-2에서 구현과 함께 GREEN으로 전환한다.
+
+```bash
+node --test scripts/tests/font_typesetting_risk_rank.test.mjs
+```
+
+이 test는 private 10k aggregate를 열지 않고 공개 fixture만 사용한다. 실제 110 MB 입력과 local ranking
+중간물은 `output/poc/font-typesetting-risk/` 아래 mode `0600`으로만 보존하며 저장소에 추가하지 않는다.

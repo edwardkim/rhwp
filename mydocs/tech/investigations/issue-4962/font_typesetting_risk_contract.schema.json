@@ -1,0 +1,420 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/issue-4962/font_typesetting_risk_contract.schema.json",
+  "title": "rhwp Font Typesetting Risk Contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "issue",
+    "inputPreconditions",
+    "compatibilityProjection",
+    "candidateIdentity",
+    "editingAxes",
+    "riskMass",
+    "ranking",
+    "historicalDefinitionEvidence",
+    "privacy",
+    "scope"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "kind": { "const": "font-typesetting-risk-contract" },
+    "issue": { "const": 4962 },
+    "inputPreconditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "determinismPeer", "postMergeIngress", "expectedW3"],
+      "properties": {
+        "primary": { "$ref": "#/$defs/frozenAggregate" },
+        "determinismPeer": { "$ref": "#/$defs/frozenAggregate" },
+        "postMergeIngress": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "baselineArtifact",
+            "currentArtifact",
+            "localOnly",
+            "requiredMode",
+            "documentCount",
+            "baselineSourceCommit",
+            "currentSourceCommit",
+            "semanticProjectionExcludedFields",
+            "semanticProjectionSha256"
+          ],
+          "properties": {
+            "baselineArtifact": { "$ref": "#/$defs/repositoryPath" },
+            "currentArtifact": { "$ref": "#/$defs/repositoryPath" },
+            "localOnly": { "const": true },
+            "requiredMode": { "const": "0600" },
+            "documentCount": { "const": 32 },
+            "baselineSourceCommit": { "$ref": "#/$defs/gitSha" },
+            "currentSourceCommit": { "$ref": "#/$defs/gitSha" },
+            "semanticProjectionExcludedFields": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "prefixItems": [
+                { "const": "aggregateHash" },
+                { "const": "checkpoint" }
+              ],
+              "items": false
+            },
+            "semanticProjectionSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "expectedW3": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "attemptedDocuments",
+            "successfulDocuments",
+            "failedDocuments",
+            "layoutCharacters",
+            "coverageCharacters",
+            "decisionUsageRows",
+            "riskCharacters"
+          ],
+          "properties": {
+            "attemptedDocuments": { "const": 10000 },
+            "successfulDocuments": { "const": 9909 },
+            "failedDocuments": { "const": 91 },
+            "layoutCharacters": { "const": 54399371 },
+            "coverageCharacters": { "const": 54326042 },
+            "decisionUsageRows": { "const": 138965 },
+            "riskCharacters": { "const": 2061732 }
+          }
+        }
+      }
+    },
+    "compatibilityProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceArray",
+        "requiredFields",
+        "riskCategories",
+        "observationalCategories",
+        "excludedStates",
+        "samePopulationSources",
+        "historicalOnlySource"
+      ],
+      "properties": {
+        "sourceArray": { "const": "decisionUsage" },
+        "requiredFields": { "$ref": "#/$defs/stringSet" },
+        "riskCategories": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            { "const": "char-miss" },
+            { "const": "face-miss" },
+            { "const": "heuristic" }
+          ],
+          "items": false
+        },
+        "observationalCategories": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "exact-hit",
+              "identity-alias-hit",
+              "measured-overlay",
+              "metric-surrogate"
+            ]
+          }
+        },
+        "excludedStates": { "$ref": "#/$defs/stringSet" },
+        "samePopulationSources": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            { "const": "decisionUsage" },
+            { "const": "legacyUsage" }
+          ],
+          "items": false
+        },
+        "historicalOnlySource": { "$ref": "#/$defs/repositoryPath" }
+      }
+    },
+    "candidateIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "documentFaceKey",
+        "metricRequestClusterKey",
+        "splitDocumentFaceBy",
+        "preservedDistributions",
+        "mergeMetricClustersIntoDocumentFaces",
+        "unknownIdentityGuessing"
+      ],
+      "properties": {
+        "documentFaceKey": { "const": "font" },
+        "metricRequestClusterKey": { "const": "metricRequestedFace" },
+        "splitDocumentFaceBy": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "preservedDistributions": { "$ref": "#/$defs/stringSet" },
+        "mergeMetricClustersIntoDocumentFaces": { "const": false },
+        "unknownIdentityGuessing": { "const": false }
+      }
+    },
+    "editingAxes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "compressed",
+        "extremeCompressed",
+        "compressionIndicators",
+        "fixedFrameContextProxy",
+        "lineSegLanes"
+      ],
+      "properties": {
+        "compressed": { "const": "ratio < 100 || spacing < 0" },
+        "extremeCompressed": { "const": "ratio <= 90 || spacing <= -5" },
+        "compressionIndicators": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "prefixItems": [
+            { "const": "ratio < 100" },
+            { "const": "ratio <= 90" },
+            { "const": "spacing < 0" },
+            { "const": "spacing <= -5" }
+          ],
+          "items": false
+        },
+        "fixedFrameContextProxy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["outputField", "matchMode", "tokens", "geometryClaim"],
+          "properties": {
+            "outputField": { "const": "fixedFrameContextProxy" },
+            "matchMode": { "const": "context-token-any" },
+            "tokens": {
+              "type": "array",
+              "minItems": 6,
+              "maxItems": 6,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "table-cell",
+                  "text-box",
+                  "caption",
+                  "header",
+                  "footer",
+                  "master-page"
+                ]
+              }
+            },
+            "geometryClaim": { "const": false }
+          }
+        },
+        "lineSegLanes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["stored-line-lane", "fresh-candidate-lane", "riskMultiplier"],
+          "properties": {
+            "stored-line-lane": { "$ref": "#/$defs/lineSegLaneTrue" },
+            "fresh-candidate-lane": { "$ref": "#/$defs/lineSegLaneFalse" },
+            "riskMultiplier": { "const": false }
+          }
+        }
+      }
+    },
+    "riskMass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "categoryWeights",
+        "compressionBase",
+        "compressionIndicatorIncrement",
+        "fixedFrameProxyFactor",
+        "otherContextFactor",
+        "formula",
+        "requiredOutputs",
+        "reconciliation"
+      ],
+      "properties": {
+        "categoryWeights": { "const": false },
+        "compressionBase": { "const": 1 },
+        "compressionIndicatorIncrement": { "const": 1 },
+        "fixedFrameProxyFactor": { "const": 2 },
+        "otherContextFactor": { "const": 1 },
+        "formula": { "$ref": "#/$defs/nonEmptyString" },
+        "requiredOutputs": { "$ref": "#/$defs/stringSet" },
+        "reconciliation": { "$ref": "#/$defs/stringSet" }
+      }
+    },
+    "ranking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary",
+        "secondary",
+        "sort",
+        "sensitivityVariants",
+        "unstableResultPolicy"
+      ],
+      "properties": {
+        "primary": { "const": "document-face-risk-rank" },
+        "secondary": { "const": "metric-request-cluster-rank" },
+        "sort": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": { "$ref": "#/$defs/sortTerm" }
+        },
+        "sensitivityVariants": { "$ref": "#/$defs/stringSet" },
+        "unstableResultPolicy": { "const": "publish-cumulative-risk-bands" }
+      }
+    },
+    "historicalDefinitionEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generatorCommit",
+        "source",
+        "sourceBlobSha256",
+        "symbols",
+        "definitions"
+      ],
+      "properties": {
+        "generatorCommit": { "$ref": "#/$defs/gitSha" },
+        "source": { "const": "examples/poc_font_layout_habits.rs" },
+        "sourceBlobSha256": { "$ref": "#/$defs/sha256" },
+        "symbols": { "$ref": "#/$defs/stringSet" },
+        "definitions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["compressed", "extremeCompressed", "storedLineSeg"],
+          "properties": {
+            "compressed": { "const": "ratio < 100 || spacing < 0" },
+            "extremeCompressed": { "const": "ratio <= 90 || spacing <= -5" },
+            "storedLineSeg": {
+              "const": "line_segs is non-empty and not all missing placeholders"
+            }
+          }
+        }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rawRowsPersisted",
+        "localOutputDirectory",
+        "localOutputMode",
+        "forbiddenKeys",
+        "forbiddenStringPatterns"
+      ],
+      "properties": {
+        "rawRowsPersisted": { "const": false },
+        "localOutputDirectory": { "const": "output/poc/font-typesetting-risk" },
+        "localOutputMode": { "const": "0600" },
+        "forbiddenKeys": { "$ref": "#/$defs/stringSet" },
+        "forbiddenStringPatterns": { "$ref": "#/$defs/stringSet" }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rerunPrivateCorpus",
+        "changeRenderer",
+        "changeMetricDatabase",
+        "changeFallback",
+        "changeFontAssets",
+        "publishPrivateAggregate"
+      ],
+      "properties": {
+        "rerunPrivateCorpus": { "const": false },
+        "changeRenderer": { "const": false },
+        "changeMetricDatabase": { "const": false },
+        "changeFallback": { "const": false },
+        "changeFontAssets": { "const": false },
+        "publishPrivateAggregate": { "const": false }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringSet": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/nonEmptyString" }
+    },
+    "repositoryPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "frozenAggregate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact",
+        "localOnly",
+        "requiredMode",
+        "bytes",
+        "fileSha256",
+        "aggregateSha256",
+        "sourceCommit"
+      ],
+      "properties": {
+        "artifact": { "$ref": "#/$defs/repositoryPath" },
+        "localOnly": { "const": true },
+        "requiredMode": { "const": "0600" },
+        "bytes": { "const": 110097106 },
+        "fileSha256": { "$ref": "#/$defs/sha256" },
+        "aggregateSha256": { "$ref": "#/$defs/sha256" },
+        "sourceCommit": { "$ref": "#/$defs/gitSha" }
+      }
+    },
+    "lineSegLaneTrue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["storedLineSeg", "validityClaim"],
+      "properties": {
+        "storedLineSeg": { "const": true },
+        "validityClaim": { "const": false }
+      }
+    },
+    "lineSegLaneFalse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["storedLineSeg", "validityClaim"],
+      "properties": {
+        "storedLineSeg": { "const": false },
+        "validityClaim": { "const": false }
+      }
+    },
+    "sortTerm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "direction"],
+      "properties": {
+        "field": { "$ref": "#/$defs/nonEmptyString" },
+        "direction": { "enum": ["ascending", "descending"] }
+      }
+    }
+  }
+}
