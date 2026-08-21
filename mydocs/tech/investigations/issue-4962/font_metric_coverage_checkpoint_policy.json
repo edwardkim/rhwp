@@ -5,7 +5,9 @@
   "policyVersion": "checkpoint-v1",
   "identityFields": [
     "sourceHead",
+    "runnerSha256",
     "workerSha256",
+    "coverageContractSha256",
     "manifestSha256",
     "manifestPolicyVersion",
     "checkpointPolicySha256",

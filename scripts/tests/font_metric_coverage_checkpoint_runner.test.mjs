@@ -182,6 +182,10 @@ test('all run identity drift refuses resume before another document runs', async
       ...current,
       checkpointPolicyBytes: Buffer.concat([current.checkpointPolicyBytes, Buffer.from('\n')]),
     })],
+    ['coverage contract', current => ({
+      ...current,
+      coverageContractBytes: Buffer.from('changed contract'),
+    })],
     ['analysis options', current => ({ ...current, analysisOptions: { mode: 'changed' } })],
     ['isolation limits', current => ({ ...current, limits: { wallTimeoutMillis: 12345 } })],
   ];

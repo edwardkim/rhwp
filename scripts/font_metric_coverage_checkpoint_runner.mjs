@@ -25,10 +25,12 @@ const INVESTIGATION = path.join(
   'investigations',
   'issue-4962',
 );
-const COVERAGE_CONTRACT = JSON.parse(fs.readFileSync(path.join(
+const COVERAGE_CONTRACT_PATH = path.join(
   INVESTIGATION,
   'font_metric_coverage_contract.json',
-), 'utf8'));
+);
+const COVERAGE_CONTRACT_BYTES = fs.readFileSync(COVERAGE_CONTRACT_PATH);
+const COVERAGE_CONTRACT = JSON.parse(COVERAGE_CONTRACT_BYTES.toString('utf8'));
 const DEFAULT_CHECKPOINT_POLICY_PATH = path.join(
   INVESTIGATION,
   'font_metric_coverage_checkpoint_policy.json',
@@ -65,6 +67,18 @@ function safeInteger(value) {
 }
 
 function validatePolicy(policy) {
+  const requiredIdentityFields = [
+    'sourceHead',
+    'runnerSha256',
+    'workerSha256',
+    'coverageContractSha256',
+    'manifestSha256',
+    'manifestPolicyVersion',
+    'checkpointPolicySha256',
+    'analysisOptionsSha256',
+    'isolationLimitsSha256',
+    'documentCount',
+  ];
   if (policy?.schemaVersion !== 1
       || policy.kind !== 'font-metric-coverage-checkpoint-policy'
       || policy.policyVersion !== 'checkpoint-v1'
@@ -75,7 +89,8 @@ function validatePolicy(policy) {
       || policy.resume?.identityDrift !== 'reject'
       || policy.resume?.uncommittedJournalTail !== 'truncate'
       || policy.resume?.replayMustMatchState !== true
-      || policy.hashChain?.algorithm !== 'sha256-chain-v1') {
+      || policy.hashChain?.algorithm !== 'sha256-chain-v1'
+      || canonicalJson(policy.identityFields) !== canonicalJson(requiredIdentityFields)) {
     throw new Error('checkpoint policy is invalid');
   }
 }
@@ -146,6 +161,10 @@ function runIdentity(options, documents, limits) {
     runnerSchemaVersion: 1,
     checkpointPolicyVersion: options.checkpointPolicy.policyVersion,
     checkpointPolicySha256: sha256Bytes(policyBytes),
+    runnerSha256: sha256Bytes(fs.readFileSync(SCRIPT_PATH)),
+    coverageContractSha256: sha256Bytes(
+      options.coverageContractBytes ?? COVERAGE_CONTRACT_BYTES,
+    ),
     manifestPolicyVersion: options.manifest.policyVersion ?? null,
     manifestSha256: sha256Bytes(manifestBytes),
     sourceHead: options.sourceHead,
