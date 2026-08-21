@@ -2820,6 +2820,34 @@ fn pua_plain_text_display(ch: char) -> Option<&'static str> {
     super::hancom_pua::verified_hancom_pua_display(ch)
 }
 
+/// [#5800] HWP5 원시 한컴 사용자 기호를 **표시 매핑 조회용 평면-15 키**로 정규화한다.
+///
+/// 같은 글자를 HWP5 는 BMP 단일 유닛 `0xA000 | X` 로, HWPX 는 평면 15 보충 PUA
+/// `U+F0000 | X` 로 싣는다(`parser::tags::HANCOM_SYMBOL_BMP_TO_PLANE15` — 한글 실측
+/// 값 집합). 표시 매핑표(`hancom_pua` · `map_pua_bullet_char`)는 평면 15 키만 갖고
+/// 있어 HWP5 경로가 표를 못 타고 원시 코드포인트를 그대로 그렸다 — `0xA832` 가
+/// 유니코드 U+A832(실로티 나그리 `꠲`)로, `0xA12B` 가 `ꄫ` 로 나오는 식이다.
+///
+/// **정규화는 표에 값이 있을 때만 한다.** 값이 없으면 원문을 그대로 둬서, 미등록 PUA
+/// 축(#5599)이 관측하는 표면을 이 변경이 흔들지 않게 한다.
+fn hancom_symbol_display_key(ch: char) -> char {
+    let Ok(unit) = u16::try_from(ch as u32) else {
+        return ch;
+    };
+    let Some(plane15) =
+        crate::parser::tags::hancom_symbol_to_plane15(unit).and_then(char::from_u32)
+    else {
+        return ch;
+    };
+    let has_mapping = pua_plain_text_display(plane15).is_some()
+        || super::layout::map_pua_bullet_char(plane15) != plane15;
+    if has_mapping {
+        plane15
+    } else {
+        ch
+    }
+}
+
 /// 한글 방점(U+302E/U+302F)을 렌더용 spacing 가운데 점 글리프로 치환한다. (Task #1735)
 ///
 /// U+302E/U+302F 는 유니코드 결합문자(combining mark)라, 유효한 base 없이
@@ -2850,6 +2878,8 @@ pub fn expand_pua_display_text(text: &str) -> String {
 
     let mut out = String::with_capacity(text.len());
     for ch in text.chars() {
+        // [#5800] HWP5 원시 기호값을 먼저 평면-15 키로 정규화한다.
+        let ch = hancom_symbol_display_key(ch);
         if ch == '\u{F081C}' {
             continue;
         }
@@ -2875,6 +2905,8 @@ pub fn expand_pua_render_text(text: &str) -> String {
 ///
 /// draw_char_overlap()에서 호출하여, 실제 렌더링 시에만 변환한다.
 pub fn pua_to_display_text(ch: char) -> Option<String> {
+    // [#5800] HWP5 원시 기호값을 먼저 평면-15 키로 정규화한다.
+    let ch = hancom_symbol_display_key(ch);
     let cp = ch as u32;
     if let Some(replacement) = pua_plain_text_display(ch) {
         return Some(replacement.to_string());
