@@ -1,4 +1,5 @@
 use rhwp::document_core::DocumentCore;
+use std::collections::BTreeMap;
 
 fn coverage(core: &DocumentCore) -> (String, serde_json::Value) {
     let raw = core
@@ -121,6 +122,87 @@ fn assert_private_data_absent(value: &serde_json::Value) {
     }
 }
 
+fn public_coverage(path: &str) -> serde_json::Value {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(path);
+    let bytes = std::fs::read(&path)
+        .unwrap_or_else(|error| panic!("public fixture read failed ({}): {error}", path.display()));
+    let core = DocumentCore::from_bytes(&bytes).unwrap_or_else(|error| {
+        panic!("public fixture parse failed ({}): {error}", path.display())
+    });
+    coverage(&core).1
+}
+
+fn width_source_counts(value: &serde_json::Value) -> BTreeMap<String, u64> {
+    let mut counts = BTreeMap::new();
+    for row in value["decisionUsage"].as_array().expect("decision usage") {
+        let source = row["widthSource"].as_str().expect("widthSource");
+        *counts.entry(source.to_string()).or_default() +=
+            row["charCount"].as_u64().expect("charCount");
+    }
+    counts
+}
+
+fn public_blank_with_font_text(font_name: &str, text: &str) -> DocumentCore {
+    use rhwp::model::paragraph::{CharShapeRef, Paragraph};
+    use rhwp::model::style::Font;
+
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("public blank template");
+    let mut document = core.document().clone();
+    assert!(document.doc_info.font_faces.len() >= 7);
+
+    let mut font_ids = [0_u16; 7];
+    for (language, faces) in document.doc_info.font_faces.iter_mut().take(7).enumerate() {
+        font_ids[language] = u16::try_from(faces.len()).expect("font fixture id");
+        faces.push(Font {
+            name: font_name.to_string(),
+            alt_type: 1,
+            ..Default::default()
+        });
+    }
+    let mut char_shape = document
+        .doc_info
+        .char_shapes
+        .first()
+        .cloned()
+        .expect("blank char shape");
+    char_shape.raw_data = None;
+    char_shape.font_ids = font_ids;
+    let char_shape_id = u32::try_from(document.doc_info.char_shapes.len())
+        .expect("char shape fixture id");
+    document.doc_info.char_shapes.push(char_shape);
+
+    let mut paragraph = Paragraph::new_empty();
+    paragraph.char_shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id,
+    }];
+    document.sections[0].paragraphs = vec![paragraph];
+    core.set_document(document);
+    core.insert_text_native(0, 0, 0, text)
+        .expect("fixture text insertion");
+    core
+}
+
+fn trace_width_source_counts(core: &DocumentCore) -> BTreeMap<String, u64> {
+    let trace: serde_json::Value = serde_json::from_str(
+        &core
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":4096}"#)
+            .expect("W2 fixture trace"),
+    )
+    .expect("W2 fixture trace JSON");
+    assert_eq!(trace["status"], "complete");
+    let mut counts = BTreeMap::new();
+    for record in trace["records"].as_array().expect("trace records") {
+        let source = record["layoutMetric"]["widthSource"]
+            .as_str()
+            .expect("trace widthSource");
+        *counts.entry(source.to_string()).or_default() += 1;
+    }
+    counts
+}
+
 #[test]
 fn public_fixture_aggregate_is_deterministic_reconciled_and_private() {
     let core = DocumentCore::from_bytes(include_bytes!("../../samples/task-001.hwp"))
@@ -235,4 +317,92 @@ fn many_char_shape_boundaries_use_a_linear_merge_walk() {
     let value: serde_json::Value = serde_json::from_str(&raw).expect("aggregate JSON");
     assert!(count(&value, "/counts/layoutCharacters") >= 10_000);
     assert_reconciled(&value);
+}
+
+#[test]
+fn public_hwp_hwpx_classification_golden_is_deterministic_and_format_portable() {
+    let manifest: serde_json::Value = serde_json::from_str(include_str!(
+        "../../mydocs/tech/investigations/issue-4962/font_metric_coverage_public_fixtures.json"
+    ))
+    .expect("public fixture manifest");
+    let mut results = BTreeMap::new();
+    for fixture in manifest["documents"].as_array().expect("public documents") {
+        let id = fixture["id"].as_str().expect("fixture id");
+        let value = public_coverage(fixture["path"].as_str().expect("fixture path"));
+        assert_reconciled(&value);
+        assert_private_data_absent(&value);
+        assert_eq!(value["format"], fixture["format"], "{id}");
+        assert_eq!(value["counts"], fixture["counts"], "{id}");
+        assert_eq!(value["categories"], fixture["categories"], "{id}");
+        assert_eq!(
+            serde_json::to_value(width_source_counts(&value)).expect("width source JSON"),
+            fixture["widthSources"],
+            "{id}"
+        );
+        assert_eq!(value["aggregateHash"]["value"], fixture["aggregateHash"], "{id}");
+        assert_eq!(
+            value["legacyProjectionHash"]["value"], fixture["legacyProjectionHash"],
+            "{id}"
+        );
+        results.insert(id.to_string(), value);
+    }
+
+    let hwp = &results["format-parity-hwp"];
+    let hwpx = &results["format-parity-hwpx"];
+    for field in ["counts", "categories", "joins", "legacyUsage", "decisionUsage"] {
+        assert_eq!(hwp[field], hwpx[field], "portable HWP/HWPX field: {field}");
+    }
+}
+
+#[test]
+fn public_blank_derived_documents_reach_every_current_positive_category() {
+    let cases = [
+        ("함초롬바탕", "가", "exact-hit", "embeddedMetric"),
+        ("KoPub돋움체 Light", "가", "measured-overlay", "kopubTable"),
+        ("본한글", "가", "metric-surrogate", "embeddedMetric"),
+        ("함초롬바탕", "😀", "char-miss", "heuristicFullwidth"),
+        ("W3 Missing Face", "A", "face-miss", "heuristicHalfwidth"),
+        ("W3 Missing Face", "ㆍ", "heuristic", "areaDotFallback"),
+    ];
+    for (font, text, category, width_source) in cases {
+        let core = public_blank_with_font_text(font, text);
+        let (_, value) = coverage(&core);
+        assert_reconciled(&value);
+        assert_private_data_absent(&value);
+        assert_eq!(count(&value, &format!("/categories/{category}")), 1, "{category}");
+        assert_eq!(
+            width_source_counts(&value),
+            BTreeMap::from([(width_source.to_string(), 1)]),
+            "{category}"
+        );
+        assert_eq!(
+            trace_width_source_counts(&core),
+            width_source_counts(&value),
+            "W2/W3 decision equivalence: {category}"
+        );
+        assert_eq!(count(&value, "/categories/identity-alias-hit"), 0);
+    }
+}
+
+#[test]
+fn public_blank_derived_document_keeps_all_non_applicable_width_sources_out_of_coverage() {
+    let text = "\u{1100}\u{1161}\u{11AB}\u{FFFC}\u{F081C}\u{2007}\t";
+    let core = public_blank_with_font_text("함초롬바탕", text);
+    let (_, value) = coverage(&core);
+    assert_reconciled(&value);
+    assert_private_data_absent(&value);
+    assert_eq!(count(&value, "/counts/layoutCharacters"), 7);
+    assert_eq!(count(&value, "/counts/coverageCharacters"), 1);
+    assert_eq!(count(&value, "/counts/notApplicableCharacters"), 6);
+
+    let expected = BTreeMap::from([
+        ("clusterContinuation".to_string(), 2),
+        ("embeddedMetric".to_string(), 1),
+        ("figureSpace".to_string(), 1),
+        ("hwpPuaFiller".to_string(), 1),
+        ("inlineObjectPlaceholder".to_string(), 1),
+        ("tabAdvance".to_string(), 1),
+    ]);
+    assert_eq!(width_source_counts(&value), expected);
+    assert_eq!(trace_width_source_counts(&core), expected);
 }
