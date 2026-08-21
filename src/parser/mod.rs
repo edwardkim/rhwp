@@ -2845,12 +2845,14 @@ mod tests {
 
     #[test]
     fn test_parse_document_reports_unsupported_hwpml_version() {
+        // [#5848] 2.1 은 지원 목록에 들어갔다(법제처 배포본, 어휘 2.91 동일) —
+        // 미지원 거절 계약은 실재하지 않는 버전으로 검증한다.
         let hwpml = br#"<?xml version="1.0" encoding="UTF-8"?>
-<HWPML Version="2.1"></HWPML>"#;
+<HWPML Version="3.0"></HWPML>"#;
         let err = parse_document(hwpml).unwrap_err();
         match err {
             ParseError::HmlError(hml::HmlError::UnsupportedVersion(version)) => {
-                assert_eq!(version, "2.1");
+                assert_eq!(version, "3.0");
             }
             other => panic!("expected HML unsupported version, got {other:?}"),
         }
