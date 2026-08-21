@@ -28,9 +28,16 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../..');
 const JPEG_PATH = path.join(REPO_ROOT, 'samples/images/tiger01.jpg');
-const KEYS = 20;
-const REFRESHES = 20;
-const WARMUP = 5;
+const num = (name, def) => {
+  const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
+  const v = hit ? Number(hit.split('=')[1]) : NaN;
+  return Number.isFinite(v) && v > 0 ? Math.floor(v) : def;
+};
+// sub-ms 구간에서는 표본이 적으면 타이머 해상도가 배율을 지배한다. 기본값으로도 판정이
+// 서지만, 경계에 걸리면 `--keys=200` 처럼 올려 다시 잰다.
+const KEYS = num('keys', 20);
+const REFRESHES = num('refreshes', 20);
+const WARMUP = num('warmup', 5);
 
 function arg(name, def) {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
@@ -170,6 +177,29 @@ async function measurePictureMove(page, info, n, warmup) {
 
 const fmt = (m) => `${m.mean.toFixed(2)} ms (median ${m.median.toFixed(2)}, max ${m.max.toFixed(2)})`;
 
+/**
+ * 무엇을 쟀는지 산출물에 남긴다.
+ *
+ * 이 프로브는 dev 서버가 서빙하는 번들을 잰다. 그 번들이 측정 대상 트리가 아니면 수치는
+ * 조용히 무의미해진다 — 실제로 그렇게 잘못 잰 적이 있다(#3315 Track 4 초회 측정: 서버가 다른
+ * 워크트리를 서빙해 Track 1~3 이전 상태를 쟀다). 트랙별 API 의 실재를 함께 적어 나중에
+ * 산출물만 보고도 판별할 수 있게 한다.
+ */
+async function captureProvenance(page) {
+  return page.evaluate(() => {
+    const w = window.__wasm;
+    const present = (n) => typeof w[n] === 'function';
+    return {
+      origin: location.origin,
+      trackApis: {
+        getPageFlowImageOps: present('getPageFlowImageOps'),
+        getPageSourceImageKeys: present('getPageSourceImageKeys'),
+        getSourceImageBytes: present('getSourceImageBytes'),
+      },
+    };
+  });
+}
+
 async function main() {
   if (!existsSync(JPEG_PATH)) throw new Error(`픽스처 없음: ${JPEG_PATH}`);
   const jpeg = readFileSync(JPEG_PATH);
@@ -180,6 +210,19 @@ async function main() {
   const out = { fixtureBytes: jpeg.length, keys: KEYS, refreshes: REFRESHES };
   try {
     await loadApp(page);
+
+    out.provenance = await captureProvenance(page);
+    const missingApis = Object.entries(out.provenance.trackApis)
+      .filter(([, ok]) => !ok).map(([n]) => n);
+    console.log(`[served] ${out.provenance.origin}`);
+    if (missingApis.length > 0) {
+      out.provenanceWarning = `Track 3 API 부재: ${missingApis.join(', ')}`;
+      console.log(`  !! ${out.provenanceWarning}`);
+      console.log('     서빙되는 트리가 측정 대상이 맞는지 확인하십시오 — 이 상태의 수치는');
+      console.log('     Track 1~3 이전을 잰 것일 수 있습니다.');
+    } else {
+      console.log('  Track 3 API 확인됨');
+    }
 
     console.log('\n=== A. 그림 없음 (베이스라인) ===');
     await createNewDocument(page);

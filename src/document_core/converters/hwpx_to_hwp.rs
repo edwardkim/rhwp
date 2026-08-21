@@ -1165,10 +1165,23 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
 /// HWPX 는 실제 문서에서 BOTH 하나만 갖는 것이 보통이지만, HWP 출력에도 같은 세 record가
 /// 필요하다. HWPX live IR 원형은 호출 경계에서 해당 overlay를 복원한다.
 fn normalize_page_border_fills_for_hwp(doc: &mut Document) {
-    for section in doc.sections.iter_mut() {
-        let sd = &mut section.section_def;
+    fn pad(sd: &mut crate::model::document::SectionDef) {
         while sd.extra_page_border_fills.len() < 2 {
             sd.extra_page_border_fills.push(sd.page_border_fill.clone());
+        }
+    }
+    for section in doc.sections.iter_mut() {
+        pad(&mut section.section_def);
+        // [#5142] HWPX 는 한 section 파일에 secPr 를 여러 개 둘 수 있고 이는 문단
+        // 중간의 SectionDef 컨트롤로 파싱된다. HWP5 저장 시 이 경계마다 별도
+        // Section 스트림으로 갈라지므로(#5142 serializer 분할), 그 컨트롤의 PBF 도
+        // 같은 3개 규격을 채워야 한글이 해당 스트림을 수용한다.
+        for para in section.paragraphs.iter_mut() {
+            for ctrl in para.controls.iter_mut() {
+                if let Control::SectionDef(sd) = ctrl {
+                    pad(sd);
+                }
+            }
         }
     }
 }

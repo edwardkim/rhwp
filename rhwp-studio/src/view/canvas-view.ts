@@ -6,6 +6,7 @@ import { CanvasPool } from './canvas-pool';
 import { PageRenderer, type PageRenderContext, type PageRenderResult } from './page-renderer';
 import { ViewportManager } from './viewport-manager';
 import { CoordinateSystem } from './coordinate-system';
+import { scrollByPageStep, type PageScrollDirection } from './page-scroll';
 import type { CanvasKitRenderDiagnostics } from './canvaskit-renderer';
 import type { FontDecisionTraceRecordV1 } from '@/core/font-decision-trace';
 import { clampRenderScale, type RenderBackend } from './render-backend';
@@ -160,6 +161,16 @@ export class CanvasView {
     await Promise.resolve();
 
     console.log(`[CanvasView] ${this.pages.length}/${pageCount}페이지 로드, 총 높이: ${this.virtualScroll.getTotalHeight()}px`);
+  }
+
+  /**
+   * PgUp/PgDn — 화면을 쪽 단위로 옮긴다. 문서는 떠 있지만 편집기가 활성이 아닐 때
+   * (InputHandler 가 키를 소유하지 않는 상태) 전역 폴백이 쓰는 진입점이다.
+   * 편집기가 활성이면 캐럿까지 함께 옮기는 `InputHandler.scrollByPageKey` 가 처리한다.
+   */
+  scrollByPage(direction: PageScrollDirection): boolean {
+    if (this.disposed) return false;
+    return scrollByPageStep(this.virtualScroll, this.viewportManager, direction).moved;
   }
 
   /** WASM 문서 교체 직후 호출하여 이전 문서의 renderer와 canvas를 동기적으로 분리한다. */

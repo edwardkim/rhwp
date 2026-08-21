@@ -5070,14 +5070,32 @@ impl LayoutEngine {
                                     });
                                 let aligned_visual_h = pic_h + bottom_caption_h;
                                 let content_top = content_cell_y + pad_top;
-                                match effective_valign {
-                                    VerticalAlign::Top => content_top + v_off,
-                                    VerticalAlign::Center => {
-                                        content_top
-                                            + (inner_height - aligned_visual_h + v_off) / 2.0
-                                    }
-                                    VerticalAlign::Bottom => {
-                                        content_top + inner_height - aligned_visual_h - v_off
+                                // [#5731] 셀-valign 강제(#2071)는 그림이 셀의 첫 콘텐츠일 때의
+                                // 계약이다(그때 저장 vpos=0 이라 흐름 배치와 일치). 캡션·다른
+                                // 그림이 앞서는 다문단 셀에서 한글은 앵커 문단의 저장 lineseg
+                                // vpos 로 흐름 배치한다 — 156522760 3쪽: 저장 vpos 14062HU
+                                // = 187.5px, 한글 PDF 678.7 ↔ 강제 valign 은 셀 상단 492.0 에
+                                // 붙여 앞 그림과 145px 겹쳤다. 저장 좌표가 신뢰되는 프로파일
+                                // 에서 vpos>0 일 때만 흐름 배치로 전환한다.
+                                let stored_flow_vpos =
+                                    (self.profile.get().hwp5_stored_pagination_layout()
+                                        || self.profile.get().hwpx_stored_layout())
+                                    .then(|| para.line_segs.first())
+                                    .flatten()
+                                    .filter(|seg| seg.vertical_pos > 0)
+                                    .map(|seg| hwpunit_to_px(seg.vertical_pos, self.dpi));
+                                if let Some(vpos_px) = stored_flow_vpos {
+                                    content_top + vpos_px + v_off
+                                } else {
+                                    match effective_valign {
+                                        VerticalAlign::Top => content_top + v_off,
+                                        VerticalAlign::Center => {
+                                            content_top
+                                                + (inner_height - aligned_visual_h + v_off) / 2.0
+                                        }
+                                        VerticalAlign::Bottom => {
+                                            content_top + inner_height - aligned_visual_h - v_off
+                                        }
                                     }
                                 }
                             } else {

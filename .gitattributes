@@ -17,6 +17,11 @@ fuzz/corpus/** -text -diff
 # trailing-whitespace 오류로 취급하지 않는다.
 output/poc/**/*.tsv -whitespace
 
+# [#5795] 스킬 마크다운은 계약이 바이트로 검사된다 (frontmatter 를 개행까지 포함해 본다).
+# 체크아웃 개행이 플랫폼마다 갈리면 같은 커밋이 Windows 에서만 빨개진다.
+.claude/skills/**/*.md text eol=lf
+.agents/skills/**/*.md text eol=lf
+
 # Agent skill fixture TSV/CSV는 끝 빈 열 또는 CRLF 입력 자체가 계약이다.
 .claude/skills/rhwp-fde/fixtures/tsv/*.tsv -whitespace
 .claude/skills/rhwp-table-exchange/fixtures/csv/table0_control_lf.csv -whitespace
