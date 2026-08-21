@@ -71,19 +71,45 @@ test('[결함2] redo 도 execute-우선 + 실패시-드롭 하이브리드다', 
   assert.match(catchBody, /throw/, 'catch 에서 rethrow');
 });
 
-test('[결함3] execute 는 operation·after-save 어느 throw 에도 스냅샷을 누수하지 않는다', () => {
+test('[결함3] execute 는 operation throw 에 스냅샷을 누수하지 않는다', () => {
   const block = methodBlock(command, 'execute(wasm: WasmBridge): DocumentPosition {');
   assert.match(block, /this\.beforeId = wasm\.saveSnapshot\(\);/, 'before 저장이 있어야 함');
-  // try 는 operation 과 after-save 를 모두 감싸야 한다 — after-save(대용량 클론
-  // 메모리 압박 등) throw 도 before 누수 → orphan 이므로 대칭 보호 필수.
-  assert.match(block, /try\s*\{[\s\S]*this\.operation\(wasm\)[\s\S]*this\.afterId = wasm\.saveSnapshot\(\)[\s\S]*\}\s*catch[\s\S]*throw/,
-    'operation 과 after-save 를 함께 try 로 감싸야 함(after-save 가 try 밖이면 누수)');
-  // catch 는 before/after 를 해제해야 한다(discard() 는 둘 다 null-safe 처리).
+  // [Task #5769] after 저장은 undo 로 옮겼다. execute 에 남은 유일한 throw 원천은
+  // operation 이고, 그것이 try 안에 있어야 before 누수(orphan)를 막는다.
+  assert.match(block, /try\s*\{[\s\S]*this\.operation\(wasm\)[\s\S]*\}\s*catch[\s\S]*throw/,
+    'operation 을 try 로 감싸야 함');
   assert.match(block, /catch[\s\S]*this\.discard\(wasm\)[\s\S]*throw/,
-    'catch 에서 discard(wasm)로 before/after 대칭 해제 후 rethrow 해야 함');
-  // after-save 가 try 밖(구 구조)이면 실패해야 한다 — catch 다음에 saveSnapshot 금지.
-  assert.ok(!/\}\s*catch[\s\S]*?throw;\s*\}\s*this\.afterId = wasm\.saveSnapshot/.test(block),
-    'after-save 가 catch 밖(try 이후)에 남아있음 — 누수 경로');
+    'catch 에서 discard(wasm)로 해제 후 rethrow 해야 함');
+  // execute 안에 after 저장이 남아 있으면 지연 저장이 무력화된다(엔트리가 다시 2슬롯).
+  assert.doesNotMatch(block, /this\.afterId = wasm\.saveSnapshot\(\)/,
+    '[#5769] execute 는 after 를 저장하지 않는다 — undo 시점에 잡는다');
+});
+
+test('[#5769] after 는 undo 에서 잡고, 저장 실패가 되돌리기를 막지 않는다', () => {
+  const block = methodBlock(command, 'undo(wasm: WasmBridge): DocumentPosition {');
+  const idxSave = block.indexOf('this.afterId = wasm.saveSnapshot()');
+  const idxRestore = block.indexOf('wasm.restoreSnapshot(this.beforeId)');
+  assert.ok(idxSave !== -1, 'undo 가 after 를 잡아야 redo 가 가능하다');
+  assert.ok(idxRestore !== -1 && idxSave < idxRestore,
+    'after 저장이 before 복원보다 먼저여야 한다 — 복원 뒤면 before 상태를 after 로 찍는다');
+  assert.match(block, /catch\s*\{[\s\S]*this\.redoUnavailable = true;/,
+    '저장 실패는 redo 만 포기하고 undo 는 계속해야 한다');
+  const catchEnd = block.indexOf('redoUnavailable = true');
+  assert.ok(block.indexOf('wasm.restoreSnapshot(this.beforeId)') > catchEnd,
+    '저장 실패 뒤에도 복원에 도달해야 한다(던지면 Ctrl+Z 가 먹통이 된다)');
+});
+
+test('[#5769] redo 는 after 로 복원한 뒤 그 스냅샷을 즉시 반환한다', () => {
+  const block = methodBlock(command, 'execute(wasm: WasmBridge): DocumentPosition {');
+  const redoArm = block.slice(0, block.indexOf('this.executed = true'));
+  assert.match(redoArm, /if \(this\.executed\)/,
+    'redo 판별은 executed 플래그여야 한다 — afterId 로는 실행 직후와 구분되지 않는다');
+  const idxRestore = redoArm.indexOf('wasm.restoreSnapshot(this.afterId)');
+  const idxDiscard = redoArm.indexOf('wasm.discardSnapshot(this.afterId)');
+  assert.ok(idxRestore !== -1 && idxDiscard !== -1 && idxRestore < idxDiscard,
+    '복원 후 반환해야 undo 스택으로 돌아간 엔트리가 1슬롯을 유지한다');
+  assert.match(redoArm, /throw new Error/,
+    'after 가 없으면 성공한 척하지 말고 던져야 한다(히스토리가 드롭한다)');
 });
 
 test('[#3350] 최초 execute 실패는 before 스냅샷 복원 후 ID를 해제한다', () => {
@@ -119,10 +145,12 @@ test('[#3350] 최초 execute 실패는 before 스냅샷 복원 후 ID를 해제�
     'rollback 실패 경로도 스냅샷 ID 를 해제해야 함');
 });
 
-test('[결함1] 스냅샷 예산은 WASM 상한에서 순간 +2 여유를 뺀 값이다', () => {
-  // 새 SnapshotCommand.execute 는 before/after 2개를 예산 강제 이전에 저장하므로,
-  // 예산 == MAX 면 그 순간 store 가 MAX 초과 → WASM 무통보 축출 → orphan.
-  // 예산 = MAX - 2 여야 순간 +2 가 MAX 를 넘지 않는다(인터리브 회귀 근절).
+test('[결함1] 스냅샷 예산은 WASM 상한에서 순간 여유를 뺀 값이다', () => {
+  // 예산 == MAX 면 예산 강제 이전의 순간 저장이 store 를 MAX 초과로 밀어 WASM 무통보
+  // 축출 → orphan 이 된다. 예산 = MAX - 2 여야 그 순간이 MAX 를 넘지 않는다.
+  // [Task #5769] after 지연 저장 이후 execute 의 순간 저장은 before 하나(+1)이고 undo 의
+  // 순간 저장도 +1 이라 여유 2 는 그대로 충분하다 — 상수는 Rust MAX_SNAPSHOTS 와
+  // 양방향 결합이므로 여유가 남는다고 좁히지 않는다.
   assert.match(history, /const WASM_MAX_SNAPSHOTS = 100;/,
     'WASM MAX_SNAPSHOTS(document.rs) 미러 상수가 있어야 함');
   assert.match(history, /const SNAPSHOT_ID_BUDGET = WASM_MAX_SNAPSHOTS - 2;/,
@@ -143,7 +171,26 @@ test('[결함1] 스냅샷 예산은 WASM 상한에서 순간 +2 여유를 뺀 �
   const idxPush = exec.indexOf('this.undoStack.push(command)');
   const idxEnforce = exec.indexOf('this.enforceSnapshotBudget(wasm)');
   assert.ok(idxPush !== -1 && idxEnforce !== -1 && idxPush < idxEnforce,
-    'execute 가 push 이후에 enforceSnapshotBudget 를 호출해야 함(전이면 +2 미반영)');
+    'execute 가 push 이후에 enforceSnapshotBudget 를 호출해야 함(전이면 미반영)');
+});
+
+test('[#5769] undo 도 스냅샷 id 를 늘리므로 undo 경로에서 예산을 강제한다', () => {
+  // after 지연 저장 이후 undo 는 엔트리를 1슬롯 → 2슬롯으로 바꾼다. execute 에서만
+  // 강제하면 예산을 채운 뒤 연속 undo 할 때 store 가 MAX 를 넘어 #2328 무통보 축출이
+  // 되살아난다.
+  const undoBlock = methodBlock(history, 'undo(wasm: WasmBridge): DocumentPosition | null {');
+  assert.match(undoBlock, /this\.enforceSnapshotBudgetAfterUndo\(wasm\)/,
+    'undo 도 예산을 강제해야 한다');
+  const idxPush = undoBlock.indexOf('this.redoStack.push(command)');
+  const idxEnforce = undoBlock.indexOf('enforceSnapshotBudgetAfterUndo');
+  assert.ok(idxPush !== -1 && idxEnforce !== -1 && idxPush < idxEnforce,
+    '스택 이동 이후에 강제해야 방금 늘어난 +1 이 반영된다');
+
+  // 축출은 redo 스택 bottom 부터 — undo 중인 사용자가 지키려는 것은 과거다.
+  const block = methodBlock(history, 'enforceSnapshotBudgetAfterUndo(wasm: WasmBridge): void {');
+  assert.match(block, /this\.redoStack\.shift\(\)/, 'redo bottom(가장 먼 미래)부터 축출');
+  assert.match(block, /this\.redoStack\.length\s*>\s*1/, '최소 1개 보존 가드');
+  assert.match(block, /this\.enforceSnapshotBudget\(wasm\)/, 'redo 로 부족하면 종전 규칙');
 });
 
 test('SnapshotCommand 는 점유 스냅샷 id 수를 보고한다(예산 계산용)', () => {
@@ -157,7 +204,8 @@ test('document-agent 미commit rollback은 exact 최신 snapshot만 폐기하고
     'rollbackUncommittedSnapshot(',
   );
   assert.match(block, /command\.type !== expectedType/, '다른 최신 명령을 되돌리면 안 됨');
-  assert.match(block, /snapshotResourceCount\?\.\(\) !== 2/, '완성된 before\/after snapshot만 대상');
+  assert.match(block, /snapshotResourceCount\?\.\(\) !== 1/,
+    '[#5769] 최초 실행 직후는 before 하나만 점유 — 상수 2 를 두면 이 경로가 죽는다');
   const undoAt = block.indexOf('command.undo(wasm)');
   const popAt = block.indexOf('this.undoStack.pop()');
   const discardAt = block.indexOf('command.discard?.(wasm)');
