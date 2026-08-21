@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { canonicalCoverageHash } from '../font_metric_coverage_contract.mjs';
 import { runResumableCoverage } from '../font_metric_coverage_checkpoint_runner.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -36,7 +37,7 @@ function manifest(count = 5) {
 
 function aggregate(index) {
   const characters = index + 1;
-  return {
+  const value = {
     schemaVersion: 1,
     kind: 'font-metric-coverage-aggregate',
     status: 'complete',
@@ -79,8 +80,10 @@ function aggregate(index) {
     legacyUsage: [{ charCount: characters }],
     decisionUsage: [{ charCount: characters }],
     legacyProjectionHash: { algorithm: 'sha256', value: (index + 10).toString(16).padStart(64, '0') },
-    aggregateHash: { algorithm: 'sha256', value: (index + 20).toString(16).padStart(64, '0') },
+    aggregateHash: { algorithm: 'sha256', value: '' },
   };
+  value.aggregateHash.value = canonicalCoverageHash(value);
+  return value;
 }
 
 function completeResult(index) {
@@ -217,16 +220,15 @@ test('all run identity drift refuses resume before another document runs', async
   }
 });
 
-test('manifest duplicate identity and aggregate format mismatch fail closed', async t => {
+test('manifest duplicate source and aggregate format or hash mismatch fail closed', async t => {
   const duplicate = manifest(2);
-  duplicate.selections[1].format = duplicate.selections[0].format;
-  duplicate.selections[1].blake3 = duplicate.selections[0].blake3;
+  duplicate.selections[1].source = duplicate.selections[0].source;
   await assert.rejects(
     runResumableCoverage({
       ...options(temporary(t), duplicate),
       runDocument: async () => completeResult(0),
     }),
-    /duplicate document/u,
+    /duplicate source/u,
   );
 
   const directory = temporary(t);
@@ -240,6 +242,22 @@ test('manifest duplicate identity and aggregate format mismatch fail closed', as
   const state = JSON.parse(fs.readFileSync(path.join(directory, 'state.json'), 'utf8'));
   assert.equal(state.nextIndex, 0);
   assert.equal(fs.statSync(path.join(directory, 'journal.ndjson')).size, 0);
+
+  const tamperedDirectory = temporary(t);
+  const tampered = aggregate(0);
+  tampered.counts.layoutCharacters += 1;
+  await assert.rejects(
+    runResumableCoverage({
+      ...options(tamperedDirectory, manifest(1)),
+      runDocument: async () => ({
+        status: 'complete',
+        aggregate: tampered,
+        metrics: { elapsedMillis: 1, peakRssBytes: 1 },
+      }),
+    }),
+    /failed its contract/u,
+  );
+  assert.equal(fs.statSync(path.join(tamperedDirectory, 'journal.ndjson')).size, 0);
 });
 
 test('journal storage budget fails before append', async t => {

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-metric-coverage-finalizer-policy",
+  "issue": 4962,
+  "policyVersion": "finalizer-v1",
+  "aggregateCountFields": [
+    "paragraphsSeen",
+    "sourceRunsSeen",
+    "layoutCharacters",
+    "coverageCharacters",
+    "notApplicableCharacters",
+    "excludedCharacters",
+    "truncatedCharacters",
+    "legacyUsageRows",
+    "decisionUsageRows"
+  ],
+  "usageCountFields": [
+    "documentCount",
+    "paragraphCount",
+    "runCount",
+    "charCount"
+  ],
+  "legacyIdentityFields": [
+    "format",
+    "font",
+    "metricFace",
+    "language",
+    "ratio",
+    "spacing",
+    "kerning",
+    "bold",
+    "italic",
+    "context",
+    "alignment",
+    "storedLineSeg"
+  ],
+  "decisionIdentityFields": [
+    "format",
+    "font",
+    "metricFace",
+    "language",
+    "ratio",
+    "spacing",
+    "kerning",
+    "bold",
+    "italic",
+    "context",
+    "alignment",
+    "storedLineSeg",
+    "normalizedFace",
+    "substFont",
+    "altType",
+    "layoutFamily",
+    "metricRequestedFace",
+    "metricResolvedFace",
+    "matchKind",
+    "metricEntry",
+    "characterMatch",
+    "widthSource",
+    "relationType",
+    "relationEvidenceStatus",
+    "coverageCategory",
+    "sourceJoinStatus"
+  ],
+  "merge": {
+    "injectFormatIntoUsageIdentity": true,
+    "sumOnlyUsageCountFields": true,
+    "failedDocumentsContributeNoUsage": true,
+    "inputOrderIndependentRows": true
+  },
+  "output": {
+    "kind": "font-metric-coverage-aggregate",
+    "privacyChecked": true,
+    "canonicalSha256": true,
+    "volatileResourceMetricsExcluded": true
+  }
+}

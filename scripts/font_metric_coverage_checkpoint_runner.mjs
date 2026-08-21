@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 import {
+  canonicalCoverageHash,
   findSensitiveAggregateValues,
   reconcileCoverageAggregate,
 } from './font_metric_coverage_contract.mjs';
@@ -124,7 +125,7 @@ function manifestDocuments(manifest) {
   if (!Array.isArray(documents) || documents.length === 0) {
     throw new Error('checkpoint manifest documents are required');
   }
-  const identities = new Set();
+  const sources = new Set();
   for (const document of documents) {
     if (typeof document?.source !== 'string' || document.source.length === 0) {
       throw new Error('checkpoint manifest source is required');
@@ -135,11 +136,10 @@ function manifestDocuments(manifest) {
     if (!/^[0-9a-f]{64}$/u.test(document.blake3 ?? '')) {
       throw new Error('checkpoint manifest BLAKE3 is invalid');
     }
-    const identity = `${document.format}:${document.blake3}`;
-    if (identities.has(identity)) {
-      throw new Error('checkpoint manifest contains a duplicate document');
+    if (sources.has(document.source)) {
+      throw new Error('checkpoint manifest contains a duplicate source');
     }
-    identities.add(identity);
+    sources.add(document.source);
   }
   return documents;
 }
@@ -229,13 +229,19 @@ function validateMetrics(metrics) {
   }
 }
 
-function validateCompleteAggregate(aggregate) {
+export function validateCompleteCoverageAggregate(aggregate) {
+  const failures = aggregate?.documents?.failures;
   if (aggregate?.kind !== 'font-metric-coverage-aggregate'
       || aggregate.status !== 'complete'
+      || aggregate.documents?.attempted !== 1
+      || aggregate.documents?.success !== 1
+      || !failures
+      || Object.values(failures).some(value => value !== 0)
       || reconcileCoverageAggregate(aggregate, COVERAGE_CONTRACT).length > 0
       || findSensitiveAggregateValues(aggregate, COVERAGE_CONTRACT).length > 0
       || aggregate.aggregateHash?.algorithm !== 'sha256'
-      || !/^[0-9a-f]{64}$/u.test(aggregate.aggregateHash?.value ?? '')) {
+      || !/^[0-9a-f]{64}$/u.test(aggregate.aggregateHash?.value ?? '')
+      || canonicalCoverageHash(aggregate) !== aggregate.aggregateHash.value) {
     throw new Error('checkpoint aggregate failed its contract');
   }
 }
@@ -263,7 +269,7 @@ function applyRecord(summary, record, expectedIndex) {
     record.metrics.peakRssBytes,
   );
   if (record.status === 'complete') {
-    validateCompleteAggregate(record.aggregate);
+    validateCompleteCoverageAggregate(record.aggregate);
     summary.documents.success += 1;
     addCoverageCounts(summary, record.aggregate.counts);
     addNumericObject(summary.categories, record.aggregate.categories, 'categories');
@@ -341,7 +347,9 @@ function appendJournal(filePath, line) {
   return Buffer.byteLength(line);
 }
 
-function replayJournal(journalPath, committedBytes, identity) {
+function replayJournal(journalPath, committedBytes, identity, options = {}) {
+  const truncateUncommittedTail = options.truncateUncommittedTail ?? true;
+  const enforcePermissions = options.enforcePermissions ?? true;
   if (!fs.existsSync(journalPath)) {
     if (committedBytes === 0) return { summary: emptySummary(identity), entries: 0 };
     throw new Error('committed checkpoint journal is missing');
@@ -349,6 +357,9 @@ function replayJournal(journalPath, committedBytes, identity) {
   const size = fs.statSync(journalPath).size;
   if (size < committedBytes) throw new Error('checkpoint journal is shorter than committed state');
   if (size > committedBytes) {
+    if (!truncateUncommittedTail) {
+      throw new Error('completed checkpoint journal has an uncommitted tail');
+    }
     fs.truncateSync(journalPath, committedBytes);
     const descriptor = fs.openSync(journalPath, 'r+');
     try {
@@ -357,15 +368,19 @@ function replayJournal(journalPath, committedBytes, identity) {
       fs.closeSync(descriptor);
     }
   }
-  fs.chmodSync(journalPath, 0o600);
+  if (enforcePermissions) fs.chmodSync(journalPath, 0o600);
   const bytes = fs.readFileSync(journalPath).subarray(0, committedBytes);
   if (bytes.length > 0 && bytes.at(-1) !== 0x0A) {
     throw new Error('committed checkpoint journal lacks a record boundary');
   }
   const lines = bytes.toString('utf8').split('\n').filter(Boolean);
   const summary = emptySummary(identity);
-  lines.forEach((line, index) => applyRecord(summary, JSON.parse(line), index));
-  return { summary, entries: lines.length };
+  const records = lines.map((line, index) => {
+    const record = JSON.parse(line);
+    applyRecord(summary, record, index);
+    return record;
+  });
+  return { summary, entries: lines.length, records };
 }
 
 function initializeOrResume(checkpointDirectory, identity) {
@@ -405,7 +420,7 @@ function initializeOrResume(checkpointDirectory, identity) {
 function checkpointRecord(index, format, result) {
   validateMetrics(result?.metrics);
   if (result.status === 'complete') {
-    validateCompleteAggregate(result.aggregate);
+    validateCompleteCoverageAggregate(result.aggregate);
     if (result.aggregate.format !== format) {
       throw new Error('checkpoint aggregate format does not match manifest');
     }
@@ -431,6 +446,33 @@ function checkpointRecord(index, format, result) {
     };
   }
   throw new Error('isolated document result is invalid');
+}
+
+export function readCompleteCoverageCheckpoint(checkpointDirectory) {
+  const statePath = path.join(checkpointDirectory, STATE_FILE);
+  const journalPath = path.join(checkpointDirectory, JOURNAL_FILE);
+  if (!fs.existsSync(statePath)) throw new Error('completed checkpoint state is missing');
+  const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+  if (state?.schemaVersion !== 1
+      || state.kind !== 'font-metric-coverage-checkpoint-state'
+      || state.status !== 'complete'
+      || !safeInteger(state.nextIndex)
+      || state.nextIndex !== state.identity?.documentCount
+      || state.journal?.entries !== state.nextIndex
+      || !safeInteger(state.journal?.committedBytes)) {
+    throw new Error('completed checkpoint state is invalid');
+  }
+  const replay = replayJournal(
+    journalPath,
+    state.journal.committedBytes,
+    state.identity,
+    { truncateUncommittedTail: false, enforcePermissions: false },
+  );
+  if (replay.entries !== state.nextIndex
+      || canonicalJson(replay.summary) !== canonicalJson(state.summary)) {
+    throw new Error('completed checkpoint journal replay does not match state');
+  }
+  return { state, records: replay.records };
 }
 
 export async function runResumableCoverage(options) {
