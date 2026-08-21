@@ -206,6 +206,119 @@
     ],
     "unstableResultPolicy": "publish-cumulative-risk-bands"
   },
+  "evidenceAndStability": {
+    "joinMode": "exact-document-face-only",
+    "identityGuessing": false,
+    "baseRankingOutputSha256": "d81e9a3426baf7e1f474f2d83303ea37f7465eb71453a82f5a3f8e93930c595e",
+    "evidenceInputs": [
+      {
+        "artifact": "mydocs/tech/investigations/issue-4939/font_rule_ledger.json",
+        "sha256": "284afd72259eb0e8465ff6f10da4e6285d792d73dcde5cfa90daa8e4520b8c23",
+        "role": "backend-and-relation-ledger"
+      },
+      {
+        "artifact": "mydocs/tech/investigations/issue-4739/task_m100_4739_government_font_successor_matrix.md",
+        "sha256": "7e5028e703c3774d7160ae349421012865e0052bf8d4a511cb3e90436fcad540",
+        "role": "government-successor-evidence"
+      },
+      {
+        "artifact": "mydocs/report/assets/survey_korea_downloads_font_jsdelivr_20260815.tsv",
+        "sha256": "8235c6974590eb35b1468bbd436db8c22f5ecad317be71b2bf5810fb40950c3c",
+        "role": "historical-supply-only"
+      },
+      {
+        "artifact": "mydocs/working/task_m100_4739_stage5_validation.md",
+        "sha256": "09f09079d8fb444b23218f6529c49a706f90894766ba061254cad9d65e0dcc57",
+        "role": "kopub-and-government-validation"
+      },
+      {
+        "artifact": "mydocs/working/task_m100_4741_stage5_validation.md",
+        "sha256": "55779150ac67386b990ec456dfff182d4988b780a865cfe6f5d3d94d42566d06",
+        "role": "backend-capability-validation"
+      },
+      {
+        "artifact": "mydocs/working/task_m100_4764_stage1_kopub_canvaskit_sfnt.md",
+        "sha256": "044d078ed49d4e768574ec4747b0d4485e5660cf453fdcc5580e2624984825ad",
+        "role": "kopub-backend-format-validation"
+      }
+    ],
+    "cumulativeRiskBands": [
+      { "name": "A", "upperExclusiveBeforeShare": 0.5 },
+      { "name": "B", "upperExclusiveBeforeShare": 0.8 },
+      { "name": "C", "upperExclusiveBeforeShare": 0.95 },
+      { "name": "D", "upperExclusiveBeforeShare": 1 }
+    ],
+    "variantMasses": {
+      "unweighted": "charCount",
+      "frame-neutral": "charCount * compressionFactor",
+      "non-extreme": "charCount * (1 + I(ratio < 100) + I(spacing < 0)) * frameFactor",
+      "stored-line-lane": "storedLineSeg ? baseRiskMass : 0",
+      "fresh-candidate-lane": "storedLineSeg ? 0 : baseRiskMass"
+    },
+    "actionPriorityWithinBand": [
+      "exact-source-verified",
+      "government-or-legal-core",
+      "backend-selection-divergence",
+      "base-rank"
+    ],
+    "crossBandPromotion": false,
+    "surveyDocumentCountAsRiskOrReach": false,
+    "curatedEvidence": {
+      "governmentOrLegalCoreFaces": [
+        "Government_16040911",
+        "정부상징 부처명_16040911"
+      ],
+      "exactSourceUnavailableFaces": [
+        "Government_16040911",
+        "정부상징 부처명_16040911"
+      ],
+      "exactSourceAvailableFaces": [
+        "KoPubWorld돋움체 Bold",
+        "KoPubWorld돋움체 Light",
+        "KoPubWorld돋움체 Medium",
+        "KoPubWorld바탕체 Bold",
+        "KoPubWorld바탕체 Light",
+        "KoPubWorld바탕체 Medium"
+      ],
+      "exactSourceVerified": [
+        {
+          "documentFace": "KoPubBatangLight",
+          "fontSha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+          "nameTableMatch": "postscriptname"
+        },
+        {
+          "documentFace": "KoPub돋움체 Bold",
+          "fontSha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+          "nameTableMatch": "family-and-fullname"
+        },
+        {
+          "documentFace": "KoPub돋움체 Light",
+          "fontSha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+          "nameTableMatch": "family-and-fullname"
+        },
+        {
+          "documentFace": "KoPub돋움체 Medium",
+          "fontSha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+          "nameTableMatch": "family-and-fullname"
+        },
+        {
+          "documentFace": "KoPub바탕체 Bold",
+          "fontSha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+          "nameTableMatch": "family-and-fullname"
+        },
+        {
+          "documentFace": "KoPub바탕체 Light",
+          "fontSha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+          "nameTableMatch": "family-and-fullname"
+        },
+        {
+          "documentFace": "KoPub바탕체 Medium",
+          "fontSha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+          "nameTableMatch": "family-and-fullname"
+        }
+      ]
+    }
+  },
   "historicalDefinitionEvidence": {
     "generatorCommit": "631287d4708f144011162179d61f8272cf072ff6",
     "source": "examples/poc_font_layout_habits.rs",

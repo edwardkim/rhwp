@@ -12,6 +12,10 @@ import {
   validateRiskInputPreconditions,
   validateTypesettingRiskContract,
 } from '../font_typesetting_risk_rank.mjs';
+import {
+  enrichTypesettingRiskRanking,
+  parseSupplySurveyTsv,
+} from '../font_typesetting_risk_evidence.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INVESTIGATION = path.join(
@@ -159,6 +163,16 @@ test('W4 contract fixes compatibility, identity, proxy and lane boundaries', () 
   );
   assert.equal(CONTRACT.editingAxes.fixedFrameContextProxy.geometryClaim, false);
   assert.equal(CONTRACT.editingAxes.lineSegLanes.riskMultiplier, false);
+  assert.equal(CONTRACT.evidenceAndStability.joinMode, 'exact-document-face-only');
+  assert.deepEqual(
+    CONTRACT.evidenceAndStability.cumulativeRiskBands.map(entry => [
+      entry.name,
+      entry.upperExclusiveBeforeShare,
+    ]),
+    [['A', 0.5], ['B', 0.8], ['C', 0.95], ['D', 1]],
+  );
+  assert.equal(CONTRACT.evidenceAndStability.crossBandPromotion, false);
+  assert.equal(CONTRACT.evidenceAndStability.surveyDocumentCountAsRiskOrReach, false);
 });
 
 test('same-row risk mass keeps document face identity and LineSeg lanes separate', () => {
@@ -349,4 +363,112 @@ test('unknown decision dimensions and non-joined usage fail closed', () => {
     () => rankTypesettingRiskAggregate(layoutOnly, CONTRACT),
     /not a joined source row/u,
   );
+});
+
+test('W4-3 keeps sensitivity variants explicit and reports rank and band ranges', () => {
+  const base = rankTypesettingRiskAggregate(fixtureAggregate(), CONTRACT);
+  const result = enrichTypesettingRiskRanking({
+    ranking: base,
+    decisionRows: fixtureRows(),
+    ledger: { rules: [] },
+    surveyRows: [],
+    contract: CONTRACT,
+  });
+  const faceA = result.documentFaces.find(entry => entry.documentFace === 'Face A');
+  const faceB = result.documentFaces.find(entry => entry.documentFace === 'Face B');
+  assert.deepEqual(faceA.variantMasses, {
+    unweighted: 17,
+    'frame-neutral': 39,
+    'non-extreme': 48,
+    'stored-line-lane': 18,
+    'fresh-candidate-lane': 50,
+  });
+  assert.deepEqual(faceA.stability.rankRange, { min: 1, max: 2 });
+  assert.deepEqual(faceA.stability.observedBands, ['A', 'B']);
+  assert.equal(faceA.empiricalRiskBand, 'A');
+  assert.equal(faceB.empiricalRiskBand, 'B');
+  assert.equal(result.stability.variants.length, 6);
+});
+
+test('W4-3 evidence joins exact names only and keeps backend and supply states separate', () => {
+  const contract = structuredClone(CONTRACT);
+  contract.evidenceAndStability.curatedEvidence.exactSourceVerified.push({
+    documentFace: 'Face B',
+    fontSha256: 'a'.repeat(64),
+    nameTableMatch: 'family-and-fullname',
+  });
+  const base = rankTypesettingRiskAggregate(fixtureAggregate(), contract);
+  const ledger = {
+    rules: [
+      {
+        ruleId: 'rule.face-a.canvas2d',
+        sourceFace: 'Face A',
+        decisionPlane: 'supply',
+        backends: ['canvas2d'],
+        status: 'active',
+        evidenceStatus: 'verified-by-test',
+        relationType: 'supply-source',
+        targetFaceOrPolicy: 'font.woff',
+        conditions: { profile: 'canvas2d-css-woff' },
+      },
+      {
+        ruleId: 'rule.face-a.canvaskit',
+        sourceFace: 'Face A',
+        decisionPlane: 'supply',
+        backends: ['canvaskit'],
+        status: 'active',
+        evidenceStatus: 'verified-by-test',
+        relationType: 'supply-source',
+        targetFaceOrPolicy: 'unavailable: no SFNT source',
+        conditions: { profile: 'canvaskit-sfnt' },
+      },
+      {
+        ruleId: 'rule.face-a.unknown',
+        sourceFace: 'Face A',
+        decisionPlane: 'metric',
+        backends: ['shared'],
+        status: 'active',
+        evidenceStatus: 'unknown',
+        relationType: 'unknown',
+        targetFaceOrPolicy: 'unresolved',
+        conditions: {},
+      },
+      {
+        ruleId: 'rule.near-name',
+        sourceFace: 'Face B ',
+        decisionPlane: 'supply',
+        backends: ['canvas2d'],
+        status: 'active',
+        evidenceStatus: 'verified-by-test',
+        relationType: 'supply-source',
+        targetFaceOrPolicy: 'near-name.woff',
+        conditions: { profile: 'canvas2d-css-woff' },
+      },
+    ],
+  };
+  const surveyRows = parseSupplySurveyTsv([
+    'font\tsearch_name\tdocument_count\tstatus\tdownload_available\twebfont_usable\twebfont_usable_reason\tdelivery\tpackage\tversion\tlicense\tdownload_url\tnote',
+    'Face A\tface a\t999999\tavailable\t가능\t가능\tchecked\tjsDelivr npm\tpkg-a\t1.0.0\tlicense\thttps://example.invalid/a.woff\tnote',
+  ].join('\n'));
+  const result = enrichTypesettingRiskRanking({
+    ranking: base,
+    decisionRows: fixtureRows(),
+    ledger,
+    surveyRows,
+    contract,
+  });
+  const faceA = result.documentFaces.find(entry => entry.documentFace === 'Face A');
+  const faceB = result.documentFaces.find(entry => entry.documentFace === 'Face B');
+  assert.deepEqual(faceA.backendProfiles.canvas2d.availability, 'available');
+  assert.deepEqual(faceA.backendProfiles.canvaskit.availability, 'unavailable');
+  assert.equal(faceA.evidenceFlags['backend-selection-divergence'], true);
+  assert.equal(faceA.evidenceFlags['unknown-relation'], true);
+  assert.equal(faceA.supply.status, 'available');
+  assert.equal('documentCount' in faceA.supply, false);
+  assert.equal(faceB.exactSource.status, 'verified');
+  assert.equal(faceB.ledgerRuleIds.includes('rule.near-name'), false);
+  assert.equal(faceB.actionRank, 2);
+  assert.equal(faceB.empiricalRiskBand, 'B');
+  assert.equal(result.gates.crossBandPromotions, 0);
+  assert.equal(result.gates.identityGuesses, 0);
 });

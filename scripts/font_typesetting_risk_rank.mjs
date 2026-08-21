@@ -180,6 +180,84 @@ export function validateTypesettingRiskContract(contract) {
   const actualSort = (ranking?.sort ?? []).map(entry => [entry?.field, entry?.direction]);
   if (!exactArray(actualSort, expectedSort)) errors.push('ranking sort order has drifted');
 
+  const evidence = contract.evidenceAndStability;
+  if (evidence?.joinMode !== 'exact-document-face-only'
+      || evidence.identityGuessing !== false
+      || !/^[0-9a-f]{64}$/u.test(evidence.baseRankingOutputSha256 ?? '')
+      || evidence.crossBandPromotion !== false
+      || evidence.surveyDocumentCountAsRiskOrReach !== false) {
+    errors.push('W4-3 evidence joins and promotion boundaries have drifted');
+  }
+  if (!Array.isArray(evidence?.evidenceInputs)
+      || evidence.evidenceInputs.length !== 6
+      || new Set(evidence.evidenceInputs.map(entry => entry?.artifact)).size !== 6
+      || evidence.evidenceInputs.some(entry => (
+        typeof entry?.artifact !== 'string'
+        || !/^[0-9a-f]{64}$/u.test(entry?.sha256 ?? '')
+        || typeof entry?.role !== 'string'
+        || entry.role.length === 0
+      ))) {
+    errors.push('W4-3 evidence input inventory is invalid');
+  }
+  const expectedBands = [['A', 0.5], ['B', 0.8], ['C', 0.95], ['D', 1]];
+  const actualBands = (evidence?.cumulativeRiskBands ?? []).map(entry => [
+    entry?.name,
+    entry?.upperExclusiveBeforeShare,
+  ]);
+  if (!exactArray(actualBands, expectedBands)) {
+    errors.push('W4-3 cumulative risk bands have drifted');
+  }
+  const expectedPriority = [
+    'exact-source-verified',
+    'government-or-legal-core',
+    'backend-selection-divergence',
+    'base-rank',
+  ];
+  if (!exactArray(evidence?.actionPriorityWithinBand, expectedPriority)) {
+    errors.push('W4-3 within-band action priority has drifted');
+  }
+  const expectedVariants = {
+    unweighted: 'charCount',
+    'frame-neutral': 'charCount * compressionFactor',
+    'non-extreme': 'charCount * (1 + I(ratio < 100) + I(spacing < 0)) * frameFactor',
+    'stored-line-lane': 'storedLineSeg ? baseRiskMass : 0',
+    'fresh-candidate-lane': 'storedLineSeg ? 0 : baseRiskMass',
+  };
+  if (!isObject(evidence?.variantMasses)
+      || canonicalJson(evidence.variantMasses) !== canonicalJson(expectedVariants)) {
+    errors.push('W4-3 sensitivity variant definitions have drifted');
+  }
+  const curated = evidence?.curatedEvidence;
+  for (const field of [
+    'governmentOrLegalCoreFaces',
+    'exactSourceUnavailableFaces',
+    'exactSourceAvailableFaces',
+  ]) {
+    if (!stringSet(curated?.[field])) errors.push(`W4-3 ${field} must be a string set`);
+  }
+  if (!Array.isArray(curated?.exactSourceVerified)
+      || curated.exactSourceVerified.length === 0
+      || new Set(curated.exactSourceVerified.map(entry => entry?.documentFace)).size
+        !== curated.exactSourceVerified.length
+      || curated.exactSourceVerified.some(entry => (
+        typeof entry?.documentFace !== 'string'
+        || !/^[0-9a-f]{64}$/u.test(entry?.fontSha256 ?? '')
+        || !['family-and-fullname', 'postscriptname'].includes(entry?.nameTableMatch)
+      ))) {
+    errors.push('W4-3 verified exact source inventory is invalid');
+  }
+  const verifiedFaces = new Set((curated?.exactSourceVerified ?? [])
+    .map(entry => entry.documentFace));
+  for (const face of curated?.exactSourceAvailableFaces ?? []) {
+    if (verifiedFaces.has(face)) errors.push('verified and available exact source sets overlap');
+  }
+  for (const face of curated?.exactSourceUnavailableFaces ?? []) {
+    if (verifiedFaces.has(face)
+        || (curated?.exactSourceAvailableFaces ?? []).includes(face)) {
+      errors.push('exact source status sets overlap');
+    }
+  }
+
   const privacy = contract.privacy;
   if (privacy?.rawRowsPersisted !== false
       || privacy.localOutputDirectory !== 'output/poc/font-typesetting-risk'
@@ -351,7 +429,7 @@ function rowRisk(row, contract) {
   };
 }
 
-function validateDecisionRow(row, index, contract) {
+export function validateDecisionRow(row, index, contract) {
   exactKeys(
     row,
     contract.compatibilityProjection.requiredFields,
@@ -798,7 +876,7 @@ function consumeDecisionText(text, state, onRow) {
   }
 }
 
-async function streamDecisionUsage(inputPath, onRow) {
+export async function streamDecisionUsage(inputPath, onRow) {
   const hash = createHash('sha256');
   const decoder = new StringDecoder('utf8');
   const state = {

@@ -14,6 +14,7 @@
     "editingAxes",
     "riskMass",
     "ranking",
+    "evidenceAndStability",
     "historicalDefinitionEvidence",
     "privacy",
     "scope"
@@ -277,6 +278,100 @@
         "unstableResultPolicy": { "const": "publish-cumulative-risk-bands" }
       }
     },
+    "evidenceAndStability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "joinMode",
+        "identityGuessing",
+        "baseRankingOutputSha256",
+        "evidenceInputs",
+        "cumulativeRiskBands",
+        "variantMasses",
+        "actionPriorityWithinBand",
+        "crossBandPromotion",
+        "surveyDocumentCountAsRiskOrReach",
+        "curatedEvidence"
+      ],
+      "properties": {
+        "joinMode": { "const": "exact-document-face-only" },
+        "identityGuessing": { "const": false },
+        "baseRankingOutputSha256": { "$ref": "#/$defs/sha256" },
+        "evidenceInputs": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": { "$ref": "#/$defs/evidenceInput" }
+        },
+        "cumulativeRiskBands": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "prefixItems": [
+            { "$ref": "#/$defs/riskBandA" },
+            { "$ref": "#/$defs/riskBandB" },
+            { "$ref": "#/$defs/riskBandC" },
+            { "$ref": "#/$defs/riskBandD" }
+          ],
+          "items": false
+        },
+        "variantMasses": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "unweighted",
+            "frame-neutral",
+            "non-extreme",
+            "stored-line-lane",
+            "fresh-candidate-lane"
+          ],
+          "properties": {
+            "unweighted": { "const": "charCount" },
+            "frame-neutral": { "const": "charCount * compressionFactor" },
+            "non-extreme": {
+              "const": "charCount * (1 + I(ratio < 100) + I(spacing < 0)) * frameFactor"
+            },
+            "stored-line-lane": { "const": "storedLineSeg ? baseRiskMass : 0" },
+            "fresh-candidate-lane": { "const": "storedLineSeg ? 0 : baseRiskMass" }
+          }
+        },
+        "actionPriorityWithinBand": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "prefixItems": [
+            { "const": "exact-source-verified" },
+            { "const": "government-or-legal-core" },
+            { "const": "backend-selection-divergence" },
+            { "const": "base-rank" }
+          ],
+          "items": false
+        },
+        "crossBandPromotion": { "const": false },
+        "surveyDocumentCountAsRiskOrReach": { "const": false },
+        "curatedEvidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "governmentOrLegalCoreFaces",
+            "exactSourceUnavailableFaces",
+            "exactSourceAvailableFaces",
+            "exactSourceVerified"
+          ],
+          "properties": {
+            "governmentOrLegalCoreFaces": { "$ref": "#/$defs/stringSet" },
+            "exactSourceUnavailableFaces": { "$ref": "#/$defs/stringSet" },
+            "exactSourceAvailableFaces": { "$ref": "#/$defs/stringSet" },
+            "exactSourceVerified": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/verifiedFontFace" }
+            }
+          }
+        }
+      }
+    },
     "historicalDefinitionEvidence": {
       "type": "object",
       "additionalProperties": false,
@@ -416,6 +511,62 @@
       "properties": {
         "field": { "$ref": "#/$defs/nonEmptyString" },
         "direction": { "enum": ["ascending", "descending"] }
+      }
+    },
+    "evidenceInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact", "sha256", "role"],
+      "properties": {
+        "artifact": { "$ref": "#/$defs/repositoryPath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "role": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "riskBandA": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "upperExclusiveBeforeShare"],
+      "properties": {
+        "name": { "const": "A" },
+        "upperExclusiveBeforeShare": { "const": 0.5 }
+      }
+    },
+    "riskBandB": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "upperExclusiveBeforeShare"],
+      "properties": {
+        "name": { "const": "B" },
+        "upperExclusiveBeforeShare": { "const": 0.8 }
+      }
+    },
+    "riskBandC": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "upperExclusiveBeforeShare"],
+      "properties": {
+        "name": { "const": "C" },
+        "upperExclusiveBeforeShare": { "const": 0.95 }
+      }
+    },
+    "riskBandD": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "upperExclusiveBeforeShare"],
+      "properties": {
+        "name": { "const": "D" },
+        "upperExclusiveBeforeShare": { "const": 1 }
+      }
+    },
+    "verifiedFontFace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["documentFace", "fontSha256", "nameTableMatch"],
+      "properties": {
+        "documentFace": { "$ref": "#/$defs/nonEmptyString" },
+        "fontSha256": { "$ref": "#/$defs/sha256" },
+        "nameTableMatch": { "enum": ["family-and-fullname", "postscriptname"] }
       }
     }
   }
