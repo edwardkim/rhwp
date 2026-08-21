@@ -113,6 +113,7 @@
       "kerning"
     ],
     "mergeMetricClustersIntoDocumentFaces": false,
+    "nullMetricRequestPolicy": "preserve-unavailable-cluster",
     "unknownIdentityGuessing": false
   },
   "editingAxes": {

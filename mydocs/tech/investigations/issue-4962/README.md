@@ -24,7 +24,8 @@ last_verified: 2026-08-22
 | `scripts/tests/font_metric_coverage_contract.test.mjs` | 정상·변이·누락을 다루는 Stage 1 계약 test |
 | `font_typesetting_risk_contract.schema.json` | W4 입력·identity·proxy·lane·risk mass·privacy schema |
 | `font_typesetting_risk_contract.json` | W3 동결 입력과 조판 위험 순위 규칙의 실행 전 계약 |
-| `scripts/tests/font_typesetting_risk_rank.test.mjs` | W4 ranker의 의도된 RED 계약 test |
+| `scripts/font_typesetting_risk_rank.mjs` | W3 `decisionUsage` 전용 streaming W4 ranker |
+| `scripts/tests/font_typesetting_risk_rank.test.mjs` | W4 ranker의 계약·결정성·privacy test |
 
 ## 권위와 경계
 
@@ -133,12 +134,23 @@ mydocs/tech/investigations/issue-4962/font_typesetting_risk_contract.json
 mydocs/tech/investigations/issue-4962/font_typesetting_risk_contract.schema.json
 ```
 
-Stage W4-1의 test는 다음 ranker 구현 전 요구사항을 RED로 고정한다. `ERR_MODULE_NOT_FOUND`는 현재 단계의
-의도된 실패이며 W4-2에서 구현과 함께 GREEN으로 전환한다.
+Stage W4-1에서 RED로 고정한 요구사항은 W4-2 ranker 구현 뒤 GREEN이다. 공개 fixture 계약 test는 private
+10k aggregate를 열지 않는다.
 
 ```bash
 node --test scripts/tests/font_typesetting_risk_rank.test.mjs
 ```
 
-이 test는 private 10k aggregate를 열지 않고 공개 fixture만 사용한다. 실제 110 MB 입력과 local ranking
-중간물은 `output/poc/font-typesetting-risk/` 아래 mode `0600`으로만 보존하며 저장소에 추가하지 않는다.
+실제 W3 r2를 읽을 때는 입력 경로·mode·bytes·파일 hash·aggregate hash·source를 동결값과 먼저 대사한다.
+ranker는 큰 `legacyUsage`를 materialize하지 않고 `decisionUsage` 행만 streaming 처리하며, 결과는 새 파일로만
+기록한다.
+
+```bash
+node scripts/font_typesetting_risk_rank.mjs \
+  --input output/poc/font-metric-coverage/final-stage4-c-10k-r2.json \
+  --output output/poc/font-typesetting-risk/rank-stage-w4-2-r1.json
+```
+
+실제 110 MB 입력과 local ranking 중간물은 `output/poc/font-typesetting-risk/` 아래 mode `0600`으로만
+보존하며 저장소에 추가하지 않는다. `metricRequestedFace=null`은 비슷한 이름으로 추정하지 않고
+`preserve-unavailable-cluster` 정책에 따라 별도 unavailable cluster로 보존한다.

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -7,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import {
   findSensitiveTypesettingRiskValues,
   rankTypesettingRiskAggregate,
+  rankTypesettingRiskFile,
   validateRiskInputPreconditions,
   validateTypesettingRiskContract,
 } from '../font_typesetting_risk_rank.mjs';
@@ -148,6 +150,10 @@ test('W4 contract fixes compatibility, identity, proxy and lane boundaries', () 
   assert.equal(CONTRACT.candidateIdentity.documentFaceKey, 'font');
   assert.equal(CONTRACT.candidateIdentity.mergeMetricClustersIntoDocumentFaces, false);
   assert.equal(
+    CONTRACT.candidateIdentity.nullMetricRequestPolicy,
+    'preserve-unavailable-cluster',
+  );
+  assert.equal(
     CONTRACT.editingAxes.fixedFrameContextProxy.outputField,
     'fixedFrameContextProxy',
   );
@@ -203,6 +209,20 @@ test('metric request clusters explain shared causes without merging document fac
   assert.deepEqual(result.documentFaces.map(entry => entry.documentFace), ['Face A', 'Face B']);
 });
 
+test('a missing metric request remains an unavailable cluster instead of a guessed face', () => {
+  const rows = fixtureRows();
+  rows[1].metricRequestedFace = null;
+  rows[4].metricRequestedFace = null;
+  const result = rankTypesettingRiskAggregate(fixtureAggregate(rows), CONTRACT);
+  const unavailable = result.metricRequestClusters.find(entry => (
+    entry.metricRequestedFace === null
+  ));
+  assert.deepEqual(
+    [unavailable.documentFaceCount, unavailable.riskCharacters, unavailable.baseRiskMass],
+    [2, 30, 30],
+  );
+});
+
 test('combined format counts are additive and do not use documentCount as reach', () => {
   const result = rankTypesettingRiskAggregate(fixtureAggregate(), CONTRACT);
   for (const candidate of result.documentFaces) {
@@ -224,6 +244,35 @@ test('row order does not change canonical public projection or hash', () => {
   const reversed = rankTypesettingRiskAggregate(fixtureAggregate(reversedRows), CONTRACT);
   assert.deepEqual(reversed, forward);
   assert.match(forward.outputHash.value, /^[0-9a-f]{64}$/u);
+});
+
+test('streaming file path skips legacy rows and produces the fixture ranking', async t => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'rhwp-4962-w4-rank-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const input = path.join(directory, 'fixture.json');
+  const aggregate = fixtureAggregate();
+  const fileAggregate = {
+    schemaVersion: aggregate.schemaVersion,
+    kind: aggregate.kind,
+    status: aggregate.status,
+    format: aggregate.format,
+    checkpoint: { identity: { sourceHead: '1'.repeat(40) } },
+    counts: aggregate.counts,
+    categories: aggregate.categories,
+    joins: aggregate.joins,
+    documents: { attempted: 1, success: 1, failures: {} },
+    aggregateHash: { algorithm: 'sha256', value: '2'.repeat(64) },
+    legacyUsage: [{ ignored: 'the streaming ranker must not materialize this array' }],
+    decisionUsage: aggregate.decisionUsage,
+  };
+  fs.writeFileSync(input, `${JSON.stringify(fileAggregate)}\n`, { mode: 0o600 });
+  const streamed = await rankTypesettingRiskFile(input, CONTRACT, {
+    enforceFrozenInput: false,
+  });
+  const inMemory = rankTypesettingRiskAggregate(aggregate, CONTRACT);
+  assert.deepEqual(streamed.totals, inMemory.totals);
+  assert.deepEqual(streamed.documentFaces, inMemory.documentFaces);
+  assert.deepEqual(streamed.metricRequestClusters, inMemory.metricRequestClusters);
 });
 
 test('frozen input drift fails before ranking', () => {
@@ -277,4 +326,27 @@ test('public projection rejects document identity, paths, raw rows, tokens and s
     riskCharacters: 17,
     baseRiskMass: 68,
   }, CONTRACT), []);
+});
+
+test('unknown decision dimensions and non-joined usage fail closed', () => {
+  const extraField = fixtureAggregate();
+  extraField.decisionUsage[0].newDimension = true;
+  assert.throws(
+    () => rankTypesettingRiskAggregate(extraField, CONTRACT),
+    /schema drift/u,
+  );
+
+  const unknownCategory = fixtureAggregate();
+  unknownCategory.decisionUsage[0].coverageCategory = 'new-risk-policy';
+  assert.throws(
+    () => rankTypesettingRiskAggregate(unknownCategory, CONTRACT),
+    /coverageCategory is unclassified/u,
+  );
+
+  const layoutOnly = fixtureAggregate();
+  layoutOnly.decisionUsage[0].sourceJoinStatus = 'layoutOnly';
+  assert.throws(
+    () => rankTypesettingRiskAggregate(layoutOnly, CONTRACT),
+    /not a joined source row/u,
+  );
 });

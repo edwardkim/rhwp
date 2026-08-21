@@ -151,6 +151,7 @@
         "splitDocumentFaceBy",
         "preservedDistributions",
         "mergeMetricClustersIntoDocumentFaces",
+        "nullMetricRequestPolicy",
         "unknownIdentityGuessing"
       ],
       "properties": {
@@ -162,6 +163,7 @@
         },
         "preservedDistributions": { "$ref": "#/$defs/stringSet" },
         "mergeMetricClustersIntoDocumentFaces": { "const": false },
+        "nullMetricRequestPolicy": { "const": "preserve-unavailable-cluster" },
         "unknownIdentityGuessing": { "const": false }
       }
     },
