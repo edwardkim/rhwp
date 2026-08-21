@@ -2101,10 +2101,16 @@ export class SetFormValueCommand implements EditCommand {
  * Document 스냅샷을 이용한 Undo/Redo 명령.
  *
  * 역연산 구현이 복잡한 작업(붙여넣기, 객체 삭제 등)에 사용한다.
- * - 최초 실행: before 스냅샷 저장 → 작업 수행 → after 스냅샷 저장
- * - Undo: before 스냅샷으로 복원
- * - Redo: after 스냅샷으로 복원
- * - Discard: 양쪽 스냅샷 메모리 해제
+ * - 최초 실행: before 스냅샷 저장 → 작업 수행 (**after 는 저장하지 않는다**)
+ * - Undo: after 스냅샷 저장 → before 스냅샷으로 복원
+ * - Redo: after 스냅샷으로 복원 → 그 스냅샷 즉시 반환
+ * - Discard: 살아있는 스냅샷 메모리 해제
+ *
+ * **[Task #5769] after 는 undo 시점에 잡는다.** 이 명령이 undo 스택 top 이라는 것은
+ * 히스토리 불변식상 "현재 문서 == 이 명령 실행 직후 상태" 를 뜻하므로, 그때 찍어도 값이
+ * 같다. 그래서 undo 스택 엔트리는 스냅샷 id 를 **1개**만 점유한다(redo 스택 엔트리는 2개).
+ * 예산 98 기준 최악 undo 깊이가 49 → 98 로 배가된다. 복원 의미는 종전과 같은 문서 전체
+ * 치환이라 문서 충실도는 달라지지 않는다.
  */
 export class SnapshotCommand implements EditCommand {
   readonly type: string;
@@ -2113,6 +2119,16 @@ export class SnapshotCommand implements EditCommand {
   private beforeId: number | null = null;
   private afterId: number | null = null;
   private noOp = false;
+  /**
+   * 최초 실행이 끝났는가. redo 판별에 쓴다.
+   *
+   * 종전에는 `afterId !== null` 이 곧 "이미 실행됨" 이었지만, after 를 undo 시점에 잡게
+   * 되면서 그 등가가 깨졌다 — 실행 직후에도 `afterId` 는 `null` 이다. 플래그 없이 두면
+   * redo 가 최초 실행으로 오인돼 `beforeId` 를 덮어쓰고 앞의 스냅샷을 누수한다.
+   */
+  private executed = false;
+  /** undo 시점 after 저장에 실패해 redo 를 제공할 수 없는 상태인가. */
+  private redoUnavailable = false;
 
   /**
    * @param operationType 작업 종류 (예: 'pasteInternal', 'deleteControl')
@@ -2130,18 +2146,29 @@ export class SnapshotCommand implements EditCommand {
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
-    if (this.afterId !== null) {
-      // Redo: after 스냅샷으로 복원
+    if (this.executed) {
+      // Redo: undo 시점에 잡아 둔 after 로 복원하고 **그 스냅샷을 즉시 반환한다** —
+      // 복원 뒤 이 명령은 undo 스택으로 돌아가고, 그러면 after 는 다시 "현재 문서" 와
+      // 같아져 들고 있을 이유가 없다. 이 반환이 없으면 undo↔redo 왕복마다 엔트리가
+      // 2슬롯으로 남아 지연 저장의 이득이 사라진다.
+      if (this.redoUnavailable || this.afterId === null) {
+        // undo 시점 after 저장이 실패한 명령이다. 조용히 성공한 척하면 문서가 그대로인
+        // 채 redo 스택만 움직여 이후 undo 가 어긋난다 — 히스토리의 실패시-드롭
+        // 하이브리드(#2328)가 이 엔트리를 걷어내도록 던진다.
+        throw new Error(`${this.type} redo 불가 — undo 시점 after 스냅샷 저장 실패`);
+      }
       wasm.restoreSnapshot(this.afterId);
+      wasm.discardSnapshot(this.afterId);
+      this.afterId = null;
       return { ...this.cursorAfter };
     }
 
-    // 최초 실행: before 저장 → 작업 수행 → after 저장
+    // 최초 실행: before 저장 → 작업 수행 (after 는 undo 시점에 잡는다)
+    this.executed = true;
     this.beforeId = wasm.saveSnapshot();
-    // [Task #2328] operation 또는 after-save 중 어느 것이 throw 하든 커맨드가
-    // 히스토리에 등록되지 못해 discard 주체가 사라진다 → 스냅샷 영구 누수(orphan
-    // → WASM 무통보 축출 재발). after-save(대용량 문서 클론 시 메모리 압박 등)까지
-    // try 범위에 포함해 before/after 를 대칭적으로 해제한다.
+    // [Task #2328] operation 이 throw 하면 커맨드가 히스토리에 등록되지 못해 discard
+    // 주체가 사라진다 → 스냅샷 영구 누수(orphan → WASM 무통보 축출 재발). 아래 catch 가
+    // before 를 대칭적으로 해제한다.
     try {
       if (this.operation) {
         const result = this.operation(wasm);
@@ -2155,11 +2182,10 @@ export class SnapshotCommand implements EditCommand {
         }
         this.cursorAfter = result;
       }
-      this.afterId = wasm.saveSnapshot();
     } catch (operationError) {
       // [#3350] 최초 execute 가 실패하면 명령 전체를 원자적으로 되돌린다. 이 커맨드는
       // history 에 push 되기 전이므로 before 스냅샷을 가진 SnapshotCommand만 rollback을
-      // 수행할 수 있다. after-save 실패도 execute 실패이므로 같은 계약을 따른다.
+      // 수행할 수 있다.
       try {
         if (this.beforeId !== null) {
           wasm.restoreSnapshot(this.beforeId);
@@ -2187,6 +2213,17 @@ export class SnapshotCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
+    // [Task #5769] after 를 여기서 잡는다. 이 명령이 undo 스택 top 이라는 것은
+    // "현재 문서 == 이 명령 실행 직후 상태" 라는 뜻이므로 실행 시점에 찍은 것과 값이 같다.
+    if (this.afterId === null && !this.redoUnavailable) {
+      try {
+        this.afterId = wasm.saveSnapshot();
+      } catch {
+        // 저장 실패로 **되돌리기 자체를 막지 않는다.** undo 는 수행하고 redo 만 포기한다 —
+        // 여기서 던지면 사용자의 Ctrl+Z 가 아무 일도 못 하고 히스토리 엔트리까지 잃는다.
+        this.redoUnavailable = true;
+      }
+    }
     if (this.beforeId !== null) {
       wasm.restoreSnapshot(this.beforeId);
     }

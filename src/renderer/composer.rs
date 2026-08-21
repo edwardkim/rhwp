@@ -2806,6 +2806,28 @@ pub fn char_overlap_size_ratio(effective_border: u8, inner_char_size: i8) -> f64
     }
 }
 
+/// 글자겹침(CharOverlap) 한 글자의 **표시 문자열**을 정한다.
+///
+/// `border_drawn` 은 그 겹침을 그릴 때 렌더러가 **실제로 원/사각 테두리를 따로 그리는지**다.
+///
+/// - 테두리를 그리는 경우: 원문자 `①`~`⑳`(U+2460~U+2473)는 안쪽 숫자로 풀어 쓴다.
+///   테두리를 그려 놓고 원문자 글리프까지 찍으면 동그라미가 이중으로 나온다.
+/// - 테두리를 안 그리는 경우(`circleType="CHAR"` → `border_type=0`): `composeText` 를
+///   **그대로** 그린다. 이때 숫자로 풀면 그릴 동그라미가 아무 데도 없어 `①` 이 맨 `1` 로
+///   나간다 (#5790).
+///
+/// 한컴은 `circleType="CHAR"` + `composeText="①"` 을 전각 한 칸에 `①` 한 글자로 찍는다.
+pub fn char_overlap_display_text(ch: char, border_drawn: bool) -> String {
+    let cp = ch as u32;
+    if border_drawn && (0x2460..=0x2473).contains(&cp) {
+        return (cp - 0x2460 + 1).to_string();
+    }
+    if let Some(display) = pua_to_display_text(ch) {
+        return display;
+    }
+    ch.to_string()
+}
+
 fn pua_enclosed_border_type(ch: char) -> Option<u8> {
     let cp = ch as u32;
     // U+F02B1~F02C4 (①~⑳): map_pua_bullet_char 에서 표준 원문자로 매핑 — CharOverlap 제외
@@ -2818,6 +2840,34 @@ fn pua_enclosed_border_type(ch: char) -> Option<u8> {
 
 fn pua_plain_text_display(ch: char) -> Option<&'static str> {
     super::hancom_pua::verified_hancom_pua_display(ch)
+}
+
+/// [#5800] HWP5 원시 한컴 사용자 기호를 **표시 매핑 조회용 평면-15 키**로 정규화한다.
+///
+/// 같은 글자를 HWP5 는 BMP 단일 유닛 `0xA000 | X` 로, HWPX 는 평면 15 보충 PUA
+/// `U+F0000 | X` 로 싣는다(`parser::tags::HANCOM_SYMBOL_BMP_TO_PLANE15` — 한글 실측
+/// 값 집합). 표시 매핑표(`hancom_pua` · `map_pua_bullet_char`)는 평면 15 키만 갖고
+/// 있어 HWP5 경로가 표를 못 타고 원시 코드포인트를 그대로 그렸다 — `0xA832` 가
+/// 유니코드 U+A832(실로티 나그리 `꠲`)로, `0xA12B` 가 `ꄫ` 로 나오는 식이다.
+///
+/// **정규화는 표에 값이 있을 때만 한다.** 값이 없으면 원문을 그대로 둬서, 미등록 PUA
+/// 축(#5599)이 관측하는 표면을 이 변경이 흔들지 않게 한다.
+fn hancom_symbol_display_key(ch: char) -> char {
+    let Ok(unit) = u16::try_from(ch as u32) else {
+        return ch;
+    };
+    let Some(plane15) =
+        crate::parser::tags::hancom_symbol_to_plane15(unit).and_then(char::from_u32)
+    else {
+        return ch;
+    };
+    let has_mapping = pua_plain_text_display(plane15).is_some()
+        || super::layout::map_pua_bullet_char(plane15) != plane15;
+    if has_mapping {
+        plane15
+    } else {
+        ch
+    }
 }
 
 /// 한글 방점(U+302E/U+302F)을 렌더용 spacing 가운데 점 글리프로 치환한다. (Task #1735)
@@ -2850,6 +2900,8 @@ pub fn expand_pua_display_text(text: &str) -> String {
 
     let mut out = String::with_capacity(text.len());
     for ch in text.chars() {
+        // [#5800] HWP5 원시 기호값을 먼저 평면-15 키로 정규화한다.
+        let ch = hancom_symbol_display_key(ch);
         if ch == '\u{F081C}' {
             continue;
         }
@@ -2875,6 +2927,8 @@ pub fn expand_pua_render_text(text: &str) -> String {
 ///
 /// draw_char_overlap()에서 호출하여, 실제 렌더링 시에만 변환한다.
 pub fn pua_to_display_text(ch: char) -> Option<String> {
+    // [#5800] HWP5 원시 기호값을 먼저 평면-15 키로 정규화한다.
+    let ch = hancom_symbol_display_key(ch);
     let cp = ch as u32;
     if let Some(replacement) = pua_plain_text_display(ch) {
         return Some(replacement.to_string());
