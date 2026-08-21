@@ -215,7 +215,8 @@ pub fn extract_tab_leaders(text: &str, positions: &[f64], style: &TextStyle) -> 
 }
 
 /// 탭 리더 추출 (tab_extended 지원)
-/// tab_extended: HWPX 인라인 탭 또는 HWP 탭 확장 데이터 (ext[1] = leader/fill_type)
+/// tab_extended: HWPX 인라인 탭 또는 HWP 탭 확장 데이터
+/// (ext[0..2] = 탭 폭(UINT32), ext[2] = (탭 종류 << 8) | 채움 종류)
 pub fn extract_tab_leaders_with_extended(
     text: &str,
     positions: &[f64],
@@ -244,9 +245,14 @@ pub fn extract_tab_leaders_with_extended(
                 None
             };
 
-            // 1. tab_extended에서 leader 가져오기 (HWPX 인라인 탭)
+            // 1. tab_extended 에서 채움 종류 가져오기 (HWP5/HWPX 인라인 탭)
+            // 인라인 탭 확장 레코드는 ext[0..2] = 탭 폭(UINT32 저/고워드),
+            // ext[2] = (탭 종류 << 8) | 채움 종류 다. 위치 계산부(`inline_tab_x` 의
+            // `fill_low = tab_type_raw & 0xFF`)와 같은 자리를 봐야 한다.
+            // ext[1] 은 탭 폭의 상위 16비트라 목차 탭 폭(수만 HWPUNIT)에서는 늘 0 →
+            // `leader` 가 붙은 탭도 채움 없음으로 읽혀 리더가 통째로 사라졌다 (#5799).
             let ext_fill = if tab_idx < tab_extended.len() {
-                tab_extended[tab_idx][1] as u8 // ext[1] = leader/fill_type
+                (tab_extended[tab_idx][2] & 0x00FF) as u8
             } else {
                 0
             };

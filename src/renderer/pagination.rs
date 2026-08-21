@@ -453,6 +453,11 @@ pub struct OverlayContinuation {
     pub control_index: usize,
     /// 이 단에서 그릴 첫 행 (inclusive). 앞 쪽이 이미 그린 행 수와 같다.
     pub start_row: usize,
+    /// [#5792] 이 단 최상단에 잔여 행이 차지하는 높이(px). 0 이면 예약하지 않는다.
+    ///
+    /// 뒤따르는 흐름이 잔여 행의 자리를 스스로 만드는 형상(#4514 필러 문단)에서는
+    /// 0 이어야 이중 계상이 없다. 판정은 typeset 한 곳에서만 한다.
+    pub reserve_px: f64,
 }
 
 /// 어울림 배치 표 옆에 배치되는 빈 리턴 문단 정보

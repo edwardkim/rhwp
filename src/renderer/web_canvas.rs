@@ -2268,51 +2268,10 @@ impl Renderer for WebCanvasRenderer {
         let has_effect =
             style.outline_type > 0 || style.shadow_type > 0 || style.emboss || style.engrave;
 
-        // Task #352: 3+ 연속 '-' 시퀀스를 단일 가로선으로 통합 (svg.rs 와 동일).
-        // underline 이 있으면 dash leader 라인 생략 (이중선 방지).
-        let suppress_dash_leader_line = !matches!(style.underline, UnderlineType::None);
-        let dash_run_groups: Vec<(usize, usize)> = {
-            let mut groups = Vec::new();
-            let mut run_start: Option<usize> = None;
-            for (idx, (_, cs)) in clusters.iter().enumerate() {
-                if cs == "-" {
-                    if run_start.is_none() {
-                        run_start = Some(idx);
-                    }
-                } else if let Some(s) = run_start.take() {
-                    if idx - s >= 3 {
-                        groups.push((s, idx));
-                    }
-                }
-            }
-            if let Some(s) = run_start {
-                if clusters.len() - s >= 3 {
-                    groups.push((s, clusters.len()));
-                }
-            }
-            groups
-        };
-        let dash_line_y_offset = -font_size * 0.32;
-        let dash_line_stroke_w = (font_size * 0.07).max(0.5f64);
-        let cluster_in_dash_run = |cluster_idx: usize| -> Option<(f64, f64)> {
-            for &(s, e) in &dash_run_groups {
-                if cluster_idx == s {
-                    let start_char_idx = clusters[s].0;
-                    let last = &clusters[e - 1];
-                    let end_char_idx = last.0 + last.1.chars().count();
-                    let x1 = char_positions.get(start_char_idx).copied().unwrap_or(0.0);
-                    let x2 = char_positions
-                        .get(end_char_idx)
-                        .copied()
-                        .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0));
-                    return Some((x1, x2));
-                }
-                if cluster_idx > s && cluster_idx < e {
-                    return Some((f64::NAN, f64::NAN));
-                }
-            }
-            None
-        };
+        // [#5804] 3+ 연속 '-' 를 단일 가로선으로 대체하던 처리(Task #352)를 걷어냈다.
+        // 한글 2022 정본은 하이픈을 낱글자 글리프로 그리고, 그 탄력 분배는 이미
+        // 레이아웃이 `extra_dash_advance` 로 만들어 `char_positions` 에 담는다.
+        // svg.rs 와 같은 결정이다.
 
         if has_effect {
             self.draw_text_with_effects(
@@ -2348,23 +2307,7 @@ impl Renderer for WebCanvasRenderer {
         } else {
             // 기본 렌더링 (효과 없음)
             self.ctx.set_fill_style_str(&color_to_css(style.color));
-            // dash leader 라인 먼저 그리기 (underline 이 없을 때만)
-            if !suppress_dash_leader_line {
-                for &(s, _) in &dash_run_groups {
-                    if let Some((x1_rel, x2_rel)) = cluster_in_dash_run(s) {
-                        if x1_rel.is_finite() {
-                            let line_y = y + dash_line_y_offset;
-                            self.ctx.set_stroke_style_str(&color_to_css(style.color));
-                            self.ctx.set_line_width(dash_line_stroke_w);
-                            self.ctx.begin_path();
-                            self.ctx.move_to(x + x1_rel, line_y);
-                            self.ctx.line_to(x + x2_rel, line_y);
-                            self.ctx.stroke();
-                        }
-                    }
-                }
-            }
-            for (cluster_idx, (char_idx, cluster_str)) in clusters.iter().enumerate() {
+            for (char_idx, cluster_str) in clusters.iter() {
                 if cluster_str == " " || cluster_str == "\t" || cluster_str == "\u{2007}" {
                     continue;
                 }
@@ -2372,10 +2315,6 @@ impl Renderer for WebCanvasRenderer {
                     self.ctx.set_font(&old_hangul_font);
                 } else {
                     self.ctx.set_font(&font);
-                }
-                // dash leader 시퀀스: 글리프 스킵 (라인이 위에서 이미 그려짐)
-                if cluster_in_dash_run(cluster_idx).is_some() {
-                    continue;
                 }
                 // XML/HTML 무효 제어문자 건너뜀 (SVG의 escape_xml과 동일)
                 if cluster_str

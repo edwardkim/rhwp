@@ -1,3 +1,5 @@
+use super::sink::println;
+
 pub(super) fn print() {
     println!("  edit fill-fields <파일.hwp|파일.hwpx> --data <JSON|@파일> [-o <출력>] [옵션]");
     println!("      누름틀에 값을 채운다 (서식 자동 작성/메일머지)");

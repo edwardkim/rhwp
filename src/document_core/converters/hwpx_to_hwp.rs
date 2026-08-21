@@ -228,8 +228,11 @@ fn convert_to_hwp_ir(doc: &mut Document, source_is_hwpx: bool) -> AdapterReport 
     normalize_bin_data_for_hwp(doc, &mut report);
 
     // Stage 4: SectionDef 컨트롤 삽입 (HWPX 파서가 만들지 않으므로 직렬화기가 PAGE_DEF 출력 못 함)
+    // [#5249] secd tail 길이는 저장될 FileHeader 버전이 정한다. 위
+    // `normalize_file_header_for_hwp` 가 버전을 확정한 뒤이므로 여기서 읽어 내린다.
+    let file_version = doc.header.version.clone();
     for (section_idx, section) in doc.sections.iter_mut().enumerate() {
-        adapt_section_def(&mut section.section_def, &mut report);
+        adapt_section_def(&mut section.section_def, &file_version, &mut report);
         insert_section_def_control(section, &mut report);
         materialize_following_section_break_type(section_idx, section, &mut report);
 
@@ -1796,11 +1799,15 @@ fn materialize_para_header_tail(para: &mut Paragraph, report: &mut AdapterReport
     report.para_header_tail_materialized += 1;
 }
 
-fn adapt_section_def(section_def: &mut SectionDef, report: &mut AdapterReport) {
+fn adapt_section_def(
+    section_def: &mut SectionDef,
+    file_version: &HwpVersion,
+    report: &mut AdapterReport,
+) {
     materialize_section_def_hide_empty_line_flag(section_def, report);
     materialize_single_master_page_flags(section_def, report);
     materialize_multi_master_page_flags(section_def, report);
-    materialize_section_def_master_page_tail(section_def, report);
+    materialize_section_def_ctrl_tail(section_def, file_version, report);
 
     for master_page in &mut section_def.master_pages {
         adapt_paragraphs_with_context(
@@ -1911,27 +1918,68 @@ fn materialize_multi_master_page_flags(section_def: &mut SectionDef, report: &mu
     }
 }
 
-fn materialize_section_def_master_page_tail(
+/// 대표Language(2) + 확장 영역 17 — 5.0.4.0 이상 저장본의 `secd` tail (CTRL_HEADER 47).
+const EXTENDED_SECTION_DEF_TAIL: usize = 19;
+/// 대표Language(2) + 확장 영역 8 — 5.0.4.0 미만 저장본의 `secd` tail (CTRL_HEADER 38).
+const LEGACY_SECTION_DEF_TAIL: usize = 10;
+
+/// [#5249] `secd` CTRL_HEADER 확장 tail 길이 — **파일 형식 버전**이 정한다.
+///
+/// `samples/**/*.hwp` 한컴 저작 517구역 전수 실측(rhwp 산출 표식 `RhwpHwpxOrigin`
+/// 스트림을 가진 3구역 제외)에서 예외가 없다 — 재현: `scripts/secd_tail_survey.py`:
+///
+/// | FileHeader 버전 | 확장 tail | CTRL_HEADER | 구역 수 |
+/// |---|---|---|---|
+/// | 5.0.1.7 (관측 하한) | 8 byte | 36 | 4 |
+/// | 5.0.2.4 ~ 5.0.3.4 | 10 byte | 38 | 188 |
+/// | **5.0.4.0 이상** | **19 byte** | **47** | **325** |
+///
+/// 바탕쪽 수는 결정 요인이 아니다 — 5.0.4.0 이상에서 **바탕쪽 0인데 47인 구역이
+/// 284개**이고, 5.0.4.0 미만에서 **바탕쪽이 있는데 38인 구역이 10개**다. 즉 종전
+/// 게이트(`master_pages.is_empty()`)는 양방향으로 어긋났다(#2768 의 "바탕쪽 없는 47
+/// 259건"이 이 축의 그림자였다).
+///
+/// 버전 경계의 관측 범위는 (5.0.3.4, 5.0.4.0] 이다 — 그 사이 버전은 코퍼스에 없다.
+/// 미관측 구간은 보수적으로 10 byte(구 계약)로 떨어진다.
+fn section_def_ctrl_tail_len(version: &HwpVersion) -> usize {
+    let v = (
+        version.major,
+        version.minor,
+        version.build,
+        version.revision,
+    );
+    if v >= (5, 0, 4, 0) {
+        EXTENDED_SECTION_DEF_TAIL
+    } else {
+        LEGACY_SECTION_DEF_TAIL
+    }
+}
+
+/// HWPX 출처 SectionDef 에 저장 버전에 맞는 CTRL_HEADER tail 을 실체화한다.
+///
+/// HWPX 파서는 CTRL_HEADER tail 을 만들지 않으므로(원본에 그런 것이 없다) 직렬화기가
+/// 기본 10 byte 를 쓴다. 그런데 HWPX 출처 문서는 FileHeader 에 5.1.0.0 을 적으므로
+/// **버전은 47을 약속하고 내용은 38을 내보내는** 불일치가 됐다.
+///
+/// HWP5 원본에서 파싱한 `raw_ctrl_extra` 는 손대지 않는다 — 라운드트립 계약이 먼저다.
+fn materialize_section_def_ctrl_tail(
     section_def: &mut SectionDef,
+    file_version: &HwpVersion,
     report: &mut AdapterReport,
 ) {
-    if section_def.master_pages.is_empty() {
+    if !section_def.raw_ctrl_extra.is_empty() {
         return;
     }
 
-    // HWPX 출처 SectionDef는 HWP 원본 CTRL_HEADER tail이 없지만, 한컴이 HWPX를
-    // HWP5로 저장한 정답지는 바탕쪽이 있는 구역에서 대표Language(0) 뒤에
-    // 17 byte 확장 영역을 붙여 총 43 byte ctrl_data (CTRL_HEADER 47 byte)를 만든다.
-    //
-    // 관찰된 계약:
-    // - exam_kor: masterPageCnt=3 -> 0x0001 marker + 15 byte zero
-    // - exam_social-p1: 단일 Both 바탕쪽 -> 17 byte zero
-    // - exam_social section1: Both + Odd 2개 바탕쪽 -> 17 byte zero
-    let mut extra = vec![0; 19];
-    extra[0..2].copy_from_slice(&0u16.to_le_bytes());
-    if section_def.master_pages.len() >= 3 {
+    let mut extra = vec![0; section_def_ctrl_tail_len(file_version)];
+    // 확장 영역 offset 0 의 u16 마커. 코퍼스 47 byte 325구역 중 비영은 14건뿐이고
+    // 바탕쪽 수의 함수가 아니다(바탕쪽 1인데 1·4, 바탕쪽 2인데 0 이 공존). 결정 요인이
+    // 미확정이므로 종전 정답지(exam_kor 계열)에서 유도된 이 규칙을 **넓히지도 좁히지도
+    // 않고** 그대로 둔다. 확장 tail 이 아닌 경우엔 자리 자체가 없다.
+    if extra.len() == EXTENDED_SECTION_DEF_TAIL && section_def.master_pages.len() >= 3 {
         extra[2..4].copy_from_slice(&1u16.to_le_bytes());
     }
+
     if section_def.raw_ctrl_extra != extra {
         section_def.raw_ctrl_extra = extra;
         report.section_def_master_page_tail_materialized += 1;
@@ -3932,13 +3980,13 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut report);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
 
         assert_eq!(section_def.flags, 0x2000_0000);
         assert_eq!(report.section_def_single_master_page_flags_materialized, 1);
 
         let mut second = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut second);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut second);
         assert_eq!(second.section_def_single_master_page_flags_materialized, 0);
     }
 
@@ -3954,7 +4002,7 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut report);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
 
         assert_eq!(section_def.flags & 0xe000_0000, 0x8000_0000);
         assert_eq!(report.section_def_single_master_page_flags_materialized, 1);
@@ -3969,13 +4017,13 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut report);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
 
         assert_eq!(section_def.flags, 0xC000_0000);
         assert_eq!(report.section_def_multi_master_page_flags_materialized, 1);
 
         let mut second = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut second);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut second);
         assert_eq!(second.section_def_multi_master_page_flags_materialized, 0);
     }
 
@@ -3988,7 +4036,7 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut report);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
 
         assert_eq!(section_def.flags & 0xe000_0000, 0xc000_0000);
         assert_eq!(report.section_def_multi_master_page_flags_materialized, 1);
@@ -4018,37 +4066,88 @@ mod tests {
         assert_ne!(section_def.flags & 0x0008_0000, 0);
     }
 
+    fn hwp_version(major: u8, minor: u8, build: u8, revision: u8) -> HwpVersion {
+        HwpVersion {
+            major,
+            minor,
+            build,
+            revision,
+        }
+    }
+
+    /// [#5249] `secd` tail 은 바탕쪽이 아니라 **저장될 파일 버전**이 정한다.
+    ///
+    /// 한컴 저작 517구역 실측(`scripts/secd_tail_survey.py`): 5.0.4.0 미만은 10 byte
+    /// tail(secd 38), 5.0.4.0 이상은 19 byte tail(secd 47). 종전 게이트(바탕쪽 유무)는
+    /// 양방향으로 어긋났다 — 바탕쪽 0인데 47이 284구역, 바탕쪽이 있는데 38이 10구역.
+    ///
+    /// 길이·마커 범위·raw 보존을 한 함수에 담는다 — `src` 유닛 테스트 총량은 래칫으로
+    /// 묶여 있고(`scripts/rust-unit-test-tiers.mjs`), 변환 산출 바이트 판정은
+    /// `tests/cases/issue_5249_section_def_ctrl_tail.rs` 가 따로 맡는다.
     #[test]
-    fn section_def_master_page_tail_marker_depends_on_master_page_count() {
-        let mut single = SectionDef {
-            master_pages: vec![Default::default()],
-            ..Default::default()
-        };
+    fn section_def_tail_follows_the_saved_file_version() {
+        // ① HWPX 출처의 실제 저장 버전(파서가 5.1.0.0 을 적는다) + 바탕쪽 없음.
+        let mut modern = SectionDef::default();
         let mut report = AdapterReport::new();
-        materialize_section_def_master_page_tail(&mut single, &mut report);
-        assert_eq!(single.raw_ctrl_extra.len(), 19);
-        assert_eq!(&single.raw_ctrl_extra[0..4], &[0, 0, 0, 0]);
+        materialize_section_def_ctrl_tail(&mut modern, &hwp_version(5, 1, 0, 0), &mut report);
+        assert_eq!(
+            modern.raw_ctrl_extra.len(),
+            19,
+            "5.1.0.0 저장본은 바탕쪽이 없어도 19 byte tail(secd 47)이다"
+        );
+        assert!(modern.raw_ctrl_extra.iter().all(|b| *b == 0));
         assert_eq!(report.section_def_master_page_tail_materialized, 1);
 
-        let mut pair = SectionDef {
-            master_pages: vec![Default::default(), Default::default()],
-            ..Default::default()
-        };
+        // ② 경계 자신과 그 바로 아래.
+        let mut boundary = SectionDef::default();
         let mut report = AdapterReport::new();
-        materialize_section_def_master_page_tail(&mut pair, &mut report);
-        assert_eq!(pair.raw_ctrl_extra.len(), 19);
-        assert_eq!(&pair.raw_ctrl_extra[0..4], &[0, 0, 0, 0]);
-        assert_eq!(report.section_def_master_page_tail_materialized, 1);
+        materialize_section_def_ctrl_tail(&mut boundary, &hwp_version(5, 0, 4, 0), &mut report);
+        assert_eq!(boundary.raw_ctrl_extra.len(), 19);
 
+        let mut legacy = SectionDef::default();
+        let mut report = AdapterReport::new();
+        materialize_section_def_ctrl_tail(&mut legacy, &hwp_version(5, 0, 3, 0), &mut report);
+        assert_eq!(
+            legacy.raw_ctrl_extra.len(),
+            10,
+            "5.0.3.0 은 10 byte tail(secd 38)"
+        );
+
+        // ③ 바탕쪽은 길이를 바꾸지 않는다 — 확장 tail 의 마커 자리만 건드린다.
         let mut triple = SectionDef {
             master_pages: vec![Default::default(), Default::default(), Default::default()],
             ..Default::default()
         };
         let mut report = AdapterReport::new();
-        materialize_section_def_master_page_tail(&mut triple, &mut report);
+        materialize_section_def_ctrl_tail(&mut triple, &hwp_version(5, 1, 0, 0), &mut report);
         assert_eq!(triple.raw_ctrl_extra.len(), 19);
         assert_eq!(&triple.raw_ctrl_extra[0..4], &[0, 0, 1, 0]);
-        assert_eq!(report.section_def_master_page_tail_materialized, 1);
+
+        // 구 계약에는 마커 자리가 없다 — 10 byte 를 넘겨 쓰지 않는다.
+        let mut legacy_triple = SectionDef {
+            master_pages: vec![Default::default(), Default::default(), Default::default()],
+            ..Default::default()
+        };
+        let mut report = AdapterReport::new();
+        materialize_section_def_ctrl_tail(
+            &mut legacy_triple,
+            &hwp_version(5, 0, 3, 0),
+            &mut report,
+        );
+        assert_eq!(legacy_triple.raw_ctrl_extra.len(), 10);
+        assert_eq!(&legacy_triple.raw_ctrl_extra[2..4], &[0, 0]);
+
+        // ④ HWP5 원본에서 파싱한 tail 은 손대지 않는다 — 라운드트립 계약이 먼저다.
+        let original = vec![9u8; 17];
+        let mut parsed = SectionDef {
+            raw_ctrl_extra: original.clone(),
+            master_pages: vec![Default::default(), Default::default(), Default::default()],
+            ..Default::default()
+        };
+        let mut report = AdapterReport::new();
+        materialize_section_def_ctrl_tail(&mut parsed, &hwp_version(5, 1, 0, 0), &mut report);
+        assert_eq!(parsed.raw_ctrl_extra, original);
+        assert_eq!(report.section_def_master_page_tail_materialized, 0);
     }
 
     #[test]
