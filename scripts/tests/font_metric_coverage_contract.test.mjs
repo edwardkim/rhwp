@@ -72,6 +72,13 @@ test('W3 contract has seven exclusive categories and disjoint reuse/delta fields
     aggregateRowBudget: true,
     outputByteBudget: true,
     corpusWorkerIsolation: 'required',
+    workerProcessPerDocument: true,
+    parentWallTimeout: true,
+    osAddressSpaceLimit: true,
+    processGroupTermination: true,
+    supervisorOutputByteBudget: true,
+    deidentifiedFailureEnvelope: true,
+    workerFailureRecovery: true,
   });
 });
 

@@ -132,7 +132,14 @@
     "nestingDepthBudget": true,
     "aggregateRowBudget": true,
     "outputByteBudget": true,
-    "corpusWorkerIsolation": "required"
+    "corpusWorkerIsolation": "required",
+    "workerProcessPerDocument": true,
+    "parentWallTimeout": true,
+    "osAddressSpaceLimit": true,
+    "processGroupTermination": true,
+    "supervisorOutputByteBudget": true,
+    "deidentifiedFailureEnvelope": true,
+    "workerFailureRecovery": true
   },
   "reusedPocFields": [
     "alignment",

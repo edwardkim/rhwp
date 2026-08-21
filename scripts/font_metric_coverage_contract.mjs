@@ -200,7 +200,14 @@ export function validateCoverageContract(contract) {
       || resource.nestingDepthBudget !== true
       || resource.aggregateRowBudget !== true
       || resource.outputByteBudget !== true
-      || resource.corpusWorkerIsolation !== 'required') {
+      || resource.corpusWorkerIsolation !== 'required'
+      || resource.workerProcessPerDocument !== true
+      || resource.parentWallTimeout !== true
+      || resource.osAddressSpaceLimit !== true
+      || resource.processGroupTermination !== true
+      || resource.supervisorOutputByteBudget !== true
+      || resource.deidentifiedFailureEnvelope !== true
+      || resource.workerFailureRecovery !== true) {
     errors.push('resourcePolicy must fail closed with bounded work, rows, output and isolation');
   }
 

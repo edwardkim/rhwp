@@ -747,11 +747,8 @@ fn analyze_paragraph(
                     })
                     .map(|(relation, evidence)| (Some(relation), Some(evidence)))
                     .unwrap_or((None, None));
-                let classification = classify_decision(
-                    &decision,
-                    relation_type.as_deref(),
-                    relation_evidence_status.as_deref(),
-                )?;
+                let classification =
+                    classify_decision(&decision, relation_type, relation_evidence_status)?;
                 let category = match classification {
                     CoverageClassification::Category(category) => {
                         *stats
