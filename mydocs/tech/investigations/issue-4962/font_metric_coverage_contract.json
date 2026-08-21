@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-metric-coverage-contract",
+  "issue": 4962,
+  "decisionInputs": {
+    "matchKinds": [
+      "boldOnly",
+      "exact",
+      "nameFirst",
+      "none"
+    ],
+    "characterMatches": [
+      "hit",
+      "miss",
+      "notApplicable"
+    ]
+  },
+  "categories": [
+    {
+      "id": "measured-overlay",
+      "priority": 1
+    },
+    {
+      "id": "identity-alias-hit",
+      "priority": 2
+    },
+    {
+      "id": "metric-surrogate",
+      "priority": 3
+    },
+    {
+      "id": "exact-hit",
+      "priority": 4
+    },
+    {
+      "id": "char-miss",
+      "priority": 5
+    },
+    {
+      "id": "face-miss",
+      "priority": 6
+    },
+    {
+      "id": "heuristic",
+      "priority": 7
+    }
+  ],
+  "widthSources": {
+    "measuredOverlay": [
+      "kopubTable",
+      "metricHalfwidthPunctuationOverlay",
+      "metricNarrowPunctuationOverlay",
+      "metricSpaceOverlay"
+    ],
+    "metricHit": [
+      "embeddedMetric",
+      "metricHalfSpace"
+    ],
+    "heuristicFallback": [
+      "heuristicFullwidth",
+      "heuristicHalfwidth",
+      "heuristicNarrow"
+    ],
+    "policyHeuristic": [
+      "areaDotFallback"
+    ],
+    "notApplicable": [
+      "clusterContinuation",
+      "figureSpace",
+      "hwpPuaFiller",
+      "inlineObjectPlaceholder",
+      "tabAdvance"
+    ],
+    "internalOnly": [
+      "metricCharacterMiss",
+      "metricMiss"
+    ]
+  },
+  "provenance": {
+    "identityAlias": {
+      "relationType": "identity-alias",
+      "verifiedEvidenceStatuses": [
+        "verified-by-bytes"
+      ]
+    },
+    "metricSurrogate": {
+      "relationType": "metric-surrogate"
+    },
+    "measuredOverlay": {
+      "relationType": "measured-overlay"
+    }
+  },
+  "denominators": {
+    "layout": "layoutCharacters = coverageCharacters + notApplicableCharacters + excludedCharacters",
+    "coverage": "coverageCharacters = sum(categories)",
+    "join": "layoutCharacters = joined + layoutOnly + excluded",
+    "documents": "attempted = success + sum(failures)",
+    "backend": "requested = complete + unsupported + notObserved + failed"
+  },
+  "collectorRequirements": {
+    "traversal": "streaming",
+    "pageCharacterLimit": null,
+    "rawRecordsPersisted": false,
+    "longPageTruncation": "forbidden",
+    "sourceJoinStates": [
+      "excluded",
+      "joined",
+      "layoutOnly"
+    ],
+    "documentFailureStates": [
+      "drm",
+      "empty",
+      "encrypted",
+      "parser",
+      "unsupported"
+    ],
+    "backendStates": [
+      "complete",
+      "failed",
+      "notObserved",
+      "unsupported"
+    ]
+  },
+  "reusedPocFields": [
+    "alignment",
+    "bold",
+    "charCount",
+    "context",
+    "documentCount",
+    "font",
+    "format",
+    "italic",
+    "kerning",
+    "language",
+    "paragraphCount",
+    "ratio",
+    "runCount",
+    "spacing",
+    "storedLineSeg"
+  ],
+  "deltaFields": [
+    "altType",
+    "backendStatus",
+    "characterMatch",
+    "coverageCategory",
+    "identityRelation",
+    "layoutNameResolution",
+    "matchKind",
+    "metricEntry",
+    "sourceJoinStatus",
+    "substFont",
+    "widthSource"
+  ],
+  "privacy": {
+    "forbiddenKeys": [
+      "absolutePath",
+      "blake3",
+      "character",
+      "codePoint",
+      "documentHash",
+      "fileName",
+      "filename",
+      "inputRoot",
+      "path",
+      "rawTrace",
+      "records",
+      "riskDocuments",
+      "source"
+    ],
+    "forbiddenStringPatterns": [
+      "absoluteHomePath",
+      "accessToken",
+      "errorStack"
+    ]
+  },
+  "existingPoc": {
+    "localArtifact": "output/poc/font-layout-habits/summary-10k-v2.json",
+    "localFormatArtifacts": {
+      "hwp": "output/poc/font-layout-habits/summary-hwp-v2.json",
+      "hwpx": "output/poc/font-layout-habits/summary-hwpx-v2.json"
+    },
+    "generatorCommit": "631287d4708f144011162179d61f8272cf072ff6",
+    "outputRepositoryHead": "44125461187c158073daf5b6b317b08042e7332a",
+    "projectionSha256": "423d0116143a74e336dd4e17fb5bb2aed48f0f5876b898e6afed1bd3e982e691",
+    "corpus": {
+      "discovered": 10000,
+      "attempted": 10000,
+      "hwp": 6582,
+      "hwpx": 3418,
+      "success": 9948,
+      "failure": 52
+    },
+    "totals": {
+      "documents": 9948,
+      "paragraphs": 3776306,
+      "chars": 54938759,
+      "fontCount": 1414,
+      "usageRowCount": 57395,
+      "riskDocumentCount": 200,
+      "metricMappedChars": 50085082,
+      "metricUnmappedChars": 4853677
+    }
+  },
+  "w1Baseline": {
+    "sourceCommit": "795e7b5fac24cfef79017e9120516570851a03b2",
+    "boundaryCount": 30,
+    "candidateCount": 1352,
+    "ledgerRuleCount": 1507,
+    "identityAliasRuleCount": 0,
+    "metricSurrogateRuleCount": 24,
+    "measuredOverlayRuleCount": 1,
+    "metricEntryCount": 600
+  }
+}

@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/issue-4962/font_metric_coverage_contract.schema.json",
+  "title": "rhwp Font Metric Coverage Contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "issue",
+    "decisionInputs",
+    "categories",
+    "widthSources",
+    "provenance",
+    "denominators",
+    "collectorRequirements",
+    "reusedPocFields",
+    "deltaFields",
+    "privacy",
+    "existingPoc",
+    "w1Baseline"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "kind": { "const": "font-metric-coverage-contract" },
+    "issue": { "const": 4962 },
+    "decisionInputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["matchKinds", "characterMatches"],
+      "properties": {
+        "matchKinds": { "$ref": "#/$defs/stringSet" },
+        "characterMatches": { "$ref": "#/$defs/stringSet" }
+      }
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": { "$ref": "#/$defs/category" }
+    },
+    "widthSources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "measuredOverlay",
+        "metricHit",
+        "heuristicFallback",
+        "policyHeuristic",
+        "notApplicable",
+        "internalOnly"
+      ],
+      "properties": {
+        "measuredOverlay": { "$ref": "#/$defs/stringSet" },
+        "metricHit": { "$ref": "#/$defs/stringSet" },
+        "heuristicFallback": { "$ref": "#/$defs/stringSet" },
+        "policyHeuristic": { "$ref": "#/$defs/stringSet" },
+        "notApplicable": { "$ref": "#/$defs/stringSet" },
+        "internalOnly": { "$ref": "#/$defs/stringSet" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identityAlias", "metricSurrogate", "measuredOverlay"],
+      "properties": {
+        "identityAlias": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["relationType", "verifiedEvidenceStatuses"],
+          "properties": {
+            "relationType": { "const": "identity-alias" },
+            "verifiedEvidenceStatuses": { "$ref": "#/$defs/stringSet" }
+          }
+        },
+        "metricSurrogate": {
+          "$ref": "#/$defs/relation"
+        },
+        "measuredOverlay": {
+          "$ref": "#/$defs/relation"
+        }
+      }
+    },
+    "denominators": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layout", "coverage", "join", "documents", "backend"],
+      "properties": {
+        "layout": { "$ref": "#/$defs/nonEmptyString" },
+        "coverage": { "$ref": "#/$defs/nonEmptyString" },
+        "join": { "$ref": "#/$defs/nonEmptyString" },
+        "documents": { "$ref": "#/$defs/nonEmptyString" },
+        "backend": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "collectorRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "traversal",
+        "pageCharacterLimit",
+        "rawRecordsPersisted",
+        "longPageTruncation",
+        "sourceJoinStates",
+        "documentFailureStates",
+        "backendStates"
+      ],
+      "properties": {
+        "traversal": { "const": "streaming" },
+        "pageCharacterLimit": { "type": "null" },
+        "rawRecordsPersisted": { "const": false },
+        "longPageTruncation": { "const": "forbidden" },
+        "sourceJoinStates": { "$ref": "#/$defs/stringSet" },
+        "documentFailureStates": { "$ref": "#/$defs/stringSet" },
+        "backendStates": { "$ref": "#/$defs/stringSet" }
+      }
+    },
+    "reusedPocFields": { "$ref": "#/$defs/stringSet" },
+    "deltaFields": { "$ref": "#/$defs/stringSet" },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["forbiddenKeys", "forbiddenStringPatterns"],
+      "properties": {
+        "forbiddenKeys": { "$ref": "#/$defs/stringSet" },
+        "forbiddenStringPatterns": { "$ref": "#/$defs/stringSet" }
+      }
+    },
+    "existingPoc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "localArtifact",
+        "localFormatArtifacts",
+        "generatorCommit",
+        "outputRepositoryHead",
+        "projectionSha256",
+        "corpus",
+        "totals"
+      ],
+      "properties": {
+        "localArtifact": { "$ref": "#/$defs/repositoryPath" },
+        "localFormatArtifacts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hwp", "hwpx"],
+          "properties": {
+            "hwp": { "$ref": "#/$defs/repositoryPath" },
+            "hwpx": { "$ref": "#/$defs/repositoryPath" }
+          }
+        },
+        "generatorCommit": { "$ref": "#/$defs/gitSha" },
+        "outputRepositoryHead": { "$ref": "#/$defs/gitSha" },
+        "projectionSha256": { "$ref": "#/$defs/sha256" },
+        "corpus": { "$ref": "#/$defs/pocCorpus" },
+        "totals": { "$ref": "#/$defs/pocTotals" }
+      }
+    },
+    "w1Baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceCommit",
+        "boundaryCount",
+        "candidateCount",
+        "ledgerRuleCount",
+        "identityAliasRuleCount",
+        "metricSurrogateRuleCount",
+        "measuredOverlayRuleCount",
+        "metricEntryCount"
+      ],
+      "properties": {
+        "sourceCommit": { "$ref": "#/$defs/gitSha" },
+        "boundaryCount": { "$ref": "#/$defs/count" },
+        "candidateCount": { "$ref": "#/$defs/count" },
+        "ledgerRuleCount": { "$ref": "#/$defs/count" },
+        "identityAliasRuleCount": { "$ref": "#/$defs/count" },
+        "metricSurrogateRuleCount": { "$ref": "#/$defs/count" },
+        "measuredOverlayRuleCount": { "$ref": "#/$defs/count" },
+        "metricEntryCount": { "$ref": "#/$defs/count" }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringSet": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/nonEmptyString" }
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "repositoryPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "category": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "priority"],
+      "properties": {
+        "id": {
+          "enum": [
+            "measured-overlay",
+            "identity-alias-hit",
+            "metric-surrogate",
+            "exact-hit",
+            "char-miss",
+            "face-miss",
+            "heuristic"
+          ]
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7
+        }
+      }
+    },
+    "relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relationType"],
+      "properties": {
+        "relationType": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "pocCorpus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["discovered", "attempted", "hwp", "hwpx", "success", "failure"],
+      "properties": {
+        "discovered": { "$ref": "#/$defs/count" },
+        "attempted": { "$ref": "#/$defs/count" },
+        "hwp": { "$ref": "#/$defs/count" },
+        "hwpx": { "$ref": "#/$defs/count" },
+        "success": { "$ref": "#/$defs/count" },
+        "failure": { "$ref": "#/$defs/count" }
+      }
+    },
+    "pocTotals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "documents",
+        "paragraphs",
+        "chars",
+        "fontCount",
+        "usageRowCount",
+        "riskDocumentCount",
+        "metricMappedChars",
+        "metricUnmappedChars"
+      ],
+      "properties": {
+        "documents": { "$ref": "#/$defs/count" },
+        "paragraphs": { "$ref": "#/$defs/count" },
+        "chars": { "$ref": "#/$defs/count" },
+        "fontCount": { "$ref": "#/$defs/count" },
+        "usageRowCount": { "$ref": "#/$defs/count" },
+        "riskDocumentCount": { "$ref": "#/$defs/count" },
+        "metricMappedChars": { "$ref": "#/$defs/count" },
+        "metricUnmappedChars": { "$ref": "#/$defs/count" }
+      }
+    }
+  }
+}
