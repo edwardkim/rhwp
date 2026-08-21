@@ -17,6 +17,9 @@ last_verified: 2026-08-21
 | --- | --- |
 | `font_metric_coverage_contract.schema.json` | W3 분류·분모·privacy·기존 자산 기준선 schema |
 | `font_metric_coverage_contract.json` | 7개 분류 우선순위, W2 입력 inventory와 POC/W1 동결값 |
+| `font_metric_coverage_checkpoint_policy.json` | crash-consistent journal·state·identity·storage 정책 |
+| `font_metric_coverage_finalizer_policy.json` | format 보존 usage key와 corpus 병합·hash 정책 |
+| `font_metric_coverage_full_manifest_policy.json` | local-only 10k 발견·BLAKE3·저장공간 preflight 정책 |
 | `scripts/font_metric_coverage_contract.mjs` | 분류·대사·hash·privacy·POC/W1 drift 검사 |
 | `scripts/tests/font_metric_coverage_contract.test.mjs` | 정상·변이·누락을 다루는 Stage 1 계약 test |
 
@@ -78,3 +81,28 @@ node scripts/font_metric_coverage_contract.mjs check \
 
 이 검사는 원문이나 risk document를 출력하지 않는다. corpus·totals·schema key·문자 합과 비식별
 projection hash, HWP+HWPX 가산성만 판정한다.
+
+Stage 4 실행 준비에는 developer-only checkpoint runner·finalizer와 full manifest builder를 사용한다.
+manifest와 checkpoint는 반드시 gitignored `output/` 아래에 두며 Issue·PR·CI artifact로 게시하지 않는다.
+
+```bash
+node scripts/font_metric_coverage_full_manifest.mjs \
+  --corpus-root <private-corpus-root> \
+  --manifest output/poc/font-metric-coverage/full-manifest-stage4-a-v1.json \
+  --preflight output/poc/font-metric-coverage/full-manifest-preflight-stage4-a-v1.json \
+  --source-head <full-commit>
+
+node scripts/font_metric_coverage_checkpoint_runner.mjs \
+  --manifest output/poc/font-metric-coverage/full-manifest-stage4-a-v1.json \
+  --checkpoint-dir output/poc/font-metric-coverage/checkpoint-stage4-r1 \
+  --worker target/debug/examples/font_metric_coverage_worker \
+  --source-head <full-commit>
+
+node scripts/font_metric_coverage_checkpoint_finalizer.mjs \
+  --checkpoint-dir output/poc/font-metric-coverage/checkpoint-stage4-r1 \
+  --output output/poc/font-metric-coverage/final-stage4-r1.json
+```
+
+full manifest는 content 중복을 제거하지 않는다. 같은 source의 중복만 오류이며 동일 bytes가 여러 문서로
+존재하는 경우 기존 corpus 빈도를 보존한다. finalizer는 문서별 usage row에 format을 주입해 HWP/HWPX
+축을 유지하고, path·filename·개별 BLAKE3 없이 최종 aggregate와 canonical SHA-256을 만든다.
