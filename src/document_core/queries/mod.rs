@@ -10,6 +10,7 @@ pub mod explore;
 // 읽기 전용 질의 모듈이며 `structure`·`rendering` 과 같은 가시성이다.
 pub mod field_query;
 mod font_decision;
+mod font_metric_coverage;
 mod form_query;
 pub mod hwpctrl_sets;
 pub mod rendering;

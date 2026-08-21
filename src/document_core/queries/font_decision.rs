@@ -49,7 +49,7 @@ fn collect_runs<'a>(node: &'a RenderNode, runs: &mut Vec<&'a TextRunNode>) {
     }
 }
 
-fn run_language_slots(
+pub(super) fn run_language_slots(
     chars: &[char],
     neutral_only_fallback: Option<usize>,
 ) -> Vec<(usize, Option<usize>)> {
@@ -198,9 +198,17 @@ fn subst_font_provenance(
     .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))
 }
 
+pub(super) fn metric_alias_relation(source: &str, target: &str) -> (&'static str, &'static str) {
+    if source == "HY각헤드라인M" || target == "Pretendard" || target == "Noto Serif KR" {
+        ("metric-surrogate", "historical")
+    } else {
+        ("unknown", "unknown")
+    }
+}
+
 fn metric_alias_provenance(source: &str, target: &str) -> Result<ProvenanceDecision, HwpError> {
-    let is_surrogate =
-        source == "HY각헤드라인M" || target == "Pretendard" || target == "Noto Serif KR";
+    let (relation_type, evidence_status) = metric_alias_relation(source, target);
+    let is_surrogate = relation_type == "metric-surrogate";
     linked_provenance(
         json!({
             "sourceBoundaryId": "rust-metric.metric-alias",
@@ -211,16 +219,8 @@ fn metric_alias_provenance(source: &str, target: &str) -> Result<ProvenanceDecis
             "order": null,
         }),
         "rust-metric",
-        if is_surrogate {
-            "metric-surrogate"
-        } else {
-            "unknown"
-        },
-        if is_surrogate {
-            "historical"
-        } else {
-            "unknown"
-        },
+        relation_type,
+        evidence_status,
         if is_surrogate {
             vec!["Alias selection does not prove glyph-outline identity.".into()]
         } else {
