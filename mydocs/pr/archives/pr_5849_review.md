@@ -2,9 +2,10 @@
 
 ## 판정
 
-**수용 예정**. 원 PR head `1942ad24267b883b11b5c5d75387102f8ecb4e6c`를 최신
+**수용**. 원 PR head `1942ad24267b883b11b5c5d75387102f8ecb4e6c`를 최신
 `upstream/devel` (`1b8c39b6c32baf00574564016bd9d9f7d1d88198`) 위 통합 후보에 반영했다.
-통합 후보 GitHub CI가 최종 merge 조건이다.
+통합 후보 #5853의 GitHub CI와 CodeQL이 모두 성공했다. trailing docs-only commit의 fast-pass
+확인 뒤 admin merge를 실행한다.
 
 ## 변경과 검토
 
@@ -52,3 +53,9 @@
 
 관련 이슈: #5715, #5798, #5821, #5822, #5828. 통합 PR CI 성공과 실제 merge SHA 확인 뒤
 각 issue/원 PR comment 및 close를 처리한다.
+
+## 통합 CI 결과
+
+통합 PR #5853 code head `92fc6e87f1fe146004b971d7b5bef16a3eb2f7a8`에서 Build & Test,
+Lint, Native Skia, Canvas visual diff, 모든 test archive shard, CodeQL(Rust 14m09s)을 포함한
+필수 검사가 성공했다. WASM Build와 Frontend unit gates는 이 변경 범위에서 skip으로 판정됐다.
