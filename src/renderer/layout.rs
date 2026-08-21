@@ -3316,6 +3316,34 @@ impl LayoutEngine {
                     );
                 }
             } else if has_shape {
+                // [#5802] 글자처럼 취급(TAC) 도형은 paragraph_layout 이 inline 좌표를
+                // 등록해야 layout_shape 가 그린다 — 미등록 TAC 는 #476 가드가 조용히
+                // 스킵한다. 머리말/꼬리말 문단은 종전에 layout_shape 만 불러, 쪽번호
+                // 묶음처럼 TAC 도형으로 저장된 내용이 통째로 소실됐다(611쪽 보고서
+                // 꼬리말 전량). 본문 등록 키와 충돌하지 않게 구역 인덱스는 HF 전용
+                // 센티널(usize::MAX)을 등록·조회 양쪽에 쓴다.
+                let has_tac_shape = para
+                    .controls
+                    .iter()
+                    .any(|c| matches!(c, Control::Shape(s) if s.common().treat_as_char));
+                let hf_shape_section = usize::MAX;
+                if has_tac_shape {
+                    let comp = self.compose_header_footer_paragraph(para, page_number);
+                    self.layout_paragraph(
+                        tree,
+                        area_node,
+                        para,
+                        Some(&comp),
+                        styles,
+                        area,
+                        y_offset,
+                        hf_shape_section,
+                        i,
+                        None,
+                        Some(bin_data_content),
+                        None,
+                    );
+                }
                 // Shape 컨트롤 렌더링 (머리말/꼬리말 내 글상자 등)
                 for (ci, ctrl) in para.controls.iter().enumerate() {
                     if let Control::Shape(_) = ctrl {
@@ -3325,7 +3353,7 @@ impl LayoutEngine {
                             hf_paragraphs,
                             i,
                             ci,
-                            0, // section_index
+                            if has_tac_shape { hf_shape_section } else { 0 },
                             styles,
                             area,
                             body_area,
@@ -3338,8 +3366,8 @@ impl LayoutEngine {
                         );
                     }
                 }
-                // 텍스트도 함께 렌더링
-                if !para.text.is_empty() {
+                // 텍스트도 함께 렌더링 (TAC 도형 경로는 위에서 이미 문단을 레이아웃함)
+                if !has_tac_shape && !para.text.is_empty() {
                     let comp = self.compose_header_footer_paragraph(para, page_number);
                     y_offset = self.layout_paragraph(
                         tree,

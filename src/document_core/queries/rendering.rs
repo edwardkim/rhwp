@@ -4567,6 +4567,16 @@ impl DocumentCore {
                 }
             }
 
+            // [#5802] 이 구역 정의가 반영되기 **전**의 carry 스냅샷 — 아래 재선택
+            // 블록의 슬롯(종류×홀짝) 단위 상속 폴백이 쓴다. 현재 구역 정의까지 섞인
+            // carry 로 폴백하면 정의 문단 앞 쪽들이 자기 구역의 (나중) 정의를 미리
+            // 쓰게 되므로, 앞 구역까지의 상태를 따로 보관한다.
+            let carry_hf_before_section = (
+                carry_header_odd.clone(),
+                carry_header_even.clone(),
+                carry_footer_odd.clone(),
+                carry_footer_even.clone(),
+            );
             // 머리말/꼬리말 carry 업데이트:
             // 페이지 active_header뿐 아니라 구역에 정의된 머리말 컨트롤도 carry에 반영
             // (짝수 페이지가 없어도 Even 머리말이 다음 구역에 상속되어야 함)
@@ -4808,11 +4818,32 @@ impl DocumentCore {
                     }
                     let (header, footer) = active.active(page.page_number);
                     // 이 구역에 없는 종류는 건드리지 않는다 — 앞 구역에서 상속받은 것이 살아 있다.
+                    //
+                    // [#5802] 종류는 있어도 **슬롯(홀짝)** 이 비면 앞 구역 carry 의 같은
+                    // 홀짝 슬롯을 상속한다. 종전에는 종류 단위로 통째 덮어써, 홀수
+                    // 머리말만 정의한 구역의 짝수 쪽(611쪽 보고서 ~300쪽)이 앞 구역의
+                    // 짝수 정의를 잃고 빈 머리말이 됐다. 폴백은 홀짝 교차 없이 같은
+                    // 슬롯만 본다 — 홀수 전용 정의가 짝수 쪽에 번지지 않게.
+                    let is_odd = page.page_number % 2 == 1;
+                    let (prev_h_odd, prev_h_even, prev_f_odd, prev_f_even) =
+                        &carry_hf_before_section;
                     if has_header {
-                        page.active_header = header;
+                        page.active_header = header.or_else(|| {
+                            if is_odd {
+                                prev_h_odd.clone()
+                            } else {
+                                prev_h_even.clone()
+                            }
+                        });
                     }
                     if has_footer {
-                        page.active_footer = footer;
+                        page.active_footer = footer.or_else(|| {
+                            if is_odd {
+                                prev_f_odd.clone()
+                            } else {
+                                prev_f_even.clone()
+                            }
+                        });
                     }
                 }
             }
