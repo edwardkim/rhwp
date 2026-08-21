@@ -2927,75 +2927,23 @@ impl Renderer for SvgRenderer {
         let dot_radius = font_size * super::render_tree::MIDDLE_DOT_RADIUS_EM;
         let dot_cy_offset = -font_size * super::render_tree::MIDDLE_DOT_CY_OFFSET_EM;
 
-        // Task #352: 3+ 연속 '-' 시퀀스(빈칸/leader) 를 단일 가로선으로 대체.
-        // Stage 2 가 advance 를 좁히면 글리프 폭이 advance 를 초과해 시각상
-        // 겹치므로 글리프 출력은 스킵하고 라인으로 통합. 가운데점 패턴과 동일.
-        // 단, 같은 run 에 underline 이 설정된 경우 underline 이 빈칸의 시각
-        // representation 을 담당하므로 dash leader 라인은 생략 (이중선 방지).
-        let suppress_dash_leader_line = !matches!(style.underline, UnderlineType::None);
-        let dash_run_groups: Vec<(usize, usize)> = {
-            let mut groups = Vec::new();
-            let mut run_start: Option<usize> = None;
-            for (idx, (_, cs)) in clusters.iter().enumerate() {
-                if cs == "-" {
-                    if run_start.is_none() {
-                        run_start = Some(idx);
-                    }
-                } else if let Some(s) = run_start.take() {
-                    if idx - s >= 3 {
-                        groups.push((s, idx));
-                    }
-                }
-            }
-            if let Some(s) = run_start {
-                if clusters.len() - s >= 3 {
-                    groups.push((s, clusters.len()));
-                }
-            }
-            groups
-        };
-        let dash_line_y_offset = -font_size * 0.32; // baseline 기준 dash 중앙선 근사
-        let dash_line_stroke_w = (font_size * 0.07).max(0.5);
-        let cluster_in_dash_run = |cluster_idx: usize| -> Option<(f64, f64)> {
-            // 첫 cluster 위치라면 (line_x1, line_x2) 반환, 외 None
-            for &(s, e) in &dash_run_groups {
-                if cluster_idx == s {
-                    let start_char_idx = clusters[s].0;
-                    let last = &clusters[e - 1];
-                    let end_char_idx = last.0 + last.1.chars().count();
-                    let x1 = char_positions.get(start_char_idx).copied().unwrap_or(0.0);
-                    let x2 = char_positions
-                        .get(end_char_idx)
-                        .copied()
-                        .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0));
-                    return Some((x1, x2));
-                }
-                if cluster_idx > s && cluster_idx < e {
-                    // run 내부 dash: 라인은 한 번만 그리고 글리프 출력은 모두 스킵
-                    return Some((f64::NAN, f64::NAN));
-                }
-            }
-            None
-        };
+        // [#5804] 3+ 연속 '-' 를 단일 가로선으로 대체하던 처리(Task #352)를 걷어냈다.
+        // 한글 2022 정본은 하이픈을 **낱글자 글리프**로 그린다 — 런마다 글자당
+        // advance 가 달라지고 끝점이 오른쪽 여백에 수렴하는 탄력 leader 다.
+        // 그 분배는 이미 레이아웃이 만든다(`compute_line_extra_spacing` 의
+        // `extra_dash_sp` → `TextStyle::extra_dash_advance`)이므로 `char_positions`
+        // 는 정본과 같은 간격을 담고 있고, 글리프를 그대로 출력하면 된다.
+        //
+        // 선으로 바꾸면 법령 개정문·신구조문대비표에서 "현행과 같음"을 뜻하는
+        // 하이픈 표기가 밑줄로 보여 읽는 사람이 생략인지 빈칸인지 구분할 수 없다.
 
         // 그림자 렌더링 (원본 아래에 오프셋된 그림자색 텍스트)
         if style.shadow_type > 0 {
             let shadow_color = color_to_svg(style.shadow_color);
             let dx = style.shadow_offset_x;
             let dy = style.shadow_offset_y;
-            for (cluster_idx, (char_idx, cluster_str)) in clusters.iter().enumerate() {
+            for (char_idx, cluster_str) in clusters.iter() {
                 if cluster_str == " " || cluster_str == "\t" {
-                    continue;
-                }
-                // Task #352: dash leader 시퀀스는 글리프 스킵, 필요 시 라인 1 회
-                if let Some((x1_rel, x2_rel)) = cluster_in_dash_run(cluster_idx) {
-                    if x1_rel.is_finite() && !suppress_dash_leader_line {
-                        let line_y = y + dash_line_y_offset + dy;
-                        self.output.push_str(&format!(
-                            "<line x1=\"{:.4}\" y1=\"{:.4}\" x2=\"{:.4}\" y2=\"{:.4}\" stroke=\"{}\" stroke-width=\"{:.4}\"/>\n",
-                            x + x1_rel + dx, line_y, x + x2_rel + dx, line_y, shadow_color, dash_line_stroke_w,
-                        ));
-                    }
                     continue;
                 }
                 if is_middle_dot(cluster_str) {
@@ -3042,19 +2990,8 @@ impl Renderer for SvgRenderer {
         }
 
         // 원본 텍스트 렌더링
-        for (cluster_idx, (char_idx, cluster_str)) in clusters.iter().enumerate() {
+        for (char_idx, cluster_str) in clusters.iter() {
             if cluster_str == " " || cluster_str == "\t" {
-                continue;
-            }
-            // Task #352: dash leader 시퀀스는 글리프 스킵, 필요 시 라인 1 회
-            if let Some((x1_rel, x2_rel)) = cluster_in_dash_run(cluster_idx) {
-                if x1_rel.is_finite() && !suppress_dash_leader_line {
-                    let line_y = y + dash_line_y_offset;
-                    self.output.push_str(&format!(
-                        "<line x1=\"{:.4}\" y1=\"{:.4}\" x2=\"{:.4}\" y2=\"{:.4}\" stroke=\"{}\" stroke-width=\"{:.4}\"/>\n",
-                        x + x1_rel, line_y, x + x2_rel, line_y, color, dash_line_stroke_w,
-                    ));
-                }
                 continue;
             }
             if is_middle_dot(cluster_str) {
