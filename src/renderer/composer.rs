@@ -2806,6 +2806,28 @@ pub fn char_overlap_size_ratio(effective_border: u8, inner_char_size: i8) -> f64
     }
 }
 
+/// 글자겹침(CharOverlap) 한 글자의 **표시 문자열**을 정한다.
+///
+/// `border_drawn` 은 그 겹침을 그릴 때 렌더러가 **실제로 원/사각 테두리를 따로 그리는지**다.
+///
+/// - 테두리를 그리는 경우: 원문자 `①`~`⑳`(U+2460~U+2473)는 안쪽 숫자로 풀어 쓴다.
+///   테두리를 그려 놓고 원문자 글리프까지 찍으면 동그라미가 이중으로 나온다.
+/// - 테두리를 안 그리는 경우(`circleType="CHAR"` → `border_type=0`): `composeText` 를
+///   **그대로** 그린다. 이때 숫자로 풀면 그릴 동그라미가 아무 데도 없어 `①` 이 맨 `1` 로
+///   나간다 (#5790).
+///
+/// 한컴은 `circleType="CHAR"` + `composeText="①"` 을 전각 한 칸에 `①` 한 글자로 찍는다.
+pub fn char_overlap_display_text(ch: char, border_drawn: bool) -> String {
+    let cp = ch as u32;
+    if border_drawn && (0x2460..=0x2473).contains(&cp) {
+        return (cp - 0x2460 + 1).to_string();
+    }
+    if let Some(display) = pua_to_display_text(ch) {
+        return display;
+    }
+    ch.to_string()
+}
+
 fn pua_enclosed_border_type(ch: char) -> Option<u8> {
     let cp = ch as u32;
     // U+F02B1~F02C4 (①~⑳): map_pua_bullet_char 에서 표준 원문자로 매핑 — CharOverlap 제외
