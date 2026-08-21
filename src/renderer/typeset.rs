@@ -4914,6 +4914,75 @@ impl FormattedParagraph {
     }
 }
 
+/// [#5801] 저장 사다리가 이 문단의 **문단 위 간격을 실제로 담고 있는가**.
+///
+/// `#2279 ①` 의 spacing 트림은 "저장 ladder 가 spacing 을 이미 반영한다"는 전제 위에 선다.
+/// 그 게이트(`has_authoritative_seg`)는 lineseg 가 합성인지만 본다. 그런데 **합성이 아닌데도
+/// 문단 위 간격을 안 담은** 사다리가 있다 — `156677324` 는 문단 간 delta 와 문단 내 줄
+/// advance 가 똑같이 2240 HU 인데, 한글은 그 자리에 50.23px(≈ 줄간격 29.86 + 문단간격 20.4)
+/// 를 그린다(한글 PDF 실측, rhwp 렌더 49.87px 과 일치).
+///
+/// 그런 사다리에 트림을 적용하면 typeset 이 쪽 채움을 문단마다 `sb` 만큼 짧게 세어, 1쪽 끝에서
+/// 99px 짜리 착시가 생긴다(트림 합계 109.9px). 쪽이 다 찼는데 남았다고 보고 다음 문단을
+/// 현재 쪽에 얹는다(#5755).
+///
+/// 판별은 데이터 안에 있다 — 앞 문단 마지막 줄 아래에서 이 문단 첫 줄까지의 **저장 간격**이
+/// `줄 간격 + 문단 위 간격` 을 담고 있으면 권위 사다리, 줄 간격뿐이면 아니다.
+fn stored_ladder_encodes_spacing_before(
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    spacing_before_px: f64,
+    dpi: f64,
+) -> bool {
+    if spacing_before_px <= 0.5 {
+        return true; // 담을 간격이 없다 — 판별 대상 아님.
+    }
+    let Some(para) = paragraphs.get(para_idx) else {
+        return true;
+    };
+    let Some(first) = para.line_segs.first() else {
+        return true;
+    };
+    let Some(prev) = para_idx
+        .checked_sub(1)
+        .and_then(|idx| paragraphs.get(idx))
+        .filter(|prev| prev.controls.is_empty())
+    else {
+        return true; // 앞이 없거나 컨트롤 문단 — 사다리 비교가 성립하지 않는다.
+    };
+    let Some(prev_last) = prev.line_segs.last() else {
+        return true;
+    };
+    // 합성(vpos 전부 0) 사다리는 이 판별의 대상이 아니다 — 기존 게이트가 처리한다.
+    if first.vertical_pos == 0 || prev_last.vertical_pos == 0 {
+        return true;
+    }
+    let stored_gap = first
+        .vertical_pos
+        .saturating_sub(prev_last.vertical_pos.saturating_add(prev_last.line_height));
+    if stored_gap <= 0 {
+        return true; // 쪽·단 경계 되감김 — 판별 불가.
+    }
+    // 비교 기준은 **같은 사다리 안의 줄 간 실제 delta** 다. 저장 `line_spacing` 필드를 쓰면
+    // 문단 경계에서 줄 간격을 흡수한 사다리를 오탐한다(2990099·3249937 에서 +3·+1쪽 회귀).
+    let intra_gap = stored_intra_line_gap(para).or_else(|| stored_intra_line_gap(prev));
+    let Some(intra_gap) = intra_gap else {
+        return true; // 한 줄짜리들뿐 — 비교 기준이 없다.
+    };
+    // 문단 경계 간격이 줄 간격과 같으면 사다리가 경계를 줄바꿈처럼 적은 것이다.
+    hwpunit_to_px(stored_gap, dpi) + 0.5 >= hwpunit_to_px(intra_gap, dpi) + spacing_before_px
+}
+
+/// [#5801] 같은 문단 안에서 저장 사다리가 적은 줄 사이 실제 간격(HWPUNIT).
+fn stored_intra_line_gap(para: &Paragraph) -> Option<i32> {
+    para.line_segs.windows(2).find_map(|w| {
+        let gap = w[1]
+            .vertical_pos
+            .saturating_sub(w[0].vertical_pos.saturating_add(w[0].line_height));
+        (gap >= 0 && w[0].vertical_pos != 0).then_some(gap)
+    })
+}
+
 /// [#2279 ①-3] spacing 트림의 복원 가능성 전방 판정.
 ///
 /// 트림은 다음 authoritative(비합성 lineseg) anchor 에서 vpos-snap 이 좌표를
@@ -16061,8 +16130,16 @@ impl TypesetEngine {
         });
         // HWP3-origin 변환본은 spacing_before 누적을 보존해야 dump-pages 요약과
         // 실제 한컴 줄 흐름이 유지된다(#1116).
-        let trim_spacing_before_for_flow =
-            !st.profile.hwp3_layout() && !para_near_rowbreak_table(paragraphs, para_idx);
+        let trim_spacing_before_for_flow = !st.profile.hwp3_layout()
+            && !para_near_rowbreak_table(paragraphs, para_idx)
+            // [#5801] 저장 사다리가 문단 위 간격을 안 담았으면 트림의 전제가 깨진다 —
+            // 트림하면 쪽 채움을 문단마다 sb 만큼 짧게 센다.
+            && stored_ladder_encodes_spacing_before(
+                paragraphs,
+                para_idx,
+                fmt.spacing_before,
+                self.dpi,
+            );
 
         // [#2279 OMIT-fit] spacing-누락 문서군에서 **저장 리셋 직전의 페이지말
         // 빈 문단**은 다음 쪽 상단 귀속이다 — 한글 fresh 는 누락 spacing 을
