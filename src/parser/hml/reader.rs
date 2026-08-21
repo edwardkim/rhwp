@@ -213,6 +213,9 @@ struct ReadState<'a> {
     body_modeled_children: usize,
     saw_head: bool,
     saw_body: bool,
+    /// [#5848] DOCTYPE 내부 서브셋에서 수용한 안전한 일반 엔티티(이름 → 확장값).
+    /// `parse_hml_internal_subset` 이 문자 참조만 담은 값으로 한정해 채운다.
+    internal_entities: std::collections::HashMap<String, String>,
     /// [#2743] `HmlLimits::max_resource_id` 사본 — 리소스 `Id` 상한.
     max_resource_id: usize,
 }
@@ -238,6 +241,7 @@ impl<'a> ReadState<'a> {
             body_modeled_children: 0,
             saw_head: false,
             saw_body: false,
+            internal_entities: std::collections::HashMap::new(),
             max_resource_id,
         }
     }
@@ -488,7 +492,10 @@ impl<'a> ReadState<'a> {
             return Err(HmlError::InvalidXml("multiple HWPML roots".to_string()));
         }
         let version = attribute(element, b"Version")?.unwrap_or_default();
-        if !matches!(version.as_str(), "2.9" | "2.91") {
+        // [#5848] HWPML 2.1(법제처 국가법령정보센터 배포본)은 요소 어휘가 2.91 과
+        // 사실상 같아 그대로 수용한다 — 08462: P/TEXT/CHAR/…/BINDATA 90종 태그가
+        // 2.91 픽스처와 동일. 그 밖의 버전은 종전대로 명시적으로 거절한다.
+        if !matches!(version.as_str(), "2.1" | "2.9" | "2.91") {
             return Err(HmlError::UnsupportedVersion(version));
         }
         self.source.version = version;
@@ -1425,7 +1432,11 @@ pub(crate) fn has_hwpml_root(xml: &str) -> bool {
                         .flatten()
                         .is_some_and(|version| !version.is_empty());
             }
-            Ok(Event::Decl(_) | Event::Comment(_) | Event::PI(_)) => {}
+            // [#5848] 법제처 배포 HWPML 은 루트 앞에 `<!DOCTYPE HWPML [...]>` 를
+            // 싣는다. 감지는 건너뛰고(정확한 포맷 식별), 수용 여부는 read_hml 의
+            // 내부 서브셋 검증이 판정한다 — 감지 실패 시 "알 수 없는 파일 형식"
+            // 으로 오도되던 것을 HWPML 오류 경로로 돌린다.
+            Ok(Event::Decl(_) | Event::Comment(_) | Event::PI(_) | Event::DocType(_)) => {}
             Ok(Event::Text(text)) if text.iter().all(|byte| byte.is_ascii_whitespace()) => {}
             Ok(Event::Eof) | Err(_) => return false,
             _ => return false,
@@ -1458,8 +1469,15 @@ pub(crate) fn read_hml(xml: &str, limits: &HmlLimits) -> Result<HmlSource, HmlEr
             Event::Text(text) => append_decoded_text(&mut state, &text, limits)?,
             Event::CData(text) => append_cdata(&mut state, &text, limits)?,
             Event::GeneralRef(reference) => append_reference(&mut state, &reference)?,
-            Event::DocType(_) => {
-                return Err(HmlError::InvalidXml("DTD is not allowed".to_string()))
+            Event::DocType(doctype) => {
+                // [#5848] 실물 HWPML(법제처 배포본)은 문자 참조만 담은 내부
+                // 엔티티(`<!ENTITY nbsp "&#160;">`) 하나를 싣는다. 외부
+                // 식별자(XXE)·파라미터 엔티티·중첩 참조(확장 폭발)는 종전대로
+                // 거절하고, 안전한 내부 서브셋만 수용한다.
+                let text = doctype
+                    .decode()
+                    .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
+                state.internal_entities = parse_hml_internal_subset(&text)?;
             }
             Event::Eof => break,
             _ => {}
@@ -1523,13 +1541,133 @@ fn append_reference(
         "amp" => "&",
         "quot" => "\"",
         "apos" => "'",
-        _ => {
+        other => {
+            // [#5848] DOCTYPE 내부 서브셋에서 수용한 안전한 엔티티를 해석한다.
+            if let Some(expanded) = state.internal_entities.get(other) {
+                let expanded = expanded.clone();
+                return state.append_text(&expanded);
+            }
             return Err(HmlError::InvalidXml(format!(
                 "entity &{name}; is not allowed"
-            )))
+            )));
         }
     };
     state.append_text(value)
+}
+
+/// [#5848] DOCTYPE 내부 서브셋의 안전 검증·수용.
+///
+/// 실물 HWPML(법제처 08462)이 쓰는 형태 — `HWPML [ <!ENTITY nbsp "&#160;"> ]` —
+/// 처럼 **문자 참조만 담은 일반 엔티티 선언**만 받는다. 나머지는 전부 거절:
+/// - `SYSTEM`/`PUBLIC` 외부 식별자 → XXE 차단
+/// - 파라미터 엔티티(`%`) → DTD 확장 차단
+/// - 엔티티 값 속 `&`(문자 참조 `&#…;` 제외) → billion-laughs 중첩 차단
+/// - 엔티티 16개·값 64자 상한, 선언 외 마크업 일절 불허
+fn parse_hml_internal_subset(
+    doctype: &str,
+) -> Result<std::collections::HashMap<String, String>, HmlError> {
+    const MAX_ENTITIES: usize = 16;
+    const MAX_VALUE_LEN: usize = 64;
+    let mut entities = std::collections::HashMap::new();
+    let text = doctype.trim();
+    let upper = text.to_ascii_uppercase();
+    if upper.contains("SYSTEM") || upper.contains("PUBLIC") {
+        return Err(HmlError::InvalidXml(
+            "DTD external identifier is not allowed".to_string(),
+        ));
+    }
+    if text.contains('%') {
+        return Err(HmlError::InvalidXml(
+            "DTD parameter entity is not allowed".to_string(),
+        ));
+    }
+    // 루트 이름(HWPML)과 선택적 내부 서브셋 `[...]` 만 허용한다.
+    let (root, subset) = match text.split_once('[') {
+        Some((root, rest)) => {
+            let Some(subset) = rest.strip_suffix(']').map(str::trim) else {
+                return Err(HmlError::InvalidXml("DTD is not allowed".to_string()));
+            };
+            (root.trim(), subset)
+        }
+        None => (text, ""),
+    };
+    if root != "HWPML" {
+        return Err(HmlError::InvalidXml("DTD is not allowed".to_string()));
+    }
+    let mut rest = subset;
+    while !rest.is_empty() {
+        let Some(after_open) = rest.strip_prefix("<!ENTITY") else {
+            return Err(HmlError::InvalidXml("DTD is not allowed".to_string()));
+        };
+        let after_open = after_open.trim_start();
+        let name_end = after_open
+            .find(|c: char| c.is_ascii_whitespace())
+            .ok_or_else(|| HmlError::InvalidXml("DTD is not allowed".to_string()))?;
+        let name = &after_open[..name_end];
+        if name.is_empty() || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+            return Err(HmlError::InvalidXml("DTD is not allowed".to_string()));
+        }
+        let after_name = after_open[name_end..].trim_start();
+        let quote = after_name
+            .chars()
+            .next()
+            .filter(|c| *c == '"' || *c == '\'')
+            .ok_or_else(|| HmlError::InvalidXml("DTD is not allowed".to_string()))?;
+        let value_body = &after_name[1..];
+        let value_end = value_body
+            .find(quote)
+            .ok_or_else(|| HmlError::InvalidXml("DTD is not allowed".to_string()))?;
+        let raw_value = &value_body[..value_end];
+        if raw_value.len() > MAX_VALUE_LEN {
+            return Err(HmlError::InvalidXml(
+                "DTD entity value is too long".to_string(),
+            ));
+        }
+        let expanded = expand_character_references_only(raw_value)?;
+        if entities.len() >= MAX_ENTITIES {
+            return Err(HmlError::InvalidXml("too many DTD entities".to_string()));
+        }
+        entities.entry(name.to_string()).or_insert(expanded);
+        let after_value = value_body[value_end + 1..].trim_start();
+        let Some(after_decl) = after_value.strip_prefix('>') else {
+            return Err(HmlError::InvalidXml("DTD is not allowed".to_string()));
+        };
+        rest = after_decl.trim_start();
+    }
+    Ok(entities)
+}
+
+/// 엔티티 값의 `&` 는 문자 참조(`&#10;`/`&#x20;`)만 허용해 즉시 확장한다 —
+/// 일반 엔티티 참조가 남아 있으면(중첩) 거절한다.
+fn expand_character_references_only(raw: &str) -> Result<String, HmlError> {
+    let mut out = String::new();
+    let mut rest = raw;
+    while let Some(pos) = rest.find('&') {
+        out.push_str(&rest[..pos]);
+        let reference = &rest[pos..];
+        let Some(end) = reference.find(';') else {
+            return Err(HmlError::InvalidXml(
+                "DTD entity value reference is not allowed".to_string(),
+            ));
+        };
+        let body = &reference[1..end];
+        let code = if let Some(hex) = body.strip_prefix("#x").or_else(|| body.strip_prefix("#X")) {
+            u32::from_str_radix(hex, 16).ok()
+        } else if let Some(dec) = body.strip_prefix('#') {
+            dec.parse::<u32>().ok()
+        } else {
+            None
+        };
+        let Some(character) = code.and_then(char::from_u32) else {
+            return Err(HmlError::InvalidXml(
+                "DTD entity value reference is not allowed".to_string(),
+            ));
+        };
+        out.push(character);
+        rest = &reference[end + 1..];
+    }
+    out.push_str(rest);
+    Ok(out)
 }
 
 fn element_name(element: &BytesStart<'_>) -> Result<String, HmlError> {

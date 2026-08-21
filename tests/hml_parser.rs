@@ -432,15 +432,69 @@ fn detects_real_hwpml_291_fixture_by_root_signature() {
     assert_eq!(detect_format(&bytes), FileFormat::Hml);
 }
 
+// [#5848] DOCTYPE 전면 거부를 **적대적 내부 서브셋 거부**로 좁혔다 — 문자 참조만
+// 담은 안전한 내부 엔티티(법제처 배포본의 `<!ENTITY nbsp "&#160;">`)는 수용하고,
+// XXE(외부 식별자)·파라미터 엔티티·중첩 참조(확장 폭발)는 종전대로 막는다.
 #[test]
-fn rejects_hml_with_doctype() {
-    let xml = br#"<?xml version="1.0"?>
-<!DOCTYPE HWPML [<!ENTITY secret "expanded">]>
+fn rejects_hostile_hml_doctype() {
+    let wrap = |subset: &str| {
+        format!(
+            r#"<?xml version="1.0"?>
+<!DOCTYPE HWPML [{subset}]>
+<HWPML Style="embed" SubVersion="9.0.1.0" Version="2.9">
+  <HEAD SecCnt="1"/><BODY><SECTION Id="0"/></BODY><TAIL/>
+</HWPML>"#
+        )
+    };
+    // 외부 식별자 (XXE)
+    let xxe = wrap(r#"<!ENTITY x SYSTEM "file:///etc/passwd">"#);
+    assert!(matches!(
+        parse_hml(xxe.as_bytes()),
+        Err(HmlError::InvalidXml(_))
+    ));
+    // 파라미터 엔티티
+    let param = wrap(r#"<!ENTITY % pe "<!ENTITY x 'y'>">"#);
+    assert!(matches!(
+        parse_hml(param.as_bytes()),
+        Err(HmlError::InvalidXml(_))
+    ));
+    // 중첩 일반 엔티티 참조 (billion laughs)
+    let nested = wrap(r#"<!ENTITY a "aa"><!ENTITY b "&a;&a;">"#);
+    assert!(matches!(
+        parse_hml(nested.as_bytes()),
+        Err(HmlError::InvalidXml(_))
+    ));
+    // DOCTYPE 루트가 HWPML 이 아님
+    let alien = r#"<?xml version="1.0"?>
+<!DOCTYPE html>
 <HWPML Style="embed" SubVersion="9.0.1.0" Version="2.9">
   <HEAD SecCnt="1"/><BODY><SECTION Id="0"/></BODY><TAIL/>
 </HWPML>"#;
+    assert!(matches!(
+        parse_hml(alien.as_bytes()),
+        Err(HmlError::InvalidXml(_))
+    ));
+}
 
-    assert!(matches!(parse_hml(xml), Err(HmlError::InvalidXml(_))));
+#[test]
+fn accepts_safe_internal_entity_doctype_and_resolves_reference() {
+    let xml = br#"<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HWPML [
+	<!ENTITY nbsp	"&#160;">
+]>
+<HWPML Style="embed" SubVersion="9.0.1.0" Version="2.9">
+  <HEAD SecCnt="1"/><BODY><SECTION Id="0"><P><TEXT><CHAR>a&nbsp;b</CHAR></TEXT></P></SECTION></BODY><TAIL/>
+</HWPML>"#;
+    let parsed = parse_hml(xml).expect("safe internal-subset DOCTYPE should parse");
+    let text: String = parsed.document.sections[0]
+        .paragraphs
+        .iter()
+        .map(|p| p.text.as_str())
+        .collect();
+    assert!(
+        text.contains("a\u{00A0}b"),
+        "&nbsp; 가 U+00A0 으로 해석되어야 한다: {text:?}"
+    );
 }
 
 #[test]
