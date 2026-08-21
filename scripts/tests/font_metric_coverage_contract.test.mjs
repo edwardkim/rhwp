@@ -68,6 +68,7 @@ test('W3 contract has seven exclusive categories and disjoint reuse/delta fields
     deadlineChecks: true,
     cancellationChecks: true,
     workUnitBudget: true,
+    nestingDepthBudget: true,
     aggregateRowBudget: true,
     outputByteBudget: true,
     corpusWorkerIsolation: 'required',

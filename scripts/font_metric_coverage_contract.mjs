@@ -197,6 +197,7 @@ export function validateCoverageContract(contract) {
       || resource.deadlineChecks !== true
       || resource.cancellationChecks !== true
       || resource.workUnitBudget !== true
+      || resource.nestingDepthBudget !== true
       || resource.aggregateRowBudget !== true
       || resource.outputByteBudget !== true
       || resource.corpusWorkerIsolation !== 'required') {

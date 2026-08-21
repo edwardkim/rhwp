@@ -54,12 +54,14 @@ const LANGUAGE_NAMES: [&str; 7] = ["ko", "latin", "hanja", "ja", "other", "symbo
 
 const DEFAULT_MAX_WORK_UNITS: u64 = 10_000_000;
 const MAX_MAX_WORK_UNITS: u64 = 2_000_000_000;
-const DEFAULT_MAX_AGGREGATE_ROWS: usize = 200_000;
-const MAX_MAX_AGGREGATE_ROWS: usize = 1_000_000;
-const DEFAULT_MAX_OUTPUT_BYTES: usize = 64 * 1024 * 1024;
-const MAX_MAX_OUTPUT_BYTES: usize = 256 * 1024 * 1024;
+const DEFAULT_MAX_AGGREGATE_ROWS: usize = 20_000;
+const MAX_MAX_AGGREGATE_ROWS: usize = 200_000;
+const DEFAULT_MAX_OUTPUT_BYTES: usize = 32 * 1024 * 1024;
+const MAX_MAX_OUTPUT_BYTES: usize = 128 * 1024 * 1024;
 const DEFAULT_DEADLINE_MILLIS: u64 = 60_000;
 const MAX_DEADLINE_MILLIS: u64 = 3_600_000;
+const DEFAULT_MAX_NESTING_DEPTH: usize = 128;
+const MAX_MAX_NESTING_DEPTH: usize = 4096;
 const MAX_DIMENSION_STRING_BYTES: usize = 4096;
 
 #[derive(Debug, Default, Deserialize)]
@@ -69,6 +71,7 @@ struct CoverageOptions {
     max_aggregate_rows: Option<usize>,
     max_output_bytes: Option<usize>,
     deadline_millis: Option<u64>,
+    max_nesting_depth: Option<usize>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -77,6 +80,7 @@ struct CoverageLimits {
     max_aggregate_rows: usize,
     max_output_bytes: usize,
     deadline: Duration,
+    max_nesting_depth: usize,
 }
 
 impl CoverageLimits {
@@ -93,6 +97,9 @@ impl CoverageLimits {
             .unwrap_or(DEFAULT_MAX_AGGREGATE_ROWS);
         let max_output_bytes = options.max_output_bytes.unwrap_or(DEFAULT_MAX_OUTPUT_BYTES);
         let deadline_millis = options.deadline_millis.unwrap_or(DEFAULT_DEADLINE_MILLIS);
+        let max_nesting_depth = options
+            .max_nesting_depth
+            .unwrap_or(DEFAULT_MAX_NESTING_DEPTH);
         if !(1..=MAX_MAX_WORK_UNITS).contains(&max_work_units) {
             return Err(coverage_error(format!(
                 "maxWorkUnits must be in 1..={MAX_MAX_WORK_UNITS}"
@@ -113,11 +120,17 @@ impl CoverageLimits {
                 "deadlineMillis must be in 1..={MAX_DEADLINE_MILLIS}"
             )));
         }
+        if !(1..=MAX_MAX_NESTING_DEPTH).contains(&max_nesting_depth) {
+            return Err(coverage_error(format!(
+                "maxNestingDepth must be in 1..={MAX_MAX_NESTING_DEPTH}"
+            )));
+        }
         Ok(Self {
             max_work_units,
             max_aggregate_rows,
             max_output_bytes,
             deadline: Duration::from_millis(deadline_millis),
+            max_nesting_depth,
         })
     }
 }
@@ -173,6 +186,16 @@ impl<'a> CoverageBudget<'a> {
             return Err(coverage_resource_error(format!(
                 "aggregate row budget exceeded: {} > {}",
                 self.aggregate_rows, self.limits.max_aggregate_rows
+            )));
+        }
+        Ok(())
+    }
+
+    fn check_depth(&self, depth: usize) -> Result<(), HwpError> {
+        if depth > self.limits.max_nesting_depth {
+            return Err(coverage_resource_error(format!(
+                "nesting depth budget exceeded: {depth} > {}",
+                self.limits.max_nesting_depth
             )));
         }
         Ok(())
@@ -812,7 +835,9 @@ fn walk_shape(
     context: u16,
     stats: &mut CoverageStats,
     budget: &mut CoverageBudget<'_>,
+    depth: usize,
 ) -> Result<(), HwpError> {
+    budget.check_depth(depth)?;
     budget.consume(1)?;
     if let Some(drawing) = shape.drawing() {
         if let Some(text_box) = &drawing.text_box {
@@ -822,6 +847,7 @@ fn walk_shape(
                 context | CTX_TEXT_BOX,
                 stats,
                 budget,
+                depth + 1,
             )?;
         }
         if let Some(caption) = &drawing.caption {
@@ -831,6 +857,7 @@ fn walk_shape(
                 context | CTX_CAPTION,
                 stats,
                 budget,
+                depth + 1,
             )?;
         }
     }
@@ -843,10 +870,11 @@ fn walk_shape(
                     context | CTX_CAPTION,
                     stats,
                     budget,
+                    depth + 1,
                 )?;
             }
             for child in &group.children {
-                walk_shape(core, child, context, stats, budget)?;
+                walk_shape(core, child, context, stats, budget, depth + 1)?;
             }
         }
         ShapeObject::Picture(picture) => {
@@ -857,6 +885,7 @@ fn walk_shape(
                     context | CTX_CAPTION,
                     stats,
                     budget,
+                    depth + 1,
                 )?;
             }
         }
@@ -871,7 +900,9 @@ fn walk_paragraphs(
     context: u16,
     stats: &mut CoverageStats,
     budget: &mut CoverageBudget<'_>,
+    depth: usize,
 ) -> Result<(), HwpError> {
+    budget.check_depth(depth)?;
     for para in paragraphs {
         analyze_paragraph(core, para, context, stats, budget)?;
         budget.consume(para.controls.len())?;
@@ -885,6 +916,7 @@ fn walk_paragraphs(
                             context | CTX_CAPTION,
                             stats,
                             budget,
+                            depth + 1,
                         )?;
                     }
                     for cell in &table.cells {
@@ -894,10 +926,13 @@ fn walk_paragraphs(
                             context | CTX_TABLE_CELL,
                             stats,
                             budget,
+                            depth + 1,
                         )?;
                     }
                 }
-                Control::Shape(shape) => walk_shape(core, shape, context, stats, budget)?,
+                Control::Shape(shape) => {
+                    walk_shape(core, shape, context, stats, budget, depth + 1)?
+                }
                 Control::Picture(picture) => {
                     if let Some(caption) = &picture.caption {
                         walk_paragraphs(
@@ -906,6 +941,7 @@ fn walk_paragraphs(
                             context | CTX_CAPTION,
                             stats,
                             budget,
+                            depth + 1,
                         )?;
                     }
                 }
@@ -916,6 +952,7 @@ fn walk_paragraphs(
                         context | CTX_HEADER,
                         stats,
                         budget,
+                        depth + 1,
                     )?;
                 }
                 Control::Footer(footer) => {
@@ -925,6 +962,7 @@ fn walk_paragraphs(
                         context | CTX_FOOTER,
                         stats,
                         budget,
+                        depth + 1,
                     )?;
                 }
                 Control::Footnote(note) => {
@@ -934,10 +972,18 @@ fn walk_paragraphs(
                         context | CTX_FOOTNOTE,
                         stats,
                         budget,
+                        depth + 1,
                     )?;
                 }
                 Control::Endnote(note) => {
-                    walk_paragraphs(core, &note.paragraphs, context | CTX_ENDNOTE, stats, budget)?;
+                    walk_paragraphs(
+                        core,
+                        &note.paragraphs,
+                        context | CTX_ENDNOTE,
+                        stats,
+                        budget,
+                        depth + 1,
+                    )?;
                 }
                 Control::HiddenComment(comment) => walk_paragraphs(
                     core,
@@ -945,6 +991,7 @@ fn walk_paragraphs(
                     context | CTX_HIDDEN_COMMENT,
                     stats,
                     budget,
+                    depth + 1,
                 )?,
                 Control::Field(field) if !field.memo_paragraphs.is_empty() => {
                     walk_paragraphs(
@@ -953,6 +1000,7 @@ fn walk_paragraphs(
                         context | CTX_MEMO,
                         stats,
                         budget,
+                        depth + 1,
                     )?;
                 }
                 _ => {}
@@ -968,7 +1016,7 @@ fn analyze_document(
 ) -> Result<CoverageStats, HwpError> {
     let mut stats = CoverageStats::new();
     for section in &core.document.sections {
-        walk_paragraphs(core, &section.paragraphs, 0, &mut stats, budget)?;
+        walk_paragraphs(core, &section.paragraphs, 0, &mut stats, budget, 0)?;
         for master in &section.section_def.master_pages {
             walk_paragraphs(
                 core,
@@ -976,6 +1024,7 @@ fn analyze_document(
                 CTX_MASTER_PAGE,
                 &mut stats,
                 budget,
+                0,
             )?;
         }
     }

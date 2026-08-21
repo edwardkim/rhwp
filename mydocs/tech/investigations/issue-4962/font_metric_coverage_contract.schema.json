@@ -125,6 +125,7 @@
         "deadlineChecks",
         "cancellationChecks",
         "workUnitBudget",
+        "nestingDepthBudget",
         "aggregateRowBudget",
         "outputByteBudget",
         "corpusWorkerIsolation"
@@ -135,6 +136,7 @@
         "deadlineChecks": { "const": true },
         "cancellationChecks": { "const": true },
         "workUnitBudget": { "const": true },
+        "nestingDepthBudget": { "const": true },
         "aggregateRowBudget": { "const": true },
         "outputByteBudget": { "const": true },
         "corpusWorkerIsolation": { "const": "required" }

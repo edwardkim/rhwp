@@ -129,6 +129,7 @@
     "deadlineChecks": true,
     "cancellationChecks": true,
     "workUnitBudget": true,
+    "nestingDepthBudget": true,
     "aggregateRowBudget": true,
     "outputByteBudget": true,
     "corpusWorkerIsolation": "required"

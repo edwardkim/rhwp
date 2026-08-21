@@ -203,6 +203,9 @@ fn resource_budgets_and_cancellation_fail_without_partial_success() {
     assert!(core
         .get_font_metric_coverage_analysis_native(r#"{"maxWorkUnits":0}"#)
         .is_err());
+    assert!(core
+        .get_font_metric_coverage_analysis_native(r#"{"maxNestingDepth":0}"#)
+        .is_err());
 }
 
 #[test]
