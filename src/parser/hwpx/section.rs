@@ -4695,6 +4695,13 @@ fn parse_container_body(
                             children.push(*shape);
                         }
                     }
+                    b"ole" => {
+                        // 그룹 멤버 OLE도 최상위 OLE와 같은 파서로 적재한다. 이 arm이 없으면
+                        // groupLevel을 읽기 전에 요소 전체가 무시되어 저장 왕복에서 소실된다.
+                        if let Some(Control::Shape(shape)) = parse_hp_ole_element(ce, reader)? {
+                            children.push(*shape);
+                        }
+                    }
                     b"renderingInfo" => {
                         parse_rendering_info(reader, &mut shape_attr)?;
                     }
@@ -9593,6 +9600,9 @@ mod tests {
       </hp:ole>
       <hp:t/>
     </hp:run>
+    <hp:container groupLevel="0">
+      <hp:ole binaryItemIDRef="ole2" groupLevel="3"></hp:ole>
+    </hp:container>
   </hp:p>
 </hs:sec>"##;
 
@@ -9634,6 +9644,20 @@ mod tests {
             ole.drawing.border_line.attr & 0xFF,
             1,
             "lineShape style=SOLID"
+        );
+
+        let Control::Shape(group_shape) = &section.paragraphs[0].controls[1] else {
+            panic!("expected group shape control");
+        };
+        let ShapeObject::Group(group) = group_shape.as_ref() else {
+            panic!("expected container group");
+        };
+        let Some(ShapeObject::Ole(group_member_ole)) = group.children.first() else {
+            panic!("group member hp:ole must be parsed");
+        };
+        assert_eq!(
+            group_member_ole.drawing.shape_attr.group_level, 3,
+            "group member hp:ole groupLevel"
         );
     }
 
