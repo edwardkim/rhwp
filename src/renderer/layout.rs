@@ -2169,6 +2169,10 @@ pub struct LayoutEngine {
     clip_enabled: std::cell::Cell<bool>,
     /// 머리말/꼬리말 감추기 세트: (global_page_index, is_header)
     hidden_header_footer: std::cell::RefCell<std::collections::HashSet<(u32, bool)>>,
+    /// [#5818] 현재 레이아웃 중인 셀에 어울림(Square 계열) float 그림/도형이 있는지.
+    /// 셀 문단 줄이 저장 LINE_SEG cs/sw(wrap 배제 인코딩)를 존중할지 판정하는
+    /// 셀-범위 신호 — layout_horizontal_cell_paragraphs 가 설정/복원한다.
+    cell_has_square_float: std::cell::Cell<bool>,
     /// 총 쪽수 (머리말/꼬리말 필드 치환용)
     total_pages: std::cell::Cell<u32>,
     /// 현재 페이지 번호 (바탕쪽 글상자 쪽번호 치환용)
@@ -2341,6 +2345,7 @@ impl LayoutEngine {
             show_transparent_borders: std::cell::Cell::new(false),
             clip_enabled: std::cell::Cell::new(true),
             hidden_header_footer: std::cell::RefCell::new(std::collections::HashSet::new()),
+            cell_has_square_float: std::cell::Cell::new(false),
             total_pages: std::cell::Cell::new(0),
             current_page_number: std::cell::Cell::new(0),
             current_page_is_section_first: std::cell::Cell::new(true),
