@@ -594,7 +594,22 @@ impl SkiaTextReplay<'_> {
                     match leader.fill_type {
                         1 => draw_styled_line(x1, line_y, x2, color, 0.5, &[], false),
                         2 => draw_styled_line(x1, line_y, x2, color, 0.5, &[3.0, 3.0], false),
-                        3 => draw_styled_line(x1, line_y, x2, color, 1.0, &[0.1, 3.0], true),
+                        3 => {
+                            // 점선 — 두께·간격은 폰트 크기를 따른다 (svg.rs 와 같은 출처).
+                            let (w, dash, gap) =
+                                crate::renderer::render_tree::tab_dot_leader_stroke(
+                                    font_size as f64,
+                                );
+                            draw_styled_line(
+                                x1,
+                                line_y,
+                                x2,
+                                color,
+                                w as f32,
+                                &[dash as f32, gap as f32],
+                                true,
+                            )
+                        }
                         4 => draw_styled_line(
                             x1,
                             line_y,
