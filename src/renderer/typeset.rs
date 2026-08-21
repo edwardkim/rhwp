@@ -17661,9 +17661,45 @@ impl TypesetEngine {
                 && w[1].vertical_pos <= 0
                 && w[0].vertical_pos > 5000
         });
+        // [#5807] 자리차지(양수 v_off) 표와 TAC 표가 한 host 에 co-anchored 되면
+        // 아래 정렬 키가 TAC 에 0 을 주어 TAC 가 float **앞**으로 온다. 한글의 실제
+        // 배치는 선언 위치의 겹침 여부로 갈린다:
+        // - float v_off 가 TAC 호스트 줄 높이보다 **작으면**(겹침) float 가 그 자리를
+        //   차지하고 TAC 줄이 아래로 밀린다 — float 먼저 (1880690: v_off 937 <
+        //   TAC 줄 28024, 뒤집히면 2쪽 354.6px 넘침. 저장 배열 순서·TAC 저장 줄
+        //   vpos 12924 도 float 먼저).
+        // - float v_off 가 TAC 줄 높이 **이상이면**(비겹침) TAC 는 문단 상단에
+        //   남는다 — TAC 먼저 (rowbreak-problem-pages s1 p28: v_off 9188 ≥ TAC 줄
+        //   8041, 기존 정렬이 이미 한글 18쪽과 일치 — #1488 핀).
+        // 겹침 케이스만 #1639/#2287 과 같이 정렬을 끄고 배열(저장) 순서를 보존한다.
+        // v_off 0/음수 float 와의 혼재(tiebreak 로 float 앞세움)는 종전 유지.
+        let tac_host_line_height_hu = para
+            .controls
+            .iter()
+            .filter_map(|c| match c {
+                Control::Table(t) if self.is_effective_tac_table(para, t, &fmt) => {
+                    // 소속 줄 매칭이 실패하는 단일 줄 host 는 ls[0] 이 곧 TAC 줄이다
+                    // (1880690: ls[0] lh=28024 = 표높이 27744+바깥여백).
+                    let li = self.tac_table_line_index(para, t, &fmt).unwrap_or(0);
+                    para.line_segs.get(li).map(|ls| ls.line_height)
+                }
+                _ => None,
+            })
+            .max()
+            .unwrap_or(0);
+        let has_tac_overlapped_by_positive_float = tac_host_line_height_hu > 0
+            && para.controls.iter().any(|c| {
+                matches!(c, Control::Table(t)
+                    if is_para_topbottom_float(&t.common)
+                        && {
+                            let v_off = signed_hwpunit(t.common.vertical_offset);
+                            v_off > 0 && v_off < tac_host_line_height_hu
+                        })
+            });
         let should_sort_para_float_tables = !para_has_non_whitespace_text(para)
             && !has_negative_para_float
-            && !has_mid_para_vpos_reset;
+            && !has_mid_para_vpos_reset
+            && !has_tac_overlapped_by_positive_float;
         let float_table_voffset = |ctrl: &Control| -> i32 {
             match ctrl {
                 Control::Table(t)
