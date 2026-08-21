@@ -6489,7 +6489,16 @@ impl LayoutEngine {
                         if let Control::Shape(shape) = ctrl {
                             let common = shape.common();
                             let shape_h = hwpunit_to_px(shape.flow_height_hu(), self.dpi);
-                            let shape_y = (vars.y + vars.baseline - shape_h).max(vars.y);
+                            // [#5789] 빈 run 줄은 max_fs=0 이라 vars.baseline 이 0 으로
+                            // 접힌다 — TAC 개체는 글자처럼 baseline 에 앉아야 하므로
+                            // 저장 줄의 baseline_distance 로 폴백한다 (3143955 이중선:
+                            // 줄 상자 top 161.99 ↔ 한글 baseline 182.4, 20.4px 어긋남).
+                            let baseline = if vars.baseline > 0.01 {
+                                vars.baseline
+                            } else {
+                                hwpunit_to_px(comp_line.baseline_distance, self.dpi)
+                            };
+                            let shape_y = (vars.y + baseline - shape_h).max(vars.y);
                             tree.set_inline_shape_position(
                                 vars.section_index,
                                 vars.para_index,
@@ -7695,7 +7704,11 @@ pub fn map_pua_bullet_char(ch: char) -> char {
             0xF0811 => '\u{250C}', // ┌ BOX DRAWINGS LIGHT DOWN AND RIGHT
             0xF0817 => '\u{2514}', // └ BOX DRAWINGS LIGHT UP AND RIGHT
             0xF081A => '\u{2500}', // ─ BOX DRAWINGS LIGHT HORIZONTAL
-            0xF0827 => '\u{25A0}', // ■ BLACK SQUARE (한컴 — 잠정, 시각 판정 후 조정)
+            // [#5793] 시각 판정 완료 — 한글 2022 는 이중 가로선(제목 밑 이중 밑줄,
+            // 반각 6.66px/자)으로 그린다. ■(전각)로 두면 띠가 2배 길어져 제목을
+            // 겹친다(1776332, layout-anomaly text-overlap w=213 1위). 이웃
+            // 0xF0832 → ═ 와 같은 이중선 계열.
+            0xF0827 => '\u{2550}', // ═ BOX DRAWINGS DOUBLE HORIZONTAL
             _ => ch,
         };
     }

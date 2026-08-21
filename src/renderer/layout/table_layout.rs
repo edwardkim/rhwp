@@ -4147,6 +4147,23 @@ impl LayoutEngine {
             let om_left = hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
             let area_x = col_area.x + om_left;
             let area_w = (col_area.width - om_left).max(0.0);
+            // [#5787] 칸 안 **어울림(SQUARE)** 중첩 표가 양의 horzOffset 을 선언하고
+            // 그 자리로 표가 셀 안에 온전히 들어가면 한글은 저장 오프셋을 그대로
+            // 쓴다 (2025571 당직근무 일지: 칸 왼끝+안여백+7975HU = 576.19 ↔ 한글
+            // 실측 576.17, 0.02px). 종전 가운데 배치(#3308)는 이 표를 49.9px
+            // 왼쪽으로 밀었다. 자리차지(TOP_AND_BOTTOM) 중첩 표는 반대 실측 —
+            // #3308 직인 표(h_offset 6226HU)는 한글도 오프셋을 무시하고 가운데
+            // 놓는다(정답지 0.6px 정합) — 이므로 SQUARE 한정. 오프셋 0 표도 종전
+            // 계약(가운데) 그대로다.
+            let h_offset = hwpunit_to_px(table.common.horizontal_offset as i32, self.dpi);
+            if !table.common.treat_as_char
+                && matches!(table.common.text_wrap, TextWrap::Square)
+                && h_offset > 0.5
+                && matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
+                && h_offset + table_width <= area_w + 0.5
+            {
+                return area_x + h_offset;
+            }
             // [#3308/#3820] 비-TAC 중첩 표는 저장 폭을 유지하고, 부모 셀보다 좁으면
             // 저장 h_offset(편집기 대화상자 표시값)과 무관하게 셀 안 가운데에 배치한다.
             // 76076 p34의 near-fit 1×1 표도 이 계약을 따른다. 부모 폭으로의 확장은

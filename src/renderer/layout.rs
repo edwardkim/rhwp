@@ -9705,6 +9705,36 @@ impl LayoutEngine {
                             tac_table_y_before + advance
                         };
                     }
+                } else if crate::renderer::para_has_no_stored_line_segs(para) {
+                    // [#5788] 저장 lineseg 가 없는(기계생성) 문서는 앵커 줄의 trailing
+                    // line_spacing 을 실을 seg 가 없어 표 아래 문단이 그만큼 붙는다
+                    // (3190263: 표 19개 × −9.2px 누적으로 8쪽 vs 한글 9쪽; 한글 계산
+                    // 조판은 앵커 줄간격을 더한다). 문단 스타일의 퍼센트 줄간격을
+                    // 앵커 글꼴 크기로 환산해 보충한다 — 저장 lineseg 보유 문서
+                    // (#1116 핀 계열)는 위 경로 그대로라 불변.
+                    let ps_id_for_ls = composed
+                        .get(para_index)
+                        .map(|c| c.para_style_id as usize)
+                        .unwrap_or(para.para_shape_id as usize);
+                    let font_size = para
+                        .char_shapes
+                        .first()
+                        .and_then(|cs| styles.char_styles.get(cs.char_shape_id as usize))
+                        .map(|c| c.font_size)
+                        .unwrap_or(0.0);
+                    if let Some(ps) = styles.para_styles.get(ps_id_for_ls) {
+                        use crate::model::style::LineSpacingType;
+                        let extra = match ps.line_spacing_type {
+                            LineSpacingType::Percent if ps.line_spacing > 100.0 => {
+                                font_size * (ps.line_spacing - 100.0) / 100.0
+                            }
+                            LineSpacingType::SpaceOnly => ps.line_spacing.max(0.0),
+                            _ => 0.0,
+                        };
+                        if extra > 0.0 {
+                            y_offset += extra;
+                        }
+                    }
                 }
                 let comp = composed.get(para_index);
                 let ps_id = comp
