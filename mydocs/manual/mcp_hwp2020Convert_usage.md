@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2020Convert_usage.md
-last_verified: 2026-08-05
+last_verified: 2026-08-21
 ---
 
 # HWP 2020 변환 client 사용법
@@ -12,7 +12,9 @@ last_verified: 2026-08-05
 
 ## 개요
 
-- 권장 실행 방식: `hwp2020-mcp-convert` CLI
+- 권장 실행 방식: `hwp2020-mcp-convert` CLI의 비동기 `start -> status -> download`
+  흐름. 대형 문서와 PR review 기준 PDF는 항상 이 흐름을 사용한다.
+- 동기 `hwp2020-mcp-convert` 호출은 소형 문서의 즉시 변환 확인에만 쓴다.
 - 선택 실행 방식: VS Code MCP 서버 `hwp2020Convert` / tool `convert_local_document`
 - 지원 입력: `.hwp`, `.hwpx`
 - 지원 출력: `pdf`, `hwpx`, `hwp`
@@ -66,10 +68,12 @@ HWP2020_MCP_AUTH_TOKEN=<관리자가_제공한_토큰>
 
 `.env.local`은 Git에 커밋하지 않는다.
 
-## 권장: CLI 변환
+## 소형 문서: 동기 CLI 변환
 
 `hwp2020-mcp-convert` CLI가 로컬 파일 바이트를 읽어 원격 HTTP MCP에 전송하고, 응답 변환본을 로컬
-`output_dir`에 저장한다. 일반 변환, PR review 기준 PDF 생성, 자동화에는 이 방식을 사용한다.
+`output_dir`에 저장한다. 이 동기 방식은 변환과 response delivery가 끝날 때까지 terminal을 점유하므로,
+수 초 안에 끝나는 소형 문서의 일회성 확인에만 사용한다. PR review 기준 PDF와 다쪽 문서에는 아래
+비동기 방식을 사용한다.
 
 도움말:
 
@@ -123,11 +127,16 @@ printf '%s\n' "$HWP_DOCUMENT_PASSWORD" | \
 `HWP_DOCUMENT_PASSWORD`는 현재 shell에서만 설정하고 shell history, Git, `.env.local`에는 저장하지 않는다.
 동기 변환의 암호 처리 중 생성되는 server-side HWPX intermediate와 PDF는 response delivery 완료 후 삭제된다.
 
-### 긴 문서 비동기 CLI 변환
+## 기본: 비동기 CLI 변환
 
-동기 `convert`는 result response가 끝날 때까지 기다린다. 긴 문서는 먼저 `start`로 `job_id`를 받고,
-`status`를 polling한 뒤 `download`로 변환본을 저장한다. `status`의 `progress_percent`는 한컴이 쪽별 진행률을
-제공하지 않아 `null`일 수 있으며, `phase`, `elapsed_seconds`, `output_bytes`, `delivery`를 기준으로 확인한다.
+PR review 기준 PDF, 다쪽 문서, 이미지·표가 많은 문서는 먼저 `start`로 `job_id`를 받고, `status`를
+polling한 뒤 `download`로 변환본을 저장한다. 이 방식은 terminal 연결이 길게 묶이지 않고,
+`queued`/`converting`/`succeeded` 상태와 출력 크기를 분리해 확인할 수 있다. `status`의
+`progress_percent`는 한컴이 쪽별 진행률을 제공하지 않아 `null`일 수 있으므로, `phase`,
+`elapsed_seconds`, `output_bytes`, `delivery`를 함께 기록한다.
+
+PR review에서는 `start` 응답의 `job_id`와 입력 경로, target, timeout을 review 기록에 남기되, 서버 URL과
+인증 정보는 기록하지 않는다. `status`가 `succeeded`가 되기 전에는 `download`를 호출하지 않는다.
 
 ```bash
 # 1. upload와 job 시작
