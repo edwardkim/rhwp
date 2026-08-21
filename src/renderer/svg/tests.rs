@@ -635,8 +635,13 @@ fn test_svg_text_ratio() {
         },
     );
     let output = renderer.output();
-    // 첫 문자 '장': translate(50,100) scale(0.8000,1)
-    assert!(output.contains("transform=\"translate(50,100) scale(0.8000,1)\""));
+    // [#5821] 압축 장평은 세로 fs×√r + 가로 √r (총 폭 ×r 불변) — 한글 2022
+    // PDF 실측 계약. 첫 문자 '장': translate(50,100) scale(√0.8=0.8944,1).
+    assert!(output.contains("transform=\"translate(50,100) scale(0.8944,1)\""));
+    assert!(
+        output.contains("font-size=\"14.31"),
+        "글리프 크기가 16×√0.8=14.31 로 축소되어야 함"
+    );
     // 문자별 렌더링이므로 각 문자가 개별 <text> 요소
     let text_count = output.matches("<text ").count();
     assert_eq!(text_count, 2, "2개 문자 = 2개 <text> 요소");

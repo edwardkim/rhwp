@@ -2169,6 +2169,10 @@ pub struct LayoutEngine {
     clip_enabled: std::cell::Cell<bool>,
     /// 머리말/꼬리말 감추기 세트: (global_page_index, is_header)
     hidden_header_footer: std::cell::RefCell<std::collections::HashSet<(u32, bool)>>,
+    /// [#5818] 현재 레이아웃 중인 셀에 어울림(Square 계열) float 그림/도형이 있는지.
+    /// 셀 문단 줄이 저장 LINE_SEG cs/sw(wrap 배제 인코딩)를 존중할지 판정하는
+    /// 셀-범위 신호 — layout_horizontal_cell_paragraphs 가 설정/복원한다.
+    cell_has_square_float: std::cell::Cell<bool>,
     /// 총 쪽수 (머리말/꼬리말 필드 치환용)
     total_pages: std::cell::Cell<u32>,
     /// 현재 페이지 번호 (바탕쪽 글상자 쪽번호 치환용)
@@ -2341,6 +2345,7 @@ impl LayoutEngine {
             show_transparent_borders: std::cell::Cell::new(false),
             clip_enabled: std::cell::Cell::new(true),
             hidden_header_footer: std::cell::RefCell::new(std::collections::HashSet::new()),
+            cell_has_square_float: std::cell::Cell::new(false),
             total_pages: std::cell::Cell::new(0),
             current_page_number: std::cell::Cell::new(0),
             current_page_is_section_first: std::cell::Cell::new(true),
@@ -3316,6 +3321,34 @@ impl LayoutEngine {
                     );
                 }
             } else if has_shape {
+                // [#5802] 글자처럼 취급(TAC) 도형은 paragraph_layout 이 inline 좌표를
+                // 등록해야 layout_shape 가 그린다 — 미등록 TAC 는 #476 가드가 조용히
+                // 스킵한다. 머리말/꼬리말 문단은 종전에 layout_shape 만 불러, 쪽번호
+                // 묶음처럼 TAC 도형으로 저장된 내용이 통째로 소실됐다(611쪽 보고서
+                // 꼬리말 전량). 본문 등록 키와 충돌하지 않게 구역 인덱스는 HF 전용
+                // 센티널(usize::MAX)을 등록·조회 양쪽에 쓴다.
+                let has_tac_shape = para
+                    .controls
+                    .iter()
+                    .any(|c| matches!(c, Control::Shape(s) if s.common().treat_as_char));
+                let hf_shape_section = usize::MAX;
+                if has_tac_shape {
+                    let comp = self.compose_header_footer_paragraph(para, page_number);
+                    self.layout_paragraph(
+                        tree,
+                        area_node,
+                        para,
+                        Some(&comp),
+                        styles,
+                        area,
+                        y_offset,
+                        hf_shape_section,
+                        i,
+                        None,
+                        Some(bin_data_content),
+                        None,
+                    );
+                }
                 // Shape 컨트롤 렌더링 (머리말/꼬리말 내 글상자 등)
                 for (ci, ctrl) in para.controls.iter().enumerate() {
                     if let Control::Shape(_) = ctrl {
@@ -3325,7 +3358,7 @@ impl LayoutEngine {
                             hf_paragraphs,
                             i,
                             ci,
-                            0, // section_index
+                            if has_tac_shape { hf_shape_section } else { 0 },
                             styles,
                             area,
                             body_area,
@@ -3338,8 +3371,8 @@ impl LayoutEngine {
                         );
                     }
                 }
-                // 텍스트도 함께 렌더링
-                if !para.text.is_empty() {
+                // 텍스트도 함께 렌더링 (TAC 도형 경로는 위에서 이미 문단을 레이아웃함)
+                if !has_tac_shape && !para.text.is_empty() {
                     let comp = self.compose_header_footer_paragraph(para, page_number);
                     y_offset = self.layout_paragraph(
                         tree,
@@ -5582,6 +5615,20 @@ impl LayoutEngine {
             if bottom_y > y_offset {
                 y_offset = bottom_y;
             }
+        }
+        // [#5792] 앞 쪽에서 잘린 overlay 표의 잔여 행(#4568)이 이 단 상단을 차지하는
+        // 형상에서는 본문 흐름이 그 아래에서 시작한다. `reserve_px` 는 typeset 이
+        // 같은 값으로 예약한 높이다 — 예약이 0 인 조각(#4514 필러 형상)은 종전대로
+        // 흐름을 밀지 않는다. 예약하지 않으면 본문 문단이 잔여 행과 같은 y 에서
+        // 시작해 글자가 겹치고, 그 본문이 배치한 표가 잔여 행의 페인트 상한을 깎아
+        // 남은 행이 통째로 사라진다.
+        let overlay_top_reserve = col_content
+            .overlay_continuations
+            .iter()
+            .map(|cont| cont.reserve_px)
+            .fold(0.0_f64, f64::max);
+        if overlay_top_reserve > 0.0 {
+            y_offset = y_offset.max(col_area.y + overlay_top_reserve);
         }
         // [Task #901 Stage 8/10] TopAndBottom flow-around: anchor paragraph 의 text 가 picture
         // 위에 fit 가능하면 pre-jump skip, render 후 post-jump 적용.
@@ -9318,6 +9365,16 @@ impl LayoutEngine {
                         if outer_margin_top_px > 0.0 {
                             y_offset += outer_margin_top_px;
                         }
+                    } else if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                        // [#5729] 직전 TAC 의 저장 seg 로 흐름이 전진해 왔어도, 이
+                        // 표의 저장 밴드가 정확히 om_top+선언높이+om_bottom 이면
+                        // 표 상단 앞의 om_top 은 그 밴드 몫이다 — 건너뛰면 표가
+                        // 3.8px 위로 앉아 직전 표 괘선과 4.2px 겹친다 (156505870
+                        // 연달은 자리차지 표 4개 중 2~4번째, 한글 이중 괘선 간격
+                        // 0.4px vs rhwp 4.3px).
+                        if Self::tac_stored_band_is_outer_box(para, t) {
+                            y_offset += hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                        }
                     }
                 } else if !is_current_empty_para_float {
                     if let Some(ps) = styles.para_styles.get(ps_id) {
@@ -9704,6 +9761,36 @@ impl LayoutEngine {
                         } else {
                             tac_table_y_before + advance
                         };
+                    }
+                } else if crate::renderer::para_has_no_stored_line_segs(para) {
+                    // [#5788] 저장 lineseg 가 없는(기계생성) 문서는 앵커 줄의 trailing
+                    // line_spacing 을 실을 seg 가 없어 표 아래 문단이 그만큼 붙는다
+                    // (3190263: 표 19개 × −9.2px 누적으로 8쪽 vs 한글 9쪽; 한글 계산
+                    // 조판은 앵커 줄간격을 더한다). 문단 스타일의 퍼센트 줄간격을
+                    // 앵커 글꼴 크기로 환산해 보충한다 — 저장 lineseg 보유 문서
+                    // (#1116 핀 계열)는 위 경로 그대로라 불변.
+                    let ps_id_for_ls = composed
+                        .get(para_index)
+                        .map(|c| c.para_style_id as usize)
+                        .unwrap_or(para.para_shape_id as usize);
+                    let font_size = para
+                        .char_shapes
+                        .first()
+                        .and_then(|cs| styles.char_styles.get(cs.char_shape_id as usize))
+                        .map(|c| c.font_size)
+                        .unwrap_or(0.0);
+                    if let Some(ps) = styles.para_styles.get(ps_id_for_ls) {
+                        use crate::model::style::LineSpacingType;
+                        let extra = match ps.line_spacing_type {
+                            LineSpacingType::Percent if ps.line_spacing > 100.0 => {
+                                font_size * (ps.line_spacing - 100.0) / 100.0
+                            }
+                            LineSpacingType::SpaceOnly => ps.line_spacing.max(0.0),
+                            _ => 0.0,
+                        };
+                        if extra > 0.0 {
+                            y_offset += extra;
+                        }
                     }
                 }
                 let comp = composed.get(para_index);
@@ -10740,6 +10827,12 @@ impl LayoutEngine {
                                 });
                             let para_base_y =
                                 para_start_y.get(&para_index).copied().unwrap_or(y_offset);
+                            if std::env::var("RHWP_5715_DBG").is_ok() {
+                                eprintln!(
+                                    "[5715] pi={para_index} ci={control_index} base={para_base_y:.1} from_map={} y_off={y_offset:.1}",
+                                    para_start_y.contains_key(&para_index)
+                                );
+                            }
                             let para_base_y = if deferred_page_start_square {
                                 // next-page owner의 `vpos=0` narrow band는 새 physical
                                 // page의 body top을 가리킨다. layout_body_picture가
@@ -10763,12 +10856,6 @@ impl LayoutEngine {
                             } else {
                                 para_base_y
                             };
-                            let pic_container = LayoutRect {
-                                x: col_area.x,
-                                y: pic_y,
-                                width: col_area.width,
-                                height: col_area.height - (pic_y - col_area.y),
-                            };
                             let saved_y_offset = y_offset;
                             // [Task #1079] 파일 vpos 가 이미 그림 공간을 반영(그림 para 줄 앞
                             // gap ≥ 그림 높이)하면 그림 높이 추가 진행 생략(typeset pushdown
@@ -10791,6 +10878,27 @@ impl LayoutEngine {
                                     }
                                     _ => false,
                                 }
+                            };
+                            // [#5715] #1079 gap 휴리스틱은 그 gap 이 **현재 쪽에 물리적으로
+                            // 실재**할 때만 유효하다. 쪽 리셋 뒤 유령 사다리(앞 lineage 의
+                            // vpos 65410 이 리셋 0-기저 쪽에 섞임)가 만든 가짜 gap 이면
+                            // 바닥-정렬이 그림을 단 상단 위로 밀어 지면 밖 소실이 된다
+                            // (베트남노동시장1125: 124쪽 중 8쪽의 차트가 본문 위/지면 밖).
+                            // 바닥-정렬 목표가 단 상단을 넘으면 기각하고, 같은 문단의 선행
+                            // float(표)이 이미 진행시킨 흐름(y_offset) 뒤로 배치한다.
+                            let (vpos_accounts_for_height, pic_y) = if vpos_accounts_for_height
+                                && pic_y - hwpunit_to_px(pic.common.height as i32, self.dpi)
+                                    < col_area.y - 0.5
+                            {
+                                (false, pic_y.max(y_offset))
+                            } else {
+                                (vpos_accounts_for_height, pic_y)
+                            };
+                            let pic_container = LayoutRect {
+                                x: col_area.x,
+                                y: pic_y,
+                                width: col_area.width,
+                                height: col_area.height - (pic_y - col_area.y),
                             };
                             result_y = self.layout_body_picture(
                                 tree,

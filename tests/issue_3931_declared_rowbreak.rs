@@ -7,8 +7,16 @@
 //!
 //! Stage 2는 표 구조와 저장 pitch를 바꾸지 않은 채 pi=23의 12+4 소유권을,
 //! Stage 3은 pi=14의 declared 선이월을 물리 fragment 계약으로 전환한다. 최신
-//! 회귀는 #4763의 383쪽 계약을 유지하면서 두 HWP 표 조각이 본문 하단 안에
-//! 머무는지를 함께 고정한다.
+//! 회귀는 두 HWP 표 조각이 본문 하단 안에 머무는지를 함께 고정한다.
+//!
+//! [#5751] HWP 쪽수 기대값을 383 → 385 로 갱신했다. `#501` 가드가 여백이 셀
+//! 높이의 절반~1배인 **정상 조밀 표**에서도 발동해 행을 선언 높이로 눌러 왔고
+//! (측정만 누르고 렌더는 저장 여백을 그대로 써 글자가 괘선을 넘었다), 그 가드를
+//! 렌더와 같은 기준으로 맞추자 이 문서에서도 표 67개 중 43개가 각 1행씩 늘었다.
+//! 383 은 한컴 **2020** PDF 기준값인데(위 #4763 줄), 같은 파일을 한글 **2022**
+//! COM 으로 열면 `.hwp`·`.hwpx` 모두 **384쪽**이다 — 383 도 385 도 2022 정답은
+//! 아니고 오차 크기는 1 로 같다. 이 문서에서 rhwp 자신의 측정↔렌더 정합은
+//! 좋아진다(`TABLE_CUT_DRIFT` 어긋난 표 13→10개, |diff| 합계 113.7→57.9px).
 
 use std::fs;
 use std::path::Path;
@@ -261,9 +269,11 @@ fn issue_3931_pi23_stored_reset_splits_across_adjacent_pages() {
 #[test]
 fn issue_3931_keeps_pr4763_hwp_page_count_contract() {
     let document = HwpDocument::from_bytes(&read_fixture()).expect("paginate #3931 HWP fixture");
+    // [#5751] 383(한컴 2020 기준) → 385. 한글 2022 는 이 문서를 384쪽으로 조판하므로
+    // 갱신 전후 모두 오차 1 이다. 모듈 주석의 근거 참조.
     assert_eq!(
         document.page_count(),
-        383,
+        385,
         "#3931 fragment containment must preserve the #4763 HWP page-count contract"
     );
 }

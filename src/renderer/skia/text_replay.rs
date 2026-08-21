@@ -296,10 +296,11 @@ impl SkiaTextReplay<'_> {
                 let char_positions = compute_char_positions(text, style);
                 let clusters = split_into_clusters(text);
                 let text_width = *char_positions.last().unwrap_or(&0.0) as f32;
-                let ratio = if style.ratio > 0.0 {
-                    style.ratio as f32
-                } else {
-                    1.0
+                // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
+                let (font_size, ratio) = {
+                    let (fs, r) =
+                        crate::renderer::condensed_ratio_draw_params(font_size as f64, style.ratio);
+                    (fs as f32, r as f32)
                 };
                 let has_ratio = (ratio - 1.0).abs() > 0.01;
                 if crate::model::color::char_shade(style.shade_color).is_some() && text_width > 0.0
@@ -380,47 +381,10 @@ impl SkiaTextReplay<'_> {
                         _ => draw_styled_line(x1, y, x2, color, 1.0, &[], false),
                     };
 
-                let suppress_dash_leader_line = !matches!(style.underline, UnderlineType::None);
-                let dash_run_groups: Vec<(usize, usize)> = {
-                    let mut groups = Vec::new();
-                    let mut run_start: Option<usize> = None;
-                    for (idx, (_, cluster)) in clusters.iter().enumerate() {
-                        if cluster == "-" {
-                            if run_start.is_none() {
-                                run_start = Some(idx);
-                            }
-                        } else if let Some(start) = run_start.take() {
-                            if idx - start >= 3 {
-                                groups.push((start, idx));
-                            }
-                        }
-                    }
-                    if let Some(start) = run_start {
-                        if clusters.len() - start >= 3 {
-                            groups.push((start, clusters.len()));
-                        }
-                    }
-                    groups
-                };
-                let cluster_in_dash_run = |cluster_idx: usize| -> Option<(f32, f32)> {
-                    for &(start, end) in &dash_run_groups {
-                        if cluster_idx == start {
-                            let start_char_idx = clusters[start].0;
-                            let last = &clusters[end - 1];
-                            let end_char_idx = last.0 + last.1.chars().count();
-                            let x1 = char_positions.get(start_char_idx).copied().unwrap_or(0.0);
-                            let x2 = char_positions
-                                .get(end_char_idx)
-                                .copied()
-                                .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0));
-                            return Some((x1 as f32, x2 as f32));
-                        }
-                        if cluster_idx > start && cluster_idx < end {
-                            return Some((f32::NAN, f32::NAN));
-                        }
-                    }
-                    None
-                };
+                // [#5804] 3+ 연속 '-' 를 단일 가로선으로 대체하던 처리(Task #352)를 걷어냈다.
+                // 한글 2022 정본은 하이픈을 낱글자 글리프로 그리고, 그 탄력 분배는 이미
+                // 레이아웃이 `extra_dash_advance` 로 만들어 `char_positions` 에 담는다.
+                // svg.rs 와 같은 결정이다.
                 let cluster_advance = |char_idx: usize, cluster: &str| -> f32 {
                     let end = char_idx + cluster.chars().count();
                     if end < char_positions.len() {
@@ -440,27 +404,13 @@ impl SkiaTextReplay<'_> {
                     } else {
                         text_paint.set_style(paint::Style::Fill);
                     }
-                    for (cluster_idx, (char_idx, cluster)) in clusters.iter().enumerate() {
+                    for (char_idx, cluster) in clusters.iter() {
                         if cluster == " " || cluster == "\t" || cluster == "\u{2007}" {
                             continue;
                         }
                         if cluster.starts_with(|ch: char| {
                             ch < '\u{0020}' && !matches!(ch, '\t' | '\n' | '\r')
                         }) {
-                            continue;
-                        }
-                        if let Some((x1_rel, x2_rel)) = cluster_in_dash_run(cluster_idx) {
-                            if x1_rel.is_finite() && !suppress_dash_leader_line {
-                                draw_styled_line(
-                                    bbox.x as f32 + x1_rel + dx,
-                                    y as f32 - font_size * 0.32 + dy,
-                                    bbox.x as f32 + x2_rel + dx,
-                                    color,
-                                    (font_size * 0.07).max(0.5),
-                                    &[],
-                                    false,
-                                );
-                            }
                             continue;
                         }
                         if is_middle_dot(cluster) {
@@ -645,7 +595,22 @@ impl SkiaTextReplay<'_> {
                     match leader.fill_type {
                         1 => draw_styled_line(x1, line_y, x2, color, 0.5, &[], false),
                         2 => draw_styled_line(x1, line_y, x2, color, 0.5, &[3.0, 3.0], false),
-                        3 => draw_styled_line(x1, line_y, x2, color, 1.0, &[0.1, 3.0], true),
+                        3 => {
+                            // 점선 — 두께·간격은 폰트 크기를 따른다 (svg.rs 와 같은 출처).
+                            let (w, dash, gap) =
+                                crate::renderer::render_tree::tab_dot_leader_stroke(
+                                    font_size as f64,
+                                );
+                            draw_styled_line(
+                                x1,
+                                line_y,
+                                x2,
+                                color,
+                                w as f32,
+                                &[dash as f32, gap as f32],
+                                true,
+                            )
+                        }
                         4 => draw_styled_line(
                             x1,
                             line_y,

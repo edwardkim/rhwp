@@ -3954,10 +3954,11 @@ impl LayoutEngine {
         // cell.height 자체를 초과하면 (mel-001 p2 셀[21]: pad=1700 HU 두 축, h=1280 HU)
         // 한컴은 자체 가드로 cell 안에 콘텐츠가 들어가도록 처리. cell.height 의 절반까지
         // 비례 축소 (HWP 스펙 외 한컴 동작 모방).
+        // 발동 기준은 측정(height_measurer)과 공유한다 (#5751).
         let (pad_top, pad_bottom) = if cell.height < 0x80000000 {
             let cell_h_px = hwpunit_to_px(cell.height as i32, self.dpi);
             let total_v_pad = pad_top + pad_bottom;
-            if cell_h_px > 0.0 && total_v_pad >= cell_h_px {
+            if crate::model::table::Cell::vertical_padding_is_abnormal(cell_h_px, total_v_pad) {
                 let max_v_pad = cell_h_px * 0.5;
                 let scale = max_v_pad / total_v_pad;
                 (pad_top * scale, pad_bottom * scale)
@@ -4147,6 +4148,23 @@ impl LayoutEngine {
             let om_left = hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
             let area_x = col_area.x + om_left;
             let area_w = (col_area.width - om_left).max(0.0);
+            // [#5787] 칸 안 **어울림(SQUARE)** 중첩 표가 양의 horzOffset 을 선언하고
+            // 그 자리로 표가 셀 안에 온전히 들어가면 한글은 저장 오프셋을 그대로
+            // 쓴다 (2025571 당직근무 일지: 칸 왼끝+안여백+7975HU = 576.19 ↔ 한글
+            // 실측 576.17, 0.02px). 종전 가운데 배치(#3308)는 이 표를 49.9px
+            // 왼쪽으로 밀었다. 자리차지(TOP_AND_BOTTOM) 중첩 표는 반대 실측 —
+            // #3308 직인 표(h_offset 6226HU)는 한글도 오프셋을 무시하고 가운데
+            // 놓는다(정답지 0.6px 정합) — 이므로 SQUARE 한정. 오프셋 0 표도 종전
+            // 계약(가운데) 그대로다.
+            let h_offset = hwpunit_to_px(table.common.horizontal_offset as i32, self.dpi);
+            if !table.common.treat_as_char
+                && matches!(table.common.text_wrap, TextWrap::Square)
+                && h_offset > 0.5
+                && matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
+                && h_offset + table_width <= area_w + 0.5
+            {
+                return area_x + h_offset;
+            }
             // [#3308/#3820] 비-TAC 중첩 표는 저장 폭을 유지하고, 부모 셀보다 좁으면
             // 저장 h_offset(편집기 대화상자 표시값)과 무관하게 셀 안 가운데에 배치한다.
             // 76076 p34의 near-fit 1×1 표도 이 계약을 따른다. 부모 폭으로의 확장은
@@ -4481,6 +4499,31 @@ impl LayoutEngine {
         };
         let fragment_line_ranges = fragment_cut_units
             .map(|(start, end)| self.cell_line_ranges_from_cut(cell, table, styles, start, end));
+        // [#5818] 셀 안 어울림(Square 계열) float 그림/도형 존재 신호 — 셀 문단
+        // 줄이 저장 LINE_SEG cs/sw(한컴이 인코딩한 wrap 배제)를 존중하게 한다
+        // (156599239 머리 표: 로고 옆 `경 찰 대 학` 줄의 저장 cs=4037HU 가
+        // 무시돼 글자가 로고 안쪽 32.8px 지점에서 시작). 중첩 복원을 위해
+        // 이전 값을 보관했다가 루프 뒤 되돌린다.
+        let prev_cell_square_float = self.cell_has_square_float.get();
+        let cell_square_float = cell.paragraphs.iter().any(|p| {
+            p.controls.iter().any(|c| {
+                let common = match c {
+                    Control::Picture(pic) => Some(&pic.common),
+                    Control::Shape(shape) => Some(shape.common()),
+                    _ => None,
+                };
+                common.is_some_and(|cm| {
+                    !cm.treat_as_char
+                        && matches!(
+                            cm.text_wrap,
+                            crate::model::shape::TextWrap::Square
+                                | crate::model::shape::TextWrap::Tight
+                                | crate::model::shape::TextWrap::Through
+                        )
+                })
+            })
+        });
+        self.cell_has_square_float.set(cell_square_float);
         // 셀 내 문단 + 컨트롤 통합 레이아웃
         let mut para_y = text_y_start;
         let mut has_preceding_text = false;
@@ -5084,7 +5127,86 @@ impl LayoutEngine {
                                     .flatten()
                                     .filter(|seg| seg.vertical_pos > 0)
                                     .map(|seg| hwpunit_to_px(seg.vertical_pos, self.dpi));
-                                if let Some(vpos_px) = stored_flow_vpos {
+                                // [#5833] 문단마다 float 그림이 하나씩 놓인 **다문단** 셀은
+                                // 한글이 그림을 흐름으로 직렬 적층하고 셀 valign 은 블록
+                                // 전체에 적용한다. 기저를 (센터링이 반영된) text_y_start 로
+                                // 잡고 각 문단의 저장 vpos 사다리 + vert offset 을 얹는다
+                                // (156684746 6쪽 표4 r1c0: 한글 p0 151.5 = 블록 센터 시작,
+                                // p1 172.9 = 기저+vpos 1597HU. 종전엔 p0 이 그림-단위
+                                // valign 강제(#2071)로 211.8 에 놓여 p1 그림 안에 파묻혀
+                                // 소멸했다). 단일 float 셀은 #2071/#5731 계약 그대로다.
+                                let stacked_float_pic_paras = cell
+                                    .paragraphs
+                                    .iter()
+                                    .filter(|p| {
+                                        p.controls.iter().any(|c| matches!(c, Control::Picture(pp)
+                                            if !pp.common.treat_as_char
+                                                && pp.common.flow_with_text
+                                                && matches!(pp.common.text_wrap, TextWrap::TopAndBottom)
+                                                && matches!(pp.common.vert_rel_to, VertRelTo::Para)))
+                                    })
+                                    .count();
+                                if stacked_float_pic_paras >= 2 {
+                                    // 블록 extent = 각 문단 저장 vpos + 그 문단 float 그림
+                                    // 높이의 최댓값. text_y_start 의 센터링은 저장 extent
+                                    // 신뢰(trust_stored_cell_flow)가 그림 높이를 담지 않는
+                                    // 사다리(빈 줄 lh 만)로 접힐 수 있어 쓰지 않는다 —
+                                    // 이 문서 실측: 저장 extent 34.7px vs 그림 블록 135.9px.
+                                    let block_extent = cell
+                                        .paragraphs
+                                        .iter()
+                                        .filter_map(|p| {
+                                            let pic_h = p
+                                                .controls
+                                                .iter()
+                                                .filter_map(|c| match c {
+                                                    Control::Picture(pp)
+                                                        if !pp.common.treat_as_char
+                                                            && pp.common.flow_with_text
+                                                            && matches!(
+                                                                pp.common.text_wrap,
+                                                                TextWrap::TopAndBottom
+                                                            ) =>
+                                                    {
+                                                        Some(hwpunit_to_px(
+                                                            pp.common.height as i32,
+                                                            self.dpi,
+                                                        ))
+                                                    }
+                                                    _ => None,
+                                                })
+                                                .fold(None::<f64>, |acc, h| {
+                                                    Some(acc.map_or(h, |a| a.max(h)))
+                                                })?;
+                                            let vpos = p
+                                                .line_segs
+                                                .first()
+                                                .filter(|seg| seg.vertical_pos >= 0)
+                                                .map(|seg| {
+                                                    hwpunit_to_px(seg.vertical_pos, self.dpi)
+                                                })
+                                                .unwrap_or(0.0);
+                                            Some(vpos + pic_h)
+                                        })
+                                        .fold(0.0f64, f64::max);
+                                    let base = content_top
+                                        + match effective_valign {
+                                            VerticalAlign::Top => 0.0,
+                                            VerticalAlign::Center => {
+                                                ((inner_height - block_extent) / 2.0).max(0.0)
+                                            }
+                                            VerticalAlign::Bottom => {
+                                                (inner_height - block_extent).max(0.0)
+                                            }
+                                        };
+                                    let vpos_px = para
+                                        .line_segs
+                                        .first()
+                                        .filter(|seg| seg.vertical_pos >= 0)
+                                        .map(|seg| hwpunit_to_px(seg.vertical_pos, self.dpi))
+                                        .unwrap_or(0.0);
+                                    base + vpos_px + v_off
+                                } else if let Some(vpos_px) = stored_flow_vpos {
                                     content_top + vpos_px + v_off
                                 } else {
                                     match effective_valign {
@@ -6052,6 +6174,7 @@ impl LayoutEngine {
                 }
             }
         }
+        self.cell_has_square_float.set(prev_cell_square_float);
     }
 
     /// 각 셀 레이아웃 (배경, 패딩, 텍스트, 컨트롤, 테두리)

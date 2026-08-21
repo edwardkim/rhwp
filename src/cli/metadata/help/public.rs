@@ -1,7 +1,12 @@
+use super::sink::println;
+
 pub(super) fn print() {
     println!("rhwp v{} - HWP 파일 뷰어", rhwp::version());
     println!();
     println!("사용법: rhwp <명령> [옵션]");
+    println!(
+        "       rhwp <명령> [<하위명령>] --help    그 명령의 절만 출력 (이 통짜 출력 대신, #5791)"
+    );
     println!();
     println!("전역 옵션 (일반 HWP5 열기·내보내기·변환 명령):");
     println!("      --password <pw>         EncryptVersion 4 암호 문서 열기");

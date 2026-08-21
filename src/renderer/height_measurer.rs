@@ -1160,7 +1160,6 @@ impl HeightMeasurer {
                         .first()
                         .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
                         .unwrap_or(0.0);
-                    let candidate = para_top + nested_h;
                     // 절대배치의 직접 증거는 "표의 공간이 호스트 줄 **위**에 이미
                     // 예약됨"이다 — 직전 저장 줄 끝→호스트 vpos 갭이 표 높이만큼
                     // 벌어진다(기장군 612 vs 표 598 · 수면 작성례 563 vs 536.5 —
@@ -1177,6 +1176,35 @@ impl HeightMeasurer {
                         .filter(|&e| e <= para_top + 0.5)
                         .fold(f64::NEG_INFINITY, f64::max);
                     let gap_before = para_top - prev_end;
+                    // [#5723] 호스트가 **셀 첫 문단**인데 그 줄의 저장 vpos 가 표
+                    // 높이 이상으로 내려가 있으면(셀 상단→줄 갭 = 표 공간), 그 줄은
+                    // wrap 개체에 밀려난 줄이다 (#2226 displaced-line 의 표 판) —
+                    // PARA 기준 float 표의 원점은 문단 시작이므로 para_top 가산은
+                    // 표 공간의 이중 계상이다. 156630807 p14: 저장 줄 155.4px 아래에
+                    // SQUARE 표 147.8px 를 다시 얹어 셀 303.2px(한글 184px), 짝 셀과의
+                    // CENTER 슬랙 60.8px 로 왼쪽 표만 내려갔다. 중간 문단 호스트는
+                    // para_top 이 앞 내용 누적이라 갭 증거가 없어 제외한다(53326
+                    // 58쪽 MATCH 유지).
+                    let host_line_displaced_below_float = pidx == 0
+                        && !prev_end.is_finite()
+                        && para_top > 0.0
+                        && nested_h <= para_top + 0.5
+                        // 갭이 표 공간 규모여야 한다(바깥여백·줄간격 허용) — 갭이
+                        // 표보다 훨씬 크면 밀림이 아니라 임의 절대배치다.
+                        && para_top <= nested_h * 1.15 + 8.0
+                        && p.controls.iter().all(|ctrl| {
+                            !matches!(ctrl, Control::Table(nested)
+                            if nested.common.treat_as_char
+                                || !matches!(
+                                    nested.common.vert_rel_to,
+                                    crate::model::shape::VertRelTo::Para
+                                ))
+                        });
+                    let candidate = if host_line_displaced_below_float {
+                        nested_h
+                    } else {
+                        para_top + nested_h
+                    };
                     // 쪽을 넘는 거대 중첩 표는 셀 사다리가 조각-국소라 표를
                     // 기술하지 못한다(49308: nested_h 2664 vs ladder_end 122 —
                     // 캡하면 쪽수 70->69 로 한글 71쪽에서 멀어짐). 표가 사다리
@@ -1638,10 +1666,15 @@ impl HeightMeasurer {
                 };
 
                 // 패딩 포함 총 필요 높이
-                // [Task #501] cell.padding 이 IR cell.height 의 절반을 초과하는 비정상
-                // 케이스 (mel-001 p2 셀[21]: cell.h=1280 HU, pad.top+bottom=3400 HU) 가드:
+                // [Task #501] cell.padding 이 IR cell.height 자체를 넘는 비정상 케이스
+                // (mel-001 p2 셀[21]: cell.h=1280 HU, pad.top+bottom=3400 HU) 가드:
                 // 비정상 padding 이 row_heights 를 확장하면 TAC 표 비례 축소가 모든 행에
                 // 영향. content_height 가 IR cell.height 안에 들어가면 IR 권위 우선.
+                // [#5751] 발동 기준은 렌더(table_layout 의 padding 비례 축소)와 같은
+                // `Cell::vertical_padding_is_abnormal` 하나를 쓴다. 종전 `절반 초과`
+                // 기준은 여백이 셀 높이의 절반~1배인 **정상 조밀 표**에서도 발동해
+                // (156505020 데이터 셀: pad 15.09px, h 21.09px) 측정만 행을 안 늘리고
+                // 렌더는 저장 여백을 그대로 써 글자가 아래 괘선을 넘겼다.
                 let total_pad = pad_top + pad_bottom;
                 let cell_h_px = if cell.height < 0x80000000 {
                     hwpunit_to_px(cell.height as i32, self.dpi)
@@ -1665,9 +1698,9 @@ impl HeightMeasurer {
                         .paragraphs
                         .iter()
                         .all(|p| !crate::renderer::para_has_no_stored_line_segs(p));
-                let required_height = if cell_h_px > 0.0
-                    && total_pad > cell_h_px * 0.5
-                    && content_height <= cell_h_px
+                let required_height = if crate::model::table::Cell::vertical_padding_is_abnormal(
+                    cell_h_px, total_pad,
+                ) && content_height <= cell_h_px
                 {
                     cell_h_px
                 } else if relaxed_pad_mirror {
