@@ -5583,6 +5583,20 @@ impl LayoutEngine {
                 y_offset = bottom_y;
             }
         }
+        // [#5792] 앞 쪽에서 잘린 overlay 표의 잔여 행(#4568)이 이 단 상단을 차지하는
+        // 형상에서는 본문 흐름이 그 아래에서 시작한다. `reserve_px` 는 typeset 이
+        // 같은 값으로 예약한 높이다 — 예약이 0 인 조각(#4514 필러 형상)은 종전대로
+        // 흐름을 밀지 않는다. 예약하지 않으면 본문 문단이 잔여 행과 같은 y 에서
+        // 시작해 글자가 겹치고, 그 본문이 배치한 표가 잔여 행의 페인트 상한을 깎아
+        // 남은 행이 통째로 사라진다.
+        let overlay_top_reserve = col_content
+            .overlay_continuations
+            .iter()
+            .map(|cont| cont.reserve_px)
+            .fold(0.0_f64, f64::max);
+        if overlay_top_reserve > 0.0 {
+            y_offset = y_offset.max(col_area.y + overlay_top_reserve);
+        }
         // [Task #901 Stage 8/10] TopAndBottom flow-around: anchor paragraph 의 text 가 picture
         // 위에 fit 가능하면 pre-jump skip, render 후 post-jump 적용.
         // (bottom_y, anchor_first_vpos) — Stage 10: vpos_lazy_base 를 anchor first vpos 로
