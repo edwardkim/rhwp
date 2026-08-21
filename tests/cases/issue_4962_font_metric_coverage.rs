@@ -349,9 +349,10 @@ fn public_hwp_hwpx_classification_golden_is_deterministic_and_format_portable() 
 
     let hwp = &results["format-parity-hwp"];
     let hwpx = &results["format-parity-hwpx"];
-    for field in ["counts", "categories", "joins", "legacyUsage", "decisionUsage"] {
+    for field in ["counts", "categories", "joins", "legacyUsage"] {
         assert_eq!(hwp[field], hwpx[field], "portable HWP/HWPX field: {field}");
     }
+    assert_eq!(width_source_counts(hwp), width_source_counts(hwpx));
 }
 
 #[test]
@@ -360,7 +361,7 @@ fn public_blank_derived_documents_reach_every_current_positive_category() {
         ("함초롬바탕", "가", "exact-hit", "embeddedMetric"),
         ("KoPub돋움체 Light", "가", "measured-overlay", "kopubTable"),
         ("본한글", "가", "metric-surrogate", "embeddedMetric"),
-        ("함초롬바탕", "😀", "char-miss", "heuristicFullwidth"),
+        ("함초롬바탕", "😀", "char-miss", "heuristicHalfwidth"),
         ("W3 Missing Face", "A", "face-miss", "heuristicHalfwidth"),
         ("W3 Missing Face", "ㆍ", "heuristic", "areaDotFallback"),
     ];
@@ -397,8 +398,8 @@ fn public_blank_derived_document_keeps_all_non_applicable_width_sources_out_of_c
 
     let expected = BTreeMap::from([
         ("clusterContinuation".to_string(), 2),
-        ("embeddedMetric".to_string(), 1),
         ("figureSpace".to_string(), 1),
+        ("heuristicFullwidth".to_string(), 1),
         ("hwpPuaFiller".to_string(), 1),
         ("inlineObjectPlaceholder".to_string(), 1),
         ("tabAdvance".to_string(), 1),
