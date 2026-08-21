@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "kind": "font-metric-coverage-full-manifest-policy",
   "issue": 4962,
-  "policyVersion": "stage4-a-v1",
+  "policyVersion": "stage4-c-v2",
   "expected": {
     "documents": 10000,
     "formats": {
@@ -24,6 +24,15 @@
     "rejectSymlinks": true,
     "rejectSpecialFiles": true,
     "maxInputBytes": 269484032
+  },
+  "formatClassification": {
+    "inputFormat": "extension",
+    "executionFormat": "supported-container-signature-or-input-fallback",
+    "unsupportedSignature": "worker-explicit-failure",
+    "supportedContainerFormats": [
+      "hwp",
+      "hwpx"
+    ]
   },
   "identity": {
     "algorithm": "blake3",

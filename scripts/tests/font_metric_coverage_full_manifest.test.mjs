@@ -26,6 +26,8 @@ const CHECKPOINT_POLICY_BYTES = fs.readFileSync(path.join(
   'issue-4962',
   'font_metric_coverage_checkpoint_policy.json',
 ));
+const HWP_HEAD = Buffer.from([0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1]);
+const HWPX_HEAD = Buffer.from([0x50, 0x4B, 0x03, 0x04, 0, 0, 0, 0]);
 
 function temporary(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'rhwp-4962-manifest-'));
@@ -38,7 +40,7 @@ function fixturePolicy() {
   policy.expected = {
     documents: 3,
     formats: { hwp: 2, hwpx: 1 },
-    candidateBytes: 10,
+    candidateBytes: 24,
     ignoredRegularFiles: 1,
     ignoredBytes: 2,
   };
@@ -59,9 +61,9 @@ test('full manifest is deterministic, local-only and preserves duplicate content
   const corpus = path.join(directory, 'corpus');
   const nested = path.join(corpus, 'nested');
   fs.mkdirSync(nested, { recursive: true });
-  fs.writeFileSync(path.join(corpus, 'a.hwp'), 'abc');
-  fs.writeFileSync(path.join(nested, 'b.hwp'), 'abc');
-  fs.writeFileSync(path.join(corpus, 'c.hwpx'), 'wxyz');
+  fs.writeFileSync(path.join(corpus, 'a.hwp'), HWP_HEAD);
+  fs.writeFileSync(path.join(nested, 'b.hwp'), HWP_HEAD);
+  fs.writeFileSync(path.join(corpus, 'c.hwpx'), HWPX_HEAD);
   fs.writeFileSync(path.join(corpus, 'metadata.tsv'), 'ok');
   const policy = fixturePolicy();
   const policyBytes = Buffer.from(`${JSON.stringify(policy)}\n`);
@@ -83,7 +85,12 @@ test('full manifest is deterministic, local-only and preserves duplicate content
   assert.equal(first.manifest.documents.length, 3);
   assert.deepEqual(first.preflight.duplicateContent, { groups: 1, extraInstances: 1 });
   assert.deepEqual(first.preflight.formats, { hwp: 2, hwpx: 1 });
-  assert.equal(first.preflight.candidateBytes, 10);
+  assert.equal(first.preflight.candidateBytes, 24);
+  assert.deepEqual(first.preflight.formatDetection, {
+    supported: { hwp: 2, hwpx: 1 },
+    unrecognized: 0,
+    inputMismatch: 0,
+  });
   assert.equal(first.preflight.privacy.containsDocumentIdentity, false);
   const safePreflight = JSON.stringify(first.preflight);
   assert.doesNotMatch(safePreflight, /(?:a\.hwp|b\.hwp|c\.hwpx|\/corpus)/u);
@@ -91,6 +98,46 @@ test('full manifest is deterministic, local-only and preserves duplicate content
   assert.equal(first.manifest.documents[0].format, 'hwp');
   assert.equal(first.manifest.documents[1].format, 'hwp');
   assert.equal(first.manifest.documents[2].format, 'hwpx');
+  assert.deepEqual(
+    first.manifest.documents.map(row => row.inputFormat),
+    ['hwp', 'hwp', 'hwpx'],
+  );
+});
+
+test('full manifest preserves input buckets while execution follows supported container bytes', async t => {
+  const directory = temporary(t);
+  const corpus = path.join(directory, 'corpus');
+  fs.mkdirSync(corpus);
+  fs.writeFileSync(path.join(corpus, 'crossed.hwp'), HWPX_HEAD);
+  fs.writeFileSync(path.join(corpus, 'crossed.hwpx'), HWP_HEAD);
+  const policy = fixturePolicy();
+  policy.expected = {
+    documents: 2,
+    formats: { hwp: 1, hwpx: 1 },
+    candidateBytes: 16,
+    ignoredRegularFiles: 0,
+    ignoredBytes: 0,
+  };
+  const result = await buildFullCoverageManifest({
+    corpusRoot: corpus,
+    sourceHead: '1'.repeat(40),
+    rhwpAgent: process.execPath,
+    checkpointFilesystemPath: directory,
+    policy,
+    policyBytes: Buffer.from(`${JSON.stringify(policy)}\n`),
+    checkpointPolicyBytes: CHECKPOINT_POLICY_BYTES,
+    hashFile: fakeHash,
+  });
+  assert.deepEqual(result.preflight.formats, { hwp: 1, hwpx: 1 });
+  assert.deepEqual(result.preflight.formatDetection, {
+    supported: { hwp: 1, hwpx: 1 },
+    unrecognized: 0,
+    inputMismatch: 2,
+  });
+  assert.deepEqual(
+    result.manifest.documents.map(row => [row.inputFormat, row.format]),
+    [['hwpx', 'hwp'], ['hwp', 'hwpx']],
+  );
 });
 
 test('full manifest fails closed on symlink, inventory drift and mutation during hash', async t => {

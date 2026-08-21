@@ -88,12 +88,12 @@ manifest와 checkpoint는 반드시 gitignored `output/` 아래에 두며 Issue�
 ```bash
 node scripts/font_metric_coverage_full_manifest.mjs \
   --corpus-root <private-corpus-root> \
-  --manifest output/poc/font-metric-coverage/full-manifest-stage4-a-v1.json \
-  --preflight output/poc/font-metric-coverage/full-manifest-preflight-stage4-a-v1.json \
+  --manifest output/poc/font-metric-coverage/full-manifest-stage4-c-v2.json \
+  --preflight output/poc/font-metric-coverage/full-manifest-preflight-stage4-c-v2.json \
   --source-head <full-commit>
 
 node scripts/font_metric_coverage_checkpoint_runner.mjs \
-  --manifest output/poc/font-metric-coverage/full-manifest-stage4-a-v1.json \
+  --manifest output/poc/font-metric-coverage/full-manifest-stage4-c-v2.json \
   --checkpoint-dir output/poc/font-metric-coverage/checkpoint-stage4-r1 \
   --worker target/debug/examples/font_metric_coverage_worker \
   --source-head <full-commit>
@@ -106,3 +106,10 @@ node scripts/font_metric_coverage_checkpoint_finalizer.mjs \
 full manifest는 content 중복을 제거하지 않는다. 같은 source의 중복만 오류이며 동일 bytes가 여러 문서로
 존재하는 경우 기존 corpus 빈도를 보존한다. finalizer는 문서별 usage row에 format을 주입해 HWP/HWPX
 축을 유지하고, path·filename·개별 BLAKE3 없이 최종 aggregate와 canonical SHA-256을 만든다.
+
+`inputFormat`은 동결된 10k inventory의 확장자 분모이고 `format`은 HWP OLE/HWPX ZIP 컨테이너
+시그니처로 판정한 실행 형식이다. 지원 컨테이너 시그니처가 없으면 실행 형식은 입력 분류를 유지하되
+worker가 HWP3·HML·unknown을 `unsupported` 문서 실패로 기록한다. 지원 형식의 확장자와 컨테이너가
+엇갈린 문서는 corpus를 이름 변경하지 않고 컨테이너 형식으로 실행하며, worker aggregate와 다르면
+checkpoint runner가 계속 fail-closed 한다. preflight에는 경로·파일명 없이 지원 형식 수,
+미인식 수, 입력 분류 불일치 수만 남긴다.

@@ -70,10 +70,10 @@ fn main() {
     };
 
     match detect_format(&bytes) {
+        FileFormat::Hwp | FileFormat::Hwpx => {}
         FileFormat::Empty => failure("empty"),
         FileFormat::DrmProtected => failure("drm"),
-        FileFormat::Unknown => failure("unsupported"),
-        _ => {}
+        FileFormat::Hwp3 | FileFormat::Hml | FileFormat::Unknown => failure("unsupported"),
     }
 
     let core = match DocumentCore::from_bytes(&bytes) {

@@ -56,7 +56,7 @@ function canonicalJson(value) {
 function validatePolicy(policy) {
   if (policy?.schemaVersion !== 1
       || policy.kind !== 'font-metric-coverage-full-manifest-policy'
-      || policy.policyVersion !== 'stage4-a-v1'
+      || policy.policyVersion !== 'stage4-c-v2'
       || policy.discovery?.rejectSymlinks !== true
       || policy.discovery?.rejectSpecialFiles !== true
       || !safeInteger(policy.discovery?.maxInputBytes)
@@ -72,6 +72,14 @@ function validatePolicy(policy) {
       || policy.privacy?.preflightContainsDocumentIdentity !== false
       || policy.privacy?.publishManifest !== false) {
     throw new Error('font metric coverage full manifest policy is invalid');
+  }
+  if (policy.formatClassification?.inputFormat !== 'extension'
+      || policy.formatClassification?.executionFormat
+        !== 'supported-container-signature-or-input-fallback'
+      || policy.formatClassification?.unsupportedSignature !== 'worker-explicit-failure'
+      || canonicalJson(policy.formatClassification?.supportedContainerFormats)
+        !== canonicalJson(['hwp', 'hwpx'])) {
+    throw new Error('full manifest format classification policy is invalid');
   }
   for (const field of ['documents', 'candidateBytes', 'ignoredRegularFiles', 'ignoredBytes']) {
     if (!safeInteger(policy.expected?.[field])) {
@@ -102,6 +110,31 @@ function statIdentity(stats) {
   return [stats.dev, stats.ino, stats.size, stats.mtimeNs].map(String).join(':');
 }
 
+function supportedContainerFormat(filePath) {
+  const descriptor = fs.openSync(filePath, 'r');
+  try {
+    const head = Buffer.alloc(8);
+    const bytesRead = fs.readSync(descriptor, head, 0, head.length, 0);
+    if (bytesRead >= 4
+        && head[0] === 0xD0
+        && head[1] === 0xCF
+        && head[2] === 0x11
+        && head[3] === 0xE0) {
+      return 'hwp';
+    }
+    if (bytesRead >= 4
+        && head[0] === 0x50
+        && head[1] === 0x4B
+        && head[2] === 0x03
+        && head[3] === 0x04) {
+      return 'hwpx';
+    }
+    return null;
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
 function discoverCorpus(corpusRoot, policy) {
   const root = fs.realpathSync(corpusRoot);
   const rootStats = fs.statSync(root);
@@ -125,9 +158,9 @@ function discoverCorpus(corpusRoot, policy) {
       }
       if (!entry.isFile()) throw new Error('full manifest corpus contains a special file');
       const extension = path.extname(entry.name).toLowerCase();
-      const format = policy.discovery.extensions[extension];
+      const inputFormat = policy.discovery.extensions[extension];
       const stats = fs.statSync(candidate, { bigint: true });
-      if (!format) {
+      if (!inputFormat) {
         if (!policy.discovery.ignoredExtensions.includes(extension)) {
           throw new Error('full manifest corpus contains an unexpected file type');
         }
@@ -140,9 +173,12 @@ function discoverCorpus(corpusRoot, policy) {
       }
       const real = fs.realpathSync(candidate);
       if (!withinRoot(root, real)) throw new Error('full manifest source escapes corpus root');
+      const detectedFormat = supportedContainerFormat(real);
       candidates.push({
         source: real,
-        format,
+        inputFormat,
+        format: detectedFormat ?? inputFormat,
+        detectedFormat,
         sizeBytes: Number(stats.size),
         statIdentity: statIdentity(stats),
       });
@@ -207,7 +243,7 @@ function validateExpected(discovery, policy) {
   let candidateBytes = 0;
   let maxInputBytes = 0;
   for (const document of discovery.candidates) {
-    formats[document.format] += 1;
+    formats[document.inputFormat] += 1;
     candidateBytes += document.sizeBytes;
     maxInputBytes = Math.max(maxInputBytes, document.sizeBytes);
   }
@@ -220,6 +256,23 @@ function validateExpected(discovery, policy) {
     throw new Error('full manifest corpus does not match the frozen Stage 4-A inventory');
   }
   return { formats, candidateBytes, maxInputBytes };
+}
+
+function formatDetectionSummary(documents) {
+  const summary = {
+    supported: { hwp: 0, hwpx: 0 },
+    unrecognized: 0,
+    inputMismatch: 0,
+  };
+  for (const document of documents) {
+    if (document.detectedFormat === null) {
+      summary.unrecognized += 1;
+      continue;
+    }
+    summary.supported[document.detectedFormat] += 1;
+    if (document.detectedFormat !== document.inputFormat) summary.inputMismatch += 1;
+  }
+  return summary;
 }
 
 function duplicateSummary(documents) {
@@ -259,8 +312,15 @@ export async function buildFullCoverageManifest(options) {
     rhwpAgent,
     onProgress: options.onProgress,
   });
+  const detection = formatDetectionSummary(hashed);
   const documents = hashed
-    .map(({ source, format, sizeBytes, blake3 }) => ({ source, format, sizeBytes, blake3 }))
+    .map(({ source, inputFormat, format, sizeBytes, blake3 }) => ({
+      source,
+      inputFormat,
+      format,
+      sizeBytes,
+      blake3,
+    }))
     .sort((left, right) => (
       compareText(left.format, right.format)
       || compareText(left.blake3, right.blake3)
@@ -294,7 +354,9 @@ export async function buildFullCoverageManifest(options) {
     },
     corpus: {
       documents: documents.length,
+      inputFormats: inventory.formats,
       formats: inventory.formats,
+      formatDetection: detection,
       candidateBytes: inventory.candidateBytes,
       ignoredRegularFiles: discovery.ignoredRegularFiles,
       ignoredBytes: discovery.ignoredBytes,
@@ -311,6 +373,7 @@ export async function buildFullCoverageManifest(options) {
     sourceHead: options.sourceHead,
     documents: documents.length,
     formats: inventory.formats,
+    formatDetection: detection,
     candidateBytes: inventory.candidateBytes,
     maximumInputBytes: inventory.maxInputBytes,
     ignoredRegularFiles: discovery.ignoredRegularFiles,
