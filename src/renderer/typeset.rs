@@ -3707,6 +3707,10 @@ fn saved_tail_fit_chain_decision(
 }
 
 const SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX: f64 = 16.0;
+/// [#5822] 누적 흐름이 저장 object frame 안으로 앞서 들어갔을 때 그 frame 을
+/// 물리 page owner 로 신뢰하는 최대 드리프트. 실측 42.2px(156634833 p6)를
+/// 덮고, frame 깊숙이 지나간 stale anchor(수백 px 뒤처짐)는 기각한다.
+const SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX: f64 = 64.0;
 
 fn saved_bounds_overlap_current_flow(bounds: (f64, f64), current_height: f64) -> bool {
     let (top, bottom) = bounds;
@@ -3765,10 +3769,21 @@ fn saved_table_bounds_fit_at_flow_tail(
     // 일반 fit 경로에 맡긴다.
     let source_frame_leads_current_flow =
         current_height <= top && saved_bounds_overlap_current_flow(bounds, current_height);
+    // [#5822] 흐름이 저장 frame **안**에 막 들어온 경우(top ≤ 흐름 ≤ top+드리프트
+    // 허용, 흐름 ≤ bottom)도 그 frame 이 물리 page owner 다 — 누적 드리프트로
+    // 흐름이 사다리보다 수십 px 앞서 달려도, 한글이 기록한 frame 이 body 에
+    // 들어가면 표는 그 쪽에 앉는다 (156634833 p6 차트 표: 저장 748.2..929.1 ≤
+    // body 933.6 인데 흐름 790.4(드리프트 +42.2px) 기준 적합검사가 밀어 40쪽 vs
+    // 한글 39쪽 — 이하 절 전체가 한 쪽씩 밀렸다). 흐름이 frame 깊숙이(허용 초과)
+    // 지나간 쪽 상단 stale anchor 는 여전히 일반 fit 경로에 맡긴다.
+    let current_flow_inside_source_frame = top <= current_height
+        && current_height <= top + SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX
+        && current_height <= bounds.1;
     table_height.is_finite()
         && table_height > 0.0
         && (saved_line_is_anchored_to_current_flow(bounds, current_height)
-            || source_frame_leads_current_flow)
+            || source_frame_leads_current_flow
+            || current_flow_inside_source_frame)
         && bounds.1 <= available
         && bounds.0 + table_height <= available
 }
@@ -17825,13 +17840,44 @@ impl TypesetEngine {
                         && !oversized_multirow
                         && has_tac
                         && para_is_non_tac_overlay_table_anchor(para);
+                    // [#5798] 단(그리고 용지) 밖에 **통째로** 놓인 자리차지(T&B) 표는
+                    // 한글이 흐름 밴드를 예약하지 않는다 — 가로로 글과 겹칠 수 없어
+                    // 위/아래로 밀어낼 대상이 없기 때문이다. 2401225 근무일지: 결재란
+                    // 표 2개(horz=단 offset 64328HU, 단 폭 ~47500HU — x=933px, 용지
+                    // 793px)가 각 ~101.7px 씩 본문을 밀어 +203px 하강·결재란 겹침을
+                    // 만들었다(한글은 두 표를 안 그리고 본문을 제자리에 둔다). 그림의
+                    // #959 가드(단 우측 초과 시 advance skip)와 동일 시멘틱 — 실측이
+                    // Left/Inside 정렬·Column/Para 기준뿐이라 그 조합에 한정한다.
+                    let horz_fully_outside_column = !table.common.treat_as_char
+                        && matches!(
+                            table.common.text_wrap,
+                            crate::model::shape::TextWrap::TopAndBottom
+                        )
+                        && matches!(
+                            table.common.horz_rel_to,
+                            crate::model::shape::HorzRelTo::Column
+                                | crate::model::shape::HorzRelTo::Para
+                        )
+                        && matches!(
+                            table.common.horz_align,
+                            crate::model::shape::HorzAlign::Left
+                                | crate::model::shape::HorzAlign::Inside
+                        )
+                        && {
+                            let left = hwpunit_to_px(
+                                signed_hwpunit(table.common.horizontal_offset),
+                                self.dpi,
+                            );
+                            let right = left + hwpunit_to_px(table.common.width as i32, self.dpi);
+                            left >= host_col_w - 0.5 || right <= 0.5
+                        };
                     // #703: 글앞으로/글뒤로 데코레이션(비-TAC) 표만 본문 흐름에서 제외.
                     // treat_as_char(글자처럼 취급) 표는 wrap 설정과 무관하게 인라인이므로
                     // 흐름 높이를 예약해야 한다(한컴 의미론). #1995: 전체폭 단일셀 콜아웃
                     // 박스가 글앞으로로 저장돼도 zero-height Shape 로 빠지면 후속 문단이
                     // 박스 위로 겹치고 문서가 과소 페이지로 압축된다. 단일컬럼 케이스만
                     // 가드하고, multicol overlay anchor 경로(자체 TAC 판정 보유)는 유지.
-                    if matches!(
+                    if (matches!(
                         table.common.text_wrap,
                         crate::model::shape::TextWrap::InFrontOfText
                             | crate::model::shape::TextWrap::BehindText
@@ -17839,7 +17885,8 @@ impl TypesetEngine {
                         && !oversized_multirow
                         && !table.common.treat_as_char)
                         || multicol_empty_overlay_anchor
-                        || multicol_tac_host_overlay_anchor)
+                        || multicol_tac_host_overlay_anchor))
+                        || horz_fully_outside_column
                     {
                         st.current_items.push(PageItem::Shape {
                             para_index: para_idx,
@@ -19694,6 +19741,9 @@ impl TypesetEngine {
             mut end_row_height_override,
         } = scan;
         let mut r = cursor_row;
+        // [#5828] landscape short-row 흡수가 직전에 받은 행의 높이. 정상 적합
+        // 행이 나오면 리셋된다 — 같은 높이 행이 연속 흡수되는 것을 막는다.
+        let mut bleed_absorbed_row_height: Option<f64> = None;
         while r < row_count {
             let cs_before = if r > cursor_row { cs } else { 0.0 };
             // [#3820 Stage 76] 직전 fragment가 내용은 모두 소비한 채 남긴
@@ -20294,6 +20344,7 @@ impl TypesetEngine {
                 || source_frame_whole_row_fits
             {
                 // 행 전체가 예산 안에 들어감.
+                bleed_absorbed_row_height = None;
                 consumed += cs_before + row_total;
                 r += 1;
                 end_row = r;
@@ -20320,9 +20371,15 @@ impl TypesetEngine {
                 && header_overhead > 0.0
                 && row_start_cut.is_empty()
                 && r > cursor_row
+                // [#5828] 같은 높이 행의 연속 흡수 금지는 아래 short-row 분기와
+                // 공유한다 — 균일 pitch 기계 표가 두 분기를 번갈아 타며 행을
+                // 계속 받는 것을 막는다.
+                && !bleed_absorbed_row_height
+                    .is_some_and(|prev| (prev - row_total).abs() < 0.5)
                 && consumed + cs_before + row_total
                     <= avail_for_rows + landscape_whole_row_tolerance
             {
+                bleed_absorbed_row_height = Some(row_total);
                 consumed += cs_before + row_total;
                 r += 1;
                 end_row = r;
@@ -20344,9 +20401,26 @@ impl TypesetEngine {
                         && !st.profile.hwp5_origin_hwpx()
                         && layout_engine.row_has_stored_vpos_frame_rewind(table, r)))
                 && row_total <= landscape_short_row_max_height
+                // [#5828] 이 흡수는 **경계에 걸친 행 하나**를 위한 것이다(#1672 의
+                // 의도). 종전에는 tolerance 가 누적 consumed 에 계속 적용돼 경계를
+                // 넘어선 뒤에도 행을 받았다 — 156505020 구역3(가용 604.8px)에서
+                // 쪽마다 26행(843px, 용지 +121px)을 얹어 한글 43쪽 vs rhwp 33쪽.
+                // 직전까지의 consumed 가 예산 안일 때만 이 행으로 경계를 한 번
+                // 넘고, 그 다음 행부터는 이 분기가 닫힌다(한글 실측: 쪽당 17행).
+                // [#5828] 이 흡수는 경계에 걸친 짧은 잔여 행을 위한 것이다
+                // (#1672). 종전에는 tolerance 가 누적 consumed 에 계속 적용돼 균일
+                // 32.4px 행 기계 표에서 8행을 연속 흡수했다 — 156505020 구역3:
+                // 쪽마다 26행(843px, 용지 +121px), 한글 43쪽 vs rhwp 33쪽. 한글
+                // 정합이 확인된 이종 행 문서(편람 383쪽 핀, #4763)의 연속 흡수는
+                // 전부 서로 다른 높이(38.7~280.2px)이므로, **같은 높이 행의 연속
+                // 흡수**만 막는다 — 균일 pitch 기계 표는 쪽당 1행에서 닫히고
+                // 이종 행 수동 문서의 계약은 그대로 유지된다.
+                && !bleed_absorbed_row_height
+                    .is_some_and(|prev| (prev - row_total).abs() < 0.5)
                 && consumed + cs_before + row_total
                     <= avail_for_rows + landscape_short_row_tolerance
             {
+                bleed_absorbed_row_height = Some(row_total);
                 consumed += cs_before + row_total;
                 r += 1;
                 end_row = r;

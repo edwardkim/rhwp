@@ -2232,6 +2232,10 @@ impl Renderer for WebCanvasRenderer {
 
         // 위첨자/아래첨자: 글꼴 크기 축소 + y좌표 조정
         let (font_size, y) = style.script_draw_metrics(base_font_size, y);
+        // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
+        let (font_size, ratio) =
+            crate::renderer::condensed_ratio_draw_params(font_size, style.ratio);
+        let has_ratio = (ratio - 1.0).abs() > 0.01;
         let font_family = super::canvas_font_family_chain(&style.font_family);
 
         let font = format!(
@@ -2243,10 +2247,6 @@ impl Renderer for WebCanvasRenderer {
             font_style, font_weight, font_size, font_family
         );
         self.ctx.set_font(&font);
-
-        // 장평 적용
-        let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
-        let has_ratio = (ratio - 1.0).abs() > 0.01;
 
         // 클러스터 분할
         let clusters = split_into_clusters(text);
