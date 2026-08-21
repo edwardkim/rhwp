@@ -97,7 +97,9 @@ jobs:
               pull_number: pr.number,
               per_page: 100,
             });
-            let tailStart = commits.length;
+            const reviewOnlyCandidates = [];
+            let codeCandidateSha = '';
+            let newerTailCommit = null;
             for (let index = commits.length - 1; index >= 0; index -= 1) {
               const commit = commits[index];
               const detail = await github.rest.repos.getCommit({
@@ -106,23 +108,33 @@ jobs:
                 ref: commit.sha,
               });
               const commitFiles = detail.data.files || [];
-              if (commitFiles.length === 0 || commitFiles.length >= 300
-                || !commitFiles.every((file) => isAllowedReviewPath(file))) {
+              if (commitFiles.length === 0 || commitFiles.length >= 300) {
+                setResult(true, `unusable-file-list:${commit.sha}`);
+                return;
+              }
+              if (!commitFiles.every((file) => isAllowedReviewPath(file))) {
+                codeCandidateSha = commit.sha;
                 break;
               }
-              tailStart = index;
+              const parents = commit.parents || [];
+              if (parents.length !== 1
+                || (newerTailCommit && newerTailCommit.parents[0].sha !== commit.sha)) {
+                setResult(true, 'full-code-or-non-mydocs-change');
+                return;
+              }
+              reviewOnlyCandidates.push(commit.sha);
+              if (reviewOnlyCandidates.length > 20) {
+                setResult(true, 'review-tail-too-long');
+                return;
+              }
+              newerTailCommit = commit;
             }
-
-            const tail = commits.slice(tailStart);
-            const candidate = commits[tailStart - 1];
-            const linearTail = tail.length > 0 && tail.length <= 20 && candidate && tail.every((commit, index) => {
-              const expectedParent = index === 0 ? candidate.sha : tail[index - 1].sha;
-              return (commit.parents || []).length === 1 && commit.parents[0].sha === expectedParent;
-            });
-            if (!linearTail) {
+            if (reviewOnlyCandidates.length === 0 || !codeCandidateSha
+              || newerTailCommit.parents[0].sha !== codeCandidateSha) {
               setResult(true, 'full-code-or-non-mydocs-change');
               return;
             }
+            reviewOnlyCandidates.push(codeCandidateSha);
 
             const candidateRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
               owner: context.repo.owner,
@@ -131,26 +143,33 @@ jobs:
               event: 'pull_request',
               per_page: 100,
             });
-            const latestCandidateRun = candidateRuns
-              .filter((run) => (
-                run.event === 'pull_request'
-                && run.head_sha === candidate.sha
-                && run.head_branch === pr.head.ref
-                && run.head_repository?.id === pr.head.repo?.id
-              ))
-              .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0];
-            const runCreatedAt = Date.parse(latestCandidateRun?.created_at || '');
-            const pullCreatedAt = Date.parse(pr.created_at || '');
-            if (!latestCandidateRun || latestCandidateRun.status !== 'completed'
-              || latestCandidateRun.conclusion !== 'success'
-              || !Number.isFinite(runCreatedAt)
-              || !Number.isFinite(pullCreatedAt)
-              || runCreatedAt < pullCreatedAt) {
-              setResult(true, 'review-tail-candidate-run-unavailable');
+            for (const candidateSha of reviewOnlyCandidates) {
+              const latestCandidateRun = candidateRuns
+                .filter((run) => (
+                  run.event === 'pull_request'
+                  && run.head_sha === candidateSha
+                  && run.head_branch === pr.head.ref
+                  && run.head_repository?.id === pr.head.repo?.id
+                ))
+                .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0];
+              if (!latestCandidateRun || latestCandidateRun.status !== 'completed') {
+                core.info(`candidate not reusable yet: ${candidateSha}`);
+                continue;
+              }
+              const runCreatedAt = Date.parse(latestCandidateRun.created_at || '');
+              const pullCreatedAt = Date.parse(pr.created_at || '');
+              if (latestCandidateRun.conclusion !== 'success'
+                || !Number.isFinite(runCreatedAt)
+                || !Number.isFinite(pullCreatedAt)
+                || runCreatedAt < pullCreatedAt) {
+                setResult(true, 'review-tail-candidate-run-unavailable');
+                return;
+              }
+              setResult(false, `skip-trusted-mydocs-tail:${candidateSha}`);
               return;
             }
 
-            setResult(false, `skip-trusted-mydocs-tail:${candidate.sha}`);
+            setResult(true, 'review-tail-candidate-run-unavailable');
 
   adapter-diff:
     name: adapter inter-diff
