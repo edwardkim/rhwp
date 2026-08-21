@@ -33,13 +33,15 @@ fn issue_5756_superscript_line_stays_inside_cell() {
          (위첨자 전진폭 결함이면 ≈761.7)"
     );
 
-    // 위첨자 글리프(10.27px)와 보통 글리프(14.67px)가 모두 존재해야 검증이 유효하다.
+    // 위첨자 글리프와 보통 글리프가 모두 존재해야 검증이 유효하다.
+    // [#5821] 압축 장평(이 문서 ratio=95%)은 세로도 √r 축소 — 10.27→10.00,
+    // 14.67→14.29.
     assert!(
-        svg.contains("font-size=\"10.2"),
-        "위첨자 글리프(0.7배)가 있어야 한다"
+        svg.contains("font-size=\"10.0"),
+        "위첨자 글리프(0.7배×√r)가 있어야 한다"
     );
     assert!(
-        svg.contains("font-size=\"14.6"),
+        svg.contains("font-size=\"14.2"),
         "본문 글리프가 있어야 한다"
     );
 }

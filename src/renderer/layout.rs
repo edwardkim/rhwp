@@ -10817,6 +10817,12 @@ impl LayoutEngine {
                                 });
                             let para_base_y =
                                 para_start_y.get(&para_index).copied().unwrap_or(y_offset);
+                            if std::env::var("RHWP_5715_DBG").is_ok() {
+                                eprintln!(
+                                    "[5715] pi={para_index} ci={control_index} base={para_base_y:.1} from_map={} y_off={y_offset:.1}",
+                                    para_start_y.contains_key(&para_index)
+                                );
+                            }
                             let para_base_y = if deferred_page_start_square {
                                 // next-page owner의 `vpos=0` narrow band는 새 physical
                                 // page의 body top을 가리킨다. layout_body_picture가
@@ -10840,12 +10846,6 @@ impl LayoutEngine {
                             } else {
                                 para_base_y
                             };
-                            let pic_container = LayoutRect {
-                                x: col_area.x,
-                                y: pic_y,
-                                width: col_area.width,
-                                height: col_area.height - (pic_y - col_area.y),
-                            };
                             let saved_y_offset = y_offset;
                             // [Task #1079] 파일 vpos 가 이미 그림 공간을 반영(그림 para 줄 앞
                             // gap ≥ 그림 높이)하면 그림 높이 추가 진행 생략(typeset pushdown
@@ -10868,6 +10868,27 @@ impl LayoutEngine {
                                     }
                                     _ => false,
                                 }
+                            };
+                            // [#5715] #1079 gap 휴리스틱은 그 gap 이 **현재 쪽에 물리적으로
+                            // 실재**할 때만 유효하다. 쪽 리셋 뒤 유령 사다리(앞 lineage 의
+                            // vpos 65410 이 리셋 0-기저 쪽에 섞임)가 만든 가짜 gap 이면
+                            // 바닥-정렬이 그림을 단 상단 위로 밀어 지면 밖 소실이 된다
+                            // (베트남노동시장1125: 124쪽 중 8쪽의 차트가 본문 위/지면 밖).
+                            // 바닥-정렬 목표가 단 상단을 넘으면 기각하고, 같은 문단의 선행
+                            // float(표)이 이미 진행시킨 흐름(y_offset) 뒤로 배치한다.
+                            let (vpos_accounts_for_height, pic_y) = if vpos_accounts_for_height
+                                && pic_y - hwpunit_to_px(pic.common.height as i32, self.dpi)
+                                    < col_area.y - 0.5
+                            {
+                                (false, pic_y.max(y_offset))
+                            } else {
+                                (vpos_accounts_for_height, pic_y)
+                            };
+                            let pic_container = LayoutRect {
+                                x: col_area.x,
+                                y: pic_y,
+                                width: col_area.width,
+                                height: col_area.height - (pic_y - col_area.y),
                             };
                             result_y = self.layout_body_picture(
                                 tree,

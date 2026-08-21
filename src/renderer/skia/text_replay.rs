@@ -296,10 +296,11 @@ impl SkiaTextReplay<'_> {
                 let char_positions = compute_char_positions(text, style);
                 let clusters = split_into_clusters(text);
                 let text_width = *char_positions.last().unwrap_or(&0.0) as f32;
-                let ratio = if style.ratio > 0.0 {
-                    style.ratio as f32
-                } else {
-                    1.0
+                // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
+                let (font_size, ratio) = {
+                    let (fs, r) =
+                        crate::renderer::condensed_ratio_draw_params(font_size as f64, style.ratio);
+                    (fs as f32, r as f32)
                 };
                 let has_ratio = (ratio - 1.0).abs() > 0.01;
                 if crate::model::color::char_shade(style.shade_color).is_some() && text_width > 0.0
