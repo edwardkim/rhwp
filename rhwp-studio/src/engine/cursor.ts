@@ -1856,6 +1856,30 @@ export class CursorState {
     this.updateRect();
   }
 
+  /**
+   * 머리말/꼬리말 내 현재 문단의 처음(-1)/끝(1) 으로 — Home/End.
+   *
+   * 이 모드의 문단은 한 줄로 조판되므로 문단 경계가 곧 줄 경계다. 본문의
+   * `moveToLineStart/End` 는 본문 좌표계를 쓰므로 여기에 쓸 수 없다.
+   */
+  moveToParagraphEdgeInHf(edge: -1 | 1): void {
+    if (this._headerFooterMode === 'none') return;
+    if (edge < 0) {
+      this._hfCharOffset = 0;
+    } else {
+      const isHeader = this._headerFooterMode === 'header';
+      try {
+        const info = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+          this._hfSectionIdx, isHeader, this._hfApplyTo, this._hfParaIdx,
+        ));
+        this._hfCharOffset = info.charCount as number;
+      } catch {
+        return; // WASM 호출 실패 — 커서를 옮기지 않는다
+      }
+    }
+    this.updateRect();
+  }
+
   /** 머리말/꼬리말 내 수평 이동 */
   moveHorizontalInHf(delta: number): void {
     if (this._headerFooterMode === 'none') return;
@@ -1950,6 +1974,24 @@ export class CursorState {
   setFnCursorPosition(fnParaIdx: number, charOffset: number): void {
     this._fnInnerParaIdx = fnParaIdx;
     this._fnCharOffset = charOffset;
+    this.updateRect();
+  }
+
+  /** 각주 내 현재 문단의 처음(-1)/끝(1) 으로 — Home/End. `moveToParagraphEdgeInHf` 참고. */
+  moveToParagraphEdgeInFn(edge: -1 | 1): void {
+    if (!this._footnoteMode) return;
+    if (edge < 0) {
+      this._fnCharOffset = 0;
+    } else {
+      try {
+        const info = this.wasm.getFootnoteInfo(
+          this._fnSectionIdx, this._fnParaIdx, this._fnControlIdx,
+        );
+        this._fnCharOffset = (info.texts[this._fnInnerParaIdx] ?? '').length;
+      } catch {
+        return; // WASM 호출 실패 — 커서를 옮기지 않는다
+      }
+    }
     this.updateRect();
   }
 
