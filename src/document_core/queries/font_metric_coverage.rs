@@ -688,7 +688,7 @@ fn analyze_document(core: &DocumentCore) -> Result<CoverageStats, HwpError> {
 }
 
 fn legacy_records(stats: &CoverageStats) -> Vec<LegacyUsageRecord> {
-    stats
+    let mut records: Vec<LegacyUsageRecord> = stats
         .legacy_usage
         .iter()
         .map(|(key, counts)| LegacyUsageRecord {
@@ -708,7 +708,16 @@ fn legacy_records(stats: &CoverageStats) -> Vec<LegacyUsageRecord> {
             run_count: counts.runs,
             char_count: counts.chars,
         })
-        .collect()
+        .collect();
+    // Keep the v2 POC projection order: character count descending, then face.
+    // Stable sorting preserves the original BTree key order for complete ties.
+    records.sort_by(|left, right| {
+        right
+            .char_count
+            .cmp(&left.char_count)
+            .then_with(|| left.font.cmp(&right.font))
+    });
+    records
 }
 
 fn decision_records(stats: &CoverageStats) -> Vec<DecisionUsageRecord> {
