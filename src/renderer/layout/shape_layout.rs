@@ -798,7 +798,7 @@ impl LayoutEngine {
         let (shape_x, shape_y) = if let Some((ix, iy)) = inline_pos {
             (ix, iy)
         } else {
-            self.compute_object_position(
+            let (mut x, y) = self.compute_object_position(
                 common_for_position,
                 shape_w,
                 shape_h,
@@ -808,7 +808,23 @@ impl LayoutEngine {
                 paper_area,
                 para_y,
                 alignment,
-            )
+            );
+            // [#5808] 어울림(Square) **도형**의 왼쪽 바깥여백은 한글이 가로 위치에
+            // 가산한다 (156518601 1쪽 묶음: 오프셋 29138+여백 566 HU = 471.6px,
+            // 한글 실측 471.3 — 미가산이면 7.2px 왼쪽). 그림은 반대 계약이 이미
+            // 핀돼 있다(#3821: 그림의 om_left 는 wrap 간격이지 위치 이동이 아님) —
+            // 그림 경로가 함께 쓰는 compute_object_position 이 아니라 도형 호출부
+            // 에서만 가산한다. 실측이 Left 정렬뿐이라 Center/Right 는 종전 유지.
+            if !common.treat_as_char
+                && matches!(common.text_wrap, crate::model::shape::TextWrap::Square)
+                && matches!(
+                    common.horz_align,
+                    crate::model::shape::HorzAlign::Left | crate::model::shape::HorzAlign::Inside
+                )
+            {
+                x += hwpunit_to_px(i32::from(common.margin.left), self.dpi);
+            }
+            (x, y)
         };
 
         // 캡션 높이 및 간격 계산

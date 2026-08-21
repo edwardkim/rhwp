@@ -3293,11 +3293,24 @@ impl LayoutEngine {
                 let font_bl = max_fs * 0.85;
                 (font_lh, ensure_min_baseline(font_bl, max_fs))
             } else {
+                // [#5825] 퇴화 저장 baseline 클램프 — 기계생성 통계표는 lineseg 에
+                // baseline == textheight(하강부 0)를 저장한다(156673604 34쪽 표 두 개:
+                // bl=1100=vertsize·spacing=0). 받침이 내려갈 자리가 없어 글자가 아래
+                // 괘선을 지나간다. 한글 2022 는 이 값을 무시하고 표준 ascent 로
+                // 그린다(실측 12.62px = 0.86×; 같은 문서의 정상 표 저장값도
+                // 935 = 0.85×1100). 하강부가 0 인 baseline 만 0.85×textheight 로
+                // 되돌리고, 정상 저장 baseline(bl < th)은 그대로 둔다.
+                let stored_bl = hwpunit_to_px(comp_line.baseline_distance, self.dpi);
+                let stored_bl = if raw_text_height > 0.0 && stored_bl >= raw_text_height - 0.01 {
+                    raw_text_height * 0.85
+                } else {
+                    stored_bl
+                };
                 (
                     line_height,
                     ensure_min_baseline(
                         crate::renderer::corrected_line_baseline_for_source(
-                            hwpunit_to_px(comp_line.baseline_distance, self.dpi),
+                            stored_bl,
                             max_fs,
                             source_metrics_reflowed,
                         ),
@@ -3384,10 +3397,23 @@ impl LayoutEngine {
                 && comp_line.column_start > 0
                 && comp_line.segment_width > 0
                 && comp_line.segment_width < col_area_w_hu;
+            // [#5818] 어울림(Square 계열) float 그림이 있는 **셀** 의 줄도 저장
+            // cs/sw(한컴이 인코딩한 wrap 배제)를 존중한다. 종전 게이트는 전부
+            // cell_ctx.is_none() 이라 셀 줄이 배제를 무시하고 셀 왼끝에서 시작해
+            // 로고를 파고들었다(156599239 머리 표: 저장 cs=4037HU=53.8px, 한글
+            // 실측 x=151.7 = 셀 콘텐츠 왼끝+cs ↔ rhwp 102.2). 신호는 같은 셀에
+            // Square float 가 실재할 때만 켜져(#547 문단 테두리 inset 오인 차단),
+            // cs>0 && sw<셀폭 인 줄에 한정한다.
+            let cell_square_wrap_stored_line = cell_ctx.is_some()
+                && self.cell_has_square_float.get()
+                && comp_line.column_start > 0
+                && comp_line.segment_width > 0
+                && comp_line.segment_width < col_area_w_hu;
             let uses_stored_segment_geometry = (has_picture_shape_square_wrap
                 || line_has_inline_tac_table
                 || precomputed_body_wrap_line
-                || empty_stored_wrap_line)
+                || empty_stored_wrap_line
+                || cell_square_wrap_stored_line)
                 && comp_line.segment_width > 0
                 && (line_avail_hu < col_area_w_hu - 200 || cs_significant);
             let (effective_col_x, effective_col_w) = if uses_stored_segment_geometry {
@@ -6489,7 +6515,16 @@ impl LayoutEngine {
                         if let Control::Shape(shape) = ctrl {
                             let common = shape.common();
                             let shape_h = hwpunit_to_px(shape.flow_height_hu(), self.dpi);
-                            let shape_y = (vars.y + vars.baseline - shape_h).max(vars.y);
+                            // [#5789] 빈 run 줄은 max_fs=0 이라 vars.baseline 이 0 으로
+                            // 접힌다 — TAC 개체는 글자처럼 baseline 에 앉아야 하므로
+                            // 저장 줄의 baseline_distance 로 폴백한다 (3143955 이중선:
+                            // 줄 상자 top 161.99 ↔ 한글 baseline 182.4, 20.4px 어긋남).
+                            let baseline = if vars.baseline > 0.01 {
+                                vars.baseline
+                            } else {
+                                hwpunit_to_px(comp_line.baseline_distance, self.dpi)
+                            };
+                            let shape_y = (vars.y + baseline - shape_h).max(vars.y);
                             tree.set_inline_shape_position(
                                 vars.section_index,
                                 vars.para_index,
@@ -7695,7 +7730,11 @@ pub fn map_pua_bullet_char(ch: char) -> char {
             0xF0811 => '\u{250C}', // ┌ BOX DRAWINGS LIGHT DOWN AND RIGHT
             0xF0817 => '\u{2514}', // └ BOX DRAWINGS LIGHT UP AND RIGHT
             0xF081A => '\u{2500}', // ─ BOX DRAWINGS LIGHT HORIZONTAL
-            0xF0827 => '\u{25A0}', // ■ BLACK SQUARE (한컴 — 잠정, 시각 판정 후 조정)
+            // [#5793] 시각 판정 완료 — 한글 2022 는 이중 가로선(제목 밑 이중 밑줄,
+            // 반각 6.66px/자)으로 그린다. ■(전각)로 두면 띠가 2배 길어져 제목을
+            // 겹친다(1776332, layout-anomaly text-overlap w=213 1위). 이웃
+            // 0xF0832 → ═ 와 같은 이중선 계열.
+            0xF0827 => '\u{2550}', // ═ BOX DRAWINGS DOUBLE HORIZONTAL
             _ => ch,
         };
     }

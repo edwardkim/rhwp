@@ -308,6 +308,13 @@ fn main() {
         Err(code) => process::exit(code),
     };
 
+    // [#5791] `rhwp <명령> [<하위명령>] --help` — 그 명령 절만 내고 exit 0.
+    // 디스패치보다 앞이다: 하위 명령 판정이나 옵션 파서에 닿기 전에 답해야
+    // "알 수 없는 옵션"·"파일을 읽을 수 없습니다"로 떨어지지 않는다.
+    if let Some(code) = cli::metadata::help::scoped_help(&args[1..]) {
+        process::exit(code);
+    }
+
     match args.get(1).map(|s| s.as_str()) {
         Some("--help") | Some("-h") => cli::metadata::help::print_help(),
         Some("--version") | Some("-V") => println!("rhwp v{}", rhwp::version()),
