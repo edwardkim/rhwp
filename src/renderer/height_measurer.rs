@@ -1160,7 +1160,29 @@ impl HeightMeasurer {
                         .first()
                         .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
                         .unwrap_or(0.0);
-                    let candidate = para_top + nested_h;
+                    // [#5723] 호스트 줄의 저장 vpos 가 표 높이 이상으로 내려가 있으면
+                    // 그 줄은 wrap 개체에 **밀려난** 줄이다 (#2226 displaced-line 의
+                    // 표 판) — PARA 기준 float 표의 원점은 문단 시작이므로 para_top
+                    // 가산은 표 공간의 이중 계상이다. 156630807 p14: 저장 줄 155.4px
+                    // 아래에 SQUARE 표 147.8px 를 다시 얹어 셀 303.2px(한글 184px),
+                    // 짝 셀과의 CENTER 슬랙 60.8px 로 왼쪽 표만 내려갔다. 흐름형
+                    // (표가 호스트 줄 뒤로 흐르는 형상)은 para_top 이 표 높이보다
+                    // 작아 발동하지 않는다.
+                    let host_line_displaced_below_float = para_top > 0.0
+                        && nested_h <= para_top + 0.5
+                        && p.controls.iter().all(|ctrl| {
+                            !matches!(ctrl, Control::Table(nested)
+                            if nested.common.treat_as_char
+                                || !matches!(
+                                    nested.common.vert_rel_to,
+                                    crate::model::shape::VertRelTo::Para
+                                ))
+                        });
+                    let candidate = if host_line_displaced_below_float {
+                        nested_h
+                    } else {
+                        para_top + nested_h
+                    };
                     // 절대배치의 직접 증거는 "표의 공간이 호스트 줄 **위**에 이미
                     // 예약됨"이다 — 직전 저장 줄 끝→호스트 vpos 갭이 표 높이만큼
                     // 벌어진다(기장군 612 vs 표 598 · 수면 작성례 563 vs 536.5 —
