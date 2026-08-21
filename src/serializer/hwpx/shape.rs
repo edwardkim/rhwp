@@ -285,6 +285,10 @@ pub fn write_container_open<W: Write>(
     let z_order = common.z_order.to_string();
     let tw = text_wrap_str(common.text_wrap);
     let tf = text_flow_str(common.text_flow);
+    // [#5716] groupLevel 은 IR(shape_attr.group_level)을 보존한다. 종전 "0" 하드코딩은
+    // 다른 그룹의 멤버인 컨테이너의 중첩 레벨이 저장 시 전부 0 으로 유실됐다
+    // (리프 도형 경로는 #2746 에서 이미 보존 — 컨테이너 자신만 누락).
+    let group_level = sa.group_level.to_string();
 
     start_tag_attrs(
         w,
@@ -299,7 +303,7 @@ pub fn write_container_open<W: Write>(
             ("lock", bool01(common.locked)),
             ("dropcapstyle", "None"),
             ("href", ""),
-            ("groupLevel", "0"),
+            ("groupLevel", &group_level),
             ("instid", &id_str),
         ],
     )?;
@@ -373,6 +377,9 @@ pub(crate) fn write_ole<W: Write>(
     };
     // [#2931] 개체 잠금(lock) — IR(common.locked)을 보존(종전 "0" 하드코딩 제거).
     let lock = if c.locked { "1" } else { "0" };
+    // [#5716] groupLevel — 컨테이너와 동형. IR(drawing.shape_attr.group_level)을
+    // 보존한다(종전 "0" 하드코딩은 그룹 내 OLE 의 중첩 레벨을 저장 시 유실).
+    let group_level = ole.drawing.shape_attr.group_level.to_string();
 
     start_tag_attrs(
         w,
@@ -387,7 +394,7 @@ pub(crate) fn write_ole<W: Write>(
             ("lock", bool01(c.locked)),
             ("dropcapstyle", "None"),
             ("href", ""),
-            ("groupLevel", "0"),
+            ("groupLevel", &group_level),
             ("instid", &instid_str),
             ("objectType", "UNKNOWN"),
             ("binaryItemIDRef", &bidref),

@@ -7013,6 +7013,9 @@ fn parse_hp_ole_element(
     // 원문 id=0을 instance_id로 다시 써서 라운드트립을 깨뜨린다.
     let mut id_attr: Option<u32> = None;
     let mut saw_instid = false;
+    // [#5716] hp:ole 자신의 groupLevel — shape_attr 는 자식 파싱 단계에서 만들어지므로
+    // 지역에 받아 두었다가 채운다.
+    let mut group_level: u16 = 0;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
@@ -7072,6 +7075,9 @@ fn parse_hp_ole_element(
             // [#2931] 개체 잠금(lock) — 종전 미파싱으로 직렬화 시 항상 "0"으로
             // 되돌아가 OLE 개체의 잠금 상태가 유실됐다.
             b"lock" => common.locked = attr_str(&attr) == "1",
+            // [#5716] groupLevel — 종전 미파싱으로 그룹 멤버 OLE 의 중첩 레벨이
+            // 왕복 시 0 으로 유실됐다(직렬화기 하드코딩도 같은 이슈에서 제거).
+            b"groupLevel" => group_level = attr_str(&attr).parse().unwrap_or(0),
             _ => {}
         }
     }
@@ -7083,7 +7089,10 @@ fn parse_hp_ole_element(
     }
 
     let mut extent: Option<(i32, i32)> = None;
-    let mut shape_attr = ShapeComponentAttr::default();
+    let mut shape_attr = ShapeComponentAttr {
+        group_level,
+        ..Default::default()
+    };
     let mut caption: Option<crate::model::shape::Caption> = None;
     let mut line_shape: Option<crate::model::style::ShapeBorderLine> = None;
     parse_common_shape_children(
