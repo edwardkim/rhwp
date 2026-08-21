@@ -7,8 +7,8 @@ use skia_safe::{
 use crate::model::style::UnderlineType;
 use crate::paint::LayerOutputOptions;
 use crate::renderer::composer::{
-    char_overlap_size_ratio, decode_pua_overlap_number, expand_pua_render_text,
-    pua_to_display_text, CharOverlapInfo,
+    char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
+    expand_pua_render_text, CharOverlapInfo,
 };
 use crate::renderer::layout::{
     compute_char_positions, is_halfwidth_cjk_quote, split_into_clusters,
@@ -268,16 +268,7 @@ impl SkiaTextReplay<'_> {
                         }
 
                         for ch in chars.iter() {
-                            let display = {
-                                let codepoint = *ch as u32;
-                                if (0x2460..=0x2473).contains(&codepoint) {
-                                    (codepoint - 0x2460 + 1).to_string()
-                                } else if let Some(display) = pua_to_display_text(*ch) {
-                                    display
-                                } else {
-                                    ch.to_string()
-                                }
-                            };
+                            let display = char_overlap_display_text(*ch, is_circle || is_rect);
                             draw_overlap_text(&display, cx, cy);
                         }
                     } else {
@@ -285,14 +276,7 @@ impl SkiaTextReplay<'_> {
                             let display = if let Some((number, _)) = boxed_pua {
                                 number.to_string()
                             } else {
-                                let codepoint = *ch as u32;
-                                if (0x2460..=0x2473).contains(&codepoint) {
-                                    (codepoint - 0x2460 + 1).to_string()
-                                } else if let Some(display) = pua_to_display_text(*ch) {
-                                    display
-                                } else {
-                                    ch.to_string()
-                                }
+                                char_overlap_display_text(*ch, is_circle || is_rect)
                             };
                             draw_overlap_box(
                                 &display,

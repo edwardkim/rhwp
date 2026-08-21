@@ -52,14 +52,33 @@ export class CommandHistory {
    * 연속 축출한다. front 축출은 contiguous 하므로 bounded-history 시멘틱을
    * 지키며(오래된 것부터 사라짐), 스냅샷 커맨드를 discard 해 WASM id 를 즉시
    * 반환한다. 텍스트 커맨드가 front 에 있으면 함께 밀려나지만(0 id) 오래된
-   * 순서라 정합적이다. redo 스택은 새 명령 실행 시 항상 비워지므로 여기서만
-   * front 를 다룬다.
+   * 순서라 정합적이다.
    */
   private enforceSnapshotBudget(wasm: WasmBridge): void {
     while (this.liveSnapshotIds() > SNAPSHOT_ID_BUDGET && this.undoStack.length > 1) {
       const evicted = this.undoStack.shift();
       evicted?.discard?.(wasm);
     }
+  }
+
+  /**
+   * [Task #5769] undo 직후의 예산 강제.
+   *
+   * after 지연 저장(#5769) 이후 **undo 가 스냅샷 id 를 늘리는 연산이 됐다** — undo 스택
+   * 엔트리(1개)가 redo 스택 엔트리(2개)로 바뀌므로 매 undo 마다 +1 이다. execute 에서만
+   * 예산을 강제하던 종전 배선을 그대로 두면, 예산을 채운 상태에서 연속 undo 할 때 store 가
+   * WASM 상한을 넘어 **무통보 축출**이 발동한다 — #2328 이 근절한 그 회귀다.
+   *
+   * 축출 대상은 **redo 스택 bottom**(가장 먼 미래)이다. undo 중인 사용자가 지키려는 것은
+   * 과거이지 미래가 아니고, redo 는 top 부터 순서대로 소비되므로 bottom 을 걷어내도 남은
+   * redo 열은 top 기준으로 연속이다. redo 로 부족하면 종전 규칙대로 undo front 를 민다.
+   */
+  private enforceSnapshotBudgetAfterUndo(wasm: WasmBridge): void {
+    while (this.liveSnapshotIds() > SNAPSHOT_ID_BUDGET && this.redoStack.length > 1) {
+      const evicted = this.redoStack.shift();
+      evicted?.discard?.(wasm);
+    }
+    this.enforceSnapshotBudget(wasm);
   }
 
   private captureExecutionEffects(command: EditCommand): void {
@@ -133,7 +152,10 @@ export class CommandHistory {
   ): DocumentPosition | null {
     this.lastExecutionEffects = NO_TEXT_MUTATION_EFFECTS;
     const command = this.undoStack[this.undoStack.length - 1];
-    if (!command || command.type !== expectedType || command.snapshotResourceCount?.() !== 2) {
+    // [Task #5769] 최초 실행 직후의 스냅샷 명령은 before 하나만 들고 있다(after 는 undo
+    // 시점에 잡는다). 종전 상수 2 를 그대로 두면 이 경로가 영영 매칭되지 않아 rollback 이
+    // 조용히 죽는다.
+    if (!command || command.type !== expectedType || command.snapshotResourceCount?.() !== 1) {
       return null;
     }
     const cursorAfter = command.undo(wasm);
@@ -164,6 +186,11 @@ export class CommandHistory {
     }
     this.undoStack.pop();
     this.redoStack.push(command);
+    // [Task #5769] undo 가 스냅샷 id 를 늘리므로(엔트리 1 → 2) 여기서도 예산을 강제한다.
+    // 스택 이동 이후에 불러야 방금 늘어난 +1 이 계산에 포함된다.
+    if ((command.snapshotResourceCount?.() ?? 0) > 0) {
+      this.enforceSnapshotBudgetAfterUndo(wasm);
+    }
     return cursorAfter;
   }
 
