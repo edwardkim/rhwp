@@ -1383,6 +1383,47 @@ fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec
 }
 
 impl LayoutEngine {
+    /// [#5729] 저장 줄 밴드가 정확히 `om_top + 선언높이 + om_bottom` 인 TAC 표는
+    /// 한글이 표 상단을 **줄 상단 + om_top** 에 앉힌다 (156505870 4표 실측:
+    /// 밴드 5195=283+4629+283 등 전부 일치). 종전 baseline-하단 정렬은 측정
+    /// 높이 흔들림이 그대로 y 오차가 되어 이중 괘선 사이가 4.3px 벌어지고
+    /// 글자가 위 괘선을 뚫었다. 밴드 증거가 없으면 None(종전 경로).
+    fn tac_table_stored_outer_band_top(
+        &self,
+        para: &Paragraph,
+        tbl: &crate::model::table::Table,
+        current_y: f64,
+    ) -> Option<f64> {
+        if !Self::tac_stored_band_is_outer_box(para, tbl) {
+            return None;
+        }
+        Some(current_y + hwpunit_to_px(tbl.outer_margin_top as i32, self.dpi))
+    }
+
+    /// [#5729] 호스트 줄의 저장 밴드가 정확히 `om_top + 선언높이 + om_bottom`
+    /// 인가 — 참이면 한글은 표 상단을 줄 상단 + om_top 에 앉힌다.
+    pub(crate) fn tac_stored_band_is_outer_box(
+        para: &Paragraph,
+        tbl: &crate::model::table::Table,
+    ) -> bool {
+        let om_top_hu = i64::from(tbl.outer_margin_top);
+        let om_bottom_hu = i64::from(tbl.outer_margin_bottom);
+        if om_top_hu <= 0 || om_bottom_hu <= 0 {
+            return false;
+        }
+        let declared = i64::from(tbl.common.height.min(i32::MAX as u32));
+        if declared <= 0 {
+            return false;
+        }
+        let Some(ls) = para.line_segs.first() else {
+            return false;
+        };
+        if ls.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+            return false;
+        }
+        (i64::from(ls.line_height) - (om_top_hu + declared + om_bottom_hu)).abs() <= 8
+    }
+
     pub(crate) fn layout_inline_table_paragraph(
         &self,
         tree: &mut PageLayoutContext,
@@ -2010,7 +2051,11 @@ impl LayoutEngine {
                 }
                 let (om_left, om_right) = table_om_px[table_idx];
                 let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
-                let tbl_y = (current_y + baseline_dist + om_bottom - tbl_h).max(current_y);
+                let tbl_y = self
+                    .tac_table_stored_outer_band_top(para, tbl, current_y)
+                    .unwrap_or_else(|| {
+                        (current_y + baseline_dist + om_bottom - tbl_h).max(current_y)
+                    });
 
                 let table_bottom = self.layout_table(
                     tree,
@@ -2064,7 +2109,9 @@ impl LayoutEngine {
                 .map(|m| m.total_height)
                 .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
             let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
-            let tbl_y = (current_y + baseline_dist + om_bottom - tbl_h).max(current_y);
+            let tbl_y = self
+                .tac_table_stored_outer_band_top(para, tbl, current_y)
+                .unwrap_or_else(|| (current_y + baseline_dist + om_bottom - tbl_h).max(current_y));
 
             let table_bottom = self.layout_table(
                 tree,

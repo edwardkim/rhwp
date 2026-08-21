@@ -9365,6 +9365,16 @@ impl LayoutEngine {
                         if outer_margin_top_px > 0.0 {
                             y_offset += outer_margin_top_px;
                         }
+                    } else if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                        // [#5729] 직전 TAC 의 저장 seg 로 흐름이 전진해 왔어도, 이
+                        // 표의 저장 밴드가 정확히 om_top+선언높이+om_bottom 이면
+                        // 표 상단 앞의 om_top 은 그 밴드 몫이다 — 건너뛰면 표가
+                        // 3.8px 위로 앉아 직전 표 괘선과 4.2px 겹친다 (156505870
+                        // 연달은 자리차지 표 4개 중 2~4번째, 한글 이중 괘선 간격
+                        // 0.4px vs rhwp 4.3px).
+                        if Self::tac_stored_band_is_outer_box(para, t) {
+                            y_offset += hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                        }
                     }
                 } else if !is_current_empty_para_float {
                     if let Some(ps) = styles.para_styles.get(ps_id) {
