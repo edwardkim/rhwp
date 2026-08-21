@@ -1119,7 +1119,10 @@ struct TypesetState {
     /// overlay 표는 흐름 소비가 0 이라 앵커 쪽에서 다음 쪽 항목을 바로 push 할 수 없다
     /// (다음 쪽은 이후 문단이 흐름을 넘길 때 비로소 생긴다). 그래서 앵커 쪽에서
     /// "몇 번째 행부터 잘렸는지"만 적어 두고, 단/쪽이 열릴 때 그 시작에 방출한다.
-    /// `(para_index, control_index, start_row, remaining_px)`.
+    /// `(para_index, control_index, start_row, reserve_px)`.
+    ///
+    /// [#5792] `reserve_px` 는 잔여 행이 새 쪽 흐름에서 예약해야 할 높이다 — 뒤따르는
+    /// 흐름이 그 자리를 스스로 만드는 형상(#4514 필러 문단)에서는 0 이다.
     pending_overlay_continuations: Vec<(usize, usize, usize, f64)>,
     /// [#4568] 현재 단에 이어 그릴 overlay 잔여 행 목록. `flush_column` 에서
     /// `ColumnContent::overlay_continuations` 로 옮긴다.
@@ -4711,14 +4714,19 @@ impl TypesetState {
                         para_index,
                         control_index,
                         start_row,
+                        reserve_px: remaining_px,
                     }
                 }),
         );
-        // 잔여 높이를 새 쪽 흐름에 예약하면 안 된다 — #4514 기제에서 필러 문단들이
-        // 이미 표 높이만큼 흐름 공간을 만들므로 이중 계상이 된다(실측: 예약 시
-        // 48 → 56쪽, 한컴 46쪽에서 더 멀어짐). 잔여 행의 자리는 이어지는 필러
-        // 흐름이 만든다.
-        let _ = overlay_top_reserve;
+        // 잔여 높이를 새 쪽 흐름에 무조건 예약하면 안 된다 — #4514 기제에서 필러
+        // 문단들이 이미 표 높이만큼 흐름 공간을 만들므로 이중 계상이 된다(실측:
+        // 예약 시 48 → 56쪽, 한컴 46쪽에서 더 멀어짐). 그래서 대기열 등록부(#5792
+        // 게이트)가 "뒤따르는 흐름이 자리를 만들지 못한다"고 판정한 조각만 0 아닌
+        // 값을 싣는다 — 필러 형상은 종전대로 0 이라 불변이다.
+        if overlay_top_reserve > 0.0 {
+            self.current_height = self.current_height.max(overlay_top_reserve);
+            self.current_start_height = self.current_height;
+        }
     }
 
     fn reset_for_new_page(&mut self) {
@@ -17749,11 +17757,40 @@ impl TypesetEngine {
                                         .copied()
                                         .unwrap_or(0.0))
                                 .max(0.0);
+                                // [#5792] 잔여 행이 놓일 자리를 뒤따르는 흐름이 스스로
+                                // 만드는가? #4514 형상은 앵커 뒤 빈 필러 문단들이 표
+                                // 높이만큼 흐름을 만들므로(저장 사다리가 앵커 → 필러로
+                                // 연속 전진) 다음 쪽에 잔여 높이를 다시 예약하면 이중
+                                // 계상이다. 반대로 뒤 문단의 저장 vpos 가 앵커보다
+                                // **되감기면**(쪽 리셋) 그 문단은 새 쪽 상단에서 다시
+                                // 시작하는 좌표라 잔여 행의 자리가 어디에도 없다. 그때
+                                // 예약하지 않으면 다음 쪽 본문이 잔여 행 위에 겹쳐
+                                // 그려지고(2700727 3쪽 'Ⅱ. 곤충이용'·'1. 설치기준'),
+                                // 그 본문 표가 잔여 행의 페인트 상한을 깎아 행이 통째로
+                                // 사라진다(42행 중 17행 소실).
+                                let ladder_resets_after_anchor = next_para
+                                    .and_then(|np| np.line_segs.first().map(|seg| seg.vertical_pos))
+                                    .zip(para.line_segs.first().map(|seg| seg.vertical_pos))
+                                    .is_some_and(|(next_vpos, anchor_vpos)| {
+                                        next_vpos < anchor_vpos
+                                    });
+                                let reserve_px = if ladder_resets_after_anchor {
+                                    remaining_px
+                                } else {
+                                    0.0
+                                };
+                                if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+                                    eprintln!(
+                                        "OVERLAY_CONT: pi={} ci={} start_row={} remaining={:.1} reserve={:.1} room={:.1}",
+                                        para_idx, ctrl_idx, first_unfit, remaining_px, reserve_px,
+                                        room,
+                                    );
+                                }
                                 st.pending_overlay_continuations.push((
                                     para_idx,
                                     ctrl_idx,
                                     first_unfit,
-                                    remaining_px,
+                                    reserve_px,
                                 ));
                                 st.current_column_overlay_cuts.push((
                                     para_idx,
