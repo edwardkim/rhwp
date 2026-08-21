@@ -238,6 +238,120 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 )
                 self.assertEqual(output[output_name], skip_value)
 
+    def test_worker_preflights_reuse_a_green_review_only_candidate_head(
+        self,
+    ) -> None:
+        code_candidate = "c" * 40
+        green_review_head = "g" * 40
+        trailing_review = "r" * 40
+        files = [
+            {"filename": "src/renderer/layout.rs", "status": "modified"},
+            {"filename": "mydocs/pr/archives/pr_5832_review.md", "status": "added"},
+            {"filename": "pdf/pr_5832_reference.pdf", "status": "added"},
+            {"filename": "mydocs/orders/20260821.md", "status": "modified"},
+        ]
+        commits = [
+            {
+                "sha": code_candidate,
+                "parents": [{"sha": "b" * 40}],
+                "files": [{"filename": "src/renderer/layout.rs", "status": "modified"}],
+            },
+            {
+                "sha": green_review_head,
+                "parents": [{"sha": code_candidate}],
+                "files": [
+                    {"filename": "mydocs/pr/archives/pr_5832_review.md", "status": "added"},
+                    {"filename": "pdf/pr_5832_reference.pdf", "status": "added"},
+                ],
+            },
+            {
+                "sha": trailing_review,
+                "parents": [{"sha": green_review_head}],
+                "files": [{"filename": "mydocs/orders/20260821.md", "status": "modified"}],
+            },
+        ]
+        runs = [
+            {
+                "event": "pull_request",
+                "head_sha": trailing_review,
+                "head_branch": "fix/bughunt-batch-r3",
+                "head_repository": {"id": 7},
+                "status": "in_progress",
+                "conclusion": None,
+                "created_at": "2026-08-20T12:01:00Z",
+            },
+            {
+                "event": "pull_request",
+                "head_sha": green_review_head,
+                "head_branch": "fix/bughunt-batch-r3",
+                "head_repository": {"id": 7},
+                "status": "completed",
+                "conclusion": "success",
+                "created_at": "2026-08-20T12:00:00Z",
+            },
+        ]
+        for name, (_, _, output_name, skip_value, _) in WORKER_PREFLIGHTS.items():
+            with self.subTest(workflow=name):
+                output = self._run_worker_preflight(
+                    name, files=files, commits=commits, runs=runs
+                )
+                self.assertEqual(output[output_name], skip_value)
+
+    def test_worker_preflights_do_not_bypass_a_failed_newer_candidate(
+        self,
+    ) -> None:
+        code_candidate = "c" * 40
+        failed_review_head = "f" * 40
+        trailing_review = "r" * 40
+        files = [
+            {"filename": "src/renderer/layout.rs", "status": "modified"},
+            {"filename": "mydocs/pr/archives/pr_5834_review.md", "status": "added"},
+            {"filename": "mydocs/orders/20260821.md", "status": "modified"},
+        ]
+        commits = [
+            {
+                "sha": code_candidate,
+                "parents": [{"sha": "b" * 40}],
+                "files": [{"filename": "src/renderer/layout.rs", "status": "modified"}],
+            },
+            {
+                "sha": failed_review_head,
+                "parents": [{"sha": code_candidate}],
+                "files": [{"filename": "mydocs/pr/archives/pr_5834_review.md", "status": "added"}],
+            },
+            {
+                "sha": trailing_review,
+                "parents": [{"sha": failed_review_head}],
+                "files": [{"filename": "mydocs/orders/20260821.md", "status": "modified"}],
+            },
+        ]
+        runs = [
+            {
+                "event": "pull_request",
+                "head_sha": failed_review_head,
+                "head_branch": "fix/bughunt-batch-r3",
+                "head_repository": {"id": 7},
+                "status": "completed",
+                "conclusion": "failure",
+                "created_at": "2026-08-20T12:00:00Z",
+            },
+            {
+                "event": "pull_request",
+                "head_sha": code_candidate,
+                "head_branch": "fix/bughunt-batch-r3",
+                "head_repository": {"id": 7},
+                "status": "completed",
+                "conclusion": "success",
+                "created_at": "2026-08-20T11:59:00Z",
+            },
+        ]
+        for name, (_, _, output_name, _, full_value) in WORKER_PREFLIGHTS.items():
+            with self.subTest(workflow=name):
+                output = self._run_worker_preflight(
+                    name, files=files, commits=commits, runs=runs
+                )
+                self.assertEqual(output[output_name], full_value)
+
     def test_worker_preflights_reject_modified_pdf_and_wrong_fork_candidate(self) -> None:
         code_candidate = "c" * 40
         modified_pdf = "m" * 40
