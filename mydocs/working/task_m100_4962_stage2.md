@@ -8,7 +8,7 @@
 - **Stage 1 기준**: `63b7f4ec2`
 - **구현 commit**: `9d7a0ef76`, `126274195`
 - **날짜**: 2026-08-21 KST
-- **단계 상태**: Stage 2 기술 완료, Stage 3 메인테이너 승인 대기
+- **단계 상태**: Stage 2 기능 완료, [Stage 2-S 보안 보강](task_m100_4962_stage2_security.md)으로 보호 계약 갱신
 
 ## 1. 결론
 
@@ -35,8 +35,13 @@ fallback target, paint face, 기본 render 호출 경로와 공개 CLI·WASM·np
 | `tests/cases/issue_4962_font_metric_coverage.rs` | 공개 fixture 결정성·분모·privacy·long-page·W2 불변 계약 |
 
 진입점은 숨김 처리한 native read-only query
-`DocumentCore::get_font_metric_coverage_analysis_native()` 하나다. 별도 adapter나 CLI command를 추가하지
-않았으므로 기본 문서 열기·편집·조판·paint에는 collector 비용이 발생하지 않는다.
+`DocumentCore::get_font_metric_coverage_analysis_native(options_json)`다. Stage 2-S에서 supervisor용 취소
+companion을 추가했지만 별도 adapter나 CLI command는 없으므로 기본 문서 열기·편집·조판·paint에는
+collector 비용이 발생하지 않는다.
+
+> **보안 정정:** 이 문서의 최초 완료 뒤 long-page 무상한을 자원 무제한으로 오해할 수 있는 결함을
+> 발견했다. 현재 정본은 Stage 2-S의 명시적 자원 예산·전체 실패 계약이며, 아래 최초 검증 결과는
+> 기능 기준선으로 보존한다.
 
 ## 3. POC 재사용과 delta
 
