@@ -1638,10 +1638,15 @@ impl HeightMeasurer {
                 };
 
                 // 패딩 포함 총 필요 높이
-                // [Task #501] cell.padding 이 IR cell.height 의 절반을 초과하는 비정상
-                // 케이스 (mel-001 p2 셀[21]: cell.h=1280 HU, pad.top+bottom=3400 HU) 가드:
+                // [Task #501] cell.padding 이 IR cell.height 자체를 넘는 비정상 케이스
+                // (mel-001 p2 셀[21]: cell.h=1280 HU, pad.top+bottom=3400 HU) 가드:
                 // 비정상 padding 이 row_heights 를 확장하면 TAC 표 비례 축소가 모든 행에
                 // 영향. content_height 가 IR cell.height 안에 들어가면 IR 권위 우선.
+                // [#5751] 발동 기준은 렌더(table_layout 의 padding 비례 축소)와 같은
+                // `Cell::vertical_padding_is_abnormal` 하나를 쓴다. 종전 `절반 초과`
+                // 기준은 여백이 셀 높이의 절반~1배인 **정상 조밀 표**에서도 발동해
+                // (156505020 데이터 셀: pad 15.09px, h 21.09px) 측정만 행을 안 늘리고
+                // 렌더는 저장 여백을 그대로 써 글자가 아래 괘선을 넘겼다.
                 let total_pad = pad_top + pad_bottom;
                 let cell_h_px = if cell.height < 0x80000000 {
                     hwpunit_to_px(cell.height as i32, self.dpi)
@@ -1665,9 +1670,9 @@ impl HeightMeasurer {
                         .paragraphs
                         .iter()
                         .all(|p| !crate::renderer::para_has_no_stored_line_segs(p));
-                let required_height = if cell_h_px > 0.0
-                    && total_pad > cell_h_px * 0.5
-                    && content_height <= cell_h_px
+                let required_height = if crate::model::table::Cell::vertical_padding_is_abnormal(
+                    cell_h_px, total_pad,
+                ) && content_height <= cell_h_px
                 {
                     cell_h_px
                 } else if relaxed_pad_mirror {
