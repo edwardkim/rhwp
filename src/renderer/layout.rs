@@ -3062,8 +3062,18 @@ impl LayoutEngine {
             for child in &body_node.children {
                 expand_clip(&mut flow_clip, &mut float_clip, child, false);
             }
-            // 부동 그림 clip 만 body_bottom+10 상한으로 절단 (Task #460).
-            let max_bottom = body_bbox.y + body_bbox.height + 10.0;
+            // [#5855] 부동 개체 clip 의 하한은 **용지 하단**이다.
+            //
+            // 한글은 쪽 기준으로 앉힌 개체를 본문 영역에 가두지 않는다 — 꼬리말 자리에
+            // 놓인 로고 띠(156618554_petfood_press: 정답지 이미지 하단 1056.0px, 본문 하단
+            // 1028.1px)가 그대로 보인다. `body_bottom + 10` 상한은 그 20.9px 를 지웠다.
+            //
+            // Task #460 이 이 상한으로 막으려던 것은 대형 부동 그림이 body clip 을 넓혀
+            // **흐름 콘텐츠**까지 꼬리말로 새게 하는 것이었다. 그런데 #3127 이후 흐름
+            // clip(`flow_clip`)은 상한 없이 따로 잡히므로, 합집합의 하단은 이미 흐름
+            // 콘텐츠가 결정한다. 이 상한이 실제로 자르고 있는 것은 부동 개체 자신뿐이다.
+            // 용지 밖으로는 여전히 나가지 못한다.
+            let max_bottom = layout.page_height.max(body_bbox.y + body_bbox.height);
             if float_clip.y + float_clip.height > max_bottom {
                 float_clip.height = max_bottom - float_clip.y;
             }
