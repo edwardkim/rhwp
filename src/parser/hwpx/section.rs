@@ -2809,7 +2809,10 @@ fn parse_picture(
     let mut caption: Option<crate::model::shape::Caption> = None;
     let mut buf = Vec::new();
     loop {
-        match reader.read_event_into(&mut buf) {
+        let event = reader.read_event_into(&mut buf);
+        // [#5797] 자기닫힘 자식은 하위 파서를 태우지 않는다 — parse_shape_object 참고.
+        let self_closing = matches!(&event, Ok(Event::Empty(_)));
+        match event {
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"imgRect" => {
                 parse_picture_img_rect(reader, &mut border_x, &mut border_y)?;
             }
@@ -3074,7 +3077,9 @@ fn parse_picture(
                     }
                     b"renderingInfo" => {
                         // 그룹 내 자식의 아핀 변환 행렬 파싱
-                        parse_rendering_info(reader, &mut shape_attr)?;
+                        if !self_closing {
+                            parse_rendering_info(reader, &mut shape_attr)?;
+                        }
                     }
                     b"flip" => {
                         parse_shape_flip(ce, &mut shape_attr);
@@ -4180,7 +4185,10 @@ fn parse_shape_shadow_attr(e: &quick_xml::events::BytesStart) -> (u32, u32, i32,
 fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
     loop {
-        match reader.read_event_into(&mut buf) {
+        let event = reader.read_event_into(&mut buf);
+        // [#5797] 자기닫힘 자식은 하위 파서를 태우지 않는다 — parse_shape_object 참고.
+        let self_closing = matches!(&event, Ok(Event::Empty(_)));
+        match event {
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
@@ -4224,7 +4232,9 @@ fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result
                             }
                         }
                     }
-                    b"p" => {
+                    // `<hp:p/>` 는 내용이 없는 문단이다 — 여는 태그로 보고 문단 파서를
+                    // 태우면 다음 `</hp:p>` 까지, 즉 뒤 문단·형제 도형을 삼킨다.
+                    b"p" if !self_closing => {
                         // subList 내 p를 독립 파싱
                         let (para, _) = parse_paragraph(ce, reader)?;
                         text_box.paragraphs.push(para);
@@ -4307,7 +4317,12 @@ fn parse_shape_object(
     let mut caption: Option<crate::model::shape::Caption> = None;
     let mut buf = Vec::new();
     loop {
-        match reader.read_event_into(&mut buf) {
+        let event = reader.read_event_into(&mut buf);
+        // [#5797] 자기닫힘 표기(`<hp:x/>`)에는 자식도 종료 태그도 없다. 여는 태그로
+        // 보고 하위 파서를 태우면 그 파서가 없는 종료 태그를 찾아 이 도형의 남은
+        // 자식과 **뒤 형제 도형**까지 통째로 삼킨다.
+        let self_closing = matches!(&event, Ok(Event::Empty(_)));
+        match event {
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"shapeComment" => {
                 common.description = read_dutmal_text(reader, b"shapeComment")?;
             }
@@ -4335,7 +4350,11 @@ fn parse_shape_object(
                     b"drawText" => {
                         let mut tb = TextBox::default();
                         tb.max_width = common.width;
-                        parse_draw_text(reader, &mut tb)?;
+                        // `<hp:drawText/>` 는 글이 없는 빈 글상자다 — 자식만 건너뛰고
+                        // 글상자 자체는 남긴다(도형의 HWP5 저장 종류가 바뀌지 않도록).
+                        if !self_closing {
+                            parse_draw_text(reader, &mut tb)?;
+                        }
                         text_box = Some(tb);
                     }
                     b"pt0" => {
@@ -4454,10 +4473,14 @@ fn parse_shape_object(
                     b"start2" => parse_xy(ce, &mut e_start2),
                     b"end2" => parse_xy(ce, &mut e_end2),
                     b"renderingInfo" => {
-                        parse_rendering_info(reader, &mut shape_attr)?;
+                        if !self_closing {
+                            parse_rendering_info(reader, &mut shape_attr)?;
+                        }
                     }
                     b"fillBrush" => {
-                        fill = parse_shape_fill_brush(reader)?;
+                        if !self_closing {
+                            fill = parse_shape_fill_brush(reader)?;
+                        }
                     }
                     b"shadow" => {
                         shadow_acc = Some(parse_shape_shadow_attr(ce));
@@ -4650,7 +4673,10 @@ fn parse_container_body(
     let mut caption: Option<crate::model::shape::Caption> = None;
     let mut buf = Vec::new();
     loop {
-        match reader.read_event_into(&mut buf) {
+        let event = reader.read_event_into(&mut buf);
+        // [#5797] 자기닫힘 자식은 하위 파서를 태우지 않는다 — parse_shape_object 참고.
+        let self_closing = matches!(&event, Ok(Event::Empty(_)));
+        match event {
             // 묶음 개체 캡션 (#1403) — 미적재 시 roundtrip 에서 캡션 subList 소실
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"caption" => {
                 caption = Some(parse_caption(ce, reader)?);
@@ -4673,7 +4699,7 @@ fn parse_container_body(
                             &mut has_pos,
                         );
                     }
-                    b"pic" => {
+                    b"pic" if !self_closing => {
                         // 자식 그림 객체
                         let child = parse_picture(ce, reader)?;
                         if let Control::Picture(pic) = child {
@@ -4681,14 +4707,16 @@ fn parse_container_body(
                         }
                     }
                     b"rect" | b"ellipse" | b"line" | b"connectLine" | b"arc" | b"polygon"
-                    | b"curve" => {
+                    | b"curve"
+                        if !self_closing =>
+                    {
                         // 자식 그리기 객체
                         let child = parse_shape_object(local, ce, reader)?;
                         if let Control::Shape(shape) = child {
                             children.push(*shape);
                         }
                     }
-                    b"container" => {
+                    b"container" if !self_closing => {
                         // 중첩 그룹 — 깊이 +1 (상한 초과 시 위에서 거부)
                         let child = parse_container(ce, reader, depth + 1)?;
                         if let Control::Shape(shape) = child {
@@ -4696,7 +4724,9 @@ fn parse_container_body(
                         }
                     }
                     b"renderingInfo" => {
-                        parse_rendering_info(reader, &mut shape_attr)?;
+                        if !self_closing {
+                            parse_rendering_info(reader, &mut shape_attr)?;
+                        }
                     }
                     _ => {}
                 }
@@ -7186,7 +7216,10 @@ fn parse_common_shape_children(
     let mut buf = Vec::new();
     let mut has_pos = false;
     loop {
-        match reader.read_event_into(&mut buf) {
+        let event = reader.read_event_into(&mut buf);
+        // [#5797] 자기닫힘 자식은 하위 파서를 태우지 않는다 — parse_shape_object 참고.
+        let self_closing = matches!(&event, Ok(Event::Empty(_)));
+        match event {
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
@@ -7215,7 +7248,9 @@ fn parse_common_shape_children(
                     // [#4669] flip/renderingInfo/lineShape — 도형·그림 파서와 동형.
                     b"flip" => parse_shape_flip(ce, shape_attr_out),
                     b"renderingInfo" => {
-                        parse_rendering_info(reader, shape_attr_out)?;
+                        if !self_closing {
+                            parse_rendering_info(reader, shape_attr_out)?;
+                        }
                     }
                     b"lineShape" => {
                         *line_shape_out = Some(parse_line_shape_attr(ce));
