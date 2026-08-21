@@ -90,6 +90,10 @@ function validatePolicy(policy) {
       || policy.resume?.uncommittedJournalTail !== 'truncate'
       || policy.resume?.replayMustMatchState !== true
       || policy.hashChain?.algorithm !== 'sha256-chain-v1'
+      || !safeInteger(policy.storage?.maxJournalBytes)
+      || policy.storage.maxJournalBytes === 0
+      || !safeInteger(policy.storage?.minimumFreeBytesAfterAppend)
+      || policy.storage.limitExceeded !== 'reject-before-append'
       || canonicalJson(policy.identityFields) !== canonicalJson(requiredIdentityFields)) {
     throw new Error('checkpoint policy is invalid');
   }
@@ -309,8 +313,23 @@ function atomicWriteJson(filePath, value) {
   fsyncDirectory(path.dirname(filePath));
 }
 
-function appendJournal(filePath, record) {
-  const line = `${JSON.stringify(record)}\n`;
+function journalLine(record) {
+  return `${JSON.stringify(record)}\n`;
+}
+
+function assertJournalCapacity(directory, committedBytes, lineBytes, storagePolicy) {
+  if (committedBytes + lineBytes > storagePolicy.maxJournalBytes) {
+    throw new Error('checkpoint journal storage limit exceeded');
+  }
+  const filesystem = fs.statfsSync(directory, { bigint: true });
+  const availableBytes = filesystem.bavail * filesystem.bsize;
+  const requiredBytes = BigInt(lineBytes + storagePolicy.minimumFreeBytesAfterAppend);
+  if (availableBytes < requiredBytes) {
+    throw new Error('checkpoint journal free-space reserve would be exceeded');
+  }
+}
+
+function appendJournal(filePath, line) {
   const descriptor = fs.openSync(filePath, 'a', 0o600);
   try {
     fs.writeFileSync(descriptor, line);
@@ -437,7 +456,15 @@ export async function runResumableCoverage(options) {
     const record = checkpointRecord(index, document.format, result);
     const nextSummary = structuredClone(checkpoint.state.summary);
     applyRecord(nextSummary, record, index);
-    const bytesAdded = appendJournal(checkpoint.journalPath, record);
+    const line = journalLine(record);
+    const bytesAdded = Buffer.byteLength(line);
+    assertJournalCapacity(
+      options.checkpointDirectory,
+      checkpoint.state.journal.committedBytes,
+      bytesAdded,
+      options.checkpointPolicy.storage,
+    );
+    appendJournal(checkpoint.journalPath, line);
     const nextIndex = index + 1;
     const committedBytes = checkpoint.state.journal.committedBytes + bytesAdded;
     const status = nextIndex === documents.length ? 'complete' : 'running';

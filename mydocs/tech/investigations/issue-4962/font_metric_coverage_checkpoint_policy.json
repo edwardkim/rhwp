@@ -42,6 +42,11 @@
     "seedIncludesRunIdentity": true,
     "recordToken": "format:status:aggregate-hash-or-failure"
   },
+  "storage": {
+    "maxJournalBytes": 17179869184,
+    "minimumFreeBytesAfterAppend": 4294967296,
+    "limitExceeded": "reject-before-append"
+  },
   "privacy": {
     "checkpointRoot": "output/",
     "fileMode": "0600",

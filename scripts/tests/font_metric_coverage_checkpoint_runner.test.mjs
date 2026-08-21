@@ -242,6 +242,25 @@ test('manifest duplicate identity and aggregate format mismatch fail closed', as
   assert.equal(fs.statSync(path.join(directory, 'journal.ndjson')).size, 0);
 });
 
+test('journal storage budget fails before append', async t => {
+  const directory = temporary(t);
+  const constrainedPolicy = structuredClone(POLICY);
+  constrainedPolicy.storage.maxJournalBytes = 16;
+  const constrainedPolicyBytes = Buffer.from(`${JSON.stringify(constrainedPolicy)}\n`);
+  await assert.rejects(
+    runResumableCoverage({
+      ...options(directory, manifest(1)),
+      checkpointPolicy: constrainedPolicy,
+      checkpointPolicyBytes: constrainedPolicyBytes,
+      runDocument: async () => completeResult(0),
+    }),
+    /journal storage limit exceeded/u,
+  );
+  const state = JSON.parse(fs.readFileSync(path.join(directory, 'state.json'), 'utf8'));
+  assert.equal(state.nextIndex, 0);
+  assert.equal(fs.statSync(path.join(directory, 'journal.ndjson')).size, 0);
+});
+
 test('uncommitted journal tail is truncated before resume', async t => {
   const directory = temporary(t);
   let calls = 0;
