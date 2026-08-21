@@ -2192,7 +2192,8 @@ mod tests {
             if body.trim() != "1" {
                 continue;
             }
-            if !header.contains("font-size=\"44\"") {
+            // [#5821] 압축 장평(ratio=90%)은 세로도 √r 축소 — 44 → 44×√0.90 ≈ 41.74.
+            if !header.contains("font-size=\"41.74") {
                 continue;
             }
             if !header.contains("HY견명조") {

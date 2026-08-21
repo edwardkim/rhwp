@@ -822,6 +822,24 @@ pub(crate) fn source_line_metrics_need_reflow(
         && raw_text_height > expected_advance * STALE_SOURCE_LINE_ADVANCE_MULTIPLIER
 }
 
+/// [#5821] 압축 장평(ratio r < 1) 글자의 그리기 파라미터.
+///
+/// 한글 2022 는 장평을 가로만 줄이는 게 아니라 **세로도 √r 로** 줄인다 —
+/// 156601658 제목 실측: 선언 25pt·ratio 90% → PDF `Tf 23.706` = 25×√0.90
+/// (오차 0.05%), 총 폭은 선언×0.90 유지(한글 630.1px ↔ rhwp 634.0px).
+/// 따라서 glyph 크기 = fs×√r, 가로 스케일 = √r (곱하면 폭 ×r 로 종전과 동일 —
+/// advance/char_positions 는 불변). 확대(r > 1)는 실측이 없어 종전(크기 불변·
+/// 가로 ×r) 유지.
+#[inline]
+pub(crate) fn condensed_ratio_draw_params(font_size: f64, ratio: f64) -> (f64, f64) {
+    if ratio > 0.0 && ratio < 0.999 {
+        let s = ratio.sqrt();
+        (font_size * s, s)
+    } else {
+        (font_size, if ratio > 0.0 { ratio } else { 1.0 })
+    }
+}
+
 /// 저장 줄 metrics를 재조판하는 경우의 baseline을 글꼴 기준으로 복원한다.
 ///
 /// 원본 `baseline_distance`도 손상된 `line_height` 좌표계에 기록되므로, 줄 높이만

@@ -2833,7 +2833,9 @@ impl Renderer for SvgRenderer {
         };
         let old_hangul_font_family = format!("'Source Han Serif K Old Hangul',{}", font_family);
 
-        let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
+        // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
+        let (font_size, ratio) =
+            crate::renderer::condensed_ratio_draw_params(font_size, style.ratio);
         let has_ratio = (ratio - 1.0).abs() > 0.01;
 
         // 공통 스타일 속성 구성 (fill 제외 — 그림자/원본에서 각각 설정)
@@ -3156,10 +3158,13 @@ impl Renderer for SvgRenderer {
                     ));
                 }
                 3 => {
-                    // 점선 ··· — round cap으로 원형 점 표현 (한컴 동등)
+                    // 점선 ··· — round cap 으로 원형 점 표현 (한컴 동등).
+                    // 두께·간격은 폰트 크기를 따른다 — 고정값은 목차 점선을 가는
+                    // 실선으로 보이게 했다(#5698 계열, 상수 근거는 render_tree).
+                    let (w, dash, gap) = super::render_tree::tab_dot_leader_stroke(font_size);
                     self.output.push_str(&format!(
-                        "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"1.0\" stroke-dasharray=\"0.1 3\" stroke-linecap=\"round\"/>\n",
-                        lx1, ly, lx2, ly, color,
+                        "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{:.3}\" stroke-dasharray=\"{:.3} {:.3}\" stroke-linecap=\"round\"/>\n",
+                        lx1, ly, lx2, ly, color, w, dash, gap,
                     ));
                 }
                 4 => {

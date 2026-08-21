@@ -2232,6 +2232,10 @@ impl Renderer for WebCanvasRenderer {
 
         // 위첨자/아래첨자: 글꼴 크기 축소 + y좌표 조정
         let (font_size, y) = style.script_draw_metrics(base_font_size, y);
+        // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
+        let (font_size, ratio) =
+            crate::renderer::condensed_ratio_draw_params(font_size, style.ratio);
+        let has_ratio = (ratio - 1.0).abs() > 0.01;
         let font_family = super::canvas_font_family_chain(&style.font_family);
 
         let font = format!(
@@ -2243,10 +2247,6 @@ impl Renderer for WebCanvasRenderer {
             font_style, font_weight, font_size, font_family
         );
         self.ctx.set_font(&font);
-
-        // 장평 적용
-        let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
-        let has_ratio = (ratio - 1.0).abs() > 0.01;
 
         // 클러스터 분할
         let clusters = split_into_clusters(text);
@@ -2506,9 +2506,12 @@ impl Renderer for WebCanvasRenderer {
                 1 => draw_line(&self.ctx, ly, 0.5, &[]),         // 실선
                 2 => draw_line(&self.ctx, ly, 0.5, &[3.0, 3.0]), // 파선
                 3 => {
-                    // 점선 ··· — round cap으로 원형 점 표현 (한컴 동등)
+                    // 점선 ··· — round cap 으로 원형 점 표현 (한컴 동등).
+                    // 두께·간격은 폰트 크기를 따른다 (svg.rs 와 같은 출처).
+                    let (w, dash, gap) =
+                        crate::renderer::render_tree::tab_dot_leader_stroke(font_size);
                     self.ctx.set_line_cap("round");
-                    draw_line(&self.ctx, ly, 1.0, &[0.1, 3.0]);
+                    draw_line(&self.ctx, ly, w, &[dash, gap]);
                     self.ctx.set_line_cap("butt");
                 }
                 4 => draw_line(&self.ctx, ly, 0.5, &[6.0, 2.0, 1.0, 2.0]), // 일점쇄선

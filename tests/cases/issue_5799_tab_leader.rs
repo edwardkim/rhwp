@@ -13,9 +13,16 @@
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
-/// 탭 리더 점선(채움 종류 3)이 SVG 로 나갈 때의 시그니처.
-/// `renderer/svg.rs` 탭 리더 `3 =>` 분기만 내는 형태다.
-const DOT_LEADER: &str = "stroke-width=\"1.0\" stroke-dasharray=\"0.1 3\" stroke-linecap=\"round\"";
+/// 탭 리더 점선(채움 종류 3)이 SVG 로 나갈 때의 시그니처 — **모양으로** 가린다.
+///
+/// 종전에는 `stroke-width="1.0" stroke-dasharray="0.1 3"` 를 리터럴로 찾았다. 그 값은
+/// 글꼴 크기와 무관한 고정값이었고 #5843 에서 폰트 비례로 바뀌었다(간격 0.248 em ·
+/// 지름은 가운뎃점과 같은 0.12 em). 값에 묶인 탐지기는 리더를 0개로 세어, 이 시험이
+/// 지키려는 계약(**인라인 탭 `leader` 만으로 점선이 나온다**)과 무관하게 깨진다.
+///
+/// 그래서 둥근 끝만 시그니처로 쓰고, 점 여부는 dasharray 의 **첫 dash 가 점만큼 짧은지**로
+/// 판정한다. 파선·쇄선(첫 dash 가 길다)과 표 괘선(둥근 끝이 없다)은 걸리지 않는다.
+const DOT_LEADER_CAP: &str = "stroke-linecap=\"round\"";
 
 /// 목차 4줄 이상이 점선으로 이어져야 한다는 뜻의 하한.
 const MIN_TOC_DOT_LEADERS: usize = 20;
@@ -29,7 +36,26 @@ fn sample_path(rel: &str) -> PathBuf {
 }
 
 fn dot_leader_count(svg: &str) -> usize {
-    svg.match_indices(DOT_LEADER).count()
+    svg.split("<line ")
+        .skip(1)
+        .filter_map(|chunk| chunk.split_once("/>").map(|(attrs, _)| attrs))
+        .filter(|attrs| attrs.contains(DOT_LEADER_CAP))
+        .filter(|attrs| {
+            let Some(at) = attrs.find("stroke-dasharray=\"") else {
+                return false;
+            };
+            let tail = &attrs[at + "stroke-dasharray=\"".len()..];
+            let Some(end) = tail.find('"') else {
+                return false;
+            };
+            let parts: Vec<f64> = tail[..end]
+                .split_whitespace()
+                .filter_map(|p| p.parse().ok())
+                .collect();
+            // 점 = 첫 dash 가 점만큼 짧고 뒤에 간격이 있는 2단 패턴
+            parts.len() == 2 && parts[0] <= 0.5 && parts[1] > 0.0
+        })
+        .count()
 }
 
 fn render_toc_page(bytes: &[u8], label: &str) -> String {

@@ -625,6 +625,22 @@ impl DocumentCore {
                     } else {
                         para.line_segs.last().map(|s| s.vertical_pos)
                     };
+                    // [#5847] 원본 캐시 보유 문단의 저장 vertpos 를 덮어쓰기 전에
+                    // 스냅샷한다 — 아래 재계산 좌표(쪽 리셋 없는 구역 누적)는 렌더
+                    // 전용이고, HWPX 직렬화기는 이 스냅샷으로 원본 좌표를 낸다.
+                    // 한 번만 캡처(재-reflow 는 이미 덮어쓴 값이라 신뢰 불가),
+                    // 합성 lineseg 가 섞인 문단은 제외.
+                    if !was_reflowed
+                        && para.source_line_seg_vertical_pos.is_none()
+                        && !para.line_segs.is_empty()
+                        && para.line_segs.iter().all(|s| {
+                            s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                        })
+                    {
+                        para.source_line_seg_vertical_pos =
+                            Some(para.line_segs.iter().map(|s| s.vertical_pos).collect());
+                    }
                     // 문단의 첫 LINE_SEG vpos를 running_vpos로 갱신
                     if let Some(first_seg) = para.line_segs.first_mut() {
                         first_seg.vertical_pos = running_vpos;

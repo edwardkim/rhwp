@@ -633,6 +633,8 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         raw_break_type,
         // 합성 쪽나눔 표식 — 파일에 실리지 않는 파서 조판 힌트라 IR 비교 대상 아님.
         page_break_synthesized: _,
+        // [#5847] reflow 이전 원본 vertpos 스냅샷 — IR 전용 부수 채널, 비교 대상 아님.
+        source_line_seg_vertical_pos: _,
         text,
         char_offsets,
         char_shapes,

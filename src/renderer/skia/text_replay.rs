@@ -296,10 +296,11 @@ impl SkiaTextReplay<'_> {
                 let char_positions = compute_char_positions(text, style);
                 let clusters = split_into_clusters(text);
                 let text_width = *char_positions.last().unwrap_or(&0.0) as f32;
-                let ratio = if style.ratio > 0.0 {
-                    style.ratio as f32
-                } else {
-                    1.0
+                // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
+                let (font_size, ratio) = {
+                    let (fs, r) =
+                        crate::renderer::condensed_ratio_draw_params(font_size as f64, style.ratio);
+                    (fs as f32, r as f32)
                 };
                 let has_ratio = (ratio - 1.0).abs() > 0.01;
                 if crate::model::color::char_shade(style.shade_color).is_some() && text_width > 0.0
@@ -594,7 +595,22 @@ impl SkiaTextReplay<'_> {
                     match leader.fill_type {
                         1 => draw_styled_line(x1, line_y, x2, color, 0.5, &[], false),
                         2 => draw_styled_line(x1, line_y, x2, color, 0.5, &[3.0, 3.0], false),
-                        3 => draw_styled_line(x1, line_y, x2, color, 1.0, &[0.1, 3.0], true),
+                        3 => {
+                            // 점선 — 두께·간격은 폰트 크기를 따른다 (svg.rs 와 같은 출처).
+                            let (w, dash, gap) =
+                                crate::renderer::render_tree::tab_dot_leader_stroke(
+                                    font_size as f64,
+                                );
+                            draw_styled_line(
+                                x1,
+                                line_y,
+                                x2,
+                                color,
+                                w as f32,
+                                &[dash as f32, gap as f32],
+                                true,
+                            )
+                        }
                         4 => draw_styled_line(
                             x1,
                             line_y,
