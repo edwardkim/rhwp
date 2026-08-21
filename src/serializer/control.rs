@@ -162,7 +162,21 @@ pub fn serialize_control(
             //   12..   UTF-16 LE 필드 이름 (예: "myMsg01")
             //
             // ctrl_data_name (HWPX `<hp:fieldBegin name="...">`) 우선, 비어있으면 생성 안 함.
-            if matches!(f.field_type, FieldType::ClickHere) && ctrl_data_record.is_none() {
+            //
+            // [#5838] 책갈피도 같은 자리를 쓴다. HWPX `<hp:fieldBegin type="BOOKMARK"
+            // name="_top">` 은 rhwp 에서 `Field{field_type: Bookmark}` 가 되어 이 경로로
+            // 오는데, 종전에는 ClickHere 만 CTRL_DATA 를 냈으므로 **책갈피 이름이 저장에서
+            // 통째로 사라졌다**(이름 없는 책갈피는 상호참조·하이퍼링크의 대상이 못 된다).
+            //
+            // 정답지 `samples/aift.hwp`(한컴 저작)는 같은 문서의 `%bmk` 컨트롤 아래에
+            // `ParameterSet ps_id=0x021b · item id=0x4000(String) = "_top"` 을 싣는다 —
+            // 위 ClickHere 구조와 **같은 바이트 모양**이다. 스펙(§4.2.10.11)도 책갈피는
+            // "책갈피 이름 밖에 없다"고 못박으므로 item ID 를 새로 발명할 필요가 없다
+            // (#4396 이 되돌린 것은 MEMO·수식의 이름 없는 named param 들이고, 이 건은
+            // 그 반대 — 스펙과 정답지가 둘 다 있는 유일한 item ID 다).
+            if matches!(f.field_type, FieldType::ClickHere | FieldType::Bookmark)
+                && ctrl_data_record.is_none()
+            {
                 if let Some(name) = &f.ctrl_data_name {
                     if !name.is_empty() {
                         let name_utf16: Vec<u16> = name.encode_utf16().collect();
