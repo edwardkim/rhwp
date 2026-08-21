@@ -257,6 +257,20 @@ impl Cell {
         false
     }
 
+    /// [Task #501 / #5751] 한컴 방어 가드의 발동 기준 — 셀 상하 안 여백 합이 셀
+    /// 선언 높이 **자체**를 넘으면 그 저장값을 비정상으로 본다
+    /// (mel-001 p2 셀[21]: pad 3400 HU vs h 1280 HU).
+    ///
+    /// 렌더(`table_layout`: padding 비례 축소)와 측정(`height_measurer`: 선언 높이
+    /// 권위 clamp)이 **같은 기준**을 쓰도록 단일 출처로 둔다 (#1785 의
+    /// `use_cell_padding_axis` 와 같은 결). 기준이 갈리면 측정만 행을 안 늘리고
+    /// 렌더는 저장 여백을 그대로 써서 글자가 아래 괘선을 넘는다 — 여백이 셀
+    /// 높이의 절반~1배인 정상 조밀 표에서 오발동한 #5751 이 그 사례다
+    /// (156505020 데이터 셀: pad 15.09px, h 21.09px).
+    pub fn vertical_padding_is_abnormal(cell_height_px: f64, total_v_pad_px: f64) -> bool {
+        cell_height_px > 0.0 && total_v_pad_px >= cell_height_px
+    }
+
     /// 축별 규칙(`use_cell_padding_axis`)을 네 축에 적용한 유효 안 여백 (HWPUNIT).
     /// [#2195 stage50] 표 기본 여백이 **네 축 모두 0**(미지정)이면 셀 저장 pad —
     /// 86712 구분선(한글 PDF 괘선 21.1px = 셀 141 상하 포함) + exam_social 머리말
