@@ -1990,13 +1990,37 @@ impl LayoutEngine {
                                             self.dpi,
                                         );
                                         let content_top = cell_y + pad_top;
-                                        match effective_align {
-                                            VerticalAlign::Top => content_top + v_off,
-                                            VerticalAlign::Center => {
-                                                content_top + (inner_height - pic_h + v_off) / 2.0
-                                            }
-                                            VerticalAlign::Bottom => {
-                                                content_top + inner_height - pic_h - v_off
+                                        // [#5734] 셀-valign 강제(#2071)는 그림이 셀의 첫
+                                        // 콘텐츠일 때의 계약이다. 다문단 셀에서 한글은 앵커
+                                        // 문단의 저장 lineseg vpos 로 흐름 배치한다 —
+                                        // 156684746 9쪽 왼쪽 칸: 그림 셋이 전부 셀 상단
+                                        // 616~640px 에 포개졌고, 한글은 655.6→854.4 로
+                                        // 차곡차곡 쌓는다. continuation 조각(su>0) 소유
+                                        // 그림은 저장 vpos 가 전체 셀 좌표라 제외하고,
+                                        // 첫 조각(su==0)은 셀 상단=조각 상단이라 유효하다.
+                                        let stored_flow_vpos = ((self
+                                            .profile
+                                            .get()
+                                            .hwp5_stored_pagination_layout()
+                                            || self.profile.get().hwpx_stored_layout())
+                                            && !(cut_units.is_some_and(|(su, _)| su > 0)
+                                                && visible_non_inline_controls))
+                                            .then(|| para.line_segs.first())
+                                            .flatten()
+                                            .filter(|seg| seg.vertical_pos > 0)
+                                            .map(|seg| hwpunit_to_px(seg.vertical_pos, self.dpi));
+                                        if let Some(vpos_px) = stored_flow_vpos {
+                                            content_top + vpos_px + v_off
+                                        } else {
+                                            match effective_align {
+                                                VerticalAlign::Top => content_top + v_off,
+                                                VerticalAlign::Center => {
+                                                    content_top
+                                                        + (inner_height - pic_h + v_off) / 2.0
+                                                }
+                                                VerticalAlign::Bottom => {
+                                                    content_top + inner_height - pic_h - v_off
+                                                }
                                             }
                                         }
                                     } else {
