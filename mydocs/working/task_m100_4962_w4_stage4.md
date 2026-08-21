@@ -12,7 +12,7 @@ last_verified: 2026-08-22
 - **계획**: [`task_m100_4962_w4.md`](../plans/task_m100_4962_w4.md)
 - **선행 단계**: [`task_m100_4962_w4_stage3.md`](task_m100_4962_w4_stage3.md)
 - **최종 보고**: [`task_m100_4962_report.md`](../report/task_m100_4962_report.md)
-- **단계 상태**: W4-4 산출물 완료, W4 최종 승인 대기
+- **단계 상태**: W4-4 산출물 완료, 2026-08-22 W4 최종 승인
 
 ## 1. 결론
 
@@ -84,5 +84,6 @@ Issue comment·체크박스·상태를 수정하지 않았다.
 - W5 Oracle Profile schema·controlled ladder 미착수
 - 원격 push·PR·GitHub write 없음
 
-W4의 기술 산출물은 준비됐지만 종료 게이트는 최종 보고와 W5 action queue에 대한 메인테이너 승인이다.
-승인 전에는 #4960·#4962 GitHub 본문 갱신, #4963 착수, 원격 push와 PR을 진행하지 않는다.
+2026-08-22 메인테이너가 최종 보고와 W5 action queue를 승인해 W4 종료 게이트를 통과했다. 다음은
+#4962 통합 준비이며, #4960·#4962 GitHub 본문 갱신, #4963 착수, 원격 push와 PR은 각각 해당 절차의
+별도 승인 뒤 진행한다.
