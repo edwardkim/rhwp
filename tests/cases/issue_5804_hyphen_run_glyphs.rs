@@ -37,7 +37,9 @@ fn issue_5804_hyphen_runs_render_as_glyphs_not_line() {
         .split("<line ")
         .skip(1)
         .filter(|head| {
-            head.split_once('>').map_or(*head, |(h, _)| h).contains("stroke-width=\"1.2133\"")
+            head.split_once('>')
+                .map_or(*head, |(h, _)| h)
+                .contains("stroke-width=\"1.2133\"")
         })
         .count();
     assert_eq!(

@@ -18,7 +18,8 @@ fn main() {
     for (i, rec) in records.iter().enumerate() {
         let is_hf_ctrl = rec.tag_id == 71
             && rec.data.len() >= 4
-            && (rec.data[..4] == [0x64, 0x61, 0x65, 0x68] || rec.data[..4] == [0x74, 0x6f, 0x6f, 0x66]);
+            && (rec.data[..4] == [0x64, 0x61, 0x65, 0x68]
+                || rec.data[..4] == [0x74, 0x6f, 0x6f, 0x66]);
         if is_hf_ctrl {
             in_sub = Some(rec.level);
         } else if let Some(base) = in_sub {
@@ -33,7 +34,13 @@ fn main() {
                 .take(48)
                 .map(|b| format!("{b:02x} "))
                 .collect();
-            println!("[{i:4}] tag={} lv={} sz={} | {}", rec.tag_id, rec.level, rec.data.len(), hex);
+            println!(
+                "[{i:4}] tag={} lv={} sz={} | {}",
+                rec.tag_id,
+                rec.level,
+                rec.data.len(),
+                hex
+            );
             if rec.tag_id == 67 {
                 let txt: String = rec
                     .data

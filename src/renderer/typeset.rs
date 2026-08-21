@@ -17690,11 +17690,11 @@ impl TypesetEngine {
         let has_tac_overlapped_by_positive_float = tac_host_line_height_hu > 0
             && para.controls.iter().any(|c| {
                 matches!(c, Control::Table(t)
-                    if is_para_topbottom_float(&t.common)
-                        && {
-                            let v_off = signed_hwpunit(t.common.vertical_offset);
-                            v_off > 0 && v_off < tac_host_line_height_hu
-                        })
+                if is_para_topbottom_float(&t.common)
+                    && {
+                        let v_off = signed_hwpunit(t.common.vertical_offset);
+                        v_off > 0 && v_off < tac_host_line_height_hu
+                    })
             });
         let should_sort_para_float_tables = !para_has_non_whitespace_text(para)
             && !has_negative_para_float

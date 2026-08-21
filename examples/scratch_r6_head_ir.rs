@@ -1,4 +1,4 @@
-﻿//! scratch: ?뚯떛??Header/Footer ?대? 臾몃떒 而⑦듃濡??뺤씤 (RHWP_HP_SRC).
+//! scratch: 파싱된 Header/Footer 내부 문단 컨트롤 확인 (RHWP_HP_SRC).
 use rhwp::model::control::Control;
 
 fn main() {
@@ -28,4 +28,3 @@ fn main() {
         }
     }
 }
-
