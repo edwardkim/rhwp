@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -161,14 +162,24 @@ function runIdentity(options, documents, limits) {
   if (!Buffer.isBuffer(policyBytes) || !Buffer.isBuffer(manifestBytes)) {
     throw new Error('raw policy and manifest bytes are required');
   }
+  if (canonicalJson(JSON.parse(policyBytes.toString('utf8')))
+        !== canonicalJson(options.checkpointPolicy)
+      || canonicalJson(JSON.parse(manifestBytes.toString('utf8')))
+        !== canonicalJson(options.manifest)) {
+    throw new Error('raw checkpoint policy or manifest does not match its parsed value');
+  }
+  const coverageContractBytes = options.coverageContractBytes ?? COVERAGE_CONTRACT_BYTES;
+  if (!Buffer.isBuffer(coverageContractBytes)
+      || canonicalJson(JSON.parse(coverageContractBytes.toString('utf8')))
+        !== canonicalJson(COVERAGE_CONTRACT)) {
+    throw new Error('raw coverage contract does not match the active contract');
+  }
   return {
     runnerSchemaVersion: 1,
     checkpointPolicyVersion: options.checkpointPolicy.policyVersion,
     checkpointPolicySha256: sha256Bytes(policyBytes),
     runnerSha256: sha256Bytes(fs.readFileSync(SCRIPT_PATH)),
-    coverageContractSha256: sha256Bytes(
-      options.coverageContractBytes ?? COVERAGE_CONTRACT_BYTES,
-    ),
+    coverageContractSha256: sha256Bytes(coverageContractBytes),
     manifestPolicyVersion: options.manifest.policyVersion ?? null,
     manifestSha256: sha256Bytes(manifestBytes),
     sourceHead: options.sourceHead,
@@ -554,6 +565,13 @@ function parseArguments(arguments_) {
 
 async function main() {
   const arguments_ = parseArguments(process.argv.slice(2));
+  const actualHead = execFileSync('git', ['rev-parse', 'HEAD'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
+  if (actualHead !== arguments_.sourceHead) {
+    throw new Error('checkpoint runner source-head does not match the current Git HEAD');
+  }
   const manifestPath = assertLocalOutputPath(arguments_.manifest);
   const checkpointDirectory = assertLocalOutputPath(arguments_.checkpointDir);
   const manifestBytes = fs.readFileSync(manifestPath);

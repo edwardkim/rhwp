@@ -180,6 +180,9 @@ function ensureUsageReconciliation(aggregate) {
 export function finalizeCoverageCheckpoint(checkpointDirectory, options = {}) {
   const policyBytes = options.policyBytes ?? fs.readFileSync(DEFAULT_POLICY_PATH);
   const policy = options.policy ?? JSON.parse(policyBytes.toString('utf8'));
+  if (canonicalJson(JSON.parse(policyBytes.toString('utf8'))) !== canonicalJson(policy)) {
+    throw new Error('raw finalizer policy does not match its parsed value');
+  }
   validatePolicy(policy);
   const checkpoint = readCompleteCoverageCheckpoint(checkpointDirectory);
   const aggregateCounts = Object.fromEntries(

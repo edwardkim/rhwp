@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { createHash } from 'node:crypto';
-import { execFile } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import { assertLocalOutputPath } from './font_metric_coverage_pilot_selector.mjs';
@@ -37,6 +37,20 @@ function safeInteger(value) {
 
 function compareText(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function canonical(value) {
+  if (Array.isArray(value)) return value.map(canonical);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value).sort().map(key => [key, canonical(value[key])]),
+    );
+  }
+  return value;
+}
+
+function canonicalJson(value) {
+  return JSON.stringify(canonical(value));
 }
 
 function validatePolicy(policy) {
@@ -224,6 +238,9 @@ function duplicateSummary(documents) {
 export async function buildFullCoverageManifest(options) {
   const policyBytes = options.policyBytes ?? fs.readFileSync(DEFAULT_POLICY_PATH);
   const policy = options.policy ?? JSON.parse(policyBytes.toString('utf8'));
+  if (canonicalJson(JSON.parse(policyBytes.toString('utf8'))) !== canonicalJson(policy)) {
+    throw new Error('raw full manifest policy does not match its parsed value');
+  }
   validatePolicy(policy);
   if (!/^[0-9a-f]{40}$/u.test(options.sourceHead ?? '')) {
     throw new Error('full manifest sourceHead must be a full Git commit');
@@ -360,6 +377,13 @@ function writeNewPrivateFile(filePath, bytes) {
 
 async function main() {
   const arguments_ = parseArguments(process.argv.slice(2));
+  const actualHead = execFileSync('git', ['rev-parse', 'HEAD'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
+  if (actualHead !== arguments_.sourceHead) {
+    throw new Error('full manifest source-head does not match the current Git HEAD');
+  }
   const manifestPath = assertLocalOutputPath(arguments_.manifest);
   const preflightPath = assertLocalOutputPath(arguments_.preflight);
   const policyBytes = fs.readFileSync(arguments_.policy);

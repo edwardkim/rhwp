@@ -18,6 +18,14 @@ const POLICY_BYTES = fs.readFileSync(path.join(
   'font_metric_coverage_checkpoint_policy.json',
 ));
 const POLICY = JSON.parse(POLICY_BYTES.toString('utf8'));
+const COVERAGE_CONTRACT_BYTES = fs.readFileSync(path.join(
+  ROOT,
+  'mydocs',
+  'tech',
+  'investigations',
+  'issue-4962',
+  'font_metric_coverage_contract.json',
+));
 const SOURCE_HEAD = '1'.repeat(40);
 const WORKER_SHA256 = '2'.repeat(64);
 
@@ -187,7 +195,7 @@ test('all run identity drift refuses resume before another document runs', async
     })],
     ['coverage contract', current => ({
       ...current,
-      coverageContractBytes: Buffer.from('changed contract'),
+      coverageContractBytes: Buffer.concat([COVERAGE_CONTRACT_BYTES, Buffer.from('\n')]),
     })],
     ['analysis options', current => ({ ...current, analysisOptions: { mode: 'changed' } })],
     ['isolation limits', current => ({ ...current, limits: { wallTimeoutMillis: 12345 } })],
