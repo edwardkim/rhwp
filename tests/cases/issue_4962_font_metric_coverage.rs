@@ -104,7 +104,10 @@ fn assert_private_data_absent(value: &serde_json::Value) {
     match value {
         serde_json::Value::Object(map) => {
             for (key, child) in map {
-                assert!(!FORBIDDEN_KEYS.contains(&key.as_str()), "forbidden key: {key}");
+                assert!(
+                    !FORBIDDEN_KEYS.contains(&key.as_str()),
+                    "forbidden key: {key}"
+                );
                 assert_private_data_absent(child);
             }
         }
@@ -169,8 +172,8 @@ fn public_blank_with_font_text(font_name: &str, text: &str) -> DocumentCore {
         .expect("blank char shape");
     char_shape.raw_data = None;
     char_shape.font_ids = font_ids;
-    let char_shape_id = u32::try_from(document.doc_info.char_shapes.len())
-        .expect("char shape fixture id");
+    let char_shape_id =
+        u32::try_from(document.doc_info.char_shapes.len()).expect("char shape fixture id");
     document.doc_info.char_shapes.push(char_shape);
 
     let mut paragraph = Paragraph::new_empty();
@@ -339,7 +342,10 @@ fn public_hwp_hwpx_classification_golden_is_deterministic_and_format_portable() 
             fixture["widthSources"],
             "{id}"
         );
-        assert_eq!(value["aggregateHash"]["value"], fixture["aggregateHash"], "{id}");
+        assert_eq!(
+            value["aggregateHash"]["value"], fixture["aggregateHash"],
+            "{id}"
+        );
         assert_eq!(
             value["legacyProjectionHash"]["value"], fixture["legacyProjectionHash"],
             "{id}"
@@ -370,7 +376,11 @@ fn public_blank_derived_documents_reach_every_current_positive_category() {
         let (_, value) = coverage(&core);
         assert_reconciled(&value);
         assert_private_data_absent(&value);
-        assert_eq!(count(&value, &format!("/categories/{category}")), 1, "{category}");
+        assert_eq!(
+            count(&value, &format!("/categories/{category}")),
+            1,
+            "{category}"
+        );
         assert_eq!(
             width_source_counts(&value),
             BTreeMap::from([(width_source.to_string(), 1)]),

@@ -26,6 +26,7 @@ use crate::renderer::layout::{
     resolved_to_text_style, trace_char_width_decisions, CharWidthDecision,
 };
 use crate::renderer::style_resolver::lookup_font_name_decision;
+use crate::schema_registry::LEGACY_FONT_LAYOUT_HABITS_SCHEMA_VERSION;
 
 use super::font_decision::{metric_alias_relation, run_language_slots};
 
@@ -1171,7 +1172,7 @@ impl DocumentCore {
         let decision_usage = decision_records(&stats);
         let source_runs_seen: u64 = stats.legacy_usage.values().map(|counts| counts.runs).sum();
         let legacy_projection = json!({
-            "schemaVersion": "poc-font-layout-habits-v2",
+            "schemaVersion": LEGACY_FONT_LAYOUT_HABITS_SCHEMA_VERSION,
             "format": format_name(self.source_format),
             "paragraphs": stats.paragraphs_seen,
             "chars": stats.joined,
