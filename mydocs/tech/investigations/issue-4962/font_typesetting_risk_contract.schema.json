@@ -15,6 +15,7 @@
     "riskMass",
     "ranking",
     "evidenceAndStability",
+    "publicProjection",
     "historicalDefinitionEvidence",
     "privacy",
     "scope"
@@ -370,6 +371,79 @@
             }
           }
         }
+      }
+    },
+    "publicProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputKind",
+        "inputCanonicalSha256",
+        "artifact",
+        "selectionPolicy",
+        "queueBands",
+        "reserveBands",
+        "rateScale",
+        "rateUnit",
+        "w5QuestionIds",
+        "requiredOracleProfileFields",
+        "githubWrite"
+      ],
+      "properties": {
+        "inputKind": { "const": "font-typesetting-risk-evidence-ranking" },
+        "inputCanonicalSha256": { "$ref": "#/$defs/sha256" },
+        "artifact": {
+          "const": "mydocs/report/assets/task_m100_4962/font_typesetting_risk_rank.json"
+        },
+        "selectionPolicy": { "const": "base-cumulative-bands-A-and-B" },
+        "queueBands": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [{ "const": "A" }, { "const": "B" }],
+          "items": false
+        },
+        "reserveBands": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [{ "const": "C" }, { "const": "D" }],
+          "items": false
+        },
+        "rateScale": { "const": 1000000 },
+        "rateUnit": { "const": "parts-per-million" },
+        "w5QuestionIds": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "prefixItems": [
+            { "const": "exact-installed" },
+            { "const": "exact-removed" },
+            { "const": "document-subst-font-only" },
+            { "const": "curated-official-successor-only" },
+            { "const": "all-related-fonts-missing" }
+          ],
+          "items": false
+        },
+        "requiredOracleProfileFields": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "prefixItems": [
+            { "const": "inputSha256" },
+            { "const": "hancomVersion" },
+            { "const": "pdfProducer" },
+            { "const": "installedFontSha256" },
+            { "const": "exactMissingState" },
+            { "const": "subsetFontName" },
+            { "const": "glyphOutlineDigest" },
+            { "const": "hmtxAdvance" },
+            { "const": "firstTypesettingDivergence" },
+            { "const": "relationEvidence" }
+          ],
+          "items": false
+        },
+        "githubWrite": { "const": false }
       }
     },
     "historicalDefinitionEvidence": {

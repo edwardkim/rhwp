@@ -16,6 +16,10 @@ import {
   enrichTypesettingRiskRanking,
   parseSupplySurveyTsv,
 } from '../font_typesetting_risk_evidence.mjs';
+import {
+  buildPublicTypesettingRiskRanking,
+  canonicalEvidenceRankingSha256,
+} from '../font_typesetting_risk_publish.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INVESTIGATION = path.join(
@@ -173,6 +177,9 @@ test('W4 contract fixes compatibility, identity, proxy and lane boundaries', () 
   );
   assert.equal(CONTRACT.evidenceAndStability.crossBandPromotion, false);
   assert.equal(CONTRACT.evidenceAndStability.surveyDocumentCountAsRiskOrReach, false);
+  assert.deepEqual(CONTRACT.publicProjection.queueBands, ['A', 'B']);
+  assert.deepEqual(CONTRACT.publicProjection.reserveBands, ['C', 'D']);
+  assert.equal(CONTRACT.publicProjection.githubWrite, false);
 });
 
 test('same-row risk mass keeps document face identity and LineSeg lanes separate', () => {
@@ -471,4 +478,49 @@ test('W4-3 evidence joins exact names only and keeps backend and supply states s
   assert.equal(faceB.empiricalRiskBand, 'B');
   assert.equal(result.gates.crossBandPromotions, 0);
   assert.equal(result.gates.identityGuesses, 0);
+});
+
+test('W4-4 public projection selects A+B and gives every candidate five W5 questions', () => {
+  const base = rankTypesettingRiskAggregate(fixtureAggregate(), CONTRACT);
+  const evidence = enrichTypesettingRiskRanking({
+    ranking: base,
+    decisionRows: fixtureRows(),
+    ledger: { rules: [] },
+    surveyRows: [],
+    contract: CONTRACT,
+  });
+  evidence.documentFaces[1].empiricalRiskBand = 'C';
+  evidence.documentFaces[1].actionRank = 2;
+  evidence.outputHash.value = canonicalEvidenceRankingSha256(evidence);
+  const contract = structuredClone(CONTRACT);
+  contract.publicProjection.inputCanonicalSha256 = evidence.outputHash.value;
+  const result = buildPublicTypesettingRiskRanking(evidence, contract);
+  assert.equal(result.w5Handoff.queue.length, 1);
+  assert.equal(result.w5Handoff.queue[0].documentFace, 'Face A');
+  assert.deepEqual(
+    result.w5Handoff.queue[0].questions.map(entry => entry.id),
+    contract.publicProjection.w5QuestionIds,
+  );
+  assert.equal(result.ranking.length, 2);
+  assert.equal(result.ranking[0].w5Queue, true);
+  assert.equal(result.ranking[1].w5Queue, false);
+  assert.equal(result.ranking[0].riskRatePpm, Math.round(17 * 1_000_000 / 37));
+  assert.equal('documentCount' in result.ranking[0].supply, false);
+  assert.equal(result.gates.privateIdentityFindings, 0);
+  assert.equal(result.gates.queueOutsideSelectedBands, 0);
+});
+
+test('W4-4 public projection rejects a stale W4-3 canonical hash', () => {
+  const base = rankTypesettingRiskAggregate(fixtureAggregate(), CONTRACT);
+  const evidence = enrichTypesettingRiskRanking({
+    ranking: base,
+    decisionRows: fixtureRows(),
+    ledger: { rules: [] },
+    surveyRows: [],
+    contract: CONTRACT,
+  });
+  assert.throws(
+    () => buildPublicTypesettingRiskRanking(evidence, CONTRACT),
+    /canonical SHA-256 has drifted/u,
+  );
 });

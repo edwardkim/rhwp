@@ -258,6 +258,43 @@ export function validateTypesettingRiskContract(contract) {
     }
   }
 
+  const publication = contract.publicProjection;
+  if (publication?.inputKind !== 'font-typesetting-risk-evidence-ranking'
+      || !/^[0-9a-f]{64}$/u.test(publication.inputCanonicalSha256 ?? '')
+      || publication.artifact
+        !== 'mydocs/report/assets/task_m100_4962/font_typesetting_risk_rank.json'
+      || publication.selectionPolicy !== 'base-cumulative-bands-A-and-B'
+      || !exactArray(publication.queueBands, ['A', 'B'])
+      || !exactArray(publication.reserveBands, ['C', 'D'])
+      || publication.rateScale !== 1_000_000
+      || publication.rateUnit !== 'parts-per-million'
+      || publication.githubWrite !== false) {
+    errors.push('W4-4 public projection boundary has drifted');
+  }
+  if (!exactArray(publication?.w5QuestionIds, [
+    'exact-installed',
+    'exact-removed',
+    'document-subst-font-only',
+    'curated-official-successor-only',
+    'all-related-fonts-missing',
+  ])) {
+    errors.push('W4-4 controlled ladder questions have drifted');
+  }
+  if (!exactArray(publication?.requiredOracleProfileFields, [
+    'inputSha256',
+    'hancomVersion',
+    'pdfProducer',
+    'installedFontSha256',
+    'exactMissingState',
+    'subsetFontName',
+    'glyphOutlineDigest',
+    'hmtxAdvance',
+    'firstTypesettingDivergence',
+    'relationEvidence',
+  ])) {
+    errors.push('W4-4 required Oracle Profile fields are incomplete');
+  }
+
   const privacy = contract.privacy;
   if (privacy?.rawRowsPersisted !== false
       || privacy.localOutputDirectory !== 'output/poc/font-typesetting-risk'

@@ -319,6 +319,42 @@
       ]
     }
   },
+  "publicProjection": {
+    "inputKind": "font-typesetting-risk-evidence-ranking",
+    "inputCanonicalSha256": "671e71747f72a70b5c0206e820bba3eb5269e8d5c45dab609c5e0e4126c91d06",
+    "artifact": "mydocs/report/assets/task_m100_4962/font_typesetting_risk_rank.json",
+    "selectionPolicy": "base-cumulative-bands-A-and-B",
+    "queueBands": [
+      "A",
+      "B"
+    ],
+    "reserveBands": [
+      "C",
+      "D"
+    ],
+    "rateScale": 1000000,
+    "rateUnit": "parts-per-million",
+    "w5QuestionIds": [
+      "exact-installed",
+      "exact-removed",
+      "document-subst-font-only",
+      "curated-official-successor-only",
+      "all-related-fonts-missing"
+    ],
+    "requiredOracleProfileFields": [
+      "inputSha256",
+      "hancomVersion",
+      "pdfProducer",
+      "installedFontSha256",
+      "exactMissingState",
+      "subsetFontName",
+      "glyphOutlineDigest",
+      "hmtxAdvance",
+      "firstTypesettingDivergence",
+      "relationEvidence"
+    ],
+    "githubWrite": false
+  },
   "historicalDefinitionEvidence": {
     "generatorCommit": "631287d4708f144011162179d61f8272cf072ff6",
     "source": "examples/poc_font_layout_habits.rs",
