@@ -4075,14 +4075,18 @@ mod tests {
         }
     }
 
-    /// [#5249] tail 길이는 바탕쪽이 아니라 **저장될 파일 버전**이 정한다.
+    /// [#5249] `secd` tail 은 바탕쪽이 아니라 **저장될 파일 버전**이 정한다.
     ///
-    /// 한컴 저작 517구역 실측: <5.0.4.0 → 10 byte(secd 38) · ≥5.0.4.0 → 19 byte(secd 47).
-    /// 종전 게이트(바탕쪽 유무)는 양방향으로 어긋났다 — 바탕쪽 0인데 47이 284구역,
-    /// 바탕쪽이 있는데 38이 10구역.
+    /// 한컴 저작 517구역 실측(`scripts/secd_tail_survey.py`): 5.0.4.0 미만은 10 byte
+    /// tail(secd 38), 5.0.4.0 이상은 19 byte tail(secd 47). 종전 게이트(바탕쪽 유무)는
+    /// 양방향으로 어긋났다 — 바탕쪽 0인데 47이 284구역, 바탕쪽이 있는데 38이 10구역.
+    ///
+    /// 길이·마커 범위·raw 보존을 한 함수에 담는다 — `src` 유닛 테스트 총량은 래칫으로
+    /// 묶여 있고(`scripts/rust-unit-test-tiers.mjs`), 변환 산출 바이트 판정은
+    /// `tests/cases/issue_5249_section_def_ctrl_tail.rs` 가 따로 맡는다.
     #[test]
-    fn section_def_tail_length_follows_the_saved_file_version() {
-        // HWPX 출처의 실제 저장 버전(파서가 5.1.0.0 을 적는다) + 바탕쪽 없음.
+    fn section_def_tail_follows_the_saved_file_version() {
+        // ① HWPX 출처의 실제 저장 버전(파서가 5.1.0.0 을 적는다) + 바탕쪽 없음.
         let mut modern = SectionDef::default();
         let mut report = AdapterReport::new();
         materialize_section_def_ctrl_tail(&mut modern, &hwp_version(5, 1, 0, 0), &mut report);
@@ -4094,7 +4098,12 @@ mod tests {
         assert!(modern.raw_ctrl_extra.iter().all(|b| *b == 0));
         assert_eq!(report.section_def_master_page_tail_materialized, 1);
 
-        // 경계 바로 아래는 구 계약 그대로.
+        // ② 경계 자신과 그 바로 아래.
+        let mut boundary = SectionDef::default();
+        let mut report = AdapterReport::new();
+        materialize_section_def_ctrl_tail(&mut boundary, &hwp_version(5, 0, 4, 0), &mut report);
+        assert_eq!(boundary.raw_ctrl_extra.len(), 19);
+
         let mut legacy = SectionDef::default();
         let mut report = AdapterReport::new();
         materialize_section_def_ctrl_tail(&mut legacy, &hwp_version(5, 0, 3, 0), &mut report);
@@ -4104,16 +4113,7 @@ mod tests {
             "5.0.3.0 은 10 byte tail(secd 38)"
         );
 
-        // 경계 자신(코퍼스에서 47 이 처음 관측된 버전).
-        let mut boundary = SectionDef::default();
-        let mut report = AdapterReport::new();
-        materialize_section_def_ctrl_tail(&mut boundary, &hwp_version(5, 0, 4, 0), &mut report);
-        assert_eq!(boundary.raw_ctrl_extra.len(), 19);
-    }
-
-    /// 바탕쪽이 있어도 **길이는 버전이** 정한다 — 바탕쪽은 마커 자리만 건드린다.
-    #[test]
-    fn section_def_tail_marker_stays_scoped_to_the_extended_tail() {
+        // ③ 바탕쪽은 길이를 바꾸지 않는다 — 확장 tail 의 마커 자리만 건드린다.
         let mut triple = SectionDef {
             master_pages: vec![Default::default(), Default::default(), Default::default()],
             ..Default::default()
@@ -4123,31 +4123,33 @@ mod tests {
         assert_eq!(triple.raw_ctrl_extra.len(), 19);
         assert_eq!(&triple.raw_ctrl_extra[0..4], &[0, 0, 1, 0]);
 
-        // 구 계약 버전에는 마커 자리가 없다 — 10 byte 를 넘겨 쓰지 않는다.
-        let mut legacy = SectionDef {
+        // 구 계약에는 마커 자리가 없다 — 10 byte 를 넘겨 쓰지 않는다.
+        let mut legacy_triple = SectionDef {
             master_pages: vec![Default::default(), Default::default(), Default::default()],
             ..Default::default()
         };
         let mut report = AdapterReport::new();
-        materialize_section_def_ctrl_tail(&mut legacy, &hwp_version(5, 0, 3, 0), &mut report);
-        assert_eq!(legacy.raw_ctrl_extra.len(), 10);
-        assert_eq!(&legacy.raw_ctrl_extra[2..4], &[0, 0]);
-    }
+        materialize_section_def_ctrl_tail(
+            &mut legacy_triple,
+            &hwp_version(5, 0, 3, 0),
+            &mut report,
+        );
+        assert_eq!(legacy_triple.raw_ctrl_extra.len(), 10);
+        assert_eq!(&legacy_triple.raw_ctrl_extra[2..4], &[0, 0]);
 
-    /// HWP5 원본에서 파싱한 tail 은 손대지 않는다 — 라운드트립 계약이 먼저다.
-    #[test]
-    fn parsed_hwp5_tail_is_preserved_as_is() {
+        // ④ HWP5 원본에서 파싱한 tail 은 손대지 않는다 — 라운드트립 계약이 먼저다.
         let original = vec![9u8; 17];
-        let mut section_def = SectionDef {
+        let mut parsed = SectionDef {
             raw_ctrl_extra: original.clone(),
             master_pages: vec![Default::default(), Default::default(), Default::default()],
             ..Default::default()
         };
         let mut report = AdapterReport::new();
-        materialize_section_def_ctrl_tail(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
-        assert_eq!(section_def.raw_ctrl_extra, original);
+        materialize_section_def_ctrl_tail(&mut parsed, &hwp_version(5, 1, 0, 0), &mut report);
+        assert_eq!(parsed.raw_ctrl_extra, original);
         assert_eq!(report.section_def_master_page_tail_materialized, 0);
     }
+
     #[test]
     fn header_footer_nested_tables_are_materialized() {
         use crate::model::header_footer::{Footer, Header};
