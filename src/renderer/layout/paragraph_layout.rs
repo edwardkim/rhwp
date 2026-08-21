@@ -1062,6 +1062,71 @@ fn compute_line_extra_spacing(
         }
         count
     };
+
+    // [#5830] 양쪽정렬 배분 대상이 아닌 줄(문단 마지막 줄·강제 줄바꿈 줄)의 dash leader.
+    //
+    // 종전에는 이 줄들에서 슬랙 자체가 계산되지 않아 `char_width_decision` 의 leader
+    // 클램프 `min(자연폭, font_size * 0.3)` 에 머물렀다 — 한글 2022 정본 대비 폭 절반.
+    //
+    // 정본(86712 규제영향분석서 p34·p35, PDF 글리프 원점 실측)의 마지막 줄 규칙:
+    //   - 여백이 충분하면 dash 는 **자연 폭**으로 그린다 (p35 10자·18자 런 = 8.00pt
+    //     = 0.571em, 오른쪽 여백에 닿지 않고 끝난다 — 무한 신장이 아니다).
+    //   - 여백이 그보다 좁으면 **여백까지만** 좁힌다 (p34 10자 런 = 7.00pt = 0.499em,
+    //     끝점이 정확히 여백 x≈530pt).
+    // 즉 마지막 줄에서는 leader 클램프를 **자연 폭 한도 안에서 슬랙만큼** 되돌린다.
+    // needs_justify 줄의 기존 탄력 흡수(Task #352, 여백까지 확장)는 그대로다.
+    //
+    // 정렬이 여백까지 채우는 종류(Justify·Split)일 때만 연다 — 왼쪽/가운데 정렬의
+    // 짧은 dash 는 저자가 의도한 길이일 수 있다.
+    let last_line_leader_fill = if !needs_justify
+        && matches!(alignment, Alignment::Justify | Alignment::Split)
+    {
+        let all_chars: Vec<char> = comp_line.runs.iter().flat_map(|r| r.text.chars()).collect();
+        let trailing_spaces = all_chars.iter().rev().take_while(|c| **c == ' ').count();
+        let visible_count = all_chars.len() - trailing_spaces;
+        let leader_dashes = count_dash_leaders(&all_chars[..visible_count]);
+        if leader_dashes > 0 {
+            // 클램프가 깎아낸 폭 = 자연 advance − min(자연, 0.3em). 단독 '-' 는 3+ 연속
+            // leader 가 아니므로 estimate_text_width 가 클램프 없는 자연 폭을 돌려준다.
+            let per_dash_restore = comp_line
+                .runs
+                .iter()
+                .find(|r| {
+                    let chars: Vec<char> = r.text.chars().collect();
+                    (0..chars.len()).any(|i| {
+                        chars[i] == '-' && chars[i..].iter().take_while(|c| **c == '-').count() >= 3
+                    })
+                })
+                .map(|r| {
+                    let mut ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                    ts.default_tab_width = tab_width;
+                    let natural = estimate_text_width("-", &ts);
+                    (natural - natural.min(ts.font_size * 0.3)).max(0.0)
+                })
+                .unwrap_or(0.0);
+            let trailing_width = if trailing_spaces > 0 {
+                if let Some(last_run) = comp_line.runs.last() {
+                    let mut ts =
+                        resolved_to_text_style(styles, last_run.char_style_id, last_run.lang_index);
+                    ts.default_tab_width = tab_width;
+                    estimate_text_width(&" ".repeat(trailing_spaces), &ts)
+                } else {
+                    0.0
+                }
+            } else {
+                0.0
+            };
+            let slack = available_width - (total_text_width - trailing_width);
+            // 슬랙이 없으면(이미 꽉 찬 줄) 아래 기존 분기(오버플로우 압축 등)로 흘린다.
+            let extra = (slack / leader_dashes as f64).min(per_dash_restore);
+            (extra > 0.0).then_some(extra)
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
     if needs_justify {
         // 양쪽 정렬: 후행 공백 제외한 내부 공백에 분배
         let all_chars: Vec<char> = comp_line.runs.iter().flat_map(|r| r.text.chars()).collect();
@@ -1188,6 +1253,9 @@ fn compute_line_extra_spacing(
         } else {
             (0.0, 0.0, 0.0)
         }
+    } else if let Some(extra_dash) = last_line_leader_fill {
+        // [#5830] 마지막 줄·강제 줄바꿈 줄의 dash leader 채움.
+        (0.0, 0.0, extra_dash)
     } else if needs_distribute && total_char_count > 1 {
         // [#4657] 배분 정렬: 남는 폭을 글자 **사이**(N-1곳)에 균등 분배.
         // extra_char_spacing 은 각 글자 advance 뒤에 붙으므로 마지막 glyph 의
