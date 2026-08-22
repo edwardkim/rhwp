@@ -9,7 +9,7 @@
 //! 낮춘다.
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use rhwp::document_core::queries::table_extract::extract_tables;
 use rhwp::model::control::Control;
@@ -110,7 +110,6 @@ fn run(batched: bool, sample_path: &str) -> (u32, String, String, Vec<u8>) {
 #[test]
 fn batched_cell_formats_match_eager_rebuild() {
     let sample_path = sample();
-    let _ = PathBuf::from(&sample_path);
 
     let eager = run(false, &sample_path);
     let batched = run(true, &sample_path);
