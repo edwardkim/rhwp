@@ -3151,6 +3151,9 @@ impl DocumentCore {
 
     // ─── Phase 3 네이티브 구현: 커서 이동 API ─────────────────
 
+    // [#5769] 통합 테스트(tests/cases/)에서 직접 호출하기 위해 pub 로 확장.
+    // wasm_api.rs:6331 의 pub fn delete_range 래퍼는 wasm_bindgen 이므로
+    // Rust 테스트에서 호출 불가 — 동일 동작의 native 경로를 공개한다.
     pub fn delete_range_native(
         &mut self,
         section_idx: usize,
