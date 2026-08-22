@@ -6720,6 +6720,28 @@ impl HwpDocument {
         self.discard_delete_fragment_native(id)
     }
 
+    /// 속성 변경 직전 구역 raw 스트림+봉인을 보관한다 (#5769 Stage 4).
+    ///
+    /// 반드시 `setSectionDef` 호출 **전**에 불린다. 반환 ID 는
+    /// `restoreSectionRaw`/`discardSectionRaw` 에 쓴다.
+    #[wasm_bindgen(js_name = captureSectionRaw)]
+    pub fn capture_section_raw(&mut self, section_idx: usize) -> Result<u32, JsValue> {
+        self.capture_section_raw_native(section_idx)
+            .map_err(|e| e.into())
+    }
+
+    /// 캡처한 구역 raw 를 되돌린다 — old 속성 재적용(재무효화) **뒤** 에 불린다 (#5769 Stage 4).
+    #[wasm_bindgen(js_name = restoreSectionRaw)]
+    pub fn restore_section_raw(&mut self, id: u32) -> Result<String, JsValue> {
+        self.restore_section_raw_native(id).map_err(|e| e.into())
+    }
+
+    /// 구역 raw 캡처를 제거하여 메모리를 해제한다 — 히스토리 축출·클리어 계약 (#5769 Stage 4).
+    #[wasm_bindgen(js_name = discardSectionRaw)]
+    pub fn discard_section_raw(&mut self, id: u32) {
+        self.discard_section_raw_native(id)
+    }
+
     /// 캐럿 위치의 글자 속성을 조회한다.
     ///
     /// 반환값: JSON 객체 (fontFamily, fontSize, bold, italic, underline, strikethrough, textColor 등)

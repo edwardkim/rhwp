@@ -204,6 +204,8 @@ impl DocumentCore {
             next_snapshot_id: 0,
             fragment_store: Vec::new(),
             next_fragment_id: 0,
+            section_raw_store: Vec::new(),
+            next_section_raw_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),
             file_name: String::new(),
             active_field: None,
