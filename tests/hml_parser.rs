@@ -455,6 +455,23 @@ fn accepts_doctype_with_safe_literal_entity() {
     );
 }
 
+/// XML 1.0 이 금지한 제어 문자와 noncharacter 는 Rust `char`로 만들 수 있어도
+/// 내부 DTD 엔티티에 실으면 안 된다. 선언이 버려져 본문 참조도 거부되어야 한다.
+#[test]
+fn rejects_invalid_xml_character_references_in_doctype_entities() {
+    for character_ref in ["&#0;", "&#x1F;", "&#xFFFE;"] {
+        let doctype = format!("<!DOCTYPE HWPML [<!ENTITY invalid \"{character_ref}\">]>");
+        let xml = HML_29
+            .replacen("\n<HWPML", &format!("\n{doctype}\n<HWPML"), 1)
+            .replacen("안녕 HML 123", "&invalid;", 1);
+
+        assert!(
+            matches!(parse_hml(xml.as_bytes()), Err(HmlError::InvalidXml(_))),
+            "{character_ref} 는 XML 1.0 DTD 엔티티로 수용하면 안 된다"
+        );
+    }
+}
+
 /// 확장 폭탄(billion laughs) — 값에 다른 엔티티 참조가 있는 선언은 **싣지 않으므로**
 /// 본문에서 그 이름을 부르면 거부된다. 재귀 확장이 성립할 자리가 없다.
 #[test]

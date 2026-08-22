@@ -104,6 +104,19 @@ fn declared_entity_in_body_resolves() {
 }
 
 #[test]
+fn invalid_xml_character_references_are_still_refused() {
+    for character_ref in ["&#0;", "&#x1F;", "&#xFFFE;"] {
+        let doctype = format!("<!DOCTYPE HWPML [<!ENTITY invalid \"{character_ref}\">]>");
+        let xml = variant(&doctype, Some("2.1"), Some(("</CHAR>", "&invalid;</CHAR>")));
+        let err = open_pages(&xml).expect_err("XML 1.0 에서 금지한 문자참조는 거부되어야 한다");
+        assert!(
+            err.contains("&invalid;") || err.to_lowercase().contains("entity"),
+            "엔티티 거부 오류여야 한다: {err}"
+        );
+    }
+}
+
+#[test]
 fn nested_entity_declaration_is_still_refused() {
     // 확장 폭탄(billion laughs) — 값에 다른 엔티티 참조가 있는 선언은 싣지 않으므로
     // 본문에서 그 이름을 부르면 종전대로 거부된다.

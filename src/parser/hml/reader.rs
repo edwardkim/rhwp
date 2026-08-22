@@ -1526,6 +1526,13 @@ fn append_decoded_text(
 
 /// [#5848] 숫자 문자참조(`&#160;` · `&#xA0;`)만 실제 문자로 푼다.
 /// 엔티티 참조는 호출부가 이미 걸러 두므로 여기 들어오지 않는다.
+fn is_xml_10_char(code: u32) -> bool {
+    matches!(
+        code,
+        0x9 | 0xA | 0xD | 0x20..=0xD7FF | 0xE000..=0xFFFD | 0x10000..=0x10FFFF
+    )
+}
+
 fn resolve_char_refs(value: &str) -> Option<String> {
     let mut out = String::with_capacity(value.len());
     let mut rest = value;
@@ -1539,6 +1546,9 @@ fn resolve_char_refs(value: &str) -> Option<String> {
         } else {
             digits.parse::<u32>().ok()?
         };
+        if !is_xml_10_char(code) {
+            return None;
+        }
         out.push(char::from_u32(code)?);
         rest = &body[end + 1..];
     }
