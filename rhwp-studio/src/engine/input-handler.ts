@@ -1,4 +1,4 @@
-import { WasmBridge } from '@/core/wasm-bridge';
+﻿import { WasmBridge } from '@/core/wasm-bridge';
 import type { DeferredFocusedPagePatch } from '@/core/wasm-bridge';
 import { EventBus } from '@/core/event-bus';
 import { CursorState } from './cursor';
@@ -2514,8 +2514,14 @@ export class InputHandler {
     }
   }
 
-  /** 선택 영역을 삭제한다 */
-  private deleteSelection(): void {
+  /**
+   * 선택 영역을 삭제한다.
+   *
+   * @param options.deferRecord true 이면 히스토리 기록 없이 직접 실행만 한다 —
+   *   붙여넣기 등에서 스냅샷 콜백 안에 들어갈 때 사용. 호출자가 SnapshotCommand 로
+   *   기록하므로 중복 엔트리를 방지한다.
+   */
+  private deleteSelection(options?: { deferRecord?: boolean }): void {
     const sel = this.cursor.getSelectionOrdered();
     if (!sel) return;
     if (!this.canDeleteSelectionInFormMode()) return;
@@ -2523,7 +2529,15 @@ export class InputHandler {
     // [Task #3416] F3 블록이면 확장 단계도 함께 기록한다 — 한컴은 undo 뒤 단계까지 되돌린다.
     const cmd = new DeleteSelectionCommand(sel.start, sel.end, this.cursor.blockSelectionPhase());
     this.cursor.clearSelection();
-    this.executeOperation({ kind: 'command', command: cmd });
+    if (options?.deferRecord) {
+      // 붙여넣기 등 스냅샷 콜백에서 호출될 때 — 히스토리 기록 없이 직접 실행만.
+      // DeleteSelectionCommand.execute() 는 WASM 삭제 + 커서 이동만 수행하므로
+      // history.execute() 없이 직접 호출해도 무방하다. 호출자의 SnapshotCommand 가
+      // before-snapshot 으로 전체 undo 를 커버한다.
+      cmd.execute(this.wasm);
+    } else {
+      this.executeOperation({ kind: 'command', command: cmd });
+    }
   }
 
   /** Undo 처리 */
