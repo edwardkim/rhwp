@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/README.md
-last_verified: 2026-08-18
+last_verified: 2026-08-22
 ---
 
 # manual 문서 지도
@@ -30,7 +30,8 @@ last_verified: 2026-08-18
 | 로컬 OWPML XML 스키마 자산 | [OWPML XML 스키마 reference](owpml_schema_reference.md) | [한컴 공식 OWPML 모델 참조 가이드](../tech/hwpx_hancom_reference.md) |
 | PDF/SVG 기준 비교의 정책 | [시각 검증 문서 지도](verification/README.md) | [시각 검증 거버넌스](verification/visual_verification_governance.md), [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md) |
 | RenderBackend 계약·픽스처 | [RenderBackend 계약 카탈로그](render_backend_contract_catalog.md) | [픽스처 목록](../tech/render_backend_fixture_catalog.md), [설계 배경](../tech/render_backend.md) |
-| 한컴 기준 PDF 산출을 위한 MCP 사용 | [HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md) | [PR review 시각·fixture 증적](pr_review/visual_fixture_evidence.md) |
+| HWP 2022 이하 저장본의 한컴 기준 PDF·원격 변환 | [HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md) | [PR review 시각·fixture 증적](pr_review/visual_fixture_evidence.md) |
+| HWP 2024 저장본의 한컴 기준 PDF·원격 변환 | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | [PR review 시각·fixture 증적](pr_review/visual_fixture_evidence.md) |
 | AI 에이전트 호스트에 rhwp 를 MCP 도구로 연결 | [MCP 통합 가이드](mcp_integration_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md), [CLI JSON 파이프라인 가이드](cli_json_pipeline_guide.md) |
 | 브라우저 확장 개발·배포 | [브라우저 확장 개발 가이드](browser_extension_dev_guide.md) | [Chrome/Edge 확장 빌드·배포](chrome_edge_extension_build_deploy.md) |
 | Studio E2E·CDP 검증 | [E2E 조판 자동 검증](e2e_verification_guide.md) | [CDP E2E 가이드](e2e-cdp.md) |
@@ -46,6 +47,19 @@ last_verified: 2026-08-18
 | release 준비와 배포 | [배포 가이드](publish_guide.md) | [개발 환경 가이드](dev_environment_guide.md) |
 | rhwp-studio UI 명칭·CSS 접두어 | [rhwp-studio UI 명칭과 CSS 접두어](rhwp_studio_ui_conventions.md) | [개발 환경 가이드](dev_environment_guide.md) |
 | rhwp-studio 테마 토큰·스킨 제작 | [rhwp-studio 테마 토큰과 스킨 제작](rhwp_studio_theming.md) | [rhwp-studio UI 명칭과 CSS 접두어](rhwp_studio_ui_conventions.md) |
+
+## HWP 원격 MCP 선택과 접근 범위
+
+원격 HWP 변환 MCP는 공개 서비스가 아니다. rhwp maintainer, collaborator 또는 MCP 관리자가 별도로
+인증한 사용자만 사용할 수 있으며, server URL과 token은 각 서비스 관리자로부터 비공개로 전달받는다.
+
+`.hwp` 확장자만으로 저장 버전을 자동 판별한다고 가정하지 않고, 문서를 저장한 한컴오피스 버전을 기준으로
+다음과 같이 서비스를 선택한다.
+
+| 저장한 한컴오피스 버전 | 변환 서비스 | 권위 문서 | client artifact |
+| --- | --- | --- | --- |
+| 2022 이하 | `hwp-convert-2020` | [HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md) | `tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz` |
+| 2024 | `hwp-convert-2024` | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | `tools/hwp-convert-mcp-2024-client-20260822-225818.tar.gz` |
 
 ## 문서 경계
 
