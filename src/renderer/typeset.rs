@@ -21439,7 +21439,23 @@ impl TypesetEngine {
                 // 62px 를 같은 폭만큼 하향(50). 코호트 재판정: 분할 정답 최대 슬랙
                 // 42.5(36395825) < 50 < 흡수 정답 최소 슬랙 56.4(36376848) 로
                 // 62 시절의 기지 한계(저슬랙 흡수 2건) 외 오분류 없음.
-                let uncertain_anchor_margin = if anchor_vpos <= 0 { 50.0 } else { 0.0 };
+                // [#2098 마진의 적용 조건] 이 마진이 보정하는 불확실성은 "앵커 vpos≤0 이라
+                // 본문 끝을 저장 vpos(prev_body_bottom_vpos)에서 **복원**했다"는 사실 자체에서
+                // 온다 — 복원값이 흐름 cur_h 를 실제로 끌어올렸을 때만 판정이 복원에 의존한다
+                // (36387725: cur_h 578 → 복원 640.7 로 상향, 이 상향분이 과관용의 근원).
+                // 복원이 판정을 바꾸지 않았다면(sync_h == cur_h: 복원값이 흐름 이하이거나
+                // #2279 처럼 동기화를 건너뛴 경우) 남은 불확실성이 없는데도 마진이 흐름 좌표
+                // 기준 fit 을 일률적으로 깎아, 여유가 실재하는 쪽을 분할한다
+                // (task2098/page_bottom_fixed_anchor_margin_split: cur_h == 복원 754.67,
+                // 배타 잔여 800.24 → 한글 2020 정본 1쪽인데 rhwp 는 2쪽).
+                // 복원이 실제로 상향한 경우에만 마진을 건다 — 코호트 재판정 신호(슬랙 스칼라)는
+                // 그대로 두고 적용 범위만 좁힌다.
+                let restoration_raised_fit = sync_h > st.current_height;
+                let uncertain_anchor_margin = if anchor_vpos <= 0 && restoration_raised_fit {
+                    50.0
+                } else {
+                    0.0
+                };
                 // [#2279 진단] footer 흡수/분할 판정 변수 분해 — 동작 불변.
                 // underrun = 이 단의 문단 place 가 트림한 (total_height − advance) 누계
                 // (렌더/한글 좌표와의 발산 중 문단-sa 성분; 표 place 성분은 미포함).
