@@ -91,4 +91,8 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   // 경로로 고정돼 있어(SnapshotCommand.undo 의 restoreSnapshot 과 같은 취급)
   // executeOperation 라우팅 강제 대상에서 제외한다. 히스토리 밖 직접 호출 금지.
   'captureDeleteRange', 'restoreDeleteFragment', 'discardDeleteFragment',
+  // [#5769 Stage 4] 구역 raw 저널 API — capture·discard 는 IR 비변경.
+  // restoreSectionRaw 는 passthrough 를 되살리지만 SetSectionPropsCommand.undo 단일
+  // 경로로 고정돼 있어(restoreDeleteFragment 와 같은 취급) 제외한다. 히스토리 밖 직접 호출 금지.
+  'captureSectionRaw', 'restoreSectionRaw', 'discardSectionRaw',
 ];

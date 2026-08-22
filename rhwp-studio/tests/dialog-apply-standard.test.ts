@@ -86,7 +86,7 @@ test('라우터와 fallback 예외를 실제로 false로 바꾼다', () => {
 test('라우팅된 다이얼로그 여섯은 모두 공용 헬퍼를 통과한다', () => {
   for (const rel of ROUTED_DIALOGS) {
     const s = src(rel);
-    assert.match(s, /import \{ applyThroughRouter \} from '\.\/dialog-apply'/, `${rel}: 헬퍼 import`);
+    assert.match(s, /import \{[^}]*applyThroughRouter[^}]*\} from '\.\/dialog-apply'/, `${rel}: 헬퍼 import`);
     assert.match(s, /return applyThroughRouter\(\{/, `${rel}: onConfirm 이 헬퍼 결과를 반환`);
     // 헬퍼 밖에서 직접 라우터를 부르면 표준화가 무너진다.
     assert.doesNotMatch(

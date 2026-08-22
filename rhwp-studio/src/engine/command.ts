@@ -4,7 +4,7 @@ import type {
   RemovedParaMeta,
   WasmBridge,
 } from '@/core/wasm-bridge';
-import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry } from '@/core/types';
+import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry, SectionDef } from '@/core/types';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 import { setObjectProps, type ObjectPropsRef } from './object-props';
@@ -2134,6 +2134,87 @@ export class SetObjectPropsCommand implements EditCommand {
    * 횟수가 다르다 — 묶으면 되돌리기 단위가 사용자가 누른 단위와 어긋난다.
    */
   mergeWith(): null { return null; }
+}
+
+/**
+ * 구역 설정(SectionDef)의 old/new 속성쌍 역연산 명령 (#5769 Stage 4).
+ *
+ * set_section_def 는 적용 시 구역 raw_stream 을 무효화한다 — 속성만 되돌리면 저장이
+ * IR 재구성 경로로 바뀌어 원본 바이트와 어긋난다(속성을 하나도 바꾸지 않고 같은 값을
+ * 한 번 적용만 해도 재현됨). 그래서 변경 직전 passthrough 를 captureSectionRaw 저널에
+ * 보관했다가 undo 에서 old 재적용(raw 재무효화) 뒤 되돌린다. Rust 수렴 실증:
+ * tests/cases/issue_5769_stage4_setter_convergence.rs — 바이트 왕복 동일.
+ *
+ * snapshotResourceCount 는 항상 0 — 스냅샷 예산을 쓰지 않는다.
+ */
+export class SetSectionPropsCommand implements EditCommand {
+  readonly type = 'setSectionProps';
+  readonly timestamp = Date.now();
+
+  /** execute 가 잡아 둔 passthrough 캡처. undo 가 소비하고 discard 가 해제한다. */
+  private captureId: number | null = null;
+  private noOp = false;
+
+  constructor(
+    private sectionIdx: number,
+    private before: SectionDef,
+    private after: SectionDef,
+    private cursorPos: DocumentPosition,
+  ) {}
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    if (this.propsEqual()) {
+      this.noOp = true;
+      return { ...this.cursorPos };
+    }
+    // redo 재실행도 같은 순서다 — undo 가 저널 항목을 소비하므로 항상 새로 캡처한다.
+    // 지역 변수로 받는다 — catch 에서 프로퍼티 좁히기가 풀린다(FragmentDeleteCommand 선례).
+    const captureId = wasm.captureSectionRaw(this.sectionIdx);
+    this.captureId = captureId;
+    try {
+      wasm.setSectionDef(this.sectionIdx, this.after);
+      return { ...this.cursorPos };
+    } catch (e) {
+      wasm.discardSectionRaw(captureId);
+      this.captureId = null;
+      throw e;
+    }
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    if (this.captureId === null) {
+      throw new Error(`${this.type} undo 불가 — 살아있는 raw 캡처가 없다`);
+    }
+    const captureId = this.captureId;
+    wasm.setSectionDef(this.sectionIdx, this.before); // old 재적용 — raw 재무효화를 동반한다
+    wasm.restoreSectionRaw(captureId); // passthrough 복원 — 저널 항목 소비
+    this.captureId = null;
+    return { ...this.cursorPos };
+  }
+
+  discard(wasm: WasmBridge): void {
+    if (this.captureId !== null) {
+      wasm.discardSectionRaw(this.captureId);
+      this.captureId = null;
+    }
+  }
+
+  snapshotResourceCount(): number { return 0; }
+
+  isNoOp(): boolean { return this.noOp; }
+
+  /** 병합하지 않는다 — 다이얼로그 확인 1회가 되돌리기 단위 1회다(한컴 정합). */
+  mergeWith(): null { return null; }
+
+  /** SectionDef 전 필드 비교 — after 만 보면 된다(execute 가 적용하는 것이 그것뿐). */
+  private propsEqual(): boolean {
+    const keys: (keyof SectionDef)[] = [
+      'pageNum', 'pageNumType', 'pictureNum', 'tableNum', 'equationNum',
+      'columnSpacing', 'defaultTabSpacing',
+      'hideHeader', 'hideFooter', 'hideMasterPage', 'hideBorder', 'hideFill', 'hideEmptyLine',
+    ];
+    return keys.every((key) => Object.is(this.before[key], this.after[key]));
+  }
 }
 
 /**

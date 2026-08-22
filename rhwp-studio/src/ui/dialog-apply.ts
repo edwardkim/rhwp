@@ -1,6 +1,46 @@
 import type { CommandServices } from '@/command/types';
 import type { DocumentPosition } from '@/core/types';
 import type { InputHandler } from '@/engine/input-handler';
+import type { EditCommand } from '@/engine/command';
+
+/** kind:'command' 디스크립터 — 헬퍼 시그니처가 리터럴을 고정한다(#5769 Stage 4). */
+export interface CommandDescriptor {
+  kind: 'command';
+  command: EditCommand;
+}
+
+/**
+ * [Task #5769 Stage 4] 커맨드 객체를 편집 라우터로 보내는 공용 경로.
+ *
+ * 속성쌍 역연산처럼 operation 콜백 한 번으로 표현할 수 없는 배선(캡처→적용 순서,
+ * undo 시 재적용→복원)은 커맨드 객체를 만들어 kind:'command' 로 보낸다.
+ * 실패 처리 규약은 [`applyThroughRouter`] 와 같다 — 경고를 남기고 다이얼로그를
+ * 열어 둔다(onConfirm 이 false 를 받아 닫지 않는다).
+ *
+ * @returns 적용에 성공했으면 `true`. 그대로 `onConfirm` 의 반환값으로 쓰면 된다.
+ */
+export function applyCommandThroughRouter(options: {
+  services: CommandServices | undefined;
+  /** 로그 접두어 — 실패 원인을 찾을 수 있게 커맨드/다이얼로그를 식별한다. */
+  label: string;
+  command: (ih: InputHandler) => CommandDescriptor;
+  /** 라우터에 도달하지 못하는 환경의 직접 적용 경로. */
+  fallback: () => void;
+}): boolean {
+  const { services, label, command, fallback } = options;
+  try {
+    const ih = services?.getInputHandler();
+    if (ih) {
+      ih.executeOperation(command(ih));
+    } else {
+      fallback();
+    }
+    return true;
+  } catch (err) {
+    console.warn(`[${label}] 적용 실패:`, err);
+    return false;
+  }
+}
 
 /**
  * [Task #2370 클러스터 C] 다이얼로그 [확인]의 문서 변경을 편집 라우터로 보내는 공용 경로.
