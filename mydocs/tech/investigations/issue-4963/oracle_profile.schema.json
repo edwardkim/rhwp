@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/issue-4963/oracle_profile.schema.json",
+  "title": "rhwp Font Oracle Profile v1",
+  "description": "Issue #4963 controlled exact/missing font observation envelope. Conditional evidence semantics are enforced by scripts/oracle_profile_contract.mjs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "issue",
+    "candidate",
+    "questionId",
+    "exactMissingState",
+    "input",
+    "environment",
+    "execution",
+    "fontState",
+    "observations",
+    "relationEvidence",
+    "privacy"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "kind": { "const": "font-oracle-profile" },
+    "issue": { "const": 4963 },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["queueRank", "documentFace"],
+      "properties": {
+        "queueRank": { "type": "integer", "minimum": 1, "maximum": 17 },
+        "documentFace": { "type": "string", "minLength": 1 }
+      }
+    },
+    "questionId": { "$ref": "#/$defs/questionId" },
+    "exactMissingState": { "$ref": "#/$defs/questionId" },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFormat",
+        "sha256",
+        "fixtureContractVersion",
+        "fixtureGeneratorCommit"
+      ],
+      "properties": {
+        "sourceFormat": { "enum": ["hwp", "hwpx"] },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "fixtureContractVersion": { "type": "string", "minLength": 1 },
+        "fixtureGeneratorCommit": { "$ref": "#/$defs/gitSha" }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "os",
+        "locale",
+        "hancomVersion",
+        "pdfProducer",
+        "exportRoute",
+        "oracleAuthority",
+        "ambientFontManifestSha256",
+        "processReset",
+        "rebooted"
+      ],
+      "properties": {
+        "os": { "type": "string", "minLength": 1 },
+        "locale": { "type": "string", "minLength": 1 },
+        "hancomVersion": { "type": "string", "minLength": 1 },
+        "pdfProducer": { "type": "string", "minLength": 1 },
+        "exportRoute": { "type": "string", "minLength": 1 },
+        "oracleAuthority": {
+          "enum": ["acceptance-primary", "secondary-historical", "contract-fixture"]
+        },
+        "ambientFontManifestSha256": { "$ref": "#/$defs/sha256" },
+        "processReset": { "type": "boolean" },
+        "rebooted": { "type": "boolean" }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidenceClass", "startedAt", "finishedAt", "repeatIndex"],
+      "properties": {
+        "evidenceClass": {
+          "enum": [
+            "synthetic-contract-fixture",
+            "historical-import",
+            "oracle-run"
+          ]
+        },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "finishedAt": { "type": "string", "format": "date-time" },
+        "repeatIndex": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "fontState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestedFace",
+        "relatedFaceSet",
+        "installedFontSha256",
+        "readbackFace",
+        "readbackFontType"
+      ],
+      "properties": {
+        "requestedFace": { "type": "string", "minLength": 1 },
+        "relatedFaceSet": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "installedFontSha256": { "$ref": "#/$defs/evidence" },
+        "readbackFace": { "$ref": "#/$defs/evidence" },
+        "readbackFontType": { "$ref": "#/$defs/evidence" }
+      }
+    },
+    "observations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subsetFontName",
+        "glyphOutlineDigest",
+        "hmtxAdvance",
+        "pdfObservedAdvance",
+        "firstTypesettingDivergence",
+        "lineCount",
+        "pageCount"
+      ],
+      "properties": {
+        "subsetFontName": { "$ref": "#/$defs/evidence" },
+        "glyphOutlineDigest": { "$ref": "#/$defs/evidence" },
+        "hmtxAdvance": { "$ref": "#/$defs/evidence" },
+        "pdfObservedAdvance": { "$ref": "#/$defs/evidence" },
+        "firstTypesettingDivergence": { "$ref": "#/$defs/evidence" },
+        "lineCount": { "$ref": "#/$defs/evidence" },
+        "pageCount": { "$ref": "#/$defs/evidence" }
+      }
+    },
+    "relationEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "anchor"],
+      "properties": {
+        "type": { "$ref": "#/$defs/relationType" },
+        "anchor": { "$ref": "#/$defs/evidence" }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fontBytesEmbedded",
+        "privateDocumentIdentityIncluded",
+        "absoluteFontPathIncluded"
+      ],
+      "properties": {
+        "fontBytesEmbedded": { "const": false },
+        "privateDocumentIdentityIncluded": { "const": false },
+        "absoluteFontPathIncluded": { "const": false }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "questionId": {
+      "enum": [
+        "exact-installed",
+        "exact-removed",
+        "document-subst-font-only",
+        "curated-official-successor-only",
+        "all-related-fonts-missing"
+      ]
+    },
+    "relationType": {
+      "enum": [
+        "identity-exact",
+        "identity-alias",
+        "official-successor",
+        "document-substitution",
+        "metric-surrogate",
+        "hancom-missing-font",
+        "unknown"
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "value", "reason"],
+      "properties": {
+        "status": {
+          "enum": ["observed", "unavailable", "not-applicable", "blocked"]
+        },
+        "value": {},
+        "reason": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}
