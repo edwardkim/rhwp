@@ -33,6 +33,7 @@ pub fn last_saved_with(extra_streams: &[(String, Vec<u8>)]) -> Option<HancomOffi
     let parts = parse_revision_number(&revision_number)?;
     let version = format!("{}.{}.{}.{}", parts[0], parts[1], parts[2], parts[3]);
     let product = match parts[0] {
+        8 => Some("hancom-office-2010"),
         10 => Some("hancom-office-2018"),
         12 => Some("hancom-office-2022"),
         13 => Some("hancom-office-2024"),

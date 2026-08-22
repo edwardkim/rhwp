@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 const HWP3: &str = "samples/hwp3-sample16.hwp";
+const HWP2010: &str = "samples/basic/Hyper(hwp2010).hwp";
 const HWP2018: &str = "samples/hwp3-sample16-hwp5-2018.hwp";
 const HWP2022: &str = "samples/hwp3-sample16-hwp5-2022.hwp";
 const HWP2024: &str = "samples/hwp3-sample16-hwp5-2024.hwp";
@@ -36,6 +37,7 @@ fn info_json(relative: &str) -> serde_json::Value {
 #[test]
 fn info_distinguishes_hancom_office_save_editions() {
     for (sample, product, version) in [
+        (HWP2010, "hancom-office-2010", "8.0.0.460"),
         (HWP2018, "hancom-office-2018", "10.0.0.14727"),
         (HWP2022, "hancom-office-2022", "12.0.0.535"),
         (HWP2024, "hancom-office-2024", "13.0.0.3457"),
