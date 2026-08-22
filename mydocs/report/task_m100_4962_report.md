@@ -7,6 +7,8 @@ last_verified: 2026-08-22
 
 # Task M100 #4962 — 실제 renderer coverage와 조판 위험 순위 최종 보고
 
+Issue: #4962
+
 ## 1. 결론
 
 #4962의 W3·W4 기술 산출물을 완료했다.
