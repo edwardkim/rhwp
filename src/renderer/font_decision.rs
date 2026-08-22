@@ -289,10 +289,13 @@ fn canonicalize(value: Value, parent_key: Option<&str>, normalized_trace: bool) 
                         key.as_str(),
                         "layoutHash"
                             | "normalizedHash"
+                            | "aggregateHash"
                             | "timestamp"
                             | "generatedAt"
                             | "elapsedMs"
+                            | "elapsedMillis"
                             | "durationMs"
+                            | "durationMillis"
                             | "stack"
                     )
                 {
@@ -310,7 +313,10 @@ fn canonicalize(value: Value, parent_key: Option<&str>, normalized_trace: bool) 
     }
 }
 
-fn sha256_canonical(value: Value, normalized_trace: bool) -> Result<String, serde_json::Error> {
+pub(crate) fn sha256_canonical(
+    value: Value,
+    normalized_trace: bool,
+) -> Result<String, serde_json::Error> {
     let canonical = canonicalize(value, None, normalized_trace);
     let mut bytes = serde_json::to_string_pretty(&canonical)?;
     bytes.push('\n');

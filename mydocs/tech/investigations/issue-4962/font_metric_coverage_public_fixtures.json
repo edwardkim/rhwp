@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-metric-coverage-public-fixtures",
+  "issue": 4962,
+  "documents": [
+    {
+      "id": "format-parity-hwp",
+      "format": "hwp",
+      "path": "samples/3-10월_교육_통합_2022.hwp",
+      "counts": {
+        "coverageCharacters": 10868,
+        "decisionUsageRows": 47,
+        "excludedCharacters": 0,
+        "layoutCharacters": 11094,
+        "legacyUsageRows": 22,
+        "notApplicableCharacters": 226,
+        "paragraphsSeen": 1149,
+        "sourceRunsSeen": 786,
+        "truncatedCharacters": 0
+      },
+      "categories": {
+        "char-miss": 307,
+        "exact-hit": 10521,
+        "face-miss": 40,
+        "heuristic": 0,
+        "identity-alias-hit": 0,
+        "measured-overlay": 0,
+        "metric-surrogate": 0
+      },
+      "widthSources": {
+        "embeddedMetric": 7328,
+        "figureSpace": 6,
+        "heuristicFullwidth": 327,
+        "heuristicHalfwidth": 20,
+        "metricHalfSpace": 3193,
+        "tabAdvance": 220
+      },
+      "aggregateHash": "2e9c54e33ce1cefdbfd7cf065eed6a6b760f486f61be1e2d9276c9b40c0e489e",
+      "legacyProjectionHash": "97afa99ba9b0385dd4c32471da4ec9d3a142d1d236794bd8a2dcb42e2ce36b61"
+    },
+    {
+      "id": "format-parity-hwpx",
+      "format": "hwpx",
+      "path": "samples/3-10월_교육_통합_2022.hwpx",
+      "counts": {
+        "coverageCharacters": 10868,
+        "decisionUsageRows": 47,
+        "excludedCharacters": 0,
+        "layoutCharacters": 11094,
+        "legacyUsageRows": 22,
+        "notApplicableCharacters": 226,
+        "paragraphsSeen": 1149,
+        "sourceRunsSeen": 786,
+        "truncatedCharacters": 0
+      },
+      "categories": {
+        "char-miss": 307,
+        "exact-hit": 10521,
+        "face-miss": 40,
+        "heuristic": 0,
+        "identity-alias-hit": 0,
+        "measured-overlay": 0,
+        "metric-surrogate": 0
+      },
+      "widthSources": {
+        "embeddedMetric": 7328,
+        "figureSpace": 6,
+        "heuristicFullwidth": 327,
+        "heuristicHalfwidth": 20,
+        "metricHalfSpace": 3193,
+        "tabAdvance": 220
+      },
+      "aggregateHash": "09340a179d1e47ef7e940b15a01ad5897bc724ff434e5c80c8bee749dee83443",
+      "legacyProjectionHash": "5c19f49c9e78ff9ed0f4a38b059b5d9fe42f3c92014de6c1f217e1aac07e0612"
+    },
+    {
+      "id": "overlay-and-policy-heuristic-hwp",
+      "format": "hwp",
+      "path": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "counts": {
+        "coverageCharacters": 16685,
+        "decisionUsageRows": 752,
+        "excludedCharacters": 0,
+        "layoutCharacters": 16872,
+        "legacyUsageRows": 476,
+        "notApplicableCharacters": 187,
+        "paragraphsSeen": 2565,
+        "sourceRunsSeen": 4663,
+        "truncatedCharacters": 0
+      },
+      "categories": {
+        "char-miss": 642,
+        "exact-hit": 14833,
+        "face-miss": 0,
+        "heuristic": 22,
+        "identity-alias-hit": 0,
+        "measured-overlay": 1188,
+        "metric-surrogate": 0
+      },
+      "widthSources": {
+        "areaDotFallback": 22,
+        "embeddedMetric": 13887,
+        "figureSpace": 187,
+        "heuristicFullwidth": 524,
+        "heuristicHalfwidth": 118,
+        "metricHalfSpace": 946,
+        "metricNarrowPunctuationOverlay": 86,
+        "metricSpaceOverlay": 1102
+      },
+      "aggregateHash": "465d4c1a5249491312cdf4c340ca0fb7f0a27275e7bb631c3bc37fd3f1f89c26",
+      "legacyProjectionHash": "dd91cb99ca6a5531428ab12613bcf5a99b6a3df5df90264d2eca16a3ef68d269"
+    }
+  ],
+  "reachableCategories": [
+    "measured-overlay",
+    "metric-surrogate",
+    "exact-hit",
+    "char-miss",
+    "face-miss",
+    "heuristic"
+  ],
+  "contractOnlyCategories": [
+    {
+      "id": "identity-alias-hit",
+      "reason": "w1-verified-identity-alias-count-is-zero"
+    }
+  ],
+  "nonApplicableWidthSources": [
+    "clusterContinuation",
+    "figureSpace",
+    "hwpPuaFiller",
+    "inlineObjectPlaceholder",
+    "tabAdvance"
+  ]
+}

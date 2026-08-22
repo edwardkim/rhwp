@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-metric-coverage-checkpoint-policy",
+  "issue": 4962,
+  "policyVersion": "checkpoint-v1",
+  "identityFields": [
+    "sourceHead",
+    "runnerSha256",
+    "workerSha256",
+    "coverageContractSha256",
+    "manifestSha256",
+    "manifestPolicyVersion",
+    "checkpointPolicySha256",
+    "analysisOptionsSha256",
+    "isolationLimitsSha256",
+    "documentCount"
+  ],
+  "journal": {
+    "format": "ndjson",
+    "appendOncePerCompletedDocument": true,
+    "fsyncBeforeStateCommit": true,
+    "containsDocumentIdentity": false,
+    "containsPrivacyCheckedAggregate": true
+  },
+  "state": {
+    "format": "json",
+    "atomicRename": true,
+    "fsyncFileBeforeRename": true,
+    "fsyncDirectoryAfterRename": true,
+    "recordsCommittedJournalBytes": true,
+    "recordsNextDocumentIndex": true
+  },
+  "resume": {
+    "identityDrift": "reject",
+    "committedJournalCorruption": "reject",
+    "uncommittedJournalTail": "truncate",
+    "replayMustMatchState": true,
+    "completedRunMutation": "reject"
+  },
+  "hashChain": {
+    "algorithm": "sha256-chain-v1",
+    "seedIncludesRunIdentity": true,
+    "recordToken": "format:status:aggregate-hash-or-failure"
+  },
+  "storage": {
+    "maxJournalBytes": 17179869184,
+    "minimumFreeBytesAfterAppend": 4294967296,
+    "limitExceeded": "reject-before-append"
+  },
+  "privacy": {
+    "checkpointRoot": "output/",
+    "fileMode": "0600",
+    "directoryMode": "0700",
+    "publishCheckpoint": false
+  }
+}

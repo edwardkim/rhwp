@@ -15,6 +15,12 @@ pub use rhwp_contracts::schema_registry::{
 /// 소비처는 `src/scaffold/schema.rs` 의 재수출이 유일하다.
 pub const SCAFFOLD_SCHEMA_VERSION: &str = "1";
 
+/// #4962 W3가 기존 10k POC usage projection과 대사할 때 유지하는 legacy schema 판.
+///
+/// 공개 capabilities의 계약 축은 아니며, read-only font metric coverage 분석기의
+/// 호환 projection에서만 소비한다.
+pub(crate) const LEGACY_FONT_LAYOUT_HABITS_SCHEMA_VERSION: &str = "poc-font-layout-habits-v2";
+
 /// 공개 `rhwp` 제품의 릴리스 semver.
 pub fn crate_version() -> &'static str {
     env!("CARGO_PKG_VERSION")
