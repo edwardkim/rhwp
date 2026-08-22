@@ -62,7 +62,8 @@ build는 214 modules를 변환했고, 새로 생성한 WASM asset을 사용했�
 ## 4. 검증 경계
 
 - Docker daemon이 꺼져 표준 최적화 WASM image는 실행하지 못했다. 네이티브 `wasm-pack --no-opt`
-  컴파일과 브라우저 검증은 통과했으며 최적화 WASM은 PR CI에서 재확인한다.
+  컴파일과 브라우저 검증은 통과했으며 최적화 WASM은 Docker 사용 가능 환경 또는 release pipeline에서
+  재확인한다.
 - `cargo fmt --all -- --check`는 일반 작업 checkout에 없는 review-only 파생 suite
   `tests/generated/regression_suite_001.rs`~`032.rs` 때문에 format 검사 진입 전에 중단됐다. 이번
   브랜치에는 Rust diff가 없고 최신 Rust의 WASM 컴파일은 통과했지만, 이를 fmt 성공으로 기록하지
