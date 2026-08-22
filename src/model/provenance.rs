@@ -54,6 +54,7 @@ pub struct LayoutCompatibilityProfile {
     hwp5_origin_hwpx: bool,
     native_hwp5_layout: bool,
     hangul2024_layout: bool,
+    flat_stored_line_ladder: bool,
 }
 
 impl LayoutCompatibilityProfile {
@@ -74,6 +75,7 @@ impl LayoutCompatibilityProfile {
             hwp5_origin_hwpx,
             native_hwp5_layout,
             hangul2024_layout: false,
+            flat_stored_line_ladder: false,
         }
     }
 
@@ -96,6 +98,22 @@ impl LayoutCompatibilityProfile {
     /// 바꾸지 않는다.
     pub fn hwp3_password_layout(&self) -> bool {
         self.hwp3_password_layout
+    }
+
+    /// [#5854] 문서의 저장 LINE_SEG 사다리가 **단일 치수 튜플로 굳어 있는가**.
+    ///
+    /// 한글이 실제로 조판해 저장한 문서는 문단마다 글자 크기·줄간격이 달라
+    /// `(line_height, text_height, baseline_distance, line_spacing)` 이 여러 종류로 나온다.
+    /// 전부 한 종류면 그 배열은 실측이 아니라 합성값이다 — 저장 치수를 신뢰하면
+    /// 2pt 문단도 10pt 문단과 같은 줄 높이를 갖는다.
+    pub fn flat_stored_line_ladder(&self) -> bool {
+        self.flat_stored_line_ladder
+    }
+
+    /// 위 판정을 표시한다. `Document::layout_profile` 만 유도한다.
+    pub(crate) fn with_flat_stored_line_ladder(mut self, enabled: bool) -> Self {
+        self.flat_stored_line_ladder = enabled;
+        self
     }
 
     /// 원본 암호 HWP3 전용 레이아웃 계약을 표시한다.

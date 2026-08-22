@@ -843,6 +843,25 @@ pub(crate) fn condensed_ratio_draw_params(font_size: f64, ratio: f64) -> (f64, f
 /// 저장 줄 metrics를 재조판하는 경우의 baseline을 글꼴 기준으로 복원한다.
 ///
 /// 원본 `baseline_distance`도 손상된 `line_height` 좌표계에 기록되므로, 줄 높이만
+/// [실험] PERCENT + 인라인 개체 없음 → 줄 advance 는 글꼴로 완전 결정된다.
+#[inline]
+pub fn percent_line_metrics_from_font(
+    has_controls: bool,
+    ls_type: LineSpacingType,
+    ls_val: f64,
+    max_fs: f64,
+) -> Option<(f64, f64)> {
+    if has_controls || max_fs <= 0.0 || !matches!(ls_type, LineSpacingType::Percent) {
+        return None;
+    }
+    let extra = if ls_val > 0.0 {
+        max_fs * (ls_val - 100.0) / 100.0
+    } else {
+        0.0
+    };
+    Some((max_fs, extra))
+}
+
 /// 낮추고 baseline을 그대로 두면 SVG/Canvas 텍스트가 페이지 하단으로 이탈한다.
 #[inline]
 pub(crate) fn corrected_line_baseline_for_source(

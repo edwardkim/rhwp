@@ -15638,7 +15638,16 @@ impl TypesetEngine {
                     prev_line_reserved_tac_picture_height = None;
                     continue;
                 }
-                let recompute_lh = text_before_picture_line || (max_fs > 0.0 && raw_lh < max_fs);
+                let recompute_lh = text_before_picture_line
+                    || (max_fs > 0.0 && raw_lh < max_fs)
+                    || (self.profile.get().flat_stored_line_ladder()
+                        && crate::renderer::percent_line_metrics_from_font(
+                            !para.controls.is_empty(),
+                            ls_type,
+                            ls_val,
+                            max_fs,
+                        )
+                        .is_some());
                 let (lh, line_spacing_px) = if recompute_lh {
                     // [Task #1042 Stage 6c] HWP3/HWP5 line_segs 의 (line_height=base,
                     // line_spacing=extra) 의미와 정합되게 분해 — 종전 처럼 ls_val/100 전체를

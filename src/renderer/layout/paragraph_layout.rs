@@ -3245,8 +3245,22 @@ impl LayoutEngine {
                 ls_val,
                 source_metrics_reflow_eligible,
             );
-            let (line_height, line_spacing_px) = empty_no_lineseg_metrics
-                .map(|(line_height, line_spacing_px, _)| (line_height, line_spacing_px))
+            let percent_font_metrics =
+                if text_before_picture_line || !self.profile.get().flat_stored_line_ladder() {
+                    None
+                } else {
+                    crate::renderer::percent_line_metrics_from_font(
+                        para.map(|p| !p.controls.is_empty()).unwrap_or(true),
+                        ls_type,
+                        ls_val,
+                        max_fs,
+                    )
+                };
+            let (line_height, line_spacing_px) = percent_font_metrics
+                .or_else(|| {
+                    empty_no_lineseg_metrics
+                        .map(|(line_height, line_spacing_px, _)| (line_height, line_spacing_px))
+                })
                 .unwrap_or_else(|| {
                     crate::renderer::corrected_line_metrics_for_source(
                         raw_lh,

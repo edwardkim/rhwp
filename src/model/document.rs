@@ -370,6 +370,41 @@ impl Document {
         .with_hwp3_password_layout(
             self.provenance.format == SourceFormat::Hwp3 && self.header.encrypted,
         )
+        .with_flat_stored_line_ladder(self.stored_line_ladder_is_flat())
+    }
+
+    /// [#5854] 저장 LINE_SEG 사다리가 단일 치수 튜플로 굳어 있는지 판정한다.
+    ///
+    /// 한글 조판본은 문단마다 글자 크기·줄간격이 달라 치수 튜플이 여러 종류다.
+    /// `samples/hwpx/hwpx-02.hwpx` 는 2pt~15pt 문단이 섞여 있는데도 122개 lineseg 가
+    /// 전부 `(1000, 1000, 850, 600)` 하나다 — 실측이 아니라 합성값이라는 뜻이다.
+    /// 표본이 작으면 우연히 한 종류일 수 있으므로 최소 개수를 요구한다.
+    fn stored_line_ladder_is_flat(&self) -> bool {
+        const MIN_SEGS: usize = 16;
+        let mut first: Option<(i32, i32, i32, i32)> = None;
+        let mut count = 0usize;
+        for section in &self.sections {
+            for paragraph in &section.paragraphs {
+                for seg in &paragraph.line_segs {
+                    if seg.tag & 0x8000_0000 != 0 {
+                        continue; // 합성 태그가 붙은 줄은 애초에 저장 증거가 아니다
+                    }
+                    let tuple = (
+                        seg.line_height,
+                        seg.text_height,
+                        seg.baseline_distance,
+                        seg.line_spacing,
+                    );
+                    match first {
+                        None => first = Some(tuple),
+                        Some(expected) if expected == tuple => {}
+                        Some(_) => return false,
+                    }
+                    count += 1;
+                }
+            }
+        }
+        count >= MIN_SEGS
     }
 
     /// 외부 이미지 binDataId가 이미 로드되었는지 확인한다.
