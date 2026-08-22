@@ -1,6 +1,6 @@
 ---
 kind: working-note
-status: in-progress
+status: completed
 issue: 4963
 stage: W5-5C
 last_verified: 2026-08-22
@@ -11,7 +11,7 @@ last_verified: 2026-08-22
 - **이슈**: [#4963](https://github.com/edwardkim/rhwp/issues/4963)
 - **계획**: [`task_m100_4963.md`](../plans/task_m100_4963.md)
 - **선행 단계**: [`task_m100_4963_w5_stage5b.md`](task_m100_4963_w5_stage5b.md)
-- **단계 상태**: three-state 실행·복원·profile·queue 정규화 완료, 시각 판정 승인 대기
+- **단계 상태**: three-state 실행·복원·profile·queue 정규화·메인테이너 시각 판정 완료
 
 ## 1. 실행 계약
 
@@ -63,5 +63,7 @@ local-only side-by-side 비교는 exact-only, subst-only, none-related 순서로
 HCR fallback 조판이다. 비교 이미지 SHA-256은
 `9d4da59dfaba6f4dcb0fd06e1268fcb490690c66998bd0574df607f376bb90cb`이다.
 
-메인테이너의 시각 판정 승인 전에는 이 working note를 completed로 바꾸거나 W5 최종 보고서로
-진입하지 않는다.
+메인테이너는 2026-08-22 side-by-side 비교를 시각 승인했다. exact-only의 더 가늘고 폭이 다른 조판과
+subst-only·none-related의 동일한 HCR fallback 외형이 기계 projection과 일치했으므로 W5 최종 보고서로
+이관한다. 이 synthetic fixture에서는 세 상태가 모두 30줄·1쪽에 머물렀으므로 실제 overflow나 페이지
+증가는 관찰값이 아니라 후속 제품 검증이 필요한 위험으로 구분한다.

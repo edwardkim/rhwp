@@ -31,6 +31,7 @@ snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 fon
 | `oracle_stage4_rank13_blocked_disposition.json` | managed font 0개에서도 exact가 남은 immutable/unmanaged 정지 근거 |
 | `oracle_stage5_queue_projection.json` | 17개 face의 profile 재사용·terminal·후속 실행 action matrix |
 | `oracle_stage5_rank8_acceptance_ladder.json` | distinct substitution을 사용한 rank 8 exact/subst/none 실행 계보 |
+| [`task_m100_4963_report.md`](../../../report/task_m100_4963_report.md) | W5 전건 disposition·시각 판정·제품 후속 원칙 최종 보고서 |
 | `fixtures/oracle_typesetting_fixture.hwpx` | rank 1 `문체부 바탕체`용 공개 synthetic HWPX canary |
 | `fixtures/oracle_typesetting_fixture.manifest.json` | fixture semantic matrix·LineSeg lane·ZIP entry hash |
 | `font_oracle_readiness.json` | 17개 face의 path-free source·ladder 준비도 원장 |
@@ -157,6 +158,6 @@ Stage W5-5B는 rank 16을 복원된 기준선에서 font resource 추가 없이 
 Stage W5-5C는 rank 8에서 exact Batang과 distinct Dotum substitution을 세 상태로 분리했다. exact-only는
 `KoPubWorldBatangLight` subset을 사용했지만, Dotum만 제공한 substitution-only는 Dotum alias가 선택
 가능해도 PDF 조판에 사용하지 않았고 none-related와 동일한 `HCRBatang-Bold` typesetting projection을
-보였다. 4개 profile과 ladder를 추가해 queue의 actionable rank는 0개가 되었다. 메인테이너 시각 판정
-전까지 단계 상태는 in-progress이며, 상세 기록은
+보였다. 4개 profile과 ladder를 추가해 queue의 actionable rank는 0개가 되었다. 메인테이너의
+side-by-side 시각 판정도 기계 projection과 일치해 W5 기술 검증을 완료했으며, 상세 기록은
 [`task_m100_4963_w5_stage5c.md`](../../../working/task_m100_4963_w5_stage5c.md)에 둔다.

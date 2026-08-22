@@ -1,6 +1,6 @@
 ---
 kind: working-note
-status: in-progress
+status: completed
 issue: 4963
 stage: W5-4B
 last_verified: 2026-08-22
@@ -11,7 +11,7 @@ last_verified: 2026-08-22
 - **이슈**: [#4963](https://github.com/edwardkim/rhwp/issues/4963)
 - **계획**: [`task_m100_4963.md`](../plans/task_m100_4963.md)
 - **선행 계약**: [`task_m100_4963_w5_stage4a.md`](task_m100_4963_w5_stage4a.md)
-- **단계 상태**: controlled run·acceptance profile·공개 projection 완료, 메인테이너 판정 대기
+- **단계 상태**: controlled run·acceptance profile·공개 projection·메인테이너 판정 완료
 
 ## 1. 환경 attestation
 
@@ -145,6 +145,6 @@ KoPubWorld 돋움 bytes를 사용했지만, 한글 `substFont`는 설치된 영�
 7. subst-only와 none-related는 조판 projection이 같았다. 이는 KoPub 바탕을 실제로 사용했다는 뜻이
    아니라, 설치된 영문 KoPub face가 fixture의 한글 `substFont`와 연결되지 않아 둘 다 HCR fallback으로
    귀결됐다는 관찰이다.
-8. 메인테이너 판정 전에는 17개 queue로 확대하지 않는다.
+8. 메인테이너가 이 acceptance projection을 승인한 뒤 W5-5A의 17개 queue 판정으로 이관했다.
 
 공개 산출물에는 raw VM/checkpoint name, 절대 경로, font bytes, private corpus 문서나 식별자를 넣지 않는다.
