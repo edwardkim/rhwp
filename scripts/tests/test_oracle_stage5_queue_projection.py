@@ -41,37 +41,85 @@ class OracleStage5QueueProjectionTests(unittest.TestCase):
             INVESTIGATION / "oracle_stage5_rank16_read_only_disposition.json"
         )
         cls.rank16 = read_json(cls.rank16_path)
+        cls.rank8_ladder_path = (
+            INVESTIGATION / "oracle_stage5_rank8_acceptance_ladder.json"
+        )
+        cls.rank8_ladder = read_json(cls.rank8_ladder_path)
         cls.by_rank = {
             entry["queueRank"]: entry for entry in cls.projection["candidates"]
         }
 
     def test_projection_is_canonical_and_covers_the_frozen_queue(self):
         self.assertEqual(validate_queue_projection(self.projection), [])
-        self.assertEqual(self.projection["stage"], "W5-5B")
+        self.assertEqual(self.projection["stage"], "W5-5C")
         self.assertEqual(self.projection["candidateCount"], 17)
         self.assertEqual(list(self.by_rank), list(range(1, 18)))
         self.assertEqual(
             self.projection["counts"],
             {
-                "complete-acceptance-ladder": 2,
-                "pending-controlled-ladder": 1,
+                "complete-acceptance-ladder": 3,
                 "terminal-protected-partial": 3,
                 "terminal-read-only-capability-mismatch": 1,
                 "terminal-source-unavailable": 10,
             },
         )
 
-    def test_only_rank8_remains_actionable(self):
-        self.assertEqual(self.projection["actionableRanks"], [8])
-        self.assertEqual(self.projection["recommendedExecutionOrder"], [8])
-        self.assertEqual(
-            self.by_rank[8]["nextAction"],
-            "approve-distinct-substitution-and-run-rank8",
-        )
+    def test_no_oracle_execution_rank_remains_actionable(self):
+        self.assertEqual(self.projection["actionableRanks"], [])
+        self.assertEqual(self.projection["recommendedExecutionOrder"], [])
+        self.assertEqual(self.by_rank[8]["nextAction"], "reuse-tracked-profiles")
         self.assertEqual(self.by_rank[16]["nextAction"], "preserve-read-only-disposition")
         for rank, entry in self.by_rank.items():
-            if rank != 8:
-                self.assertNotIn("run-rank", entry["nextAction"])
+            self.assertNotIn("run-rank", entry["nextAction"])
+
+    def test_rank8_distinct_substitution_ladder_is_hash_bound(self):
+        entry = self.by_rank[8]
+        self.assertEqual(entry["disposition"], "complete-acceptance-ladder")
+        self.assertEqual(len(entry["availableProfiles"]), 4)
+        self.assertEqual(
+            self.projection["inputs"]["rank8AcceptanceLadderSha256"],
+            sha256_file(self.rank8_ladder_path),
+        )
+        relation = self.rank8_ladder["fixture"]["documentSubstitution"]
+        self.assertEqual(relation["face"], "KoPubWorld돋움체 Light")
+        self.assertFalse(relation["identityAliasOrSuccessor"])
+        self.assertEqual(
+            [run["physicalState"] for run in self.rank8_ladder["runs"]],
+            ["exact-only", "subst-only", "none-related"],
+        )
+        self.assertEqual(
+            self.rank8_ladder["runs"][1]["typesettingProjectionSha256"],
+            self.rank8_ladder["runs"][2]["typesettingProjectionSha256"],
+        )
+
+        profiles = {
+            profile["questionId"]: read_json(ROOT / profile["artifact"])
+            for profile in entry["availableProfiles"]
+        }
+        exact = profiles["exact-installed"]
+        substitution = profiles["document-subst-font-only"]
+        missing = profiles["all-related-fonts-missing"]
+        self.assertEqual(
+            exact["observations"]["subsetFontName"]["value"],
+            "INPILL+KoPubWorldBatangLight",
+        )
+        self.assertEqual(exact["observations"]["hmtxAdvance"]["value"]["advance"], 936)
+        self.assertEqual(
+            exact["observations"]["pdfObservedAdvance"]["value"]["advance"],
+            7.454008,
+        )
+        self.assertEqual(substitution["relationEvidence"]["type"], "document-substitution")
+        self.assertFalse(
+            substitution["relationEvidence"]["anchor"]["value"]["exportUsedSubstitution"]
+        )
+        self.assertEqual(
+            substitution["observations"]["subsetFontName"]["value"],
+            "INPILL+HCRBatang-Bold",
+        )
+        self.assertEqual(
+            missing["observations"]["subsetFontName"]["value"],
+            "INPILL+HCRBatang-Bold",
+        )
 
     def test_rank16_uses_restored_feature_detection_not_the_old_probe(self):
         entry = self.by_rank[16]
@@ -102,7 +150,7 @@ class OracleStage5QueueProjectionTests(unittest.TestCase):
         )
 
     def test_completed_ladders_are_reused_without_remeasurement(self):
-        for rank in (1, 7):
+        for rank in (1, 7, 8):
             entry = self.by_rank[rank]
             self.assertEqual(entry["disposition"], "complete-acceptance-ladder")
             self.assertEqual(entry["nextAction"], "reuse-tracked-profiles")
@@ -164,7 +212,7 @@ class OracleStage5QueueProjectionTests(unittest.TestCase):
             for candidate in self.projection["candidates"]
             for profile in candidate["availableProfiles"]
         ]
-        self.assertEqual(len(profile_records), 11)
+        self.assertEqual(len(profile_records), 15)
         for profile in profile_records:
             path = ROOT / profile["artifact"]
             self.assertTrue(path.is_file())
@@ -172,7 +220,7 @@ class OracleStage5QueueProjectionTests(unittest.TestCase):
 
     def test_canonical_and_actionable_rank_drift_fail_closed(self):
         changed = copy.deepcopy(self.projection)
-        changed["actionableRanks"] = [8, 9]
+        changed["actionableRanks"] = [8]
         errors = validate_queue_projection(changed)
         self.assertIn("queue projection actionable rank boundary drifted", errors)
         self.assertIn("queue projection canonical hash mismatch", errors)
@@ -184,7 +232,12 @@ class OracleStage5QueueProjectionTests(unittest.TestCase):
         self.assertEqual(validate_queue_projection(changed), [])
 
     def test_public_artifacts_do_not_publish_private_inputs(self):
-        for path in (self.projection_path, self.blocked_path, self.rank16_path):
+        for path in (
+            self.projection_path,
+            self.blocked_path,
+            self.rank16_path,
+            self.rank8_ladder_path,
+        ):
             text = path.read_text(encoding="utf-8")
             self.assertNotIn("/home/", text)
             self.assertNotIn("/mnt/", text)

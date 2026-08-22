@@ -94,6 +94,10 @@ test('tracked historical and HWP 2020 Oracle Profiles satisfy the executable con
   assert.deepEqual(names, [
     'historical_hanyang_sinmyeongjo_exact_installed.json',
     'historical_human_myeongjo_exact_installed.json',
+    'windows_hwp2020_kopubworld_batang_light_all_related_fonts_missing.json',
+    'windows_hwp2020_kopubworld_batang_light_document_subst_font_only.json',
+    'windows_hwp2020_kopubworld_batang_light_exact_installed.json',
+    'windows_hwp2020_kopubworld_batang_light_exact_removed.json',
     'windows_hwp2020_kopubworld_dotum_light_all_related_fonts_missing.json',
     'windows_hwp2020_kopubworld_dotum_light_document_subst_font_only.json',
     'windows_hwp2020_kopubworld_dotum_light_exact_installed.json',

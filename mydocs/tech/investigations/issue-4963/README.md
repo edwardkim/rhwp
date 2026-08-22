@@ -30,10 +30,11 @@ snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 fon
 | `oracle_stage4_rank{1,7}_acceptance_ladder.json` | exact/subst/none 물리 실행과 semantic question 재사용 계보 |
 | `oracle_stage4_rank13_blocked_disposition.json` | managed font 0개에서도 exact가 남은 immutable/unmanaged 정지 근거 |
 | `oracle_stage5_queue_projection.json` | 17개 face의 profile 재사용·terminal·후속 실행 action matrix |
+| `oracle_stage5_rank8_acceptance_ladder.json` | distinct substitution을 사용한 rank 8 exact/subst/none 실행 계보 |
 | `fixtures/oracle_typesetting_fixture.hwpx` | rank 1 `문체부 바탕체`용 공개 synthetic HWPX canary |
 | `fixtures/oracle_typesetting_fixture.manifest.json` | fixture semantic matrix·LineSeg lane·ZIP entry hash |
 | `font_oracle_readiness.json` | 17개 face의 path-free source·ladder 준비도 원장 |
-| `profiles/` | 한컴 2022 historical 2개, HWP 2020 read-only 1개, W5-4B acceptance 8개 profile |
+| `profiles/` | 한컴 2022 historical 2개, HWP 2020 read-only 1개, W5-4B 8개, W5-5C 4개 profile |
 | `scripts/oracle_profile_contract.mjs` | 계약·schema·W4 handoff·profile·negative fixture 실행 검사 |
 | `scripts/tests/oracle_profile_contract.test.mjs` | 상태·advance·관계·권위·privacy 회귀 test |
 | `scripts/generate_oracle_typesetting_fixture.py` | byte-exact HWPX fixture 생성기 |
@@ -46,6 +47,7 @@ snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 fon
 | `scripts/oracle_stage4_contract.py` | attestation·동일 입력·managed/unrelated font·restore validator |
 | `scripts/oracle_stage4_profile.py` | local-only W5-4B 증거를 path-free profile·ladder·projection으로 변환 |
 | `scripts/oracle_stage5_rank16_disposition.py` | rank 16 read-only 기능 탐지를 path-free blocked disposition으로 변환 |
+| `scripts/oracle_stage5_rank8_profile.py` | rank 8 local evidence를 distinct-substitution profile·ladder로 변환 |
 | `scripts/oracle_stage5_queue_projection.py` | 기존 증거를 전건 disposition으로 결합하고 재계측 후보를 제한 |
 | `scripts/tests/test_oracle_stage2.py` | 결정론·손상·상한·path escape·symlink 회귀 test |
 | `scripts/tests/test_oracle_stage3.py` | historical 결정론·현재 canary·negative control·privacy 회귀 test |
@@ -151,3 +153,10 @@ Stage W5-5B는 rank 16을 복원된 기준선에서 font resource 추가 없이 
 따라서 Stage W5-3의 단발 selection 성공만으로 exact-installed profile을 발행하지 않고
 `blocked-document-face-name-resolution` disposition으로 닫았다. 현재 actionable rank는 rank 8 하나이며,
 세부 판정은 [`task_m100_4963_w5_stage5b.md`](../../../working/task_m100_4963_w5_stage5b.md)에 기록한다.
+
+Stage W5-5C는 rank 8에서 exact Batang과 distinct Dotum substitution을 세 상태로 분리했다. exact-only는
+`KoPubWorldBatangLight` subset을 사용했지만, Dotum만 제공한 substitution-only는 Dotum alias가 선택
+가능해도 PDF 조판에 사용하지 않았고 none-related와 동일한 `HCRBatang-Bold` typesetting projection을
+보였다. 4개 profile과 ladder를 추가해 queue의 actionable rank는 0개가 되었다. 메인테이너 시각 판정
+전까지 단계 상태는 in-progress이며, 상세 기록은
+[`task_m100_4963_w5_stage5c.md`](../../../working/task_m100_4963_w5_stage5c.md)에 둔다.

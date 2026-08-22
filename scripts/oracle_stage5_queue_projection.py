@@ -27,6 +27,7 @@ from oracle_stage5_rank16_disposition import (
     build_rank16_read_only_disposition,
     validate_rank16_read_only_disposition,
 )
+from oracle_stage5_rank8_profile import LADDER_NAME as RANK8_LADDER_NAME
 
 
 READINESS_PATH = INVESTIGATION / "font_oracle_readiness.json"
@@ -211,6 +212,7 @@ def _candidate_projection(
     stage3: dict[str, Any],
     rank13_artifact: str,
     rank16_artifact: str,
+    rank8_ladder: dict[str, Any],
 ) -> dict[str, Any]:
     rank = entry["queueRank"]
     face = entry["documentFace"]
@@ -259,22 +261,38 @@ def _candidate_projection(
         disposition = "terminal-source-unavailable"
         next_action = "source-discovery-only"
     elif rank == 8:
-        pending = _question(
-            "pending-controlled-run",
-            "The local SFNT is ready, but a disposable ladder has not been executed.",
-        )
-        questions = {
-            "exact-installed": pending,
-            "exact-removed": pending,
-            "document-subst-font-only": _question(
-                "pending-fixture-contract",
-                "The W5-4 default substitution face equals this exact face; a distinct explicit substitution must be approved.",
-            ),
-            "curated-official-successor-only": successor,
-            "all-related-fonts-missing": pending,
+        expected_questions = {
+            "exact-installed",
+            "exact-removed",
+            "document-subst-font-only",
+            "all-related-fonts-missing",
         }
-        disposition = "pending-controlled-ladder"
-        next_action = "approve-distinct-substitution-and-run-rank8"
+        actual_questions = {profile["questionId"] for profile in profiles}
+        if actual_questions != expected_questions:
+            raise OracleStage2Error("rank 8 acceptance profile set is incomplete")
+        ladder_hashes = {
+            profile["questionId"]: profile["sha256"]
+            for profile in rank8_ladder["profiles"]
+        }
+        for profile in profiles:
+            require_equal(
+                profile["sha256"],
+                ladder_hashes.get(profile["questionId"]),
+                f'rank 8 {profile["questionId"]} ladder profile',
+            )
+        questions = {
+            question: _question(
+                "observed-primary",
+                "A controlled disposable-environment profile is tracked and hash-addressed.",
+                _profile_evidence(profiles, question),
+            )
+            for question in expected_questions
+        }
+        questions.update({
+            "curated-official-successor-only": successor,
+        })
+        disposition = "complete-acceptance-ladder"
+        next_action = "reuse-tracked-profiles"
     elif rank == 9:
         questions = {
             "exact-installed": _question(
@@ -380,6 +398,7 @@ def _candidate_projection(
 def build_queue_projection(
     rank13_disposition_path: Path,
     rank16_disposition_path: Path,
+    rank8_ladder_path: Path,
 ) -> dict[str, Any]:
     readiness = read_json(READINESS_PATH)
     profile_contract = read_json(PROFILE_CONTRACT_PATH)
@@ -387,8 +406,10 @@ def build_queue_projection(
     stage4 = read_json(STAGE4_PROJECTION_PATH)
     rank13_disposition = read_json(rank13_disposition_path)
     rank16_disposition = read_json(rank16_disposition_path)
+    rank8_ladder = read_json(rank8_ladder_path)
     reject_absolute_paths(rank13_disposition)
     reject_absolute_paths(rank16_disposition)
+    reject_absolute_paths(rank8_ladder)
     require_equal(
         rank13_disposition.get("status"),
         "blocked-immutable-or-unmanaged-font",
@@ -402,6 +423,22 @@ def build_queue_projection(
     rank16_errors = validate_rank16_read_only_disposition(rank16_disposition)
     if rank16_errors:
         raise OracleStage2Error("; ".join(rank16_errors))
+    require_equal(rank8_ladder.get("kind"), "font-oracle-stage5-ladder-evidence", "rank 8 ladder")
+    require_equal(
+        rank8_ladder.get("target"),
+        {"queueRank": 8, "documentFace": "KoPubWorld바탕체 Light"},
+        "rank 8 ladder target",
+    )
+    require_equal(
+        [run.get("physicalState") for run in rank8_ladder.get("runs", [])],
+        ["exact-only", "subst-only", "none-related"],
+        "rank 8 physical states",
+    )
+    require_equal(
+        rank8_ladder.get("privacy", {}).get("privateCorpusAccessed"),
+        False,
+        "rank 8 ladder privacy",
+    )
     by_rank, inventory_sha256 = _profile_inventory()
     rank13_artifact = (INVESTIGATION / RANK13_DISPOSITION_NAME).relative_to(ROOT).as_posix()
     rank16_artifact = (INVESTIGATION / RANK16_DISPOSITION_NAME).relative_to(ROOT).as_posix()
@@ -412,6 +449,7 @@ def build_queue_projection(
             stage3,
             rank13_artifact,
             rank16_artifact,
+            rank8_ladder,
         )
         for entry in readiness["candidates"]
     ]
@@ -429,13 +467,14 @@ def build_queue_projection(
         "schemaVersion": 1,
         "kind": "font-oracle-stage5-queue-projection",
         "issue": 4963,
-        "stage": "W5-5B",
+        "stage": "W5-5C",
         "inputs": {
             "readinessSha256": sha256_file(READINESS_PATH),
             "stage3ContractSha256": sha256_file(STAGE3_CONTRACT_PATH),
             "stage4AcceptanceProjectionSha256": sha256_file(STAGE4_PROJECTION_PATH),
             "rank13BlockedDispositionSha256": sha256_file(rank13_disposition_path),
             "rank16ReadOnlyDispositionSha256": sha256_file(rank16_disposition_path),
+            "rank8AcceptanceLadderSha256": sha256_file(rank8_ladder_path),
             "profileInventorySha256": inventory_sha256,
         },
         "policy": {
@@ -451,8 +490,8 @@ def build_queue_projection(
         },
         "candidateCount": len(candidates),
         "counts": dict(sorted(counts.items())),
-        "actionableRanks": [8],
-        "recommendedExecutionOrder": [8],
+        "actionableRanks": [],
+        "recommendedExecutionOrder": [],
         "candidates": candidates,
         "privacy": {
             "absolutePathIncluded": False,
@@ -471,7 +510,7 @@ def validate_queue_projection(value: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if value.get("schemaVersion") != 1 or value.get("kind") != "font-oracle-stage5-queue-projection":
         errors.append("queue projection identity mismatch")
-    if value.get("stage") != "W5-5B":
+    if value.get("stage") != "W5-5C":
         errors.append("queue projection stage drifted")
     candidates = value.get("candidates")
     if not isinstance(candidates, list) or len(candidates) != 17:
@@ -480,6 +519,12 @@ def validate_queue_projection(value: dict[str, Any]) -> list[str]:
     if [entry.get("queueRank") for entry in candidates] != list(range(1, 18)):
         errors.append("queue projection ranks are not exact and ordered")
     if len(candidates) == 17:
+        rank8 = candidates[7]
+        if (
+            rank8.get("disposition") != "complete-acceptance-ladder"
+            or len(rank8.get("availableProfiles", [])) != 4
+        ):
+            errors.append("queue projection rank 8 acceptance ladder drifted")
         rank16 = candidates[15]
         if (
             rank16.get("disposition") != "terminal-read-only-capability-mismatch"
@@ -487,9 +532,9 @@ def validate_queue_projection(value: dict[str, Any]) -> list[str]:
             != "blocked-document-face-name-resolution"
         ):
             errors.append("queue projection rank 16 disposition drifted")
-    if value.get("actionableRanks") != [8]:
+    if value.get("actionableRanks") != []:
         errors.append("queue projection actionable rank boundary drifted")
-    if value.get("recommendedExecutionOrder") != [8]:
+    if value.get("recommendedExecutionOrder") != []:
         errors.append("queue projection safe execution order drifted")
     if value.get("policy", {}).get("privateCorpusRemeasurementRequired") is not False:
         errors.append("queue projection reintroduced private corpus measurement")
@@ -541,7 +586,8 @@ def main() -> int:
     with_rank16 = output_path(args.output_root, RANK16_DISPOSITION_NAME)
     write_bytes(with_rank13, pretty_json_bytes(rank13), mode=0o644)
     write_bytes(with_rank16, pretty_json_bytes(rank16), mode=0o644)
-    projection = build_queue_projection(with_rank13, with_rank16)
+    rank8_ladder = INVESTIGATION / RANK8_LADDER_NAME
+    projection = build_queue_projection(with_rank13, with_rank16, rank8_ladder)
     errors = validate_queue_projection(projection)
     if errors:
         raise OracleStage2Error("; ".join(errors))

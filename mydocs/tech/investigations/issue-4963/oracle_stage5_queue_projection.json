@@ -1,7 +1,5 @@
 {
-  "actionableRanks": [
-    8
-  ],
+  "actionableRanks": [],
   "candidateCount": 17,
   "candidates": [
     {
@@ -332,15 +330,50 @@
       "sourceReadiness": "ready-local-sfnt"
     },
     {
-      "availableProfiles": [],
-      "disposition": "pending-controlled-ladder",
+      "availableProfiles": [
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_all_related_fonts_missing.json",
+          "documentFace": "KoPubWorld바탕체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "all-related-fonts-missing",
+          "queueRank": 8,
+          "sha256": "9b3818f561dfd6ab6cf3f1d595ec12d4594eed6393471b00e1bdbf998a5f61fb"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_document_subst_font_only.json",
+          "documentFace": "KoPubWorld바탕체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "document-subst-font-only",
+          "queueRank": 8,
+          "sha256": "861859b308df21f307fe4cb7a29c6fdad499dc0a98ebbe58e5934b13bdf32ba2"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_exact_installed.json",
+          "documentFace": "KoPubWorld바탕체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "exact-installed",
+          "queueRank": 8,
+          "sha256": "94e5cb958a10b9e9398091f81bc07547b22e89781070918ee6287c724fc8b26d"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_exact_removed.json",
+          "documentFace": "KoPubWorld바탕체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "exact-removed",
+          "queueRank": 8,
+          "sha256": "2e8e7b44f36737447bb02cdda50d6188e0eaa196963d0c48bbbd97ca2518fc3d"
+        }
+      ],
+      "disposition": "complete-acceptance-ladder",
       "documentFace": "KoPubWorld바탕체 Light",
-      "nextAction": "approve-distinct-substitution-and-run-rank8",
+      "nextAction": "reuse-tracked-profiles",
       "questions": {
         "all-related-fonts-missing": {
-          "evidence": [],
-          "reason": "The local SFNT is ready, but a disposable ladder has not been executed.",
-          "status": "pending-controlled-run"
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_all_related_fonts_missing.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
         },
         "curated-official-successor-only": {
           "evidence": [],
@@ -348,19 +381,25 @@
           "status": "not-provided-no-direct-anchor"
         },
         "document-subst-font-only": {
-          "evidence": [],
-          "reason": "The W5-4 default substitution face equals this exact face; a distinct explicit substitution must be approved.",
-          "status": "pending-fixture-contract"
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_document_subst_font_only.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
         },
         "exact-installed": {
-          "evidence": [],
-          "reason": "The local SFNT is ready, but a disposable ladder has not been executed.",
-          "status": "pending-controlled-run"
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_exact_installed.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
         },
         "exact-removed": {
-          "evidence": [],
-          "reason": "The local SFNT is ready, but a disposable ladder has not been executed.",
-          "status": "pending-controlled-run"
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_exact_removed.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
         }
       },
       "queueRank": 8,
@@ -729,18 +768,18 @@
       "sourceReadiness": "source-unavailable"
     }
   ],
-  "canonicalSha256": "46e14974fa04ee7b44395b9a278ef225fb5786aebf4dc78631b2fab4c3c95d0b",
+  "canonicalSha256": "3ac48bf6df9c223d0fd67552b7021375407d40538bda548b630eefe95f871804",
   "counts": {
-    "complete-acceptance-ladder": 2,
-    "pending-controlled-ladder": 1,
+    "complete-acceptance-ladder": 3,
     "terminal-protected-partial": 3,
     "terminal-read-only-capability-mismatch": 1,
     "terminal-source-unavailable": 10
   },
   "inputs": {
-    "profileInventorySha256": "a09772cf2a9f9b3476f7830c4963047e7ad5b12ba7aa7b0f53ca44ca8c7e46f0",
+    "profileInventorySha256": "b94686f99a918be791928a5d97abe6af9acb66f92266c9e50a32a5611ccf7583",
     "rank13BlockedDispositionSha256": "7c6506dc23ce9d5983147ee62ef6e6dc46e8bbaceb2656c6414d92a4952c2796",
     "rank16ReadOnlyDispositionSha256": "dbf596fd79aa4b0d55a00f5761d8e93b7a006606eddc44455937815e9bc1eeda",
+    "rank8AcceptanceLadderSha256": "d6e8a4371dd049a899a88fb975d6499ed435154b72e1fc804b701addf3cb75ec",
     "readinessSha256": "76338ef972a7a279e6cd499d103b9e5c8836ad942dd4ce9134c5142a669e91db",
     "stage3ContractSha256": "52d27ea8aac1b8b666213fecea6dc38bc4a1cc0378ba9827f1fe0e2201b06c7f",
     "stage4AcceptanceProjectionSha256": "bfa4a622ca9e6bffae2b9ab4df5ff7c298898ff10c083be4d4c0dba2aa10843c"
@@ -771,9 +810,7 @@
     "privateCorpusAccessed": false,
     "privateDocumentIdentityIncluded": false
   },
-  "recommendedExecutionOrder": [
-    8
-  ],
+  "recommendedExecutionOrder": [],
   "schemaVersion": 1,
-  "stage": "W5-5B"
+  "stage": "W5-5C"
 }
