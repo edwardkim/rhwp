@@ -495,11 +495,8 @@ impl SkiaTextReplay<'_> {
                 draw_text_pass(colorref_to_skia(style.color, 1.0), 0.0, 0.0, 0.0);
 
                 if !matches!(style.underline, UnderlineType::None) && text_width > 0.0 {
-                    let color = if style.underline_color != 0 {
-                        colorref_to_skia(style.underline_color, 1.0)
-                    } else {
-                        colorref_to_skia(style.color, 1.0)
-                    };
+                    // COLORREF 0 은 미지정이 아니라 검정 — svg.rs 와 같은 계약.
+                    let color = colorref_to_skia(style.underline_color, 1.0);
                     // [#5730] 아래 밑줄은 기준선 + 0.17em (한글 2022 프로브 실측) —
                     // 이중/삼중선(shape 7~10)은 em 비례 실측표를 따른다.
                     // SVG 백엔드(renderer/svg.rs)와 같은 표(text_decoration)를 소비한다.
