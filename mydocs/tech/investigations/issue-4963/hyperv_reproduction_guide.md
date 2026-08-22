@@ -119,7 +119,7 @@ Production checkpoint나 자동 checkpoint로 조용히 대체하지 않는다.
 5. `scripts/oracle_stage4_windows_interactive.ps1`가 `RegisterModule=true`, HWPX `Open=true`, 1쪽 이상과
    비어 있지 않은 text를 반환하는지 read-only canary로 확인한다.
 6. font source root를 guest에 놓되 Windows font registry나 Fonts folder에는 아직 설치하지 않는다.
-7. 아래 repository 파일과 대상 fixture를 guest 작업 root에 복사한다.
+7. 아래 repository 파일과 generator로 만든 대상 fixture를 guest 작업 root에 복사한다.
 8. interactive 계정은 로그인된 상태로 두고 HWP process와 일회성 task가 0개인지 확인한다.
 9. ambient manifest를 두 번 실행해 digest가 같은지 확인한다.
 10. 그 상태에서 Standard checkpoint를 하나만 만들고 VMId·checkpoint Id를 local-only 원장에 고정한다.
@@ -128,10 +128,23 @@ Production checkpoint나 자동 checkpoint로 조용히 대체하지 않는다.
 
 ```text
 scripts/oracle_stage4_windows_manifest.ps1
+scripts/oracle_stage4_hyperv_canary.ps1
 scripts/oracle_stage4_windows_font_state.ps1
 scripts/oracle_stage4_windows_interactive.ps1
 scripts/oracle_stage4_windows_task.ps1
-mydocs/tech/investigations/issue-4963/fixtures/oracle_typesetting_fixture.hwpx
+scripts/generate_oracle_typesetting_fixture.py
+```
+
+rank 8 fixture는 tracked rank 1 fixture를 이름만 바꿔 쓰지 않는다. 같은 generator로 exact face와 distinct
+substitution을 지정해 local-only root에 재생성하고 contract hash를 확인한다.
+
+```bash
+python3 scripts/generate_oracle_typesetting_fixture.py \
+  --output-root <local-fixture-root> \
+  --output rank8.hwpx \
+  --manifest rank8.manifest.json \
+  --face 'KoPubWorld바탕체 Light' \
+  --subst-face 'KoPubWorld돋움체 Light'
 ```
 
 보안 모듈 등록 예시는 guest의 interactive 계정 PowerShell에서 실행한다.
@@ -184,13 +197,14 @@ $probe = Invoke-Command -VMName $VmName -Credential $Credential -ScriptBlock {
     os = (Get-CimInstance Win32_OperatingSystem).Caption
   }
 }
-if (-not $probe.user) { throw 'Interactive logon session is required' }
 if ($probe.hwpProcessCount -ne 0) { throw 'Hwp.exe baseline is dirty' }
 ```
 
 PowerShell Direct는 valid guest credential이 필요하며, interactive HWP COM은 별도 desktop session이
-필요하다. 그래서 font 상태 구성·manifest는 PowerShell Direct로 실행하고 HWP export만 이미 로그인한
-사용자의 일회성 Scheduled Task로 실행한다.
+필요하다. `Win32_ComputerSystem.UserName`은 disconnected session에서 `null`일 수 있으므로 단독 gate로
+사용하지 않는다. `explorer.exe`의 `GetOwner`와 session id로 유일한 interactive token을 확인한다. 그래서
+font 상태 구성·manifest는 PowerShell Direct로 실행하고 HWP export만 그 token의 일회성 Scheduled
+Task로 실행한다.
 
 baseline manifest는 guest root와 font root를 매개변수로 전달해 두 번 얻는다.
 
@@ -212,8 +226,10 @@ if ($m1.managedInstalledByExactBytes.Count -ne 0) {
 
 ## 7. three-state 실행
 
-각 물리 상태는 **서로 이어서 실행하지 않는다**. `exact-only`, `subst-only`, `none-related` 각각에 대해
-다음 loop를 독립 실행한다.
+각 물리 상태는 **서로 이어서 실행하지 않는다**. tracked host controller
+`scripts/oracle_stage4_hyperv_canary.ps1`을 `exact-only`, `subst-only`, `none-related` 각각 한 번씩
+독립 실행한다. controller는 raw VM/checkpoint GUID, 암호화 credential, baseline digest를 local-only
+parameter로 받고 다음 loop를 강제한다.
 
 1. host가 exact VM/checkpoint Id를 다시 확인한다.
 2. baseline checkpoint를 restore한다.
@@ -390,6 +406,12 @@ Hyper-V Guest Service Interface를 명시적으로 활성화한 `Copy-VMFile`을
 Microsoft의 [integration services 절차][integration-services]와 [Copy-VMFile 명세][copy-vm-file]에
 따라 host와 guest 양쪽 service 상태를 확인한다.
 
+WSL UNC 경로는 Windows PowerShell의 `Copy-Item -ToSession` source로 직접 사용할 수 없는 구성이 있다.
+WSL checkout을 사용하는 경우 controller와 helper, fixture를 먼저 Windows host의 짧은 local staging
+경로로 복사한 뒤 그 경로를 `-HostRepoRoot`와 `-HostFixture`에 전달한다. 실행이 끝나면 staging과
+Windows 측 중복 output을 삭제하고 owner-only 분석 원본만 남긴다. 이 staging은 font source나 evidence의
+공개 위치가 아니며 tracked 문서에 실제 절대 경로를 기록하지 않는다.
+
 [integration-services]: https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/manage/manage-hyper-v-integration-services
 [copy-vm-file]: https://learn.microsoft.com/en-us/powershell/module/hyper-v/copy-vmfile
 
@@ -507,3 +529,27 @@ python3 scripts/oracle_stage4_reproduction_compare.py \
 
 이 일곱 조건을 만족하면 결과가 기존 한컴 2020 기준과 달라도 **절차 재현 성공·Oracle 결과 차이**다.
 환경 차이를 버전 분기로 숨기지 않고 후속 분석 대상으로 남긴다.
+
+## 11. 2026-08-23 reference canary
+
+이 가이드와 `scripts/oracle_stage4_hyperv_canary.ps1`의 실제 통합 경로를 rank 8로 검증했다. 세 상태는
+각각 baseline restore에서 시작했고 실행 뒤 다시 같은 baseline으로 복구했다. 한컴 build와 HWP executable
+hash, culture·locale이 세 상태에서 동일했으며, page 1·visual line 30·glyph observation 1,556도 같았다.
+
+| 상태 | PDF font | typesetting projection |
+| --- | --- | --- |
+| exact-only | `KoPubWorldBatangLight` | `38f83a79…b4c7` |
+| subst-only | `HCRBatang-Bold` | `59801255…27be` |
+| none-related | `HCRBatang-Bold` | `59801255…27be` |
+
+세 projection은 기존 rank 8 acceptance ladder와 정확히 일치했다. raw PDF hash는 metadata 때문에 달라도
+canonical 조판 결과는 재현됐다. 실행 중 WSL UNC staging과 guest execution policy에서 각각 한 번씩
+상태 변경 전 실패했지만, 두 실패 모두 `finally` restore로 baseline을 회복했다. Windows local staging과
+process-scope policy를 적용한 뒤 세 상태가 완료됐다. 자격 증명과 Windows staging·중복 output은 종료 후
+삭제했고 VM은 baseline으로 복구했다.
+
+공개 path-free 기계 결과는
+[`oracle_stage4_hyperv_reproduction_canary.json`](oracle_stage4_hyperv_reproduction_canary.json), 상세
+실행 기록은
+[`task_m100_4963_w5_hyperv_reproduction_canary.md`](../../../working/task_m100_4963_w5_hyperv_reproduction_canary.md)에
+있다. raw VM/checkpoint identity, credential, font bytes와 private corpus identity는 포함하지 않는다.

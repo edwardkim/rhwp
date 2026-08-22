@@ -8,10 +8,10 @@ last_verified: 2026-08-23
 # Issue #4963 W5 Oracle Profile·controlled ladder
 
 이 디렉터리는 W4 조판 위험 상위 17개 face를 한컴 exact/missing 상태에서 비교하기 위한 기계 검증
-계약을 보존한다. Stage W5-4B까지 profile 형식, deterministic fixture, SFNT/PDF 관측기, 17개 후보
-준비도 원장, 기존 한컴 2022 evidence import, 한컴 2020 read-only exact-installed canary, disposable
-snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 font metric·fallback·paint 결과는
-변경하지 않았다.
+계약을 보존한다. Stage W5-5C와 공개 Hyper-V 재현 canary까지 profile 형식, deterministic fixture,
+SFNT/PDF 관측기, 17개 후보 disposition, 기존 한컴 2022 evidence import, 한컴 2020 read-only canary,
+disposable snapshot 실행계약과 rank 1·7·8 acceptance ladder를 고정했다. 제품 font
+metric·fallback·paint 결과는 변경하지 않았다.
 
 ## 산출물
 
@@ -31,8 +31,10 @@ snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 fon
 | `oracle_stage4_rank13_blocked_disposition.json` | managed font 0개에서도 exact가 남은 immutable/unmanaged 정지 근거 |
 | `oracle_stage5_queue_projection.json` | 17개 face의 profile 재사용·terminal·후속 실행 action matrix |
 | `oracle_stage5_rank8_acceptance_ladder.json` | distinct substitution을 사용한 rank 8 exact/subst/none 실행 계보 |
+| `oracle_stage4_hyperv_reproduction_canary.json` | 공개 host controller로 다시 실행한 rank 8 three-state path-free 결과 |
 | [`hyperv_reproduction_guide.md`](hyperv_reproduction_guide.md) | 제3자 Hyper-V 환경 구축·three-state 실행·복구·비교 절차 |
 | [`task_m100_4963_report.md`](../../../report/task_m100_4963_report.md) | W5 전건 disposition·시각 판정·제품 후속 원칙 최종 보고서 |
+| [`task_m100_4963_w5_hyperv_reproduction_canary.md`](../../../working/task_m100_4963_w5_hyperv_reproduction_canary.md) | 공개 재현 경로 실제 canary·실패 복구·정리 기록 |
 | `fixtures/oracle_typesetting_fixture.hwpx` | rank 1 `문체부 바탕체`용 공개 synthetic HWPX canary |
 | `fixtures/oracle_typesetting_fixture.manifest.json` | fixture semantic matrix·LineSeg lane·ZIP entry hash |
 | `font_oracle_readiness.json` | 17개 face의 path-free source·ladder 준비도 원장 |
@@ -48,6 +50,7 @@ snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 fon
 | `scripts/oracle_stage3_profile.py` | local-only 실행 증적을 path-free acceptance profile로 투영 |
 | `scripts/oracle_stage4_contract.py` | attestation·동일 입력·managed/unrelated font·restore validator |
 | `scripts/oracle_stage4_profile.py` | local-only W5-4B 증거를 path-free profile·ladder·projection으로 변환 |
+| `scripts/oracle_stage4_hyperv_canary.ps1` | raw identity 대사·restore 전후·interactive task·evidence 회수 host controller |
 | `scripts/oracle_stage4_windows_font_state.ps1` | disposable guest의 exact/subst/none managed font 상태 구성 |
 | `scripts/oracle_stage4_windows_task.ps1` | localized face·배열을 보존하는 interactive Scheduled Task entrypoint |
 | `scripts/oracle_stage4_reproduction_compare.py` | 새 Hyper-V 환경의 restore·managed set·projection 독립 비교 |
@@ -165,3 +168,10 @@ Stage W5-5C는 rank 8에서 exact Batang과 distinct Dotum substitution을 세 �
 보였다. 4개 profile과 ladder를 추가해 queue의 actionable rank는 0개가 되었다. 메인테이너의
 side-by-side 시각 판정도 기계 projection과 일치해 W5 기술 검증을 완료했으며, 상세 기록은
 [`task_m100_4963_w5_stage5c.md`](../../../working/task_m100_4963_w5_stage5c.md)에 둔다.
+
+2026-08-23에는 공개 [Hyper-V 재현 가이드](hyperv_reproduction_guide.md)와 tracked host controller로
+rank 8 세 상태를 새로 실행했다. 각 상태 전후 baseline 복구를 확인했고 exact/subst/none의 typesetting
+projection이 기존 acceptance ladder와 모두 일치했다. path-free 결과는
+`oracle_stage4_hyperv_reproduction_canary.json`, 실행·복구 기록은
+[`task_m100_4963_w5_hyperv_reproduction_canary.md`](../../../working/task_m100_4963_w5_hyperv_reproduction_canary.md)에
+고정한다.

@@ -47,6 +47,12 @@ class OracleStage4Tests(unittest.TestCase):
         cls.ladder = read_json(
             INVESTIGATION / "oracle_stage4_public_fixtures.json"
         )["validLadder"]
+        cls.reproduction_canary = read_json(
+            INVESTIGATION / "oracle_stage4_hyperv_reproduction_canary.json"
+        )
+        cls.rank8_ladder = read_json(
+            INVESTIGATION / "oracle_stage5_rank8_acceptance_ladder.json"
+        )
 
     def test_contract_preflight_and_public_ladder_are_valid(self):
         self.assertEqual(validate_contract(self.contract), [])
@@ -158,6 +164,7 @@ class OracleStage4Tests(unittest.TestCase):
             INVESTIGATION / "oracle_stage4_contract.json",
             INVESTIGATION / "oracle_stage4_current_host_preflight.json",
             INVESTIGATION / "oracle_stage4_public_fixtures.json",
+            INVESTIGATION / "oracle_stage4_hyperv_reproduction_canary.json",
         ):
             text = path.read_text(encoding="utf-8")
             self.assertNotIn("/home/", text)
@@ -165,6 +172,73 @@ class OracleStage4Tests(unittest.TestCase):
             self.assertNotRegex(text, r"[A-Za-z]:[\\/]")
         self.assertEqual(list(INVESTIGATION.glob("*.ttf")), [])
         self.assertEqual(list(INVESTIGATION.glob("*.hft")), [])
+
+    def test_public_hyperv_canary_matches_rank8_acceptance(self):
+        canary_path = (
+            INVESTIGATION / "oracle_stage4_hyperv_reproduction_canary.json"
+        )
+        self.assertEqual(
+            sha256_file(canary_path),
+            "f411d55f28a4d9f319b4b8676c216d8363facd2895a855d26d4c24d8c841b811",
+        )
+        canary_without_hash = copy.deepcopy(self.reproduction_canary)
+        canonical_hash = canary_without_hash.pop("canonicalSha256")
+        self.assertEqual(
+            sha256_bytes(canonical_json_bytes(canary_without_hash)), canonical_hash
+        )
+        self.assertEqual(
+            canonical_hash,
+            "b31d0e07437fceb80efb6e10fcda5a4834eb5b7cf7c9496ba3d95600a9466c17",
+        )
+        self.assertEqual(
+            self.reproduction_canary["fixtureSha256"],
+            self.rank8_ladder["fixture"]["sha256"],
+        )
+        self.assertEqual(
+            self.reproduction_canary["baseline"]["manifestSha256"],
+            self.rank8_ladder["attestation"]["baselineFontManifestSha256"],
+        )
+        self.assertEqual(
+            self.reproduction_canary["baseline"]["unrelatedProjectionSha256"],
+            self.rank8_ladder["unrelatedFontProjectionSha256"],
+        )
+        accepted = {
+            run["physicalState"]: run["typesettingProjectionSha256"]
+            for run in self.rank8_ladder["runs"]
+        }
+        reproduced = {
+            state: value["typesettingProjectionSha256"]
+            for state, value in self.reproduction_canary["states"].items()
+        }
+        self.assertEqual(reproduced, accepted)
+        self.assertFalse(self.reproduction_canary["comparisons"]["exactEqualsNone"])
+        self.assertTrue(
+            self.reproduction_canary["comparisons"]["substitutionEqualsNone"]
+        )
+        self.assertEqual(
+            self.reproduction_canary["privacy"],
+            {
+                "absolutePathIncluded": False,
+                "fontBytesIncluded": False,
+                "privateCorpusAccessed": False,
+            },
+        )
+
+    def test_hyperv_controller_keeps_external_restore_and_empty_set_guards(self):
+        controller = (ROOT / "scripts/oracle_stage4_hyperv_canary.ps1").read_text(
+            encoding="utf-8"
+        )
+        for contract in (
+            "SupportsShouldProcess",
+            "CheckpointRestoreApproved",
+            "AutomaticCheckpointsEnabled",
+            "Restore-Baseline",
+            "Test-ExactStringArray",
+            "Get-InteractiveIdentity",
+        ):
+            self.assertIn(contract, controller)
+        self.assertNotIn("RemoveFontResource", controller)
+        self.assertNotRegex(controller, r"(?i)Remove-Item.+(?:Fonts|font source)")
 
     def test_hyperv_reproduction_compare_reconciles_three_restored_states(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -200,6 +274,10 @@ class OracleStage4Tests(unittest.TestCase):
                     "environment": {
                         "securityModuleRegistered": True,
                         "processReset": True,
+                        "hancomVersion": "11, 0, 0, 9136",
+                        "currentCulture": "ko-KR",
+                        "currentUICulture": "en-US",
+                        "systemLocale": "en-US",
                     },
                     "privacy": {"privateCorpusAccessed": False},
                 }
@@ -210,6 +288,7 @@ class OracleStage4Tests(unittest.TestCase):
                     ),
                     "unrelatedProjectionSha256": unrelated_hash,
                     "hwpProcessCount": 0,
+                    "hwpExecutableSha256": "7" * 64,
                 }
                 observation = {
                     "schemaVersion": 1,
@@ -260,6 +339,8 @@ class OracleStage4Tests(unittest.TestCase):
             self.assertFalse(result["comparisons"]["exactEqualsNone"])
             self.assertTrue(result["comparisons"]["substitutionEqualsNone"])
             self.assertTrue(result["privacy"]["absolutePathIncluded"] is False)
+            self.assertEqual(result["environment"]["hancomVersion"], "11, 0, 0, 9136")
+            self.assertEqual(len(result["canonicalSha256"]), 64)
 
             recovered_path = root / "rank8-none-related/recovered.ambient-manifest.json"
             recovered = json.loads(recovered_path.read_text(encoding="utf-8"))

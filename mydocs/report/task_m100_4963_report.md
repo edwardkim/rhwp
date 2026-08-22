@@ -11,10 +11,10 @@ Issue: #4963
 
 ## 1. 결론
 
-#4963의 W5 Oracle 기술·시각 검증은 완료했다. 다만 최종 보고서 검토에서 제3자가 Hyper-V 환경을
-구축해 같은 절차를 실행하는 공개 경로가 부족하다는 결손이 확인되어 보고서 승인을 다시 열었다.
-환경 구축 가이드와 재현 helper·비교기를 구현했으며, 이 공개 경로의 disposable VM end-to-end canary가
-남은 마지막 재현성 게이트다.
+#4963의 W5 Oracle 기술·시각 검증과 공개 Hyper-V 재현 경로의 disposable VM end-to-end canary를
+완료했다. 최종 보고서 검토에서 확인된 제3자 환경 구축·실행 경로 결손은 가이드, tracked host
+controller, guest helper, 독립 비교기와 실제 rank 8 three-state 재현 결과로 닫았다. 남은 절차 게이트는
+이 최종 보고서에 대한 메인테이너 승인이다.
 
 - W4가 넘긴 조판 위험 상위 17개 face를 재계측·terminal·blocked로 빠짐없이 분류했다.
 - rank 1 `문체부 바탕체`, rank 7 `KoPubWorld돋움체 Light`, rank 8
@@ -43,6 +43,8 @@ Issue: #4963
 | [W5-4B 실행 보고](../working/task_m100_4963_w5_stage4b.md) | disposable VM canary·복원·rank 1·7 관측 |
 | [W5-5C 실행 보고](../working/task_m100_4963_w5_stage5c.md) | rank 8 기계·시각 판정 |
 | [Hyper-V 재현 가이드](../tech/investigations/issue-4963/hyperv_reproduction_guide.md) | 제3자 환경 구축·상태 실행·복원·독립 비교 정본 |
+| [Hyper-V 재현 canary](../working/task_m100_4963_w5_hyperv_reproduction_canary.md) | 공개 controller의 실제 three-state 실행·실패 복구·정리 기록 |
+| [재현 canary 기계 요약](../tech/investigations/issue-4963/oracle_stage4_hyperv_reproduction_canary.json) | path-free environment·상태별 hash·projection 비교 |
 
 기계 정본의 현재 file SHA-256은 다음과 같다.
 
@@ -51,6 +53,7 @@ Issue: #4963
 | `oracle_stage5_queue_projection.json` | `7765e060982c672cac8fbd0700f73e21d7488ae2fb25144c8046a4e678e0002d` |
 | `oracle_stage5_rank8_acceptance_ladder.json` | `d6e8a4371dd049a899a88fb975d6499ed435154b72e1fc804b701addf3cb75ec` |
 | `oracle_stage5_rank16_read_only_disposition.json` | `dbf596fd79aa4b0d55a00f5761d8e93b7a006606eddc44455937815e9bc1eeda` |
+| `oracle_stage4_hyperv_reproduction_canary.json` | `f411d55f28a4d9f319b4b8676c216d8363facd2895a855d26d4c24d8c841b811` |
 
 ## 3. 계획 대비 실행
 
@@ -66,6 +69,7 @@ contract hash가 일치할 때 재사용하고, 실제 상태가 비어 있던 �
 | disposable controlled canary | rank 1·7 완료, rank 13 보호 정지 |
 | actionable queue 확대 | rank 16 기능 불일치 정지, rank 8 ladder 완료 |
 | side-by-side 시각 판정 | 메인테이너 승인 |
+| 공개 Hyper-V 재현 canary | rank 8 three-state·복원·독립 비교 완료 |
 | 제품 구현 | 범위 밖으로 유지, 변경 0 |
 
 계획과 달리 모든 face에 동일한 5-state 수치를 채우지 않았다. source 부재나 HFT·system provider 보호를
@@ -165,15 +169,15 @@ fallback의 U+AC00 PDF advance는 exact보다 약 4.3% 컸다. 한 글자 차이
 | 검증 | 결과 |
 | --- | --- |
 | Oracle Node contract·profile tests | 13/13 통과 |
-| Stage 2·3·4·4 profile·5 queue Python tests | 40/40 통과 |
+| Stage 2·3·4·4 profile·5 queue Python tests | 42/42 통과 |
 | queue candidate/disposition reconciliation | 17/17, 오류 0 |
 | rank 8 input·profile·ladder hash 연결 | 통과 |
 | baseline/unrelated font 복원 | 통과 |
 | private corpus 접근·식별 정보 공개 | 0 |
 | font bytes·절대 VM path 공개 | 0 |
 | 메인테이너 side-by-side 시각 판정 | 통과 |
-| Hyper-V PowerShell AST parse | 기존·신규 runner 4/4 통과 |
-| 변경 Markdown 내부 상대 링크 | 8개, 이상 없음 |
+| Hyper-V PowerShell AST parse | 기존·신규 runner 5/5 통과 |
+| 변경 파일 Markdown 내부 상대 링크 | 9개, 이상 없음 |
 | `cargo fmt --all -- --check`·diff check | 통과 |
 
 `cargo fmt --all`을 먼저 적용한 뒤 같은 전체 workspace 범위의 `--check`를 수행했다.
@@ -195,10 +199,20 @@ fallback의 U+AC00 PDF advance는 exact보다 약 4.3% 컸다. 한 글자 차이
 않는다. 새 실행은 자체 baseline을 가진 reproduction summary로 먼저 검증하고, environment identity가
 다른 결과를 기존 acceptance profile과 혼합하지 않는다.
 
-현재 공개 재현 경로는 PowerShell AST 4/4와 synthetic three-state 비교기 회귀 테스트를 통과했다.
-그러나 새 `oracle_stage4_windows_font_state.ps1`을 실제 disposable VM에서 exact/subst/none 순으로 실행한
-증거는 아직 없다. 메인테이너가 mutable VM canary를 승인하면 가이드 그대로 한 target을 재실행하고,
-각 상태의 recovered manifest와 reproduction summary를 local-only 증거로 만든 뒤 이 절을 닫는다.
+공개 재현 경로는 tracked controller로 rank 8의 exact-only, subst-only, none-related를 각각 독립
+실행했다. 각 실행 전후 baseline manifest
+`3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40`과 unrelated projection
+`437a36e513cce9d2909d904f3d07d2341051cc017e21be9ec6d35bbb9d87bc78`을 복구했다. disconnected
+interactive session에서는 `Win32_ComputerSystem.UserName`이 비어 있을 수 있어, controller는 유일한
+`explorer.exe` owner와 session id를 기능 탐지해 Scheduled Task token으로 사용한다.
+
+첫 시도는 WSL UNC source를 `Copy-Item -ToSession`에 직접 넘겨 상태 변경 전에 중단됐고, 두 번째 시도는
+guest 실행 정책이 helper를 막아 역시 상태 변경 전에 중단됐다. 두 경우 모두 `finally`가 baseline을
+복구했다. Windows local staging과 process-scope execution policy를 적용한 뒤 세 상태가 완료됐고,
+exact projection `38f83a79…b4c7`, subst/none projection `59801255…27be`가 기존 rank 8 acceptance와
+각각 정확히 일치했다. credential과 Windows staging·중복 산출물은 제거했으며 owner-only 원본 증거만
+저장소 밖에 유지한다. 공개 기계 요약의 file SHA-256은 `f411d55f…b811`, canonical SHA-256은
+`b31d0e07…6c17`이다.
 
 ## 10. 제품 후속 후보
 
@@ -216,9 +230,7 @@ face도 기존 queue를 폐기하지 않고 같은 Oracle 계약으로 재개한
 
 ## 11. 완료와 남은 절차
 
-기존 Oracle 결과의 기술 완료 조건인 17개 최종 disposition, 실행 profile 계보, blocker·재개 조건,
-privacy 경계와 시각 판정은 모두 충족했다. 최종 보고서 종료에는 새 공개 Hyper-V 경로로 한 target의
-three-state 실행·복원·독립 비교가 실제 통과했다는 canary를 추가로 요구한다. 이 canary와 최종 보고서에
-대한 메인테이너 승인 뒤 #4963 통합 준비, 승인된 원격 push·PR, self-review, CI, merge와 이슈 close를
-각각 프로젝트 절차에 따라 진행한다. #4960의 W5 상태와 제품 후속 이슈 후보도 통합 결과를 확인한 뒤
-별도 갱신한다.
+17개 최종 disposition, 실행 profile 계보, blocker·재개 조건, privacy 경계, 시각 판정과 공개 Hyper-V
+three-state 실행·복원·독립 비교를 모두 충족했다. 이 최종 보고서에 대한 메인테이너 승인 뒤 #4963 통합
+준비, 승인된 원격 push·PR, self-review, CI, merge와 이슈 close를 각각 프로젝트 절차에 따라 진행한다.
+#4960의 W5 상태와 제품 후속 이슈 후보도 통합 결과를 확인한 뒤 별도 갱신한다.

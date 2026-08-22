@@ -87,6 +87,7 @@ def compare(evidence_root: Path, config: dict[str, Any]) -> dict[str, Any]:
     state_config = config.get("states")
     _require(isinstance(state_config, dict), "config states are required")
     records: dict[str, dict[str, Any]] = {}
+    environments: dict[str, dict[str, Any]] = {}
     for state in STATES:
         specification = state_config.get(state, {})
         directory = specification.get("directory")
@@ -149,6 +150,26 @@ def compare(evidence_root: Path, config: dict[str, Any]) -> dict[str, Any]:
             environment.get("processReset") is True,
             f"{state} process reset drift",
         )
+        environment_projection = {
+            "hancomVersion": environment.get("hancomVersion"),
+            "currentCulture": environment.get("currentCulture"),
+            "currentUICulture": environment.get("currentUICulture"),
+            "systemLocale": environment.get("systemLocale"),
+            "hwpExecutableSha256": manifest.get("hwpExecutableSha256"),
+        }
+        _require(
+            all(
+                isinstance(value, str) and value
+                for value in environment_projection.values()
+            ),
+            f"{state} environment identity is incomplete",
+        )
+        _require(
+            SHA256.fullmatch(environment_projection["hwpExecutableSha256"])
+            is not None,
+            f"{state} HWP executable hash is invalid",
+        )
+        environments[state] = environment_projection
         pdf_hash = sha256_file(pdf_path)
         _require(run.get("export", {}).get("pdfSha256") == pdf_hash, f"{state} PDF drift")
         _require(
@@ -215,13 +236,21 @@ def compare(evidence_root: Path, config: dict[str, Any]) -> dict[str, Any]:
             "glyphObservationCount": observation.get("glyphObservationCount"),
         }
 
-    return {
+    _require(
+        environments["exact-only"]
+        == environments["subst-only"]
+        == environments["none-related"],
+        "state environment identity drift",
+    )
+    summary = {
         "schemaVersion": 1,
         "kind": "font-oracle-hyperv-reproduction-summary",
         "issue": 4963,
+        "evidenceClass": "reproduction-primary",
         "queueRank": config["queueRank"],
         "documentFace": config["documentFace"],
         "fixtureSha256": fixture_hash,
+        "environment": environments["exact-only"],
         "baseline": {
             "manifestSha256": baseline_manifest,
             "unrelatedProjectionSha256": unrelated_projection,
@@ -243,6 +272,8 @@ def compare(evidence_root: Path, config: dict[str, Any]) -> dict[str, Any]:
             "privateCorpusAccessed": False,
         },
     }
+    summary["canonicalSha256"] = sha256_bytes(canonical_json_bytes(summary))
+    return summary
 
 
 def main() -> int:
