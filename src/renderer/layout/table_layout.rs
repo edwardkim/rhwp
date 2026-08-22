@@ -953,6 +953,9 @@ fn reconstruct_nested_table_descendant_fragment_frames(
     }
 }
 
+/// 조각 clip 바닥에서 이만큼(줄 높이 배수) 안쪽에서 시작한 줄까지만 "잘려 나간 그 줄"로 본다.
+const SPLIT_FRAGMENT_RECOVER_LINE_GAP_RATIO: f64 = 1.5;
+
 /// [#5862] 쪽 분할 조각 셀이 **자기가 배치한 직계 글줄**을 clip 밖에 남기지 않게 한다.
 ///
 /// 조각 셀의 clip 높이는 괘선이 아니라 쪽 컷 부기(`start_cut`/`end_cut`)가 정한다.
@@ -969,7 +972,7 @@ fn reconstruct_nested_table_descendant_fragment_frames(
 ///
 /// 같은 파일의 `extend_clipped_cell_vertical_clip_to_nearby_nested_table_borders`(테두리
 /// stroke 포섭)와 같은 결의 보정이다.
-fn expand_page_fragment_clip_to_own_text_lines(node: &mut RenderNode) {
+fn expand_page_fragment_clip_to_own_text_lines(node: &mut RenderNode, page_bottom: f64) {
     let RenderNodeType::TableCell(meta) = &node.node_type else {
         return;
     };
@@ -977,12 +980,41 @@ fn expand_page_fragment_clip_to_own_text_lines(node: &mut RenderNode) {
         return;
     }
     let clip_bottom = node.bbox.y + node.bbox.height;
-    let owned_bottom = node
-        .children
-        .iter()
-        .filter(|child| child.visible && matches!(child.node_type, RenderNodeType::TextLine(_)))
-        .map(|child| child.bbox.y + child.bbox.height)
-        .fold(clip_bottom, f64::max);
+
+    // 조각이 자기 자식으로 붙여 놓고 clip 밖으로 흘린 **바로 다음 한 줄**만 되살린다.
+    //
+    // 아래 줄을 전부 포섭하면 조각이 159px 까지 늘어나 뒤 내용이 통째로 밀리고,
+    // `hwpx_sample2.hwpx` 10쪽에서 글자 102개가 종이 밖으로 나갔다
+    // (`overflow_cell_baseline` 원장이 3줄 증가로 잡는다). 컷 부기와 조판이 어긋나는
+    // 폭은 줄 하나 남짓이므로 되살릴 대상도 줄 하나로 못박는다.
+    let mut recovered: Option<&RenderNode> = None;
+    for child in &node.children {
+        if !child.visible || !matches!(child.node_type, RenderNodeType::TextLine(_)) {
+            continue;
+        }
+        if child.bbox.y <= clip_bottom {
+            continue;
+        }
+        // 윗변이 이미 쪽 하단 밖인 줄은 어느 부분도 그려지지 않는다 — 되살릴 것이 없다.
+        if page_bottom > 0.0 && child.bbox.y > page_bottom {
+            continue;
+        }
+        // clip 바닥에서 한 줄 남짓 안쪽에서 시작한 줄만 "잘려 나간 그 줄"로 본다.
+        if child.bbox.y - clip_bottom > child.bbox.height * SPLIT_FRAGMENT_RECOVER_LINE_GAP_RATIO {
+            continue;
+        }
+        if recovered.is_none_or(|best| child.bbox.y < best.bbox.y) {
+            recovered = Some(child);
+        }
+    }
+
+    let Some(line) = recovered else {
+        return;
+    };
+    let mut owned_bottom = line.bbox.y + line.bbox.height;
+    if page_bottom > 0.0 {
+        owned_bottom = owned_bottom.min(page_bottom);
+    }
     if owned_bottom > clip_bottom + NESTED_FRAGMENT_EDGE_EPSILON_PX {
         node.bbox.height = owned_bottom - node.bbox.y;
     }
@@ -1027,7 +1059,7 @@ fn repair_clipped_nested_table_fragment_frame(
     let clip_bottom = node.bbox.y + node.bbox.height;
     repair_clipped_cell_text_table_seam(node, suppress_bottom_text_residue);
     suppress_future_nested_table_border_residue(node, clip_bottom);
-    expand_page_fragment_clip_to_own_text_lines(node);
+    expand_page_fragment_clip_to_own_text_lines(node, tree.page_size().1);
     for table_index in 0..node.children.len() {
         if !node.children[table_index].visible
             || !matches!(
