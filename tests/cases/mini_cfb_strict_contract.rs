@@ -15,6 +15,52 @@ fn read_u32_at(bytes: &[u8], offset: usize) -> u32 {
     u32::from_le_bytes(bytes[offset..offset + 4].try_into().unwrap())
 }
 
+fn directory_entry_offset(bytes: &[u8], index: usize) -> usize {
+    let first_dir_sector = read_u32_at(bytes, 48) as usize;
+    SECTOR_SIZE
+        + (first_dir_sector + index / DIR_ENTRIES_PER_SECTOR) * SECTOR_SIZE
+        + (index % DIR_ENTRIES_PER_SECTOR) * DIR_ENTRY_SIZE
+}
+
+fn assert_valid_red_black_subtree(
+    bytes: &[u8],
+    index: u32,
+    entry_count: usize,
+    parent_is_red: bool,
+    visited: &mut [bool],
+) -> usize {
+    if index == NOSTREAM {
+        return 1; // NIL leaves are black.
+    }
+
+    let index = index as usize;
+    assert!(index < entry_count, "directory index out of range: {index}");
+    assert!(
+        !visited[index],
+        "directory tree contains a cycle at {index}"
+    );
+    visited[index] = true;
+
+    let offset = directory_entry_offset(bytes, index);
+    let color = bytes[offset + 67];
+    assert!(color <= 1, "invalid directory color {color} at {index}");
+    let is_red = color == 0;
+    assert!(
+        !(parent_is_red && is_red),
+        "adjacent red directory nodes at {index}"
+    );
+
+    let left = read_u32_at(bytes, offset + 68);
+    let right = read_u32_at(bytes, offset + 72);
+    let left_height = assert_valid_red_black_subtree(bytes, left, entry_count, is_red, visited);
+    let right_height = assert_valid_red_black_subtree(bytes, right, entry_count, is_red, visited);
+    assert_eq!(
+        left_height, right_height,
+        "directory black-height mismatch at {index}"
+    );
+    left_height + usize::from(!is_red)
+}
+
 #[test]
 fn unused_container_slots_use_required_sentinels() {
     let owned = [
@@ -70,5 +116,38 @@ fn unused_container_slots_use_required_sentinels() {
         assert_eq!(read_u32_at(&bytes, offset + 68), NOSTREAM);
         assert_eq!(read_u32_at(&bytes, offset + 72), NOSTREAM);
         assert_eq!(read_u32_at(&bytes, offset + 76), NOSTREAM);
+    }
+}
+
+#[test]
+fn directory_tree_obeys_red_black_invariants() {
+    for stream_count in 1..=128usize {
+        let owned: Vec<_> = (0..stream_count)
+            .map(|index| (format!("/Stream{index:04}"), Vec::<u8>::new()))
+            .collect();
+        let streams: Vec<_> = owned
+            .iter()
+            .map(|(path, data)| (path.as_str(), data.as_slice()))
+            .collect();
+        let bytes = mini_cfb::build_cfb(&streams).unwrap();
+        let entry_count = 1 + stream_count;
+
+        let root_offset = directory_entry_offset(&bytes, 0);
+        let tree_root = read_u32_at(&bytes, root_offset + 76);
+        assert_ne!(tree_root, NOSTREAM);
+        let tree_root_offset = directory_entry_offset(&bytes, tree_root as usize);
+        assert_eq!(
+            bytes[tree_root_offset + 67],
+            1,
+            "directory tree root must be black for {stream_count} streams"
+        );
+
+        let mut visited = vec![false; entry_count];
+        visited[0] = true; // Root Entry owns the child tree but is not in it.
+        assert_valid_red_black_subtree(&bytes, tree_root, entry_count, false, &mut visited);
+        assert!(
+            visited.iter().all(|seen| *seen),
+            "directory tree omitted an entry for {stream_count} streams"
+        );
     }
 }
