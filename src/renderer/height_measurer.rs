@@ -23,7 +23,20 @@ pub fn is_tac_table_inline(
     text: &str,
     controls: &[Control],
 ) -> bool {
-    let table_width: u32 = table.get_column_widths().iter().sum();
+    // [#5785] 판정 폭은 **선언 폭**을 우선한다. `get_column_widths()` 는 전역
+    // 그리드의 col_span==1 셀 max 합이라, 행마다 열 구획이 다른 표(#5697,
+    // 3049001 약장)에서 12,872 vs 17,299HU 로 표마다 흔들렸다 — 과소합산된
+    // 표만 90% 문턱을 우연히 통과해 인라인이 되고, 그 인라인 흐름이 이웃
+    // 셀의 폴백 기준 x 를 +22~27px 오염시켰다(약장 2·5·11). 선언 폭이 없는
+    // 합성 표만 colsum 폴백.
+    let tac_width = |t: &Table| -> u32 {
+        if t.common.width > 0 {
+            t.common.width
+        } else {
+            t.get_column_widths().iter().sum()
+        }
+    };
+    let table_width: u32 = tac_width(table);
 
     if !text.is_empty() {
         return (table_width as i32) < (seg_width as f64 * 0.9) as i32;
@@ -39,10 +52,7 @@ pub fn is_tac_table_inline(
         .collect();
 
     if tac_tables.len() >= 2 {
-        let total_width: u32 = tac_tables
-            .iter()
-            .map(|t| t.get_column_widths().iter().sum::<u32>())
-            .sum();
+        let total_width: u32 = tac_tables.iter().map(|t| tac_width(t)).sum();
         return (total_width as i32) <= seg_width;
     }
 
