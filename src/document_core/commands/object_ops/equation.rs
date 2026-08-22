@@ -375,7 +375,7 @@ impl DocumentCore {
         color: u32,
     ) -> Result<String, HwpError> {
         use crate::model::control::Equation;
-        use crate::model::shape::CommonObjAttr;
+        use crate::model::shape::{CommonObjAttr, HorzRelTo, TextWrap, VertRelTo};
         use crate::parser::tags::CTRL_EQUATION;
 
         if section_idx >= self.document.sections.len() {
@@ -392,17 +392,47 @@ impl DocumentCore {
         }
 
         let (width, height) = crate::renderer::equation::intrinsic_size_hwp(script, font_size);
+        let equation_order = self.document.sections[section_idx]
+            .paragraphs
+            .iter()
+            .flat_map(|paragraph| paragraph.controls.iter())
+            .filter(|control| matches!(control, Control::Equation(_)))
+            .count() as u32;
+        // 한컴에서 만든 인라인 수식은 0이 아닌 고유 개체 ID를 사용한다. 삽입 API는
+        // 구역 안의 기존 수식 수를 기준으로 결정적인 ID와 z-order를 배정한다.
+        let instance_id = 0x4400_0000
+            | (((section_idx as u32) & 0xff) << 20)
+            | ((equation_order + 1) & 0x000f_ffff);
         let equation = Equation {
             common: CommonObjAttr {
                 ctrl_id: CTRL_EQUATION,
+                // 한컴 저장본의 인라인 수식 계약: 문단 기준 위치, 절대 크기,
+                // 글자처럼 취급, 글과 함께 이동, 위아래 배치.
+                attr: 0x0C2A_2311,
                 treat_as_char: true,
                 width,
                 height,
+                z_order: equation_order as i32,
+                margin: crate::model::Padding {
+                    left: 56,
+                    right: 56,
+                    top: 0,
+                    bottom: 0,
+                },
+                instance_id,
+                flow_with_text: true,
+                vert_rel_to: VertRelTo::Para,
+                horz_rel_to: HorzRelTo::Para,
+                text_wrap: TextWrap::TopAndBottom,
+                hwp5_gen_shape_attr_bit26: true,
+                description: "수식입니다.".to_string(),
                 ..Default::default()
             },
             script: script.to_string(),
             font_size,
             color,
+            baseline: 85,
+            version_info: "Equation Version 60".to_string(),
             font_name: "HYhwpEQ".to_string(),
             ..Default::default()
         };
