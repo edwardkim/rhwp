@@ -241,6 +241,34 @@ pub fn fit_measured_table_to_declared_height(
         return fitted;
     }
 
+    // [#5879] 그 창 안이라도 **내용이 필요로 하는 높이 아래로는 줄이지 않는다.**
+    //
+    // 위 25% 창은 "근소한 어긋남"을 노렸지만 비율만 본다. 저장 선언 높이가 낡은 문서에서는
+    // 17% 축소도 글줄을 통째로 삼킨다 — `samples/issue4514/sample1-repro.hwp` 19쪽은
+    // 측정 683.9px 표를 선언 565.8px 로 0.829배 줄인다. 그러면 표가 쪽에 "들어간다"고
+    // 판정돼 분할되지 않고, 줄들은 그대로 그려진 뒤 셀 clip 이 지운다(4줄 소실, 다음 쪽에
+    // 이어지지도 않는다 — #5784).
+    //
+    // 그래서 축소가 어느 한 행이라도 자기 내용(패딩 포함) 아래로 내리면 보정을 건너뛴다.
+    // 늘리는 방향(scale >= 1)과 내용을 안 자르는 축소는 종전 그대로다.
+    if target_row_sum > 0.0 && current_row_sum > 0.0 {
+        let scale = target_row_sum / current_row_sum;
+        if scale < 1.0 {
+            let cuts_content = (0..row_count).any(|row| {
+                let floor = fitted
+                    .cells
+                    .iter()
+                    .filter(|cell| cell.row == row && cell.row_span == 1)
+                    .map(|cell| cell.padding_top + cell.total_content_height + cell.padding_bottom)
+                    .fold(0.0f64, f64::max);
+                floor > 0.0 && fitted.row_heights[row] * scale < floor - 0.5
+            });
+            if cuts_content {
+                return fitted;
+            }
+        }
+    }
+
     if target_row_sum > 0.0 && (current_row_sum - target_row_sum).abs() > 0.5 {
         if current_row_sum > 0.0 {
             let scale = target_row_sum / current_row_sum;
