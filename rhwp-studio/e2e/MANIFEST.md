@@ -117,6 +117,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `topmost-lifecycle.test.mjs` | 상시 | active | E2E 테스트 (Issue #1280 v2): 겹침 최상단 선택 → 연산 lifecycle | textbox-under-image.hwp | 수동 |  |
 | `typesetting.test.mjs` | 상시 | active | 조판 품질 검증 (문단부호 표시 상태) | — | 수동 |  |
 | `undo-contracts.test.mjs` | 상시 | active | 편집 undo 계약 실동작 검증 (Task #2301) | — | npm e2e:undo |  |
+| `undo-delete-fragment-bytes.test.mjs` | 상시 | active | [#5769] 다문단 선택 삭제 조각 undo 저장 바이트 왕복 동일성 (Delete 키 → Ctrl+Z → exportHwp 대조) | — | npm e2e:undo-delete-fragment-bytes |  |
 | `undo-object-selection.test.mjs` | 상시 | active | E2E: undo/redo 후 개체/표 선택 stale ref 해제 (Task #2303) /  / 계약: undo/r | — | npm e2e:undo-object-selection |  |
 | `unsaved-changes-guard.test.mjs` | 상시 | active | #886 저장되지 않은 변경사항 보호 모달 | — | npm e2e:unsaved-guard |  |
 | `unsupported-format-error.test.mjs` | 상시 | active | 미지원 문서 오류 알림 후 정상 문서 재로드 | field-01.hwp | 수동 |  |
