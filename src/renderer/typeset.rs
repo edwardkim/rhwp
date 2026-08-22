@@ -20949,6 +20949,37 @@ impl TypesetEngine {
                             retried = true;
                         }
                     }
+                    // `end_row = r` 는 "이 행을 통째로 다음 쪽으로 이월" 이라는 뜻
+                    // 이므로, 행 앞에 이미 배치된 행이 있을 때만 성립한다. 그러나
+                    // `r == cursor_row` 인 continuation 조각은 이미 이 행 중간
+                    // (`row_start_cut`)에서 시작하므로 이월할 앞부분이 없다. 이때
+                    // 재시도 실패로 `end_row = r` 로 되돌리면 호출부가
+                    // `end_row >= row_count && split_end_limit == 0` 을 "나머지가 이
+                    // 쪽에 다 들어감" 으로 읽어 남은 유닛 전부를 클립 없이 한 쪽에
+                    // 쏟는다. mixed-nested 재시도 예산은 실측 초과분(`over`)에서
+                    // painted tail 을 한 번 더 빼므로 이 tail 이 큰 거대 셀에서는
+                    // 예산이 0 에 수렴해 이 0-전진 경로로 떨어진다
+                    // (table_giant_cell_overfill: budget 1005.4 → retry 12.4,
+                    // 남은 4,577px 이 39쪽 한 장에 겹쳐 렌더). 예산 컷 `res` 자체는
+                    // orphan 기준을 통과한 유효한 전진이므로, 0-전진 대신 그 컷을
+                    // 쓴다.
+                    let continuation_row_must_advance = r == cursor_row
+                        && is_continuation
+                        && !row_start_cut.is_empty()
+                        && !res.end_cut.is_empty()
+                        && res.consumed_height > 0.0
+                        && row_split_meets_min_top_keep(
+                            res.consumed_height,
+                            split_total,
+                            row_split_min_keep_uses_painted_height,
+                        );
+                    if !retried && continuation_row_must_advance {
+                        end_row = r + 1;
+                        split_end_cut = res.end_cut.clone();
+                        split_end_limit = res.consumed_height;
+                        consumed += cs_before + split_total;
+                        retried = true;
+                    }
                     if !retried {
                         end_row = r;
                     }
