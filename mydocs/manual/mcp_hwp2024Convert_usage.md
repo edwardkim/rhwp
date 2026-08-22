@@ -10,11 +10,18 @@ last_verified: 2026-08-22
 이 문서는 rhwp 작업 PC의 HWP/HWPX 파일을 원격 Windows Hancom Office 2024 HTTP MCP server로
 보내고 변환 결과를 다시 client PC에 저장하는 방법을 설명한다.
 
+한컴오피스 2024에서 저장한 `.hwp`는 이 `hwp-convert-2024` 서비스를 사용한다.
+저장한 한컴오피스 버전이 2022 이하인 `.hwp`는 이 서비스가 아니라
+[HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md)의 `hwp-convert-2020` 서비스를 사용한다.
+두 입력은 확장자가 모두 `.hwp`일 수 있으므로 파일명만으로 서비스를 자동 선택한다고 가정하지 않는다.
+
 ## 개요
 
 - MCP server 이름: `hwp2024Convert`
-- 권장 실행 방식: VS Code stdio MCP bridge `hwp2024-mcp-bridge`
-- 터미널 실행 방식: `hwp2024-mcp-convert`
+- 권장 실행 방식: `hwp2024-mcp-convert` CLI의 비동기 `start → status → download` 흐름.
+  다쪽 문서, 변환 시간이 긴 문서와 PR review 기준 PDF는 항상 이 흐름을 사용한다.
+- 동기 `hwp2024-mcp-convert convert` 호출은 소형 문서의 즉시 변환 확인에만 사용한다.
+- VS Code 연동 방식: stdio MCP bridge `hwp2024-mcp-bridge`. 실제 변환은 비동기 tool을 우선한다.
 - 지원 입력: `.hwp`, `.hwpx`
 - 지원 출력: `pdf`, `hwp`, `hwpx`
 - 지원 방향: `.hwp → pdf|hwp|hwpx`, `.hwpx → pdf|hwp`
@@ -30,7 +37,8 @@ resource blob의 byte 수와 SHA-256을 검증한 뒤 local output directory에 
 같은 파일 경로나 공유 폴더를 사용할 필요는 없다.
 
 server URL/IP, bearer token과 `.env.local` 내용은 Git, issue, PR, 공개 문서와 로그에 기록하지 않는다.
-인증된 관리자에게 비공개 경로로 전달받는다.
+이 서비스는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용할 수 있다.
+접근 정보는 MCP 관리자에게 비공개 경로로 전달받는다.
 
 ## 최신 client artifact
 
@@ -75,6 +83,9 @@ endpoint는 `/mcp`까지 포함한다. HTTP bearer token은 전송 구간 암호
 
 ## 터미널 CLI
 
+실제 문서 변환은 비동기 `start → status → download`를 기본으로 사용한다. 아래 동기 예제는 설치 확인이나
+수 초 안에 끝나는 소형 문서 smoke test에만 사용한다.
+
 도움말:
 
 ```powershell
@@ -83,7 +94,7 @@ endpoint는 `/mcp`까지 포함한다. HTTP bearer token은 전송 구간 암호
   -- hwp2024-mcp-convert --help
 ```
 
-### 동기 변환
+### 소형 문서 확인 전용: 동기 변환
 
 작은 문서는 `convert`가 upload, 원격 변환, download, SHA-256 검증과 local 저장을 한 번에 수행한다.
 
@@ -102,9 +113,9 @@ endpoint는 `/mcp`까지 포함한다. HTTP bearer token은 전송 구간 암호
 성공하면 `status`, `output_path`, `target`, `size`, `sha256`와 server 변환 metadata가 JSON으로
 출력된다. 기존 output file은 덮어쓰지 않는다.
 
-### 비동기 변환
+### 권장: 비동기 변환
 
-큰 문서나 변환 시간이 긴 문서는 `start → status → download` 순서로 처리한다.
+큰 문서, 변환 시간이 긴 문서와 PR review 기준 PDF는 `start → status → download` 순서로 처리한다.
 
 ```powershell
 # 1. local input upload와 remote job 시작

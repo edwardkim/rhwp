@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-07-25
+last_verified: 2026-08-22
 ---
 
 # 시각·fixture 증적
@@ -38,21 +38,28 @@ PR 또는 관련 issue 본문·comment에 첨부된 HWP/HWPX/PDF/PNG와 외부�
 두 경로, SHA-256 동일 여부, 기준인지 참고 보고서인지를 적는다. 원본 HWP/HWPX가 없으면 독립 시각 검증과
 장기 재현이 불가하다는 사실을 review 문서에 명시한다.
 
-## 3.5.1 기준 PDF 미첨부 시 HWP 2020 MCP
+## 3.5.1 기준 PDF 미첨부 시 버전별 HWP MCP
 
-PR에 기준 PDF가 없지만 원본 HWP/HWPX가 있으면, PDF 업로드 요청보다 먼저 HWP 2020 MCP로 기준 PDF를
-산출한다. client 설치와 환경 준비는 [HWP 2020 MCP 사용법](../mcp_hwp2020Convert_usage.md)을 따른다.
+PR에 기준 PDF가 없지만 원본 HWP/HWPX가 있으면, PDF 업로드 요청보다 먼저 문서를 저장한 한컴오피스
+버전을 확인해 해당 MCP로 기준 PDF를 산출한다. 2022 이하에서 저장한 `.hwp`는
+[HWP 2020 MCP 사용법](../mcp_hwp2020Convert_usage.md)의 `hwp-convert-2020`, 2024에서 저장한 `.hwp`는
+[HWP 2024 MCP 사용법](../mcp_hwp2024Convert_usage.md)의 `hwp-convert-2024`를 사용한다.
+확장자가 같다는 이유로 서비스를 자동 선택하지 않는다.
 
-- 최종 기준 PDF는 output에만 두지 않고 pdf/{원본 stem}-2020.pdf에 저장한다.
+- 최종 기준 PDF는 output에만 두지 않고 2020 계열은 `pdf/{원본 stem}-2020.pdf`, 2024 계열은
+  `pdf/{원본 stem}-2024.pdf`에 저장한다.
 - 50MB 미만 MCP 산출 PDF는 commit 가능한 장기 증적이다. 큰 PDF는 pdf-large와 Git LFS 정책을 따른다.
 - 서버 URL, IP, 인증 token, .env.local 내용은 GitHub issue·PR·review 문서·로그에 기록하지 않는다.
+- 두 원격 서비스는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
 - 원본 크기와 예상 페이지 수를 먼저 확인한다. 페이지가 많거나 거대·중첩 표, 성능 sample은
   timeout_seconds를 900–1800초로 늘린다.
 - VS Code MCP 호출이 timeout되어도 서버 job이 성공했을 수 있다. CLI로 재호출해 로컬 PDF 수신까지 확인한다.
 
-성공 조건은 CLI status success, server run_status 0, validation ok, pdf 아래의 실제 PDF 존재와
-file 또는 pdfinfo 확인이다. review 문서에는 원본 경로·가능하면 SHA-256·출처 URL, PDF 경로·SHA-256,
-MCP job id, run_status·validation·페이지 수, 사용한 visual sweep asset과 지표를 적는다.
+HWP 2020 MCP의 성공 조건은 CLI `status: success`, server `run_status: 0`, `validation: ok`다.
+HWP 2024 MCP는 동기 `status: success` 또는 비동기 `succeeded → success`, client/server byte 수와
+SHA-256 일치를 확인한다. 공통으로 `pdf/` 아래 실제 PDF 존재와 `file` 또는 `pdfinfo` 확인이 필요하다.
+review 문서에는 사용한 서비스 버전, 원본 경로·가능하면 SHA-256·출처 URL, PDF 경로·SHA-256, MCP job id,
+서비스별 status·validation metadata·페이지 수, 사용한 visual sweep asset과 지표를 적는다.
 
 ## 대표 asset과 안정 URL
 
