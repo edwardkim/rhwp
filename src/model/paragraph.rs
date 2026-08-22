@@ -1329,6 +1329,14 @@ impl Paragraph {
         let new_control_mask =
             Self::compute_control_mask_for(&new_text, &new_controls, &new_field_ranges);
 
+        // PARA_HEADER instanceId는 문단별 식별자다. Enter로 만든 문단이 원문 tail을
+        // 그대로 복제하면 동일한 비영 ID가 반복된다. 새 문단의 ID만 초기화하고 뒤의
+        // 변경 추적 suffix는 보존한다. 병합 undo는 `apply_meta`가 원래 tail을 복원한다.
+        let mut new_raw_header_extra = self.raw_header_extra.clone();
+        if new_raw_header_extra.len() >= 10 {
+            new_raw_header_extra[6..10].fill(0);
+        }
+
         Paragraph {
             text: new_text,
             char_offsets: new_char_offsets,
@@ -1351,7 +1359,7 @@ impl Paragraph {
             controls: new_controls,
             ctrl_data_records: new_ctrl_data_records,
             char_count_msb: false,
-            raw_header_extra: self.raw_header_extra.clone(),
+            raw_header_extra: new_raw_header_extra,
             has_para_text: new_has_para_text,
             tab_extended: Vec::new(),
             title_marks: new_title_marks,
