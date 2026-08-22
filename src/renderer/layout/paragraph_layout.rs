@@ -1128,8 +1128,22 @@ fn compute_line_extra_spacing(
     };
 
     if needs_justify {
-        // 양쪽 정렬: 후행 공백 제외한 내부 공백에 분배
-        let all_chars: Vec<char> = comp_line.runs.iter().flat_map(|r| r.text.chars()).collect();
+        // 양쪽 정렬: 후행 공백 제외한 내부 공백에 분배.
+        //
+        // [#5899] 공백은 **그려지는 텍스트**로 센다. `extra_word_spacing` 은
+        // text_measurement 가 표시 텍스트의 공백마다 붙이므로, 모델 텍스트(`run.text`)
+        // 로 세면 분모(내부 공백 수)와 실제 적용 대상이 어긋난다. 머리말/꼬리말
+        // 쪽번호 필드는 #3216 규약대로 모델 1자(공백 placeholder)를 유지하고
+        // `display_text` 만 번호로 바꾸므로, 모델로 세면 `… Inc.` + 공백 75개로
+        // **끝나는 줄**로 보여 슬랙이 내부 공백 2개에만 나뉜다. 그 여분(262.9px)이
+        // 표시 텍스트의 공백 76개 전부에 붙어 쪽번호가 종이 밖 x≈20,163px 로
+        // 밀려났다. 폭(`total_text_width`)·글자수(`total_char_count`)는 이미 표시
+        // 텍스트 기준이라 여기만 축이 달랐다.
+        let all_chars: Vec<char> = comp_line
+            .runs
+            .iter()
+            .flat_map(|r| effective_text_for_metrics(r).chars())
+            .collect();
         let trailing_spaces = all_chars.iter().rev().take_while(|c| **c == ' ').count();
         let visible_count = all_chars.len() - trailing_spaces;
         let interior_spaces = all_chars[..visible_count]
