@@ -259,7 +259,12 @@ pub fn fit_measured_table_to_declared_height(
     // 판정돼 분할되지 않고, 줄들은 그대로 그려진 뒤 셀 clip 이 지운다(4줄 소실, 다음 쪽에
     // 이어지지도 않는다 — #5784).
     //
-    // 그래서 축소가 어느 한 행이라도 자기 내용(패딩 포함) 아래로 내리면 보정을 건너뛴다.
+    // 그래서 축소가 어느 한 행이라도 **글줄 높이 합** 아래로 내리면 보정을 건너뛴다.
+    //
+    // 하한은 패딩을 뺀 순수 내용이다 — 패딩은 눌러도 되고, #1510 이 그 경우다:
+    // `decl=37.3 req=41.1 content=37.3 pad=3.8` 처럼 선언 높이가 패딩을 안 담아
+    // 줄어드는 몫이 정확히 패딩이면 글자는 하나도 안 잘린다. 반면 #5879 는
+    // `decl=541.0 req=589.2 content=585.5` 로 내용 자체가 선언보다 크다.
     // 늘리는 방향(scale >= 1)과 내용을 안 자르는 축소는 종전 그대로다.
     if target_row_sum > 0.0 && current_row_sum > 0.0 {
         let scale = target_row_sum / current_row_sum;
@@ -269,7 +274,7 @@ pub fn fit_measured_table_to_declared_height(
                     .cells
                     .iter()
                     .filter(|cell| cell.row == row && cell.row_span == 1)
-                    .map(|cell| cell.padding_top + cell.total_content_height + cell.padding_bottom)
+                    .map(|cell| cell.total_content_height)
                     .fold(0.0f64, f64::max);
                 floor > 0.0 && fitted.row_heights[row] * scale < floor - 0.5
             });
