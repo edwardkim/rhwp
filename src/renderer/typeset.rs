@@ -3192,6 +3192,71 @@ fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
     ls.tag & 0x80000000 != 0
 }
 
+/// 어울림(비 `treat_as_char`) 개체를 문단이 품고 있는가.
+///
+/// 어울림 밴드 옆으로 흐르는 줄은 앞 문단과 같은 세로 위치를 정당하게 다시 쓰므로,
+/// 저장된 vpos 충돌을 쪽 경계로 읽으면 안 되는 예외다.
+fn para_has_floating_object(para: &Paragraph) -> bool {
+    para.controls.iter().any(|c| {
+        matches!(
+            c,
+            Control::Shape(_) | Control::Table(_) | Control::Picture(_) | Control::Equation(_)
+        ) && !c.is_treat_as_char_object()
+    })
+}
+
+/// 앞뒤 문단이 **둘 다** 단 맨 위(stored vpos 0)를 주장하는가 (#5907).
+///
+/// Task #321 의 단일 단 트리거는 직전 문단의 마지막 줄이 쪽 하단부에 있을 때
+/// (`pv > 5000`) 만 저장 리셋을 인정한다. 그런데 한/글은 쪽 하나에 짧은 문단
+/// 하나만 올린 뒤 쪽을 넘기기도 하고, 그때 직전 문단의 vpos 는 0 이라 트리거가
+/// 침묵한다 — 세 문단이 각각 한 쪽씩 차지하는 `samples/p122.hwp` 가 그 예다.
+///
+/// 앞 문단이 vpos 0 에서 시작해 0 보다 큰 위치에서 끝났는데 바로 다음 문단이 다시
+/// vpos 0 을 주장하면 두 문단은 같은 단에 함께 놓일 수 없다. 넘침이 사유가 아니어서
+/// rhwp 자체 흐름으로는 재현되지 않으므로 저장값을 그대로 신뢰한다.
+///
+/// 오탐을 막기 위해 두 문단이 같은 단 기하(`column_start`/`segment_width`)를 쓰고,
+/// 어울림 개체가 없으며, 양쪽 LINE_SEG 가 합성본이 아닌 경우로만 좁힌다.
+fn stored_vpos_top_collision(prev: &Paragraph, curr: &Paragraph) -> bool {
+    if para_has_floating_object(prev) || para_has_floating_object(curr) {
+        return false;
+    }
+    // 앞 문단이 실제로 무언가를 담고 단 맨 위를 차지했어야 한다. 내용도 컨트롤도 없는
+    // 빈 문단이 줄줄이 이어지는 문서 말미(#1663 자리차지 표 뒤 trailing 빈 문단)는
+    // 저장 vpos 0 이 그대로 남아 있을 뿐 쪽 경계가 아니다.
+    if !para_has_visible_text(prev) && prev.controls.is_empty() {
+        return false;
+    }
+
+    let real = |ls: &&LineSeg| !is_synthetic_line_seg(ls);
+    let (Some(prev_first), Some(prev_last), Some(curr_first)) = (
+        prev.line_segs.iter().find(real),
+        prev.line_segs.iter().rev().find(real),
+        curr.line_segs.iter().find(real),
+    ) else {
+        return false;
+    };
+
+    // 저장된 조판에서 온 실제 줄 세그먼트여야 한다. 프로그램으로 만든 문단
+    // (`LineSeg::default()` + line_height 만 채운 합성 IR)은 vpos·tag·segment_width 가
+    // 모두 0 이라 "전부 단 맨 위" 로 보이므로, 그런 IR 에는 이 규칙을 적용하지 않는다.
+    let parsed_seg = |ls: &LineSeg| {
+        ls.tag & LineSeg::TAG_FIRST_SEGMENT != 0 && ls.segment_width > 0 && ls.line_height > 0
+    };
+    if !parsed_seg(prev_first) || !parsed_seg(prev_last) || !parsed_seg(curr_first) {
+        return false;
+    }
+
+    // 앞 문단이 통째로 단 맨 위 한 줄에 있었고(첫 줄·마지막 줄 모두 vpos 0),
+    // 0 보다 아래에서 끝났는데 다음 문단이 다시 맨 위를 주장한다.
+    prev_first.vertical_pos == 0
+        && prev_last.vertical_pos == 0
+        && curr_first.vertical_pos == 0
+        && prev_last.column_start == curr_first.column_start
+        && prev_last.segment_width == curr_first.segment_width
+}
+
 /// Returns only the measured-row slack that remains below a saved native
 /// RowBreak first-fragment flow frame. Both bounds are absolute page flow
 /// coordinates; host-before spacing and paint-only vertical insets are not
@@ -6990,6 +7055,16 @@ impl TypesetEngine {
                         && para.controls.is_empty()
                         && para_has_visible_text(para)
                         && next_heading_after_top_content_reset;
+                    // [#5907] 앞뒤 문단이 둘 다 stored vpos 0 을 주장하는 충돌.
+                    // `pv > 5000` 기준은 "직전 문단이 쪽 하단부에 있었다"를 전제하는데,
+                    // 한/글이 짧은 문단 하나만 올리고 쪽을 넘긴 경우 pv 는 0 이라 침묵한다.
+                    // 같은 단 기하 + 어울림 개체 없음 + 문단 자체 나누기 없음으로 좁힌다.
+                    let stored_top_collision_reset = st.col_count == 1
+                        && cv == 0
+                        && para.column_type == ColumnBreakType::None
+                        && st.wrap_around_cs < 0
+                        && !para_is_page_bottom_fixed_table_anchor(para)
+                        && stored_vpos_top_collision(prev_para, para);
                     let trigger = if st.col_count > 1 {
                         if is_distribute {
                             cv < prev_vpos_end && prev_vpos_end > 0
@@ -7003,6 +7078,7 @@ impl TypesetEngine {
                             && !para_is_page_bottom_fixed_table_anchor(para))
                             || near_page_top_reset
                             || native_near_top_reset
+                            || stored_top_collision_reset
                     };
                     // [#2279 OMIT-fit] spacing-누락 문서군에서 fresh 재계산이 직전
                     // 쪽에서 밀어낸 빈 문단만 담긴 쪽에는 저장 리셋 경계를 적용하지
@@ -24699,6 +24775,10 @@ impl TypesetEngine {
     /// 쪽을 거의 채우면 그 vpos가 빈 문단을 새 물리 쪽으로 보낼 수 있지만, 한컴
     /// 출력은 이를 새 빈 쪽으로 인쇄하지 않는다. 여기서 앞 쪽의 실내용/의도적인
     /// 페이지 나누기와 가시 control은 절대 제거하지 않는다.
+    ///
+    /// [#5907] 앞뒤 문단이 둘 다 stored vpos 0 을 주장해 열린 쪽도 보존한다 —
+    /// 넘침 잔재가 아니라 한/글이 저장한 쪽 경계 그 자체이므로, 한/글도 그 빈 쪽을
+    /// 인쇄한다 (`samples/p122.hwp` 3쪽, 정본 `pdf/p122-2022.pdf`).
     fn discard_terminal_blank_only_page(pages: &mut Vec<PageContent>, paragraphs: &[Paragraph]) {
         if pages.len() <= 1 {
             return;
@@ -24724,8 +24804,13 @@ impl TypesetEngine {
                     .replace(|ch: char| ch.is_control(), "")
                     .trim()
                     .is_empty();
+                let opened_by_stored_vpos_reset = *para_index > 0
+                    && paragraphs
+                        .get(*para_index - 1)
+                        .is_some_and(|prev| stored_vpos_top_collision(prev, para));
                 no_visible_text
                     && para.controls.is_empty()
+                    && !opened_by_stored_vpos_reset
                     && !matches!(
                         para.column_type,
                         ColumnBreakType::Page | ColumnBreakType::Section
