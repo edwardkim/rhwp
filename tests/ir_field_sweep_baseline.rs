@@ -33,7 +33,8 @@
 //!
 //! ```text
 //! RHWP_IR_SWEEP_DUMP=tests/fixtures/ir_field_sweep_baseline.tsv \
-//!   cargo test --profile release-test --test ir_field_sweep_baseline -- --nocapture
+//!   cargo test --profile release-test --test regression_suite_014 \
+//!   ir_field_sweep_baseline::ir_field_sweep_does_not_regress -- --nocapture
 //! ```
 //!
 //! ## CI 범위 — 전체 코퍼스가 기본값

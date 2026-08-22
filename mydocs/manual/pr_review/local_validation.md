@@ -360,9 +360,14 @@ draft 해제 전에 **두 baseline 절차**를 수행한다: ① IR field sweep(
 ~~~bash
 RHWP_IR_SWEEP_DUMP=/tmp/ir_field_sweep_current.tsv \
   cargo test --locked --profile release-test \
-  --test ir_field_sweep_baseline -- --nocapture
+  --test regression_suite_014 \
+  ir_field_sweep_baseline::ir_field_sweep_does_not_regress -- --nocapture
 diff -u tests/fixtures/ir_field_sweep_baseline.tsv /tmp/ir_field_sweep_current.tsv
 ~~~
+
+`ir_field_sweep_baseline.rs`는 standalone Cargo test target이 아니라 generated
+`regression_suite_014`에 포함된다. 따라서 독립 target을 지정하지 않고 위 module filter로
+실행한다. generated suite 파일 자체는 review 산출물이므로 수정하거나 stage하지 않는다.
 
 - baseline은 fixture 목록이 아니라 관측된 비영 왕복 발산의 래칫이다. 발산이 없으면 행을 억지로 추가하지 않는다.
 - 새 발산은 먼저 RHWP_IR_SWEEP_DETAIL로 원본값·재생성값을 확인한다. 의도된 정규화임을 증명한 경우에만
