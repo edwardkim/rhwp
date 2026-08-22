@@ -282,7 +282,16 @@ pub fn build_cfb_with_root_clsid(
         difat_count,
     );
 
-    // 디렉토리 엔트리 작성
+    // 디렉토리 엔트리 작성. 마지막 디렉토리 섹터의 빈 슬롯은 object type 0인
+    // unallocated entry이면서 sibling/child ID가 모두 NOSTREAM이어야 한다.
+    for i in entries.len()..dir_sectors * ENTRIES_PER_DIR_SECTOR {
+        let sector_idx = i / ENTRIES_PER_DIR_SECTOR;
+        let entry_in_sector = i % ENTRIES_PER_DIR_SECTOR;
+        let offset = 512 + sector_idx * SECTOR_SIZE + entry_in_sector * DIR_ENTRY_SIZE;
+        output[offset + 68..offset + 72].copy_from_slice(&NOSTREAM.to_le_bytes());
+        output[offset + 72..offset + 76].copy_from_slice(&NOSTREAM.to_le_bytes());
+        output[offset + 76..offset + 80].copy_from_slice(&NOSTREAM.to_le_bytes());
+    }
     for (i, entry) in entries.iter().enumerate() {
         let sector_idx = i / ENTRIES_PER_DIR_SECTOR;
         let entry_in_sector = i % ENTRIES_PER_DIR_SECTOR;
@@ -305,8 +314,17 @@ pub fn build_cfb_with_root_clsid(
             .copy_from_slice(&entries[0].data);
     }
 
-    // 미니 FAT 작성
+    // 미니 FAT 작성. 할당되지 않은 슬롯은 FREESECT여야 한다. 출력 버퍼의
+    // 기본값 0은 관대한 파서에서는 통과하지만 strict CFB 검증에서는 실제
+    // sector 0을 가리키는 값으로 해석된다.
     if mini_fat_start != ENDOFCHAIN {
+        for sector_idx in 0..mini_fat_sector_count as usize {
+            let sector_base = 512 + (mini_fat_start as usize + sector_idx) * SECTOR_SIZE;
+            for entry_idx in 0..FAT_ENTRIES_PER_SECTOR {
+                let offset = sector_base + entry_idx * 4;
+                output[offset..offset + 4].copy_from_slice(&FREESECT.to_le_bytes());
+            }
+        }
         for (i, &mf) in mini_fat.iter().enumerate() {
             let sector_idx = i / FAT_ENTRIES_PER_SECTOR;
             let entry_in_sector = i % FAT_ENTRIES_PER_SECTOR;
@@ -316,7 +334,15 @@ pub fn build_cfb_with_root_clsid(
         }
     }
 
-    // FAT 작성
+    // FAT 작성. 마지막 FAT 섹터의 total_sectors 뒤 미사용 슬롯도 FREESECT로
+    // 초기화해야 한다.
+    for sector_idx in 0..fat_count as usize {
+        let sector_base = 512 + (fat_start as usize + sector_idx) * SECTOR_SIZE;
+        for entry_idx in 0..FAT_ENTRIES_PER_SECTOR {
+            let offset = sector_base + entry_idx * 4;
+            output[offset..offset + 4].copy_from_slice(&FREESECT.to_le_bytes());
+        }
+    }
     for (i, &fat_entry) in fat.iter().enumerate() {
         let fat_sector_idx = i / FAT_ENTRIES_PER_SECTOR;
         let entry_in_sector = i % FAT_ENTRIES_PER_SECTOR;
