@@ -7,11 +7,11 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
     tools.extend([
         tool(
             "hwp_info",
-            "HWP/HWPX/HML 문서의 메타데이터(포맷·구역/페이지/문단 수·폰트·제목)를 조회한다. 문서를 열기 전에 규모와 형식을 파악할 때 쓴다.",
+            "HWP/HWPX/HML 문서의 메타데이터(포맷·마지막 저장 제품·구역/페이지/문단 수·폰트·제목)를 조회한다. 문서를 열기 전에 규모와 형식을 파악할 때 쓴다.",
             path_schema(serde_json::json!({})),
             "info",
             serde_json::json!(["info", "--json", "{path}"]),
-            &["format", "sizeBytes", "sections", "pageCount", "paraCount", "fonts", "title", "warnings"],
+            &["format", "sizeBytes", "sections", "pageCount", "paraCount", "fonts", "title", "lastSavedWith", "warnings"],
         ),
         tool(
             "hwp_word_count",

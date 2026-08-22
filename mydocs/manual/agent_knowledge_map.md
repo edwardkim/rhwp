@@ -24,7 +24,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
 | 표면 규모 | CLI 명령 **98개**(그중 `--json` 계약 **65개**, batch 축 **9개**) · MCP 도구 **181개**(무상태 163 + 세션 전용 18) |
-| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **324개** · §2 전수 사전 **332개**(자기서술 밖 실측·참조 필드 포함) |
+| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **325개** · §2 전수 사전 **333개**(자기서술 밖 실측·참조 필드 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
 **재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.
@@ -56,7 +56,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 하려는 일 | 명령 (MCP 도구) | 판정 필드 | 권위 |
 |---|---|---|---|
 | 요청에 어떤 스킬이 필요한가 | `python tools/skill_router/route.py "<요청>" --json` | `intent`·`requiredCapabilities`·`skillSelection`·`executionGraph` | [스킬 라우터](agent_skill_router.md) |
-| 규모·형식 파악 | `info --json` (`hwp_info`) | `format`·`pageCount`·`paraCount` | [CLI 매뉴얼](cli_commands.md) §info |
+| 규모·형식 파악 | `info --json` (`hwp_info`) | `format`·`pageCount`·`paraCount`·`lastSavedWith` | [CLI 매뉴얼](cli_commands.md) §info |
 | 한 호출로 전체 감 잡기 | `digest --json` (`hwp_digest`) | `outline`·`excerpt`·`nextStep` | [초소형 모델 매크로](../tech/tiny_model_macro_tools.md) |
 | 절 단위로 훑기 | `digest --sections --json` | `sections[]`·`sectionsMode` | 같은 문서 |
 | 쪽 범위만 발췌 | `digest --pages a..b --json` | `pages{from,to}`·`nextStep` | 같은 문서 |
@@ -302,10 +302,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 332개 필드
+### 2-2. 전수 사전 — 333개 필드
 
-`capabilities` 의 `recordFields` 고유 **324개**와 그 밖의 실측·참조 필드를 합친
-332개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **325개**와 그 밖의 실측·참조 필드를 합친
+333개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -380,6 +380,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `headersFooters` | array | 머리말/꼬리말 목록 `{sectionIdx,isHeader,applyTo,label}` | `headers-footers` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
+| `lastSavedWith` | object\|null | HWP5 `HwpSummaryInformation.revisionNumber`에서 읽은 마지막 저장 제품 `{product,version,confidence}`. `product`는 알려진 주버전만 `hancom-office-2018`·`hancom-office-2022`·`hancom-office-2024`로 분류하고, 알 수 없는 주버전은 `null`; HWP3/HWPX, 요약정보 부재·손상은 필드 전체가 `null`. 원 작성 제품이 아니라 수정 가능한 마지막 저장 메타데이터다 | `info` |
 | `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |
 | `summary` | string | 사람용 여러 줄 요약(형식·쪽수·표·누름틀·각주) — **문서 파생** | `explain` |
 | `encrypted` | bool | 암호화 문서 여부 | `explain` |

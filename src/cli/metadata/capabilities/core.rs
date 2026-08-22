@@ -5,7 +5,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         // ── 기계 계약(--json) 명령 ──
         cmd_json(
             "info",
-            "문서 메타(포맷·버전·페이지/문단 수·폰트·제목) 표시",
+            "문서 메타(포맷·버전·마지막 저장 제품·페이지/문단 수·폰트·제목) 표시",
             &["--json"],
             &[
                 "schemaVersion",
@@ -18,6 +18,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "paraCount",
                 "fonts",
                 "title",
+                "lastSavedWith",
                 "warnings",
             ],
         ),
