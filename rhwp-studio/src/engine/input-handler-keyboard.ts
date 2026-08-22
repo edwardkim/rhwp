@@ -1,4 +1,4 @@
-/** input-handler keyboard methods — extracted from InputHandler class */
+﻿/** input-handler keyboard methods — extracted from InputHandler class */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { InsertTextCommand, InsertLineBreakCommand, InsertTabCommand, SplitParagraphCommand, SplitParagraphInCellCommand, InsertTextInHeaderFooterCommand, SplitParagraphInHeaderFooterCommand, SplitParagraphInFootnoteCommand, DeleteTextInFootnoteCommand, MergeParagraphInFootnoteCommand, cellParaIndexOf } from './command';
@@ -288,7 +288,7 @@ function positionAfterPasteResult(pos: DocumentPosition, parsed: any): DocumentP
 
 function pastePlainText(this: any, text: string, hasSelection: boolean): void {
   if (hasSelection) {
-    this.deleteSelection();
+    this.deleteSelection({ deferRecord: true });
   }
   if (!text) return;
 
@@ -1744,7 +1744,7 @@ export function onPaste(this: any, e: ClipboardEvent): void {
     // 컨트롤(개체) 붙여넣기 — 본문에서만 허용
     if (this.wasm.clipboardHasControl() && pos.parentParaIndex === undefined) {
       this.executeOperation({ kind: 'snapshot', operationType: 'pasteControl', operation: (wasm: WasmBridge) => {
-        if (hasSelection) this.deleteSelection();
+        if (hasSelection) this.deleteSelection({ deferRecord: true });
         const p = this.cursor.getPosition();
         const result = wasm.pasteControl(p.sectionIndex, p.paragraphIndex, p.charOffset);
         const parsed = JSON.parse(result);
@@ -1764,7 +1764,7 @@ export function onPaste(this: any, e: ClipboardEvent): void {
     // 내부 클립보드 텍스트 붙여넣기 (서식 보존)
     this.executeOperation({ kind: 'snapshot', operationType: 'pasteInternal', operation: (wasm: WasmBridge) => {
       this.pastedFieldEndOutsidePending = false;
-      if (hasSelection) this.deleteSelection();
+      if (hasSelection) this.deleteSelection({ deferRecord: true });
       const p = this.cursor.getPosition();
       let result: string;
       if (isNestedCellPosition(p)) {
@@ -1809,7 +1809,7 @@ export function onPaste(this: any, e: ClipboardEvent): void {
   // 외부 클립보드: HTML이 있으면 pasteHtml로 표/서식 보존 붙여넣기
   if (html) {
     this.executeOperation({ kind: 'snapshot', operationType: 'pasteHtml', operation: (wasm: WasmBridge) => {
-      if (hasSelection) this.deleteSelection();
+      if (hasSelection) this.deleteSelection({ deferRecord: true });
       const p = this.cursor.getPosition();
       let result: string;
       if (isNestedCellPosition(p)) {
