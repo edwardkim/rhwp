@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: local-validated-pending-push
+status: trailing-docs-pending-ci
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-22
 ---
@@ -87,8 +87,23 @@ GitHub 상태값은 작성 시점 참고값이며, merge 전 최신 source head�
 모든 Cargo 검증은 `--locked`로 실행했다. 초기 검토 중 `--locked` 없이 실행해 발생했던
 `Cargo.lock`의 순서-only 변경은 즉시 되돌렸으며 현재 diff에 포함되지 않는다.
 
+## GitHub CI 실측 결과
+
+code candidate `4ba01d160555e65029b7ceaa36be1f65d0cd3833`의 첫 실행은 작성자의
+`FIRST_TIME_CONTRIBUTOR` 보호 정책으로 `action_required`가 되었고, reviewer `@jangster77`이
+현재 head에 대해 workflow를 승인했다. 동일 head의 두 번째 attempt에서 다음이 성공했다.
+
+- Build & Test, archive A/B/C build 및 shard A1/A2/B/C, Lint
+- CodeQL Rust, Python, JavaScript/TypeScript
+- Adapter inter-diff와 Proptest roundtrip
+- CI·CodeQL·Adapter·Proptest preflight
+
+Native Skia, WASM Build, frontend package/unit gates는 변경 범위 정책에 따른 skip이며 실패 검사는 없다.
+작성 시점 PR은 `MERGEABLE`, `CLEAN`이다. 이 trailing docs-only commit의 최신 head와 fast-pass는
+merge 직전에 다시 확인한다.
+
 ## 최종 판정
 
-**수용 권고, push 전.** 원 PR head 자체는 ID 충돌 때문에 그대로 merge할 수 없지만, maintainer
-보정과 공개 회귀시험은 로컬에서 통과했다. 아직 이 보정은 remote head에 없으므로, 커밋·push 뒤
-새 code head의 Full CI, CodeQL 및 필수 check를 다시 확인한 뒤에만 merge한다.
+**수용 권고, trailing CI 대기.** 원 PR head 자체의 ID 충돌은 maintainer 보정과 공개 회귀시험으로
+해소됐고, 보정 code candidate의 로컬 검증과 GitHub Full CI·CodeQL이 모두 성공했다. 이 기록 commit이
+허용된 review-only fast-pass를 통과하고 최신 head가 `CLEAN`이면 merge한다.

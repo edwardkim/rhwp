@@ -1,6 +1,6 @@
 ---
 kind: pr-review-implementation
-status: local-validated-pending-push
+status: trailing-docs-pending-ci
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-22
 ---
@@ -41,7 +41,7 @@ last_verified: 2026-08-22
 
 ## 다음 절차와 복구
 
-이 문서와 검토 문서는 오늘할일과 함께 별도 기록 commit으로 만들고, source PR head에 fast-forward
-push한다. code 또는 test 보정이 포함되므로 fast-pass를 적용하지 않고 새 head의 Full CI와 CodeQL을
-확인한다. 보정이 수용되지 않으면 maintainer가 추가한 commit만 revert하고 contributor source commit은
-그대로 보존한다.
+code/test 보정과 첫 기록 commit은 source PR head에 fast-forward push했고, code candidate의 Full CI와
+CodeQL을 확인했다. 현재 trailing docs-only commit은 그 실측 결과를 고정하는 단계이며, fast-pass와
+최신 `CLEAN` 상태를 확인한 뒤 merge한다. 보정이 수용되지 않으면 maintainer가 추가한 commit만 revert하고
+contributor source commit은 그대로 보존한다.
