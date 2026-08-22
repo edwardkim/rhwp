@@ -3266,6 +3266,16 @@ impl LayoutEngine {
             if let Some((_, _, font_size)) = empty_no_lineseg_metrics {
                 max_fs = font_size;
             }
+            // [#5854] 통짜 합성 사다리 문서의 빈 문단은 조합 줄에 run 이 하나도 없어
+            // 위 fold 가 0 을 준다. 조판(typeset)은 이미 `composed_line_max_font_size`
+            // 로 저장 글자모양을 보조 근거로 쓰므로, 렌더도 같은 근거를 써야 두 경로의
+            // 줄 진행이 갈라지지 않는다.
+            let uniform_filler_ladder = self.uniform_filler_ladder.get();
+            if uniform_filler_ladder && max_fs <= 0.0 {
+                if let Some(p) = para {
+                    max_fs = crate::renderer::composed_line_max_font_size(comp_line, p, styles);
+                }
+            }
             let mut line_tac_offsets = tac_offsets_for_line(composed, &tac_offsets_px, line_idx);
             if let Some(offsets) =
                 repeated_empty_tac_line_offset(composed, &tac_offsets_px, line_idx)
@@ -3316,6 +3326,14 @@ impl LayoutEngine {
             let (line_height, line_spacing_px) = empty_no_lineseg_metrics
                 .map(|(line_height, line_spacing_px, _)| (line_height, line_spacing_px))
                 .unwrap_or_else(|| {
+                    // [#5854] 통짜 합성 사다리는 저장 `line_height` 가 글자 크기보다
+                    // 크든 작든 실측이 아니다 — 조판(typeset)과 같은 규칙으로 항상
+                    // 글꼴·문단 스타일에서 다시 뽑는다.
+                    if uniform_filler_ladder && max_fs > 0.0 && !text_before_picture_line {
+                        return crate::renderer::corrected_line_metrics(
+                            0.0, 0.0, max_fs, ls_type, ls_val,
+                        );
+                    }
                     crate::renderer::corrected_line_metrics_for_source(
                         raw_lh,
                         raw_text_height,
