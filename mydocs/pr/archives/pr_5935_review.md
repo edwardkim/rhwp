@@ -13,9 +13,9 @@ last_verified: 2026-08-23
 | --- | --- |
 | PR / 작성자 | [#5935](https://github.com/edwardkim/rhwp/pull/5935) / [@jangster77](https://github.com/jangster77) |
 | 관련 issue | [#5934](https://github.com/edwardkim/rhwp/issues/5934) |
-| base / code candidate | `devel` `61e4390436644d306bd2e0402bc24d841066b671` / `14432bd356a8d7a3f95049a580bfc2711313cca2` |
-| 변경 규모 | 4 files, +5 / -2 |
-| 작성 시점 상태 | non-draft, `MERGEABLE`, `BLOCKED` (GitHub required checks 진행 중) |
+| base / code candidate | `devel` `61e4390436644d306bd2e0402bc24d841066b671` / `152bcbe8fcc611bba6d042a332ac79fbaa18f0cf` |
+| code candidate 변경 규모 | 11 files, +26 / -4 |
+| 작성 시점 상태 | non-draft; 새 code candidate의 GitHub required checks는 trailing push 뒤 재확인 필요 |
 | reviewer | 작성자 본인 self-review, 별도 reviewer 미지정 |
 
 GitHub mergeability와 CI 상태는 작성 시점 참고값이다. 이 trailing 기록 commit의 최신 head가
@@ -28,16 +28,38 @@ required check를 통과하고 작업지시자가 승인한 뒤에만 merge한�
 - 기존 2018/2022/2024 분류와 알 수 없는 주 버전의 `product:null` 동작은 유지한다.
 - CLI 매뉴얼과 에이전트 지식 지도의 `lastSavedWith` 설명을 2010 범위까지 갱신했다.
 
-renderer, layout, sample 파일, 기준 PDF는 바뀌지 않았다. 기존 fixture를 읽는 JSON 계약 변경이므로
-시각 검증은 요구하지 않았다.
+renderer, layout, 기준 PDF는 바뀌지 않았다. 아래의 저장 버전 증적 sample만 추가했으며,
+JSON 메타데이터 계약 변경이므로 시각 검증은 요구하지 않았다.
+
+## 원본 증적 fixture
+
+한컴오피스별 새 저장본 네 개를 `samples/pr5935/`에 바이트 보존하고 계약 테스트에 직접 추가했다.
+
+| 파일 | `revisionNumber` | SHA-256 |
+| --- | --- | --- |
+| `samples/pr5935/test-2010.hwp` | `8.0.0.466` | `a448aea8bb18299ab2e391ede290dd46ebe65174b543a5b8551ed7447db5a635` |
+| `samples/pr5935/test-2018.hwp` | `10.0.0.5060` | `7abedd9239954e40bbf46e834e2d17caa81adf35acd176a49965eed87981d465` |
+| `samples/pr5935/test-2022.hwp` | `12.0.0.4605` | `5df570e17e3ba0a716da2ad2f149c963a778cfa9e10b905f00218b9cf2b28a70` |
+| `samples/pr5935/test-2024.hwp` | `13.0.0.3379` | `91a4f0cec582df4d21c2eced423482e6307aafd998639ac32c57f55ae56e740e` |
+
+이 변경은 metadata parser와 CLI 계약만 검증하며 renderer 출력 비교를 주장하지 않는다. 새 fixture의
+IR field sweep과 overflow-cell 원장 결과는 아래 로컬 검증에 기록한다.
+
+overflow-cell 원장은 새 `samples/pr5935/` fixture에 0행을 기록했다. 반복 실행에서 동일하게 확인된
+기존 감소도 원장에 반영했다: `issue3637/regulatory_impact_nested_table_escape.hwpx`의 8행은 해소됐고,
+`task2097/75544_pii_bunseok.hwpx`는 19행에서 2행으로 감소했다. parser 변경이나 새 저장 버전 fixture가
+renderer 동작을 바꾼 결과로 해석하지 않으며, 감소분만 래칫으로 조였다.
 
 ## 로컬 검증
 
-- `node scripts/run-rust-test.mjs info_hancom_save_version_contract -- --locked --cargo-profile release-test --target-dir target/pr-review`를 통과했다.
-  - HWP 2010/2018/2022/2024 fixture는 각각 대응하는 `lastSavedWith.product`와 버전을 반환했다.
+- `node scripts/run-rust-test.mjs info_hancom_save_version_contract -- --locked --cargo-profile release-test --target-dir target/pr-review`를 exit code 0으로 통과했다.
+  - 기존 fixture와 `samples/pr5935/`의 새 저장 HWP 2010/2018/2022/2024는 각각 대응하는 `lastSavedWith.product`와 버전을 반환했다.
   - HWP3와 HWPX는 `lastSavedWith:null`을 유지했다.
-- 한컴오피스 2010으로 새로 저장한 별도 HWP 표본도 `8.0.0.466`과 `hancom-office-2010`을 반환했다.
-- `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast`를 exit code 0으로 통과했다.
+- `RHWP_IR_SWEEP_DUMP=/tmp/pr5935_ir_field_sweep_current.tsv cargo test --locked --profile release-test --target-dir target/pr-review --test regression_suite_014 ir_field_sweep_baseline::ir_field_sweep_does_not_regress -- --nocapture`를 통과했다.
+  - 903건(3 skipped), 519개 발산 경로, 총 238,920건을 측정했고 기준 TSV와 diff가 없었다.
+- `RHWP_OVERFLOW_CELL_DUMP=/tmp/pr5935_overflow_cell_current.tsv cargo test --locked --profile release-test --target-dir target/pr-review --test overflow_cell_baseline -- --nocapture`를 두 번 통과했다.
+  - 두 dump는 동일했고, 785건(3 skipped), 14개 문서, 총 546줄이며 갱신한 기준 TSV와 diff가 없었다.
+- `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast`를 fixture 추가 뒤 exit code 0으로 통과했다.
 - `cargo clippy --locked --all-targets --target-dir target/pr-review -- -D warnings`,
   `cargo fmt --all -- --check`, `git diff --check`를 통과했다.
 - `node scripts/rust-test-suite-manifest.mjs --prepare` 및 `--check`,
