@@ -899,6 +899,13 @@ pub struct TableCellNode {
     pub text_direction: u8,
     /// 셀 콘텐츠를 bounding box로 클리핑 (분할 행 셀에서 사용)
     pub clip: bool,
+    /// [#5862] 이 셀이 **쪽 분할 조각**인가 (`table_partial` 경로에서 만든 셀).
+    ///
+    /// 조각 셀의 clip 은 괘선이 아니라 **쪽 컷**이 정한 값이라, 컷 부기와 실제
+    /// 조판이 어긋나면 조각이 이미 배치한 글줄이 clip 밖에 남는다. 일반 셀의
+    /// clip 은 괘선 그 자체이므로 같은 보정을 적용하면 글자가 아래 칸을 침범한다.
+    /// 두 경우를 렌더 트리에서 구분하려고 둔 표식이다.
+    pub page_fragment: bool,
     /// 모델 cells 배열 내 인덱스 (getTableCellBboxes에서 resize용)
     pub model_cell_index: Option<u32>,
 }

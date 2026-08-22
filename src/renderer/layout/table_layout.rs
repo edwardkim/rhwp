@@ -953,6 +953,41 @@ fn reconstruct_nested_table_descendant_fragment_frames(
     }
 }
 
+/// [#5862] 쪽 분할 조각 셀이 **자기가 배치한 직계 글줄**을 clip 밖에 남기지 않게 한다.
+///
+/// 조각 셀의 clip 높이는 괘선이 아니라 쪽 컷 부기(`start_cut`/`end_cut`)가 정한다.
+/// 그 부기와 실제 조판 배치가 어긋나면 조각이 이미 자기 자식으로 붙인 마지막 글줄이
+/// clip 아래로 내려간다. 그 줄은 **다음 쪽이 다시 그리지도 않으므로** 어느 쪽에도
+/// 남지 않는다 — `samples/hwpx_sample2.hwp` 8쪽에서 clip 바닥 985.7 대 직계 글줄
+/// 바닥 1,018.2 로 `[청약신청주택] … 관리번호 …` 한 줄이 통째로 사라졌다(그 구간 잉크
+/// rhwp 0px / 한글 2024 정본 2,946px).
+///
+/// 세 겹으로 좁힌다.
+/// 1. `page_fragment` 셀만 — 일반 셀의 clip 은 괘선 그 자체라 넘기면 아래 칸을 침범한다.
+/// 2. **직계 `TextLine`** 만 — 중첩 표 자손은 다음 쪽 조각일 수 있다(#5863 이 억제한다).
+/// 3. 이미 배치된 것만 보이게 할 뿐, 새 콘텐츠를 만들지도 옮기지도 않는다.
+///
+/// 같은 파일의 `extend_clipped_cell_vertical_clip_to_nearby_nested_table_borders`(테두리
+/// stroke 포섭)와 같은 결의 보정이다.
+fn expand_page_fragment_clip_to_own_text_lines(node: &mut RenderNode) {
+    let RenderNodeType::TableCell(meta) = &node.node_type else {
+        return;
+    };
+    if !meta.clip || !meta.page_fragment {
+        return;
+    }
+    let clip_bottom = node.bbox.y + node.bbox.height;
+    let owned_bottom = node
+        .children
+        .iter()
+        .filter(|child| child.visible && matches!(child.node_type, RenderNodeType::TextLine(_)))
+        .map(|child| child.bbox.y + child.bbox.height)
+        .fold(clip_bottom, f64::max);
+    if owned_bottom > clip_bottom + NESTED_FRAGMENT_EDGE_EPSILON_PX {
+        node.bbox.height = owned_bottom - node.bbox.y;
+    }
+}
+
 /// Repair the frame and source-flow seam of a true nested-table continuation.
 ///
 /// A direct nested table keeps its document-global coordinates even when its
@@ -992,6 +1027,7 @@ fn repair_clipped_nested_table_fragment_frame(
     let clip_bottom = node.bbox.y + node.bbox.height;
     repair_clipped_cell_text_table_seam(node, suppress_bottom_text_residue);
     suppress_future_nested_table_border_residue(node, clip_bottom);
+    expand_page_fragment_clip_to_own_text_lines(node);
     for table_index in 0..node.children.len() {
         if !node.children[table_index].visible
             || !matches!(
@@ -6337,6 +6373,7 @@ impl LayoutEngine {
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
                     clip: true,
+                    page_fragment: false,
                     model_cell_index: Some(cell_idx as u32),
                 }),
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
