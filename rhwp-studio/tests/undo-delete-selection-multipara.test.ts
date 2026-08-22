@@ -35,10 +35,13 @@ function classBlock(src: string, name: string): string {
 
 const block = classBlock(commandSrc, 'DeleteSelectionCommand');
 
-test('undo 는 스냅샷 복원에 위임한다', () => {
-  assert.match(block, /new SnapshotCommand\('deleteSelection'/, '스냅샷 커맨드에 위임');
-  assert.match(block, /undo\(wasm: WasmBridge\): DocumentPosition \{\s*\n\s*return this\.snapshot\.undo\(wasm\);/,
-    'undo 는 스냅샷 복원만 한다');
+test('undo 는 조각 복원또는 스냅샷 복원에 위임한다', () => {
+  // [#5769] 비셀 선택은 조각 경로, 셀 선택은 스냅샷 경로 — 둘 중 하나를 쓴다.
+  assert.match(block, /FragmentDeleteCommand|new SnapshotCommand\('deleteSelection'/,
+    '조각 또는 스냅샷 커맨드에 위임');
+  assert.match(block,
+    /undo\(wasm: WasmBridge\): DocumentPosition \{[\s\S]{0,300}?return this\.(fragment|snapshot)[\s\S]{0,20}\?\.undo\(wasm\)|this\.snapshot!\.undo\(wasm\)/,
+    'undo 는 조각또는 스냅샷 복원만 한다');
 });
 
 test('스냅샷 커서 인자는 (cursorBefore=end, cursorAfter=start) 순서다', () => {
@@ -72,10 +75,10 @@ test('undo 가 텍스트 재조립으로 되돌아가지 않는다', () => {
 });
 
 test('스냅샷 예산에 참여한다', () => {
-  // 위임만 하고 snapshotResourceCount/discard 를 안 넘기면 히스토리가 이 커맨드의 WASM
-  // 스냅샷 id 를 세지 못해 예산이 어긋나고, 축출 시 id 가 반환되지 않아 누수된다(#2328).
-  assert.match(block, /snapshotResourceCount\(\): number \{\s*\n\s*return this\.snapshot\.snapshotResourceCount\(\);/,
-    'id 개수 위임');
-  assert.match(block, /discard\(wasm: WasmBridge\): void \{\s*\n\s*this\.snapshot\.discard\(wasm\);/,
-    'discard 위임');
+  // [#5769] 비셀은 조각으로 0 슬롯, 셀은 스냅샷으로 위임 — 어느 쪽이든
+  // 히스토리가 리소스를 세고 해제할 수 있어야 한다.
+  assert.match(block, /snapshotResourceCount\(\): number \{[\s\S]{0,200}?(this\.fragment|this\.snapshot)/,
+    'id 개수 위임(조각또는 스냅샷)');
+  assert.match(block, /discard\(wasm: WasmBridge\): void \{[\s\S]{0,200}?(this\.fragment|this\.snapshot)/,
+    'discard 위임(조각또는 스냅샷)');
 });
