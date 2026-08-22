@@ -25,6 +25,7 @@ pub mod doc_info;
 pub mod header;
 pub mod hml;
 pub mod hwp3;
+pub mod hwp_summary;
 pub mod hwpx;
 pub mod ingest;
 pub mod ole_container;
