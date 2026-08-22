@@ -2,7 +2,7 @@
 kind: report
 status: completed
 canonical: mydocs/plans/task_m100_3514.md
-last_verified: 2026-08-20
+last_verified: 2026-08-21
 ---
 
 # Task M100 #3514 Stage 5 — 최신 devel 정합화·재검증
@@ -55,9 +55,9 @@ Stage 5에서는 기능 코드를 추가하지 않고 다음 정합화 문서만
 | Actual Chrome | `RHWP_EXTENSION_SMOKE_REPEAT=10 npm --prefix rhwp-chrome run test:e2e:smoke` | 새 profile 10개, retry 없이 10/10 통과 |
 | Git | `git diff --check`, 최신 base 조상 검사, `range-diff` | 통과 |
 
-actual Chrome 반복은 매회 extension production build, 격리 profile, 실제 MV3 worker·viewer·options·print·
-content script와 탭 예산을 함께 검증했다. 최신 base의 frontend build는 214 modules를 변환했고,
-새로 생성한 WASM asset을 사용했다.
+actual Chrome 명령은 extension production build를 한 번 수행한 뒤 반복마다 새 격리 profile을 만들어
+실제 MV3 worker·viewer·options·print·content script와 탭 예산을 함께 검증했다. 최신 base의 frontend
+build는 214 modules를 변환했고, 새로 생성한 WASM asset을 사용했다.
 
 ## 4. 검증 경계
 
