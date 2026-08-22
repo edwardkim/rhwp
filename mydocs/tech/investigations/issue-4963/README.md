@@ -8,9 +8,10 @@ last_verified: 2026-08-22
 # Issue #4963 W5 Oracle Profile·controlled ladder
 
 이 디렉터리는 W4 조판 위험 상위 17개 face를 한컴 exact/missing 상태에서 비교하기 위한 기계 검증
-계약을 보존한다. Stage W5-4A까지 profile 형식, deterministic fixture, SFNT/PDF 관측기, 17개 후보
-준비도 원장, 기존 한컴 2022 evidence import, 한컴 2020 read-only exact-installed canary와 disposable
-snapshot 실행계약을 고정했다. 제품 font metric·fallback·paint 결과는 변경하지 않았다.
+계약을 보존한다. Stage W5-4B까지 profile 형식, deterministic fixture, SFNT/PDF 관측기, 17개 후보
+준비도 원장, 기존 한컴 2022 evidence import, 한컴 2020 read-only exact-installed canary, disposable
+snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 font metric·fallback·paint 결과는
+변경하지 않았다.
 
 ## 산출물
 
@@ -24,10 +25,13 @@ snapshot 실행계약을 고정했다. 제품 font metric·fallback·paint 결�
 | `oracle_stage4_contract.json` | 3개 canary·5개 질문·snapshot restore·font delta 실행계약 |
 | `oracle_stage4_current_host_preflight.json` | 현재 호스트가 disposable이 아님을 고정한 read-only 판정 |
 | `oracle_stage4_public_fixtures.json` | 3개 물리 상태와 snapshot attestation 공개 contract fixture |
+| `oracle_stage4_acceptance_attestation.json` | 경로·호스트명 없는 Hyper-V restore와 updated-base identity 증명 |
+| `oracle_stage4_acceptance_projection.json` | rank 1·7의 8개 profile file hash와 조판 projection 공개 인덱스 |
+| `oracle_stage4_rank{1,7}_acceptance_ladder.json` | exact/subst/none 물리 실행과 semantic question 재사용 계보 |
 | `fixtures/oracle_typesetting_fixture.hwpx` | rank 1 `문체부 바탕체`용 공개 synthetic HWPX canary |
 | `fixtures/oracle_typesetting_fixture.manifest.json` | fixture semantic matrix·LineSeg lane·ZIP entry hash |
 | `font_oracle_readiness.json` | 17개 face의 path-free source·ladder 준비도 원장 |
-| `profiles/` | 한컴 2022 historical 2개와 HWP 2020 acceptance-primary 1개 profile |
+| `profiles/` | 한컴 2022 historical 2개, HWP 2020 read-only 1개, W5-4B acceptance 8개 profile |
 | `scripts/oracle_profile_contract.mjs` | 계약·schema·W4 handoff·profile·negative fixture 실행 검사 |
 | `scripts/tests/oracle_profile_contract.test.mjs` | 상태·advance·관계·권위·privacy 회귀 test |
 | `scripts/generate_oracle_typesetting_fixture.py` | byte-exact HWPX fixture 생성기 |
@@ -38,9 +42,11 @@ snapshot 실행계약을 고정했다. 제품 font metric·fallback·paint 결�
 | `scripts/oracle_stage3_windows_canary.ps1` | font 상태 무변경 manifest·readback·HWPX open·PDF export runner |
 | `scripts/oracle_stage3_profile.py` | local-only 실행 증적을 path-free acceptance profile로 투영 |
 | `scripts/oracle_stage4_contract.py` | attestation·동일 입력·managed/unrelated font·restore validator |
+| `scripts/oracle_stage4_profile.py` | local-only W5-4B 증거를 path-free profile·ladder·projection으로 변환 |
 | `scripts/tests/test_oracle_stage2.py` | 결정론·손상·상한·path escape·symlink 회귀 test |
 | `scripts/tests/test_oracle_stage3.py` | historical 결정론·현재 canary·negative control·privacy 회귀 test |
 | `scripts/tests/test_oracle_stage4.py` | snapshot·상태 membership·ambient drift·restore fail-closed test |
+| `scripts/tests/test_oracle_stage4_profile.py` | acceptance hash 연결·결정론·validator·privacy 회귀 test |
 
 ## 핵심 경계
 
@@ -65,6 +71,7 @@ node scripts/oracle_profile_contract.mjs check
 python3 -m unittest -v scripts.tests.test_oracle_stage2
 python3 -m unittest -v scripts.tests.test_oracle_stage3
 python3 -m unittest -v scripts.tests.test_oracle_stage4
+python3 -m unittest -v scripts.tests.test_oracle_stage4_profile
 python3 scripts/oracle_stage4_contract.py check
 ```
 
@@ -119,6 +126,10 @@ Stage W5-4A는 다음 실행계약을 완료했다.
 - `휴먼명조`처럼 managed TTF 제거 뒤에도 같은 face가 readback되면 한컴 bundled HFT 가능성을
   `blocked-immutable-or-unmanaged-font`로 기록하고 missing 성공을 주장하지 않음
 
-현재 세션은 Hyper-V VM inventory 권한과 checkpoint/restore 증거가 없어 `qualified=false`,
-`mutationAllowed=false`다. W5-4B는 외부에서 제어 가능한 VM/checkpoint identity와 실제 restore probe를
-준비한 뒤 시작한다. 그 전에는 현재 호스트의 font 상태를 변경하지 않는다.
+W5-4B 관찰 해설은
+[`task_m100_4963_w5_stage4b.md`](../../../working/task_m100_4963_w5_stage4b.md)에 기록한다. rank 1과
+rank 7은 updated-base에서 세 물리 상태를 완료했고 8개 semantic profile로 정규화했다. rank 13은 관리
+TTF가 없는 기준선에서도 exact face가 남아 `blocked-immutable-or-unmanaged-font`로 판정했다.
+`문체부 바탕체` exact bytes(`MBatang`)와 fixture-declared `KoPubWorld바탕체 Light`는 서로 다른 역할이며,
+subst-only가 실제 KoPub subset을 사용했다는 주장은 하지 않는다. 17개 queue 확대는 이 acceptance
+projection에 대한 메인테이너 판정 뒤 별도 게이트로 진행한다.

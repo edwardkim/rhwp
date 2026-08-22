@@ -170,7 +170,12 @@ def parse_stext(value: bytes, maximum_glyphs: int) -> dict[str, Any]:
 
 def parse_trace(value: bytes, maximum_glyphs: int) -> list[dict[str, Any]]:
     try:
-        root = ET.fromstring(value)
+        # Hancom PDF can preserve a legacy Korean byte sequence in a subset
+        # font name while MuPDF emits the rest of the trace as UTF-8. XML has
+        # no legal mixed-encoding representation, so retain the structural and
+        # numeric evidence and replace only undecodable name bytes. The raw PDF
+        # identity remains separately fixed by inputSha256.
+        root = ET.fromstring(value.decode("utf-8", "replace"))
     except ET.ParseError as error:
         raise OracleStage2Error("mutool trace XML parse failed") from error
     glyphs = []

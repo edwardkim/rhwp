@@ -89,12 +89,20 @@ test('public synthetic fixture validates but is explicitly not Oracle evidence',
 
 test('tracked historical and HWP 2020 Oracle Profiles satisfy the executable contract', () => {
   const names = fs.readdirSync(PROFILE_DIRECTORY)
-    .filter(name => name.endsWith('_exact_installed.json'))
+    .filter(name => name.endsWith('.json') && name !== 'historical_import_manifest.json')
     .sort();
   assert.deepEqual(names, [
     'historical_hanyang_sinmyeongjo_exact_installed.json',
     'historical_human_myeongjo_exact_installed.json',
+    'windows_hwp2020_kopubworld_dotum_light_all_related_fonts_missing.json',
+    'windows_hwp2020_kopubworld_dotum_light_document_subst_font_only.json',
+    'windows_hwp2020_kopubworld_dotum_light_exact_installed.json',
+    'windows_hwp2020_kopubworld_dotum_light_exact_removed.json',
     'windows_hwp2020_malgun_gothic_exact_installed.json',
+    'windows_hwp2020_mbatang_all_related_fonts_missing.json',
+    'windows_hwp2020_mbatang_document_subst_font_only.json',
+    'windows_hwp2020_mbatang_exact_installed.json',
+    'windows_hwp2020_mbatang_exact_removed.json',
   ]);
   for (const name of names) {
     const profile = JSON.parse(fs.readFileSync(path.join(PROFILE_DIRECTORY, name), 'utf8'));

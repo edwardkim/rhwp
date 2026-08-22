@@ -26,7 +26,7 @@ from oracle_stage2_common import (  # noqa: E402
     regular_input,
     sha256_bytes,
 )
-from pdf_oracle_observe import analyze_pdf  # noqa: E402
+from pdf_oracle_observe import analyze_pdf, parse_trace  # noqa: E402
 
 
 def minimal_pdf() -> bytes:
@@ -67,6 +67,22 @@ def minimal_pdf() -> bytes:
 
 
 class OracleStage2Test(unittest.TestCase):
+    def test_trace_preserves_glyph_evidence_with_legacy_font_name_bytes(self) -> None:
+        trace = (
+            b'<?xml version="1.0"?><document><page>'
+            b'<fill_text transform="1 0 0 1 0 0">'
+            b'<span font="INPILL+\xc8\xde\xb8\xd5" wmode="0" trm="10 0 0 10">'
+            b'<g unicode="A" glyph="1" x="2" y="3" adv="0.5"/>'
+            b'</span></fill_text></page></document>'
+        )
+
+        glyphs = parse_trace(trace, maximum_glyphs=1)
+
+        self.assertEqual(len(glyphs), 1)
+        self.assertEqual(glyphs[0]["unicode"], "A")
+        self.assertEqual(glyphs[0]["fontNormalizedAdvance"], 0.5)
+        self.assertIn("\ufffd", glyphs[0]["font"])
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.contract = read_contract()
