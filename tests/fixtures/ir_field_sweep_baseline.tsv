@@ -231,6 +231,8 @@ hwp5rb	issue5787/nested_square_table_horz_offset.hwp	sections[].paragraphs[].con
 hwp5rb	issue5788/tac_table_missing_anchor_line_spacing.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	113
 hwp5rb	issue5788/tac_table_missing_anchor_line_spacing.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	5
 hwp5rb	issue5793/pua_f0827_double_rule.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	167
+hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1484
+hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	52
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
