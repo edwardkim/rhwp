@@ -10177,6 +10177,52 @@ impl LayoutEngine {
         (line_spacing + paragraph_spacing).min(previous_unit.height.max(0.0))
     }
 
+    /// [#5920] 중첩 표만 든 문단 유닛에서 **상자 아래 보이지 않는 이송 여백**.
+    ///
+    /// 가시 텍스트 없이 표 control 만 든 문단의 유닛 높이는
+    /// `max(중첩 표 높이, 줄 이송 높이)` 다. 줄 이송이 표보다 크면 상자 아래에
+    /// 아무것도 그리지 않는 여백이 남는다. 한글은 이 여백을 쪽 하단 예산에 넣지
+    /// 않는다 — 상자 자체가 본문 안에 들어가면 그 쪽에 앉히고 여백은 쪽 경계
+    /// 밖으로 흘린다(#5920 정본 8쪽: 결론 상자 512.0~778.0pt, 본문 하단 785.2pt).
+    ///
+    /// 표가 아닌 유닛, 분할된 중첩 행/조각 유닛, 표와 글자가 섞인 문단은 상자
+    /// 아래가 비어 있다고 볼 수 없으므로 0 을 돌려준다.
+    fn nested_atom_invisible_tail(
+        &self,
+        cell: &crate::model::table::Cell,
+        unit: &CellUnit,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        if unit.empty_spacer
+            || unit.nested_row.is_some()
+            || unit.nested_table_fragment.is_some()
+            || unit.mixed_nested_fragment
+            || unit.mixed_nested_trailing
+        {
+            return 0.0;
+        }
+        let Some(para) = cell.paragraphs.get(unit.para_idx) else {
+            return 0.0;
+        };
+        // `cell_units` 의 atom 분기와 같은 가시 텍스트 판정 — 표와 글자가 함께
+        // 있는 문단은 높이가 `line_based_h + nested_h + 4.0` 이라 꼬리가 여백이 아니다.
+        if para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}') {
+            return 0.0;
+        }
+        let nested_h: f64 = para
+            .controls
+            .iter()
+            .map(|ctrl| match ctrl {
+                Control::Table(t) => self.calc_nested_table_height(t, styles),
+                _ => 0.0,
+            })
+            .sum();
+        if nested_h <= 0.0 {
+            return 0.0;
+        }
+        (unit.height - nested_h).max(0.0)
+    }
+
     fn is_non_inline_control_flow_unit(unit: &CellUnit) -> bool {
         unit.vis_start == unit.vis_end
             && !unit.empty_spacer
@@ -11037,6 +11083,18 @@ impl LayoutEngine {
                     break;
                 }
                 if j > start && h + u.height > avail_height {
+                    // [#5920] 마지막으로 놓이는 중첩 표 atom 유닛이 **상자 아래
+                    // 보이지 않는 이송 여백** 때문에만 예산을 넘으면 현재 쪽에
+                    // 앉힌다. 보이는 상자는 본문 안에 들어가므로 한글과 같은 쪽에
+                    // 놓이고 여백만 쪽 경계 밖으로 흘린다. `h` 에는 가시 높이만
+                    // 더해 조각 높이가 본문을 침범하지 않게 한다 —
+                    // `native_multirow_saved_reset_trailing_trim` 과 같은 부기.
+                    let nested_atom_tail = self.nested_atom_invisible_tail(cell, u, styles);
+                    if nested_atom_tail > 0.0 && h + u.height - nested_atom_tail <= avail_height {
+                        h += (u.height - nested_atom_tail).max(0.0);
+                        j += 1;
+                        break;
+                    }
                     // [#3931] 저장 reset 직전 마지막 가시 줄의 trailing 공백을
                     // 물리 쪽 경계에서 제외하면 예산에 들어가는 경우, 그 줄까지
                     // 현 조각에 넣고 다음 문단 hard break 직전에서 멈춘다. source
