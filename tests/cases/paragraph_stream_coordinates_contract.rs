@@ -32,3 +32,24 @@ fn insert_split_merge_preserves_hwp_stream_widths() {
     assert_eq!(paragraph.char_offsets, vec![0, 1]);
     assert_eq!(paragraph.char_count, 3);
 }
+
+#[test]
+fn split_clears_new_paragraph_instance_id_and_preserves_suffix() {
+    let mut paragraph = Paragraph {
+        text: "AB".to_string(),
+        char_count: 3,
+        char_offsets: vec![0, 1],
+        // counts(6) + instanceId(4) + change-tracking suffix(2)
+        raw_header_extra: vec![1, 2, 3, 4, 5, 6, 0xD2, 0x94, 0x09, 0xBA, 7, 8],
+        ..Paragraph::new_empty()
+    };
+
+    let tail = paragraph.split_at(1);
+
+    assert_eq!(
+        &paragraph.raw_header_extra[6..10],
+        &[0xD2, 0x94, 0x09, 0xBA]
+    );
+    assert_eq!(&tail.raw_header_extra[6..10], &[0, 0, 0, 0]);
+    assert_eq!(&tail.raw_header_extra[10..12], &[7, 8]);
+}
