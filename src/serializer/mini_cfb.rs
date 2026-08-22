@@ -38,6 +38,7 @@ struct DirEntry {
     left: u32,
     right: u32,
     child: u32,
+    color: u8,
     start_sector: u32,
     is_mini: bool,
     /// 디렉터리 엔트리 +80, 16바이트. OLE 개체는 이 값으로 서버를 식별한다 (#4097).
@@ -59,6 +60,7 @@ impl DirEntry {
             left: NOSTREAM,
             right: NOSTREAM,
             child: NOSTREAM,
+            color: 1,
             // Storage(1)는 start_sector=0 (MS-CFB 스펙: "SHOULD be set to all zeroes")
             // Root(5), Stream(2)은 ENDOFCHAIN → 나중에 실제 값으로 교체
             start_sector: if obj_type == 1 { 0 } else { ENDOFCHAIN },
@@ -282,7 +284,16 @@ pub fn build_cfb_with_root_clsid(
         difat_count,
     );
 
-    // 디렉토리 엔트리 작성
+    // 디렉토리 엔트리 작성. 마지막 디렉토리 섹터의 빈 슬롯은 object type 0인
+    // unallocated entry이면서 sibling/child ID가 모두 NOSTREAM이어야 한다.
+    for i in entries.len()..dir_sectors * ENTRIES_PER_DIR_SECTOR {
+        let sector_idx = i / ENTRIES_PER_DIR_SECTOR;
+        let entry_in_sector = i % ENTRIES_PER_DIR_SECTOR;
+        let offset = 512 + sector_idx * SECTOR_SIZE + entry_in_sector * DIR_ENTRY_SIZE;
+        output[offset + 68..offset + 72].copy_from_slice(&NOSTREAM.to_le_bytes());
+        output[offset + 72..offset + 76].copy_from_slice(&NOSTREAM.to_le_bytes());
+        output[offset + 76..offset + 80].copy_from_slice(&NOSTREAM.to_le_bytes());
+    }
     for (i, entry) in entries.iter().enumerate() {
         let sector_idx = i / ENTRIES_PER_DIR_SECTOR;
         let entry_in_sector = i % ENTRIES_PER_DIR_SECTOR;
@@ -305,8 +316,17 @@ pub fn build_cfb_with_root_clsid(
             .copy_from_slice(&entries[0].data);
     }
 
-    // 미니 FAT 작성
+    // 미니 FAT 작성. 할당되지 않은 슬롯은 FREESECT여야 한다. 출력 버퍼의
+    // 기본값 0은 관대한 파서에서는 통과하지만 strict CFB 검증에서는 실제
+    // sector 0을 가리키는 값으로 해석된다.
     if mini_fat_start != ENDOFCHAIN {
+        for sector_idx in 0..mini_fat_sector_count as usize {
+            let sector_base = 512 + (mini_fat_start as usize + sector_idx) * SECTOR_SIZE;
+            for entry_idx in 0..FAT_ENTRIES_PER_SECTOR {
+                let offset = sector_base + entry_idx * 4;
+                output[offset..offset + 4].copy_from_slice(&FREESECT.to_le_bytes());
+            }
+        }
         for (i, &mf) in mini_fat.iter().enumerate() {
             let sector_idx = i / FAT_ENTRIES_PER_SECTOR;
             let entry_in_sector = i % FAT_ENTRIES_PER_SECTOR;
@@ -316,7 +336,15 @@ pub fn build_cfb_with_root_clsid(
         }
     }
 
-    // FAT 작성
+    // FAT 작성. 마지막 FAT 섹터의 total_sectors 뒤 미사용 슬롯도 FREESECT로
+    // 초기화해야 한다.
+    for sector_idx in 0..fat_count as usize {
+        let sector_base = 512 + (fat_start as usize + sector_idx) * SECTOR_SIZE;
+        for entry_idx in 0..FAT_ENTRIES_PER_SECTOR {
+            let offset = sector_base + entry_idx * 4;
+            output[offset..offset + 4].copy_from_slice(&FREESECT.to_le_bytes());
+        }
+    }
     for (i, &fat_entry) in fat.iter().enumerate() {
         let fat_sector_idx = i / FAT_ENTRIES_PER_SECTOR;
         let entry_in_sector = i % FAT_ENTRIES_PER_SECTOR;
@@ -442,12 +470,45 @@ fn build_tree(entries: &mut Vec<DirEntry>, idx: usize) {
     let root = build_balanced_tree(entries, &sorted);
     entries[idx].child = root;
 
+    // Midpoint BST의 leaf 깊이는 최대 깊이 또는 그보다 1 작다. 최하단 노드만
+    // red, 나머지를 black으로 두면 모든 NIL 경로의 black-height가 같아지고
+    // red-red 인접도 생기지 않는다. 각 자식 트리의 root는 항상 black이다.
+    let max_depth = tree_max_depth(entries, root, 0);
+    color_deepest_nodes(entries, root, 0, max_depth);
+
     // 하위 스토리지에 대해 재귀
     for &child_idx in &children {
         if entries[child_idx].obj_type == 1 {
             build_tree(entries, child_idx);
         }
     }
+}
+
+fn tree_max_depth(entries: &[DirEntry], idx: u32, depth: usize) -> usize {
+    if idx == NOSTREAM {
+        return depth.saturating_sub(1);
+    }
+    let entry = &entries[idx as usize];
+    tree_max_depth(entries, entry.left, depth + 1).max(tree_max_depth(
+        entries,
+        entry.right,
+        depth + 1,
+    ))
+}
+
+fn color_deepest_nodes(entries: &mut [DirEntry], idx: u32, depth: usize, max_depth: usize) {
+    if idx == NOSTREAM {
+        return;
+    }
+    let left = entries[idx as usize].left;
+    let right = entries[idx as usize].right;
+    entries[idx as usize].color = if depth > 0 && depth == max_depth {
+        0 // red
+    } else {
+        1 // black
+    };
+    color_deepest_nodes(entries, left, depth + 1, max_depth);
+    color_deepest_nodes(entries, right, depth + 1, max_depth);
 }
 
 /// 정렬된 인덱스 배열로 균형 이진 트리를 구축한다.
@@ -564,8 +625,8 @@ fn write_dir_entry(output: &mut [u8], offset: usize, entry: &DirEntry) {
     // Object type
     buf[66] = entry.obj_type;
 
-    // Color flag: 1 = black (유효한 red-black 트리)
-    buf[67] = 1;
+    // Color flag: 0 = red, 1 = black
+    buf[67] = entry.color;
 
     // Left sibling
     buf[68..72].copy_from_slice(&entry.left.to_le_bytes());

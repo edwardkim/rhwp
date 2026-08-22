@@ -3417,6 +3417,30 @@ impl LayoutEngine {
             probe,
         );
 
+        // [#5877] `h_edges`/`v_edges`/`grid_row_y` 는 **조각-지역 행 인덱스**
+        // (`render_rows` 순서)인데 `row_col_x` 는 **원본 행 전체**다. 테두리
+        // 렌더러는 그 인덱스로 `row_col_x` 를 직접 참조하므로, 조각이 원본 행 18
+        // 부터 시작해도 조각-지역 0·1 이 원본 행 0·1(전폭 단일 셀 제목 행 —
+        // 행별 열 구획이 균등 보간된다)의 격자를 집는다. 그 결과 쪽을 넘어온
+        // 조각 상단에만 표폭/열수 균등 간격의 유령 세로 괘선이 그려졌다
+        // (2961515 150행×32열: 21.13px 간격, 셀 좌표는 정상).
+        // 렌더 순서에 맞춰 조각용 격자를 만들어 넘긴다.
+        let fragment_row_col_x: Vec<Vec<f64>> = render_rows
+            .iter()
+            .map(|&r| {
+                row_col_x
+                    .get(r)
+                    .or_else(|| row_col_x.last())
+                    .cloned()
+                    .unwrap_or_else(|| col_x.clone())
+            })
+            .collect();
+        let fragment_row_col_x = if fragment_row_col_x.is_empty() {
+            row_col_x.clone()
+        } else {
+            fragment_row_col_x
+        };
+
         // 엣지 기반 테두리 렌더링
         let body_top_clip = (enclosing_cell_ctx.is_none()
             && self.is_body_flow_col_area(col_area)
@@ -3426,7 +3450,7 @@ impl LayoutEngine {
             tree,
             &h_edges,
             &v_edges,
-            &row_col_x,
+            &fragment_row_col_x,
             &grid_row_y,
             table_x,
             table_y,
@@ -3437,7 +3461,7 @@ impl LayoutEngine {
                 tree,
                 &h_edges,
                 &v_edges,
-                &row_col_x,
+                &fragment_row_col_x,
                 &grid_row_y,
                 table_x,
                 table_y,
