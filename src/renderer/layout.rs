@@ -798,6 +798,33 @@ fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
         .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace())
 }
 
+/// [#5584] 자리차지 표 호스트 문단의 **저장 줄 전부가 표 위**인가.
+///
+/// 한글은 호스트 텍스트를 표의 세로 오프셋보다 앞선 저장 vpos 에 그대로 둔다
+/// (00072 별표 제목: 저장 줄 3420 < 표 vertOffset 4129 → 1쪽 표 위). rhwp 는
+/// RowBreak 자리차지 표의 호스트 텍스트를 마지막 조각 뒤로 미루는 계약
+/// (`defer_visible_rowbreak_host_text`)을 쓰는데, 그 계약은 표 **아래**에 놓이는
+/// 서명란·발신명의 호스트를 위한 것이라 이 형상에서는 제목을 마지막 쪽 표
+/// 하단 밖으로 보냈다. 저장 기하가 "전 줄이 표 위"를 증언할 때만 지연을 끈다 —
+/// 일부 줄만 위인 혼합 형상은 뒤 텍스트가 소실될 수 있어 제외한다.
+fn stored_host_lines_precede_float(para: &Paragraph, table: &crate::model::table::Table) -> bool {
+    let v_off = signed_hwpunit(table.common.vertical_offset);
+    if v_off <= 0 {
+        return false;
+    }
+    let stored: Vec<&crate::model::paragraph::LineSeg> = para
+        .line_segs
+        .iter()
+        .filter(|ls| ls.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        .collect();
+    let Some(base) = stored.first().map(|ls| ls.vertical_pos) else {
+        return false;
+    };
+    stored
+        .iter()
+        .all(|ls| (ls.vertical_pos as i64 - base as i64) < v_off as i64)
+}
+
 /// [#4610 · #4599 ④] 결재문서 템플릿의 공백-전용 TAC 캐리어 문단 페인트 변위.
 ///
 /// 선행 문단이 앵커한 자리차지 표가 흐름 커서를 표 하단까지 밀어낸 뒤에 오는,
@@ -9962,7 +9989,10 @@ impl LayoutEngine {
                                 t.page_break,
                                 crate::model::table::TablePageBreak::RowBreak
                             )
-                            && para_has_non_whitespace_text(para) =>
+                            && para_has_non_whitespace_text(para)
+                            // [#5584] 저장 기하가 "호스트 줄 전부가 표 위" 를
+                            // 증언하면 지연하지 않는다 — 그 줄은 pre-text 다.
+                            && !stored_host_lines_precede_float(para, t) =>
                     {
                         Some(t.row_count as usize)
                     }
