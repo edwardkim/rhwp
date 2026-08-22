@@ -423,7 +423,7 @@ export function validateOracleProfileContract(contract) {
     'privateCorpusUsedAsPublicFixture',
     'privateDocumentIdentityPublished',
     'absoluteFontPathsPublished',
-    'localFontRoot',
+    'fontRootProvisioning',
     'localInventoryMode',
     'publicFields',
   ], 'privacy', errors);
@@ -431,7 +431,7 @@ export function validateOracleProfileContract(contract) {
       || contract.privacy.privateCorpusUsedAsPublicFixture !== false
       || contract.privacy.privateDocumentIdentityPublished !== false
       || contract.privacy.absoluteFontPathsPublished !== false
-      || contract.privacy.localFontRoot !== '/home/edward/mygithub/ttfs'
+      || contract.privacy.fontRootProvisioning !== 'runtime-argument-outside-repository'
       || contract.privacy.localInventoryMode !== '0600'
       || !exactArray(contract.privacy.publicFields, [
         'font-names',

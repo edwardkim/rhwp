@@ -63,6 +63,12 @@ test('W5 contract freezes the W4 queue and controlled ladder without product cha
     CONTRACT.environmentPolicy.mutableFontState,
     'disposable-snapshot-explicit-approval-only',
   );
+  assert.equal(
+    CONTRACT.privacy.fontRootProvisioning,
+    'runtime-argument-outside-repository',
+  );
+  assert.equal(JSON.stringify(CONTRACT).includes('/home/'), false);
+  assert.equal(JSON.stringify(CONTRACT).includes('/mnt/'), false);
   assert.ok(Object.values(CONTRACT.scope).every(value => value === false));
 });
 

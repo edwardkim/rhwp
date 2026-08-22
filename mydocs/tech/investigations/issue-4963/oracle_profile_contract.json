@@ -132,7 +132,7 @@
     "privateCorpusUsedAsPublicFixture": false,
     "privateDocumentIdentityPublished": false,
     "absoluteFontPathsPublished": false,
-    "localFontRoot": "/home/edward/mygithub/ttfs",
+    "fontRootProvisioning": "runtime-argument-outside-repository",
     "localInventoryMode": "0600",
     "publicFields": [
       "font-names",
