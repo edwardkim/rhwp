@@ -12533,7 +12533,40 @@ impl LayoutEngine {
                 let nrow = nt.row_count as usize;
                 let row_heights = self.resolve_row_heights(nt, ncol, nrow, None, styles, true);
                 let cs = hwpunit_to_px(nt.cell_spacing as i32, self.dpi);
-                let rows = calc_nested_split_rows(&row_heights, cs, offset, visible);
+                let mut rows = calc_nested_split_rows(&row_heights, cs, offset, visible);
+                // [#5846] 비종료 조각의 꼬리 행이 가시 창에 **일부만** 걸치면 이 조각에서
+                // 뺀다.
+                //
+                // `calc_nested_split_rows` 는 연속 조각(offset>0)의 start_row 를 **행
+                // 처음부터** 다시 그린다(`offset_within_start = 0`). 따라서 컷 조각이
+                // 남긴 부분 행은 다음 쪽이 반드시 통째로 재렌더한다 — 컷 조각에 남겨 두면
+                // 같은 내용이 두 쪽에 나온다. 기존 탈락 규칙은 `min(last_h*0.5, 10.0)` 라
+                // 슬라이버가 10px 을 넘으면 부분 행을 그대로 뒀다.
+                //
+                // 실측(75544 pi=527, 59쪽): 2행 중첩 표(행높이 650.9 / 767.6)에 가시
+                // 688.0 → end_row=2 로 행 1 이 35.3px 스텁으로 붙었고, 그 안의 25문단이
+                // 전부 그 스텁에 그려져 본문 하한 1,046.9px 을 넘는 <text> 549개
+                // (최하단 y=1,725.6px)가 셀 클립 밖으로 나갔다. 같은 내용은 60쪽이 행 1 을
+                // 처음부터 다시 그려 이미 온전히 나온다.
+                //
+                // 온전한 행이 최소 하나 남을 때만 뺀다 — 조각이 통째로 비면 행 이월이
+                // 무한히 미뤄질 수 있다. 높이 필드(visible_height/flow_height)는 유닛
+                // 회계 값을 그대로 두어 부모 flow 소비와 조각 경계는 바뀌지 않는다.
+                if !terminal && rows.end_row > rows.start_row + 1 {
+                    let last = rows.end_row - 1;
+                    let mut last_top = 0.0f64;
+                    for (r, rh) in row_heights.iter().enumerate().take(last) {
+                        last_top += rh;
+                        if r + 1 < nrow {
+                            last_top += cs;
+                        }
+                    }
+                    let available_for_last = offset + visible - last_top;
+                    if available_for_last + 0.5 < row_heights[last] {
+                        rows.end_row = last;
+                    }
+                }
+                let rows = rows;
                 // [#3658] 종료 조각: start_row 상단 중 이전 쪽에 이미 보인 밴드만큼
                 // 내부 오프셋을 부여한다. 종전(0.0 고정)에는 종료 조각이 start_row 를
                 // 처음부터 재적층해 행 그리드보다 커지고, 초과한 꼬리 문단이 셀 하단
