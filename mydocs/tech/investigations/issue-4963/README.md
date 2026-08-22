@@ -28,6 +28,8 @@ snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 fon
 | `oracle_stage4_acceptance_attestation.json` | 경로·호스트명 없는 Hyper-V restore와 updated-base identity 증명 |
 | `oracle_stage4_acceptance_projection.json` | rank 1·7의 8개 profile file hash와 조판 projection 공개 인덱스 |
 | `oracle_stage4_rank{1,7}_acceptance_ladder.json` | exact/subst/none 물리 실행과 semantic question 재사용 계보 |
+| `oracle_stage4_rank13_blocked_disposition.json` | managed font 0개에서도 exact가 남은 immutable/unmanaged 정지 근거 |
+| `oracle_stage5_queue_projection.json` | 17개 face의 profile 재사용·terminal·후속 실행 action matrix |
 | `fixtures/oracle_typesetting_fixture.hwpx` | rank 1 `문체부 바탕체`용 공개 synthetic HWPX canary |
 | `fixtures/oracle_typesetting_fixture.manifest.json` | fixture semantic matrix·LineSeg lane·ZIP entry hash |
 | `font_oracle_readiness.json` | 17개 face의 path-free source·ladder 준비도 원장 |
@@ -43,10 +45,12 @@ snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 fon
 | `scripts/oracle_stage3_profile.py` | local-only 실행 증적을 path-free acceptance profile로 투영 |
 | `scripts/oracle_stage4_contract.py` | attestation·동일 입력·managed/unrelated font·restore validator |
 | `scripts/oracle_stage4_profile.py` | local-only W5-4B 증거를 path-free profile·ladder·projection으로 변환 |
+| `scripts/oracle_stage5_queue_projection.py` | 기존 증거를 전건 disposition으로 결합하고 재계측 후보를 제한 |
 | `scripts/tests/test_oracle_stage2.py` | 결정론·손상·상한·path escape·symlink 회귀 test |
 | `scripts/tests/test_oracle_stage3.py` | historical 결정론·현재 canary·negative control·privacy 회귀 test |
 | `scripts/tests/test_oracle_stage4.py` | snapshot·상태 membership·ambient drift·restore fail-closed test |
 | `scripts/tests/test_oracle_stage4_profile.py` | acceptance hash 연결·결정론·validator·privacy 회귀 test |
+| `scripts/tests/test_oracle_stage5_queue_projection.py` | 17개 queue·profile hash·terminal/actionable·privacy 회귀 test |
 
 ## 핵심 경계
 
@@ -72,6 +76,7 @@ python3 -m unittest -v scripts.tests.test_oracle_stage2
 python3 -m unittest -v scripts.tests.test_oracle_stage3
 python3 -m unittest -v scripts.tests.test_oracle_stage4
 python3 -m unittest -v scripts.tests.test_oracle_stage4_profile
+python3 -m unittest -v scripts.tests.test_oracle_stage5_queue_projection
 python3 scripts/oracle_stage4_contract.py check
 ```
 
@@ -133,3 +138,9 @@ TTF가 없는 기준선에서도 exact face가 남아 `blocked-immutable-or-unma
 `문체부 바탕체` exact bytes(`MBatang`)와 fixture-declared `KoPubWorld바탕체 Light`는 서로 다른 역할이며,
 subst-only가 실제 KoPub subset을 사용했다는 주장은 하지 않는다. 17개 queue 확대는 이 acceptance
 projection에 대한 메인테이너 판정 뒤 별도 게이트로 진행한다.
+
+Stage W5-5A는 이 판정을 17개 전건 action matrix로 확장했다. rank 1·7은 완료 profile을 재사용하고,
+source가 없는 10개와 보호된 ambient/HFT provider를 가진 rank 9·10·13은 증거 있는 terminal
+disposition으로 닫는다. 추가 Oracle 실행 후보는 rank 8과 rank 16뿐이며, 안전한 순서는 rank 16
+read-only exact profile 뒤 rank 8 controlled ladder다. 세부 근거와 rank 8의 distinct substitution 계약은
+[`task_m100_4963_w5_stage5a.md`](../../../working/task_m100_4963_w5_stage5a.md)에 기록한다.
