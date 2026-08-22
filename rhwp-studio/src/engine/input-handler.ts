@@ -2531,10 +2531,16 @@ export class InputHandler {
     this.cursor.clearSelection();
     if (options?.deferRecord) {
       // 붙여넣기 등 스냅샷 콜백에서 호출될 때 — 히스토리 기록 없이 직접 실행만.
-      // DeleteSelectionCommand.execute() 는 WASM 삭제 + 커서 이동만 수행하므로
-      // history.execute() 없이 직접 호출해도 무방하다. 호출자의 SnapshotCommand 가
-      // before-snapshot 으로 전체 undo 를 커버한다.
-      cmd.execute(this.wasm);
+      // 호출자의 SnapshotCommand 가 before-snapshot 으로 전체 undo 를 커버한다.
+      //
+      // 반환값을 반드시 소비해 JS 커서를 옮긴다 — getPosition() 은 내부 캐시
+      // (`{ ...this.position }`)라 WASM 캐럿이 움직여도 갱신되지 않는다. 놓치면
+      // 이어지는 붙여넣기가 삭제 **전** 좌표(선택 끝)에 삽입된다(실측:
+      // "AAAABBBBCCCC" 에서 BBBB 선택+붙여넣기 → XYZ 가 끝에 붙는다).
+      // executeOperation('command') 의 moveTo·resetPreferredX 에 해당하는 최소 배선.
+      const newPos = cmd.execute(this.wasm);
+      this.cursor.moveTo(newPos);
+      this.cursor.resetPreferredX();
     } else {
       this.executeOperation({ kind: 'command', command: cmd });
     }

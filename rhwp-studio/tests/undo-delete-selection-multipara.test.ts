@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { functionBodyFrom } from './support/source-guard.ts';
 
 // DeleteSelectionCommand.undo 의 복원 방식 가드.
 //
@@ -90,5 +91,19 @@ test('스냅샷 예산에 참여한다', () => {
     block,
     /discard\(wasm: WasmBridge\): void \{\s*this\.fragment\?\.discard\(wasm\);\s*this\.snapshot\?\.discard\(wasm\);/,
     'discard 위임(조각·스냅샷 모두)',
+  );
+});
+
+test('[#5769] deferRecord 는 반환 위치로 JS 커서를 동기한다', () => {
+  // 붙여넣기 스냅샷 콜백 안에서 deleteSelection({deferRecord:true}) 가 실행되면,
+  // 이어지는 paste* 가 getPosition() 으로 좌표를 읽는다. getPosition 은 내부 캐시라
+  // execute() 의 반환 위치를 moveTo 로 옮기지 않으면 삭제 **전** 좌표에 삽입된다
+  // (실측: "AAAABBBBCCCC" 에서 BBBB 선택+붙여넣기 → XYZ 가 문단 끝에 붙는다).
+  const handlerSrc = readFileSync(join(rootDir, 'src/engine/input-handler.ts'), 'utf8');
+  const del = functionBodyFrom(handlerSrc, 'private deleteSelection(');
+  assert.match(
+    del,
+    /const newPos = cmd\.execute\(this\.wasm\);\s*this\.cursor\.moveTo\(newPos\);\s*this\.cursor\.resetPreferredX\(\);/,
+    'deferRecord 분기는 execute 반환 위치를 moveTo+resetPreferredX 로 소비해야 한다',
   );
 });
