@@ -69,6 +69,15 @@ fn hancom_symbol_table_covers_the_compose_text_measurements() {
     }
 }
 
+/// [#5861] `0xA807` 은 표에서 빠져 있던 마지막 실측 값이다. s36 오라클 전수에서 "원본에
+/// 없던 Yi/Lisu 대역 글자가 저장본에 생긴" 경로는 코퍼스 전체에서 `03373.h2x` 하나였고,
+/// 그 자리에서 한글은 원본을 `U+F0807` 로, rhwp 저장본을 `U+A807` 로 읽었다.
+#[test]
+fn hancom_symbol_table_covers_the_last_measured_gap() {
+    assert_eq!(hancom_symbol_to_plane15(0xA807), Some(0x0F_0807));
+    assert_eq!(plane15_to_hancom_symbol(0x0F_0807), Some(0xA807));
+}
+
 /// 표는 정렬·중복 없음이어야 한다 — 값을 손으로 추가하다 흐트러지는 것을 막는다.
 #[test]
 fn hancom_symbol_table_is_sorted_and_unique() {
