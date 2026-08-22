@@ -4,7 +4,7 @@
 - 수행계획서: `mydocs/plans/task_m100_3514.md`
 - 브랜치: `codex/issue-3514-extension-smoke`
 - 작성일: 2026-08-20
-- 현재 게이트: Stage 6에서 발견한 fixture proxy socket reset을 Stage 7에서 정정 중
+- 현재 게이트: Stage 7 정정·10회 무재시도 검증 완료, remote push·Open PR 게시 진행
 
 ## 1. Hyper-Waterfall 단계
 
