@@ -602,6 +602,96 @@ impl Table {
         owners
     }
 
+    /// [#5910] 병합 셀 선언 높이가 걸친 행들의 단일행 선언 합보다 **작을** 때, 한글이
+    /// 마지막 걸침 행에서 흡수하는 축소량(HWPUNIT)을 행별로 계산한다.
+    ///
+    /// HWP 표의 행 높이는 셀마다 따로 저장되므로, `row_span>1` 셀의 선언 높이와 그 셀이
+    /// 걸친 행들의 `row_span==1` 선언 합이 어긋난 문서가 존재한다. 선언 합이 **모자랄**
+    /// 때(병합 선언이 더 큼) 잔여를 마지막 걸침 행에 더하는 규칙은 이미 있으나
+    /// (#2291/#2237), 반대 방향에는 규칙이 없어 걸침 묶음이 실제보다 부풀었다.
+    ///
+    /// 다만 두 선언이 어긋난다는 사실만으로는 어느 쪽이 옳은지 알 수 없다 — 걸침 선언이
+    /// 0 이거나 한 행 값과 같은 손상 문서도 실재한다(1342000_edu_curriculum_map: 걸침
+    /// 선언 0 vs 행합 1500). 그래서 **저장된 표 높이(`common.height`)가 축소 결과를
+    /// 확인해 줄 때만** 적용한다: 마지막 걸침 행까지의 행합이 축소 후 `common.height` 와
+    /// 정확히 같아야 한다. 이 확인이 없으면 종전 동작(축소 없음)을 유지한다.
+    ///
+    /// 실측 근거 — `samples/kps-ai.hwp` 43쪽 표(13행×5열)의 `r8 rs=3` 선언은 17,354HU
+    /// 인데 걸친 세 행의 단일행 선언은 6,082HU×3 = 18,246HU 다. 한글 2022 정본
+    /// (`pdf/kps-ai-2022.pdf` 46쪽)의 행 괘선 실측은 60.8/60.8/**51.9**pt 이고, 마지막
+    /// 행 5,190HU = 17,354 − 6,082×2 로 정확히 닫힌다. 같은 표의 `common.height`
+    /// 62,725HU 도 머리행 2,797 + 6,082×9 + 5,190 으로 같은 값에 닫혀 두 경로가 서로를
+    /// 확인해 준다.
+    ///
+    /// 걸친 행 중 하나라도 `row_span==1` 선언이 없으면(미지 행) 기존 분배 규칙이
+    /// 담당하므로 0 을 돌려준다. 반환 벡터의 길이는 `row_count` 다.
+    pub fn rowspan_declared_overflow_shrink(&self) -> Vec<HwpUnit> {
+        let row_count = self.row_count as usize;
+        let mut shrink = vec![0 as HwpUnit; row_count];
+        if row_count == 0 || self.common.height == 0 {
+            return shrink;
+        }
+
+        // 행별 단일행 선언 높이 (없으면 None = 미지 행)
+        let mut declared: Vec<Option<HwpUnit>> = vec![None; row_count];
+        for cell in &self.cells {
+            if cell.row_span != 1 || cell.height >= 0x8000_0000 {
+                continue;
+            }
+            let r = cell.row as usize;
+            if r >= row_count {
+                continue;
+            }
+            let slot = &mut declared[r];
+            if slot.is_none_or(|h| cell.height > h) {
+                *slot = Some(cell.height);
+            }
+        }
+
+        for cell in &self.cells {
+            let span = cell.row_span as usize;
+            let r = cell.row as usize;
+            if span <= 1 || cell.height >= 0x8000_0000 || r + span > row_count {
+                continue;
+            }
+            let last = r + span - 1;
+            // 걸친 행 합 — 미지 행이 있으면 기존 분배 규칙 담당.
+            let mut span_sum: u64 = 0;
+            let mut prefix_sum: u64 = 0;
+            let mut all_known = true;
+            for (i, h) in declared.iter().enumerate().take(last + 1) {
+                match h {
+                    Some(v) => {
+                        prefix_sum += *v as u64;
+                        if i >= r {
+                            span_sum += *v as u64;
+                        }
+                    }
+                    None => {
+                        all_known = false;
+                        break;
+                    }
+                }
+            }
+            if !all_known || span_sum <= cell.height as u64 {
+                continue;
+            }
+            let deficit = span_sum - cell.height as u64;
+            // 저장 표 높이 확인 — 축소 후 마지막 걸침 행까지의 행합이 `common.height`
+            // 와 정확히 같을 때만 적용한다. 손상 선언(걸침 선언 0 등)은 여기서 걸러진다.
+            if prefix_sum.checked_sub(deficit) != Some(self.common.height as u64) {
+                continue;
+            }
+            let capped = deficit.min(declared[last].unwrap_or(0) as u64) as HwpUnit;
+            // 같은 마지막 행에 상한이 여러 개면 **덜 줄이는** 쪽을 택한다 —
+            // 이 규칙은 부푼 묶음을 되돌리는 보정이지 새 압축이 아니다.
+            if shrink[last] == 0 || capped < shrink[last] {
+                shrink[last] = capped;
+            }
+        }
+        shrink
+    }
+
     /// [Task #1716] 반복 제목행으로 재사용할 **표 상단의 연속 제목행 블록** `0..H` 를 반환한다.
     ///
     /// 행 r 이 제목행 ⟺ header 셀(`is_header`, rowspan 덮개 포함)이 r 을 덮음. 상단(행 0)부터

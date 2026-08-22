@@ -3380,6 +3380,8 @@ impl LayoutEngine {
 
         // 1단계: row_span==1인 셀에서 개별 행 높이 추출
         let mut row_heights = vec![0.0f64; row_count];
+        // 행별 **컨텐츠** 하한 — 2단계 축소 규칙(#5910)의 바닥. HeightMeasurer 미러.
+        let mut content_row_floor = vec![0.0f64; row_count];
         for cell in &table.cells {
             if table.local_resize_cols.contains(&cell.col) {
                 continue;
@@ -3453,6 +3455,9 @@ impl LayoutEngine {
                     };
                     line_req.max(object_req)
                 };
+                if required_height > content_row_floor[r] {
+                    content_row_floor[r] = required_height;
+                }
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;
                 }
@@ -3522,6 +3527,16 @@ impl LayoutEngine {
                 if total_h > known_sum + 0.5 {
                     row_heights[r + span - 1] += total_h - known_sum;
                 }
+            }
+            // [#5910] 반대 방향 모순(병합 선언 < 걸친 행들의 단일행 선언 합)은
+            // 마지막 걸침 행을 줄여 닫는다 — HeightMeasurer 2-b 와 동일 규칙.
+            let shrink = table.rowspan_declared_overflow_shrink();
+            for (r, &hu) in shrink.iter().enumerate().take(row_count) {
+                if hu == 0 {
+                    continue;
+                }
+                let shrunk = row_heights[r] - hwpunit_to_px(hu as i32, self.dpi);
+                row_heights[r] = shrunk.max(content_row_floor[r]);
             }
         }
 
@@ -12950,6 +12965,18 @@ impl LayoutEngine {
             .collect();
         row_cells.sort_by_key(|c| c.col);
         let is_whole_row = start_cut.is_empty() && end_cut.is_empty();
+        // [#5910] 병합 선언이 걸친 행합보다 작으면 마지막 걸침 행의 **선언** 높이를
+        // 그만큼 낮춘 값이 한글 실측 행 높이다. 컷 회계가 원 선언을 그대로 쓰면
+        // HeightMeasurer 가 이미 줄여 둔 행을 다시 부풀려(row_cut_h > mt.row_heights)
+        // 걸침 묶음이 쪽에 못 들어간다.
+        let declared_shrink = hwpunit_to_px(
+            table
+                .rowspan_declared_overflow_shrink()
+                .get(row)
+                .copied()
+                .unwrap_or(0) as i32,
+            self.dpi,
+        );
         let mut max_h = 0.0f64;
         for (i, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
@@ -12982,7 +13009,7 @@ impl LayoutEngine {
                 0.0
             };
             let cell_h_px = if cell.height < 0x8000_0000 {
-                hwpunit_to_px(cell.height as i32, self.dpi)
+                (hwpunit_to_px(cell.height as i32, self.dpi) - declared_shrink).max(0.0)
             } else {
                 0.0
             };
