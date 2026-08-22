@@ -1,6 +1,6 @@
 ---
 kind: report
-status: in-progress
+status: completed
 canonical: mydocs/report/task_m100_4963_report.md
 last_verified: 2026-08-23
 ---
@@ -9,12 +9,14 @@ last_verified: 2026-08-23
 
 Issue: #4963
 
+- **메인테이너 최종 승인**: 2026-08-23
+
 ## 1. 결론
 
 #4963의 W5 Oracle 기술·시각 검증과 공개 Hyper-V 재현 경로의 disposable VM end-to-end canary를
 완료했다. 최종 보고서 검토에서 확인된 제3자 환경 구축·실행 경로 결손은 가이드, tracked host
-controller, guest helper, 독립 비교기와 실제 rank 8 three-state 재현 결과로 닫았다. 남은 절차 게이트는
-이 최종 보고서에 대한 메인테이너 승인이다.
+controller, guest helper, 독립 비교기와 실제 rank 8 three-state 재현 결과로 닫았다. 메인테이너는
+2026-08-23 이 최종 보고서를 승인했다.
 
 - W4가 넘긴 조판 위험 상위 17개 face를 재계측·terminal·blocked로 빠짐없이 분류했다.
 - rank 1 `문체부 바탕체`, rank 7 `KoPubWorld돋움체 Light`, rank 8
@@ -231,6 +233,6 @@ face도 기존 queue를 폐기하지 않고 같은 Oracle 계약으로 재개한
 ## 11. 완료와 남은 절차
 
 17개 최종 disposition, 실행 profile 계보, blocker·재개 조건, privacy 경계, 시각 판정과 공개 Hyper-V
-three-state 실행·복원·독립 비교를 모두 충족했다. 이 최종 보고서에 대한 메인테이너 승인 뒤 #4963 통합
-준비, 승인된 원격 push·PR, self-review, CI, merge와 이슈 close를 각각 프로젝트 절차에 따라 진행한다.
-#4960의 W5 상태와 제품 후속 이슈 후보도 통합 결과를 확인한 뒤 별도 갱신한다.
+three-state 실행·복원·독립 비교를 모두 충족했고 메인테이너가 최종 보고서를 승인했다. #4963 통합 준비,
+승인된 원격 push·PR, self-review, CI, merge와 이슈 close를 각각 프로젝트 절차에 따라 진행한다. #4960의
+W5 상태와 제품 후속 이슈 후보도 통합 결과를 확인한 뒤 별도 갱신한다.
