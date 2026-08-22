@@ -220,7 +220,7 @@ samples/table-complex.hwp	4	4	0
 samples/table-in-tbox.hwp	2	2	0
 samples/table-ipc.hwp	10	10	0
 samples/table-vpos-01.hwp	5	5	0
-samples/table_giant_cell_overfill.hwpx	48	42	-6
+samples/table_giant_cell_overfill.hwpx	48	47	-1
 samples/table_scattered_header_rowbreak.hwp	52	52	0
 samples/table_text_anchor_wrap.hwpx	3	3	0
 samples/tac-case-001.hwp	1	1	0
