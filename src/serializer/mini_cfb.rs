@@ -38,6 +38,7 @@ struct DirEntry {
     left: u32,
     right: u32,
     child: u32,
+    color: u8,
     start_sector: u32,
     is_mini: bool,
     /// 디렉터리 엔트리 +80, 16바이트. OLE 개체는 이 값으로 서버를 식별한다 (#4097).
@@ -59,6 +60,7 @@ impl DirEntry {
             left: NOSTREAM,
             right: NOSTREAM,
             child: NOSTREAM,
+            color: 1,
             // Storage(1)는 start_sector=0 (MS-CFB 스펙: "SHOULD be set to all zeroes")
             // Root(5), Stream(2)은 ENDOFCHAIN → 나중에 실제 값으로 교체
             start_sector: if obj_type == 1 { 0 } else { ENDOFCHAIN },
@@ -468,12 +470,45 @@ fn build_tree(entries: &mut Vec<DirEntry>, idx: usize) {
     let root = build_balanced_tree(entries, &sorted);
     entries[idx].child = root;
 
+    // Midpoint BST의 leaf 깊이는 최대 깊이 또는 그보다 1 작다. 최하단 노드만
+    // red, 나머지를 black으로 두면 모든 NIL 경로의 black-height가 같아지고
+    // red-red 인접도 생기지 않는다. 각 자식 트리의 root는 항상 black이다.
+    let max_depth = tree_max_depth(entries, root, 0);
+    color_deepest_nodes(entries, root, 0, max_depth);
+
     // 하위 스토리지에 대해 재귀
     for &child_idx in &children {
         if entries[child_idx].obj_type == 1 {
             build_tree(entries, child_idx);
         }
     }
+}
+
+fn tree_max_depth(entries: &[DirEntry], idx: u32, depth: usize) -> usize {
+    if idx == NOSTREAM {
+        return depth.saturating_sub(1);
+    }
+    let entry = &entries[idx as usize];
+    tree_max_depth(entries, entry.left, depth + 1).max(tree_max_depth(
+        entries,
+        entry.right,
+        depth + 1,
+    ))
+}
+
+fn color_deepest_nodes(entries: &mut [DirEntry], idx: u32, depth: usize, max_depth: usize) {
+    if idx == NOSTREAM {
+        return;
+    }
+    let left = entries[idx as usize].left;
+    let right = entries[idx as usize].right;
+    entries[idx as usize].color = if depth > 0 && depth == max_depth {
+        0 // red
+    } else {
+        1 // black
+    };
+    color_deepest_nodes(entries, left, depth + 1, max_depth);
+    color_deepest_nodes(entries, right, depth + 1, max_depth);
 }
 
 /// 정렬된 인덱스 배열로 균형 이진 트리를 구축한다.
@@ -590,8 +625,8 @@ fn write_dir_entry(output: &mut [u8], offset: usize, entry: &DirEntry) {
     // Object type
     buf[66] = entry.obj_type;
 
-    // Color flag: 1 = black (유효한 red-black 트리)
-    buf[67] = 1;
+    // Color flag: 0 = red, 1 = black
+    buf[67] = entry.color;
 
     // Left sibling
     buf[68..72].copy_from_slice(&entry.left.to_le_bytes());
