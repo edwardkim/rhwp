@@ -76,6 +76,19 @@ fn equation_by_script(path: &Path, script: &str) -> Equation {
         .expect("inserted equation must round-trip")
 }
 
+fn equation_in_section(doc: &HwpDocument, section_idx: usize, script: &str) -> Equation {
+    doc.document().sections[section_idx].paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::Equation(equation) if equation.script == script => {
+                Some(equation.as_ref().clone())
+            }
+            _ => None,
+        })
+        .expect("inserted equation must exist")
+}
+
 #[test]
 fn insert_equation_adds_control() {
     let src = sample();
@@ -117,6 +130,34 @@ fn insert_equation_adds_control() {
     assert_eq!(equation.version_info, "Equation Version 60");
     assert_eq!(equation.font_name, "HYhwpEQ");
     let _ = std::fs::remove_file(&out);
+}
+
+#[test]
+fn insert_equation_assigns_unique_ids_across_sections() {
+    let mut doc = HwpDocument::create_empty();
+    let template = doc.document().sections[0].clone();
+    let mut document = doc.document().clone();
+    document.sections = vec![template; 65];
+    doc.set_document(document);
+
+    doc.insert_equation_native(0, 0, 0, "a", 1000, 0)
+        .expect("section 0 insert");
+    doc.insert_equation_native(64, 0, 0, "b", 1000, 0)
+        .expect("section 64 insert");
+    doc.insert_equation_native(0, 0, 0, "c", 1000, 0)
+        .expect("second section 0 insert");
+
+    let first = equation_in_section(&doc, 0, "a");
+    let other_section = equation_in_section(&doc, 64, "b");
+    let second = equation_in_section(&doc, 0, "c");
+
+    assert_eq!(first.common.instance_id, 0x4400_0001);
+    assert_eq!(other_section.common.instance_id, 0x4400_0002);
+    assert_eq!(second.common.instance_id, 0x4400_0003);
+    assert_ne!(first.common.instance_id, other_section.common.instance_id);
+    assert_eq!(first.common.z_order, 0);
+    assert_eq!(other_section.common.z_order, 0);
+    assert_eq!(second.common.z_order, 1);
 }
 
 #[test]
