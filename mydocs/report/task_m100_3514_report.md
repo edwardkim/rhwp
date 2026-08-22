@@ -72,7 +72,7 @@ PR 생성 전 최신 `upstream/devel`을 다시 fetch하자 기존 기준보다 
 
 Docker daemon이 꺼져 문서화된 표준 최적화 WASM image는 로컬에서 실행하지 못했다. 대신 최신 Rust를
 네이티브 `wasm-pack --no-opt`로 실제 컴파일해 extension build와 브라우저 검증에 사용했으며, 최적화
-WASM은 PR CI에서 재확인한다.
+WASM은 Docker 사용 가능 환경 또는 release pipeline에서 재확인한다.
 
 Stage 5에서 시도한 `cargo fmt --all -- --check`는 당시 base가 일반 작업 checkout에 두지 않는 review-only 파생 suite
 `tests/generated/regression_suite_001.rs`~`032.rs`를 참조해 format 검사 진입 전에 중단됐다. 이번
@@ -119,7 +119,8 @@ WASM과 이를 소비하는 Firefox/Chrome build·dist·실제 Chrome은 최종 
 
 최초 Chrome smoke는 sandbox가 loopback fixture의 `127.0.0.1` bind를 `EPERM`으로 차단해 surface
 실행 전에 중단됐다. 같은 명령을 허용된 실행 환경에서 재실행해 10/10 통과했으므로 제품 실패나 테스트
-retry로 분류하지 않는다. Docker daemon은 여전히 꺼져 표준 최적화 WASM은 PR CI 재확인 범위다.
+retry로 분류하지 않는다. Docker daemon은 여전히 꺼져 표준 최적화 WASM은 Docker 사용 가능 환경 또는
+release pipeline의 재확인 범위다.
 
 ## 2026-08-22 최종 upstream 정합화와 Stage 6 판정
 

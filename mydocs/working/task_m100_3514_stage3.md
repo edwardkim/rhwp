@@ -39,7 +39,7 @@ extension ID와 MV3 worker, HWP3 viewer canvas, 다크 자산, options, print su
 로컬 Docker daemon이 꺼져 표준 `docker compose ... wasm` 최적화 경로는 실행하지 못했다. 초기 환경
 준비에서 개발 가이드의 네이티브 `wasm-pack build --target web --out-dir pkg --no-opt` fallback으로
 현재 source의 WASM을 만들었다. Stage 2에는 Rust 변경이 없으며 Chrome·Firefox package는 이 동일
-WASM을 사용했다. 최종 최적화 산출물은 PR CI에서 재확인한다.
+WASM을 사용했다. 최종 최적화 산출물은 Docker 사용 가능 환경 또는 release pipeline에서 재확인한다.
 
 렌더링·레이아웃 구현 변경이 없어 PDF/SVG 시각 비교는 적용하지 않았다. 실제 HWP3 canvas 생성과
 다크 자산 로드는 package smoke에서 직접 확인했다.
