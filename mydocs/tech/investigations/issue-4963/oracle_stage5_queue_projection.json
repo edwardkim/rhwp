@@ -1,7 +1,6 @@
 {
   "actionableRanks": [
-    8,
-    16
+    8
   ],
   "candidateCount": 17,
   "candidates": [
@@ -653,16 +652,16 @@
     },
     {
       "availableProfiles": [],
-      "disposition": "pending-read-only-profile",
+      "disposition": "terminal-read-only-capability-mismatch",
       "documentFace": "한컴 윤고딕 230",
-      "nextAction": "run-rank16-read-only-exact-profile",
+      "nextAction": "preserve-read-only-disposition",
       "questions": {
         "all-related-fonts-missing": {
           "evidence": [
-            "mydocs/tech/investigations/issue-4963/oracle_stage3_contract.json"
+            "mydocs/tech/investigations/issue-4963/oracle_stage5_rank16_read_only_disposition.json"
           ],
-          "reason": "The exact face already exists outside the managed font set and is not removed by this contract.",
-          "status": "blocked-protected-ambient-exact"
+          "reason": "The ambient English alias remains outside the managed set; this read-only lane does not remove it or create missing states.",
+          "status": "blocked-protected-ambient-alias"
         },
         "curated-official-successor-only": {
           "evidence": [],
@@ -671,24 +670,24 @@
         },
         "document-subst-font-only": {
           "evidence": [
-            "mydocs/tech/investigations/issue-4963/oracle_stage3_contract.json"
+            "mydocs/tech/investigations/issue-4963/oracle_stage5_rank16_read_only_disposition.json"
           ],
-          "reason": "The exact face already exists outside the managed font set and is not removed by this contract.",
-          "status": "blocked-protected-ambient-exact"
+          "reason": "The ambient English alias remains outside the managed set; this read-only lane does not remove it or create missing states.",
+          "status": "blocked-protected-ambient-alias"
         },
         "exact-installed": {
           "evidence": [
-            "mydocs/tech/investigations/issue-4963/oracle_stage3_contract.json"
+            "mydocs/tech/investigations/issue-4963/oracle_stage5_rank16_read_only_disposition.json"
           ],
-          "reason": "Exact selection is observed, but the PDF profile has not yet been projected.",
-          "status": "pending-read-only-profile"
+          "reason": "The restored document face falls back to HCRBatang and the PDF does not use the exact SFNT bytes.",
+          "status": "blocked-document-face-name-resolution"
         },
         "exact-removed": {
           "evidence": [
-            "mydocs/tech/investigations/issue-4963/oracle_stage3_contract.json"
+            "mydocs/tech/investigations/issue-4963/oracle_stage5_rank16_read_only_disposition.json"
           ],
-          "reason": "The exact face already exists outside the managed font set and is not removed by this contract.",
-          "status": "blocked-protected-ambient-exact"
+          "reason": "The ambient English alias remains outside the managed set; this read-only lane does not remove it or create missing states.",
+          "status": "blocked-protected-ambient-alias"
         }
       },
       "queueRank": 16,
@@ -730,17 +729,18 @@
       "sourceReadiness": "source-unavailable"
     }
   ],
-  "canonicalSha256": "4f4c35778e0131844b5995c1ddc88a85be824fd73901cecb8d74de6bd7cf27ce",
+  "canonicalSha256": "46e14974fa04ee7b44395b9a278ef225fb5786aebf4dc78631b2fab4c3c95d0b",
   "counts": {
     "complete-acceptance-ladder": 2,
     "pending-controlled-ladder": 1,
-    "pending-read-only-profile": 1,
     "terminal-protected-partial": 3,
+    "terminal-read-only-capability-mismatch": 1,
     "terminal-source-unavailable": 10
   },
   "inputs": {
     "profileInventorySha256": "a09772cf2a9f9b3476f7830c4963047e7ad5b12ba7aa7b0f53ca44ca8c7e46f0",
     "rank13BlockedDispositionSha256": "7c6506dc23ce9d5983147ee62ef6e6dc46e8bbaceb2656c6414d92a4952c2796",
+    "rank16ReadOnlyDispositionSha256": "dbf596fd79aa4b0d55a00f5761d8e93b7a006606eddc44455937815e9bc1eeda",
     "readinessSha256": "76338ef972a7a279e6cd499d103b9e5c8836ad942dd4ce9134c5142a669e91db",
     "stage3ContractSha256": "52d27ea8aac1b8b666213fecea6dc38bc4a1cc0378ba9827f1fe0e2201b06c7f",
     "stage4AcceptanceProjectionSha256": "bfa4a622ca9e6bffae2b9ab4df5ff7c298898ff10c083be4d4c0dba2aa10843c"
@@ -772,9 +772,8 @@
     "privateDocumentIdentityIncluded": false
   },
   "recommendedExecutionOrder": [
-    16,
     8
   ],
   "schemaVersion": 1,
-  "stage": "W5-5A"
+  "stage": "W5-5B"
 }

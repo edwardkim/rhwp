@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""W5-5A reuse matrix and terminal-disposition regression tests."""
+"""W5-5 reuse matrix and terminal-disposition regression tests."""
 
 from __future__ import annotations
 
@@ -21,6 +21,9 @@ from oracle_stage5_queue_projection import (  # noqa: E402
     SOURCE_UNAVAILABLE_RANKS,
     validate_queue_projection,
 )
+from oracle_stage5_rank16_disposition import (  # noqa: E402
+    validate_rank16_read_only_disposition,
+)
 
 
 def read_json(path: Path):
@@ -34,12 +37,17 @@ class OracleStage5QueueProjectionTests(unittest.TestCase):
         cls.projection = read_json(cls.projection_path)
         cls.blocked_path = INVESTIGATION / "oracle_stage4_rank13_blocked_disposition.json"
         cls.blocked = read_json(cls.blocked_path)
+        cls.rank16_path = (
+            INVESTIGATION / "oracle_stage5_rank16_read_only_disposition.json"
+        )
+        cls.rank16 = read_json(cls.rank16_path)
         cls.by_rank = {
             entry["queueRank"]: entry for entry in cls.projection["candidates"]
         }
 
     def test_projection_is_canonical_and_covers_the_frozen_queue(self):
         self.assertEqual(validate_queue_projection(self.projection), [])
+        self.assertEqual(self.projection["stage"], "W5-5B")
         self.assertEqual(self.projection["candidateCount"], 17)
         self.assertEqual(list(self.by_rank), list(range(1, 18)))
         self.assertEqual(
@@ -47,26 +55,51 @@ class OracleStage5QueueProjectionTests(unittest.TestCase):
             {
                 "complete-acceptance-ladder": 2,
                 "pending-controlled-ladder": 1,
-                "pending-read-only-profile": 1,
                 "terminal-protected-partial": 3,
+                "terminal-read-only-capability-mismatch": 1,
                 "terminal-source-unavailable": 10,
             },
         )
 
-    def test_only_rank8_and_rank16_remain_actionable(self):
-        self.assertEqual(self.projection["actionableRanks"], [8, 16])
-        self.assertEqual(self.projection["recommendedExecutionOrder"], [16, 8])
+    def test_only_rank8_remains_actionable(self):
+        self.assertEqual(self.projection["actionableRanks"], [8])
+        self.assertEqual(self.projection["recommendedExecutionOrder"], [8])
         self.assertEqual(
             self.by_rank[8]["nextAction"],
             "approve-distinct-substitution-and-run-rank8",
         )
-        self.assertEqual(
-            self.by_rank[16]["nextAction"],
-            "run-rank16-read-only-exact-profile",
-        )
+        self.assertEqual(self.by_rank[16]["nextAction"], "preserve-read-only-disposition")
         for rank, entry in self.by_rank.items():
-            if rank not in {8, 16}:
+            if rank != 8:
                 self.assertNotIn("run-rank", entry["nextAction"])
+
+    def test_rank16_uses_restored_feature_detection_not_the_old_probe(self):
+        entry = self.by_rank[16]
+        self.assertEqual(validate_rank16_read_only_disposition(self.rank16), [])
+        self.assertEqual(entry["disposition"], "terminal-read-only-capability-mismatch")
+        self.assertEqual(
+            entry["questions"]["exact-installed"]["status"],
+            "blocked-document-face-name-resolution",
+        )
+        self.assertTrue(self.rank16["featureDetection"]["priorSingleSelectionExact"])
+        self.assertFalse(self.rank16["featureDetection"]["documentFace"]["exact"])
+        self.assertTrue(self.rank16["featureDetection"]["sfntEnglishAlias"]["exact"])
+        self.assertEqual(
+            self.rank16["output"]["subsetFontNames"],
+            ["INPILL+HCRBatang-Bold"],
+        )
+        self.assertFalse(self.rank16["output"]["exactSourceSubsetObserved"])
+        self.assertEqual(
+            self.projection["inputs"]["rank16ReadOnlyDispositionSha256"],
+            sha256_file(self.rank16_path),
+        )
+
+        changed = copy.deepcopy(self.rank16)
+        changed["output"]["exactSourceSubsetObserved"] = True
+        self.assertIn(
+            "rank 16 disposition invented an exact PDF subset",
+            validate_rank16_read_only_disposition(changed),
+        )
 
     def test_completed_ladders_are_reused_without_remeasurement(self):
         for rank in (1, 7):
@@ -139,7 +172,7 @@ class OracleStage5QueueProjectionTests(unittest.TestCase):
 
     def test_canonical_and_actionable_rank_drift_fail_closed(self):
         changed = copy.deepcopy(self.projection)
-        changed["actionableRanks"] = [8, 9, 16]
+        changed["actionableRanks"] = [8, 9]
         errors = validate_queue_projection(changed)
         self.assertIn("queue projection actionable rank boundary drifted", errors)
         self.assertIn("queue projection canonical hash mismatch", errors)
@@ -151,7 +184,7 @@ class OracleStage5QueueProjectionTests(unittest.TestCase):
         self.assertEqual(validate_queue_projection(changed), [])
 
     def test_public_artifacts_do_not_publish_private_inputs(self):
-        for path in (self.projection_path, self.blocked_path):
+        for path in (self.projection_path, self.blocked_path, self.rank16_path):
             text = path.read_text(encoding="utf-8")
             self.assertNotIn("/home/", text)
             self.assertNotIn("/mnt/", text)

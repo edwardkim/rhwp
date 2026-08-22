@@ -1,6 +1,6 @@
 ---
 kind: working-note
-status: in-progress
+status: completed
 issue: 4963
 stage: W5-5A
 last_verified: 2026-08-22
@@ -11,7 +11,7 @@ last_verified: 2026-08-22
 - **이슈**: [#4963](https://github.com/edwardkim/rhwp/issues/4963)
 - **계획**: [`task_m100_4963.md`](../plans/task_m100_4963.md)
 - **선행 단계**: [`task_m100_4963_w5_stage4b.md`](task_m100_4963_w5_stage4b.md)
-- **단계 상태**: 전건 reuse·terminal·actionable 분류 완료, 후속 실행 승인 대기
+- **단계 상태**: 전건 reuse·terminal·actionable 분류 완료, W5-5B로 이관
 
 ## 1. 목적
 
@@ -78,3 +78,6 @@ controlled ladder**로 한다. 이 순서와 rank 8 substitution 계약에 대�
 
 공개 projection과 blocked disposition에는 raw VM/checkpoint 이름, 절대 경로, font bytes, private corpus
 문서·식별자를 포함하지 않는다.
+
+후속 rank 16 기능 탐지 결과와 queue 정정은
+[`task_m100_4963_w5_stage5b.md`](task_m100_4963_w5_stage5b.md)에 기록한다.

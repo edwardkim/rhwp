@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the W5-5A 17-face action matrix without redundant Oracle runs."""
+"""Build the W5-5 17-face action matrix without redundant Oracle runs."""
 
 from __future__ import annotations
 
@@ -22,6 +22,11 @@ from oracle_stage2_common import (
     write_bytes,
 )
 from oracle_stage4_profile import reject_absolute_paths, require_equal
+from oracle_stage5_rank16_disposition import (
+    DISPOSITION_NAME as RANK16_DISPOSITION_NAME,
+    build_rank16_read_only_disposition,
+    validate_rank16_read_only_disposition,
+)
 
 
 READINESS_PATH = INVESTIGATION / "font_oracle_readiness.json"
@@ -205,6 +210,7 @@ def _candidate_projection(
     profiles: list[dict[str, Any]],
     stage3: dict[str, Any],
     rank13_artifact: str,
+    rank16_artifact: str,
 ) -> dict[str, Any]:
     rank = entry["queueRank"]
     face = entry["documentFace"]
@@ -335,29 +341,28 @@ def _candidate_projection(
         disposition = "terminal-protected-partial"
         next_action = "preserve-provider-and-reuse-blocked-disposition"
     elif rank == 16:
-        selection_evidence = "mydocs/tech/investigations/issue-4963/oracle_stage3_contract.json"
         results = stage3["currentHostCanary"]["selectionProbe"]["results"]
         matches = [result for result in results if result.get("queueRank") == 16]
         if len(matches) != 1 or matches[0].get("exact") is not True:
             raise OracleStage2Error("rank 16 exact selection evidence is unavailable")
         protected = _question(
-            "blocked-protected-ambient-exact",
-            "The exact face already exists outside the managed font set and is not removed by this contract.",
-            [selection_evidence],
+            "blocked-protected-ambient-alias",
+            "The ambient English alias remains outside the managed set; this read-only lane does not remove it or create missing states.",
+            [rank16_artifact],
         )
         questions = {
             "exact-installed": _question(
-                "pending-read-only-profile",
-                "Exact selection is observed, but the PDF profile has not yet been projected.",
-                [selection_evidence],
+                "blocked-document-face-name-resolution",
+                "The restored document face falls back to HCRBatang and the PDF does not use the exact SFNT bytes.",
+                [rank16_artifact],
             ),
             "exact-removed": protected,
             "document-subst-font-only": protected,
             "curated-official-successor-only": successor,
             "all-related-fonts-missing": protected,
         }
-        disposition = "pending-read-only-profile"
-        next_action = "run-rank16-read-only-exact-profile"
+        disposition = "terminal-read-only-capability-mismatch"
+        next_action = "preserve-read-only-disposition"
     else:
         raise OracleStage2Error(f"unclassified W5 queue rank: {rank}")
 
@@ -372,22 +377,42 @@ def _candidate_projection(
     }
 
 
-def build_queue_projection(rank13_disposition_path: Path) -> dict[str, Any]:
+def build_queue_projection(
+    rank13_disposition_path: Path,
+    rank16_disposition_path: Path,
+) -> dict[str, Any]:
     readiness = read_json(READINESS_PATH)
     profile_contract = read_json(PROFILE_CONTRACT_PATH)
     stage3 = read_json(STAGE3_CONTRACT_PATH)
     stage4 = read_json(STAGE4_PROJECTION_PATH)
     rank13_disposition = read_json(rank13_disposition_path)
+    rank16_disposition = read_json(rank16_disposition_path)
     reject_absolute_paths(rank13_disposition)
+    reject_absolute_paths(rank16_disposition)
     require_equal(
         rank13_disposition.get("status"),
         "blocked-immutable-or-unmanaged-font",
         "rank 13 blocked disposition",
     )
+    require_equal(
+        rank16_disposition.get("status"),
+        "blocked-document-face-name-resolution",
+        "rank 16 read-only disposition",
+    )
+    rank16_errors = validate_rank16_read_only_disposition(rank16_disposition)
+    if rank16_errors:
+        raise OracleStage2Error("; ".join(rank16_errors))
     by_rank, inventory_sha256 = _profile_inventory()
     rank13_artifact = (INVESTIGATION / RANK13_DISPOSITION_NAME).relative_to(ROOT).as_posix()
+    rank16_artifact = (INVESTIGATION / RANK16_DISPOSITION_NAME).relative_to(ROOT).as_posix()
     candidates = [
-        _candidate_projection(entry, by_rank.get(entry["queueRank"], []), stage3, rank13_artifact)
+        _candidate_projection(
+            entry,
+            by_rank.get(entry["queueRank"], []),
+            stage3,
+            rank13_artifact,
+            rank16_artifact,
+        )
         for entry in readiness["candidates"]
     ]
     require_equal([entry["queueRank"] for entry in candidates], list(range(1, 18)), "queue order")
@@ -404,12 +429,13 @@ def build_queue_projection(rank13_disposition_path: Path) -> dict[str, Any]:
         "schemaVersion": 1,
         "kind": "font-oracle-stage5-queue-projection",
         "issue": 4963,
-        "stage": "W5-5A",
+        "stage": "W5-5B",
         "inputs": {
             "readinessSha256": sha256_file(READINESS_PATH),
             "stage3ContractSha256": sha256_file(STAGE3_CONTRACT_PATH),
             "stage4AcceptanceProjectionSha256": sha256_file(STAGE4_PROJECTION_PATH),
             "rank13BlockedDispositionSha256": sha256_file(rank13_disposition_path),
+            "rank16ReadOnlyDispositionSha256": sha256_file(rank16_disposition_path),
             "profileInventorySha256": inventory_sha256,
         },
         "policy": {
@@ -425,8 +451,8 @@ def build_queue_projection(rank13_disposition_path: Path) -> dict[str, Any]:
         },
         "candidateCount": len(candidates),
         "counts": dict(sorted(counts.items())),
-        "actionableRanks": [8, 16],
-        "recommendedExecutionOrder": [16, 8],
+        "actionableRanks": [8],
+        "recommendedExecutionOrder": [8],
         "candidates": candidates,
         "privacy": {
             "absolutePathIncluded": False,
@@ -445,15 +471,25 @@ def validate_queue_projection(value: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if value.get("schemaVersion") != 1 or value.get("kind") != "font-oracle-stage5-queue-projection":
         errors.append("queue projection identity mismatch")
+    if value.get("stage") != "W5-5B":
+        errors.append("queue projection stage drifted")
     candidates = value.get("candidates")
     if not isinstance(candidates, list) or len(candidates) != 17:
         errors.append("queue projection must contain 17 candidates")
         candidates = []
     if [entry.get("queueRank") for entry in candidates] != list(range(1, 18)):
         errors.append("queue projection ranks are not exact and ordered")
-    if value.get("actionableRanks") != [8, 16]:
+    if len(candidates) == 17:
+        rank16 = candidates[15]
+        if (
+            rank16.get("disposition") != "terminal-read-only-capability-mismatch"
+            or rank16.get("questions", {}).get("exact-installed", {}).get("status")
+            != "blocked-document-face-name-resolution"
+        ):
+            errors.append("queue projection rank 16 disposition drifted")
+    if value.get("actionableRanks") != [8]:
         errors.append("queue projection actionable rank boundary drifted")
-    if value.get("recommendedExecutionOrder") != [16, 8]:
+    if value.get("recommendedExecutionOrder") != [8]:
         errors.append("queue projection safe execution order drifted")
     if value.get("policy", {}).get("privateCorpusRemeasurementRequired") is not False:
         errors.append("queue projection reintroduced private corpus measurement")
@@ -474,11 +510,13 @@ def validate_queue_projection(value: dict[str, Any]) -> list[str]:
 def write_outputs(
     output_root: Path,
     rank13_disposition: dict[str, Any],
+    rank16_disposition: dict[str, Any],
     queue_projection: dict[str, Any],
 ) -> dict[str, str]:
     hashes = {}
     for name, value in (
         (RANK13_DISPOSITION_NAME, rank13_disposition),
+        (RANK16_DISPOSITION_NAME, rank16_disposition),
         (QUEUE_PROJECTION_NAME, queue_projection),
     ):
         payload = pretty_json_bytes(value)
@@ -490,6 +528,7 @@ def write_outputs(
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage4-evidence-root", type=Path, required=True)
+    parser.add_argument("--stage5-evidence-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     return parser.parse_args()
 
@@ -497,13 +536,16 @@ def parse_arguments() -> argparse.Namespace:
 def main() -> int:
     args = parse_arguments()
     rank13 = build_rank13_blocked_disposition(args.stage4_evidence_root)
+    rank16 = build_rank16_read_only_disposition(args.stage5_evidence_root)
     with_rank13 = output_path(args.output_root, RANK13_DISPOSITION_NAME)
+    with_rank16 = output_path(args.output_root, RANK16_DISPOSITION_NAME)
     write_bytes(with_rank13, pretty_json_bytes(rank13), mode=0o644)
-    projection = build_queue_projection(with_rank13)
+    write_bytes(with_rank16, pretty_json_bytes(rank16), mode=0o644)
+    projection = build_queue_projection(with_rank13, with_rank16)
     errors = validate_queue_projection(projection)
     if errors:
         raise OracleStage2Error("; ".join(errors))
-    hashes = write_outputs(args.output_root, rank13, projection)
+    hashes = write_outputs(args.output_root, rank13, rank16, projection)
     print(json.dumps(hashes, ensure_ascii=False, sort_keys=True, indent=2))
     return 0
 

@@ -45,6 +45,7 @@ snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 fon
 | `scripts/oracle_stage3_profile.py` | local-only 실행 증적을 path-free acceptance profile로 투영 |
 | `scripts/oracle_stage4_contract.py` | attestation·동일 입력·managed/unrelated font·restore validator |
 | `scripts/oracle_stage4_profile.py` | local-only W5-4B 증거를 path-free profile·ladder·projection으로 변환 |
+| `scripts/oracle_stage5_rank16_disposition.py` | rank 16 read-only 기능 탐지를 path-free blocked disposition으로 변환 |
 | `scripts/oracle_stage5_queue_projection.py` | 기존 증거를 전건 disposition으로 결합하고 재계측 후보를 제한 |
 | `scripts/tests/test_oracle_stage2.py` | 결정론·손상·상한·path escape·symlink 회귀 test |
 | `scripts/tests/test_oracle_stage3.py` | historical 결정론·현재 canary·negative control·privacy 회귀 test |
@@ -144,3 +145,9 @@ source가 없는 10개와 보호된 ambient/HFT provider를 가진 rank 9·10·1
 disposition으로 닫는다. 추가 Oracle 실행 후보는 rank 8과 rank 16뿐이며, 안전한 순서는 rank 16
 read-only exact profile 뒤 rank 8 controlled ladder다. 세부 근거와 rank 8의 distinct substitution 계약은
 [`task_m100_4963_w5_stage5a.md`](../../../working/task_m100_4963_w5_stage5a.md)에 기록한다.
+
+Stage W5-5B는 rank 16을 복원된 기준선에서 font resource 추가 없이 실행했다. 영문 SFNT alias는 exact로
+선택됐지만 문서의 한글 face는 `함초롬바탕`으로 readback됐고 PDF도 `HCRBatang-Bold`만 사용했다.
+따라서 Stage W5-3의 단발 selection 성공만으로 exact-installed profile을 발행하지 않고
+`blocked-document-face-name-resolution` disposition으로 닫았다. 현재 actionable rank는 rank 8 하나이며,
+세부 판정은 [`task_m100_4963_w5_stage5b.md`](../../../working/task_m100_4963_w5_stage5b.md)에 기록한다.
