@@ -1448,6 +1448,9 @@ impl HeightMeasurer {
 
         let row_count = table.row_count as usize;
         let mut row_heights = vec![0.0f64; row_count];
+        // 행별 **컨텐츠** 하한 — 2단계에서만 채워지며, 병합 선언이 행합보다 작을 때
+        // (2-b 축소 규칙) 글자가 잘리지 않도록 축소 바닥으로 쓴다.
+        let mut content_row_floor = vec![0.0f64; row_count];
 
         // 1단계: row_span==1인 셀에서 행별 최대 높이 추출
         // cell.height는 HWP가 저장한 셀 높이 (pad + content, trailing ls 미포함)
@@ -2060,6 +2063,9 @@ impl HeightMeasurer {
                         }
                     }
                 }
+                if required_height > content_row_floor[r] {
+                    content_row_floor[r] = required_height;
+                }
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;
                 }
@@ -2125,6 +2131,21 @@ impl HeightMeasurer {
                 if total_h > known_sum + 0.5 {
                     row_heights[r + span - 1] += total_h - known_sum;
                 }
+            }
+            // [#5910] 반대 방향 모순 — 병합 셀 선언이 걸친 행들의 단일행 선언 합보다
+            // **작다**. 한글은 이때도 병합 선언을 권위로 삼아 마지막 걸침 행을 줄인다
+            // (규칙과 실측 근거는 `Table::rowspan_declared_overflow_shrink`). 종전에는
+            // 행합을 그대로 써 걸침 묶음이 부풀었고, rowspan 묶음은 행 단위로 쪼갤 수
+            // 없으므로 묶음 전체가 다음 쪽으로 밀려 문서가 한글보다 길어졌다
+            // (kps-ai: 한글 77쪽 → rhwp 78쪽).
+            let shrink = table.rowspan_declared_overflow_shrink();
+            for (r, &hu) in shrink.iter().enumerate().take(row_count) {
+                if hu == 0 {
+                    continue;
+                }
+                let shrunk = row_heights[r] - hwpunit_to_px(hu as i32, self.dpi);
+                // 글자 소실 방지 — 컨텐츠 하한 밑으로는 줄이지 않는다.
+                row_heights[r] = shrunk.max(content_row_floor[r]);
             }
         }
 
