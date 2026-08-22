@@ -86,4 +86,6 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   'setActiveField', 'clearActiveField', // 편집 세션 상태 (직렬화 비대상)
   'moveVertical', 'moveVerticalByPath', // 캐럿 세로 탐색 (조회)
   'ensureParagraphStableIds', // 런타임 추적 id 부여
+  // [#5769] 삭제 조각(fragment) API — 문서 IR 변경이 아니라 undo 인프라
+  'captureDeleteRange', 'restoreDeleteFragment', 'discardDeleteFragment',
 ];

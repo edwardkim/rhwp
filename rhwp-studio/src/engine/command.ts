@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   DeferredCellTextMutationResult,
   DeferredFocusedPagePatch,
   RemovedParaMeta,
@@ -841,28 +841,111 @@ export class MergeParagraphCommand implements EditCommand {
   mergeWith(): null { return null; }
 }
 
-// ─── 선택 영역 삭제 명령 ─────────────────────────────
+// ─── [#5769] 선택 영역 삭제 — 조각(fragment) 경로 ───────
 
+/**
+ * 스냅샷 대신 조각 저장소를 쓰는 선택 삭제 명령.
+ *
+ * captureDeleteRange → deleteRange → (undo: restoreDeleteFragment) 순서로,
+ * 스냅샷 2슬롯 대신 조각 1개(문단 클론 + 꼬리 line_segs + raw + 캐럿)로
+ * 역연산한다. snapshotResourceCount 는 항상 0 — 스냅샷 예산에 기여하지 않는다.
+ *
+ * redo: undo 가 조각을 소비하므로 문서를 다시 캡처해 삭제한다.
+ * 셀 내 삭제는 조각 API 미지원이라 cellOperation 이 있는 경우
+ * 스냅샷 경로로 폴백한다(Stage 3에서 확장).
+ */
+export class FragmentDeleteCommand implements EditCommand {
+  readonly type = 'deleteSelection';
+  readonly timestamp = Date.now();
+
+  private fragmentId: number | null = null;
+  private noOp = false;
+
+  constructor(
+    private cursorBefore: DocumentPosition,
+    private cursorAfter: DocumentPosition,
+    private selection: { start: DocumentPosition; end: DocumentPosition; blockPhase: number | null },
+    private sectionIdx: number,
+    private startPara: number,
+    private endPara: number,
+    private operation: (wasm: WasmBridge) => DocumentPosition | null,
+    private cellOperation: ((wasm: WasmBridge) => DocumentPosition | null) | null,
+  ) {}
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    if (this.cellOperation) {
+      return this.cellOperation(wasm);
+    }
+    this.fragmentId = wasm.captureDeleteRange(this.sectionIdx, this.startPara, this.endPara);
+    try {
+      const result = this.operation(wasm);
+      if (result === null) {
+        this.noOp = true;
+        wasm.discardDeleteFragment(this.fragmentId);
+        this.fragmentId = null;
+        return { ...this.cursorBefore };
+      }
+      return result;
+    } catch (e) {
+      wasm.discardDeleteFragment(this.fragmentId);
+      this.fragmentId = null;
+      throw e;
+    }
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    if (this.cellOperation) {
+      return this.cursorBefore;
+    }
+    if (this.fragmentId !== null) {
+      wasm.restoreDeleteFragment(this.fragmentId);
+      this.fragmentId = null;
+    }
+    return { ...this.cursorBefore };
+  }
+
+  mergeWith(): null { return null; }
+
+  selectionBefore(): { start: DocumentPosition; end: DocumentPosition; blockPhase: number | null } {
+    return this.selection;
+  }
+
+  snapshotResourceCount(): number {
+    return 0;
+  }
+
+  isNoOp(): boolean {
+    return this.noOp;
+  }
+
+  discard(wasm: WasmBridge): void {
+    if (this.fragmentId !== null) {
+      wasm.discardDeleteFragment(this.fragmentId);
+      this.fragmentId = null;
+    }
+    if (this.cellOperation) {
+      this.cellOperation = null;
+    }
+  }
+}
+/**
+ * 선택 영역 삭제 명령.
+ *
+ * 비셀(basic text) 선택은 [#5769] 조각 저장소를 사용한다 — 스냅샷 2슬롯 대신
+ * 조각 1개로 역연산해 스냅샷 예산을 절약한다. 셀 내 삭제는 조각 API 미지원이라
+ * 기존 SnapshotCommand 경로를 유지한다(Stage 3에서 확장).
+ *
+ * `kind:'command'` 로 남는다 — 양식 모드 게이트(`isOperationAllowedInEditMode` 의
+ * `'deleteSelection'` 분기)가 커맨드 타입에 걸려 있어, `kind:'snapshot'` 으로 바꾸면
+ * 양식 모드 선택 삭제가 게이트에서 드롭돼 무언 폐기가 된다.
+ */
 export class DeleteSelectionCommand implements EditCommand {
   readonly type = 'deleteSelection';
   readonly timestamp = Date.now();
 
-  /**
-   * 삭제 범위의 복원은 문서 스냅샷에 맡긴다 (Task #2418).
-   *
-   * 평문만 저장해 되돌리던 이전 방식은 글자 모양·문단 메타·인라인 컨트롤을 되살리지
-   * 못했다 — 재삽입은 삽입 지점의 현재 글자 모양을 쓰고, 다문단 복원은 문단 메타를 앞
-   * 문단에서 상속하는 `splitParagraph` 를 타며(#2342), 셀 다문단은 문단 구조 대신
-   * `'\n'` 이어붙이기로 대체됐다. 선택 범위의 서식·컨트롤을 평문 밖에서 따로 캡처하려면
-   * 글자모양 run·문단 메타·컨트롤을 읽고 되돌리는 API 가 새로 필요한데, 그것은 스냅샷이
-   * 이미 하는 일이다. 같은 이유로 붙여넣기(`pasteInternal` 등)가 스냅샷을 쓰므로 그
-   * 역연산인 선택 삭제도 같은 방식으로 맞춘다.
-   *
-   * `kind:'command'` 로 남는다 — 양식 모드 게이트(`isOperationAllowedInEditMode` 의
-   * `'deleteSelection'` 분기)가 커맨드 타입에 걸려 있어, `kind:'snapshot'` 으로 바꾸면
-   * 양식 모드 선택 삭제가 게이트에서 드롭돼 무언 폐기가 된다.
-   */
-  private readonly snapshot: SnapshotCommand;
+  /** 조각 경로(비셀) 또는 스냅샷 경로(셀). 둘 중 하나만 실체화된다. */
+  private readonly fragment: FragmentDeleteCommand | null;
+  private readonly snapshot: SnapshotCommand | null;
   private readonly selection: {
     start: DocumentPosition;
     end: DocumentPosition;
@@ -871,55 +954,74 @@ export class DeleteSelectionCommand implements EditCommand {
 
   constructor(start: DocumentPosition, end: DocumentPosition, blockPhase: number | null = null) {
     this.selection = { start: { ...start }, end: { ...end }, blockPhase };
-    // 삭제 후 커서는 선택 시작으로 모이고, undo 후에는 선택 끝으로 되돌아간다.
-    this.snapshot = new SnapshotCommand('deleteSelection', end, start, (wasm) => {
-      if (isCell(start)) {
-        // 중첩 셀 좌표 축 정합: flat controlIndex/cellIndex 는 cellPath[0](최외곽)이라
-        // 중첩 셀에서 바깥 셀을 지운다. 최내곽 셀을 대상으로 ...ByPath 로 라우팅하고,
-        // 셀 문단 인덱스는 cellPath[last] 에서 읽는다(cellParaIndexOf).
+
+    if (isCell(start)) {
+      // 셀 내 삭제 — 조각 API 미지원, 스냅샷 경로 유지 (Stage 3에서 확장)
+      this.fragment = null;
+      this.snapshot = new SnapshotCommand('deleteSelection', end, start, (wasm) => {
         wasm.deleteRangeInCellByPath(
           start.sectionIndex, start.parentParaIndex!, cellPathJson(start),
           cellParaIndexOf(start), start.charOffset, cellParaIndexOf(end), end.charOffset,
         );
-      } else {
-        wasm.deleteRange(
-          start.sectionIndex, start.paragraphIndex, start.charOffset,
-          end.paragraphIndex, end.charOffset,
-        );
-      }
-      return { ...start };
-    });
+        return { ...start };
+      });
+    } else {
+      // 비셀 선택 — 조각 경로 (#5769)
+      this.snapshot = null;
+      this.fragment = new FragmentDeleteCommand(
+        end,   // cursorBefore — undo 시 돌아갈 위치(선택 끝)
+        start, // cursorAfter — execute 후 커서 위치(선택 시작)
+        this.selection,
+        start.sectionIndex,
+        start.paragraphIndex,
+        end.paragraphIndex,
+        (wasm) => {
+          wasm.deleteRange(
+            start.sectionIndex, start.paragraphIndex, start.charOffset,
+            end.paragraphIndex, end.charOffset,
+          );
+          return { ...start };
+        },
+        null,
+      );
+    }
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
-    return this.snapshot.execute(wasm);
+    return this.fragment
+      ? this.fragment.execute(wasm)
+      : this.snapshot!.execute(wasm);
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    return this.snapshot.undo(wasm);
+    return this.fragment
+      ? this.fragment.undo(wasm)
+      : this.snapshot!.undo(wasm);
   }
 
   mergeWith(): null { return null; }
 
-  /**
-   * [Task #3416] 지우기 전 선택 범위. undo 뒤 이 범위를 되살린다.
-   *
-   * undo 가 돌려주는 커서가 이미 `end`(선택 끝)라, 여기에 anchor(`start`)만 더하면 한컴과
-   * 같은 상태가 된다 — 실측에서 undo 후 선택은 `(0,0,18)~(0,0,22)`, 캐럿은 `(0,0,22)` 였다.
-   */
   selectionBefore(): { start: DocumentPosition; end: DocumentPosition; blockPhase: number | null } {
     return this.selection;
   }
 
   snapshotResourceCount(): number {
-    return this.snapshot.snapshotResourceCount();
+    return this.fragment
+      ? this.fragment.snapshotResourceCount()
+      : this.snapshot!.snapshotResourceCount();
+  }
+
+  isNoOp(): boolean {
+    return this.fragment
+      ? this.fragment.isNoOp()
+      : this.snapshot?.isNoOp() ?? false;
   }
 
   discard(wasm: WasmBridge): void {
-    this.snapshot.discard(wasm);
+    this.fragment?.discard(wasm);
+    this.snapshot?.discard(wasm);
   }
 }
-
 // ─── 글자 서식 적용 명령 ─────────────────────────────
 
 /** 문단 하나에 대한 서식 적용 정보 */

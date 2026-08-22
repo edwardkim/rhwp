@@ -2842,6 +2842,23 @@ export class WasmBridge {
     this.doc.discardSnapshot(id);
   }
 
+  // ─── [#5769] 삭제 조각(fragment) API ──────────────────
+
+  captureDeleteRange(sectionIdx: number, startPara: number, endPara: number): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.captureDeleteRange(sectionIdx, startPara, endPara);
+  }
+
+  restoreDeleteFragment(id: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.restoreDeleteFragment(id);
+  }
+
+  discardDeleteFragment(id: number): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.doc.discardDeleteFragment(id);
+  }
+
   // ─── 머리말/꼬리말 API ──────────────────────────────────
 
   getHeaderFooter(sectionIdx: number, isHeader: boolean, applyTo: number): string {
