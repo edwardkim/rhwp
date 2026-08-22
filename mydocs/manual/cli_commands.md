@@ -618,8 +618,12 @@ rhwp 를 **실제 MCP 서버**로 실행한다. 전송은 MCP 표준 stdio(줄 �
 ### `info <파일> [--json]`
 HWP 파일 정보 표시(버전/구역 수/암호화 등).
 - `--json` (#3237): stdout 에 순수 JSON 하나 —
-  `{"schemaVersion":"1.0","source","format":"hwp5|hwpx|hwp3|hml","sizeBytes","version","sections","pageCount","paraCount","fonts"}`.
-  `version` 은 HML 이면 null. 스키마 계약은 `export-text --json` 항목과 동일 규칙.
+  `{"schemaVersion":"1.0","source","format":"hwp5|hwpx|hwp3|hml","sizeBytes","version","sections","pageCount","paraCount","fonts","title","lastSavedWith","warnings"}`.
+  `version` 은 HML 이면 null. `lastSavedWith`는 HWP5 `HwpSummaryInformation.revisionNumber`를
+  해석한 마지막 저장 제품 메타데이터다. 예: `{"product":"hancom-office-2024","version":"13.0.0.3457","confidence":"metadata"}`.
+  2018/2022/2024 매핑 근거가 없는 버전은 `product:null`, HWP3·HWPX·메타데이터 없음·손상은
+  `lastSavedWith:null`이다. 원 작성 제품의 증명이 아니며, 재저장·삭제·변조될 수 있다. 스키마 계약은
+  `export-text --json` 항목과 동일 규칙.
 
 ### `word-count <파일> [--json]` (#4999)
 IR 본문에서 구역·문단·글자·어절·쪽 수를 센다. 새 파서는 없다.

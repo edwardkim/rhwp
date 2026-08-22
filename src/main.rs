@@ -755,6 +755,17 @@ fn info_json_value(
         .map(|face| face.name.clone())
         .collect();
     let para_count: usize = document.sections.iter().map(|s| s.paragraphs.len()).sum();
+    let last_saved_with = if detected_format == rhwp::parser::FileFormat::Hwp {
+        rhwp::parser::hwp_summary::last_saved_with(&document.extra_streams).map(|save_version| {
+            serde_json::json!({
+                "product": save_version.product,
+                "version": save_version.version,
+                "confidence": "metadata",
+            })
+        })
+    } else {
+        None
+    };
     provenance::marked(
         serde_json::json!({
             "schemaVersion": ENVELOPE_SCHEMA_VERSION,
@@ -768,6 +779,9 @@ fn info_json_value(
             "fonts": fonts,
             // [#3407] best-effort 문서 제목 — 없으면 null. batch info 로 자동 전파.
             "title": document_title(doc),
+            // HWP5 summary metadata only. This identifies the last saving product,
+            // not the original authoring product, and can be absent or modified.
+            "lastSavedWith": last_saved_with,
             // [#3880 T1] 파싱 중 건너뛴 것을 봉투가 스스로 밝힌다.
             //
             // 인간 출력은 `warnings: N` 과 상세를 stderr 로 내는데 JSON 분기는 그
