@@ -103,3 +103,20 @@ commit을 push한 뒤 exact candidate 재사용 여부와 최신 aggregate를 �
 코드 self-review와 로컬·GitHub code candidate 검증에서 차단 결함을 발견하지 않아 **조건부 merge를
 권고**한다. 최종 조건은 review-only 기록이 포함된 최신 PR head의 required checks 성공, 최신
 mergeability 재확인, 작업지시자의 별도 merge 승인이다.
+
+## 메인터너 재검토 (2026-08-22)
+
+- 검토자는 `@jangster77`로 지정했고, 최신 source head
+  `365bebd028941d36448ce02175219a9f83da4f6c`를 `upstream/devel@81ddd8c4e` 위 통합
+  검토 branch에 적용했다.
+- source head의 review-only CI는 preflight와 aggregate만 성공하고 Rust archive, lint, WASM,
+  frontend gates는 경로 정책에 따라 skip됐다. 따라서 이것만으로 실제 Chrome 실행을 대신하지 않았다.
+- Ubuntu 검토 호스트에서 `npm --prefix rhwp-chrome run test:e2e:smoke`를 다시 실행해 production
+  build, page-budget Node 계약 4건, unpacked MV3 extension의 viewer/options/print/service
+  worker/content script smoke를 모두 통과했다.
+- 패키지 코드의 실행 범위, 외부망 차단, 임시 profile 정리, 예상 밖 탭과 socket abort의 실패 처리를
+  확인했고 추가 차단 결함은 발견하지 못했다. 컨테이너 Docker WASM 검증은 이 호스트에 Docker가 없어
+  실행하지 못했으며, 동일 head의 locked raw WASM build는 통과했다.
+
+**통합 후보 수용.** 이 PR의 원격 CI가 fast-pass였던 한계는 통합 PR의 새 code head Full CI로 다시
+검증한다.
