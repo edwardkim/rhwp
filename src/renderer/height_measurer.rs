@@ -406,6 +406,122 @@ pub fn fit_measured_table_nested_tail_to_declared_height(
     Some(fitted)
 }
 
+/// [#5906] 빈 host의 비-TAC RowBreak 표에서 **마지막 행만 저장 선언(cellSz)으로
+/// 잡히고 그 안에 여유가 남을 때**, 앞 행 경계는 그대로 두고 마지막 행에서만
+/// 측정−선언 드리프트를 회수한다.
+///
+/// 페인트 경로의 `fit_row_heights_to_common_height` 는 이미 같은 일을 **키우는
+/// 방향으로만** 한다 — 측정 합이 표 선언높이(hp:sz)보다 작으면 남는 몫을 마지막
+/// 행에 몰아준다. 줄어드는 방향은 그대로 버려져서, 측정이 선언을 몇 px 넘긴 표는
+/// 그 초과분 때문에 본문 바닥을 넘겨 쪽이 갈린다.
+///
+/// `samples/float-stack-defer.hwp` 의 두 번째 12행 표가 그 경우다. 한글 2022 정본은
+/// 2쪽 한 장에 12행을 모두 담고(괘선 실측 90.86pt→770.64pt = 679.78pt ≒ 선언
+/// 68051HU), 앞 11행 경계는 rhwp 측정과 ±1px 로 같다. 다른 것은 마지막 행뿐이다 —
+/// 정본 70.48px, rhwp 는 저장 cellSz 그대로 77.37px. 차이 6.89px 는 rhwp 측정 합이
+/// 표 선언높이를 넘긴 양과 정확히 같다. 그 6.89px 때문에 마지막 두 행이 3쪽으로
+/// 밀린다.
+///
+/// 그래서 회수는 마지막 행 한 곳에서만, 그리고 그 행의 저장 줄 내용(line_segs +
+/// 패딩) 아래로는 내려가지 않는 범위에서만 한다. 마지막 행이 콘텐츠에 밀려 커진
+/// 행이면(측정 ≠ 선언) 회수할 여유가 없다고 보고 손대지 않는다.
+///
+/// 호출자는 native HWP5 의 빈 TopAndBottom host 라는 저장 계약을 별도로 확인해야
+/// 한다. 이 helper 는 마지막 행의 형상과 측정/선언 차이만 검증한다.
+pub fn fit_measured_table_declared_tail_to_declared_height(
+    measured: &MeasuredTable,
+    table: &Table,
+    dpi: f64,
+) -> Option<MeasuredTable> {
+    let row_count = measured.row_heights.len();
+    if row_count < 2 || table.row_count as usize != row_count || table.common.height == 0 {
+        return None;
+    }
+    let last_row = row_count - 1;
+
+    // 마지막 행이 저장 선언으로만 잡힌 행인지 — 콘텐츠가 밀어 키운 행이면 여유가 없다.
+    let declared_tail = table
+        .cells
+        .iter()
+        .filter(|cell| {
+            cell.row as usize == last_row && cell.row_span == 1 && cell.height < 0x8000_0000
+        })
+        .map(|cell| hwpunit_to_px(cell.height as i32, dpi))
+        .fold(0.0f64, f64::max);
+    if declared_tail <= 0.0 || (measured.row_heights[last_row] - declared_tail).abs() > 0.5 {
+        return None;
+    }
+
+    // 축소 하한 = 마지막 행 셀들의 저장 줄 내용 높이 + 상하 패딩.
+    let mut content_floor = 0.0f64;
+    for cell in &table.cells {
+        if cell.row as usize != last_row || cell.row_span != 1 {
+            continue;
+        }
+        // 합성 줄 셀과 중첩 표 tail 은 여기서 판단하지 않는다 (후자는
+        // `fit_measured_table_nested_tail_to_declared_height` 담당).
+        if cell
+            .paragraphs
+            .iter()
+            .any(crate::renderer::para_has_no_stored_line_segs)
+            || cell.paragraphs.iter().any(|paragraph| {
+                paragraph
+                    .controls
+                    .iter()
+                    .any(|control| matches!(control, Control::Table(_)))
+            })
+        {
+            return None;
+        }
+        let content_hu = cell
+            .paragraphs
+            .iter()
+            .flat_map(|paragraph| paragraph.line_segs.iter())
+            .map(|seg| i64::from(seg.vertical_pos) + i64::from(seg.line_height))
+            .max()
+            .unwrap_or(0);
+        let pad = hwpunit_to_px(
+            (cell.padding.top as i32).saturating_add(cell.padding.bottom as i32),
+            dpi,
+        );
+        let floor = hwpunit_to_px(content_hu as i32, dpi) + pad;
+        if floor > content_floor {
+            content_floor = floor;
+        }
+    }
+    if content_floor <= 0.0 {
+        return None;
+    }
+
+    let spacing_total = measured.cell_spacing * row_count.saturating_sub(1) as f64;
+    let target_body_height = hwpunit_to_px(table.common.height as i32, dpi);
+    let target_row_sum = (target_body_height - spacing_total).max(0.0);
+    let current_row_sum = measured.row_heights.iter().sum::<f64>();
+    let reduction = current_row_sum - target_row_sum;
+    // 반올림 급(≤0.5px)은 건드리지 않는다. 선언의 2% 를 넘는 큰 모순은 선언이
+    // stale 한 문서일 수 있으므로 종전대로 콘텐츠 기반 분할에 맡긴다 (#672 의
+    // TAC 임계와 같은 폭).
+    if reduction <= 0.5 || reduction > (target_body_height * 0.02).max(1.0) {
+        return None;
+    }
+    let target_tail = measured.row_heights[last_row] - reduction;
+    if target_tail < content_floor - 0.5 {
+        return None;
+    }
+
+    let mut fitted = measured.clone();
+    fitted.row_heights[last_row] = target_tail;
+    fitted.cumulative_heights = vec![0.0; row_count + 1];
+    for (idx, row_height) in fitted.row_heights.iter().enumerate() {
+        let spacing = if idx > 0 { fitted.cell_spacing } else { 0.0 };
+        fitted.cumulative_heights[idx + 1] = fitted.cumulative_heights[idx] + row_height + spacing;
+    }
+    let previous_body_height = current_row_sum + spacing_total;
+    let caption_and_spacing = (measured.total_height - previous_body_height).max(0.0);
+    fitted.total_height = target_row_sum + spacing_total + caption_and_spacing;
+    Some(fitted)
+}
+
 /// 셀의 줄 단위 측정 정보 (행 내부 분할용)
 #[derive(Debug, Clone)]
 pub struct MeasuredCell {

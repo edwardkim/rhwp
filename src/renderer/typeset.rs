@@ -23,6 +23,7 @@ use crate::renderer::float_placement::{
 };
 use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::{
+    fit_measured_table_declared_tail_to_declared_height,
     fit_measured_table_nested_tail_to_declared_height, fit_measured_table_to_declared_height,
     MeasuredTable,
 };
@@ -17018,28 +17019,43 @@ impl TypesetEngine {
                     // 행만 선언 총높이에 맞춘다 (76076 p81→82). 전체 비율 축소는 정상
                     // 헤더/짧은 행까지 줄이므로 금지하고, helper가 마지막 행만 줄일 수
                     // 있는 구조·64px 이내 drift를 다시 확인한다.
-                    let native_empty_rowbreak_nested_tail = self
-                        .profile
-                        .get()
-                        .hwp5_stored_pagination_layout()
+                    let native_empty_rowbreak_nested_tail =
+                        self.profile.get().hwp5_stored_pagination_layout()
+                            && !table.common.treat_as_char
+                            && matches!(
+                                table.page_break,
+                                crate::model::table::TablePageBreak::RowBreak
+                            )
+                            && table.row_count > 1
+                            && table.cells.iter().all(|cell| cell.row_span == 1);
+                    // [#5906] 위 helper 가 못 잡는 형상이라도, 마지막 행이 저장
+                    // 선언(cellSz)으로만 잡혀 여유가 남아 있으면 그 행에서만 초과분을
+                    // 회수한다. 페인트 경로가 이미 반대 방향(부족분 → 마지막 행)으로
+                    // 하는 일과 같다 (float-stack-defer 2쪽 표 3쪽 분열).
+                    let native_empty_rowbreak = self.profile.get().hwp5_stored_pagination_layout()
                         && !table.common.treat_as_char
                         && matches!(
                             table.page_break,
                             crate::model::table::TablePageBreak::RowBreak
                         )
-                        && table.row_count > 1
-                        && table.cells.iter().all(|cell| cell.row_span == 1);
-                    if native_empty_rowbreak_nested_tail {
-                        if let Some(tail_fitted) =
-                            fit_measured_table_nested_tail_to_declared_height(measured, table, self.dpi)
-                        {
-                            tail_fitted
-                        } else {
-                            measured.clone()
-                        }
-                    } else {
-                        measured.clone()
-                    }
+                        && table.row_count > 1;
+                    native_empty_rowbreak_nested_tail
+                        .then(|| {
+                            fit_measured_table_nested_tail_to_declared_height(
+                                measured, table, self.dpi,
+                            )
+                        })
+                        .flatten()
+                        .or_else(|| {
+                            native_empty_rowbreak
+                                .then(|| {
+                                    fit_measured_table_declared_tail_to_declared_height(
+                                        measured, table, self.dpi,
+                                    )
+                                })
+                                .flatten()
+                        })
+                        .unwrap_or_else(|| measured.clone())
                 } else {
                     fitted
                 }
