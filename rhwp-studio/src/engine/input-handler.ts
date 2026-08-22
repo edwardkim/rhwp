@@ -1,4 +1,4 @@
-﻿import { WasmBridge } from '@/core/wasm-bridge';
+import { WasmBridge } from '@/core/wasm-bridge';
 import type { DeferredFocusedPagePatch } from '@/core/wasm-bridge';
 import { EventBus } from '@/core/event-bus';
 import { CursorState } from './cursor';

@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   DeferredCellTextMutationResult,
   DeferredFocusedPagePatch,
   RemovedParaMeta,
@@ -851,8 +851,8 @@ export class MergeParagraphCommand implements EditCommand {
  * 역연산한다. snapshotResourceCount 는 항상 0 — 스냅샷 예산에 기여하지 않는다.
  *
  * redo: undo 가 조각을 소비하므로 문서를 다시 캡처해 삭제한다.
- * 셀 내 삭제는 조각 API 미지원이라 cellOperation 이 있는 경우
- * 스냅샷 경로로 폴백한다(Stage 3에서 확장).
+ * 셀 내 삭제는 조각 API 미지원이라 DeleteSelectionCommand 생성자에서
+ * SnapshotCommand 경로로 폴백한다.
  */
 export class FragmentDeleteCommand implements EditCommand {
   readonly type = 'deleteSelection';
@@ -869,38 +869,35 @@ export class FragmentDeleteCommand implements EditCommand {
     private startPara: number,
     private endPara: number,
     private operation: (wasm: WasmBridge) => DocumentPosition | null,
-    private cellOperation: ((wasm: WasmBridge) => DocumentPosition | null) | null,
   ) {}
 
   execute(wasm: WasmBridge): DocumentPosition {
-    if (this.cellOperation) {
-      return this.cellOperation(wasm);
-    }
-    this.fragmentId = wasm.captureDeleteRange(this.sectionIdx, this.startPara, this.endPara);
+    // 지역 변수로 받는다 — catch 에서 프로퍼티 좁히기가 풀려 TS2345 가 난다(CI 실측).
+    const fragmentId = wasm.captureDeleteRange(this.sectionIdx, this.startPara, this.endPara);
+    this.fragmentId = fragmentId;
     try {
       const result = this.operation(wasm);
       if (result === null) {
         this.noOp = true;
-        wasm.discardDeleteFragment(this.fragmentId);
+        wasm.discardDeleteFragment(fragmentId);
         this.fragmentId = null;
         return { ...this.cursorBefore };
       }
       return result;
     } catch (e) {
-      wasm.discardDeleteFragment(this.fragmentId);
+      wasm.discardDeleteFragment(fragmentId);
       this.fragmentId = null;
       throw e;
     }
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    if (this.cellOperation) {
-      return this.cursorBefore;
+    if (this.fragmentId === null) {
+      // 실행 전·이미 복원된 뒤의 undo 는 배선 버그다 — 무음 통과 대신 드러낸다.
+      throw new Error(`${this.type} undo 불가 — 살아있는 삭제 조각이 없다`);
     }
-    if (this.fragmentId !== null) {
-      wasm.restoreDeleteFragment(this.fragmentId);
-      this.fragmentId = null;
-    }
+    wasm.restoreDeleteFragment(this.fragmentId);
+    this.fragmentId = null;
     return { ...this.cursorBefore };
   }
 
@@ -922,9 +919,6 @@ export class FragmentDeleteCommand implements EditCommand {
     if (this.fragmentId !== null) {
       wasm.discardDeleteFragment(this.fragmentId);
       this.fragmentId = null;
-    }
-    if (this.cellOperation) {
-      this.cellOperation = null;
     }
   }
 }
@@ -982,7 +976,6 @@ export class DeleteSelectionCommand implements EditCommand {
           );
           return { ...start };
         },
-        null,
       );
     }
   }
