@@ -6688,6 +6688,38 @@ impl HwpDocument {
         self.discard_snapshot_native(id)
     }
 
+    /// 삭제 직전 문단 범위 원본을 조각으로 보관한다 (#5769).
+    ///
+    /// 반드시 `deleteRangeNative` 호출 **전**에 불린다. 반환 조각 ID 는
+    /// `restoreDeleteFragment`/`discardDeleteFragment` 에 쓴다.
+    #[wasm_bindgen(js_name = captureDeleteRange)]
+    pub fn capture_delete_range(
+        &mut self,
+        section_idx: usize,
+        start_para: usize,
+        end_para: usize,
+    ) -> Result<u32, JsValue> {
+        self.capture_delete_range_native(section_idx, start_para, end_para)
+            .map_err(|e| e.into())
+    }
+
+    /// 삭제 조각을 원래 자리에 되돌려 끼운다 — 삭제의 참 역연산 (#5769).
+    ///
+    /// 스냅샷 복원과 달리 문서 전체가 아니라 삭제 범위+꼬리 줄 좌표만 되돌린다.
+    /// 성공 시 조각은 소비(제거)된다.
+    #[wasm_bindgen(js_name = restoreDeleteFragment)]
+    pub fn restore_delete_fragment(&mut self, id: u32) -> Result<String, JsValue> {
+        self.restore_delete_fragment_native(id)
+            .map_err(|e| e.into())
+    }
+
+    /// 삭제 조각을 제거하여 메모리를 해제한다 — 히스토리 축출·클리어 시 스냅샷
+    /// `discardSnapshot` 과 짝으로 호출한다(#5769).
+    #[wasm_bindgen(js_name = discardDeleteFragment)]
+    pub fn discard_delete_fragment(&mut self, id: u32) {
+        self.discard_delete_fragment_native(id)
+    }
+
     /// 캐럿 위치의 글자 속성을 조회한다.
     ///
     /// 반환값: JSON 객체 (fontFamily, fontSize, bold, italic, underline, strikethrough, textColor 등)
