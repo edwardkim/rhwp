@@ -33,6 +33,7 @@ const FIXTURES = JSON.parse(fs.readFileSync(
   path.join(INVESTIGATION, 'oracle_profile_public_fixtures.json'),
   'utf8',
 ));
+const PROFILE_DIRECTORY = path.join(INVESTIGATION, 'profiles');
 
 function clone(value) {
   return structuredClone(value);
@@ -55,6 +56,7 @@ test('W5 contract freezes the W4 queue and controlled ladder without product cha
     'blocked',
   ]);
   assert.equal(CONTRACT.profilePolicy.hmtxAndPdfAdvanceSeparated, true);
+  assert.equal(CONTRACT.profilePolicy.historicalImportMissingProvenanceExplicit, true);
   assert.equal(CONTRACT.profilePolicy.unknownIdentityGuessing, false);
   assert.equal(CONTRACT.environmentPolicy.versionBranching, false);
   assert.equal(
@@ -81,8 +83,23 @@ test('JSON Schema enum inventories cannot drift from the executable contract', (
 test('public synthetic fixture validates but is explicitly not Oracle evidence', () => {
   assert.equal(FIXTURES.validProfile.execution.evidenceClass, 'synthetic-contract-fixture');
   assert.equal(FIXTURES.validProfile.environment.oracleAuthority, 'contract-fixture');
-  assert.match(FIXTURES.validProfile.environment.hancomVersion, /not-an-oracle/u);
+  assert.match(FIXTURES.validProfile.environment.hancomVersion.value, /not-an-oracle/u);
   assert.deepEqual(validateOracleProfile(FIXTURES.validProfile, CONTRACT), []);
+});
+
+test('tracked historical and HWP 2020 Oracle Profiles satisfy the executable contract', () => {
+  const names = fs.readdirSync(PROFILE_DIRECTORY)
+    .filter(name => name.endsWith('_exact_installed.json'))
+    .sort();
+  assert.deepEqual(names, [
+    'historical_hanyang_sinmyeongjo_exact_installed.json',
+    'historical_human_myeongjo_exact_installed.json',
+    'windows_hwp2020_malgun_gothic_exact_installed.json',
+  ]);
+  for (const name of names) {
+    const profile = JSON.parse(fs.readFileSync(path.join(PROFILE_DIRECTORY, name), 'utf8'));
+    assert.deepEqual(validateOracleProfile(profile, CONTRACT), [], name);
+  }
 });
 
 test('all public negative fixtures fail closed with their declared reason', () => {
@@ -166,12 +183,12 @@ test('evidence class fixes authority and primary Oracle runs require process res
   ));
 
   mismatch.environment.oracleAuthority = 'acceptance-primary';
-  mismatch.environment.processReset = false;
+  mismatch.environment.processReset.value = false;
   assert.ok(validateOracleProfile(mismatch, CONTRACT).includes(
-    'an oracle-run requires a reset Hancom process',
+    'an oracle-run requires an observed reset Hancom process',
   ));
 
-  mismatch.environment.processReset = true;
+  mismatch.environment.processReset.value = true;
   assert.deepEqual(validateOracleProfile(mismatch, CONTRACT), []);
 });
 

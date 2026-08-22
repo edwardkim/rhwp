@@ -3,7 +3,7 @@
   "kind": "font-oracle-profile-public-fixtures",
   "issue": 4963,
   "validProfile": {
-    "schemaVersion": 1,
+    "schemaVersion": 2,
     "kind": "font-oracle-profile",
     "issue": 4963,
     "candidate": {
@@ -13,26 +13,75 @@
     "questionId": "exact-installed",
     "exactMissingState": "exact-installed",
     "input": {
-      "sourceFormat": "hwpx",
-      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "sourceFormat": {
+        "status": "observed",
+        "value": "hwpx",
+        "reason": null
+      },
+      "sha256": {
+        "status": "observed",
+        "value": "1111111111111111111111111111111111111111111111111111111111111111",
+        "reason": null
+      },
       "fixtureContractVersion": "public-contract-fixture-v1",
       "fixtureGeneratorCommit": "2222222222222222222222222222222222222222"
     },
     "environment": {
-      "os": "public-contract-fixture",
-      "locale": "ko-KR",
-      "hancomVersion": "public-contract-fixture-not-an-oracle",
-      "pdfProducer": "public-contract-fixture-not-an-oracle",
-      "exportRoute": "public-contract-fixture",
+      "os": {
+        "status": "observed",
+        "value": "public-contract-fixture",
+        "reason": null
+      },
+      "locale": {
+        "status": "observed",
+        "value": "ko-KR",
+        "reason": null
+      },
+      "hancomVersion": {
+        "status": "observed",
+        "value": "public-contract-fixture-not-an-oracle",
+        "reason": null
+      },
+      "pdfProducer": {
+        "status": "observed",
+        "value": "public-contract-fixture-not-an-oracle",
+        "reason": null
+      },
+      "exportRoute": {
+        "status": "observed",
+        "value": "public-contract-fixture",
+        "reason": null
+      },
       "oracleAuthority": "contract-fixture",
-      "ambientFontManifestSha256": "3333333333333333333333333333333333333333333333333333333333333333",
-      "processReset": true,
-      "rebooted": false
+      "ambientFontManifestSha256": {
+        "status": "observed",
+        "value": "3333333333333333333333333333333333333333333333333333333333333333",
+        "reason": null
+      },
+      "processReset": {
+        "status": "observed",
+        "value": true,
+        "reason": null
+      },
+      "rebooted": {
+        "status": "observed",
+        "value": false,
+        "reason": null
+      }
     },
     "execution": {
       "evidenceClass": "synthetic-contract-fixture",
-      "startedAt": "2026-08-22T00:00:00.000Z",
-      "finishedAt": "2026-08-22T00:00:01.000Z",
+      "measurementDate": "2026-08-22",
+      "startedAt": {
+        "status": "observed",
+        "value": "2026-08-22T00:00:00.000Z",
+        "reason": null
+      },
+      "finishedAt": {
+        "status": "observed",
+        "value": "2026-08-22T00:00:01.000Z",
+        "reason": null
+      },
       "repeatIndex": 1
     },
     "fontState": {

@@ -112,6 +112,7 @@
     "plainNullForbidden": true,
     "observedRequiresValue": true,
     "unobservedRequiresNullAndReason": true,
+    "historicalImportMissingProvenanceExplicit": true,
     "hmtxAndPdfAdvanceSeparated": true,
     "officialSuccessorRequiresObservedDirectAnchor": true,
     "unknownIdentityGuessing": false

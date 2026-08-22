@@ -1,0 +1,33 @@
+{
+  "canonicalSha256": "3f45a6e9860e008f684cfeebd8911f7c778dc9cdab7ec80d6408a4cdc5e8dcd3",
+  "issue": 4963,
+  "kind": "font-oracle-historical-import-manifest",
+  "profileCount": 2,
+  "profileSchemaVersion": 2,
+  "profiles": [
+    {
+      "canonicalSha256": "01b795ae82eed61268ebf3a03886bf3645052a9df17b28ed3c30c94218802ad4",
+      "documentFace": "한양신명조",
+      "file": "historical_hanyang_sinmyeongjo_exact_installed.json",
+      "fileSha256": "ffdf07da245c821868c4bfdcfd08a5bc099b0f21aa14f21b6ba2e02dcf04d6b0",
+      "queueRank": 10
+    },
+    {
+      "canonicalSha256": "4cf963cb6e0851411651faba1478dc629a118aba22a15fa4355f68bc25b8b1b5",
+      "documentFace": "휴먼명조",
+      "file": "historical_human_myeongjo_exact_installed.json",
+      "fileSha256": "981c3d43a690d6d248045bb2f8998e675222e1fac9c29439d79b1ec6c620ca5a",
+      "queueRank": 13
+    }
+  ],
+  "schemaVersion": 1,
+  "scope": {
+    "fileUpload": false,
+    "githubWrite": false,
+    "productFallbackChange": false,
+    "productMetricDatabaseChange": false,
+    "productPaintChange": false,
+    "remoteConversion": false,
+    "systemFontMutation": false
+  }
+}

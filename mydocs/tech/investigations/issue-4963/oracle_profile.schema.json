@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/issue-4963/oracle_profile.schema.json",
-  "title": "rhwp Font Oracle Profile v1",
-  "description": "Issue #4963 controlled exact/missing font observation envelope. Conditional evidence semantics are enforced by scripts/oracle_profile_contract.mjs.",
+  "title": "rhwp Font Oracle Profile v2",
+  "description": "Issue #4963 controlled exact/missing font observation envelope. Version 2 makes incomplete historical input and environment provenance explicit evidence. Conditional evidence semantics are enforced by scripts/oracle_profile_contract.mjs.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -21,7 +21,7 @@
     "privacy"
   ],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "kind": { "const": "font-oracle-profile" },
     "issue": { "const": 4963 },
     "candidate": {
@@ -45,8 +45,8 @@
         "fixtureGeneratorCommit"
       ],
       "properties": {
-        "sourceFormat": { "enum": ["hwp", "hwpx"] },
-        "sha256": { "$ref": "#/$defs/sha256" },
+        "sourceFormat": { "$ref": "#/$defs/evidence" },
+        "sha256": { "$ref": "#/$defs/evidence" },
         "fixtureContractVersion": { "type": "string", "minLength": 1 },
         "fixtureGeneratorCommit": { "$ref": "#/$defs/gitSha" }
       }
@@ -66,23 +66,29 @@
         "rebooted"
       ],
       "properties": {
-        "os": { "type": "string", "minLength": 1 },
-        "locale": { "type": "string", "minLength": 1 },
-        "hancomVersion": { "type": "string", "minLength": 1 },
-        "pdfProducer": { "type": "string", "minLength": 1 },
-        "exportRoute": { "type": "string", "minLength": 1 },
+        "os": { "$ref": "#/$defs/evidence" },
+        "locale": { "$ref": "#/$defs/evidence" },
+        "hancomVersion": { "$ref": "#/$defs/evidence" },
+        "pdfProducer": { "$ref": "#/$defs/evidence" },
+        "exportRoute": { "$ref": "#/$defs/evidence" },
         "oracleAuthority": {
           "enum": ["acceptance-primary", "secondary-historical", "contract-fixture"]
         },
-        "ambientFontManifestSha256": { "$ref": "#/$defs/sha256" },
-        "processReset": { "type": "boolean" },
-        "rebooted": { "type": "boolean" }
+        "ambientFontManifestSha256": { "$ref": "#/$defs/evidence" },
+        "processReset": { "$ref": "#/$defs/evidence" },
+        "rebooted": { "$ref": "#/$defs/evidence" }
       }
     },
     "execution": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["evidenceClass", "startedAt", "finishedAt", "repeatIndex"],
+      "required": [
+        "evidenceClass",
+        "measurementDate",
+        "startedAt",
+        "finishedAt",
+        "repeatIndex"
+      ],
       "properties": {
         "evidenceClass": {
           "enum": [
@@ -91,8 +97,9 @@
             "oracle-run"
           ]
         },
-        "startedAt": { "type": "string", "format": "date-time" },
-        "finishedAt": { "type": "string", "format": "date-time" },
+        "measurementDate": { "type": "string", "format": "date" },
+        "startedAt": { "$ref": "#/$defs/evidence" },
+        "finishedAt": { "$ref": "#/$defs/evidence" },
         "repeatIndex": { "type": "integer", "minimum": 1 }
       }
     },

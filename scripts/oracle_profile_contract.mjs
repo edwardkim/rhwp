@@ -300,6 +300,7 @@ export function validateOracleProfileContract(contract) {
     'plainNullForbidden',
     'observedRequiresValue',
     'unobservedRequiresNullAndReason',
+    'historicalImportMissingProvenanceExplicit',
     'hmtxAndPdfAdvanceSeparated',
     'officialSuccessorRequiresObservedDirectAnchor',
     'unknownIdentityGuessing',
@@ -385,6 +386,7 @@ export function validateOracleProfileContract(contract) {
     'plainNullForbidden',
     'observedRequiresValue',
     'unobservedRequiresNullAndReason',
+    'historicalImportMissingProvenanceExplicit',
     'hmtxAndPdfAdvanceSeparated',
     'officialSuccessorRequiresObservedDirectAnchor',
   ]) {
@@ -486,7 +488,7 @@ export function validateOracleProfile(profile, contract) {
     'relationEvidence',
     'privacy',
   ], 'profile', errors);
-  if (profile.schemaVersion !== 1) errors.push('profile schemaVersion must be 1');
+  if (profile.schemaVersion !== 2) errors.push('profile schemaVersion must be 2');
   if (profile.kind !== 'font-oracle-profile') {
     errors.push('profile kind must be font-oracle-profile');
   }
@@ -512,8 +514,26 @@ export function validateOracleProfile(profile, contract) {
   if (exactKeys(input, [
     'sourceFormat', 'sha256', 'fixtureContractVersion', 'fixtureGeneratorCommit',
   ], 'input', errors)) {
-    if (!['hwp', 'hwpx'].includes(input.sourceFormat)) errors.push('input sourceFormat is invalid');
-    if (!SHA256_PATTERN.test(input.sha256 ?? '')) errors.push('input sha256 is invalid');
+    validateEvidence(
+      input.sourceFormat,
+      'input.sourceFormat',
+      contract.profilePolicy.observationStatuses,
+      errors,
+    );
+    validateEvidence(
+      input.sha256,
+      'input.sha256',
+      contract.profilePolicy.observationStatuses,
+      errors,
+    );
+    if (input.sourceFormat?.status === 'observed'
+        && !['hwp', 'hwpx', 'in-memory-hwp'].includes(input.sourceFormat.value)) {
+      errors.push('input sourceFormat observed value is invalid');
+    }
+    if (input.sha256?.status === 'observed'
+        && !SHA256_PATTERN.test(input.sha256.value ?? '')) {
+      errors.push('input sha256 observed value is invalid');
+    }
     if (typeof input.fixtureContractVersion !== 'string'
         || input.fixtureContractVersion.length === 0) {
       errors.push('input fixtureContractVersion is required');
@@ -535,35 +555,73 @@ export function validateOracleProfile(profile, contract) {
     'processReset',
     'rebooted',
   ], 'environment', errors)) {
+    for (const field of [
+      'os',
+      'locale',
+      'hancomVersion',
+      'pdfProducer',
+      'exportRoute',
+      'ambientFontManifestSha256',
+      'processReset',
+      'rebooted',
+    ]) {
+      validateEvidence(
+        environment[field],
+        `environment.${field}`,
+        contract.profilePolicy.observationStatuses,
+        errors,
+      );
+    }
     for (const field of ['os', 'locale', 'hancomVersion', 'pdfProducer', 'exportRoute']) {
-      if (typeof environment[field] !== 'string' || environment[field].length === 0) {
-        errors.push(`environment.${field} must be a non-empty string`);
+      if (environment[field]?.status === 'observed'
+          && (typeof environment[field].value !== 'string'
+            || environment[field].value.length === 0)) {
+        errors.push(`environment.${field} observed value must be a non-empty string`);
       }
     }
     if (!['acceptance-primary', 'secondary-historical', 'contract-fixture']
       .includes(environment.oracleAuthority)) {
       errors.push('environment.oracleAuthority is invalid');
     }
-    if (!SHA256_PATTERN.test(environment.ambientFontManifestSha256 ?? '')) {
-      errors.push('environment ambient font manifest digest is invalid');
+    if (environment.ambientFontManifestSha256?.status === 'observed'
+        && !SHA256_PATTERN.test(environment.ambientFontManifestSha256.value ?? '')) {
+      errors.push('environment ambient font manifest observed digest is invalid');
     }
-    if (typeof environment.processReset !== 'boolean'
-        || typeof environment.rebooted !== 'boolean') {
-      errors.push('environment reset fields must be boolean');
+    for (const field of ['processReset', 'rebooted']) {
+      if (environment[field]?.status === 'observed'
+          && typeof environment[field].value !== 'boolean') {
+        errors.push(`environment.${field} observed value must be boolean`);
+      }
     }
   }
 
   const execution = profile.execution;
   if (exactKeys(execution, [
-    'evidenceClass', 'startedAt', 'finishedAt', 'repeatIndex',
+    'evidenceClass', 'measurementDate', 'startedAt', 'finishedAt', 'repeatIndex',
   ], 'execution', errors)) {
     if (!contract.profilePolicy.evidenceClasses.includes(execution.evidenceClass)) {
       errors.push('execution evidenceClass is invalid');
     }
-    const start = Date.parse(execution.startedAt);
-    const finish = Date.parse(execution.finishedAt);
-    if (!Number.isFinite(start) || !Number.isFinite(finish) || finish < start) {
-      errors.push('execution timestamps must be valid and monotonic');
+    if (typeof execution.measurementDate !== 'string'
+        || !/^\d{4}-\d{2}-\d{2}$/u.test(execution.measurementDate)) {
+      errors.push('execution measurementDate must be YYYY-MM-DD');
+    }
+    for (const field of ['startedAt', 'finishedAt']) {
+      validateEvidence(
+        execution[field],
+        `execution.${field}`,
+        contract.profilePolicy.observationStatuses,
+        errors,
+      );
+      if (execution[field]?.status === 'observed'
+          && !Number.isFinite(Date.parse(execution[field].value))) {
+        errors.push(`execution.${field} observed value must be a date-time`);
+      }
+    }
+    if (execution.startedAt?.status === 'observed'
+        && execution.finishedAt?.status === 'observed'
+        && Date.parse(execution.finishedAt.value) < Date.parse(execution.startedAt.value)) {
+      errors.push('execution observed timestamps must be monotonic');
     }
     if (!positiveInteger(execution.repeatIndex)) {
       errors.push('execution repeatIndex must be a positive integer');
@@ -576,8 +634,22 @@ export function validateOracleProfile(profile, contract) {
     if (environment?.oracleAuthority !== expectedAuthority) {
       errors.push('evidenceClass and oracleAuthority do not match');
     }
-    if (execution.evidenceClass === 'oracle-run' && environment?.processReset !== true) {
-      errors.push('an oracle-run requires a reset Hancom process');
+    if (execution.evidenceClass === 'oracle-run') {
+      if (environment?.processReset?.status !== 'observed'
+          || environment.processReset.value !== true) {
+        errors.push('an oracle-run requires an observed reset Hancom process');
+      }
+      for (const [label, evidence] of [
+        ['input.sourceFormat', input?.sourceFormat],
+        ['input.sha256', input?.sha256],
+        ['environment.ambientFontManifestSha256', environment?.ambientFontManifestSha256],
+        ['execution.startedAt', execution.startedAt],
+        ['execution.finishedAt', execution.finishedAt],
+      ]) {
+        if (evidence?.status !== 'observed') {
+          errors.push(`an oracle-run requires observed ${label}`);
+        }
+      }
     }
   }
 
@@ -668,7 +740,8 @@ export function validateOracleProfileSchema(schema, contract) {
   const errors = [];
   if (schema?.$schema !== 'https://json-schema.org/draft/2020-12/schema'
       || schema?.type !== 'object'
-      || schema?.additionalProperties !== false) {
+      || schema?.additionalProperties !== false
+      || schema?.properties?.schemaVersion?.const !== 2) {
     errors.push('Oracle Profile JSON Schema root has drifted');
   }
   if (!exactArray(schema?.$defs?.questionId?.enum, contract.profilePolicy.questionIds)) {
