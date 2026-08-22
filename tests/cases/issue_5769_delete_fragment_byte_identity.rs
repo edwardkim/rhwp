@@ -63,10 +63,13 @@ fn assert_byte_identity(path: &str, sec: usize, s: usize, so: usize, e: usize, e
     // char_shapes 병합이 사후 재구성을 막으므로).
     let mut core = DocumentCore::from_bytes(&bytes).expect("조각 경로 파싱");
     let before = core.export_hwp_native().expect("삭제 전 export");
-    let frag = core.capture_delete_range_native(sec, s, e).expect("조각 캡처");
+    let frag = core
+        .capture_delete_range_native(sec, s, e)
+        .expect("조각 캡처");
     core.delete_range_native(sec, s, so, e, eo, None)
         .expect("범위 삭제");
-    core.restore_delete_fragment_native(frag).expect("조각 복원");
+    core.restore_delete_fragment_native(frag)
+        .expect("조각 복원");
     let after = core.export_hwp_native().expect("복원 후 export");
     assert_eq!(before.len(), after.len(), "바이트 길이 불일치 ({label})");
     let first_diff = before.iter().zip(after.iter()).position(|(a, b)| a != b);
@@ -82,7 +85,9 @@ fn assert_byte_identity(path: &str, sec: usize, s: usize, so: usize, e: usize, e
     snap_core
         .delete_range_native(sec, s, so, e, eo, None)
         .expect("스냅샷 경로 삭제");
-    snap_core.restore_snapshot_native(snap).expect("스냅샷 복원");
+    snap_core
+        .restore_snapshot_native(snap)
+        .expect("스냅샷 복원");
     let after_snap = snap_core.export_hwp_native().expect("스냅샷 경로 export");
     assert_eq!(before, after_snap, "스냅샷 경로 대조 실패 ({label})");
 }
@@ -126,14 +131,7 @@ fn issue_5769_section_tail_boundary_delete_restores_bytes() {
     let sec = 0;
     let last = para_count(&doc, sec) - 1;
     assert!(last >= 2, "3문단 이상 필요");
-    assert_byte_identity(
-        HONGBO,
-        sec,
-        last - 1,
-        0,
-        last,
-        char_len(&doc, sec, last),
-    );
+    assert_byte_identity(HONGBO, sec, last - 1, 0, last, char_len(&doc, sec, last));
 }
 
 #[test]
