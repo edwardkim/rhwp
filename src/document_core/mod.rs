@@ -210,6 +210,11 @@ pub struct DocumentCore {
     pub(crate) fragment_store: Vec<(u32, commands::delete_fragment::DeleteFragment)>,
     /// 다음 삭제 조각 ID
     pub(crate) next_fragment_id: u32,
+    /// [#5769] Stage 4 구역 raw 저널 (ID → SectionRawCapture).
+    /// 조각 저장소와 ID 계열을 나눈다. 자동 축출 없음 — discardSectionRaw 계약.
+    pub(crate) section_raw_store: Vec<(u32, commands::section_raw_journal::SectionRawCapture)>,
+    /// 다음 구역 raw 캡처 ID
+    pub(crate) next_section_raw_id: u32,
     /// 머리말/꼬리말 감추기: (global_page_index, is_header) 조합
     pub(crate) hidden_header_footer: std::collections::HashSet<(u32, bool)>,
     /// 파일 이름 (머리말/꼬리말 필드 치환용)
@@ -416,6 +421,8 @@ impl DocumentCore {
             next_snapshot_id: 0,
             fragment_store: Vec::new(),
             next_fragment_id: 0,
+            section_raw_store: Vec::new(),
+            next_section_raw_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),
             file_name: String::new(),
             active_field: None,

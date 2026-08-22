@@ -12,3 +12,6 @@ mod object_ops;
 pub mod page_extract;
 mod table_ops;
 mod text_editing;
+// [#5769] Stage 4 — 구역 raw 저널. SectionRawCapture 타입이 DocumentCore 필드로
+// 쓰이므로 pub(crate).
+pub(crate) mod section_raw_journal;
