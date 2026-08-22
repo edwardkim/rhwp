@@ -344,8 +344,7 @@ async function startFixtureServer(diagnostics) {
     response.end('Not found');
   });
   server.on('connect', (request, socket) => {
-    diagnostics.blockedProxyRequests.push(`CONNECT ${request.url}`);
-    socket.end('HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\n\r\n');
+    rejectProxyConnect(request.url, socket, diagnostics);
   });
 
   await new Promise((resolve, reject) => {
@@ -358,6 +357,21 @@ async function startFixtureServer(diagnostics) {
   const address = server.address();
   assert.ok(address && typeof address === 'object');
   return { server, origin: `http://127.0.0.1:${address.port}` };
+}
+
+export function rejectProxyConnect(requestUrl, socket, diagnostics) {
+  const target = requestUrl || '(unknown target)';
+  diagnostics.blockedProxyRequests.push(`CONNECT ${target}`);
+  socket.on('error', (error) => {
+    if (error?.code === 'ECONNRESET' || error?.code === 'EPIPE') {
+      diagnostics.proxyClientAborts.push(`${target}: ${error.code}`);
+      return;
+    }
+    diagnostics.errors.push(
+      `[fixture-proxy] socket error for ${target}: ${error?.code ?? error?.message ?? error}`,
+    );
+  });
+  socket.end('HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\n\r\n');
 }
 
 function attachPageDiagnostics(page, diagnostics, fixtureOrigin) {
@@ -503,6 +517,7 @@ function createDiagnostics() {
     errors: [],
     unexpectedPageTargets: [],
     blockedProxyRequests: [],
+    proxyClientAborts: [],
   };
 }
 
@@ -515,6 +530,7 @@ function formatDiagnostics(diagnostics) {
     `errors=${JSON.stringify(diagnostics.errors, null, 2)}`,
     `unexpectedPages=${JSON.stringify(diagnostics.unexpectedPageTargets, null, 2)}`,
     `blockedProxyRequests=${JSON.stringify(diagnostics.blockedProxyRequests, null, 2)}`,
+    `proxyClientAborts=${JSON.stringify(diagnostics.proxyClientAborts, null, 2)}`,
     `workerConsole=${JSON.stringify(diagnostics.workerConsole.slice(-20), null, 2)}`,
     `pageConsole=${JSON.stringify(diagnostics.console.slice(-40), null, 2)}`,
   ].join('\n');

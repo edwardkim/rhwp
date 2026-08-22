@@ -1,6 +1,6 @@
 ---
 kind: report
-status: active
+status: completed
 canonical: mydocs/plans/task_m100_3514.md
 last_verified: 2026-08-22
 ---
@@ -17,7 +17,7 @@ last_verified: 2026-08-22
 - Stage 4: `f090fc0a7` — 탭 예산 즉시 중단 보강
 - Stage 5: `694f9059c` — 최신 `devel` 정합화·재검증
 - Stage 6: PR 직전 최신 base·locked WASM 재검증 — fixture proxy reset 결함 확인
-- Stage 7: fixture proxy client abort 안전 처리 — 진행 중
+- Stage 7: fixture proxy client abort 안전 처리 — 완료
 - 단계 기록: `mydocs/working/task_m100_3514_stage{1,2,3,4,5,6,7}.md`
 
 ## 결과
@@ -146,6 +146,25 @@ fixture proxy CONNECT socket의 처리되지 않은 `read ECONNRESET`으로 Node
 흡수하고 예상 밖 socket 오류는 진단 실패로 보존하는 Stage 7 보강 뒤, 새 code head에서 10회를 처음부터
 다시 실행한다.
 
+## Stage 7 fixture proxy client abort 안전 처리
+
+CONNECT 차단 응답을 쓰기 전에 socket `error` listener를 설치했다. Chrome이 응답을 다 읽기 전에 연결을
+닫을 때 발생하는 `ECONNRESET`·`EPIPE`는 정상 client abort로 별도 진단 배열에 남기고, 그 밖의 오류는
+`[fixture-proxy]` 오류로 보존해 smoke의 최종 오류 판정을 통과하지 못하게 한다.
+
+Node 계약은 listener가 `socket.end()`보다 먼저 설치되는지, `ECONNRESET`이 프로세스 전역 오류로
+번지지 않는지, 예상 밖 `EACCES`가 진단 실패로 남는지를 고정한다. 검증 결과는 다음과 같다.
+
+- `node --check rhwp-chrome/e2e/extension-smoke.test.mjs`: 통과
+- `node --test rhwp-chrome/e2e/page-budget.test.mjs`: 4/4 통과
+- Chrome·Firefox extension Node 전체 계약: 134/134 통과
+- `RHWP_EXTENSION_SMOKE_REPEAT=10 npm --prefix rhwp-chrome run test:e2e:smoke`: production build 1회,
+  새 profile 10개, retry 없이 10/10 통과
+- `node --test scripts/frontend-extension-dist.test.mjs`: 3/3 통과
+
+Stage 6의 실패 실행은 지우거나 성공 실행으로 대체하지 않았다. Stage 7 변경 뒤 수행한 새 10회 명령은
+별도의 단일 실행이며, 그 실행 내부의 10개 격리 profile이 모두 첫 시도에 통과했다.
+
 ## PR 활용과 후속 구현 경계
 
 PR 본문에는 이 명령이 확장 변경의 로컬 사전 점검과 릴리즈 후보 package smoke에 사용되고, 후속 #3515에서
@@ -179,4 +198,5 @@ Stage 4 진행을 승인했고, 구현·검증 결과도 23:20 KST에 승인했�
 작업지시자 승인 뒤 정합화 커밋으로 Stage 5를 닫았다. PR 생성 직전 다시 전진한 base는 Stage 6에서
 정합화·재검증했고, 2026-08-22 최종 전진분에서는 fixture proxy reset 결함을 새로 확인했다. 작업지시자는
 필요한 upstream 반영과 PR 게시 진행을 승인했으므로 Stage 6 결과를 별도 문서 커밋으로 고정한 뒤 Stage 7의
-좁은 harness 보강과 10회 재검증을 수행한다.
+좁은 harness 보강과 새 code head의 10회 재검증을 완료했다. Stage 7을 별도 커밋한 뒤 승인된 remote
+push와 Open PR 게시를 진행한다.
