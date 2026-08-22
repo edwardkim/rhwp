@@ -2859,6 +2859,23 @@ export class WasmBridge {
     this.doc.discardDeleteFragment(id);
   }
 
+  // ─── [#5769 Stage 4] 구역 raw 저널 API ─────────────────
+
+  captureSectionRaw(sectionIdx: number): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.captureSectionRaw(sectionIdx);
+  }
+
+  restoreSectionRaw(id: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.restoreSectionRaw(id);
+  }
+
+  discardSectionRaw(id: number): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.doc.discardSectionRaw(id);
+  }
+
   // ─── 머리말/꼬리말 API ──────────────────────────────────
 
   getHeaderFooter(sectionIdx: number, isHeader: boolean, applyTo: number): string {
