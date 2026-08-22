@@ -653,6 +653,18 @@ impl Paragraph {
         }
     }
 
+    /// `PARA_TEXT`에서 한 문자가 차지하는 UTF-16 code unit 수를 반환한다.
+    ///
+    /// 탭은 Rust 문자열에서는 한 문자지만 HWP5에서는 7개 확장 데이터 unit이 뒤따르는
+    /// 8-unit 확장 문자다. 문단 좌표와 `char_count`는 이 스트림 폭을 사용해야 한다.
+    fn char_stream_len(c: char) -> u32 {
+        if c == '\t' {
+            CTRL_CHAR_CODE_UNITS
+        } else {
+            Self::char_utf16_len(c)
+        }
+    }
+
     /// char_offset 위치에 텍스트를 삽입한다.
     /// 인라인 컨트롤(각주/미주/수식/새 번호 등, 8 code unit)을 char_offset 위치에 삽입할 때
     /// 문단 메타데이터를 일괄 시프트한다.
@@ -681,7 +693,7 @@ impl Paragraph {
                 .text
                 .chars()
                 .nth(last_idx)
-                .map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 })
+                .map(Self::char_stream_len)
                 .unwrap_or(1);
             self.char_offsets[last_idx] + last_w
         };
@@ -805,7 +817,7 @@ impl Paragraph {
             // 텍스트 끝 이후 (인라인 컨트롤 뒤): 마지막 문자의 UTF-16 위치 + 폭 + 후행 갭
             let last_idx = self.char_offsets.len() - 1;
             let last_char_end =
-                self.char_offsets[last_idx] + Self::char_utf16_len(text_chars[last_idx]);
+                self.char_offsets[last_idx] + Self::char_stream_len(text_chars[last_idx]);
             // 후행 컨트롤 수 = char_offset - text_len
             let trailing_ctrl_count = (char_offset - text_len) as u32;
             last_char_end + trailing_ctrl_count * 8
@@ -814,7 +826,7 @@ impl Paragraph {
                 0
             } else if !self.char_offsets.is_empty() {
                 let prev_idx = effective_char_offset - 1;
-                self.char_offsets[prev_idx] + Self::char_utf16_len(text_chars[prev_idx])
+                self.char_offsets[prev_idx] + Self::char_stream_len(text_chars[prev_idx])
             } else {
                 0
             }
@@ -822,7 +834,7 @@ impl Paragraph {
             self.char_offsets[effective_char_offset]
         } else if !self.char_offsets.is_empty() {
             let last_idx = self.char_offsets.len() - 1;
-            self.char_offsets[last_idx] + Self::char_utf16_len(text_chars[last_idx])
+            self.char_offsets[last_idx] + Self::char_stream_len(text_chars[last_idx])
         } else {
             // 텍스트가 비어있을 때: 기존 컨트롤 뒤에 삽입 (각 컨트롤 = 8 code units)
             (self.controls.len() as u32) * 8
@@ -831,7 +843,7 @@ impl Paragraph {
 
         // 새 텍스트의 UTF-16 총 길이
         let new_chars: Vec<char> = new_text.chars().collect();
-        let utf16_delta: u32 = new_chars.iter().map(|c| Self::char_utf16_len(*c)).sum();
+        let utf16_delta: u32 = new_chars.iter().map(|c| Self::char_stream_len(*c)).sum();
 
         // 1. 텍스트 삽입
         self.text.insert_str(byte_offset, new_text);
@@ -846,7 +858,7 @@ impl Paragraph {
         let mut pos = utf16_insert_pos;
         for c in &new_chars {
             new_offsets.push(pos);
-            pos += Self::char_utf16_len(*c);
+            pos += Self::char_stream_len(*c);
         }
         // char_offset 위치에 새 오프셋 삽입
         let mut updated_offsets = Vec::with_capacity(self.char_offsets.len() + new_offsets.len());
@@ -896,7 +908,7 @@ impl Paragraph {
         }
 
         // 6. char_count 갱신
-        self.char_count += new_chars.len() as u32;
+        self.char_count += utf16_delta;
 
         effective_char_offset
     }
@@ -937,7 +949,7 @@ impl Paragraph {
         };
         let utf16_delta: u32 = text_chars[char_offset..del_end]
             .iter()
-            .map(|c| Self::char_utf16_len(*c))
+            .map(|c| Self::char_stream_len(*c))
             .sum();
         let utf16_end = utf16_start + utf16_delta;
 
@@ -1027,7 +1039,7 @@ impl Paragraph {
             .retain(|fr| fr.start_char_idx <= fr.end_char_idx);
 
         // 6. char_count 갱신
-        self.char_count -= actual_count as u32;
+        self.char_count -= utf16_delta;
 
         actual_count
     }
@@ -1077,9 +1089,12 @@ impl Paragraph {
             self.char_offsets[split_pos]
         } else if !self.char_offsets.is_empty() {
             let last = self.char_offsets.len() - 1;
-            self.char_offsets[last] + Self::char_utf16_len(text_chars[last])
+            self.char_offsets[last] + Self::char_stream_len(text_chars[last])
         } else {
-            split_pos as u32
+            text_chars[..split_pos]
+                .iter()
+                .map(|character| Self::char_stream_len(*character))
+                .sum()
         };
 
         // === 새 문단 구성 ===
@@ -1298,10 +1313,11 @@ impl Paragraph {
 
         // 6. char_count 갱신
         //    원본 문단에 남은 controls는 각각 8 code unit을 차지하므로 반영 필요
-        let new_text_char_count = new_text.chars().count() as u32;
+        let kept_text_code_units: u32 = self.text.chars().map(Self::char_stream_len).sum();
+        let new_text_code_units: u32 = new_text.chars().map(Self::char_stream_len).sum();
         let ctrl_code_units: u32 = self.controls.len() as u32 * 8;
-        self.char_count = split_pos as u32 + ctrl_code_units + 1; // +1 for paragraph end marker
-        let new_char_count = new_text_char_count + new_controls.len() as u32 * 8 + 1;
+        self.char_count = kept_text_code_units + ctrl_code_units + 1; // +1 for paragraph end marker
+        let new_char_count = new_text_code_units + new_controls.len() as u32 * 8 + 1;
 
         // 7. has_para_text: 빈 문단(텍스트 없고 컨트롤 없음)이면 PARA_TEXT 불필요
         //    HWP 프로그램은 cc=1(빈 문단)에 PARA_TEXT가 있으면 파일 손상으로 판단
@@ -1312,6 +1328,14 @@ impl Paragraph {
             Self::compute_control_mask_for(&self.text, &self.controls, &self.field_ranges);
         let new_control_mask =
             Self::compute_control_mask_for(&new_text, &new_controls, &new_field_ranges);
+
+        // PARA_HEADER instanceId는 문단별 식별자다. Enter로 만든 문단이 원문 tail을
+        // 그대로 복제하면 동일한 비영 ID가 반복된다. 새 문단의 ID만 초기화하고 뒤의
+        // 변경 추적 suffix는 보존한다. 병합 undo는 `apply_meta`가 원래 tail을 복원한다.
+        let mut new_raw_header_extra = self.raw_header_extra.clone();
+        if new_raw_header_extra.len() >= 10 {
+            new_raw_header_extra[6..10].fill(0);
+        }
 
         Paragraph {
             text: new_text,
@@ -1335,7 +1359,7 @@ impl Paragraph {
             controls: new_controls,
             ctrl_data_records: new_ctrl_data_records,
             char_count_msb: false,
-            raw_header_extra: self.raw_header_extra.clone(),
+            raw_header_extra: new_raw_header_extra,
             has_para_text: new_has_para_text,
             tab_extended: Vec::new(),
             title_marks: new_title_marks,
@@ -1371,7 +1395,7 @@ impl Paragraph {
         let utf16_end: u32 = if !self.char_offsets.is_empty() {
             let last = self.char_offsets.len() - 1;
             let text_chars: Vec<char> = self.text.chars().collect();
-            self.char_offsets[last] + Self::char_utf16_len(text_chars[last])
+            self.char_offsets[last] + Self::char_stream_len(text_chars[last])
         } else {
             0
         } + trailing_ctrl_units;
@@ -1483,7 +1507,7 @@ impl Paragraph {
         // 6. char_count 갱신: 텍스트 + 컨트롤(각 8 code unit) + 문단끝(1)
         //    split_at의 ctrl_code_units 계산과 정합. HWPX 직렬화가 char_count에서
         //    컨트롤 수를 역산하므로 컨트롤 유닛 포함 필수.
-        self.char_count = (self_text_len + other.text.chars().count()) as u32
+        self.char_count = self.text.chars().map(Self::char_stream_len).sum::<u32>()
             + self.controls.len() as u32 * 8
             + 1;
 

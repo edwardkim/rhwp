@@ -375,7 +375,7 @@ impl DocumentCore {
         color: u32,
     ) -> Result<String, HwpError> {
         use crate::model::control::Equation;
-        use crate::model::shape::CommonObjAttr;
+        use crate::model::shape::{CommonObjAttr, HorzRelTo, TextWrap, VertRelTo};
         use crate::parser::tags::CTRL_EQUATION;
 
         if section_idx >= self.document.sections.len() {
@@ -392,17 +392,60 @@ impl DocumentCore {
         }
 
         let (width, height) = crate::renderer::equation::intrinsic_size_hwp(script, font_size);
+        let equation_order = self.document.sections[section_idx]
+            .paragraphs
+            .iter()
+            .flat_map(|paragraph| paragraph.controls.iter())
+            .filter(|control| matches!(control, Control::Equation(_)))
+            .count() as u32;
+        let equation_instance_order = self
+            .document
+            .sections
+            .iter()
+            .flat_map(|section| section.paragraphs.iter())
+            .flat_map(|paragraph| paragraph.controls.iter())
+            .filter(|control| matches!(control, Control::Equation(_)))
+            .count();
+        // 한컴 계열 0x44 접두는 유지하되, 접두와 겹치지 않는 하위 26비트에 문서 전체
+        // 수식 순서를 배정한다. 구역 번호를 OR하면 구역 0과 64가 같은 ID가 된다.
+        let equation_instance_sequence = u32::try_from(equation_instance_order)
+            .ok()
+            .and_then(|order| order.checked_add(1))
+            .filter(|&order| order <= 0x03ff_ffff)
+            .ok_or_else(|| {
+                HwpError::RenderError("수식 instance ID를 더 이상 배정할 수 없습니다.".to_string())
+            })?;
+        let instance_id = 0x4400_0000 | equation_instance_sequence;
         let equation = Equation {
             common: CommonObjAttr {
                 ctrl_id: CTRL_EQUATION,
+                // 한컴 저장본의 인라인 수식 계약: 문단 기준 위치, 절대 크기,
+                // 글자처럼 취급, 글과 함께 이동, 위아래 배치.
+                attr: 0x0C2A_2311,
                 treat_as_char: true,
                 width,
                 height,
+                z_order: equation_order as i32,
+                margin: crate::model::Padding {
+                    left: 56,
+                    right: 56,
+                    top: 0,
+                    bottom: 0,
+                },
+                instance_id,
+                flow_with_text: true,
+                vert_rel_to: VertRelTo::Para,
+                horz_rel_to: HorzRelTo::Para,
+                text_wrap: TextWrap::TopAndBottom,
+                hwp5_gen_shape_attr_bit26: true,
+                description: "수식입니다.".to_string(),
                 ..Default::default()
             },
             script: script.to_string(),
             font_size,
             color,
+            baseline: 85,
+            version_info: "Equation Version 60".to_string(),
             font_name: "HYhwpEQ".to_string(),
             ..Default::default()
         };

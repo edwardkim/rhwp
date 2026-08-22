@@ -34,7 +34,9 @@ use crate::model::shape::{
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 
 use super::context::SerializeContext;
-use super::section::{render_hp_p_open, render_paragraph_parts};
+use super::section::{
+    build_secpr_run, first_run_char_shape_id, render_hp_p_open, render_paragraph_parts,
+};
 use super::shape::numbering_type_str;
 use super::utils::{empty_tag, end_tag, start_tag, start_tag_attrs};
 use super::SerializeError;
@@ -348,6 +350,17 @@ fn write_sub_list<W: Write>(
 /// 본문과 동일한 공유 직렬화 경로(render_paragraph_parts)로 컨트롤 슬롯(표 재귀
 /// 포함) 방출 + run 분할 + lineseg IR 보존/fallback (#1379 2단계).
 /// sub_list_depth: subList 경로 한정 colPr 인라인 방출 스코프 (#1379 3단계).
+///
+/// [#5873] 셀 안 문단이 구역 나누기(`SectionDef`)를 들고 있으면 `hp:secPr` 도 낸다.
+/// `render_runs` 는 `SectionDef` 슬롯을 hidden 처리해 XML 을 내지 않고, 본문 최상위
+/// 문단만 #4056 이 `write_section` 루프에서 보완해 왔다. subList 에는 그 보완이 없어
+/// 셀 안 구역이 통째로 사라졌다 — 뒤따르는 `hp:colPr` 만 남는다.
+///
+/// 코퍼스 HWP5 6,491문서 전수(레코드 단위): BodyText 스트림 수보다 `secd` 가 많은 문서
+/// 3건이고 그 **17개 전부 표 셀 안(level 3)** 이다. 그중 06874 는 `secd` 15개를 잃어
+/// 한글이 `부록 4-④` 문단부터 문서 끝까지 폐기했다(204→159쪽, −57,525자).
+/// 한글 2022 오라클 주입 검정: 그 자리 **한 곳에만** `secPr` 를 되살리면 쪽수·글자수가
+/// 원본과 정확히 같아지고 컨트롤 인구조사(`atno:6`·`fn:6`·`tbl:113`·`gso:41`)도 일치한다.
 fn write_sub_list_paragraphs<W: Write>(
     w: &mut Writer<W>,
     paragraphs: &[crate::model::paragraph::Paragraph],
@@ -364,6 +377,14 @@ fn write_sub_list_paragraphs<W: Write>(
         vert_cursor = advance;
         let pid = ctx.next_para_id();
         let mut p_xml = render_hp_p_open(para, pid, sid);
+        // [#5873] 셀 안 구역 나누기 — #4056 의 본문 경로와 같은 보완.
+        if let Some(crate::model::control::Control::SectionDef(sd)) = para
+            .controls
+            .iter()
+            .find(|c| matches!(c, crate::model::control::Control::SectionDef(_)))
+        {
+            p_xml.push_str(&build_secpr_run(sd, first_run_char_shape_id(para)));
+        }
         p_xml.push_str(&runs);
         p_xml.push_str(&linesegs);
         p_xml.push_str("</hp:p>");

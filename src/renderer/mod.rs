@@ -901,6 +901,93 @@ pub(crate) fn paragraph_source_line_metrics_need_reflow(
     )
 }
 
+/// 구역의 저장 LINE_SEG 사다리가 "통짜 합성값"인지 판정한다 (#5854).
+///
+/// 한컴이 실제로 조판한 문서의 LINE_SEG 는 줄마다 그 줄의 글자 크기·줄간격을
+/// 담고, 여러 줄로 접힌 문단은 줄 수만큼 세그먼트를 갖는다. 반면 일부 생성기는
+/// 그 자리에 **문단 하나당 세그먼트 하나 · 전 문단 동일 튜플 · `vertical_pos` 는
+/// 그 튜플의 advance 만큼 일정하게 증가**하는 사다리를 채워 넣는다. 그런 사다리는
+/// 문서의 실제 글자 크기와 무관한 상수라서 조판 근거가 될 수 없다.
+///
+/// 실측 (`samples/hwpx/hwpx-02.hwpx`): 122 문단 전부
+/// `vertsize=1000 textheight=1000 baseline=850 spacing=600`,
+/// `vertpos` 는 처음부터 끝까지 정확히 1600 씩 증가한다. 그런데 문단들의 실제
+/// 글자 크기는 2pt~15pt 로 갈려 82 문단이 저장 `vertsize`(10pt) 와 어긋난다.
+///
+/// 판정이 참이면 호출자는 (1) 줄 metrics 를 저장값이 아니라 글꼴·문단 스타일에서
+/// 다시 뽑고, (2) `vertical_pos` 앵커 스냅을 끈다. 원본 IR 은 건드리지 않는다.
+pub(crate) fn stored_line_ladder_is_uniform_filler(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    styles: &style_resolver::ResolvedStyleSet,
+) -> bool {
+    /// 사다리 하나로 단정하기 위한 최소 문단 수.
+    const MIN_PARAGRAPHS: usize = 8;
+    /// 저장 advance 와 글꼴 advance 가 어긋나야 하는 최소 비율의 역수 (1/4).
+    const CONTRADICTION_RATIO_DIVISOR: usize = 4;
+
+    if paragraphs.len() < MIN_PARAGRAPHS {
+        return false;
+    }
+
+    let mut tuple: Option<(i32, i32, i32, i32)> = None;
+    let mut prev_vpos: Option<i32> = None;
+    let mut contradicting = 0usize;
+
+    for para in paragraphs {
+        let [seg] = para.line_segs.as_slice() else {
+            return false;
+        };
+        if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || seg.line_height <= 0
+            || seg.text_height <= 0
+        {
+            return false;
+        }
+        let current = (
+            seg.line_height,
+            seg.text_height,
+            seg.baseline_distance,
+            seg.line_spacing,
+        );
+        match tuple {
+            None => tuple = Some(current),
+            Some(first) if first != current => return false,
+            _ => {}
+        }
+        // 사다리 걸음은 그 튜플의 advance 와 같아야 한다 — 실측 조판이면 문단마다
+        // 다른 값이 나온다.
+        let step = seg.line_height.saturating_add(seg.line_spacing);
+        if let Some(previous) = prev_vpos {
+            if seg.vertical_pos.saturating_sub(previous) != step {
+                return false;
+            }
+        }
+        prev_vpos = Some(seg.vertical_pos);
+
+        let max_fs = para
+            .char_shapes
+            .iter()
+            .filter_map(|shape| styles.char_styles.get(shape.char_shape_id as usize))
+            .map(|style| style.font_size)
+            .fold(0.0f64, f64::max);
+        if max_fs <= 0.0 {
+            continue;
+        }
+        let (ls_type, ls_val) = styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map(|style| (style.line_spacing_type, style.line_spacing))
+            .unwrap_or((LineSpacingType::Percent, 160.0));
+        let (font_lh, font_ls) = corrected_line_metrics(0.0, 0.0, max_fs, ls_type, ls_val);
+        let stored_advance = hwpunit_to_px(step, DEFAULT_DPI);
+        if (font_lh + font_ls - stored_advance).abs() > 0.5 {
+            contradicting += 1;
+        }
+    }
+
+    contradicting * CONTRADICTION_RATIO_DIVISOR >= paragraphs.len()
+}
+
 /// 저장된 순수 텍스트 줄은 `vertsize`에 내부 여백이 포함되어도 한컴의 줄 진행이
 /// `textheight + spacing`에 맞춰지는 사례가 있다. IR 값은 보존하고 렌더/조판용
 /// line height만 낮춘다.

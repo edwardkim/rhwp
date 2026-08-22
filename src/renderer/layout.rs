@@ -798,6 +798,37 @@ fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
         .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace())
 }
 
+/// [#5584] 자리차지 표 호스트 문단의 **저장 줄 전부가 표 위**인가.
+///
+/// 한글은 호스트 텍스트를 표의 세로 오프셋보다 앞선 저장 vpos 에 그대로 둔다
+/// (00072 별표 제목: 저장 줄 3420 < 표 vertOffset 4129 → 1쪽 표 위). rhwp 는
+/// RowBreak 자리차지 표의 호스트 텍스트를 마지막 조각 뒤로 미루는 계약
+/// (`defer_visible_rowbreak_host_text`)을 쓰는데, 그 계약은 표 **아래**에 놓이는
+/// 서명란·발신명의 호스트를 위한 것이라 이 형상에서는 제목을 마지막 쪽 표
+/// 하단 밖으로 보냈다. 저장 기하가 "전 줄이 표 위"를 증언할 때만 지연을 끈다 —
+/// 일부 줄만 위인 혼합 형상은 뒤 텍스트가 소실될 수 있어 제외한다.
+fn stored_host_lines_precede_float(para: &Paragraph, table: &crate::model::table::Table) -> bool {
+    let v_off = signed_hwpunit(table.common.vertical_offset);
+    if v_off <= 0 {
+        return false;
+    }
+    let stored: Vec<&crate::model::paragraph::LineSeg> = para
+        .line_segs
+        .iter()
+        .filter(|ls| ls.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        .collect();
+    let Some(base) = stored.first().map(|ls| ls.vertical_pos) else {
+        return false;
+    };
+    // 줄이 표 상단 **위에서 끝나야** 한다 — 표 상단(v_off)이 줄 밴드 안이면 그
+    // 줄은 표의 앵커 줄이지 선행 줄이 아니다(pr-1674 #1686 핀: v_off 607 <
+    // 줄 높이 1200 → 안내문은 표 뒤가 정답). 00072 제목은 v_off 4129 ≥ 줄
+    // 끝 1500 으로 표 위 선행 줄임이 증명된다.
+    stored.iter().all(|ls| {
+        (ls.vertical_pos as i64 - base as i64) + i64::from(ls.line_height) <= v_off as i64
+    })
+}
+
 /// [#4610 · #4599 ④] 결재문서 템플릿의 공백-전용 TAC 캐리어 문단 페인트 변위.
 ///
 /// 선행 문단이 앵커한 자리차지 표가 흐름 커서를 표 하단까지 밀어낸 뒤에 오는,
@@ -2223,6 +2254,10 @@ pub struct LayoutEngine {
     pre_emitted_host_paras: std::cell::RefCell<std::collections::HashSet<usize>>,
     /// [#2015] pre-emit 한 host 텍스트 높이(px) — vert_offset 이중계상 보정용.
     pre_emitted_host_heights: std::cell::RefCell<std::collections::HashMap<usize, f64>>,
+    /// [#5854] 현재 구역의 저장 LINE_SEG 사다리가 통짜 합성값인지 — 단 진입 시 set.
+    /// 참이면 줄 metrics 를 저장값이 아니라 글꼴·문단 스타일에서 다시 뽑고,
+    /// `vertical_pos` 앵커 스냅을 끈다 (조판 경로와 같은 규칙).
+    uniform_filler_ladder: std::cell::Cell<bool>,
     /// 렌더용 가상 미주 문단 시작 인덱스
     endnote_para_base: std::cell::Cell<usize>,
     /// 가상 미주 문단별 원본 위치
@@ -2360,6 +2395,7 @@ impl LayoutEngine {
             hidden_empty_paras: std::cell::RefCell::new(std::collections::HashSet::new()),
             pre_emitted_host_paras: std::cell::RefCell::new(std::collections::HashSet::new()),
             pre_emitted_host_heights: std::cell::RefCell::new(std::collections::HashMap::new()),
+            uniform_filler_ladder: std::cell::Cell::new(false),
             endnote_para_base: std::cell::Cell::new(usize::MAX),
             endnote_para_sources: std::cell::RefCell::new(Vec::new()),
             endnote_between_notes_hu: std::cell::Cell::new(0),
@@ -3062,8 +3098,18 @@ impl LayoutEngine {
             for child in &body_node.children {
                 expand_clip(&mut flow_clip, &mut float_clip, child, false);
             }
-            // 부동 그림 clip 만 body_bottom+10 상한으로 절단 (Task #460).
-            let max_bottom = body_bbox.y + body_bbox.height + 10.0;
+            // [#5855] 부동 개체 clip 의 하한은 **용지 하단**이다.
+            //
+            // 한글은 쪽 기준으로 앉힌 개체를 본문 영역에 가두지 않는다 — 꼬리말 자리에
+            // 놓인 로고 띠(156618554_petfood_press: 정답지 이미지 하단 1056.0px, 본문 하단
+            // 1028.1px)가 그대로 보인다. `body_bottom + 10` 상한은 그 20.9px 를 지웠다.
+            //
+            // Task #460 이 이 상한으로 막으려던 것은 대형 부동 그림이 body clip 을 넓혀
+            // **흐름 콘텐츠**까지 꼬리말로 새게 하는 것이었다. 그런데 #3127 이후 흐름
+            // clip(`flow_clip`)은 상한 없이 따로 잡히므로, 합집합의 하단은 이미 흐름
+            // 콘텐츠가 결정한다. 이 상한이 실제로 자르고 있는 것은 부동 개체 자신뿐이다.
+            // 용지 밖으로는 여전히 나가지 못한다.
+            let max_bottom = layout.page_height.max(body_bbox.y + body_bbox.height);
             if float_clip.y + float_clip.height > max_bottom {
                 float_clip.height = max_bottom - float_clip.y;
             }
@@ -5720,6 +5766,16 @@ impl LayoutEngine {
             col_content.endnote_flow,
         );
         hcursor.suppress_hwpx_stale_forward = self.profile.get().hwpx_stored_layout();
+        // [#5854] 통짜 합성 LINE_SEG 사다리 판정 — 본문 단에서만 갱신한다. 미주 단은
+        // `paragraphs` 가 미주 전용 재색인 배열이라 구역 판정의 근거가 아니므로 본문에서
+        // 정해진 값을 그대로 이어 쓴다 (조판 경로 `TypesetEngine` 과 같은 구역 단위 값).
+        if !col_content.endnote_flow {
+            self.uniform_filler_ladder
+                .set(crate::renderer::stored_line_ladder_is_uniform_filler(
+                    paragraphs, styles,
+                ));
+        }
+        hcursor.uniform_filler_ladder = self.uniform_filler_ladder.get();
         // [Task #1246] 미주 흐름 컬럼에만 between-notes 마진(HU)을 주입 → HeightCursor 가 새 미주
         // 제목 forward 흐름의 min-gap 보정에 사용. 본문 컬럼은 0 (무영향).
         if col_content.endnote_flow {
@@ -9952,7 +10008,10 @@ impl LayoutEngine {
                                 t.page_break,
                                 crate::model::table::TablePageBreak::RowBreak
                             )
-                            && para_has_non_whitespace_text(para) =>
+                            && para_has_non_whitespace_text(para)
+                            // [#5584] 저장 기하가 "호스트 줄 전부가 표 위" 를
+                            // 증언하면 지연하지 않는다 — 그 줄은 pre-text 다.
+                            && !stored_host_lines_precede_float(para, t) =>
                     {
                         Some(t.row_count as usize)
                     }

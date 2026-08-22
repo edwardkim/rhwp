@@ -1,0 +1,12 @@
+$ rhwp info <법제처 형태 HWPML>
+오류: 문서 파싱 실패 - 유효하지 않은 파일: 지원하지 않는 포맷입니다: 알 수 없는 파일 형식.
+오류코드: UNSUPPORTED_FILE_FORMAT. 현재 rhwp는 HWP 5.0, HWPX, 일부 HWP 3.0, HWPML 2.9 문서를 지원합니다.
+
+# DOCTYPE 을 지워도:
+오류: 문서 파싱 실패 - 유효하지 않은 파일: HML 오류: 지원하지 않는 HWPML 버전입니다: 2.1
+
+# 포맷 감지를 고친 뒤:
+오류: 문서 파싱 실패 - 유효하지 않은 파일: HML 오류: 잘못된 HML XML입니다: DTD is not allowed
+
+# DTD 를 통과시킨 뒤:
+오류: 문서 파싱 실패 - 유효하지 않은 파일: HML 오류: 잘못된 HML XML입니다: entity &nbsp; is not allowed

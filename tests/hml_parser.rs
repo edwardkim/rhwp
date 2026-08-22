@@ -432,12 +432,71 @@ fn detects_real_hwpml_291_fixture_by_root_signature() {
     assert_eq!(detect_format(&bytes), FileFormat::Hml);
 }
 
+/// [#5848] DOCTYPE 계약이 **"통째 거부"에서 "안전한 선언만 수용"으로 좁혀졌다.**
+///
+/// 종전에는 `Event::DocType` 을 만나면 무조건 `DTD is not allowed` 였다. 그런데 법제처
+/// 국가법령정보센터 배포본이 `<!DOCTYPE HWPML [ <!ENTITY nbsp "&#160;"> ]>` 를 달고 나와서,
+/// 그 규칙이 실사용 문서를 통째로 못 열게 만들고 있었다.
+///
+/// 지금은 **엔티티 선언만 거두고 나머지는 버린다.** 이 시험이 쓰는
+/// `<!ENTITY secret "expanded">` 는 중첩 참조가 없는 리터럴이라 안전한 쪽이므로 열린다.
+/// 위험한 쪽(중첩 참조 · 외부 엔티티)이 여전히 막히는지는 아래 두 시험이 지킨다.
 #[test]
-fn rejects_hml_with_doctype() {
+fn accepts_doctype_with_safe_literal_entity() {
     let xml = br#"<?xml version="1.0"?>
 <!DOCTYPE HWPML [<!ENTITY secret "expanded">]>
 <HWPML Style="embed" SubVersion="9.0.1.0" Version="2.9">
   <HEAD SecCnt="1"/><BODY><SECTION Id="0"/></BODY><TAIL/>
+</HWPML>"#;
+
+    assert!(
+        parse_hml(xml).is_ok(),
+        "리터럴 엔티티만 선언한 DOCTYPE 은 열려야 한다"
+    );
+}
+
+/// XML 1.0 이 금지한 제어 문자와 noncharacter 는 Rust `char`로 만들 수 있어도
+/// 내부 DTD 엔티티에 실으면 안 된다. 선언이 버려져 본문 참조도 거부되어야 한다.
+#[test]
+fn rejects_invalid_xml_character_references_in_doctype_entities() {
+    for character_ref in ["&#0;", "&#x1F;", "&#xFFFE;"] {
+        let doctype = format!("<!DOCTYPE HWPML [<!ENTITY invalid \"{character_ref}\">]>");
+        let xml = HML_29
+            .replacen("\n<HWPML", &format!("\n{doctype}\n<HWPML"), 1)
+            .replacen("안녕 HML 123", "&invalid;", 1);
+
+        assert!(
+            matches!(parse_hml(xml.as_bytes()), Err(HmlError::InvalidXml(_))),
+            "{character_ref} 는 XML 1.0 DTD 엔티티로 수용하면 안 된다"
+        );
+    }
+}
+
+/// 확장 폭탄(billion laughs) — 값에 다른 엔티티 참조가 있는 선언은 **싣지 않으므로**
+/// 본문에서 그 이름을 부르면 거부된다. 재귀 확장이 성립할 자리가 없다.
+#[test]
+fn rejects_nested_entity_expansion() {
+    let xml = br#"<?xml version="1.0"?>
+<!DOCTYPE HWPML [
+  <!ENTITY a "AAAAAAAAAA">
+  <!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;">
+]>
+<HWPML Style="embed" SubVersion="9.0.1.0" Version="2.9">
+  <HEAD SecCnt="1"/><BODY><SECTION Id="0">&b;</SECTION></BODY><TAIL/>
+</HWPML>"#;
+
+    assert!(matches!(parse_hml(xml), Err(HmlError::InvalidXml(_))));
+}
+
+/// XXE — `SYSTEM` 외부 엔티티는 값을 읽지도 않으므로 본문 참조가 거부된다.
+#[test]
+fn rejects_external_entity_reference() {
+    let xml = br#"<?xml version="1.0"?>
+<!DOCTYPE HWPML [
+  <!ENTITY xx SYSTEM "file:///etc/passwd">
+]>
+<HWPML Style="embed" SubVersion="9.0.1.0" Version="2.9">
+  <HEAD SecCnt="1"/><BODY><SECTION Id="0">&xx;</SECTION></BODY><TAIL/>
 </HWPML>"#;
 
     assert!(matches!(parse_hml(xml), Err(HmlError::InvalidXml(_))));

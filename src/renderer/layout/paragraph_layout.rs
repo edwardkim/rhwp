@@ -1062,9 +1062,88 @@ fn compute_line_extra_spacing(
         }
         count
     };
-    if needs_justify {
-        // 양쪽 정렬: 후행 공백 제외한 내부 공백에 분배
+
+    // [#5830] 양쪽정렬 배분 대상이 아닌 줄(문단 마지막 줄·강제 줄바꿈 줄)의 dash leader.
+    //
+    // 종전에는 이 줄들에서 슬랙 자체가 계산되지 않아 `char_width_decision` 의 leader
+    // 클램프 `min(자연폭, font_size * 0.3)` 에 머물렀다 — 한글 2022 정본 대비 폭 절반.
+    //
+    // 정본(86712 규제영향분석서 p34·p35, PDF 글리프 원점 실측)의 마지막 줄 규칙:
+    //   - 여백이 충분하면 dash 는 **자연 폭**으로 그린다 (p35 10자·18자 런 = 8.00pt
+    //     = 0.571em, 오른쪽 여백에 닿지 않고 끝난다 — 무한 신장이 아니다).
+    //   - 여백이 그보다 좁으면 **여백까지만** 좁힌다 (p34 10자 런 = 7.00pt = 0.499em,
+    //     끝점이 정확히 여백 x≈530pt).
+    // 즉 마지막 줄에서는 leader 클램프를 **자연 폭 한도 안에서 슬랙만큼** 되돌린다.
+    // needs_justify 줄의 기존 탄력 흡수(Task #352, 여백까지 확장)는 그대로다.
+    //
+    // 정렬이 여백까지 채우는 종류(Justify·Split)일 때만 연다 — 왼쪽/가운데 정렬의
+    // 짧은 dash 는 저자가 의도한 길이일 수 있다.
+    let last_line_leader_fill = if !needs_justify
+        && matches!(alignment, Alignment::Justify | Alignment::Split)
+    {
         let all_chars: Vec<char> = comp_line.runs.iter().flat_map(|r| r.text.chars()).collect();
+        let trailing_spaces = all_chars.iter().rev().take_while(|c| **c == ' ').count();
+        let visible_count = all_chars.len() - trailing_spaces;
+        let leader_dashes = count_dash_leaders(&all_chars[..visible_count]);
+        if leader_dashes > 0 {
+            // 클램프가 깎아낸 폭 = 자연 advance − min(자연, 0.3em). 단독 '-' 는 3+ 연속
+            // leader 가 아니므로 estimate_text_width 가 클램프 없는 자연 폭을 돌려준다.
+            let per_dash_restore = comp_line
+                .runs
+                .iter()
+                .find(|r| {
+                    let chars: Vec<char> = r.text.chars().collect();
+                    (0..chars.len()).any(|i| {
+                        chars[i] == '-' && chars[i..].iter().take_while(|c| **c == '-').count() >= 3
+                    })
+                })
+                .map(|r| {
+                    let mut ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                    ts.default_tab_width = tab_width;
+                    let natural = estimate_text_width("-", &ts);
+                    (natural - natural.min(ts.font_size * 0.3)).max(0.0)
+                })
+                .unwrap_or(0.0);
+            let trailing_width = if trailing_spaces > 0 {
+                if let Some(last_run) = comp_line.runs.last() {
+                    let mut ts =
+                        resolved_to_text_style(styles, last_run.char_style_id, last_run.lang_index);
+                    ts.default_tab_width = tab_width;
+                    estimate_text_width(&" ".repeat(trailing_spaces), &ts)
+                } else {
+                    0.0
+                }
+            } else {
+                0.0
+            };
+            let slack = available_width - (total_text_width - trailing_width);
+            // 슬랙이 없으면(이미 꽉 찬 줄) 아래 기존 분기(오버플로우 압축 등)로 흘린다.
+            let extra = (slack / leader_dashes as f64).min(per_dash_restore);
+            (extra > 0.0).then_some(extra)
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    if needs_justify {
+        // 양쪽 정렬: 후행 공백 제외한 내부 공백에 분배.
+        //
+        // [#5899] 공백은 **그려지는 텍스트**로 센다. `extra_word_spacing` 은
+        // text_measurement 가 표시 텍스트의 공백마다 붙이므로, 모델 텍스트(`run.text`)
+        // 로 세면 분모(내부 공백 수)와 실제 적용 대상이 어긋난다. 머리말/꼬리말
+        // 쪽번호 필드는 #3216 규약대로 모델 1자(공백 placeholder)를 유지하고
+        // `display_text` 만 번호로 바꾸므로, 모델로 세면 `… Inc.` + 공백 75개로
+        // **끝나는 줄**로 보여 슬랙이 내부 공백 2개에만 나뉜다. 그 여분(262.9px)이
+        // 표시 텍스트의 공백 76개 전부에 붙어 쪽번호가 종이 밖 x≈20,163px 로
+        // 밀려났다. 폭(`total_text_width`)·글자수(`total_char_count`)는 이미 표시
+        // 텍스트 기준이라 여기만 축이 달랐다.
+        let all_chars: Vec<char> = comp_line
+            .runs
+            .iter()
+            .flat_map(|r| effective_text_for_metrics(r).chars())
+            .collect();
         let trailing_spaces = all_chars.iter().rev().take_while(|c| **c == ' ').count();
         let visible_count = all_chars.len() - trailing_spaces;
         let interior_spaces = all_chars[..visible_count]
@@ -1188,6 +1267,9 @@ fn compute_line_extra_spacing(
         } else {
             (0.0, 0.0, 0.0)
         }
+    } else if let Some(extra_dash) = last_line_leader_fill {
+        // [#5830] 마지막 줄·강제 줄바꿈 줄의 dash leader 채움.
+        (0.0, 0.0, extra_dash)
     } else if needs_distribute && total_char_count > 1 {
         // [#4657] 배분 정렬: 남는 폭을 글자 **사이**(N-1곳)에 균등 분배.
         // extra_char_spacing 은 각 글자 advance 뒤에 붙으므로 마지막 glyph 의
@@ -3198,6 +3280,16 @@ impl LayoutEngine {
             if let Some((_, _, font_size)) = empty_no_lineseg_metrics {
                 max_fs = font_size;
             }
+            // [#5854] 통짜 합성 사다리 문서의 빈 문단은 조합 줄에 run 이 하나도 없어
+            // 위 fold 가 0 을 준다. 조판(typeset)은 이미 `composed_line_max_font_size`
+            // 로 저장 글자모양을 보조 근거로 쓰므로, 렌더도 같은 근거를 써야 두 경로의
+            // 줄 진행이 갈라지지 않는다.
+            let uniform_filler_ladder = self.uniform_filler_ladder.get();
+            if uniform_filler_ladder && max_fs <= 0.0 {
+                if let Some(p) = para {
+                    max_fs = crate::renderer::composed_line_max_font_size(comp_line, p, styles);
+                }
+            }
             let mut line_tac_offsets = tac_offsets_for_line(composed, &tac_offsets_px, line_idx);
             if let Some(offsets) =
                 repeated_empty_tac_line_offset(composed, &tac_offsets_px, line_idx)
@@ -3248,6 +3340,14 @@ impl LayoutEngine {
             let (line_height, line_spacing_px) = empty_no_lineseg_metrics
                 .map(|(line_height, line_spacing_px, _)| (line_height, line_spacing_px))
                 .unwrap_or_else(|| {
+                    // [#5854] 통짜 합성 사다리는 저장 `line_height` 가 글자 크기보다
+                    // 크든 작든 실측이 아니다 — 조판(typeset)과 같은 규칙으로 항상
+                    // 글꼴·문단 스타일에서 다시 뽑는다.
+                    if uniform_filler_ladder && max_fs > 0.0 && !text_before_picture_line {
+                        return crate::renderer::corrected_line_metrics(
+                            0.0, 0.0, max_fs, ls_type, ls_val,
+                        );
+                    }
                     crate::renderer::corrected_line_metrics_for_source(
                         raw_lh,
                         raw_text_height,

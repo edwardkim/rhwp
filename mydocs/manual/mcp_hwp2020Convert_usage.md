@@ -2,13 +2,18 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2020Convert_usage.md
-last_verified: 2026-08-21
+last_verified: 2026-08-22
 ---
 
 # HWP 2020 변환 client 사용법
 
 이 문서는 rhwp 작업에서 로컬 HWP/HWPX 파일을 원격 Hancom Office 2020 MCP 변환 서비스로 보내고,
 변환 결과를 다시 로컬에 저장하는 방법을 설명한다.
+
+저장한 한컴오피스 버전이 2022 이하인 `.hwp`는 이 `hwp-convert-2020` 서비스를 사용한다.
+한컴오피스 2024에서 저장한 `.hwp`는 이 서비스가 아니라
+[HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md)의 `hwp-convert-2024` 서비스를 사용한다.
+두 입력은 확장자가 모두 `.hwp`일 수 있으므로 파일명만으로 서비스를 자동 선택한다고 가정하지 않는다.
 
 ## 개요
 
@@ -34,15 +39,19 @@ last_verified: 2026-08-21
   암호 HWP5가 만드는 큰 `Contents/section0.xml`도 XML 전체를 memory로 읽지 않는 validator로 확인한다.
 
 서버 URL/IP, 인증 토큰, `.env.local` 내용은 Git, issue, PR, 공개 문서, 로그에 기록하지 않는다.
-인증된 collaborator만 비공개 채널로 공유받고, 필요하면 `@jangster77`에게 요청한다.
+이 서비스는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용할 수 있다.
+접근 정보는 비공개 채널로 공유받고, 필요하면 `@jangster77`에게 요청한다.
 
 ## 최신 client artifact
 
 rhwp에는 최신 client artifact 하나만 유지한다.
 
 ```text
-tools/hwp-convert-mcp-client-20260805-071707.tar.gz
+tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz
 ```
+
+archive 파일명의 `2022`는 이 client를 선택하는 최대 저장 버전 범위를 뜻한다. 실제 MCP server 이름,
+실행 명령과 환경 변수의 `hwp2020`/`HWP2020` 식별자는 변경하지 않는다.
 
 이전 client archive는 사용하거나 보관하지 않는다. 작업 PC에서는 새 archive만 유지한다.
 
@@ -53,7 +62,7 @@ MCP client tarball은 rhwp 저장소의 `tools/` 아래에 둔다. 서버 URL/to
 
 ```text
 $HOME/rhwp/
-  tools/hwp-convert-mcp-client-20260805-071707.tar.gz
+  tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz
 
 $HOME/Devel/hwp-convert/
   .env.local
@@ -68,7 +77,7 @@ HWP2020_MCP_AUTH_TOKEN=<관리자가_제공한_토큰>
 
 `.env.local`은 Git에 커밋하지 않는다.
 
-## 소형 문서: 동기 CLI 변환
+## 소형 문서 확인 전용: 동기 CLI 변환
 
 `hwp2020-mcp-convert` CLI가 로컬 파일 바이트를 읽어 원격 HTTP MCP에 전송하고, 응답 변환본을 로컬
 `output_dir`에 저장한다. 이 동기 방식은 변환과 response delivery가 끝날 때까지 terminal을 점유하므로,
@@ -79,7 +88,7 @@ HWP2020_MCP_AUTH_TOKEN=<관리자가_제공한_토큰>
 
 ```bash
 /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert --help
 ```
@@ -88,7 +97,7 @@ PDF 변환 예:
 
 ```bash
 /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert \
   --env-file "$HOME/Devel/hwp-convert/.env.local" \
@@ -112,7 +121,7 @@ request의 `password`로 전달하며, 대화형 prompt를 열지 않는다.
 ```bash
 printf '%s\n' "$HWP_DOCUMENT_PASSWORD" | \
   /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert \
   --env-file "$HOME/Devel/hwp-convert/.env.local" \
@@ -127,7 +136,7 @@ printf '%s\n' "$HWP_DOCUMENT_PASSWORD" | \
 `HWP_DOCUMENT_PASSWORD`는 현재 shell에서만 설정하고 shell history, Git, `.env.local`에는 저장하지 않는다.
 동기 변환의 암호 처리 중 생성되는 server-side HWPX intermediate와 PDF는 response delivery 완료 후 삭제된다.
 
-## 기본: 비동기 CLI 변환
+## 권장: 비동기 CLI 변환
 
 PR review 기준 PDF, 다쪽 문서, 이미지·표가 많은 문서는 먼저 `start`로 `job_id`를 받고, `status`를
 polling한 뒤 `download`로 변환본을 저장한다. 이 방식은 terminal 연결이 길게 묶이지 않고,
@@ -141,7 +150,7 @@ PR review에서는 `start` 응답의 `job_id`와 입력 경로, target, timeout�
 ```bash
 # 1. upload와 job 시작
 /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert start \
   --env-file "$HOME/Devel/hwp-convert/.env.local" \
@@ -151,7 +160,7 @@ PR review에서는 `start` 응답의 `job_id`와 입력 경로, target, timeout�
 
 # 2. succeeded 또는 failed가 될 때까지 상태 확인
 /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert status \
   --env-file "$HOME/Devel/hwp-convert/.env.local" \
@@ -159,7 +168,7 @@ PR review에서는 `start` 응답의 `job_id`와 입력 경로, target, timeout�
 
 # 3. SHA-256 검증 후 client local directory에 저장
 /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert download \
   --env-file "$HOME/Devel/hwp-convert/.env.local" \
@@ -215,7 +224,7 @@ Apple Silicon Homebrew 환경에서는 보통 `/opt/homebrew/bin/npx`다. 워크
       "command": "/opt/homebrew/bin/npx",
       "args": [
         "-y",
-        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz",
+        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz",
         "--",
         "hwp2020-mcp-bridge"
       ],
@@ -318,8 +327,8 @@ shasum -a 256 "$HOME/rhwp/pdf/example-a3-2020.pdf"
 
 ## 문제 해결
 
-- client archive가 `tools/hwp-convert-mcp-client-20260805-071707.tar.gz` 하나만 있는지 확인한다.
-- `--package=file:$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz`처럼 `file:` 스킴과
+- client archive가 `tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz` 하나만 있는지 확인한다.
+- `--package=file:$HOME/rhwp/tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz`처럼 `file:` 스킴과
   절대경로를 사용한다.
 - `/opt/homebrew/bin/npx`가 실제 `npx` 경로와 다르면 `mcp.json`의 `command`를 `which npx` 결과로
   바꾼다.

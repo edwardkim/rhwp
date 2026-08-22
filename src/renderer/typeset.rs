@@ -705,6 +705,9 @@ pub struct TypesetEngine {
     /// [#2403] 현재 조판 입력의 레이아웃 호환 프로파일 — typeset 진입 시 set.
     /// (HWPX 저장 시멘틱·HWP3 변환본 판단 등 소스분기의 단일 질의 표면.)
     profile: std::cell::Cell<crate::model::provenance::LayoutCompatibilityProfile>,
+    /// [#5854] 현재 구역의 저장 LINE_SEG 사다리가 통짜 합성값인지 — 구역 진입 시 set.
+    /// 참이면 줄 metrics 를 저장값이 아니라 글꼴·문단 스타일에서 다시 뽑는다.
+    uniform_filler_ladder: std::cell::Cell<bool>,
 }
 
 /// 조판 중 현재 페이지/단 상태
@@ -5365,6 +5368,7 @@ impl TypesetEngine {
         Self {
             dpi,
             profile: std::cell::Cell::new(Default::default()),
+            uniform_filler_ladder: std::cell::Cell::new(false),
         }
     }
 
@@ -6542,6 +6546,11 @@ impl TypesetEngine {
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         // [#2403] 소스분기 프로파일 — 엔진(Cell)과 state 에 한 번에 배선.
         self.profile.set(profile);
+        // [#5854] 통짜 합성 LINE_SEG 사다리 판정 — 구역당 한 번.
+        self.uniform_filler_ladder
+            .set(crate::renderer::stored_line_ladder_is_uniform_filler(
+                paragraphs, styles,
+            ));
         let col_count = column_def.column_count.max(1);
         let default_footnote_shape = FootnoteShape::default();
         let footnote_shape = footnote_shape.unwrap_or(&default_footnote_shape);
@@ -15291,6 +15300,7 @@ impl TypesetEngine {
             allow_start_height_backtrack: false,
             suppress_large_forward_jump: false,
             suppress_hwpx_stale_forward: st.profile.hwpx_stored_layout(),
+            uniform_filler_ladder: self.uniform_filler_ladder.get(),
             endnote_between_notes_hu: 0,
             prev_item_content_bottom_y: None,
             last_compacted_endnote_title_gap: false,
@@ -15638,7 +15648,10 @@ impl TypesetEngine {
                     prev_line_reserved_tac_picture_height = None;
                     continue;
                 }
-                let recompute_lh = text_before_picture_line || (max_fs > 0.0 && raw_lh < max_fs);
+                // [#5854] 통짜 합성 사다리 문서는 저장 `line_height` 가 글자 크기보다
+                // 크든 작든 실측이 아니다 — 항상 글꼴·문단 스타일로 다시 뽑는다.
+                let recompute_lh = text_before_picture_line
+                    || (max_fs > 0.0 && (raw_lh < max_fs || self.uniform_filler_ladder.get()));
                 let (lh, line_spacing_px) = if recompute_lh {
                     // [Task #1042 Stage 6c] HWP3/HWP5 line_segs 의 (line_height=base,
                     // line_spacing=extra) 의미와 정합되게 분해 — 종전 처럼 ls_val/100 전체를
@@ -19071,9 +19084,34 @@ impl TypesetEngine {
             is_para_topbottom_float(&table.common) && para_has_non_whitespace_text(para);
         let signed_vertical_offset = vertical_offset as i32;
         let total_lines = fmt.line_heights.len();
+        // [#5871] 공백만 있는 host 문단이 두 술어 사이 틈에 빠진다 —
+        // `is_visible_para_float` 는 공백을 글자로 안 세는데(`para_has_non_
+        // whitespace_text`) 아래 pre-text 판정은 `!para.text.is_empty()` 라 공백
+        // 한 칸도 글자로 셌다. 그 결과 저장 줄상자를 표 앞 텍스트로 한 번 방출하고
+        // 그 아래에 같은 표를 다시 그려 표가 제 높이만큼 밀렸다(10895 [별표 3]
+        // 8쪽 둘째 표 667.7 → 1012.7, 본문 하한 1028.1 초과·쪽번호와 겹침).
+        //
+        // 다만 "공백=무텍스트" 로만 넓히면 저장 줄상자가 표와 무관한 문서에서
+        // 쪽이 늘어난다(19952675 서식 6→7, 한글 6). 발동은 **저장 줄상자가 이미
+        // 표를 담고 있다는 증거**가 있을 때로 한정한다 — 첫 저장 줄의 lh 가
+        // 표 높이 + 위·아래 바깥여백 이상(10895: lh 24276 = 23710+283+283).
+        let whitespace_host_line_covers_table = !para_has_non_whitespace_text(para)
+            && !para.text.is_empty()
+            && para
+                .line_segs
+                .iter()
+                .find(|ls| !is_synthetic_line_seg(ls))
+                .is_some_and(|ls| {
+                    i64::from(ls.line_height)
+                        >= i64::from(table.common.height.min(i32::MAX as u32))
+                            + i64::from(table.outer_margin_top)
+                            + i64::from(table.outer_margin_bottom)
+                            - 10
+                });
         let pre_table_end_line = if !is_visible_para_float
             && signed_vertical_offset > 0
             && !para.text.is_empty()
+            && !whitespace_host_line_covers_table
         {
             total_lines
         } else if table.common.treat_as_char
