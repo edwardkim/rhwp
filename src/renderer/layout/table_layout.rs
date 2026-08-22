@@ -768,23 +768,29 @@ fn repair_clipped_cell_text_table_seam(node: &mut RenderNode, suppress_bottom_te
 /// even when the table's logical top is just below the clip, leaving a stray
 /// horizontal rule at the preceding page's bottom (issue2007 p8).
 ///
-/// This is deliberately limited to a table beginning no more than one border
-/// residue window below the physical clip.  A separate page render owns that
-/// table with a fresh viewport; no current-page text or usable table area is
-/// discarded here.
+/// A separate page render owns that table with a fresh viewport; no
+/// current-page text or usable table area is discarded here.
+///
+/// [#5863] 억제는 테두리 잔여물에서 끝나지 않는다. 잘린 셀의 clip 바닥 **아래에서
+/// 시작하는** 중첩 표는 그 셀 안에서 보일 수 있는 부분이 아예 없다 — 다음 쪽 조각이다.
+/// 그런데 셀 clip 이 이 표에 걸리지 않는 경로가 있어(`hwpx_sample2.hwp` 8쪽), 표가
+/// **본문 clip 까지** 그려지며 글줄이 가로로 반 잘린 채 남고, 그 아래 40자는 본문 밖에
+/// 찍혀 사라진다. 같은 표가 9쪽에 온전히 다시 그려지므로(한글 2024 정본도 9쪽에 둔다)
+/// 이 조각은 순수한 중복이다.
+///
+/// 종전에는 억제 창이 테두리 안티에일리어싱 폭(6px)뿐이라 34px 아래에서 시작하는 이
+/// 조각을 놓쳤다. clip 바닥 아래에서 시작하는 표는 거리와 무관하게 **현재 쪽에서 보일
+/// 근거가 없으므로** 창 상한을 두지 않는다.
 fn suppress_future_nested_table_border_residue(node: &mut RenderNode, clip_bottom: f64) {
     for child in &mut node.children {
         if !child.visible {
             continue;
         }
-        if matches!(child.node_type, RenderNodeType::Table(_)) {
-            let table_top = child.bbox.y;
-            if table_top >= clip_bottom - NESTED_FRAGMENT_EDGE_EPSILON_PX
-                && table_top - clip_bottom <= NESTED_FRAGMENT_RESIDUAL_BORDER_PX
-            {
-                child.visible = false;
-                continue;
-            }
+        if matches!(child.node_type, RenderNodeType::Table(_))
+            && child.bbox.y >= clip_bottom - NESTED_FRAGMENT_EDGE_EPSILON_PX
+        {
+            child.visible = false;
+            continue;
         }
         suppress_future_nested_table_border_residue(child, clip_bottom);
     }
