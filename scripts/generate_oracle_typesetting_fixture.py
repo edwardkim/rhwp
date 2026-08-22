@@ -149,9 +149,25 @@ def header_or_footer(kind: str, control_id: int, char_property_id: int, text: st
     )
 
 
-def build_char_properties(header: str, face: str, matrix: list[dict[str, Any]]) -> str:
+def build_char_properties(
+    header: str,
+    face: str,
+    matrix: list[dict[str, Any]],
+    substitution_face: str | None = None,
+) -> str:
     escaped_face = html.escape(face, quote=True)
     header = header.replace('face="함초롬바탕"', f'face="{escaped_face}"')
+    if substitution_face is not None:
+        escaped_substitution = html.escape(substitution_face, quote=True)
+        marker = f'<hh:font id="1" face="{escaped_face}" type="TTF" isEmbedded="0">'
+        if header.count(marker) != 7:
+            raise OracleStage2Error("exact font marker must occur once per language")
+        header = header.replace(
+            marker,
+            marker
+            + f'<hh:substFont face="{escaped_substitution}" type="TTF" '
+            'isEmbedded="0" binaryItemIDRef=""/>',
+        )
     match = re.search(r'(<hh:charPr id="0".*?</hh:charPr>)', header, flags=re.DOTALL)
     if match is None:
         raise OracleStage2Error("base charPr 0 is missing")
@@ -208,6 +224,7 @@ def generate_fixture(
     output_relative: str,
     manifest_relative: str,
     document_face: str,
+    substitution_face: str | None = None,
 ) -> dict[str, Any]:
     fixture = contract["fixture"]
     sources = contract["fontInventory"]["sources"]
@@ -240,7 +257,7 @@ def generate_fixture(
 
     header = entries["Contents/header.xml"].decode("utf-8")
     entries["Contents/header.xml"] = build_char_properties(
-        header, document_face, matrix
+        header, document_face, matrix, substitution_face
     ).encode("utf-8")
 
     context_records: list[dict[str, Any]] = []
@@ -358,7 +375,11 @@ def generate_fixture(
             archive.writestr(zip_info(name, zipfile.ZIP_DEFLATED), entries[name])
 
     semantic = {
-        "contractVersion": fixture["contractVersion"],
+        "contractVersion": (
+            fixture["contractVersion"]
+            if substitution_face is None
+            else f'{fixture["contractVersion"]}-subst-v1'
+        ),
         "documentFace": document_face,
         "queueRank": ranks[document_face],
         "sourceTemplateSha256": fixture["sourceTemplateSha256"],
@@ -367,6 +388,8 @@ def generate_fixture(
         "contexts": context_records,
         "fontBytesEmbedded": False,
     }
+    if substitution_face is not None:
+        semantic["substitutionFace"] = substitution_face
     lane_counts = {
         lane: sum(record["lineSegLane"] == lane for record in context_records)
         for lane in fixture["lineSegLanes"]
@@ -405,6 +428,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--output", default="oracle_typesetting_fixture.hwpx")
     parser.add_argument("--manifest", default="oracle_typesetting_fixture.manifest.json")
     parser.add_argument("--face")
+    parser.add_argument("--subst-face")
     return parser.parse_args()
 
 
@@ -418,6 +442,7 @@ def main() -> int:
         output_relative=args.output,
         manifest_relative=args.manifest,
         document_face=face,
+        substitution_face=args.subst_face,
     )
     print(manifest["inputSha256"])
     return 0

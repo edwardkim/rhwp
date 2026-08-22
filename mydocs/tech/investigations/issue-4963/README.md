@@ -8,9 +8,9 @@ last_verified: 2026-08-22
 # Issue #4963 W5 Oracle Profile·controlled ladder
 
 이 디렉터리는 W4 조판 위험 상위 17개 face를 한컴 exact/missing 상태에서 비교하기 위한 기계 검증
-계약을 보존한다. Stage W5-3까지 profile 형식, deterministic fixture, SFNT/PDF 관측기, 17개 후보
-준비도 원장, 기존 한컴 2022 evidence import와 한컴 2020 read-only exact-installed canary를 고정했다.
-제품 font metric·fallback·paint 결과는 변경하지 않았다.
+계약을 보존한다. Stage W5-4A까지 profile 형식, deterministic fixture, SFNT/PDF 관측기, 17개 후보
+준비도 원장, 기존 한컴 2022 evidence import, 한컴 2020 read-only exact-installed canary와 disposable
+snapshot 실행계약을 고정했다. 제품 font metric·fallback·paint 결과는 변경하지 않았다.
 
 ## 산출물
 
@@ -21,6 +21,9 @@ last_verified: 2026-08-22
 | `oracle_profile_public_fixtures.json` | Oracle 결과가 아닌 공개 synthetic 정상 fixture와 9개 negative mutation |
 | `oracle_stage2_contract.json` | fixture matrix·source hash·PDF 자원 상한·privacy 계약 |
 | `oracle_stage3_contract.json` | historical import hash와 현재 HWP 2020 feature/readback/canary 증적 계약 |
+| `oracle_stage4_contract.json` | 3개 canary·5개 질문·snapshot restore·font delta 실행계약 |
+| `oracle_stage4_current_host_preflight.json` | 현재 호스트가 disposable이 아님을 고정한 read-only 판정 |
+| `oracle_stage4_public_fixtures.json` | 3개 물리 상태와 snapshot attestation 공개 contract fixture |
 | `fixtures/oracle_typesetting_fixture.hwpx` | rank 1 `문체부 바탕체`용 공개 synthetic HWPX canary |
 | `fixtures/oracle_typesetting_fixture.manifest.json` | fixture semantic matrix·LineSeg lane·ZIP entry hash |
 | `font_oracle_readiness.json` | 17개 face의 path-free source·ladder 준비도 원장 |
@@ -34,8 +37,10 @@ last_verified: 2026-08-22
 | `scripts/oracle_stage3_historical_import.py` | hash가 맞는 기존 #2430 evidence를 profile v2로 투영 |
 | `scripts/oracle_stage3_windows_canary.ps1` | font 상태 무변경 manifest·readback·HWPX open·PDF export runner |
 | `scripts/oracle_stage3_profile.py` | local-only 실행 증적을 path-free acceptance profile로 투영 |
+| `scripts/oracle_stage4_contract.py` | attestation·동일 입력·managed/unrelated font·restore validator |
 | `scripts/tests/test_oracle_stage2.py` | 결정론·손상·상한·path escape·symlink 회귀 test |
 | `scripts/tests/test_oracle_stage3.py` | historical 결정론·현재 canary·negative control·privacy 회귀 test |
+| `scripts/tests/test_oracle_stage4.py` | snapshot·상태 membership·ambient drift·restore fail-closed test |
 
 ## 핵심 경계
 
@@ -59,6 +64,8 @@ node --test scripts/tests/oracle_profile_contract.test.mjs
 node scripts/oracle_profile_contract.mjs check
 python3 -m unittest -v scripts.tests.test_oracle_stage2
 python3 -m unittest -v scripts.tests.test_oracle_stage3
+python3 -m unittest -v scripts.tests.test_oracle_stage4
+python3 scripts/oracle_stage4_contract.py check
 ```
 
 개별 profile은 다음처럼 같은 계약으로 검사한다.
@@ -99,5 +106,19 @@ bytes와 입력 hash가 정확히 맞지 않으면 export 전에 중단하며, f
 30개 visual line과 1쪽을 기록했다. rank 1 `문체부 바탕체`와 KoPubWorld 2종은 local font source가
 있어도 현재 Windows에는 exact-installed가 아니므로 `함초롬바탕` readback을 성공으로 승격하지 않았다.
 
-다음 Stage W5-4는 disposable snapshot과 복원 절차를 승인받은 뒤 rank 1을 포함한 paired
-exact/missing controlled canary를 실행한다. 그 전에는 현재 호스트의 font 상태를 변경하지 않는다.
+Stage W5-4A는 다음 실행계약을 완료했다.
+
+- 대상: rank 1 `문체부 바탕체`, rank 13 `휴먼명조`, rank 7 `KoPubWorld돋움체 Light`
+- 같은 target에서는 모든 상태가 같은 HWPX bytes를 사용하고, 공개 fixture가 선언한
+  `KoPubWorld바탕체 Light`만 document substitution 관계로 인정
+- 5개 질문을 `exact-only`, `subst-only`, `none-related` 3개 고유 실행으로 매핑
+- 직접 official-successor anchor가 없어 successor-only는 `not-provided`로 유지
+- `exact-removed`와 `all-related-fonts-missing`의 managed set이 같을 때만 같은 실행을 명시적으로 재사용
+- 외부 control plane snapshot, 실행 전후 restore, baseline manifest 복구와 unrelated font projection
+  동일성을 모두 요구
+- `휴먼명조`처럼 managed TTF 제거 뒤에도 같은 face가 readback되면 한컴 bundled HFT 가능성을
+  `blocked-immutable-or-unmanaged-font`로 기록하고 missing 성공을 주장하지 않음
+
+현재 세션은 Hyper-V VM inventory 권한과 checkpoint/restore 증거가 없어 `qualified=false`,
+`mutationAllowed=false`다. W5-4B는 외부에서 제어 가능한 VM/checkpoint identity와 실제 restore probe를
+준비한 뒤 시작한다. 그 전에는 현재 호스트의 font 상태를 변경하지 않는다.

@@ -147,6 +147,43 @@ class OracleStage2Test(unittest.TestCase):
                     document_face="broken",
                 )
 
+    def test_substitution_fixture_is_explicit_and_byte_exact(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            arguments = {
+                "contract": self.contract,
+                "output_root": root,
+                "document_face": "문체부 바탕체",
+                "substitution_face": "KoPubWorld바탕체 Light",
+            }
+            first = generate_fixture(
+                **arguments,
+                output_relative="first.hwpx",
+                manifest_relative="first.json",
+            )
+            second = generate_fixture(
+                **arguments,
+                output_relative="second.hwpx",
+                manifest_relative="second.json",
+            )
+            self.assertEqual((root / "first.hwpx").read_bytes(), (root / "second.hwpx").read_bytes())
+            self.assertEqual(first, second)
+            self.assertEqual(
+                first["semantic"]["contractVersion"],
+                "w5-oracle-typesetting-v1-subst-v1",
+            )
+            self.assertEqual(
+                first["semantic"]["substitutionFace"],
+                "KoPubWorld바탕체 Light",
+            )
+            with zipfile.ZipFile(root / "first.hwpx") as archive:
+                header = archive.read("Contents/header.xml").decode("utf-8")
+            marker = (
+                '<hh:substFont face="KoPubWorld바탕체 Light" type="TTF" '
+                'isEmbedded="0" binaryItemIDRef=""/>'
+            )
+            self.assertEqual(header.count(marker), 7)
+
     def test_pdf_observation_is_byte_exact_and_advance_is_not_hmtx(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
