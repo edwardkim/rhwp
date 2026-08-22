@@ -2008,25 +2008,28 @@ export class InputHandler {
       kind: 'snapshot',
       operationType: 'applyCharFormatCellBlock',
       operation: (wasm) => {
-        for (const cellIdx of block.cellIndices) {
-          if (block.cellPath) {
-            const path = block.cellPath;
-            const paraCount = wasm.getCellParagraphCountByPath(block.sec, block.ppi, JSON.stringify(withCellPathTarget(path, cellIdx)));
-            for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
-              const pathJson = JSON.stringify(withCellPathTarget(path, cellIdx, cellParaIdx));
-              const len = wasm.getCellParagraphLengthByPath(block.sec, block.ppi, pathJson);
-              if (len <= 0) continue;
-              wasm.applyCharFormatInCellByPath(block.sec, block.ppi, pathJson, 0, len, propsJson);
+        // 셀 수만큼 뮤테이터를 호출하므로 재페이지네이션을 묶는다(#4118).
+        wasm.runInBatch(() => {
+          for (const cellIdx of block.cellIndices) {
+            if (block.cellPath) {
+              const path = block.cellPath;
+              const paraCount = wasm.getCellParagraphCountByPath(block.sec, block.ppi, JSON.stringify(withCellPathTarget(path, cellIdx)));
+              for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
+                const pathJson = JSON.stringify(withCellPathTarget(path, cellIdx, cellParaIdx));
+                const len = wasm.getCellParagraphLengthByPath(block.sec, block.ppi, pathJson);
+                if (len <= 0) continue;
+                wasm.applyCharFormatInCellByPath(block.sec, block.ppi, pathJson, 0, len, propsJson);
+              }
+              continue;
             }
-            continue;
+            const paraCount = wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx);
+            for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
+              const len = wasm.getCellParagraphLength(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx);
+              if (len <= 0) continue;
+              wasm.applyCharFormatInCell(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx, 0, len, propsJson);
+            }
           }
-          const paraCount = wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx);
-          for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
-            const len = wasm.getCellParagraphLength(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx);
-            if (len <= 0) continue;
-            wasm.applyCharFormatInCell(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx, 0, len, propsJson);
-          }
-        }
+        });
         return { ...cursorBefore };
       },
     });
@@ -5010,9 +5013,12 @@ export class InputHandler {
           range,
           this.cursor.getExcludedCells(),
         );
-        for (const cellIdx of cellIndices) {
-          wasm.setCellProperties(ctx.sec, ctx.ppi, ctx.ci, cellIdx, props);
-        }
+        // 셀 수만큼 setCellProperties 를 호출하므로 재페이지네이션을 묶는다(#4118).
+        wasm.runInBatch(() => {
+          for (const cellIdx of cellIndices) {
+            wasm.setCellProperties(ctx.sec, ctx.ppi, ctx.ci, cellIdx, props);
+          }
+        });
         return this.cursor.getPosition();
       },
     });

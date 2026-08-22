@@ -740,6 +740,30 @@ export class WasmBridge {
     return JSON.parse(d.flushDeferredPagination());
   }
 
+  /**
+   * 여러 뮤테이션을 한 번의 재페이지네이션으로 묶는다 (#4118).
+   *
+   * begin_batch~end_batch 사이의 뮤테이터는 파생 재계산을 end_batch 의 paginate()
+   * 1회로 미루므로, 셀 블록 전체 적용처럼 셀 수만큼 뮤테이터를 호출하는 경로의
+   * O(n²) 재조판을 O(n) 으로 만든다. fn 도중 예외가 나도 batch 가 새지 않게
+   * finally 에서 닫는다. pkg 가 낡아 beginBatch 가 없으면 묶음 없이 실행한다 —
+   * 결과는 동일하고 느릴 뿐이다.
+   */
+  runInBatch<T>(fn: () => T): T {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { beginBatch?: () => string; endBatch?: () => string };
+    const batchable = typeof d.beginBatch === 'function' && typeof d.endBatch === 'function';
+    if (!batchable) {
+      return fn();
+    }
+    this.doc.beginBatch();
+    try {
+      return fn();
+    } finally {
+      this.doc.endBatch();
+    }
+  }
+
   getSectionCount(): number {
     return this.doc?.getSectionCount() ?? 0;
   }

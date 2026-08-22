@@ -1059,19 +1059,22 @@ export class ApplyCharFormatCommand implements EditCommand {
       const endPara = cellParaIndexOf(end);
 
       this.entries = [];
-      for (let p = startPara; p <= endPara; p++) {
-        const pathP = cellPathJsonForPara(start, p);
-        const from = p === startPara ? start.charOffset : 0;
-        const to = p === endPara ? end.charOffset : wasm.getCellParagraphLengthByPath(sec, ppi, pathP);
-        if (to <= from) continue;
+      // 대상 문단 수만큼 뮤테이터를 호출하므로 재페이지네이션을 묶는다(#4118).
+      wasm.runInBatch(() => {
+        for (let p = startPara; p <= endPara; p++) {
+          const pathP = cellPathJsonForPara(start, p);
+          const from = p === startPara ? start.charOffset : 0;
+          const to = p === endPara ? end.charOffset : wasm.getCellParagraphLengthByPath(sec, ppi, pathP);
+          if (to <= from) continue;
 
-        const prevProps = wasm.getCellCharPropertiesAtByPath(sec, ppi, pathP, from);
-        this.entries.push({ paraIndex: p, startOffset: from, endOffset: to, beforeCharShapeId: prevProps.charShapeId });
+          const prevProps = wasm.getCellCharPropertiesAtByPath(sec, ppi, pathP, from);
+          this.entries.push({ paraIndex: p, startOffset: from, endOffset: to, beforeCharShapeId: prevProps.charShapeId });
 
-        wasm.applyCharFormatInCellByPath(sec, ppi, pathP, from, to, propsJson);
-        const afterProps = wasm.getCellCharPropertiesAtByPath(sec, ppi, pathP, from);
-        this.entries[this.entries.length - 1].afterCharShapeId = afterProps.charShapeId;
-      }
+          wasm.applyCharFormatInCellByPath(sec, ppi, pathP, from, to, propsJson);
+          const afterProps = wasm.getCellCharPropertiesAtByPath(sec, ppi, pathP, from);
+          this.entries[this.entries.length - 1].afterCharShapeId = afterProps.charShapeId;
+        }
+      });
     } else {
       const sec = start.sectionIndex;
       const startPara = start.paragraphIndex;
@@ -1206,9 +1209,12 @@ export class ApplyParaFormatCommand implements EditCommand {
       beforeParaShapeId: getParaShapeId(wasm, target),
     }));
 
-    for (const entry of entries) {
-      applyParaFormatToTarget(wasm, entry.target, propsJson);
-    }
+    // 대상 수만큼 뮤테이터를 호출하므로 재페이지네이션을 묶는다(#4118).
+    wasm.runInBatch(() => {
+      for (const entry of entries) {
+        applyParaFormatToTarget(wasm, entry.target, propsJson);
+      }
+    });
     for (const entry of entries) {
       entry.afterParaShapeId = getParaShapeId(wasm, entry.target);
     }
