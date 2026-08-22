@@ -597,6 +597,7 @@ impl LayoutEngine {
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
                     clip: false,
+                    page_fragment: false,
                     model_cell_index: Some(cell_enum_idx as u32),
                 }),
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),

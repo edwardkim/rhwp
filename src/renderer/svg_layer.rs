@@ -96,6 +96,7 @@ impl SvgLayerRenderer {
                             border_fill_id: 0,
                             text_direction: 0,
                             clip: true,
+                            page_fragment: false,
                             model_cell_index: None,
                         }),
                     },

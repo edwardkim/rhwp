@@ -887,6 +887,8 @@ impl LayoutEngine {
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
                     clip: is_in_split_row || is_rowbreak_straddle,
+                    // [#5862] 이 경로의 clip 셀은 전부 쪽 컷이 만든 조각이다.
+                    page_fragment: is_in_split_row || is_rowbreak_straddle,
                     model_cell_index: Some(cell_idx as u32),
                 }),
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
@@ -3709,6 +3711,7 @@ mod tests {
                 border_fill_id: 0,
                 text_direction: 0,
                 clip: true,
+                page_fragment: false,
                 model_cell_index: Some(0),
             }),
             BoundingBox::new(10.0, 20.0, 100.0, 80.0),
