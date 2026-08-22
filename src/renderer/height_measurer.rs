@@ -23,7 +23,20 @@ pub fn is_tac_table_inline(
     text: &str,
     controls: &[Control],
 ) -> bool {
-    let table_width: u32 = table.get_column_widths().iter().sum();
+    // [#5785] 판정 폭은 **선언 폭**을 우선한다. `get_column_widths()` 는 전역
+    // 그리드의 col_span==1 셀 max 합이라, 행마다 열 구획이 다른 표(#5697,
+    // 3049001 약장)에서 12,872 vs 17,299HU 로 표마다 흔들렸다 — 과소합산된
+    // 표만 90% 문턱을 우연히 통과해 인라인이 되고, 그 인라인 흐름이 이웃
+    // 셀의 폴백 기준 x 를 +22~27px 오염시켰다(약장 2·5·11). 선언 폭이 없는
+    // 합성 표만 colsum 폴백.
+    let tac_width = |t: &Table| -> u32 {
+        if t.common.width > 0 {
+            t.common.width
+        } else {
+            t.get_column_widths().iter().sum()
+        }
+    };
+    let table_width: u32 = tac_width(table);
 
     if !text.is_empty() {
         return (table_width as i32) < (seg_width as f64 * 0.9) as i32;
@@ -39,10 +52,7 @@ pub fn is_tac_table_inline(
         .collect();
 
     if tac_tables.len() >= 2 {
-        let total_width: u32 = tac_tables
-            .iter()
-            .map(|t| t.get_column_widths().iter().sum::<u32>())
-            .sum();
+        let total_width: u32 = tac_tables.iter().map(|t| tac_width(t)).sum();
         return (total_width as i32) <= seg_width;
     }
 
@@ -239,6 +249,39 @@ pub fn fit_measured_table_to_declared_height(
     let max_reasonable = current_row_sum * 1.35;
     if target_row_sum < min_reasonable || target_row_sum > max_reasonable {
         return fitted;
+    }
+
+    // [#5879] 그 창 안이라도 **내용이 필요로 하는 높이 아래로는 줄이지 않는다.**
+    //
+    // 위 25% 창은 "근소한 어긋남"을 노렸지만 비율만 본다. 저장 선언 높이가 낡은 문서에서는
+    // 17% 축소도 글줄을 통째로 삼킨다 — `samples/issue4514/sample1-repro.hwp` 19쪽은
+    // 측정 683.9px 표를 선언 565.8px 로 0.829배 줄인다. 그러면 표가 쪽에 "들어간다"고
+    // 판정돼 분할되지 않고, 줄들은 그대로 그려진 뒤 셀 clip 이 지운다(4줄 소실, 다음 쪽에
+    // 이어지지도 않는다 — #5784).
+    //
+    // 그래서 축소가 어느 한 행이라도 **글줄 높이 합** 아래로 내리면 보정을 건너뛴다.
+    //
+    // 하한은 패딩을 뺀 순수 내용이다 — 패딩은 눌러도 되고, #1510 이 그 경우다:
+    // `decl=37.3 req=41.1 content=37.3 pad=3.8` 처럼 선언 높이가 패딩을 안 담아
+    // 줄어드는 몫이 정확히 패딩이면 글자는 하나도 안 잘린다. 반면 #5879 는
+    // `decl=541.0 req=589.2 content=585.5` 로 내용 자체가 선언보다 크다.
+    // 늘리는 방향(scale >= 1)과 내용을 안 자르는 축소는 종전 그대로다.
+    if target_row_sum > 0.0 && current_row_sum > 0.0 {
+        let scale = target_row_sum / current_row_sum;
+        if scale < 1.0 {
+            let cuts_content = (0..row_count).any(|row| {
+                let floor = fitted
+                    .cells
+                    .iter()
+                    .filter(|cell| cell.row == row && cell.row_span == 1)
+                    .map(|cell| cell.total_content_height)
+                    .fold(0.0f64, f64::max);
+                floor > 0.0 && fitted.row_heights[row] * scale < floor - 0.5
+            });
+            if cuts_content {
+                return fitted;
+            }
+        }
     }
 
     if target_row_sum > 0.0 && (current_row_sum - target_row_sum).abs() > 0.5 {

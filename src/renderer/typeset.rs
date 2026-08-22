@@ -19071,9 +19071,34 @@ impl TypesetEngine {
             is_para_topbottom_float(&table.common) && para_has_non_whitespace_text(para);
         let signed_vertical_offset = vertical_offset as i32;
         let total_lines = fmt.line_heights.len();
+        // [#5871] 공백만 있는 host 문단이 두 술어 사이 틈에 빠진다 —
+        // `is_visible_para_float` 는 공백을 글자로 안 세는데(`para_has_non_
+        // whitespace_text`) 아래 pre-text 판정은 `!para.text.is_empty()` 라 공백
+        // 한 칸도 글자로 셌다. 그 결과 저장 줄상자를 표 앞 텍스트로 한 번 방출하고
+        // 그 아래에 같은 표를 다시 그려 표가 제 높이만큼 밀렸다(10895 [별표 3]
+        // 8쪽 둘째 표 667.7 → 1012.7, 본문 하한 1028.1 초과·쪽번호와 겹침).
+        //
+        // 다만 "공백=무텍스트" 로만 넓히면 저장 줄상자가 표와 무관한 문서에서
+        // 쪽이 늘어난다(19952675 서식 6→7, 한글 6). 발동은 **저장 줄상자가 이미
+        // 표를 담고 있다는 증거**가 있을 때로 한정한다 — 첫 저장 줄의 lh 가
+        // 표 높이 + 위·아래 바깥여백 이상(10895: lh 24276 = 23710+283+283).
+        let whitespace_host_line_covers_table = !para_has_non_whitespace_text(para)
+            && !para.text.is_empty()
+            && para
+                .line_segs
+                .iter()
+                .find(|ls| !is_synthetic_line_seg(ls))
+                .is_some_and(|ls| {
+                    i64::from(ls.line_height)
+                        >= i64::from(table.common.height.min(i32::MAX as u32))
+                            + i64::from(table.outer_margin_top)
+                            + i64::from(table.outer_margin_bottom)
+                            - 10
+                });
         let pre_table_end_line = if !is_visible_para_float
             && signed_vertical_offset > 0
             && !para.text.is_empty()
+            && !whitespace_host_line_covers_table
         {
             total_lines
         } else if table.common.treat_as_char

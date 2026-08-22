@@ -712,6 +712,17 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                             x = (body_right_legacy - seg_w).max(x);
                         }
                     }
+                    // [#5872] leader 없는 RIGHT 탭이 **줄 중간**에 있으면 그것은
+                    // 쪽번호 정렬 탭이 아니라 줄 앞머리의 정렬 탭이다(목차 개요번호:
+                    // `\tI.\t총 칙\t 1`). 뒤에 탭이 더 있는데도 본문 우측 끝으로
+                    // 끌어가면 로마숫자가 쪽번호 자리에 겹친다(113424 6쪽 7줄:
+                    // I@709.3 ↔ 한글 I@101.0). 한컴이 저장한 `width` 는 정렬을 이미
+                    // 마친 전진 거리이므로 그대로 쓰면 좌표가 재현된다
+                    // (본문 좌단 75.6 + 1911HU/25.5px = 101.1 ↔ 한글 101.0).
+                    // 줄 끝의 RIGHT 탭(뒤에 탭 없음)은 종전대로 우측 끝 정렬.
+                    (2, _) if has_more_tabs_after => {
+                        x = tab_target.max(x);
+                    }
                     (2, _) => {
                         // RIGHT 인라인 탭 (no leader): 한컴 metrics 차이 흡수.
                         let seg_start = {
