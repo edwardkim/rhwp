@@ -2845,12 +2845,17 @@ mod tests {
 
     #[test]
     fn test_parse_document_reports_unsupported_hwpml_version() {
+        // [#5848] 예시를 `2.1` → `9.9` 로 바꿨다. 계약("모르는 버전은
+        // `UnsupportedVersion` 으로 보고한다")은 그대로다 — 예시로 쓰던 `2.1` 이
+        // 이제 **지원 대상**이 됐을 뿐이다(법제처 국가법령정보센터 배포본이 그 버전이고,
+        // 파서는 버전 값으로 분기하지 않아 태그 기반 경로가 그대로 적용된다).
+        // 게이트를 없앤 것이 아니므로 모르는 버전은 여전히 여기서 걸린다.
         let hwpml = br#"<?xml version="1.0" encoding="UTF-8"?>
-<HWPML Version="2.1"></HWPML>"#;
+<HWPML Version="9.9"></HWPML>"#;
         let err = parse_document(hwpml).unwrap_err();
         match err {
             ParseError::HmlError(hml::HmlError::UnsupportedVersion(version)) => {
-                assert_eq!(version, "2.1");
+                assert_eq!(version, "9.9");
             }
             other => panic!("expected HML unsupported version, got {other:?}"),
         }
