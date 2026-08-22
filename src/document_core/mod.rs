@@ -205,6 +205,11 @@ pub struct DocumentCore {
     pub(crate) snapshot_store: Vec<(u32, Document)>,
     /// 다음 스냅샷 ID
     pub(crate) next_snapshot_id: u32,
+    /// [#5769] Undo/Redo용 삭제 조각 저장소 (ID → DeleteFragment).
+    /// 스냅샷과 달리 코어가 자동 축출하지 않는다 — TS 히스토리의 discard 계약 참조.
+    pub(crate) fragment_store: Vec<(u32, commands::delete_fragment::DeleteFragment)>,
+    /// 다음 삭제 조각 ID
+    pub(crate) next_fragment_id: u32,
     /// 머리말/꼬리말 감추기: (global_page_index, is_header) 조합
     pub(crate) hidden_header_footer: std::collections::HashSet<(u32, bool)>,
     /// 파일 이름 (머리말/꼬리말 필드 치환용)
@@ -409,6 +414,8 @@ impl DocumentCore {
             overflow_links_cache: RefCell::new(HashMap::new()),
             snapshot_store: Vec::new(),
             next_snapshot_id: 0,
+            fragment_store: Vec::new(),
+            next_fragment_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),
             file_name: String::new(),
             active_field: None,

@@ -1,4 +1,7 @@
 mod clipboard;
+// [#5769] 삭제의 참 역연산 — 조각 저장소. DeleteFragment 타입이 DocumentCore
+// 필드로 쓰이므로 pub(crate).
+pub(crate) mod delete_fragment;
 mod document;
 mod footnote_ops;
 mod formatting;
