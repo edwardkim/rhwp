@@ -820,9 +820,13 @@ fn stored_host_lines_precede_float(para: &Paragraph, table: &crate::model::table
     let Some(base) = stored.first().map(|ls| ls.vertical_pos) else {
         return false;
     };
-    stored
-        .iter()
-        .all(|ls| (ls.vertical_pos as i64 - base as i64) < v_off as i64)
+    // 줄이 표 상단 **위에서 끝나야** 한다 — 표 상단(v_off)이 줄 밴드 안이면 그
+    // 줄은 표의 앵커 줄이지 선행 줄이 아니다(pr-1674 #1686 핀: v_off 607 <
+    // 줄 높이 1200 → 안내문은 표 뒤가 정답). 00072 제목은 v_off 4129 ≥ 줄
+    // 끝 1500 으로 표 위 선행 줄임이 증명된다.
+    stored.iter().all(|ls| {
+        (ls.vertical_pos as i64 - base as i64) + i64::from(ls.line_height) <= v_off as i64
+    })
 }
 
 /// [#4610 · #4599 ④] 결재문서 템플릿의 공백-전용 TAC 캐리어 문단 페인트 변위.
