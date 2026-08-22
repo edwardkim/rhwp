@@ -1,8 +1,8 @@
 ---
 kind: report
-status: completed
+status: in-progress
 canonical: mydocs/report/task_m100_4963_report.md
-last_verified: 2026-08-22
+last_verified: 2026-08-23
 ---
 
 # Task M100 #4963 — W5 Font Oracle Profile·controlled ladder 최종 보고
@@ -11,7 +11,10 @@ Issue: #4963
 
 ## 1. 결론
 
-#4963의 W5 기술·시각 검증을 완료했다.
+#4963의 W5 Oracle 기술·시각 검증은 완료했다. 다만 최종 보고서 검토에서 제3자가 Hyper-V 환경을
+구축해 같은 절차를 실행하는 공개 경로가 부족하다는 결손이 확인되어 보고서 승인을 다시 열었다.
+환경 구축 가이드와 재현 helper·비교기를 구현했으며, 이 공개 경로의 disposable VM end-to-end canary가
+남은 마지막 재현성 게이트다.
 
 - W4가 넘긴 조판 위험 상위 17개 face를 재계측·terminal·blocked로 빠짐없이 분류했다.
 - rank 1 `문체부 바탕체`, rank 7 `KoPubWorld돋움체 Light`, rank 8
@@ -39,6 +42,7 @@ Issue: #4963
 | [rank 16 disposition](../tech/investigations/issue-4963/oracle_stage5_rank16_read_only_disposition.json) | 문서 face 기능 불일치 정지 근거 |
 | [W5-4B 실행 보고](../working/task_m100_4963_w5_stage4b.md) | disposable VM canary·복원·rank 1·7 관측 |
 | [W5-5C 실행 보고](../working/task_m100_4963_w5_stage5c.md) | rank 8 기계·시각 판정 |
+| [Hyper-V 재현 가이드](../tech/investigations/issue-4963/hyperv_reproduction_guide.md) | 제3자 환경 구축·상태 실행·복원·독립 비교 정본 |
 
 기계 정본의 현재 file SHA-256은 다음과 같다.
 
@@ -161,17 +165,40 @@ fallback의 U+AC00 PDF advance는 exact보다 약 4.3% 컸다. 한 글자 차이
 | 검증 | 결과 |
 | --- | --- |
 | Oracle Node contract·profile tests | 13/13 통과 |
-| Stage 2·3·4·4 profile·5 queue Python tests | 39/39 통과 |
+| Stage 2·3·4·4 profile·5 queue Python tests | 40/40 통과 |
 | queue candidate/disposition reconciliation | 17/17, 오류 0 |
 | rank 8 input·profile·ladder hash 연결 | 통과 |
 | baseline/unrelated font 복원 | 통과 |
 | private corpus 접근·식별 정보 공개 | 0 |
 | font bytes·절대 VM path 공개 | 0 |
 | 메인테이너 side-by-side 시각 판정 | 통과 |
-| 변경 Markdown 내부 상대 링크 | 5개, 이상 없음 |
+| Hyper-V PowerShell AST parse | 기존·신규 runner 4/4 통과 |
+| 변경 Markdown 내부 상대 링크 | 8개, 이상 없음 |
 | `cargo fmt --all -- --check`·diff check | 통과 |
 
 `cargo fmt --all`을 먼저 적용한 뒤 같은 전체 workspace 범위의 `--check`를 수행했다.
+
+### 9.1 제3자 Hyper-V 재현 경로
+
+원 실행의 attestation은 checkpoint 복원 사실을 증명하지만 다른 개발자가 환경을 만드는 방법까지
+설명하지 못했다. 이를 보완해 [Hyper-V 재현 가이드](../tech/investigations/issue-4963/hyperv_reproduction_guide.md)에
+다음을 고정했다.
+
+- Standard checkpoint와 PowerShell Direct의 host/guest 전제조건
+- 한컴 update 뒤 최초 GUI 실행, interactive session과 공식 보안 모듈 준비
+- 외부 control plane의 restore-before/restore-after와 raw identity 대사
+- exact/subst/none managed font 상태를 만드는 guest helper
+- localized face 이름을 안전하게 전달하는 interactive Scheduled Task wrapper
+- 새 환경의 baseline·managed set·PDF observation·typesetting projection을 검증하는 독립 비교기
+
+기존 profile projector는 원 실행의 raw hash를 고정하므로 제3자 evidence를 받아들이는 도구로 사용하지
+않는다. 새 실행은 자체 baseline을 가진 reproduction summary로 먼저 검증하고, environment identity가
+다른 결과를 기존 acceptance profile과 혼합하지 않는다.
+
+현재 공개 재현 경로는 PowerShell AST 4/4와 synthetic three-state 비교기 회귀 테스트를 통과했다.
+그러나 새 `oracle_stage4_windows_font_state.ps1`을 실제 disposable VM에서 exact/subst/none 순으로 실행한
+증거는 아직 없다. 메인테이너가 mutable VM canary를 승인하면 가이드 그대로 한 target을 재실행하고,
+각 상태의 recovered manifest와 reproduction summary를 local-only 증거로 만든 뒤 이 절을 닫는다.
 
 ## 10. 제품 후속 후보
 
@@ -189,7 +216,9 @@ face도 기존 queue를 폐기하지 않고 같은 Oracle 계약으로 재개한
 
 ## 11. 완료와 남은 절차
 
-기술 완료 조건인 17개 최종 disposition, 실행 profile 계보, blocker·재개 조건, privacy 경계와 시각
-판정을 모두 충족했다. 이 최종 보고서에 대한 메인테이너 승인 뒤 #4963 통합 준비, 승인된 원격 push·PR,
-self-review, CI, merge와 이슈 close를 각각 프로젝트 절차에 따라 진행한다. #4960의 W5 상태와 제품 후속
-이슈 후보도 통합 결과를 확인한 뒤 별도 갱신한다.
+기존 Oracle 결과의 기술 완료 조건인 17개 최종 disposition, 실행 profile 계보, blocker·재개 조건,
+privacy 경계와 시각 판정은 모두 충족했다. 최종 보고서 종료에는 새 공개 Hyper-V 경로로 한 target의
+three-state 실행·복원·독립 비교가 실제 통과했다는 canary를 추가로 요구한다. 이 canary와 최종 보고서에
+대한 메인테이너 승인 뒤 #4963 통합 준비, 승인된 원격 push·PR, self-review, CI, merge와 이슈 close를
+각각 프로젝트 절차에 따라 진행한다. #4960의 W5 상태와 제품 후속 이슈 후보도 통합 결과를 확인한 뒤
+별도 갱신한다.

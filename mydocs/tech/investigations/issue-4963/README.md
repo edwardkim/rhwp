@@ -2,7 +2,7 @@
 kind: investigation
 status: active
 canonical: mydocs/plans/task_m100_4963.md
-last_verified: 2026-08-22
+last_verified: 2026-08-23
 ---
 
 # Issue #4963 W5 Oracle Profile·controlled ladder
@@ -31,6 +31,7 @@ snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 fon
 | `oracle_stage4_rank13_blocked_disposition.json` | managed font 0개에서도 exact가 남은 immutable/unmanaged 정지 근거 |
 | `oracle_stage5_queue_projection.json` | 17개 face의 profile 재사용·terminal·후속 실행 action matrix |
 | `oracle_stage5_rank8_acceptance_ladder.json` | distinct substitution을 사용한 rank 8 exact/subst/none 실행 계보 |
+| [`hyperv_reproduction_guide.md`](hyperv_reproduction_guide.md) | 제3자 Hyper-V 환경 구축·three-state 실행·복구·비교 절차 |
 | [`task_m100_4963_report.md`](../../../report/task_m100_4963_report.md) | W5 전건 disposition·시각 판정·제품 후속 원칙 최종 보고서 |
 | `fixtures/oracle_typesetting_fixture.hwpx` | rank 1 `문체부 바탕체`용 공개 synthetic HWPX canary |
 | `fixtures/oracle_typesetting_fixture.manifest.json` | fixture semantic matrix·LineSeg lane·ZIP entry hash |
@@ -47,6 +48,9 @@ snapshot 실행계약과 rank 1·7 acceptance ladder를 고정했다. 제품 fon
 | `scripts/oracle_stage3_profile.py` | local-only 실행 증적을 path-free acceptance profile로 투영 |
 | `scripts/oracle_stage4_contract.py` | attestation·동일 입력·managed/unrelated font·restore validator |
 | `scripts/oracle_stage4_profile.py` | local-only W5-4B 증거를 path-free profile·ladder·projection으로 변환 |
+| `scripts/oracle_stage4_windows_font_state.ps1` | disposable guest의 exact/subst/none managed font 상태 구성 |
+| `scripts/oracle_stage4_windows_task.ps1` | localized face·배열을 보존하는 interactive Scheduled Task entrypoint |
+| `scripts/oracle_stage4_reproduction_compare.py` | 새 Hyper-V 환경의 restore·managed set·projection 독립 비교 |
 | `scripts/oracle_stage5_rank16_disposition.py` | rank 16 read-only 기능 탐지를 path-free blocked disposition으로 변환 |
 | `scripts/oracle_stage5_rank8_profile.py` | rank 8 local evidence를 distinct-substitution profile·ladder로 변환 |
 | `scripts/oracle_stage5_queue_projection.py` | 기존 증거를 전건 disposition으로 결합하고 재계측 후보를 제한 |
