@@ -14,8 +14,8 @@ Canvas2D paint, webfont supply와 CanvasKit SFNT의 유한 규칙을 하나의 c
 맞는 정적 projection으로 생성한다. 전환 전후 선택 결과·순서·metric·renderer output은 동일하다.
 
 최초 로컬 결과와 메인테이너 승인은 있었지만, PR #5950의 CI가 PR-base unit-tier 정책 위반을 발견해
-**완료 판정을 철회하고 Stage W7-R 영향도 재감사로 되돌렸다**. 최신 CI, self-review, merge와 issue
-close는 근본 정정과 전체 재검증 뒤의 후속 승인 게이트다.
+완료 판정을 철회하고 Stage W7-R 영향도 재감사로 되돌렸다. 이후 근본 정정과 W7-R4 전체 로컬 재검증은
+완료했다. 최신 원격 CI, self-review, merge와 issue close는 후속 승인 게이트다.
 
 ## 2. 단계별 산출
 
@@ -51,14 +51,16 @@ W7은 이 plan을 load 성공으로 승격하지 않고 capability와 계획을 
 
 ## 4. 최종 검증
 
-- W1·W2·W6·W7 Node contract 77/77
-- release library 4,074 pass·13 ignore
-- release-test nextest 8,201/8,201, 정책 skip 41
-- native-skia library, placeholder 2/2, direct PDF 4/4
+- W1·W2·W3·W6·W7 Node contract 87/87
+- PR-base unit-tier 4,221 tests / 299 modules, drift 없음
+- 공개 API integration 2/2
+- release library 4,071 pass·13 ignore
+- release-test nextest 8,200/8,200, 정책 skip 41
+- native-skia library 4,128 pass·13 ignore, placeholder 2/2, direct PDF 4/4
 - Clippy `-D warnings`, rustdoc, fmt 통과
 - Studio TypeScript, 1,070 pass·1 skip, production build 통과
 - Canvas2D·CanvasKit focused 38/38
-- Docker optimized WASM과 fresh WASM trace 3/3
+- Docker optimized WASM 6분 22초와 fresh WASM trace 3/3
 - 공개 HWP 7문서 167쪽 + 대표 HWP/HWPX 6문서 page 0, SVG byte mismatch 0
 
 첫 nextest에서 새 generated Rust 파일의 schema version 리터럴 두 개가 중앙 스키마 계약에 걸렸다.
@@ -87,6 +89,13 @@ oracle helper는 제거하고 `tests/cases/issue_4966_font_rule_projection.rs`�
 (직접 관측 137·우선순위 shadow 34)와 metric alias 67개를 검증한다. focused 결과는 W1·W2·W3·W6·W7
 87/87, source Rust 35/35, integration 2/2, PR-base unit-tier와 Clippy 통과다. 세부 내용은
 [Stage W7-R2·R3 기록](../working/task_m100_4966_w7_rework_stage2.md)에 있다.
+
+W7-R4에서는 collaborator의 원격 `745660467`을 부모로 포함한 `fc2194b2c`에서 전체 gate를 다시
+실행했다. release-test 8,200건, Native Skia 공식 3종, Docker optimized WASM과 공개 173페이지
+native/WASM byte parity가 모두 통과했다. W7-6보다 source unit 3건과 전체 nextest 1건이 줄어든 것은
+금지된 source-side 회귀를 제거하고 integration 2건으로 재구성한 제출 경계 변화다. 최신 명령·환경·hash와
+Decision Trace E2E의 worktree 의존성 준비 기록은
+[Stage W7-R4 기록](../working/task_m100_4966_w7_rework_stage3.md)에 있다.
 
 ## 5. 운영 경계
 
