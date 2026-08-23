@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-08-07
+last_verified: 2026-08-23
 ---
 
 # 한글 버전별 페이지네이션 대조 가이드
@@ -217,7 +217,9 @@ powershell -File tools\hangul_version_oracle\scan_appversion.ps1 `
 ```
 
 - HWPX는 `version.xml`의 `appVersion`에 **저장한 한글의 버전이 그대로** 기록된다.
-- HWP5에는 작성 앱 버전이 없다. FileHeader의 포맷 버전만 얻을 수 있고, 세대의 약한 지표일 뿐이다.
+- HWP5 FileHeader에는 포맷 버전만 있어 제품 연도를 확정할 수 없다. 다만
+  `HwpSummaryInformation.revisionNumber`가 남아 있으면 마지막 저장 앱 버전을 읽을 수 있고,
+  누락·손상 시에는 제품 연도를 추정하지 않는다.
 
 r1 실측(HWPX 3,418건): 한글 2020이 70.7%로 최빈, 2024 저장분은 1.0%, 2022 이하가 98.4%였다.
 

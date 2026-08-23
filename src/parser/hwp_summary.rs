@@ -1,7 +1,11 @@
-//! HWP5 `HwpSummaryInformation`에서 읽는 저장 프로그램 메타데이터.
+//! HWP5/HWPX에서 읽는 저장 프로그램 메타데이터.
 //!
-//! 이 스트림은 사용자가 지울 수 있는 OLE 요약 정보다. 따라서 여기서 얻는 값은
+//! HWP5는 `HwpSummaryInformation.revisionNumber`, HWPX는
+//! `version.xml`의 `appVersion`을 사용한다. 둘 다 사용자가 지우거나 바꿀 수 있으므로
 //! 문서의 원 작성 도구가 아니라 **마지막 저장 도구의 메타데이터**로만 취급한다.
+
+use quick_xml::events::Event;
+use quick_xml::Reader;
 
 /// `HwpSummaryInformation`의 `PIDSI_REVNUMBER` 속성 ID.
 const REVISION_NUMBER_PID: u32 = 0x0000_0009;
@@ -30,11 +34,69 @@ pub fn last_saved_with(extra_streams: &[(String, Vec<u8>)]) -> Option<HancomOffi
         })
         .map(|(_, data)| data.as_slice())?;
     let revision_number = summary_property_string(summary, REVISION_NUMBER_PID)?;
-    let parts = parse_revision_number(&revision_number)?;
+    save_version(&revision_number)
+}
+
+/// HWPX 보조 엔트리의 `version.xml/appVersion`에서 마지막 저장 제품을 읽는다.
+///
+/// HWPX 파서는 `version.xml` 원문을 라운드트립용 보조 엔트리에 보존한다. 속성이
+/// 없거나 XML·버전 문자열을 해석하지 못하면 `None`이며 제품 연도를 추정하지 않는다.
+pub fn hwpx_last_saved_with(
+    hwpx_aux_entries: &[(String, Vec<u8>)],
+) -> Option<HancomOfficeSaveVersion> {
+    let version_xml = hwpx_aux_entries
+        .iter()
+        .find(|(path, _)| path.trim_start_matches('/') == "version.xml")
+        .map(|(_, data)| data.as_slice())?;
+    let app_version = hwpx_app_version(version_xml)?;
+    save_version(&app_version)
+}
+
+fn hwpx_app_version(data: &[u8]) -> Option<String> {
+    let xml = std::str::from_utf8(data).ok()?;
+    let mut reader = Reader::from_str(xml);
+    let mut buf = Vec::new();
+
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Start(element)) | Ok(Event::Empty(element)) => {
+                let qualified_name = element.name();
+                let name = local_name(qualified_name.as_ref());
+                if name != b"HCFVersion" && name != b"version" {
+                    buf.clear();
+                    continue;
+                }
+                for attr in element.attributes() {
+                    let attr = attr.ok()?;
+                    if local_name(attr.key.as_ref()) == b"appVersion" {
+                        let raw = String::from_utf8_lossy(&attr.value);
+                        return Some(
+                            quick_xml::escape::unescape(&raw)
+                                .map(|value| value.into_owned())
+                                .unwrap_or_else(|_| raw.into_owned()),
+                        );
+                    }
+                }
+                return None;
+            }
+            Ok(Event::Eof) | Err(_) => return None,
+            _ => {}
+        }
+        buf.clear();
+    }
+}
+
+fn local_name(name: &[u8]) -> &[u8] {
+    name.rsplit(|byte| *byte == b':').next().unwrap_or(name)
+}
+
+fn save_version(value: &str) -> Option<HancomOfficeSaveVersion> {
+    let parts = parse_revision_number(value)?;
     let version = format!("{}.{}.{}.{}", parts[0], parts[1], parts[2], parts[3]);
     let product = match parts[0] {
         8 => Some("hancom-office-2010"),
         10 => Some("hancom-office-2018"),
+        11 => Some("hancom-office-2020"),
         12 => Some("hancom-office-2022"),
         13 => Some("hancom-office-2024"),
         _ => None,

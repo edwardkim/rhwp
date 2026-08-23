@@ -755,17 +755,22 @@ fn info_json_value(
         .map(|face| face.name.clone())
         .collect();
     let para_count: usize = document.sections.iter().map(|s| s.paragraphs.len()).sum();
-    let last_saved_with = if detected_format == rhwp::parser::FileFormat::Hwp {
-        rhwp::parser::hwp_summary::last_saved_with(&document.extra_streams).map(|save_version| {
-            serde_json::json!({
-                "product": save_version.product,
-                "version": save_version.version,
-                "confidence": "metadata",
-            })
+    let last_saved_with = match detected_format {
+        rhwp::parser::FileFormat::Hwp => {
+            rhwp::parser::hwp_summary::last_saved_with(&document.extra_streams)
+        }
+        rhwp::parser::FileFormat::Hwpx => {
+            rhwp::parser::hwp_summary::hwpx_last_saved_with(&document.hwpx_aux_entries)
+        }
+        _ => None,
+    }
+    .map(|save_version| {
+        serde_json::json!({
+            "product": save_version.product,
+            "version": save_version.version,
+            "confidence": "metadata",
         })
-    } else {
-        None
-    };
+    });
     provenance::marked(
         serde_json::json!({
             "schemaVersion": ENVELOPE_SCHEMA_VERSION,
@@ -779,8 +784,8 @@ fn info_json_value(
             "fonts": fonts,
             // [#3407] best-effort 문서 제목 — 없으면 null. batch info 로 자동 전파.
             "title": document_title(doc),
-            // HWP5 summary metadata only. This identifies the last saving product,
-            // not the original authoring product, and can be absent or modified.
+            // HWP5 summary 또는 HWPX version.xml 메타데이터다. 원 작성 제품이 아니라
+            // 마지막 저장 제품을 가리키며 없거나 수정될 수 있다.
             "lastSavedWith": last_saved_with,
             // [#3880 T1] 파싱 중 건너뛴 것을 봉투가 스스로 밝힌다.
             //
