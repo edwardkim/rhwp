@@ -9462,13 +9462,14 @@ impl LayoutEngine {
                         let h = corrected_h(line, li);
                         let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                         let is_cell_last_line = is_last_para && li + 1 == line_count;
-                        let is_block_rowbreak = matches!(
-                            table.page_break,
-                            crate::model::table::TablePageBreak::RowBreak
-                        ) && !table.common.treat_as_char;
-                        let include_trailing_ls = !is_cell_last_line || para_count > 1;
+                        // [#5923] 셀 마지막 줄 trailing 줄간격은 비-TAC 표에서
+                        // 문단 수와 무관하게 제외 — HeightMeasurer·렌더 행높이 회계
+                        // 일치. 다문단 셀만 포함하던 구규칙은 hwpctl_API_v2.4 75쪽
+                        // 유령 쪽(행마다 +2.7px)을 낳았다. TAC 표의 다문단 셀은
+                        // [Task #874/#1086] 보존 핀(KTX TOC 등)을 위해 기존 포함
+                        // 회계를 유지한다.
                         let include_trailing_ls =
-                            include_trailing_ls && (!is_cell_last_line || !is_block_rowbreak);
+                            !is_cell_last_line || (para_count > 1 && table.common.treat_as_char);
                         let mut lh = if include_trailing_ls { h + ls } else { h };
                         if li == 0 {
                             lh += spacing_before;
@@ -9712,17 +9713,11 @@ impl LayoutEngine {
                             let h = corrected_h(line, li);
                             let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                             let is_cell_last_line = is_last_para && li + 1 == line_count;
-                            // [Task #1022/#1086] trailing ls 규칙 — HeightMeasurer 와
-                            // 정합. CellBreak/TAC 표는 기존 trailing geometry 를 보존하고,
-                            // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
-                            // trailing 을 제외해 행 fit 을 맞춘다.
-                            let is_block_rowbreak = matches!(
-                                table.page_break,
-                                crate::model::table::TablePageBreak::RowBreak
-                            ) && !table.common.treat_as_char;
-                            let include_trailing_ls = !is_cell_last_line || para_count > 1;
-                            let include_trailing_ls =
-                                include_trailing_ls && (!is_cell_last_line || !is_block_rowbreak);
+                            // [#5923] trailing ls — 비-TAC 표는 문단 수 무관 마지막
+                            // 줄 제외 (HeightMeasurer 와 동일 회계). TAC 표의
+                            // 다문단 셀은 보존 핀(KTX TOC 등) 유지.
+                            let include_trailing_ls = !is_cell_last_line
+                                || (para_count > 1 && table.common.treat_as_char);
                             let mut lh = if include_trailing_ls { h + ls } else { h };
                             if li == 0 {
                                 lh += spacing_before;
@@ -9801,9 +9796,11 @@ impl LayoutEngine {
                     let h = corrected_h(line, li);
                     let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                     let is_cell_last_line = is_last_para && li + 1 == line_count;
-                    let include_trailing_ls = !is_cell_last_line || para_count > 1;
+                    // [#5923] trailing ls — 비-TAC 표는 문단 수 무관 마지막 줄
+                    // 제외 (HeightMeasurer 와 동일 회계). TAC 표의 다문단 셀은
+                    // 보존 핀(KTX TOC 등) 유지.
                     let include_trailing_ls =
-                        include_trailing_ls && (!is_cell_last_line || !is_block_rowbreak);
+                        !is_cell_last_line || (para_count > 1 && table.common.treat_as_char);
                     let mut lh = if include_trailing_ls { h + ls } else { h };
                     if collapse_empty_rowbreak_spacer {
                         lh = 0.0;
