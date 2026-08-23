@@ -1,0 +1,12 @@
+pr	author	source_head	source_commits	applied_to_integration	current_check_summary	visual_evidence	decision
+5900	kevin9327	8abc28dc2ae83bf71c0e6dfa22792ccd7932bddb	2/2	true	22 success; 1 neutral; 4 skipped; 0 failure	mydocs/report/edit_demo_5862/p8_before_after_oracle.png	accept-recommended
+5909	kevin9327	2c60993db5e2d05c47db2b0435b4c73b57535df6	1/1	true	23 success; 2 skipped; 0 failure	mydocs/report/edit_demo_5906/float_stack_defer_p2.png	accept-recommended
+5911	kevin9327	3b506b57736bb6e9b5505d12ecc31cba7fc87e76	1/1	true	23 success; 2 skipped; 0 failure	mydocs/report/edit_demo_5908/p40_collapsed_before_after_oracle.png; mydocs/report/edit_demo_5908/p42_table_restored_before_after_oracle.png	accept-recommended
+5915	lpaiu-cs	ce5148c1d10b6203d881523edc99bc428dcf276a	12/12	true	24 success; 3 skipped; 0 failure	contract and browser E2E tests	accept-recommended-after-maintainer-fix
+5926	kevin9327	547ea8a1273185f03ef55b7dd7243313f2ca480a	2/2	true	21 success; 1 neutral; 3 skipped; 0 failure	mydocs/report/assets/issue_5925_underline_color_black/before_after_hwpx_sample2_p12.png; mydocs/report/assets/issue_5925_underline_color_black/before_after_pr1674_p7.png	accept-recommended
+5927	kevin9327	6d5ad6a7fd77644d06d07ff3235d5aa2568a70c9	1/1	true	21 success; 1 neutral; 3 skipped; 0 failure	mydocs/report/edit_demo_5920/page8_before_after.png	accept-recommended
+5928	kevin9327	27da1cf35623534a4209da96165fa3848fe8595e	1/1	true	23 success; 2 skipped; 0 failure	mydocs/report/edit_demo_5924/task2098_before_ghost_page2.png; mydocs/report/edit_demo_5924/task2098_margin_split_before_after.png	accept-recommended
+5936	lpaiu-cs	81ad85bb7051e8bfca8cd39f89000bb249f6de9a	4/4	true	22 success; 1 neutral; 4 skipped; 0 failure	batching contract test	accept-recommended-after-maintainer-fix
+5937	planet6897	b1d07c8421ba0f7a3a3198c76bcdd02599caf254	1/1	true	18 success; 1 neutral; 4 skipped; 0 failure	issue_5933_hml_page_border_fill contract	accept-recommended
+5939	humdrum00001010	11c8f9a758d0badd4086fd85e1ccceada9d1942b	2/2	true	24 success; 3 skipped; 0 failure	Native Skia and renderer contract coverage	accept-recommended
+5942	planet6897	1ee84daf72b1f36243988d1b6ba6eb6d8d53535d	1/1	true	5 success; 15 skipped; 0 failure	mydocs/report/survey_10k_r39_20260823.md	accept-recommended
