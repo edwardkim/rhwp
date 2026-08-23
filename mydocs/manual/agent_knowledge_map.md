@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/agent_knowledge_map.md
-last_verified: 2026-08-11
+last_verified: 2026-08-23
 ---
 
 # 에이전트 지식 지도 — rhwp 참조 문서의 단일 진입점
@@ -25,7 +25,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
 | 표면 규모 | CLI 명령 **98개**(그중 `--json` 계약 **65개**, batch 축 **9개**) · MCP 도구 **181개**(무상태 163 + 세션 전용 18) |
 | 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **325개** · §2 전수 사전 **333개**(자기서술 밖 실측·참조 필드 포함) |
-| 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
+| 표본 | `samples/` tracked 파일 **895개** 중 실측한 것만 §7 에 적었다 |
 
 **재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.
 
@@ -380,7 +380,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `headersFooters` | array | 머리말/꼬리말 목록 `{sectionIdx,isHeader,applyTo,label}` | `headers-footers` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
-| `lastSavedWith` | object\|null | HWP5 `HwpSummaryInformation.revisionNumber`에서 읽은 마지막 저장 제품 `{product,version,confidence}`. `product`는 알려진 주버전만 `hancom-office-2010`·`hancom-office-2018`·`hancom-office-2022`·`hancom-office-2024`로 분류하고, 알 수 없는 주버전은 `null`; HWP3/HWPX, 요약정보 부재·손상은 필드 전체가 `null`. 원 작성 제품이 아니라 수정 가능한 마지막 저장 메타데이터다 | `info` |
+| `lastSavedWith` | object\|null | HWP5 `HwpSummaryInformation.revisionNumber` 또는 HWPX `version.xml/appVersion`에서 읽은 마지막 저장 제품 `{product,version,confidence}`. `product`는 알려진 주버전만 `hancom-office-2010`·`hancom-office-2018`·`hancom-office-2020`·`hancom-office-2022`·`hancom-office-2024`로 분류하고, 알 수 없는 주버전은 `null`; HWP3, 메타데이터 부재·손상은 필드 전체가 `null`. 원 작성 제품이 아니라 수정 가능한 마지막 저장 메타데이터다 | `info` |
 | `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |
 | `summary` | string | 사람용 여러 줄 요약(형식·쪽수·표·누름틀·각주) — **문서 파생** | `explain` |
 | `encrypted` | bool | 암호화 문서 여부 | `explain` |
@@ -1307,6 +1307,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `samples/field-01.hwp` | hwp5, 3쪽, 누름틀 **11개**(그중 `목차1` 이 5회 반복), 표 0 | `fields`/`fill-fields`, **`ambiguous` 와 `이름[N]` 지목**, `run` 계획 |
 | `samples/field-01-memo.hwp` | 위와 같은 문서 + 누름틀 **메모**가 채워져 있음 | `fields[].memo`, `inspect injection --include-fields` |
 | `samples/누름틀-2024.hwp` / `.hwpx` | 누름틀 2개, 같은 문서의 두 형식 | 형식 보존 편집(HWPX→HWPX) 대조 |
+| `samples/pr5935/test-{2018,2022,2024}.hwp` / `.hwpx` | 한컴오피스 버전별로 다시 저장한 같은 내용 | `info.lastSavedWith`의 HWP5 summary/HWPX `version.xml` 교차 대조 |
 | `samples/form-01.hwp`·`form-02.hwp` | 누름틀 1개, 1쪽 | 최소 서식 회귀 |
 | `samples/table-001.hwp` | 표 1개, 19×9 격자, 칸 131개, **병합 20개** | `export-tables` 병합 보존, `set-cell` 앵커 보호, `table-to-csv`/`csv-to-table` 왕복 |
 | `samples/multi-table-001.hwp` | 표 6개, 2쪽 | `--table <index>` 지목, 표 여럿일 때의 index 규칙 |

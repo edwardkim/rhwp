@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/README.md
-last_verified: 2026-08-22
+last_verified: 2026-08-23
 ---
 
 # manual 문서 지도
@@ -53,8 +53,10 @@ last_verified: 2026-08-22
 원격 HWP 변환 MCP는 공개 서비스가 아니다. rhwp maintainer, collaborator 또는 MCP 관리자가 별도로
 인증한 사용자만 사용할 수 있으며, server URL과 token은 각 서비스 관리자로부터 비공개로 전달받는다.
 
-`.hwp` 확장자만으로 저장 버전을 자동 판별한다고 가정하지 않고, 문서를 저장한 한컴오피스 버전을 기준으로
-다음과 같이 서비스를 선택한다.
+`.hwp`/`.hwpx` 확장자만으로 저장 버전을 자동 판별한다고 가정하지 않고, 문서를 저장한 한컴오피스 버전을
+기준으로 다음과 같이 서비스를 선택한다. HWP5의 `HwpSummaryInformation.revisionNumber` 또는 HWPX의
+`version.xml/appVersion`이 남아 있으면 `rhwp info --json <파일>`의 `lastSavedWith.product`로 확인할 수
+있다. 이 필드가 `null`이면 파일 형식 버전으로 제품 연도를 추정하지 말고 저장 환경을 별도로 확인한다.
 
 | 저장한 한컴오피스 버전 | 변환 서비스 | 권위 문서 | client artifact |
 | --- | --- | --- | --- |

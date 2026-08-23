@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2020Convert_usage.md
-last_verified: 2026-08-22
+last_verified: 2026-08-23
 ---
 
 # HWP 2020 변환 client 사용법
@@ -10,10 +10,12 @@ last_verified: 2026-08-22
 이 문서는 rhwp 작업에서 로컬 HWP/HWPX 파일을 원격 Hancom Office 2020 MCP 변환 서비스로 보내고,
 변환 결과를 다시 로컬에 저장하는 방법을 설명한다.
 
-저장한 한컴오피스 버전이 2022 이하인 `.hwp`는 이 `hwp-convert-2020` 서비스를 사용한다.
-한컴오피스 2024에서 저장한 `.hwp`는 이 서비스가 아니라
+저장한 한컴오피스 버전이 2022 이하인 `.hwp`/`.hwpx`는 이 `hwp-convert-2020` 서비스를 사용한다.
+한컴오피스 2024에서 저장한 `.hwp`/`.hwpx`는 이 서비스가 아니라
 [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md)의 `hwp-convert-2024` 서비스를 사용한다.
-두 입력은 확장자가 모두 `.hwp`일 수 있으므로 파일명만으로 서비스를 자동 선택한다고 가정하지 않는다.
+확장자만으로 서비스를 선택하지 않는다. `rhwp info --json <파일>`의 `lastSavedWith.product`가
+`hancom-office-2010`·`hancom-office-2018`·`hancom-office-2020`·`hancom-office-2022`이면 이 서비스를
+사용하고, 필드가 `null`이면 저장 환경을 별도로 확인한다.
 
 ## 개요
 
