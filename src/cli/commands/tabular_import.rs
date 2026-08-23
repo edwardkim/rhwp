@@ -467,12 +467,15 @@ pub(crate) fn csv_to_table(args: &[String]) -> i32 {
 
 /// `csv-to-chart` — CSV 내용으로 기존 차트 N 의 숫자 값을 덮어쓴다 (#4100).
 ///
-/// **크기는 바꾸지 않는다.** 계열 수·값 개수·계열명·카테고리 라벨이 다르면 한 칸도 쓰지
-/// 않고 `invalid[]` 로 보고하며 exit 2 다 — `csv-to-table` 과 같은 규약이다.
+/// **`--structure` 없이는 크기를 바꾸지 않는다.** 계열 수·값 개수·계열명·카테고리 라벨이
+/// 다르면 한 칸도 쓰지 않고 `invalid[]` 로 보고하며 exit 2 다 — `csv-to-table` 과 같은 규약이다.
+/// [#5652] `--structure` 를 주면 CSV 가 **목표 상태**다 — 행·열 증감(꼬리 기준), 계열명·라벨
+/// 변경이 ①② 에 함께 쓰인다. 의도 없이 개수가 어긋난 CSV 는 여전히 사고이므로 옵트인이다.
 ///
 /// 검증은 전부 코어(`set_chart_data_by_index_native`)가 한다. 여기서 하는 것은 CSV 를
 /// 행렬로 읽어 넘기고 봉투를 실어 나르는 일뿐이다 — 검증기가 코어와 CLI 로 갈리면
-/// 둘이 서로 다른 것을 허용하기 시작한다.
+/// 둘이 서로 다른 것을 허용하기 시작한다. 종류별 가드(원형 계열 1 고정 등)도 코어에 있어
+/// 거부 사유가 `invalid[]` 로 그대로 흐른다.
 pub(crate) fn csv_to_chart(args: &[String]) -> i32 {
     use rhwp::document_core::queries::chart_csv::from_csv;
     use rhwp::document_core::queries::chart_extract::collect_charts;
@@ -484,6 +487,7 @@ pub(crate) fn csv_to_chart(args: &[String]) -> i32 {
     let mut dry_run = false;
     let mut verify_mode = false;
     let mut json_mode = false;
+    let mut structure = false;
 
     let mut i = 0;
     while i < args.len() {
@@ -491,6 +495,7 @@ pub(crate) fn csv_to_chart(args: &[String]) -> i32 {
             "--json" => json_mode = true,
             "--dry-run" => dry_run = true,
             "--verify" => verify_mode = true,
+            "--structure" => structure = true,
             "--csv" => {
                 i += 1;
                 match args.get(i) {
@@ -537,7 +542,7 @@ pub(crate) fn csv_to_chart(args: &[String]) -> i32 {
 
     let (Some(file_path), Some(csv_path), Some(chart_no)) = (file_path, csv_path, chart_arg) else {
         eprintln!(
-            "사용법: rhwp csv-to-chart <파일.hwp|파일.hwpx> --csv <경로.csv> --chart <번호> [-o <출력>] [--dry-run] [--verify] [--json]"
+            "사용법: rhwp csv-to-chart <파일.hwp|파일.hwpx> --csv <경로.csv> --chart <번호> [-o <출력>] [--structure] [--dry-run] [--verify] [--json]"
         );
         return EXIT_USAGE;
     };
@@ -615,6 +620,7 @@ pub(crate) fn csv_to_chart(args: &[String]) -> i32 {
             .map(|(name, values)| serde_json::json!({"name": name, "values": values}))
             .collect::<Vec<_>>(),
         "dryRun": dry_run,
+        "structure": structure,
     });
     let result: serde_json::Value = match doc
         .set_chart_data_by_index_native(index, &edits.to_string())

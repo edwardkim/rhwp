@@ -317,9 +317,9 @@
         "changed[].from"
       ],
       "origins": {
-        "changed[].from": "ooxml_chart::data — CSV를 적용하기 전 차트 c:v 에 있던 문서 값"
+        "changed[].from": "ooxml_chart::data — CSV를 적용하기 전 차트 c:v 에 있던 문서 값(값·계열명·카테고리 라벨, #5652 구조 편집 항목 포함)"
       },
-      "note": "csv·to·wrote 는 호출자 입력 또는 엔진값이고, 변경 전 값(from)만 문서에서 왔다.",
+      "note": "csv·to·wrote·op 는 호출자 입력 또는 엔진값이고, 변경 전 값(from)만 문서에서 왔다.",
       "category": "편집-저널",
       "forbiddenSlots": [
         "system_prompt",
@@ -393,6 +393,7 @@
       "untrusted": [
         "confusable[].lookalikes",
         "oldText",
+        "changed[].from",
         "findings[].raw",
         "findings[].masked",
         "removed[].before"
@@ -400,6 +401,7 @@
       "origins": {
         "confusable[].lookalikes": "화면상 같아 보이는 **문서의 다른 누름틀 이름들** (#3707)",
         "oldText": "set-cell 이 덮어쓰기 전 셀에 있던 문서 텍스트",
+        "changed[].from": "set-chart-data 가 덮어쓰기 전 차트 c:v 에 있던 문서 값(값·계열명·카테고리 라벨)",
         "findings[].raw": "redact 가 탐지한 개인정보 **원문** — 문서 본문에서 그대로 뽑은 값",
         "findings[].masked": "redact 마스킹 결과 — 구조 문자·자릿수가 문서 원문에서 유래",
         "removed[].before": "sanitize 가 지운 문서 속성 원문 — 제목·작성자·키워드, 그리고 preview.text 는 본문 첫 화면 발췌"

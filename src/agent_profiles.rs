@@ -255,7 +255,8 @@ pub const PROFILES: &[AgentProfile] = &[
             "값 갱신을 되돌려 쓸 때는 hwp_table_to_csv 산출물을 고쳐 hwp_csv_to_table 로 반영",
             "차트 수치는 hwp_chart_to_csv (행=카테고리·분산형 X, 열=계열), 되돌리기는 hwp_csv_to_chart",
             "차트 JSON 직접 기록은 hwp_set_chart_data (chart 순번 1부터, data 는 series[].values 문자열)",
-            "차트 편집은 값만 바꾼다 — 계열·값 개수와 이름·라벨이 다르면 한 칸도 쓰지 않고 invalid",
+            "차트 편집 기본은 값만 바꾼다 — 계열·값 개수와 이름·라벨이 다르면 한 칸도 쓰지 않고 invalid",
+            "행·열 추가/삭제·계열명·라벨 변경은 structure 옵트인(hwp_csv_to_chart structure=true / data.structure=true) — 꼬리 기준 증감, 원형은 계열 1 고정·주식형은 계열 수 고정, 거부 사유는 invalid[].reason",
         ],
     },
     AgentProfile {

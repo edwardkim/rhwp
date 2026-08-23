@@ -423,12 +423,35 @@ rhwp chart-to-csv samples/chart/세로막대형/묶은세로막대형.hwpx --cha
 rhwp chart-to-csv 보고서.hwpx --json | jq '.charts[] | {chart, rowCount, colCount}'
 ```
 
-### `csv-to-chart <파일.hwp|파일.hwpx> --csv <경로.csv> --chart <번호> [-o <출력>] [--dry-run] [--verify] [--json]` (#4100)
+### `csv-to-chart <파일.hwp|파일.hwpx> --csv <경로.csv> --chart <번호> [-o <출력>] [--structure] [--dry-run] [--verify] [--json]` (#4100·#5652)
 CSV 내용으로 기존 차트 N 의 숫자 값을 덮어쓴다. `chart-to-csv` 의 짝이다.
-**크기·이름은 바꾸지 않는다** — 계열 수, 값 개수, 계열명, 카테고리 라벨은 전부 구조 변경이라
-범위 밖이고, 다르면 **한 칸도 쓰지 않고** `invalid[]` + exit 2 다.
+**`--structure` 없이는 크기·이름을 바꾸지 않는다** — 계열 수, 값 개수, 계열명, 카테고리 라벨이
+다르면 **한 칸도 쓰지 않고** `invalid[]` + exit 2 다. 의도 없이 개수가 어긋난 CSV 는 사고이므로
+구조 편집은 옵트인이다.
 - `--csv <경로.csv>` (필수) — UTF-8 CSV(선두 BOM 허용). `chart-to-csv` 산출을 고쳐 쓰는 것이 안전하다.
 - `--chart <번호>` (필수) — 문서 순서 1부터.
+- `--structure` (#5652) — **CSV 를 목표 상태로 본다.** 행(카테고리)·열(계열) 추가·삭제, 계열명·
+  카테고리 라벨(분산형은 X) 변경까지 ①② 에 함께 쓴다. 치수 차이는 **위치 기반 꼬리 증감**이다 —
+  행이 늘면 각 블록 꼬리에 점이 붙고(`c:ptCount` 재계산, `c:pt idx` 는 `0..n-1` 유지), 줄면 꼬리
+  점이 지워진다; 계열이 늘면 마지막 계열을 복제해 뒤에 붙이고(`c:idx`/`c:order` 채번, `c:f` 는
+  복제분 그대로 — 한컴은 캐시만 읽는다 #5447), 줄면 꼬리 계열이 지워진다. 따라서 "중간 행 삭제"는
+  뒤 행이 앞으로 당겨지고 마지막 행이 지워지는 것과 같다(계열 색 같은 위치 서식은 위치를 따른다).
+  `c:f`·레거시 `Contents`(③)·EMF 프리뷰(④)·`c:extLst`·`ho:hncChartStyle` 은 바이트 그대로다.
+  - 종류별 가드(한컴이 막지 않아 코어가 fail-closed 로 막는다 — #5447 실측): 원형·3D원형·원형대원형은
+    계열 수 **1 고정**(`pieSeriesCountFixed`), 주식형은 계열 수가 종류에 묶여(HLC=3/OHLC=4) 변경
+    거부(`stockSeriesCountFixed` — 변경은 B3 종류 변환), 마지막 1점·1계열 삭제 거부
+    (`lastPointDeleteRefused`/`lastSeriesDeleteRefused`), 분산형은 행 수 변경 시 X(첫 열)가 같은
+    개수로 함께 와야 함(`scatterXYMismatch`), 다층 카테고리(`multiLvlStrRef`)는 행·라벨 구조 편집
+    거부(`multiLevelLabelsUnsupported`).
+  - 행렬 규칙: 직사각형(`rowCountMismatch`), 라벨 보유 차트의 행 수 변경은 라벨 열 필수
+    (`labelsRequired`·`labelCountMismatch`), 새 점·바뀌는 점은 수치(`notANumber`), 이름·라벨에
+    XML 특수문자(`<`·`>`·`&`)는 이스케이프하지 않고 거부(`unsafeText`), `c:tx` 없는 계열의 이름은
+    넣을 자리가 없어 거부(`seriesNameNotPatchable`), 신설 계열은 템플릿에 이름이 있으면 이름 필수
+    (`seriesNameRequired`), 캐시 구조 좌표(`ptCount`·앵커)가 없는 블록은 개수 변경 불가
+    (`pointsNotInsertable`·`seriesNotClonable`).
+  - 쓰기 전에 산출을 다시 읽어 목표와 같을 때만 쓴다(`selfCheckFailed` 면 한 바이트도 안 씀).
+    봉투 `changed[]` 에 구조 항목 `{"op":"appendPoints"|"truncatePoints"|"renameSeries"|"relabel"|
+    "appendSeries"|"truncateSeries", …}` 이 값 항목과 함께 실린다.
 - **값 하나가 OOXML 두 표현에 중복 저장돼 있어 각 원본에 독립적으로 쓴다** — HWPX zip 파트
   `Chart/chartN.xml`(①)과 중첩 CFB 의 `OOXMLChartContents`(②). ①만 쓰면 HWP 변환에서 편집이
   조용히 사라진다(#4055 한컴 실측). 두 표현의 계열·라벨·값이 다르면
@@ -439,8 +462,8 @@ CSV 내용으로 기존 차트 N 의 숫자 값을 덮어쓴다. `chart-to-csv` 
   ①에도 쓰지 않는다. 반쪽만 새 값인 파일을 내보내지 않는다.
 - 값이 실제로 달라지는 칸만 다시 쓴다. 바뀐 칸이 0 이면 **슬롯을 건드리지 않는다** —
   중첩 CFB 를 되쓰기만 해도 섹터 배치가 달라져 바이트가 바뀐다.
-- 거부 사유: `csvParse`(CSV 구조) · `seriesCountMismatch` · `valueCountMismatch` ·
-  `seriesNameMismatch` · `categoryMismatch` · `notANumber` · `valueNotPatchable`(빈 `<c:v/>`) ·
+- 거부 사유(기본): `csvParse`(CSV 구조) · `seriesCountMismatch` · `valueCountMismatch` ·
+  `seriesNameMismatch` · `categoryMismatch`(넷은 `--structure` 로만 풀린다) · `notANumber` · `valueNotPatchable`(빈 `<c:v/>`) ·
   `sharedXRequired`(분산형에서 계열별 X 가 달라 한 열로 표현 불가) ·
   `sharedCategoryRequired`(카테고리형에서 계열별 라벨이 달라 한 열로 표현 불가) ·
   `representationMismatch`(①·②의 논리 차트 데이터 불일치) ·
@@ -449,12 +472,15 @@ CSV 내용으로 기존 차트 N 의 숫자 값을 덮어쓴다. `chart-to-csv` 
 - `-o, --output <파일>` — 출력 파일(기본 `<입력명>_chart.<입력과 같은 확장자>`, §edit 산출 형식)
 - `--dry-run` — 파일을 쓰지 않고 `changed[]`(from→to)만 보고
 - `--verify` — 저장 직후 IR 자기검증(차이 시 exit 3)
-- `--json` 봉투: `{"schemaVersion":"1.0","source","csv","chart","changedCount","changed":[{"series","point"|"x","from","to"}],"invalid":[],"wrote":["zipPart","nestedCopy"],"dryRun","changedPages":null,"output"?,"outputFormat"?,"verify"?}`
+- `--json` 봉투: `{"schemaVersion":"1.0","source","csv","chart","changedCount","changed":[{"series","point"|"x","from","to"} | {"op",…}],"invalid":[],"wrote":["zipPart","nestedCopy"],"dryRun","changedPages":null,"output"?,"outputFormat"?,"verify"?}`
 
 ```bash
 rhwp chart-to-csv 보고서.hwpx --chart 1 -o /tmp/차트1.csv
-# /tmp/차트1.csv 를 편집한 뒤
+# /tmp/차트1.csv 를 편집한 뒤 (값만)
 rhwp csv-to-chart 보고서.hwpx --csv /tmp/차트1.csv --chart 1 -o 수정본.hwpx --json
+# 행·열을 더하거나 지우고 계열명·라벨을 바꾼 CSV 는 --structure 로 (먼저 --dry-run 으로 op 확인)
+rhwp csv-to-chart 보고서.hwpx --csv /tmp/차트1.csv --chart 1 --structure --dry-run --json
+rhwp csv-to-chart 보고서.hwpx --csv /tmp/차트1.csv --chart 1 --structure -o 수정본.hwpx --json
 ```
 
 > **알려진 한계** — 편집된 차트의 레거시 `Contents` 표현은 옛 값으로 남는다. 한컴은 그것을
@@ -1099,8 +1125,12 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 
 ### `edit set-chart-data <파일> --chart N --data <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
 문서 순번 차트의 숫자 데이터를 바꾼다. 코어 `set_chart_data_by_index_native`. `--chart` 는
-문서 순서 1부터(`charts` 와 같다). `--data` 는 `{"labels"?,"series":[{"name"?,"values":["…"]}]}`.
-계열 수·값 개수·이름이 다르면 한 칸도 쓰지 않는다.
+문서 순서 1부터(`charts` 와 같다). `--data` 는
+`{"labels"?,"series":[{"name"?,"values":["…"]}],"structure"?:bool,"dryRun"?:bool}`.
+기본은 계열 수·값 개수·이름·라벨이 다르면 한 칸도 쓰지 않는다. [#5652] `"structure": true` 면
+행렬이 목표 상태다 — 행·열 증감(꼬리 기준)·계열명·라벨 변경을 쓰고, 종류별 가드와 거부 사유는
+위 `csv-to-chart --structure` 절과 같다. `--dry-run` 도 코어 검증을 거쳐 거부 사유(`invalid[]` + exit 2)와 `changed[]`(`op`)를
+보고한다(예전엔 dry-run 이 코어를 건너뛰었다). 봉투에 `changedCount`·`changed`·`wrote` 가 실린다.
 
 ### `edit insert-number <파일> [--section N] [--para N] [--offset N] [--count N] [-o <출력>] [--dry-run] [--verify] [--json]`
 문단 좌표에 쪽 새 번호로 시작 컨트롤을 넣는다. 코어 `insert_new_number_native`. `--count` 는
