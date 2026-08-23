@@ -2,20 +2,20 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2024Convert_usage.md
-last_verified: 2026-08-23
+last_verified: 2026-08-24
 ---
 
 # HWP 2024 변환 MCP client 사용법
 
-이 문서는 macOS, Linux, Windows 작업 PC의 HWP/HWPX 파일을 원격 Hancom Office 2024 HTTP MCP
-service로 보내고 변환 결과를 다시 같은 client PC에 저장하는 방법을 설명한다. 현재 변환 service는
-Windows Hancom Office 2024 host에서 동작하지만 client OS에는 종속되지 않는다.
+이 문서는 macOS, Linux, Windows 작업 PC의 HWP/HWPX 파일을 원격 Windows Hancom HTTP MCP
+service로 보내고 변환 결과를 다시 같은 client PC에 저장하는 방법을 설명한다. 변환 service는
+Windows에서 HOffice120과 HOffice130 profile을 선택해 실행하지만 client OS에는 종속되지 않는다.
 
-한컴오피스 2024에서 저장한 `.hwp`/`.hwpx`는 이 `hwp-convert-2024` 서비스를 사용한다.
-저장한 한컴오피스 버전이 2022 이하인 `.hwp`/`.hwpx`는 이 서비스가 아니라
-[HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md)의 `hwp-convert-2020` 서비스를 사용한다.
-확장자만으로 서비스를 선택하지 않는다. `rhwp info --json <파일>`의 `lastSavedWith.product`가
-`hancom-office-2024`이면 이 서비스를 사용하고, 필드가 `null`이면 저장 환경을 별도로 확인한다.
+한컴오피스 2022 이하 저장본은 `engine: 2020`, 한컴오피스 2024 저장본은 `engine: 2024`를 사용한다.
+`2020`은 이 service에 등록된 Windows HOffice120 호환 profile의 공개 식별자이며 폐기된 Linux 한컴
+2020 beta service를 호출한다는 뜻이 아니다. 확장자만으로 engine을 선택하지 않는다.
+`rhwp info --json <파일>`의 `lastSavedWith.product`가 `hancom-office-2024`이면 `2024`,
+`hancom-office-2022`이면 `2020`을 사용하고, 필드가 `null`이면 저장 환경을 별도로 확인한다.
 
 ## 개요
 
@@ -27,6 +27,8 @@ Windows Hancom Office 2024 host에서 동작하지만 client OS에는 종속되�
 - 지원 입력: `.hwp`, `.hwpx`
 - 지원 출력: `pdf`, `hwp`, `hwpx`
 - 지원 방향: `.hwp → pdf|hwp|hwpx`, `.hwpx → pdf|hwp`
+- 지원 engine: `2020`(HOffice120 호환 profile), `2024`(HOffice130), 기본값 `2024`
+- 선택적 암호 문서: MCP tool의 `password` 또는 CLI의 비공개 `--password-file`
 - 동기 tool: `convert_local_document`
 - 비동기 tool: `start_local_document_conversion`, `get_local_conversion_status`,
   `save_local_conversion_result`
@@ -48,14 +50,14 @@ server URL/IP, bearer token과 `.env.local` 내용은 Git, issue, PR, 공개 문
 rhwp에는 HWP 2024용 최신 client artifact 하나를 유지한다.
 
 ```text
-tools/hwp-convert-mcp-2024-client-20260822-225818.tar.gz
+tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz
 ```
 
 | 항목 | 값 |
 | --- | --- |
-| package version | `0.8.0` |
-| archive bytes | 7,673 |
-| archive SHA-256 | `55b75bb002818a42a18f0f289f3f8d669ac63af7185d2f6eece062ab326b120c` |
+| package version | `0.9.0` |
+| archive bytes | 8,558 |
+| archive SHA-256 | `830b1f7ff3696a9b499d0043e48e3dccfba7817797a698003bd909226f13cf72` |
 | 외부 npm runtime dependency | 없음 |
 | 포함 명령 | `hwp2024-mcp-bridge`, `hwp2024-mcp-convert` |
 
@@ -71,9 +73,9 @@ directory의 `.env.local`에만 둔다. Linux에서는 운영 경로를
 
 | client OS | rhwp archive | 비공개 환경 파일 |
 | --- | --- | --- |
-| macOS | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260822-225818.tar.gz` | `$HOME/hwp-convert-2024/.env.local` |
-| Linux | `/home/tsjang/rhwp/tools/hwp-convert-mcp-2024-client-20260822-225818.tar.gz` | `/home/tsjang/hwp-convert-2024/.env.local` |
-| Windows | `C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-20260822-225818.tar.gz` | `C:\Users\<사용자>\hwp-convert-2024\.env.local` |
+| macOS | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `$HOME/hwp-convert-2024/.env.local` |
+| Linux | `/home/tsjang/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `/home/tsjang/hwp-convert-2024/.env.local` |
+| Windows | `C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `C:\Users\<사용자>\hwp-convert-2024\.env.local` |
 
 ```env
 HWP2024_MCP_SERVER_URL=http://<관리자가_제공한_MCP_endpoint>
@@ -94,6 +96,11 @@ Windows에서는 `.env.local`을 현재 사용자만 읽을 수 있는 `hwp-conv
 token은 전송 구간 암호화를 제공하지 않으므로 신뢰할 수 있는 내부망에서만 사용하고, 신뢰할 수 없는 망에서는
 HTTPS reverse proxy 뒤에 둔다.
 
+암호 문서를 CLI로 변환할 때는 문서 암호를 command line 인자에 직접 넣지 않는다. Git 밖의 현재 사용자만
+읽을 수 있는 단일 행 파일을 만들고 `convert` 또는 `start`에 `--password-file <경로>`를 지정한다.
+MCP tool에서는 요청의 선택적 `password` 필드로만 전달한다. client는 암호를 결과 JSON, job 상태,
+파일명 또는 로그에 기록하지 않는다.
+
 ## 터미널 CLI
 
 macOS·Linux에서는 `npx`의 절대 경로를 확인한다. macOS GUI VS Code는 shell `PATH`를 상속하지 않을 수
@@ -104,7 +111,7 @@ command -v npx
 # macOS Homebrew 예: /opt/homebrew/bin/npx
 # Ubuntu 예: /usr/bin/npx
 
-export HWP2024_MCP_PACKAGE="$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260822-225818.tar.gz"
+export HWP2024_MCP_PACKAGE="$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz"
 export HWP2024_MCP_ENV_FILE="$HOME/hwp-convert-2024/.env.local"
 ```
 
@@ -112,7 +119,7 @@ Windows PowerShell에서는 다음 변수로 경로를 한 번만 정의한다.
 
 ```powershell
 $Npx = 'C:\Program Files\nodejs\npx.cmd'
-$Package = 'C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-20260822-225818.tar.gz'
+$Package = 'C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-20260824-011002.tar.gz'
 $EnvFile = 'C:\Users\<사용자>\hwp-convert-2024\.env.local'
 & $Npx --version
 ```
@@ -146,6 +153,7 @@ npx -y --package="file:$HWP2024_MCP_PACKAGE" -- hwp2024-mcp-convert convert \
   --env-file "$HWP2024_MCP_ENV_FILE" \
   --input "$HOME/rhwp/samples/example.hwp" \
   --target pdf \
+  --engine 2024 \
   --output-dir "$HOME/rhwp/pdf" \
   --output-filename example-2024.pdf \
   --timeout-seconds 900
@@ -160,6 +168,7 @@ Windows PowerShell:
   --env-file $EnvFile `
   --input 'C:\Users\<사용자>\rhwp\samples\example.hwp' `
   --target pdf `
+  --engine 2024 `
   --output-dir 'C:\Users\<사용자>\rhwp\pdf' `
   --output-filename 'example-2024.pdf' `
   --timeout-seconds 900
@@ -180,6 +189,7 @@ npx -y --package="file:$HWP2024_MCP_PACKAGE" -- hwp2024-mcp-convert start \
   --env-file "$HWP2024_MCP_ENV_FILE" \
   --input "$HOME/rhwp/samples/large-manual.hwpx" \
   --target pdf \
+  --engine 2024 \
   --output-filename large-manual-2024.pdf \
   --timeout-seconds 1800
 
@@ -205,6 +215,7 @@ Windows PowerShell:
   --env-file $EnvFile `
   --input 'C:\Users\<사용자>\rhwp\samples\large-manual.hwpx' `
   --target pdf `
+  --engine 2024 `
   --output-filename 'large-manual-2024.pdf' `
   --timeout-seconds 1800
 
@@ -245,7 +256,7 @@ macOS GUI VS Code에서는 `command -v npx`의 절대 경로를 `command`에 쓰
       "command": "/opt/homebrew/bin/npx",
       "args": [
         "-y",
-        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260822-225818.tar.gz",
+        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
         "--",
         "hwp2024-mcp-bridge"
       ],
@@ -274,7 +285,7 @@ Linux에서 Node.js가 system package로 설치됐다면 보통 `/usr/bin/npx`�
       "command": "/usr/bin/npx",
       "args": [
         "-y",
-        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260822-225818.tar.gz",
+        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
         "--",
         "hwp2024-mcp-bridge"
       ],
@@ -294,7 +305,7 @@ Linux에서 Node.js가 system package로 설치됐다면 보통 `/usr/bin/npx`�
       "command": "C:\\Program Files\\nodejs\\npx.cmd",
       "args": [
         "-y",
-        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260822-225818.tar.gz",
+        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
         "--",
         "hwp2024-mcp-bridge"
       ],
@@ -325,6 +336,7 @@ macOS/Linux 경로 예시:
 {
   "input_path": "/home/<사용자>/rhwp/samples/example.hwp",
   "target": "pdf",
+  "engine": "2024",
   "output_dir": "/home/<사용자>/rhwp/pdf",
   "output_filename": "example-2024.pdf",
   "timeout_seconds": 900
@@ -337,6 +349,7 @@ Windows 경로 예시:
 {
   "input_path": "C:\\Users\\<사용자>\\rhwp\\samples\\example.hwp",
   "target": "pdf",
+  "engine": "2024",
   "output_dir": "C:\\Users\\<사용자>\\rhwp\\pdf",
   "output_filename": "example-2024.pdf",
   "timeout_seconds": 900
@@ -351,6 +364,7 @@ macOS/Linux 경로 예시:
 {
   "input_path": "/home/<사용자>/rhwp/samples/large-manual.hwpx",
   "target": "pdf",
+  "engine": "2024",
   "output_filename": "large-manual-2024.pdf",
   "timeout_seconds": 1800
 }
@@ -362,6 +376,7 @@ Windows 경로 예시:
 {
   "input_path": "C:\\Users\\<사용자>\\rhwp\\samples\\large-manual.hwpx",
   "target": "pdf",
+  "engine": "2024",
   "output_filename": "large-manual-2024.pdf",
   "timeout_seconds": 1800
 }
@@ -399,6 +414,20 @@ Windows 경로 예시:
 `/Users/<사용자>/...`, Windows는 `C:\Users\<사용자>\...`를 쓰며 server 내부 경로를 입력하지 않는다.
 `output_filename`은 경로가 없는 파일명이어야 하며 target 확장자와 일치해야 한다.
 
+암호 문서는 동기 또는 비동기 시작 요청에만 `password`를 추가한다. 상태 확인과 결과 저장 요청에는
+암호를 다시 넣지 않는다.
+
+```json
+{
+  "input_path": "/home/<사용자>/rhwp/samples/protected.hwp",
+  "target": "pdf",
+  "engine": "2020",
+  "password": "<비공개_문서_암호>",
+  "output_filename": "protected-hwp2020.pdf",
+  "timeout_seconds": 900
+}
+```
+
 ## 동시 호출과 timeout
 
 HTTP MCP server는 여러 client session을 받을 수 있지만 한컴 runtime 안정성을 위해 실제 변환은
@@ -413,7 +442,8 @@ server process 전체에서 하나씩 직렬 실행한다. 비동기 요청은 �
 변환 결과에서 다음을 확인한다.
 
 - `status: success`
-- `server.engine: hancom-2024-direct-host`
+- `server.engine`과 `server.engine_profile`: 요청한 `2020` 또는 `2024`
+- `server.hancom_version`: 선택한 Windows 한컴 runtime의 실제 버전
 - `server.backend: hwp-managed-direct-dll-host`
 - `server.worker_bits: 32`
 - client가 보고한 `size`, `sha256`과 local file이 일치
@@ -440,7 +470,17 @@ Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<사용자>\rhwp\pdf\examp
 
 ## artifact 검증 기준선
 
-2026-08-22 생성 artifact를 실제 배포 MCP server에 연결해 다음을 확인했다.
+2026-08-24 생성 artifact는 현재 source 계약을 사용하는 local mock HTTP MCP에서 다음을 확인했다.
+
+- package `0.9.0`, archive 8,558바이트, SHA-256 `830b1f7ff3696a9b499d0043e48e3dccfba7817797a698003bd909226f13cf72`
+- tarball에서 `hwp2024-mcp-convert --help` 실행 성공
+- stdio initialize와 tool discovery 성공, tool 4개
+- archive 내 `node_modules` 0개, runtime dependency 0개, 외부 runtime import 0개
+- tool schema에 `engine: 2020|2024`와 선택적 `password` 존재
+- 실제 archive CLI의 비동기 `start`가 engine `2020`, 엔진별 기본 파일명, 비공개 암호 파일을 remote argument로 전달
+- 결과 JSON에는 `status`, `job_id`, `engine`만 있고 암호 값은 없음
+
+2026-08-22의 이전 `0.8.0` artifact는 당시 실제 배포 MCP server에 연결해 다음을 확인했다.
 
 - tarball에서 `hwp2024-mcp-convert --help` 실행 성공
 - stdio initialize와 tool discovery 성공, tool 4개
