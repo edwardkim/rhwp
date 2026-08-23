@@ -232,3 +232,77 @@ fn cell_zone_apply_undo_converges_to_original_bytes() {
         ),
     }
 }
+
+#[test]
+fn foreign_tail_is_not_truncated_by_earlier_apply_undo() {
+    let (_original, mut doc, grid) = load_with_body_table();
+    let capture = doc
+        .capture_section_raw(grid.section as usize)
+        .expect("캡처");
+
+    // A 적용 — push 가 일어나고 fromLen 을 기록한다.
+    let resp: serde_json::Value = serde_json::from_str(
+        &doc.set_cell_properties(
+            grid.section as u32,
+            grid.paragraph as u32,
+            grid.control as u32,
+            0,
+            border_bg_json(),
+        )
+        .expect("적용 성공"),
+    )
+    .expect("응답 JSON");
+    let len_before_a = resp["borderFillLenBefore"].as_u64().expect("길이 기록") as usize;
+    let dirty_before_a = resp["docInfoDirtyBefore"].as_bool().expect("dirty 플래그");
+
+    // 계약 밖 직접 뮤테이션(hwpctl류) — 저널 항목 없이 꼬리를 하나 더 push 한다.
+    let foreign: serde_json::Value = serde_json::from_str(
+        &doc.set_cell_zone_properties(
+            grid.section as u32,
+            grid.paragraph as u32,
+            grid.control as u32,
+            1, 1, 1, 1,
+            r##"{"fillType":"solid","fillColor":"#00FF00","patternColor":"#000000","patternType":0}"##,
+        )
+        .expect("외부 적용 성공"),
+    )
+    .expect("외부 응답 JSON");
+    let foreign_id = foreign["borderFillId"].as_u64().expect("외부 id") as usize;
+    assert!(
+        foreign_id > len_before_a,
+        "외부 push 가 A 의 항목 아래에 겹치면 이 시나리오가 성립하지 않는다"
+    );
+
+    // A undo — 참조 스캔이 외부 꼬리를 살리고 거기서 멈춰야 한다.
+    doc.apply_cell_border_fill_ids(
+        grid.section as u32,
+        grid.paragraph as u32,
+        grid.control as u32,
+        &serde_json::to_string(&serde_json::json!({ "cells": undo_cells(&resp) })).unwrap(),
+    )
+    .expect("id 직접 대입이 성공해야 함");
+    let gc: serde_json::Value = serde_json::from_str(
+        &doc.remove_border_fill_tails(
+            &serde_json::to_string(&serde_json::json!({
+                "fromLen": len_before_a, "dirtyWas": dirty_before_a
+            }))
+            .unwrap(),
+        )
+        .expect("절단이 성공해야 함"),
+    )
+    .expect("절단 응답 JSON");
+    assert_eq!(
+        gc["discarded"].as_u64(),
+        Some(0),
+        "참조 중인 외부 꼬리는 절단되지 않아야 한다"
+    );
+    assert!(
+        doc.document().doc_info.border_fills.len() >= foreign_id,
+        "외부 스타일 항목이 살아 있어야 한다 — 잘라내면 붙여넣기·삽입물의 스타일이 깨진다"
+    );
+
+    // raw 복원 전제(A 의 applyIds 가 무효화)와 export 성공까지 확인.
+    doc.restore_section_raw(capture).expect("raw 복원");
+    doc.export_hwp()
+        .expect("계약 위반 시나리오에서도 export 는 성공해야 함");
+}

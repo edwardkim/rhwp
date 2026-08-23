@@ -2285,6 +2285,9 @@ export class SetCellBorderFillCommand implements EditCommand {
     let dirtyBefore = false;
     let zoneBeforeId: number | null = null;
     let changed = false;
+    // 뮤테이션 네이티브가 하나라도 성공했는가 — 전부 실패였다면 롤백 호출 없이
+    // 캡처 해제만으로 충분하다(빈 payload 대입은 table.dirty 만 세운다).
+    let mutated = false;
 
     // redo 도 같은 순서다 — undo 가 저널 항목을 소비하므로 항상 새로 캡처한다.
     this.captureId = wasm.captureSectionRaw(this.sec);
@@ -2294,6 +2297,7 @@ export class SetCellBorderFillCommand implements EditCommand {
           this.sec, this.ppi, this.ci, this.target.range,
           this.props as Partial<CellProperties>,
         );
+        mutated = true;
         lenBefore = r.borderFillLenBefore ?? -1;
         dirtyBefore = r.docInfoDirtyBefore ?? false;
         const beforeId = r.zoneBeforeId ?? null;
@@ -2309,6 +2313,7 @@ export class SetCellBorderFillCommand implements EditCommand {
               this.sec, this.ppi, this.ci, cellIdx,
               this.props as Partial<CellProperties>,
             );
+            mutated = true;
             if (lenBefore === -1) {
               lenBefore = r.borderFillLenBefore ?? -1;
               dirtyBefore = r.docInfoDirtyBefore ?? false;
@@ -2325,7 +2330,7 @@ export class SetCellBorderFillCommand implements EditCommand {
     } catch (applyError) {
       // 최초 execute 실패 시 지금까지의 기록으로라도 원상 복구를 시도한다(#3350 계열).
       try {
-        this.rollback(wasm, cellBefores, zoneBeforeId, lenBefore, dirtyBefore);
+        this.rollback(wasm, cellBefores, zoneBeforeId, lenBefore, dirtyBefore, mutated);
       } catch (rollbackError) {
         console.error(`${this.type} 실패 롤백도 실패:`, rollbackError);
       }
@@ -2386,8 +2391,16 @@ export class SetCellBorderFillCommand implements EditCommand {
     zoneBeforeId: number | null,
     lenBefore: number,
     dirtyBefore: boolean,
+    mutated: boolean,
   ): void {
     if (this.captureId === null) return;
+    if (!mutated) {
+      // 뮤테이션이 하나도 성공하지 못했다 — 문서는 원본 그대로다. 빈 payload
+      // 대입은 table.dirty 만 세우므로 캡처 해제로 끝낸다.
+      wasm.discardSectionRaw(this.captureId);
+      this.captureId = null;
+      return;
+    }
     wasm.applyCellBorderFillIds(this.sec, this.ppi, this.ci, {
       cells: [...cellBefores.entries()].map(([cellIdx, id]) => ({ cellIdx, id })),
       zones: this.target.kind === 'zone'
