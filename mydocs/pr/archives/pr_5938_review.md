@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: self-review-changes-requested
+status: self-review-ci-pending
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-23
 ---
@@ -15,7 +15,7 @@ last_verified: 2026-08-23
 - loaded documents: `pr_review_workflow.md`, `pr_review/README.md`, 위 기본·보조 문서와
   `docs_and_git_workflow.md`
 - 작성자 본인 self-review이므로 reviewer를 지정하지 않는다.
-- code candidate: `2d15b50ea13cff679d2dae8151bd3721b95d49a1`
+- code candidate: `f5f71f8c062719e73a70c2115f4265851e928758`
 
 ## 작성 시점 metadata
 
@@ -26,6 +26,7 @@ last_verified: 2026-08-23
 | 관련 이슈 | [#4964](https://github.com/edwardkim/rhwp/issues/4964), parent [#4960](https://github.com/edwardkim/rhwp/issues/4960) |
 | base / head | `devel` / `task_m100_4964` |
 | 게시 code head | `2d15b50ea13cff679d2dae8151bd3721b95d49a1` |
+| 로컬 correction candidate | `f5f71f8c062719e73a70c2115f4265851e928758` — push 전 |
 | 규모 | 24 files, +115,529 / -46,200, 7 commits |
 | 상태 | Open, non-draft, `MERGEABLE`, `mergeStateStatus=BLOCKED` — 작성 시점 참고값 |
 
@@ -52,7 +53,7 @@ runtime lookup과 provenance의 소유권을 행동 변화 없이 분리하는 �
 
 ## code self-review findings
 
-### [P1] 실행 CWD가 canonical generated DB ownership 판정을 결정한다
+### [P1][해결] 실행 CWD가 canonical generated DB ownership 판정을 결정한다
 
 `src/tools/font_metric_gen.rs:1093-1130`은 `env::current_dir()`를 repository root로 사용한다. 저장소
 상위나 하위 디렉터리에서 실행하면 실제 `src/renderer/font_metrics_generated.rs`와 비교하는 canonical
@@ -64,7 +65,12 @@ blocker다. 실행 위치와 무관한 checkout root를 하나만 결정하고 i
 root에서 해석해야 한다. checkout-relative 입력은 canonicalize 뒤 root 밖으로 나가는 symlink도 거부해야
 한다. 저장소 밖 local font 검산은 plan generation이 아니라 기존 read-only diagnostic 경로로 분리한다.
 
-### [P1] generated output이 provenance metadata보다 먼저 변경된다
+`f5f71f8c0`은 현재 worktree를 우선하고 checkout 밖 실행에서는 실제 binary 경로를 fallback으로 쓰는
+root 탐지를 추가했다. input·evidence는 그 root에서 canonicalize한 실파일만 허용하고 symlink가 root
+밖으로 나가면 쓰기 전에 실패한다. 저장소 하위와 상위 CWD에서 각각 정상 생성·canonical canary 차단을
+재현해 실행 위치가 ownership 판정에 영향을 주지 않음을 확인했다.
+
+### [P1][해결] generated output이 provenance metadata보다 먼저 변경된다
 
 `src/tools/font_metric_gen.rs:1209-1213`은 입력 파싱·직렬화 뒤 generated 파일을 먼저 쓰고 metadata를
 두 번째로 쓴다. metadata 대상이 디렉터리이거나 I/O가 실패하면 명령은 오류를 반환하지만 generated
@@ -74,7 +80,12 @@ root에서 해석해야 한다. checkout-relative 입력은 canonicalize 뒤 roo
 data를 마지막 commit point로 교체해야 한다. 중간 실패에서는 temporary file을 정리하고 기존 generated
 target hash가 유지되는 negative test가 필요하다.
 
-### [P2] generator Node contract의 내부 Cargo build가 lockfile을 보호하지 않는다
+`f5f71f8c0`은 generated와 metadata bytes를 각각 target sibling staging 파일에 먼저 쓰고 sync한다.
+metadata를 먼저 반영한 뒤 generated를 마지막 commit point로 교체하며, 실패한 staging 파일은 정리한다.
+metadata target을 `blocked.json` 디렉터리로 만든 negative test에서 명령은 실패했고 기존 generated
+sentinel bytes는 그대로 유지됐다.
+
+### [P2][해결] generator Node contract의 내부 Cargo build가 lockfile을 보호하지 않는다
 
 `scripts/tests/font_metric_gen.test.mjs:42-47`은 `cargo build --bin font-metric-gen`을 `--locked` 없이
 실행한다. Stage W6-5에서 이 test가 workspace package 두 항목의 `Cargo.lock` 순서를 실제로 바꿨고,
@@ -83,6 +94,10 @@ target hash가 유지되는 negative test가 필요하다.
 
 build 인자에 `--locked`를 추가하고, 같은 Node contract 재실행 뒤 `Cargo.lock` blob이 바뀌지 않았음을
 검사한다.
+
+Node contract의 build를 `cargo build --locked --bin font-metric-gen`으로 바꿨다. 테스트 전후
+`Cargo.lock` SHA-256은 모두 `a0a2ec455835cd85c7b2521d1accca069d32811c473bf64f7461470bc753113f`로
+동일했다.
 
 ## 대량 data·manifest review
 
@@ -121,6 +136,24 @@ renderer source 경계가 바뀌므로 `visual_fixture_evidence.md`를 적용했
 | review 파생 suite manifest | 881 sources, 32 suites + 9 exceptions, 통과 |
 | unit-tier policy | 4,225 tests / 299 modules, 통과 |
 
+### correction candidate 재검증
+
+| 검증 | 결과 |
+| --- | --- |
+| generator Node contract | 5/5 통과 — subdir/parent CWD, symlink escape, metadata 실패 포함 |
+| baseline·lineage manifest check | 통과 |
+| Rust font metric·legacy lookup | 9/9 통과 |
+| full nextest | 8,173/8,173 통과, 정책 skip 39 |
+| Clippy `--locked --all-targets -D warnings` | 통과 |
+| review suite manifest·unit-tier policy | 통과 — 881 sources / 4,225 tests·299 modules |
+| `cargo fmt --all -- --check`·`git diff --check` | 통과 |
+| `Cargo.lock` | 테스트 전후 SHA-256 동일 |
+
+correction은 generator binary와 그 Node contract에만 닫혀 있고 runtime metric·renderer·WASM source 및
+공개 fixture는 바꾸지 않았다. 따라서 앞서 같은 runtime source에서 통과한 Native Skia·Docker WASM·
+167쪽 byte parity는 재사용하고, 새 source head에서 CLI 필수 범위인 focused·전체 release-test·Clippy를
+재실행했다.
+
 공유 `target/pr-review`에 과거 worktree의 compile-time 절대경로가 남아 발생한 `rhwp-contracts` 1건은
 해당 package의 `release-test` 파생 cache만 정리하고 현재 checkout에서 다시 링크한 뒤 전체 8,073건이
 통과했다. task branch의 오래된 ignored generated suite도 review 단계에서 `--prepare`한 뒤 표준 fixture
@@ -128,9 +161,8 @@ renderer source 경계가 바뀌므로 `visual_fixture_evidence.md`를 적용했
 
 ## GitHub Actions와 남은 조건
 
-code candidate `2d15b50ea`의 preflight 5종은 성공했고 Full CI, CodeQL, Proptest, Adapter와 Render Diff는
-self-review 작성 시점에 진행 중이다. 그러나 위 generator blocker를 고칠 새 code head가 필요하므로 현재
-실행 결과가 성공하더라도 최종 merge 근거로 재사용하지 않는다.
+게시 code candidate `2d15b50ea`의 GitHub 결과는 correction candidate의 최종 merge 근거로 재사용하지
+않는다. 보정 commit `f5f71f8c0`과 이 review·오늘할일 trailing commit은 아직 로컬에만 있다.
 
 최소 정정과 focused negative contract를 통과한 새 code candidate에서 변경 범위 검증을 다시 수행하고,
 review·오늘할일 trailing commit을 포함한 최신 head의 required checks를 확인해야 한다. code correction이
@@ -138,7 +170,7 @@ review·오늘할일 trailing commit을 포함한 최신 head의 required checks
 
 ## 현재 권고
 
-metric data 분리와 renderer 불변성에서는 blocker를 발견하지 않았지만 generator ownership·paired output
-계약 2건과 lockfile 보호 1건을 고쳐야 한다. 따라서 현재 head는 **changes requested / merge 보류**다.
-메인테이너가 최소 정정 계획을 승인한 뒤 보정 code·negative test·재검증을 별도 commit으로 추가하고,
-review 문서를 최신 code candidate 기준으로 갱신한다.
+발견한 generator ownership·paired output 계약 2건과 lockfile 보호 1건은 `f5f71f8c0`에서 모두 보정됐고
+로컬 필수 게이트를 통과했다. 코드 self-review상 새 blocker는 없으므로 **조건부 merge 후보**로 전환한다.
+다만 아직 원격에 없는 correction·trailing 문서를 push한 뒤 새 code head의 Full CI와 required checks,
+최신 base mergeability를 확인하고 메인테이너가 별도로 merge 승인하기 전까지 merge는 보류한다.
