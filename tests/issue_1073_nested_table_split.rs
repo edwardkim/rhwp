@@ -10,10 +10,22 @@
 //! 정정: cell_units per-중첩행 유닛 분해 + NestedTableSplit 컷 구동 + 연속 페이지 rowspan
 //! 라벨 공란화.
 //!
-//! pi=674 표가 걸치는 페이지(0-based global index): 65(첫 조각), 66(연속).
+//! pi=674 표가 걸치는 페이지(0-based global index): `SPLIT_FIRST_PAGE`(첫 조각),
+//! 그 다음 쪽(연속).
+//!
+//! [#5910] 43쪽 병합 셀 선언 높이 보정으로 이 문서가 78쪽 → **77쪽**(한글 2022 정본과
+//! 일치)이 되면서 뒤쪽 쪽 번호가 한 칸씩 당겨졌다. 계약(첫 조각에 표 제목 있음 /
+//! 연속 쪽에 없음)은 그대로고 인덱스만 65·66 → **64·65** 로 옮겼다. 실측: 제목
+//! `소프트웨어사업` 이 있는 쪽이 수정 전 [65, 67] → 수정 후 [64, 66] 이라 첫 조각
+//! 다음 쪽에 제목이 없다는 계약이 양쪽에서 같은 형태로 성립한다.
 
 use std::fs;
 use std::path::Path;
+
+/// 중첩 표가 처음 걸치는 쪽(0-based). 문서 쪽수가 바뀌면 여기만 고치면 된다.
+const SPLIT_FIRST_PAGE: u32 = 64;
+/// 그 표가 이어지는 다음 쪽.
+const SPLIT_CONT_PAGE: u32 = SPLIT_FIRST_PAGE + 1;
 
 fn load_doc(rel: &str) -> rhwp::wasm_api::HwpDocument {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
@@ -71,22 +83,26 @@ fn svg_text(svg: &str) -> String {
 #[test]
 fn kps_ai_nested_table_first_chunk_no_overflow() {
     let doc = load_doc("samples/kps-ai.hwp");
-    let svg = doc.render_page_svg_native(65).expect("render page 65");
+    let svg = doc
+        .render_page_svg_native(SPLIT_FIRST_PAGE)
+        .expect("render 첫 조각 쪽");
     let (h, max_y) = (svg_height(&svg), max_text_y(&svg));
     assert!(
         max_y <= h,
-        "kps-ai page 65(첫 조각): text max_y={max_y:.1} > 페이지 높이 {h:.1} (중첩 표 미분할 회귀)"
+        "kps-ai {SPLIT_FIRST_PAGE}쪽(첫 조각): text max_y={max_y:.1} > 페이지 높이 {h:.1} (중첩 표 미분할 회귀)"
     );
 }
 
 #[test]
 fn kps_ai_nested_table_continuation_no_overflow() {
     let doc = load_doc("samples/kps-ai.hwp");
-    let svg = doc.render_page_svg_native(66).expect("render page 66");
+    let svg = doc
+        .render_page_svg_native(SPLIT_CONT_PAGE)
+        .expect("render 연속 쪽");
     let (h, max_y) = (svg_height(&svg), max_text_y(&svg));
     assert!(
         max_y <= h,
-        "kps-ai page 66(연속): text max_y={max_y:.1} > 페이지 높이 {h:.1}"
+        "kps-ai {SPLIT_CONT_PAGE}쪽(연속): text max_y={max_y:.1} > 페이지 높이 {h:.1}"
     );
 }
 
@@ -95,15 +111,21 @@ fn kps_ai_nested_table_continuation_no_overflow() {
 #[test]
 fn kps_ai_nested_table_split_no_title_duplication() {
     let doc = load_doc("samples/kps-ai.hwp");
-    let first = svg_text(&doc.render_page_svg_native(65).expect("page 65"));
-    let cont = svg_text(&doc.render_page_svg_native(66).expect("page 66"));
+    let first = svg_text(
+        &doc.render_page_svg_native(SPLIT_FIRST_PAGE)
+            .expect("첫 조각 쪽"),
+    );
+    let cont = svg_text(
+        &doc.render_page_svg_native(SPLIT_CONT_PAGE)
+            .expect("연속 쪽"),
+    );
     const TITLE: &str = "소프트웨어사업";
     assert!(
         first.contains(TITLE),
-        "첫 조각(page 65)에 표 제목 누락 — 분할 미발생 의심"
+        "첫 조각({SPLIT_FIRST_PAGE}쪽)에 표 제목 누락 — 분할 미발생 의심"
     );
     assert!(
         !cont.contains(TITLE),
-        "연속(page 66)에 표 제목 재렌더 — 전체 재렌더 중복/rowspan 라벨 누수 회귀"
+        "연속({SPLIT_CONT_PAGE}쪽)에 표 제목 재렌더 — 전체 재렌더 중복/rowspan 라벨 누수 회귀"
     );
 }

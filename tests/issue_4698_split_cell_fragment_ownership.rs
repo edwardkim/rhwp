@@ -3,7 +3,7 @@
 //! 재현 문서 (tracked 공개 샘플): `samples/kps-ai.hwp` (HWP5).
 //! 한컴 정답지: `pdf/kps-ai-2022.pdf` — `- 62 -` 쪽 하단 라벨은 "3. 민간 / 소프트웨어" 까지,
 //! 이어지는 `- 63 -` 쪽 상단이 "시장침해 / 가능성" 을 받는다.
-//! (0-based 페이지 인덱스로는 각각 65, 66)
+//! (0-based 페이지 인덱스로는 각각 64, 65)
 //!
 //! 결함 본질: 셀[39](r=18, rs=6)은 기하만 두 조각으로 나뉘고 **내용은 나뉘지 않았다**.
 //! 앞 조각이 문단 5 개 전부를 받아 조각 하단(1033.8px)을 넘긴 줄이 Cell clip 으로 사라지고,
@@ -24,6 +24,8 @@ const LABEL_COLUMN_RIGHT: f64 = 175.0;
 const FIRST_FRAGMENT_CELL_BOTTOM: f64 = 1033.8;
 /// 뒤 조각 라벨 셀 상단 + 한 줄 여유(px).
 const CONTINUATION_LABEL_TOP_BAND: f64 = 200.0;
+const FIRST_FRAGMENT_PAGE: u32 = 64;
+const CONTINUATION_FRAGMENT_PAGE: u32 = 65;
 
 fn load_doc(rel: &str) -> rhwp::wasm_api::HwpDocument {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
@@ -78,18 +80,20 @@ fn label_column_chars(svg: &str, y_min: f64, y_max: f64) -> String {
 #[test]
 fn first_fragment_keeps_only_its_own_paragraphs() {
     let doc = load_doc("samples/kps-ai.hwp");
-    let svg = doc.render_page_svg_native(65).expect("render page 65");
+    let svg = doc
+        .render_page_svg_native(FIRST_FRAGMENT_PAGE)
+        .expect("render first fragment page");
 
     let own = label_column_chars(&svg, 900.0, FIRST_FRAGMENT_CELL_BOTTOM);
     assert!(
         own.contains("민간") && own.contains("소프트웨어"),
-        "앞 조각(page 65) 라벨 셀에 `3. 민간 / 소프트웨어` 누락 — 조각 배분 회귀 (실측: {own:?})"
+        "앞 조각(page {FIRST_FRAGMENT_PAGE}) 라벨 셀에 `3. 민간 / 소프트웨어` 누락 — 조각 배분 회귀 (실측: {own:?})"
     );
 
     let overflow = label_column_chars(&svg, FIRST_FRAGMENT_CELL_BOTTOM, f64::MAX);
     assert!(
         overflow.is_empty(),
-        "앞 조각(page 65)이 다음 쪽 소유 문단을 셀 하단 아래로 흘려보냈다 (실측: {overflow:?})"
+        "앞 조각(page {FIRST_FRAGMENT_PAGE})이 다음 쪽 소유 문단을 셀 하단 아래로 흘려보냈다 (실측: {overflow:?})"
     );
 }
 
@@ -97,16 +101,18 @@ fn first_fragment_keeps_only_its_own_paragraphs() {
 #[test]
 fn continuation_fragment_receives_the_remaining_paragraphs() {
     let doc = load_doc("samples/kps-ai.hwp");
-    let svg = doc.render_page_svg_native(66).expect("render page 66");
+    let svg = doc
+        .render_page_svg_native(CONTINUATION_FRAGMENT_PAGE)
+        .expect("render continuation fragment page");
 
     let top = label_column_chars(&svg, 0.0, CONTINUATION_LABEL_TOP_BAND);
     assert!(
         top.contains("시장침해"),
-        "연속(page 66) 라벨 셀 상단이 `시장침해` 를 받지 못했다 — \
+        "연속(page {CONTINUATION_FRAGMENT_PAGE}) 라벨 셀 상단이 `시장침해` 를 받지 못했다 — \
          병합 라벨 공란화(#1073) 회귀로 4 자가 어느 쪽에도 남지 않는다 (실측: {top:?})"
     );
     assert!(
         top.contains("가능성"),
-        "연속(page 66) 라벨 셀 상단에 `가능성` 누락 (실측: {top:?})"
+        "연속(page {CONTINUATION_FRAGMENT_PAGE}) 라벨 셀 상단에 `가능성` 누락 (실측: {top:?})"
     );
 }
