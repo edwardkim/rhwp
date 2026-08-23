@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: self-review-ci-pending
+status: self-review-complete
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-23
 ---
@@ -17,7 +17,7 @@ last_verified: 2026-08-23
 - 작성자 본인 self-review이므로 reviewer를 지정하지 않는다.
 - code candidate: `f5f71f8c062719e73a70c2115f4265851e928758`
 
-## 작성 시점 metadata
+## 최종 검증 metadata
 
 | 항목 | 값 |
 | --- | --- |
@@ -25,10 +25,10 @@ last_verified: 2026-08-23
 | 작성자 | `edwardkim` |
 | 관련 이슈 | [#4964](https://github.com/edwardkim/rhwp/issues/4964), parent [#4960](https://github.com/edwardkim/rhwp/issues/4960) |
 | base / head | `devel` / `task_m100_4964` |
-| 게시 code head | `2d15b50ea13cff679d2dae8151bd3721b95d49a1` |
-| 로컬 correction candidate | `f5f71f8c062719e73a70c2115f4265851e928758` — push 전 |
-| 규모 | 24 files, +115,529 / -46,200, 7 commits |
-| 상태 | Open, non-draft, `MERGEABLE`, `mergeStateStatus=BLOCKED` — 작성 시점 참고값 |
+| 게시 PR head | `4778e1efdcafedced3d7aff2deb870f5c0b731ed` |
+| correction candidate | `f5f71f8c062719e73a70c2115f4265851e928758` — 게시·Full CI 통과 |
+| 규모 | 26 files, +115,983 / -46,200, 10 commits |
+| 상태 | Open, non-draft, `MERGEABLE`, `mergeStateStatus=CLEAN` |
 
 1,000줄을 크게 넘지만 65,881행 lineage manifest, 45,921행 기존 metric data 이동과 단계별 계획·보고가
 대부분이다. runtime 정책 diff는 facade와 generator에 집중돼 있고 7개 commit이 기준선→manifest→물리
@@ -161,16 +161,25 @@ correction은 generator binary와 그 Node contract에만 닫혀 있고 runtime 
 
 ## GitHub Actions와 남은 조건
 
-게시 code candidate `2d15b50ea`의 GitHub 결과는 correction candidate의 최종 merge 근거로 재사용하지
-않는다. 보정 commit `f5f71f8c0`과 이 review·오늘할일 trailing commit은 아직 로컬에만 있다.
+correction과 직전 review tail을 포함한 PR head `4778e1efdcafedced3d7aff2deb870f5c0b731ed`에서
+review-only fast-pass가 아니라 Full CI가 실행됐다. CI run `32622050873`의 Lint, Native Skia,
+Frontend package, test archive build 3종과 shard 4종, Build & Test가 모두 성공했다. CodeQL run
+`32622050727`, Proptest `32622050861`, Adapter inter-diff `32622050782`, Render Diff
+`32622050731`도 모두 성공했다. 정책상 WASM Build·Frontend unit gates의 skip 외에 실패·취소된 필수
+check는 없다.
 
-최소 정정과 focused negative contract를 통과한 새 code candidate에서 변경 범위 검증을 다시 수행하고,
-review·오늘할일 trailing commit을 포함한 최신 head의 required checks를 확인해야 한다. code correction이
-포함되므로 review-only fast-pass로 Full CI를 우회하지 않는다.
+검증 중 `upstream/devel`은 #5935 merge `e9e0d7e4b8b5ca80e6c43f1c180728b4620f2dfb`로 1 commit
+전진했다. 최신 base와 `4778e1efd`의 merge-tree `f6e3b1915cf1a62317d63e303fbaf3ef8ff49a72`가 충돌
+없이 생성됐고 GitHub도 `MERGEABLE/CLEAN`으로 판정했다. 양쪽이 수정한 `mydocs/orders/20260823.md`도
+merge-tree에서 함께 보존된다.
+
+이 최종 self-review·오늘할일 변경은 `mydocs/` 한정 trailing commit이다. 이를 원격에 push한 뒤
+review-only controller의 fast-pass와 최신 aggregate 상태를 확인해야 하며, 메인테이너의 독립 merge
+승인은 여전히 남는다.
 
 ## 현재 권고
 
 발견한 generator ownership·paired output 계약 2건과 lockfile 보호 1건은 `f5f71f8c0`에서 모두 보정됐고
-로컬 필수 게이트를 통과했다. 코드 self-review상 새 blocker는 없으므로 **조건부 merge 후보**로 전환한다.
-다만 아직 원격에 없는 correction·trailing 문서를 push한 뒤 새 code head의 Full CI와 required checks,
-최신 base mergeability를 확인하고 메인테이너가 별도로 merge 승인하기 전까지 merge는 보류한다.
+로컬 필수 게이트와 새 code head Full CI를 통과했다. 최신 base simulation에서도 blocker가 없으므로
+self-review는 **완료 / 조건부 merge 권고**로 판정한다. 이 trailing 기록의 fast-pass와 최신 aggregate
+상태를 확인하고 메인테이너가 별도로 merge 승인하기 전까지 merge는 보류한다.
