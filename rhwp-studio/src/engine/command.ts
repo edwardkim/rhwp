@@ -4,7 +4,7 @@ import type {
   RemovedParaMeta,
   WasmBridge,
 } from '@/core/wasm-bridge';
-import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry, SectionDef } from '@/core/types';
+import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry, SectionDef, CellProperties } from '@/core/types';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 import { setObjectProps, type ObjectPropsRef } from './object-props';
@@ -2220,6 +2220,183 @@ export class SetSectionPropsCommand implements EditCommand {
       'hideHeader', 'hideFooter', 'hideMasterPage', 'hideBorder', 'hideFill', 'hideEmptyLine',
     ];
     return keys.every((key) => Object.is(this.before[key], this.after[key]));
+  }
+}
+
+/** [#5959] 셀 테두리/배경 적용 대상 — 다이얼로그가 범위를 데이터로 고정해 넘긴다. */
+export type CellBorderFillTarget =
+  | { kind: 'cells'; cellIdxes: number[] }
+  | { kind: 'zone'; range: { startRow: number; startCol: number; endRow: number; endCol: number } };
+
+interface CellBorderFillUndoState {
+  /** cellIdx → 적용 직전 borderFillId(배치 안 첫 기록이 원본이다). */
+  cellBefores: Array<{ cellIdx: number; id: number }>;
+  /** asOne 적용의 범위 — undo 시 id 원복 또는 신설 제거에 쓴다. */
+  zoneRange: { startRow: number; startCol: number; endRow: number; endCol: number } | null;
+  /** null 이면 apply 때 zone 이 신설됐다 → undo 는 zone 을 제거한다. */
+  zoneBeforeId: number | null;
+  borderFillLenBefore: number;
+  docInfoDirtyBefore: boolean;
+}
+
+/**
+ * [#5959] 셀 테두리/배경(테두리·채우기·대각선)의 속성쌍 역연산 커맨드.
+ *
+ * 변경 실체는 대상+이웃 집단의 `border_fill_id` 재배정과 스타일 테이블 append 다
+ * (mydocs/working/task_m100_5959_cell_border_bg.md 판정). Rust 가 self-describing
+ * 기록(changes / zoneBeforeId / borderFillLenBefore / docInfoDirtyBefore)을 응답으로
+ * 돌려주므로 undo 는 세 단계로 원상 복구한다:
+ *
+ *   ① `applyCellBorderFillIds` 로 cell/zone id 를 직접 대입(스타일 테이블 무손상)
+ *   ② `removeBorderFillTails` 로 이번 apply 가 push 한 꼬리 항목 절단(dirty 원복 포함)
+ *   ③ `restoreSectionRaw` 로 passthrough 복원(section_raw_journal 계약)
+ *
+ * 구버전 wasm 조합은 `hasCellBorderFillInverse()` probe 를 캡처 **전에** 통과시킨다
+ * (#5951 스크우 선례) — probe 없이 진행하면 undo 불능 오염만 남는다.
+ *
+ * 생명주기는 SetSectionPropsAllCommand 와 동일하다 — execute 가 raw 를 캡처해 두고,
+ * undo 는 재적용(raw 재무효화) 뒤 복원한다. redo 는 execute 재실행이며, 절단된
+ * 스타일 항목은 dedupe 가 같은 내용을 꼬리에 다시 만들어 id 가 안정적이다.
+ */
+export class SetCellBorderFillCommand implements EditCommand {
+  readonly type = 'setCellBorderFill';
+  readonly timestamp = Date.now();
+
+  private captureId: number | null = null;
+  private noOp = false;
+  private state: CellBorderFillUndoState | null = null;
+
+  constructor(
+    private sec: number,
+    private ppi: number,
+    private ci: number,
+    private target: CellBorderFillTarget,
+    private props: Record<string, unknown>,
+    private cursorPos: DocumentPosition,
+  ) {}
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    if (!wasm.hasCellBorderFillInverse()) {
+      throw new Error(`${this.type} 불가 — 구버전 wasm 에 역연산 경로가 없다`);
+    }
+
+    const cellBefores = new Map<number, number>();
+    let lenBefore = -1;
+    let dirtyBefore = false;
+    let zoneBeforeId: number | null = null;
+    let changed = false;
+
+    // redo 도 같은 순서다 — undo 가 저널 항목을 소비하므로 항상 새로 캡처한다.
+    this.captureId = wasm.captureSectionRaw(this.sec);
+    try {
+      if (this.target.kind === 'zone') {
+        const r = wasm.setCellZoneProperties(
+          this.sec, this.ppi, this.ci, this.target.range,
+          this.props as Partial<CellProperties>,
+        );
+        lenBefore = r.borderFillLenBefore ?? -1;
+        dirtyBefore = r.docInfoDirtyBefore ?? false;
+        const beforeId = r.zoneBeforeId ?? null;
+        changed = beforeId !== (r.borderFillId ?? null);
+        if (changed) zoneBeforeId = beforeId;
+      } else {
+        const target = this.target;
+        if (target.kind !== 'cells') throw new Error(`${this.type} 잘못된 대상`);
+        // 셀 수만큼 setCellProperties 를 호출하므로 재페이지네이션을 묶는다(#4118).
+        wasm.runInBatch(() => {
+          for (const cellIdx of target.cellIdxes) {
+            const r = wasm.setCellProperties(
+              this.sec, this.ppi, this.ci, cellIdx,
+              this.props as Partial<CellProperties>,
+            );
+            if (lenBefore === -1) {
+              lenBefore = r.borderFillLenBefore ?? -1;
+              dirtyBefore = r.docInfoDirtyBefore ?? false;
+            }
+            for (const ch of r.changes ?? []) {
+              changed = true;
+              // 배치 안에서 같은 셀이 이웃 갱신으로 여러 번 기록될 수 있다 —
+              // undo 는 원본(첫 기록) 하나면 충분하다.
+              if (!cellBefores.has(ch.cellIdx)) cellBefores.set(ch.cellIdx, ch.beforeId);
+            }
+          }
+        });
+      }
+    } catch (applyError) {
+      // 최초 execute 실패 시 지금까지의 기록으로라도 원상 복구를 시도한다(#3350 계열).
+      try {
+        this.rollback(wasm, cellBefores, zoneBeforeId, lenBefore, dirtyBefore);
+      } catch (rollbackError) {
+        console.error(`${this.type} 실패 롤백도 실패:`, rollbackError);
+      }
+      throw applyError;
+    }
+
+    if (!changed) {
+      // 문서 무변경(dedupe 수렴 등) — 저널 항목 없이 깨끗한 no-op(#2370).
+      this.noOp = true;
+      wasm.discardSectionRaw(this.captureId);
+      this.captureId = null;
+      return { ...this.cursorPos };
+    }
+
+    this.state = {
+      cellBefores: [...cellBefores.entries()].map(([cellIdx, id]) => ({ cellIdx, id })),
+      zoneRange: this.target.kind === 'zone' ? { ...this.target.range } : null,
+      zoneBeforeId,
+      borderFillLenBefore: lenBefore,
+      docInfoDirtyBefore: dirtyBefore,
+    };
+    return { ...this.cursorPos };
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    if (this.captureId === null || !this.state) {
+      throw new Error(`${this.type} undo 불가 — 살아있는 변경 기록이 없다`);
+    }
+    wasm.applyCellBorderFillIds(this.sec, this.ppi, this.ci, {
+      cells: this.state.cellBefores,
+      zones: this.state.zoneRange
+        ? [{ ...this.state.zoneRange, id: this.state.zoneBeforeId }]
+        : [],
+    });
+    wasm.removeBorderFillTails(this.state.borderFillLenBefore, this.state.docInfoDirtyBefore);
+    wasm.restoreSectionRaw(this.captureId);
+    this.captureId = null;
+    return { ...this.cursorPos };
+  }
+
+  discard(wasm: WasmBridge): void {
+    if (this.captureId !== null) {
+      wasm.discardSectionRaw(this.captureId);
+      this.captureId = null;
+    }
+  }
+
+  snapshotResourceCount(): number { return 0; }
+
+  isNoOp(): boolean { return this.noOp; }
+
+  /** 병합하지 않는다 — 다이얼로그 확인 1회가 되돌리기 단위 1회다(한컴 정합). */
+  mergeWith(): null { return null; }
+
+  private rollback(
+    wasm: WasmBridge,
+    cellBefores: Map<number, number>,
+    zoneBeforeId: number | null,
+    lenBefore: number,
+    dirtyBefore: boolean,
+  ): void {
+    if (this.captureId === null) return;
+    wasm.applyCellBorderFillIds(this.sec, this.ppi, this.ci, {
+      cells: [...cellBefores.entries()].map(([cellIdx, id]) => ({ cellIdx, id })),
+      zones: this.target.kind === 'zone'
+        ? [{ ...this.target.range, id: zoneBeforeId }]
+        : [],
+    });
+    if (lenBefore >= 0) wasm.removeBorderFillTails(lenBefore, dirtyBefore);
+    wasm.restoreSectionRaw(this.captureId);
+    this.captureId = null;
   }
 }
 

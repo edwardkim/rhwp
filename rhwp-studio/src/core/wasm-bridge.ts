@@ -1728,9 +1728,67 @@ export class WasmBridge {
     return JSON.parse(doc.getCellOwnProperties(sec, parentPara, controlIdx, cellIdx));
   }
 
-  setCellProperties(sec: number, parentPara: number, controlIdx: number, cellIdx: number, props: Partial<CellProperties>): { ok: boolean } {
+  setCellProperties(
+    sec: number,
+    parentPara: number,
+    controlIdx: number,
+    cellIdx: number,
+    props: Partial<CellProperties>,
+  ): {
+    ok: boolean;
+    /** [#5959] borderFillId 전환 기록(target+이웃) — 구버전 wasm 에선 없다. */
+    changes?: Array<{ cellIdx: number; beforeId: number; afterId: number }>;
+    borderFillLenBefore?: number;
+    docInfoDirtyBefore?: boolean;
+  } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.setCellProperties(sec, parentPara, controlIdx, cellIdx, JSON.stringify(props)));
+  }
+
+  /**
+   * [#5959] 셀 테두리/배경 역연산 경로가 이 wasm 조합에 실려 있는가.
+   *
+   * 구버전 wasm 은 applyCellBorderFillIds 가 없다 — probe 통과 전에 캡처·뮤테이션을
+   * 하면 undo 불능 상태로 문서만 오염된다(#5951 스크우 probe 선례).
+   */
+  hasCellBorderFillInverse(): boolean {
+    const doc = this.doc as unknown as { applyCellBorderFillIds?: unknown };
+    return !!doc && typeof doc.applyCellBorderFillIds === 'function';
+  }
+
+  /** [#5959] execute 의 변경 기록을 되돌린다 — 스타일 테이블은 건드리지 않는다. */
+  applyCellBorderFillIds(
+    sec: number,
+    parentPara: number,
+    controlIdx: number,
+    payload: {
+      cells: Array<{ cellIdx: number; id: number }>;
+      zones: Array<{
+        startRow: number;
+        startCol: number;
+        endRow: number;
+        endCol: number;
+        id: number | null;
+      }>;
+    },
+  ): { ok: boolean } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      applyCellBorderFillIds(sec: number, parentPara: number, controlIdx: number, json: string): string;
+    };
+    return JSON.parse(doc.applyCellBorderFillIds(sec, parentPara, controlIdx, JSON.stringify(payload)));
+  }
+
+  /**
+   * [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목 절단. 완전 절단에 성공하면
+   * dirty 플래그를 `dirtyWas` 로 원복한다.
+   */
+  removeBorderFillTails(fromLen: number, dirtyWas: boolean): { ok: boolean; discarded: number; fullyDiscarded: boolean } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      removeBorderFillTails(json: string): string;
+    };
+    return JSON.parse(doc.removeBorderFillTails(JSON.stringify({ fromLen, dirtyWas })));
   }
 
   setCellZoneProperties(
@@ -1739,7 +1797,14 @@ export class WasmBridge {
     controlIdx: number,
     range: { startRow: number; startCol: number; endRow: number; endCol: number },
     props: Partial<CellProperties>,
-  ): { ok: boolean; borderFillId: number } {
+  ): {
+    ok: boolean;
+    borderFillId: number;
+    /** [#5959] 적용 전 zone 의 id — null 이면 신설이다. 구버전 wasm 에선 없다. */
+    zoneBeforeId?: number | null;
+    borderFillLenBefore?: number;
+    docInfoDirtyBefore?: boolean;
+  } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const doc = this.doc as unknown as {
       setCellZoneProperties(
