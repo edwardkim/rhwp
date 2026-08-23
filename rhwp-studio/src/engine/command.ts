@@ -2275,10 +2275,20 @@ export class SetZOrderCommand implements EditCommand {
     try {
       if (this.moves) {
         // redo — 상대 연산은 멱등하지 않으므로(front=항상 max+1) 저장된 after 를 대입한다.
-        wasm.applyShapeZOrderPairs(this.sectionIdx, this.pairsJson('after'));
+        const r = wasm.applyShapeZOrderPairs(this.sectionIdx, this.pairsJson('after'));
+        // 거절 = 기록 이후 문서가 out-of-band 로 바졌다 — 성공으로 스택을 옮기지 않는다.
+        if (!r.ok) {
+          throw new Error(`${this.type} redo 거부 — 기록 이후 문서가 바뀌었다`);
+        }
       } else {
         // 최초 실행 — 기존 상대 연산으로 적용하고 자기기술 레코드를 받는다.
         const r = wasm.changeShapeZOrder(this.sectionIdx, this.ppi, this.ci, this.operation);
+        if (r.ok && r.moves === undefined) {
+          // ok:true 인데 moves 가 없으면 구버전 wasm 과 짝이 어긋난 것이다 — 실제
+          // 변경이 적용됐을 수 있어 noOp 로 흡수하면 무음 변이가 된다. 스큐를 소음
+          // 없이-않게 알리고 안전 쪽(noOp 아님)으로는 갈 수 없으므로 경고 후 기각한다.
+          console.error('[SetZOrderCommand] wasm 응답에 moves 가 없다 — JS/wasm 버전 스크우');
+        }
         const moves = r.ok ? r.moves ?? [] : [];
         if (!r.ok || moves.length === 0) {
           // 이미 맨 앞/뒤 등 무변경 — phantom 엔트리와 캡처 잔류를 막는다(#2370 계약).

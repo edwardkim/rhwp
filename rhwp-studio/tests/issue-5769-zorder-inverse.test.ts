@@ -57,10 +57,15 @@ test('SetZOrderCommand 배선 핀 — 캡처 선행, undo 는 old 대입 뒤 raw
   const body = classBody(read('src/engine/command.ts'), 'SetZOrderCommand');
 
   // execute: 캡처가 상대 연산/절대 대입보다 먼저다(SetSectionPropsCommand 와 동일 생명주기).
-  assert.match(body, /captureSectionRaw\(this\.sectionIdx\)/,
-    'execute 는 변경 전 구역 raw 를 캡처해야 한다');
-  assert.match(body, /captureSectionRaw[\s\S]{0,400}?changeShapeZOrder/,
-    '최초 실행은 캡처 뒤 상대 연산을 실행한다');
+  // 정규식 거리 창은 분기 추가에 깨지므로 인덱스 순서로 핀한다.
+  const capIdx = body.indexOf('captureSectionRaw(this.sectionIdx)');
+  const redoIdx = body.indexOf("pairsJson('after')");
+  const firstRunIdx = body.indexOf('changeShapeZOrder');
+  assert.notEqual(capIdx, -1, 'execute 는 변경 전 구역 raw 를 캡처해야 한다');
+  assert.ok(
+    capIdx !== -1 && capIdx < redoIdx && capIdx < firstRunIdx,
+    '캡처는 redo 절대 대입과 최초 상대 연산 양쪽보다 먼저여야 한다',
+  );
   assert.match(body, /pairsJson\('after'\)/, 'redo 는 저장된 after 쌍으로 절대 대입한다');
 
   // undo: old 재적용(raw 재무효화) 뒤 passthrough 복원 — 순서가 바뀌면 수렴이 깨진다.
