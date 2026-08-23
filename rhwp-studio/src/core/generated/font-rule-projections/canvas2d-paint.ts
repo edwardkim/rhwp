@@ -10,6 +10,7 @@ export type GeneratedFontRuleConditions = Readonly<{
 
 export type GeneratedFontRuleProjection = Readonly<{
   ruleId: string;
+  sourceBoundaryId: string;
   relationType: string;
   decisionPlane: string;
   sourceFace: string | null;
@@ -26,13 +27,14 @@ export const FONT_RULE_CANVAS2D_PAINT_META = Object.freeze({
   "sourceCommit": "b299e1650e94da54114c60b66ea2a1a29d5dd46a",
   "inputSha256": "70be84e06388af87d1e90696a08e6519b2fc1bfe19bec66a2d44e4506cb4b6c9",
   "projectionId": "canvas2d-paint",
-  "projectionSha256": "0f9a4e3bb2a895a58557c7ec4a11c4aea71c35e5a060129e6831d5c7d91c5bef",
+  "projectionSha256": "c959e68087f6928edcafc74a1d3f9cd3885dd7540faf22b7663a49b6ad8835e4",
   "ruleCount": 281
 });
 
 export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjection[] = Object.freeze([
   {
     "ruleId": "rule.rust-paint-chain.e00c9b26ff77a9a990aa",
+    "sourceBoundaryId": "rust-paint-chain.installed-aliases",
     "relationType": "official-successor",
     "decisionPlane": "paint",
     "sourceFace": "정부상징 부처명_16040911",
@@ -47,6 +49,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.rust-paint-chain.b4d532ad95d211fc126d",
+    "sourceBoundaryId": "rust-paint-chain.installed-aliases",
     "relationType": "official-successor",
     "decisionPlane": "paint",
     "sourceFace": "정부상징 부처명_16040911",
@@ -61,6 +64,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.rust-paint-chain.51b791ee51c34eaf8111",
+    "sourceBoundaryId": "rust-paint-chain.installed-aliases",
     "relationType": "official-successor",
     "decisionPlane": "paint",
     "sourceFace": "정부상징 부처명_16040911",
@@ -75,6 +79,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.rust-paint-chain.a32a4fc414ef08d18dbe",
+    "sourceBoundaryId": "rust-paint-chain.installed-aliases",
     "relationType": "official-successor",
     "decisionPlane": "paint",
     "sourceFace": "정부상징 부처명_16040911",
@@ -89,6 +94,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.rust-paint-chain.b26ec7001aaf437c8556",
+    "sourceBoundaryId": "rust-paint-chain.installed-aliases",
     "relationType": "official-successor",
     "decisionPlane": "paint",
     "sourceFace": "정부상징 부처명_16040911",
@@ -103,6 +109,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.rust-paint-chain.bdaf3df068763d38cbe4",
+    "sourceBoundaryId": "rust-paint-chain.installed-aliases",
     "relationType": "official-successor",
     "decisionPlane": "paint",
     "sourceFace": "Government_16040911",
@@ -117,6 +124,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.rust-paint-chain.13dccfb7e2e3ac8b4c95",
+    "sourceBoundaryId": "rust-paint-chain.installed-aliases",
     "relationType": "official-successor",
     "decisionPlane": "paint",
     "sourceFace": "Government_16040911",
@@ -131,6 +139,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.rust-paint-chain.18e0090dc39ca5982f48",
+    "sourceBoundaryId": "rust-paint-chain.installed-aliases",
     "relationType": "official-successor",
     "decisionPlane": "paint",
     "sourceFace": "Government_16040911",
@@ -145,6 +154,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.rust-paint-chain.d42ea8ed9ffa1f3b3963",
+    "sourceBoundaryId": "rust-paint-chain.installed-aliases",
     "relationType": "official-successor",
     "decisionPlane": "paint",
     "sourceFace": "Government_16040911",
@@ -159,6 +169,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.rust-paint-chain.e2ccc6ad363c6c774e86",
+    "sourceBoundaryId": "rust-paint-chain.installed-aliases",
     "relationType": "official-successor",
     "decisionPlane": "paint",
     "sourceFace": "Government_16040911",
@@ -173,6 +184,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.31018655d8b0949f8169",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "휴먼명조",
@@ -189,6 +201,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.d1128911d36a5d57e02d",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "휴먼명조",
@@ -205,6 +218,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.917ee2221fd0ba861e44",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양중고딕",
@@ -221,6 +235,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.082d013155cb2f1231ad",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -237,6 +252,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.674bc70d924bf5707bcf",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -253,6 +269,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.3f0c7dac166d031c86c0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태고딕",
@@ -269,6 +286,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.55303f02912f1e4b25db",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양견명조",
@@ -285,6 +303,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.c6f925c486aa355d1886",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태명조",
@@ -301,6 +320,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.3ae451e49fbe5c79bf9c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 견고딕",
@@ -317,6 +337,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.8c04e7e2ea1025f6ca05",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 견명조",
@@ -333,6 +354,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.23e7c5a7664920a458ed",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태그래픽",
@@ -349,6 +371,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5ac4e056107231f6e274",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 중고딕",
@@ -365,6 +388,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.8af20db49db593ed9c91",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "태 가는 헤드라인T",
@@ -381,6 +405,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.0e6a017c6548f0a4478e",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 튼튼B",
@@ -397,6 +422,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.e945bd4304ec35757034",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "태 가는 헤드라인D",
@@ -413,6 +439,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.60f52a8e1aa4cf15bace",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양견고딕",
@@ -429,6 +456,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.bb4f6d3cbc27e4842ced",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Gulim",
@@ -445,6 +473,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5e0fe830f4233fa0036b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "HYHeadLine Medium",
@@ -461,6 +490,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.322517a7b5b2cf9f9354",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Malgun Gothic",
@@ -477,6 +507,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.2a1dffea82c4d40a16ea",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴바탕",
@@ -493,6 +524,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.97ebc33a60ff30158048",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴돋움",
@@ -509,6 +541,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.bb3f0e14de2ebb01bd16",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새바탕",
@@ -525,6 +558,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.e0d0b32f459e04124e87",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새돋움",
@@ -541,6 +575,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.4eb19e7e8b7605e4132c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "바탕",
@@ -557,6 +592,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.1b817ec5d7197c6f769d",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "돋움",
@@ -573,6 +609,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.82858c7547853b3a83de",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새굴림",
@@ -589,6 +626,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.4938577f57a49c4e268d",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "굴림",
@@ -605,6 +643,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ea987371d871a00af454",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새궁서",
@@ -621,6 +660,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.97cf5fc0b55001532a17",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "궁서",
@@ -637,6 +677,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.2676e8856a3e992fc55c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "백묵 굴림",
@@ -653,6 +694,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5060ec129a132f6b0ed8",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "백묵 돋움",
@@ -669,6 +711,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.1f0db75178da866930cf",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "백묵 바탕",
@@ -685,6 +728,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.d355708a45c4aa899a79",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "백묵 헤드라인",
@@ -701,6 +745,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ab769c76e0840dd9eacd",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "가는안상수체",
@@ -717,6 +762,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.cc56b771cb3b1239eba1",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "중간안상수체",
@@ -733,6 +779,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.0f86cc67128c6997da44",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "굵은안상수체",
@@ -749,6 +796,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b879e9b425a7793ea774",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "HY그래픽M",
@@ -765,6 +813,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.40fbc1e6f30101ae68fa",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -781,6 +830,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.4c85792a6a19c15c8ed9",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "고딕",
@@ -797,6 +847,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.7c63499818a8127da136",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "샘물",
@@ -813,6 +864,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.cc90186faae0ade11816",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "필기",
@@ -829,6 +881,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.acd2d8bf13447bce8562",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "시스템",
@@ -845,6 +898,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.f6c09d93fda9338ee455",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "HY둥근고딕",
@@ -861,6 +915,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.6a218fa2021ea8480d5b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "옛한글",
@@ -877,6 +932,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.7a1bc7bf02176eb7f93c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "가는공한",
@@ -893,6 +949,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.076d6d26c73591e738da",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "중간공한",
@@ -909,6 +966,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.97a58871e8b77123ffdd",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "굵은공한",
@@ -925,6 +983,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.6e82333bae5db5a0b5b6",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "가는한",
@@ -941,6 +1000,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b7743959065c033acee2",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "중간한",
@@ -957,6 +1017,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.80a885d73f79a0335332",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "굵은한",
@@ -973,6 +1034,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.683b09b25352d5907e2e",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "휴먼명조",
@@ -989,6 +1051,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.747672692233145fb8da",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "휴먼고딕",
@@ -1005,6 +1068,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b9b24d1cd43d28b8abdf",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "가는안상수체",
@@ -1021,6 +1085,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.40a6b63b180c10dae20c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "중간안상수체",
@@ -1037,6 +1102,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.8a4e186a23992f2fd7bc",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "굵은안상수체",
@@ -1053,6 +1119,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.4523ef8f0c82821dc75d",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "휴먼가는샘체",
@@ -1069,6 +1136,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5c34c1eb8394b207d5b6",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "휴먼중간샘체",
@@ -1085,6 +1153,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.d50b8431553d792c54b3",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "휴먼굵은샘체",
@@ -1101,6 +1170,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.cf34065ce59f174c73ed",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "휴먼가는팸체",
@@ -1117,6 +1187,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.1ad182efbd743de14cd0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "휴먼중간팸체",
@@ -1133,6 +1204,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ef8728d78779d79df266",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "휴먼굵은팸체",
@@ -1149,6 +1221,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.36eb24ad1699bacfb013",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "휴먼옛체",
@@ -1165,6 +1238,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.45f8ba3b8b94be11a9f9",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -1181,6 +1255,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.066347cb43acd6d2ebb4",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양견명조",
@@ -1197,6 +1272,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.70f8ba4597b8a08ac36a",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양중고딕",
@@ -1213,6 +1289,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b7e3dd13b103a05065d0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양견고딕",
@@ -1229,6 +1306,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.c45afce08e33aa8ccf69",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양그래픽",
@@ -1245,6 +1323,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.c4f69285c803b9a08307",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양궁서",
@@ -1261,6 +1340,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.8f0efa840c322ae3b797",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "문화바탕",
@@ -1277,6 +1357,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.6dd229ef7f2d80c1c16f",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "문화바탕제목",
@@ -1293,6 +1374,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.23e73e045c671b912a5d",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "문화돋움",
@@ -1309,6 +1391,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.e3312b62a241444b3467",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "문화돋움제목",
@@ -1325,6 +1408,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.c5ccb3e16e24d7231b30",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "문화쓰기",
@@ -1341,6 +1425,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.3538cfe43cf096282c35",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "문화쓰기흘림",
@@ -1357,6 +1442,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ef94a585ea6e7c9cc646",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "펜흘림",
@@ -1373,6 +1459,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.f2b23ddae28567b37660",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "복숭아",
@@ -1389,6 +1476,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.0dd7a7f70902cc9ab64f",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "옥수수",
@@ -1405,6 +1493,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.772dd3ccadb4cbc6e817",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "오이",
@@ -1421,6 +1510,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.244fcfb638cbf0173b6e",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "가지",
@@ -1437,6 +1527,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.d6a2fa86d67621026f2b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "강낭콩",
@@ -1453,6 +1544,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5bc36154817756fa512f",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "딸기",
@@ -1469,6 +1561,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.1df310a87d82d7961d8e",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "타이프",
@@ -1485,6 +1578,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.1f479840b7ba339b677a",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "태 나무",
@@ -1501,6 +1595,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.4ee0c6259f428a3cd2b8",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "태 헤드라인D",
@@ -1517,6 +1612,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.7f9b02f0964f7a332c69",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "태 가는 헤드라인D",
@@ -1533,6 +1629,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.559fbf673ad7c7319183",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "태 헤드라인T",
@@ -1549,6 +1646,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.cf964e285149be7f92e2",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "태 가는 헤드라인T",
@@ -1565,6 +1663,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.8ab2405ad0e5e2b9a152",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 다운명조M",
@@ -1581,6 +1680,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.75d2241f5fe94b4b91ba",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 본목각M",
@@ -1597,6 +1697,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.2190b89fd0bb4388018c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 소슬",
@@ -1613,6 +1714,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.73b3d3a997642f65fb7c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 튼튼B",
@@ -1629,6 +1731,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.a25323bbe3c467c0eda8",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 참숯B",
@@ -1645,6 +1748,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.04b04c86a8ef4e511cac",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 둘기",
@@ -1661,6 +1765,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.71b14a9add21a371bc5c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 매화",
@@ -1677,6 +1782,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.58311349e714549cc59e",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 샤넬",
@@ -1693,6 +1799,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.c3014ca530ec6b626eea",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 와당",
@@ -1709,6 +1816,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.bfe84a1062f3cac87ddf",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 이니셜",
@@ -1725,6 +1833,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.beaeb1d0d74902999b4f",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 세명조",
@@ -1741,6 +1850,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.bfdac82a518bf3600f37",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 신명조",
@@ -1757,6 +1867,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.2a0401de3dd1a28fb8ef",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 신신명조",
@@ -1773,6 +1884,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.92ba6d5679993bf50217",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 중명조",
@@ -1789,6 +1901,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.9f73bf613d178aad5c7a",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태명조",
@@ -1805,6 +1918,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.10f50343f3549c68730b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 견명조",
@@ -1821,6 +1935,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.daad32224ff650aa7edb",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 신문명조",
@@ -1837,6 +1952,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.22a51d84831126a5f7f8",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 순명조",
@@ -1853,6 +1969,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.e9849013ddb4daaf4e4a",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 세고딕",
@@ -1869,6 +1986,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.2d986fb71bb15758220f",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 중고딕",
@@ -1885,6 +2003,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.1ac04a3d513de6a4b4f2",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태고딕",
@@ -1901,6 +2020,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5cef4b1d0b53eb31f64b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 견고딕",
@@ -1917,6 +2037,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.fbf4a469ba33e412d3f8",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 세나루",
@@ -1933,6 +2054,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.6acd48ec96c99316a019",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 디나루",
@@ -1949,6 +2071,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b1ddf59ab8d954039176",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 신그래픽",
@@ -1965,6 +2088,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.0d217a1553cdc1c40207",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태그래픽",
@@ -1981,6 +2105,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.7928ea6904004f2f8516",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 궁서",
@@ -1997,6 +2122,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.122c325267a7885bee9f",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "SPOQAHANSANS",
@@ -2013,6 +2139,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.33ae9124672740f36193",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양중고딕",
@@ -2029,6 +2156,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.e6e2545e37da3ffa8b56",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -2045,6 +2173,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.76ef5e341bd095003118",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -2061,6 +2190,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.31fa5e0208d57d1fdbcc",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "HCI Poppy",
@@ -2077,6 +2207,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.81daf7bd554e1507c2ed",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태고딕",
@@ -2093,6 +2224,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.07fd6e1a3394e03260fd",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "산세리프",
@@ -2109,6 +2241,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.0a4d3adcb3da3b664183",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양견명조",
@@ -2125,6 +2258,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.66d36fa46504fd19b7e2",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태명조",
@@ -2141,6 +2275,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.c6a4690fe0fcb0d831c0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 견고딕",
@@ -2157,6 +2292,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.075ece08e48f4e96278a",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 견명조",
@@ -2173,6 +2309,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.44910d6407e72dfbbeb6",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태그래픽",
@@ -2189,6 +2326,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5fe82b0b6e6883112d1f",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 중고딕",
@@ -2205,6 +2343,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.700772b281cef9cdbc60",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "양재 튼튼B",
@@ -2221,6 +2360,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.623eb3aa318ed9f440a5",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양견고딕",
@@ -2237,6 +2377,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.1926932fb6d61ec82838",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Gulim",
@@ -2253,6 +2394,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.eb8755aba4e60ddddea0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "HYHeadLine Medium",
@@ -2269,6 +2411,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.4ecd5e57c0728fa82986",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Malgun Gothic",
@@ -2285,6 +2428,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.e0e8549efba0930c80b9",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Tahoma",
@@ -2301,6 +2445,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.02eb7a1598c678ddc438",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "MS Sans Serif",
@@ -2317,6 +2462,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.28d7eeb9953ec6f80b1b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Times New Roman",
@@ -2333,6 +2479,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b90ab7a4f4de860e7278",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴바탕",
@@ -2349,6 +2496,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.cf3d0ecf5dff293f66c5",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴돋움",
@@ -2365,6 +2513,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.baef5d40d31beb701812",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새바탕",
@@ -2381,6 +2530,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.60f0549bf5064b726a92",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새돋움",
@@ -2397,6 +2547,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.65cd44d67257bcf741cc",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "바탕",
@@ -2413,6 +2564,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b7661d041013edcd4682",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "돋움",
@@ -2429,6 +2581,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.423952186940188fb8fb",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새굴림",
@@ -2445,6 +2598,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.cf202a8851c59dbc6bf2",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "굴림",
@@ -2461,6 +2615,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.7639fe6289a03755c057",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새궁서",
@@ -2477,6 +2632,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.37e21fb9d45988d9cb72",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "궁서",
@@ -2493,6 +2649,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.733e70a99ead7df033c6",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "백묵 굴림",
@@ -2509,6 +2666,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.8ff9ea9bc81862cfc7ef",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "백묵 돋움",
@@ -2525,6 +2683,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.81baa9cb2de7284c2046",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "백묵 바탕",
@@ -2541,6 +2700,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.2a71cd3cbcc17415d55c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "백묵 헤드라인",
@@ -2557,6 +2717,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b51dde1307674029c331",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "HY그래픽M",
@@ -2573,6 +2734,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.f84b5125419b5ff0770c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -2589,6 +2751,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.850fe545764a4f76d983",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "고딕",
@@ -2605,6 +2768,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.aa00d1bf9e2d543898e8",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "산세리프",
@@ -2621,6 +2785,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b498ab67acd69f1ec90e",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "필기",
@@ -2637,6 +2802,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.9e746e7c49f738148aa9",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -2653,6 +2819,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.204a772ac9846dd3252b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양중고딕",
@@ -2669,6 +2836,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.2e8e4aeeeff1d576aae0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "시스템",
@@ -2685,6 +2853,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.f409d3571b30627cf6a5",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "HY둥근고딕",
@@ -2701,6 +2870,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5b6be80177ef39b3927c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양견명조",
@@ -2717,6 +2887,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.4ec11f9a74196684b801",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양견고딕",
@@ -2733,6 +2904,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.66c7676496b6c52532a2",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양그래픽",
@@ -2749,6 +2921,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5ede4957a3bcd9c15810",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양궁서",
@@ -2765,6 +2938,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ce0eaaacfd32ef8b7b91",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "SPOQAHANSANS",
@@ -2781,6 +2955,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.532c5fd9b02fe8924747",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양중고딕",
@@ -2797,6 +2972,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.37afa9b1a111600d133e",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -2813,6 +2989,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ac22b4bf32c14432b69e",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -2829,6 +3006,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.3115a23acd283ed74c73",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태고딕",
@@ -2845,6 +3023,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.2cdb104fa6d323421f4c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Gulim",
@@ -2861,6 +3040,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.e6c5aefd48e8676a6d50",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Malgun Gothic",
@@ -2877,6 +3057,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.27692fc418e5d0a0aade",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴바탕",
@@ -2893,6 +3074,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.0781dd11aef20695a084",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴돋움",
@@ -2909,6 +3091,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.e23ac5016e8c9b45fd42",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새바탕",
@@ -2925,6 +3108,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.f50fa6c4c0ce6ee331ff",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새돋움",
@@ -2941,6 +3125,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.a410cf33a92fd7b6683f",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "바탕",
@@ -2957,6 +3142,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.8148573c6249f4090951",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "돋움",
@@ -2973,6 +3159,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.39cb1ca358ad6438c4cb",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새굴림",
@@ -2989,6 +3176,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5865a6d8dd85c317b6f8",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "굴림",
@@ -3005,6 +3193,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ead41651158facfd5259",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새궁서",
@@ -3021,6 +3210,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.87fabbf31a2afbd9f4bb",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "궁서",
@@ -3037,6 +3227,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.88b9d28bc283ca1f0b13",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -3053,6 +3244,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.d49f28ed798c69f9398b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -3069,6 +3261,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b42eaa2121a51288ae69",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양중고딕",
@@ -3085,6 +3278,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.e2884c2caefee1f356e8",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "SPOQAHANSANS",
@@ -3101,6 +3295,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.a2523b85a56405a7ff7d",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양중고딕",
@@ -3117,6 +3312,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.28fe4f55ca0cb6c2e241",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -3133,6 +3329,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.0d8f8381f24a58698505",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -3149,6 +3346,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.8f09161e2205b8028fa3",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태고딕",
@@ -3165,6 +3363,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.138c58a39b6e7e8cf567",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Gulim",
@@ -3181,6 +3380,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.73f35c22925db6b15430",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Malgun Gothic",
@@ -3197,6 +3397,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.48974c2274331c44e917",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴바탕",
@@ -3213,6 +3414,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.16670d4452d0ac4ffdc9",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴돋움",
@@ -3229,6 +3431,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.9b6323bd207090bc86a6",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새바탕",
@@ -3245,6 +3448,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.0ed788b88848b42cbc9b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새돋움",
@@ -3261,6 +3465,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.3bc7e793616a6a94b47b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "바탕",
@@ -3277,6 +3482,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ff8fcd32e18464e7eb4c",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "돋움",
@@ -3293,6 +3499,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b348293a780f32314ffd",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새굴림",
@@ -3309,6 +3516,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.52efaf37fe76450e9ed5",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "굴림",
@@ -3325,6 +3533,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.22c20d4684759dd9e26d",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새궁서",
@@ -3341,6 +3550,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.1e454749617ccdac252d",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "궁서",
@@ -3357,6 +3567,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.e30786006c9aa1487693",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -3373,6 +3584,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b6c96997170b4e1161ea",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "고딕",
@@ -3389,6 +3601,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.13a7619771a335bb889b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -3405,6 +3618,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.74ff288d22161d060ad7",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양중고딕",
@@ -3421,6 +3635,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b03c8500696689530d64",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "시스템",
@@ -3437,6 +3652,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.f437ad76ab99f1b2dec0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "SPOQAHANSANS",
@@ -3453,6 +3669,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.140c081e9249967c4f4b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -3469,6 +3686,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.fe05686d29336e3a905f",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -3485,6 +3703,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.541d604dafe2216589a5",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Gulim",
@@ -3501,6 +3720,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ec29f8ae09feee7982c1",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Malgun Gothic",
@@ -3517,6 +3737,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.c1576f72df36e6741a30",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴바탕",
@@ -3533,6 +3754,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.9db78e9d9e785fce9bf0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴돋움",
@@ -3549,6 +3771,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.4d56491720dbef1b864a",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새바탕",
@@ -3565,6 +3788,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.6853e19b7b0bbcfbc24a",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새돋움",
@@ -3581,6 +3805,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.e193c6f517eb6c7345de",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "바탕",
@@ -3597,6 +3822,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.bea82478aaa9418593cc",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "돋움",
@@ -3613,6 +3839,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.99bbe8902c43af0a08fb",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새굴림",
@@ -3629,6 +3856,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ccf56b4520f710b47f85",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "굴림",
@@ -3645,6 +3873,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.db90444f9c52ed76d652",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새궁서",
@@ -3661,6 +3890,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.c353578b1be54d73d283",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "궁서",
@@ -3677,6 +3907,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.adb16ec54c4b31eebf5b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -3693,6 +3924,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.258e7f7b23ce32aabc95",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -3709,6 +3941,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.142d17cfc91d2866e474",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "SPOQAHANSANS",
@@ -3725,6 +3958,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.93e859e5497d4152b924",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양중고딕",
@@ -3741,6 +3975,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.65a63417da4a297a4406",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -3757,6 +3992,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.bf74d065a0ea8b2220c8",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -3773,6 +4009,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ac6fbcf19e1ef5b80c1f",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 견고딕",
@@ -3789,6 +4026,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.a11eaee0ca2a998ac1a7",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 견명조",
@@ -3805,6 +4043,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.70e948d0cdd7b6111727",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "신명 태그래픽",
@@ -3821,6 +4060,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b825e8cb4c2d6e21bdd0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Gulim",
@@ -3837,6 +4077,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5e35c4e0a51e00e8cd35",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "HYHeadLine Medium",
@@ -3853,6 +4094,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.7b56a40ef9529c0692cc",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Malgun Gothic",
@@ -3869,6 +4111,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.346abd4d396fc1c8b345",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴바탕",
@@ -3885,6 +4128,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.61c97b6ac43aa5e92caa",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴돋움",
@@ -3901,6 +4145,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.98705adaf297df20e681",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새바탕",
@@ -3917,6 +4162,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.3419e34fd43ffff48f94",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새돋움",
@@ -3933,6 +4179,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.f1256c3b87ef9041dac0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "바탕",
@@ -3949,6 +4196,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.b8e9822435dfc84bffcf",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "돋움",
@@ -3965,6 +4213,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.3f62b538bccf4a597534",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새굴림",
@@ -3981,6 +4230,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.6f748ccf3460e236dcfe",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "굴림",
@@ -3997,6 +4247,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.acaa8a572fa394062180",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새궁서",
@@ -4013,6 +4264,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.16ec54d4dc791a620abe",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "궁서",
@@ -4029,6 +4281,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.016a680e0a20ce023e8b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -4045,6 +4298,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.348daaa7cbd93a545548",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "시스템",
@@ -4061,6 +4315,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.62574eb42352ba172b8b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -4077,6 +4332,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.09187c7f9d882f1590e0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양중고딕",
@@ -4093,6 +4349,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.4aedbd212462d59d94e0",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "SPOQAHANSANS",
@@ -4109,6 +4366,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.da8d2183a27ac7a6a338",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한양신명조",
@@ -4125,6 +4383,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.f4df753633f252d75285",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -4141,6 +4400,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.00fe182a569fe3a4c03d",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Gulimche",
@@ -4157,6 +4417,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.53bb2ec848c92a6f050f",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Gulim",
@@ -4173,6 +4434,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5b6f7a31aca9a9807ce4",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "Malgun Gothic",
@@ -4189,6 +4451,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.66c32b65cd1638edc363",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "함초롬돋움",
@@ -4205,6 +4468,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ae81276d46c81b7450cd",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴바탕",
@@ -4221,6 +4485,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.9cc24c2435946230ed2b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한컴돋움",
@@ -4237,6 +4502,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.8fc376b2252f4c869b62",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새바탕",
@@ -4253,6 +4519,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.5fe8473c404dd197cf58",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새돋움",
@@ -4269,6 +4536,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.ca17e3b44572c1e4b587",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "바탕",
@@ -4285,6 +4553,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.aba22751e79bf07e98e2",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "돋움",
@@ -4301,6 +4570,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.7733a8cba2fc5dd33b06",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새굴림",
@@ -4317,6 +4587,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.abee1b6088d71050d97d",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "굴림",
@@ -4333,6 +4604,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.c85113339920176c6b0d",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "새궁서",
@@ -4349,6 +4621,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.d48375826cc4cd91980b",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "궁서",
@@ -4365,6 +4638,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.a1b8c69d500b30153870",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "명조",
@@ -4381,6 +4655,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.507dbe3341fe854768c7",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "한글 풀어쓰기",
@@ -4397,6 +4672,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.dc809c56144aa22001ec",
+    "sourceBoundaryId": "studio-substitution.substitution-tables",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": "SPOQAHANSANS",
@@ -4413,6 +4689,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.d45114ab935a0f64fb24",
+    "sourceBoundaryId": "studio-substitution.display-chain",
     "relationType": "style-fallback",
     "decisionPlane": "paint",
     "sourceFace": null,
@@ -4427,6 +4704,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.4b0f0e36407c7d1478cb",
+    "sourceBoundaryId": "studio-substitution.display-chain",
     "relationType": "official-successor",
     "decisionPlane": "paint",
     "sourceFace": null,
@@ -4441,6 +4719,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.3d36e30af2b3eafc0014",
+    "sourceBoundaryId": "studio-substitution.display-chain",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": null,
@@ -4455,6 +4734,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.aef174ec2cbb69d68246",
+    "sourceBoundaryId": "studio-substitution.display-chain",
     "relationType": "document-substitution",
     "decisionPlane": "paint",
     "sourceFace": null,
@@ -4469,6 +4749,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-substitution.8276e3c7e99757ae44c7",
+    "sourceBoundaryId": "studio-substitution.display-chain",
     "relationType": "generic-fallback",
     "decisionPlane": "paint",
     "sourceFace": null,
@@ -4483,6 +4764,7 @@ export const FONT_RULE_CANVAS2D_PAINT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-canvas-patch.afffc48cd5e801e57b86",
+    "sourceBoundaryId": "studio-canvas-patch.css-family-substitution",
     "relationType": "paint-substitute",
     "decisionPlane": "paint",
     "sourceFace": null,

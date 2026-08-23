@@ -10,6 +10,7 @@ export type GeneratedFontRuleConditions = Readonly<{
 
 export type GeneratedFontRuleProjection = Readonly<{
   ruleId: string;
+  sourceBoundaryId: string;
   relationType: string;
   decisionPlane: string;
   sourceFace: string | null;
@@ -26,13 +27,14 @@ export const FONT_RULE_CANVASKIT_SFNT_META = Object.freeze({
   "sourceCommit": "b299e1650e94da54114c60b66ea2a1a29d5dd46a",
   "inputSha256": "f8730126c3053b14ccfc1ebdd5e4b13ee0efd01c225dcbcf905317473d78b5b5",
   "projectionId": "canvaskit-sfnt",
-  "projectionSha256": "e61e6253ca303a8c64c32eacef6f4f15a9a5a211fbc634e0745f24c5d4c484ad",
+  "projectionSha256": "d9019fc756d4fd9334252704309bb2020c251d6a7d04dc0f5a6b2efb0f017668",
   "ruleCount": 158
 });
 
 export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjection[] = Object.freeze([
   {
     "ruleId": "rule.studio-supply.bd74329daa5a2a185478.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "함초롬돋움",
@@ -74,6 +76,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.05ea00b9c9e0a769922f.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "함초롬바탕",
@@ -114,6 +117,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.bc675f06812aac14a681.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "함초롱돋움",
@@ -155,6 +159,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.54d07bcc1a0df04ff7dc.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "함초롱바탕",
@@ -195,6 +200,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.9f9811ad1c07f0295722.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "한컴돋움",
@@ -236,6 +242,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.8f74d729519767fbbf93.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "한컴바탕",
@@ -276,6 +283,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.768a38c63d8bd590b992.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "한컴산뜻돋움",
@@ -317,6 +325,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.31eddfa9d17a36b7a95c.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "새돋움",
@@ -358,6 +367,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.3ff1312cd22c7187e612.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "새바탕",
@@ -398,6 +408,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.30078d3a0db57db6e3a4.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HY헤드라인M",
@@ -450,6 +461,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.62f82c6c6e42b2466712.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HYHeadLine M",
@@ -502,6 +514,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.e5f20e53cc00a1c7dfd1.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HYHeadLine Medium",
@@ -554,6 +567,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.86f800aa66064bb9adaf.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HY견고딕",
@@ -606,6 +620,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.0cfefc4a25911abc7b28.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HYGothic-Extra",
@@ -658,6 +673,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.94a8953162d2d51c96ba.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HY그래픽",
@@ -710,6 +726,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.88a1eb20cd3b549115cb.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HYGraphic-Medium",
@@ -762,6 +779,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.3753c27802a6697adaca.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HY그래픽M",
@@ -814,6 +832,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.29d6d127a0d52037a7a5.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HY견명조",
@@ -858,6 +877,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.833df2e422075c8bd815.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HYMyeongJo-Extra",
@@ -902,6 +922,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.93eb9ff639f4cfcfb962.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HY신명조",
@@ -950,6 +971,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.a34b73718b0ffd09a21b.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HY중고딕",
@@ -1002,6 +1024,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.856cdf2bb6bf547fb7da.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "한양중고딕",
@@ -1054,6 +1077,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.3ba7f1f7809a833b969a.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "양재튼튼체B",
@@ -1106,6 +1130,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.d988ac8884c2a8beab41.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Malgun Gothic",
@@ -1152,6 +1177,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.b247488092a350760c80.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "맑은 고딕",
@@ -1198,6 +1224,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.f09587c087bbefe58254.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "돋움",
@@ -1250,6 +1277,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.0448add22607e6fabd3d.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "돋움체",
@@ -1302,6 +1330,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.26197494604ee7285153.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "굴림",
@@ -1354,6 +1383,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.4a2e12a75c84cb081aab.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "굴림체",
@@ -1400,6 +1430,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.ec72133ef5cf9fd282fb.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "새굴림",
@@ -1452,6 +1483,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.411ce3616959e647602c.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Haansoft Dotum",
@@ -1504,6 +1536,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.c7917f3a4fa439763a33.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "바탕",
@@ -1552,6 +1585,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.2f05addbdfe5f66a5bd0.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "바탕체",
@@ -1598,6 +1632,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.1935f03ba4e1a1890c90.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "궁서",
@@ -1646,6 +1681,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.85a2d17c39656a68a057.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "궁서체",
@@ -1694,6 +1730,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.1cb50440148d64980dac.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "새궁서",
@@ -1742,6 +1779,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.600e8918afb7dce374f4.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔고딕",
@@ -1786,6 +1824,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.3036d5d8cc5c14a890c9.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔고딕 Bold",
@@ -1823,6 +1862,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.bddb33f3dad691a36c3e.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔고딕 ExtraBold",
@@ -1860,6 +1900,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.9dacb9d11f184d63edb3.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔명조",
@@ -1902,6 +1943,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.d08686d681c97e128496.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔명조 ExtraBold",
@@ -1939,6 +1981,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.a85bd10cee9ebd997eee.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔고딕코딩",
@@ -1983,6 +2026,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.dd065bb47aec6ca6723d.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔고딕_코딩",
@@ -2027,6 +2071,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.223d8475001285897db8.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "NanumGothic",
@@ -2071,6 +2116,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.86194ca892a082c950b8.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Palatino Linotype",
@@ -2119,6 +2165,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.8175c2ae512fdcecc704.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Noto Sans KR",
@@ -2171,6 +2218,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.d8acdee5efab4ff80ae7.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Noto Sans KR Medium",
@@ -2208,6 +2256,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.370ab90396cbd2cefa67.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Noto Sans KR ExtraLight",
@@ -2260,6 +2309,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.16a7ab9887c570ec0d99.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Noto Serif KR",
@@ -2308,6 +2358,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.746b8c3993b4f81def2c.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Pretendard",
@@ -2354,6 +2405,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.be1e50dc2beb3d0f60e3.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Pretendard Thin",
@@ -2396,6 +2448,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.afd86ce934ac67467a43.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Pretendard ExtraLight",
@@ -2438,6 +2491,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.2121cbb9a8a2c4566a4c.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Pretendard Light",
@@ -2480,6 +2534,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.37b271c9e695ce40a5c7.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Pretendard Medium",
@@ -2522,6 +2577,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.e9989f499770a1829563.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Pretendard SemiBold",
@@ -2564,6 +2620,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.30364eaa2fa741fabe4c.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Pretendard Bold",
@@ -2606,6 +2663,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.87d8b2801087e772ddb3.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Pretendard ExtraBold",
@@ -2648,6 +2706,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.eef87dc1aae34a7afc2c.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Pretendard Black",
@@ -2690,6 +2749,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.5e648d7aa6c2db3be53d.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "DejaVu Serif",
@@ -2727,6 +2787,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.45ef6b86328af59f834c.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Roboto",
@@ -2764,6 +2825,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.9226454d982d47a1557d.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Government_16040911",
@@ -2802,6 +2864,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.521afff37dd1f6357469.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "정부상징 부처명_16040911",
@@ -2840,6 +2903,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.f718d270a6f25396c4af.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPub돋움체 Light",
@@ -2879,6 +2943,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.a93f39ddc1e2f413d204.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPub돋움체 Medium",
@@ -2918,6 +2983,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.3f2ebfb25f1e24a5e022.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPub돋움체 Bold",
@@ -2957,6 +3023,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.bb3cbc04a878dd35803c.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPub바탕체 Light",
@@ -2996,6 +3063,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.c376561582c767a780fd.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPub바탕체 Medium",
@@ -3035,6 +3103,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.898ab998fcc897199dbf.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPub바탕체 Bold",
@@ -3074,6 +3143,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.73bb35832c85fdcfa94a.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubDotum Light",
@@ -3113,6 +3183,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.334218b855ae9b9950b4.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubDotum Medium",
@@ -3152,6 +3223,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.132bd3983f2110e463bc.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubDotum Bold",
@@ -3191,6 +3263,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.8225cfd32925b5ad4dff.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubBatang Light",
@@ -3230,6 +3303,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.e2bab0aa777f7c235f74.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubBatang Medium",
@@ -3269,6 +3343,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.af8d0ba95e9447ddf7dc.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubBatang Bold",
@@ -3308,6 +3383,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.ab5d962141d56102aa59.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubDotumLight",
@@ -3347,6 +3423,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.11811dc7b4887de84937.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubDotumMedium",
@@ -3386,6 +3463,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.444dd63f80256eed471d.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubDotumBold",
@@ -3425,6 +3503,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.92f6e5d4c44c53d9171a.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubBatangLight",
@@ -3464,6 +3543,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.2fe9515d279228acacee.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubBatangMedium",
@@ -3503,6 +3583,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.8a53670839d0037b5b6c.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubBatangBold",
@@ -3542,6 +3623,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.b4a81472cc52c505ee6d.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubWorld돋움체 Light",
@@ -3579,6 +3661,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.275188318957f26d8f80.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubWorld돋움체 Medium",
@@ -3618,6 +3701,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.1e957b44174bb4e58a05.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubWorld돋움체 Bold",
@@ -3655,6 +3739,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.272f0ba64ebeef347d44.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubWorld바탕체 Light",
@@ -3692,6 +3777,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.81125e4480d6704cd407.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubWorld바탕체 Medium",
@@ -3731,6 +3817,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.0c50fe05921a7c299e56.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubWorld바탕체 Bold",
@@ -3768,6 +3855,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.4acaa1b1c7544f6b8ffd.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubWorld Dotum",
@@ -3807,6 +3895,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.675b1aec7f8844bb0897.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubWorld Batang",
@@ -3846,6 +3935,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.bdc440581b1fca926d22.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubWorldDotum",
@@ -3885,6 +3975,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.32defe91e23de06f16c4.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KoPubWorldBatang",
@@ -3924,6 +4015,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.977ef99cd33d09129a6b.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "경기천년바탕 Bold",
@@ -3962,6 +4054,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.2041f33491f87ddee0af.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "경기천년바탕 Regular",
@@ -4000,6 +4093,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.f14e188b83ef32e773dd.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "경기천년제목 Bold",
@@ -4039,6 +4133,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.baf9ef5d6088912b069e.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "경기천년제목 Light",
@@ -4078,6 +4173,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.afdb1042b3e581761dd7.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "경기천년제목 Medium",
@@ -4117,6 +4213,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.24c7a7ed92e76b838f70.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔바른펜",
@@ -4154,6 +4251,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.fe8c1e6bd80dc977481a.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔스퀘어라운드 Bold",
@@ -4193,6 +4291,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.a2fca4b269cbaf47e6fd.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔스퀘어라운드 ExtraBold",
@@ -4232,6 +4331,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.e0e80a5e2d2d694ead20.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔스퀘어라운드 Regular",
@@ -4271,6 +4371,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.ed221d8bc824fdeed8a4.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "62570체",
@@ -4308,6 +4409,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.853f0809eee4e6b9daa9.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔고딕 Light",
@@ -4345,6 +4447,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.66778cab409e2f8a43e1.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔고딕OTF",
@@ -4382,6 +4485,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.64deb67e642ac428998b.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔고딕OTF Bold",
@@ -4419,6 +4523,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.f934e40df33952c15e3d.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔명조OTF ExtraBold",
@@ -4456,6 +4561,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.daeb146a5a3125ba10ff.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔바른고딕 Light",
@@ -4493,6 +4599,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.d0ae1415680a6333f9d3.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔바른고딕OTF",
@@ -4530,6 +4637,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.3bb7acf78e4978622599.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "나눔스퀘어OTF",
@@ -4567,6 +4675,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.4b6852096db05e93c258.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "다음_SemiBold",
@@ -4604,6 +4713,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.fda1a51097546a80890b.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "에스코어 드림 3 Light",
@@ -4641,6 +4751,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.829e641bf7d97c4b41e3.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Baskerville BT",
@@ -4678,6 +4789,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.ed00e50e6310822e1a16.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Bodoni Bd BT",
@@ -4717,6 +4829,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.a24633a420802036ba08.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Bodoni Bk BT",
@@ -4756,6 +4869,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.66b7fa1b21caa72ae8b5.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Bodoni MT",
@@ -4795,6 +4909,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.f9b7ce3f9ecfedc26c08.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "BrushScript BT",
@@ -4832,6 +4947,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.6a68839caf882e5c47f9.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Calisto MT",
@@ -4869,6 +4985,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.a3ab877d557ae3620dc9.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Century Schoolbook",
@@ -4906,6 +5023,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.901b6b211f4fcfa54768.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "FangSong",
@@ -4943,6 +5061,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.15884b9e7c1f2a7c4ee9.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Futura Hv BT",
@@ -4980,6 +5099,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.64ceaf9e0bb28ae5c942.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Garamond",
@@ -5017,6 +5137,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.2ce5d402e8711133d375.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "HCRDotum",
@@ -5054,6 +5175,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.9c94b159bdd08dbaa68f.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Helvetica",
@@ -5091,6 +5213,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.4ec2b847f6c75730609a.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Helvetica 65 Medium",
@@ -5128,6 +5251,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.0d9e89207f8f7d90215a.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Helvetica Neue",
@@ -5165,6 +5289,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.55003aecf83027a605cd.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "KBIZ한마음명조 R",
@@ -5202,6 +5327,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.7c1ae0bbafc6cdefe9af.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "MS Gothic",
@@ -5240,6 +5366,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.095c1c232dbb4dfb5cc2.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "MS Mincho",
@@ -5278,6 +5405,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.d3e8b09ed17746beaa6a.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "MS Song",
@@ -5315,6 +5443,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.f3ea7acc996fe24a3604.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "MS UI Gothic",
@@ -5353,6 +5482,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.3c6f59d992a9c3bc6797.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "MT Extra",
@@ -5390,6 +5520,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.617b2457d3e4b9fef10f.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Myeongjo",
@@ -5427,6 +5558,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.41f4abc361abb59f405b.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Nanum Barun Gothic",
@@ -5464,6 +5596,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.f8bd9d02732ea351cd32.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Noto",
@@ -5501,6 +5634,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.255312354238713953d0.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Noto Sans CJK JP Regular",
@@ -5538,6 +5672,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.95f9511d889a697b4c8a.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Segoe UI",
@@ -5575,6 +5710,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.5d2cb1564c2f5ad4dcd6.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "SimSun",
@@ -5612,6 +5748,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.c52db9881ba457f5c392.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Yu Mincho",
@@ -5650,6 +5787,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.95f071bf284bacec28b6.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "D2Coding",
@@ -5696,6 +5834,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.89fc1e92518accb512a3.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "해피니스 산스 레귤러",
@@ -5740,6 +5879,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.7fa94fcf4b29abfb99e2.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Happiness Sans Regular",
@@ -5784,6 +5924,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.9f0b2b27b2e1cdcf48c9.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "해피니스 산스 볼드",
@@ -5828,6 +5969,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.ed42872fd0faa00ab14c.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Happiness Sans Bold",
@@ -5872,6 +6014,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.a98320b11ca23a757549.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "해피니스 산스 타이틀",
@@ -5916,6 +6059,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.235d312a1bcaa5223d51.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Happiness Sans Title",
@@ -5960,6 +6104,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.7addb14ca54d3478ff11.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "해피니스 산스 VF",
@@ -6004,6 +6149,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.6ed322eba70a28f851f5.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Happiness Sans VF",
@@ -6048,6 +6194,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.064b5392c04262fb4a31.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Cafe24 Ssurround Bold",
@@ -6090,6 +6237,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.9e9d6be2e5d060c37893.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "카페24 슈퍼매직",
@@ -6134,6 +6282,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.cadf006c804cd692d83d.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Cafe24 Supermagic",
@@ -6178,6 +6327,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.fb1ba6d9a29aa201f8ee.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Latin Modern Math",
@@ -6220,6 +6370,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.217e88329fd93b1b4b7d.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "SpoqaHanSans",
@@ -6262,6 +6413,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.5031552686798f2c6ca4.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "고운바탕",
@@ -6310,6 +6462,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.673ef286e7424d121b88.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "고운돋움",
@@ -6352,6 +6505,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.0aab2d58429b52047acb.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "Source Han Serif K Old Hangul",
@@ -6394,6 +6548,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.46fe921c63519b834a98",
+    "sourceBoundaryId": "studio-supply.canvaskit-plan",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "휴먼명조",
@@ -6408,6 +6563,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.8c1d7ff9afc345a4e0e6",
+    "sourceBoundaryId": "studio-supply.canvaskit-plan",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "한양중고딕",
@@ -6422,6 +6578,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.42a29aa55fdc0eb2f270",
+    "sourceBoundaryId": "studio-supply.canvaskit-plan",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "한컴 윤고딕 230",
@@ -6436,6 +6593,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-supply.f8d718ee50988a4bc31e",
+    "sourceBoundaryId": "studio-supply.canvaskit-plan",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": null,
@@ -6450,6 +6608,7 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
   },
   {
     "ruleId": "rule.studio-detection.dc427cacdd59d822e9e2",
+    "sourceBoundaryId": "studio-detection.sfnt-bytes",
     "relationType": "capability-detection",
     "decisionPlane": "detection",
     "sourceFace": null,

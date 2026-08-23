@@ -90,9 +90,13 @@ function pathDigest(file, root = ROOT) {
   return { path: relativePath(file, root), sha256: sha256File(file) };
 }
 
-function projectionRow(rule, config) {
+function projectionRow(rule) {
+  if (rule.evidence.sourceBoundaryIds.length !== 1) {
+    throw new Error(`${rule.ruleId}: backend projection requires exactly one source boundary`);
+  }
   const row = {
     ruleId: rule.ruleId,
+    sourceBoundaryId: rule.evidence.sourceBoundaryIds[0],
     relationType: rule.relationType,
     decisionPlane: rule.decisionPlane,
     sourceFace: rule.sourceFace,
@@ -103,12 +107,6 @@ function projectionRow(rule, config) {
     metricEntryIds: rule.metricEntryIds,
     supply: rule.supply,
   };
-  if (config.language === 'rust') {
-    if (rule.evidence.sourceBoundaryIds.length !== 1) {
-      throw new Error(`${rule.ruleId}: Rust projection requires exactly one source boundary`);
-    }
-    row.sourceBoundaryId = rule.evidence.sourceBoundaryIds[0];
-  }
   return row;
 }
 
@@ -252,6 +250,7 @@ export type GeneratedFontRuleConditions = Readonly<{
 
 export type GeneratedFontRuleProjection = Readonly<{
   ruleId: string;
+  sourceBoundaryId: string;
   relationType: string;
   decisionPlane: string;
   sourceFace: string | null;
@@ -291,7 +290,7 @@ export function buildProjectionBundle(
   const outputs = OUTPUT_CONFIGS.map(config => {
     const inputRules = registry.rules
       .filter(rule => rule.projections[0].id === config.projectionId);
-    const rows = inputRules.map(rule => projectionRow(rule, config));
+    const rows = inputRules.map(rule => projectionRow(rule));
     const inputSha256 = sha256Text(canonicalJson(inputRules));
     const projectionSha256 = sha256Text(canonicalJson(rows));
     const metadata = {

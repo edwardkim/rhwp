@@ -98,12 +98,12 @@ test('output allowlist, language and ruleId order match the canonical registry',
   }
 });
 
-test('Rust projections retain one source boundary and emit allocation-free match lookups', () => {
+test('all projections retain one source boundary and Rust emits allocation-free match lookups', () => {
   const registry = readRegistry();
   const bundle = buildProjectionBundle(registry);
   const rustOutputs = bundle.outputs.filter(output => output.language === 'rust');
 
-  for (const output of rustOutputs) {
+  for (const output of bundle.outputs) {
     const inputRules = registry.rules.filter(rule => (
       rule.projections[0].id === output.projectionId
     ));
@@ -112,13 +112,12 @@ test('Rust projections retain one source boundary and emit allocation-free match
       inputRules.map(rule => rule.evidence.sourceBoundaryIds[0]),
     );
     assert.equal(inputRules.every(rule => rule.evidence.sourceBoundaryIds.length === 1), true);
+  }
+
+  for (const output of rustOutputs) {
     assert.match(output.content, /pub\(crate\) fn find_font_rule_layout_/);
     assert.match(output.content, /match (?:source_face|\(source_boundary_id, source_face\))/);
     assert.doesNotMatch(output.content, /\.iter\(\)/);
-  }
-
-  for (const output of bundle.outputs.filter(output => output.language === 'typescript')) {
-    assert.equal(output.rows.some(row => 'sourceBoundaryId' in row), false);
   }
 });
 
