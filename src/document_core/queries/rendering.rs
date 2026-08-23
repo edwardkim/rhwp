@@ -2612,46 +2612,6 @@ impl DocumentCore {
         Ok(format!("{{\"ok\":true,\"pageCount\":{}}}", page_count))
     }
 
-    /// [#5769 후속2] 지정 구역들에 각자 다른 old SectionDef 를 일괄 재적용한다 —
-    /// `SetSectionPropsAllCommand.undo` 가 쓴다.
-    ///
-    /// items_json: `[{"idx":N,"def":{...}},...]`. 구역별 setter 를 N 번 부르면 전체
-    /// 재조판도 N 번 반복되는 성능 회귀가 생기므로(gpt 3차 리뷰), 적용은 루프하되
-    /// 재구성·재페이지네이션은 `set_section_def_all_native` 과 같이 마지막 한 번만
-    /// 한다. passthrough 무효화는 항목별 `apply_section_def_json` 이 소유한다.
-    /// 하나라도 어긋나면 아무것도 적용하지 않고 거절한다 — 부분 복원은 undo 도중의
-    /// 문서 오염이다.
-    pub fn apply_section_defs_bulk_native(&mut self, items_json: &str) -> Result<String, HwpError> {
-        let items: Vec<serde_json::Value> = serde_json::from_str(items_json)
-            .map_err(|e| HwpError::RenderError(format!("items JSON 파싱 실패: {}", e)))?;
-
-        // 1차 — 전수 검증(범위·def 존재).
-        for item in &items {
-            let idx = item["idx"]
-                .as_u64()
-                .ok_or_else(|| HwpError::RenderError("items 항목에 idx 가 없다".to_string()))?
-                as usize;
-            if item["def"].is_null() {
-                return Err(HwpError::RenderError(
-                    "items 항목에 def 가 없다".to_string(),
-                ));
-            }
-            if idx >= self.document.sections.len() {
-                return Err(HwpError::RenderError(format!("구역 {} 범위 초과", idx)));
-            }
-        }
-
-        // 2차 — 적용(항목별 passthrough 무효화 동반).
-        let applied = items.len();
-        for item in &items {
-            let idx = item["idx"].as_u64().expect("1차에서 검증됨") as usize;
-            let def = item["def"].clone().to_string();
-            self.apply_section_def_json(idx, &def)?;
-        }
-        self.recompose_and_paginate();
-        Ok(format!("{{\"ok\":true,\"applied\":{}}}", applied))
-    }
-
     /// 구역의 쪽 테두리/배경 설정을 JSON으로 반환한다.
     pub fn get_page_border_fill_native(&self, section_idx: usize) -> Result<String, HwpError> {
         use crate::document_core::helpers::{border_line_type_to_u8_val, color_ref_to_css};

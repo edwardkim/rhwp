@@ -2391,11 +2391,12 @@ export class SetSectionPropsAllCommand implements EditCommand {
       throw new Error(`${this.type} undo 불가 — 살아있는 raw 캡처가 없다`);
     }
     const captureIds = this.captureIds;
-    // old 일괄 재적용(재조판 1회 — 구역별 setter 반복의 성능 회귀 차단, gpt 3차
-    // 리뷰) → 캡처 복원. 순서는 캡처와 동일하게 유지한다.
-    wasm.applySectionDefsBulk(
-      JSON.stringify(this.sections.map((s) => ({ idx: s.idx, def: s.before }))),
-    );
+    // old 재적용(raw 재무효화) → 캡처 복원. 순서는 캡처와 동일하게 유지한다.
+    // [측결 2026-08-23] bulk 네이티브 없이 구역별 setter 루프 — 실문서 구역 수
+    // (통상 ≤5)에서 전체 재조판 반복 비용은 서브밀리초라 별도 API 가 필요 없다.
+    for (const s of this.sections) {
+      wasm.setSectionDef(s.idx, s.before);
+    }
     for (const c of captureIds) {
       wasm.restoreSectionRaw(c.id);
     }
