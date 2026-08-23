@@ -82,3 +82,28 @@ Stage D — **게이트**: `issue_5959_cell_borderfill_inverse_convergence.rs` �
 Rust 응답 확장+신규 네이티브 2건(~200줄), TS 커맨드+배선(~150줄), 게이트 .rs+e2e 가드.
 followup2(section-all)급 — 단, Stage C 가 serializer 계약(#2555)과 맞닿으므로
 구현 전 이 문서 기준으로 착수 승인을 받는다.
+
+## 구현 결과 (2026-08-24, 브랜치 feat/5959-cell-borderfill-inverse)
+
+설계안 A~D 전부 착수·완료:
+
+- Stage A: 두 setter 의 응답 확장 — changes[{cellIdx,beforeId,afterId}] +
+  borderFillLenBefore + docInfoDirtyBefore(zone 은 zoneBeforeId). 이웃은
+  id 이동이 있던 셀만 기록(update_neighbor_borders 반환 확장).
+- Stage B: apply_cell_border_fill_ids_native(직접 id 대입, 전수 검증 후 적용,
+  zone null=제거) + wasm 바인딩 applyCellBorderFillIds.
+- Stage C: remove_border_fill_tails_native(fromLen 까지 꼬리 절단, 완전 절단 시
+  dirtyWas 로 원복) + 바인딩 removeBorderFillTails.
+- Stage D: 게이트 tests/cases/issue_5959_cell_borderfill_inverse_convergence.rs
+  (셀 경로·zone 경로 각각 apply->undo->export 가 baseline export 와 바이트 동일 +
+  스타일 테이블 길이 원복), 소스 가드 rhwp-studio/tests/
+  issue-5959-cell-borderfill-inverse.test.ts 6종.
+- TS: SetCellBorderFillCommand + 다이얼로그 배선 전환, table-props-undo 가드를
+  새 계약으로 갱신, 신규 네이티브 둘 MUTATING_METHODS 등재.
+
+### 실측
+
+- 수렴 게이트 2/2 통과 — apply->undo 후 export 가 baseline export 와 바이트 완전
+  동일(스타일 테이블 길이 원복 포함). 표본: 수출입 현황 .hwp 본문 표.
+- npm test 1076 pass / 0 fail(신규 가드 6종 포함, 구 가드 1건 새 계약 갱신).
+- clippy clean / cargo fmt --check 통과.
