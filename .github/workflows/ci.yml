@@ -924,6 +924,7 @@ jobs:
           python3 -m unittest scripts/tests/test_proptest_roundtrip_workflow.py
           python3 -m unittest scripts/tests/test_adapter_diff_workflow.py
           python3 -m unittest scripts/tests/test_llm_verifier_workflow.py
+          python3 -m unittest scripts/tests/test_undo_depth_e2e_workflow.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
 
       - name: Validate gym scorer contracts
@@ -1243,6 +1244,35 @@ jobs:
 
       - name: Run Studio unit tests
         run: npm --prefix rhwp-studio run test
+
+      - name: Install headless Chrome
+        working-directory: rhwp-studio
+        run: |
+          chrome_path="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
+          if [ -z "$chrome_path" ]; then
+            chrome_install_output="$(./node_modules/.bin/browsers install chrome@stable --path "$HOME/.cache/puppeteer" --format '{{path}}' 2>&1)" || {
+              printf '%s\n' "$chrome_install_output" >&2
+              exit 1
+            }
+            chrome_path="$(printf '%s\n' "$chrome_install_output" | tail -n 1)"
+          fi
+          if [ ! -f "$chrome_path" ]; then
+            chrome_path="$(find "$HOME/.cache/puppeteer" -type f \( -name chrome -o -name chrome-headless-shell \) | sort | tail -n 1)"
+          fi
+          if [ -z "$chrome_path" ] || [ ! -f "$chrome_path" ]; then
+            echo "Chrome executable not found under $HOME/.cache/puppeteer" >&2
+            exit 1
+          fi
+          echo "CHROME_PATH=$chrome_path" >> "$GITHUB_ENV"
+          echo "PUPPETEER_EXECUTABLE_PATH=$chrome_path" >> "$GITHUB_ENV"
+
+      # [#5959] 스냅샷 예산 축출 회귀 게이트(#5769) — 실 wasm 과 실 브라우저를
+      # 구동해야 하므로 스텁 wasm 을 쓰는 unit 모드가 아닌 package 모드에서만 단다.
+      - name: Run undo depth measurement gate (#5769)
+        working-directory: rhwp-studio
+        env:
+          VITE_PORT: '7700'
+        run: npm run e2e:undo-depth
 
       - name: Build Studio
         run: npm --prefix rhwp-studio run build
