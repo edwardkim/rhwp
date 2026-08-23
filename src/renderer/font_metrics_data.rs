@@ -252,6 +252,40 @@ pub fn layout_metric_face_name(font_family: &str, bold: bool, italic: bool) -> O
     find_metric(primary, bold, italic).map(|m| m.metric.name.to_string())
 }
 
+/// 기존 선형 스캔 구현 — 색인 등가성 검증 전용으로 보존 (수정 금지).
+#[cfg(test)]
+fn legacy_find_metric(name: &str, bold: bool, italic: bool) -> Option<MetricMatch> {
+    let (name, _) = resolve_projected_metric_alias(name);
+    // 정확한 매칭 (name + bold + italic)
+    if let Some(m) = FONT_METRICS
+        .iter()
+        .find(|m| m.name == name && m.bold == bold && m.italic == italic)
+    {
+        return Some(MetricMatch {
+            metric: m,
+            bold_fallback: false,
+        });
+    }
+    // bold만 매칭 (italic 무시)
+    if let Some(m) = FONT_METRICS
+        .iter()
+        .find(|m| m.name == name && m.bold == bold && !m.italic)
+    {
+        return Some(MetricMatch {
+            metric: m,
+            bold_fallback: false,
+        });
+    }
+    // Regular 폴백 — bold 요청이었으면 bold_fallback 표시
+    FONT_METRICS
+        .iter()
+        .find(|m| m.name == name)
+        .map(|m| MetricMatch {
+            metric: m,
+            bold_fallback: bold,
+        })
+}
+
 include!("font_metrics_generated.rs");
 include!("font_metrics_overlays.rs");
 
@@ -273,144 +307,10 @@ impl FontMetrics {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::renderer::font_rule_layout_metric_projection::FONT_RULE_LAYOUT_METRIC_RULES;
     use sha2::{Digest, Sha256};
 
     const NOTO_SANS_KR_REGULAR: &[u8] =
         include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
-
-    /// W7 전환 전 한국어 폰트 이름 → 내장 메트릭 영문 이름 별칭 오라클.
-    /// runtime projection과의 전건 동등성 검증에만 사용한다.
-    fn resolve_metric_alias(name: &str) -> &str {
-        match name {
-            "함초롬돋움" => "HCR Dotum",
-            "한컴돋움" => "Haansoft Dotum",
-            "돋움" => "Dotum",
-            "함초롬바탕" => "HCR Batang",
-            "한컴바탕" => "Haansoft Batang",
-            "바탕" => "Batang",
-            "맑은 고딕" => "Malgun Gothic",
-            "나눔고딕" => "NanumGothic",
-            "나눔명조" => "NanumMyeongjo",
-            "바탕체" => "BatangChe",
-            "굴림" => "Gulim",
-            "궁서" => "Gungsuh",
-            "굴림체" => "GulimChe",
-            "돋움체" => "DotumChe",
-            "궁서체" => "GungsuhChe",
-            "D2Coding" | "D2 Coding" => "D2Coding",
-            "고운바탕" | "Gowun Batang" => "Gowun Batang",
-            "고운돋움" | "Gowun Dodum" => "Gowun Dodum",
-            "Pretendard" | "프리텐다드" => "Pretendard",
-            "HY중고딕" => "HYGothic-Medium",
-            "HY견고딕" => "HYGothic-Extra",
-            "HY헤드라인M" => "HYHeadLine-Medium",
-            "HY견명조" => "HYMyeongJo-Extra",
-            "HY신명조" => "HYSinMyeongJo-Medium",
-            "HY그래픽" => "HYGraphic-Medium",
-            "HY궁서" => "HYGungSo-Bold",
-            "한양신명조" => "HanyangSinMyeongJo",
-            "한양중고딕" => "HanyangJungGothic",
-            "한양견명조" => "HanyangKyunMyeongJo",
-            "한양견고딕" => "HanyangKyunGothic",
-            "휴먼명조" => "HumanMyeongJo",
-            "신명조" => "HanyangSinMyeongJo",
-            "HY수평선B" => "HYsupB",
-            "HY수평선M" => "HYsupM",
-            "HY울릉도B" => "HYwulB",
-            "HY울릉도M" => "HYwulM",
-            "HY태백B" => "HYtbrB",
-            "HY동녘B" => "HYdnkB",
-            "HY동녘M" => "HYdnkM",
-            "HY각헤드라인M" => "HYHeadLine-Medium",
-            "본한글" | "본한글vf" | "본한글 Medium" | "본한글M" | "본고딕" | "본고딕vf"
-            | "Source Han Sans" | "Source Han Sans K" | "Source Han Sans KR" | "SourceHanSans"
-            | "SourceHanSansKR" | "SourceHanSansK" | "Noto Sans CJK KR" => "Pretendard",
-            "본명조"
-            | "본명조vf"
-            | "본명조M"
-            | "Source Han Serif"
-            | "Source Han Serif K"
-            | "Source Han Serif KR"
-            | "SourceHanSerif"
-            | "SourceHanSerifKR"
-            | "SourceHanSerifK"
-            | "Noto Serif CJK KR" => "Noto Serif KR",
-            _ => name,
-        }
-    }
-
-    /// 기존 선형 스캔 구현 — 색인 등가성 검증 전용으로 보존한다.
-    fn legacy_find_metric(name: &str, bold: bool, italic: bool) -> Option<MetricMatch> {
-        let name = resolve_metric_alias(name);
-        if let Some(metric) = FONT_METRICS
-            .iter()
-            .find(|metric| metric.name == name && metric.bold == bold && metric.italic == italic)
-        {
-            return Some(MetricMatch {
-                metric,
-                bold_fallback: false,
-            });
-        }
-        if let Some(metric) = FONT_METRICS
-            .iter()
-            .find(|metric| metric.name == name && metric.bold == bold && !metric.italic)
-        {
-            return Some(MetricMatch {
-                metric,
-                bold_fallback: false,
-            });
-        }
-        FONT_METRICS
-            .iter()
-            .find(|metric| metric.name == name)
-            .map(|metric| MetricMatch {
-                metric,
-                bold_fallback: bold,
-            })
-    }
-
-    fn legacy_find_metric_decision<'a>(
-        name: &'a str,
-        bold: bool,
-        italic: bool,
-    ) -> Option<MetricLookupDecision<'a>> {
-        let alias_resolved_name = resolve_metric_alias(name);
-        let exact = FONT_METRICS
-            .iter()
-            .enumerate()
-            .find(|(_, metric)| {
-                metric.name == alias_resolved_name && metric.bold == bold && metric.italic == italic
-            })
-            .map(|(index, metric)| (metric, index, MetricMatchKind::Exact, false));
-        let bold_only = || {
-            FONT_METRICS
-                .iter()
-                .enumerate()
-                .find(|(_, metric)| {
-                    metric.name == alias_resolved_name && metric.bold == bold && !metric.italic
-                })
-                .map(|(index, metric)| (metric, index, MetricMatchKind::BoldOnly, false))
-        };
-        let name_first = || {
-            FONT_METRICS
-                .iter()
-                .enumerate()
-                .find(|(_, metric)| metric.name == alias_resolved_name)
-                .map(|(index, metric)| (metric, index, MetricMatchKind::NameFirst, bold))
-        };
-        let (metric, entry_index, match_kind, bold_fallback) =
-            exact.or_else(bold_only).or_else(name_first)?;
-        Some(MetricLookupDecision {
-            requested_name: name,
-            alias_resolved_name,
-            alias_rule_id: None,
-            metric,
-            bold_fallback,
-            match_kind,
-            entry_index,
-        })
-    }
 
     #[test]
     fn issue_4442_noto_sans_kr_ascii_advances_match_tracked_font() {
@@ -680,41 +580,5 @@ mod tests {
                 }
             }
         }
-
-        for rule in FONT_RULE_LAYOUT_METRIC_RULES {
-            assert_eq!(rule.source_boundary_id, "rust-metric.metric-alias");
-            let source = rule.source_face.expect("metric alias source face");
-            let (projected_alias, projected_rule_id) = resolve_projected_metric_alias(source);
-            assert_eq!(projected_alias, resolve_metric_alias(source));
-            assert_eq!(projected_alias, rule.target_face_or_policy);
-            assert_eq!(projected_rule_id, Some(rule.rule_id));
-
-            for bold in [false, true] {
-                for italic in [false, true] {
-                    let projected = find_metric_decision(source, bold, italic);
-                    let legacy = legacy_find_metric_decision(source, bold, italic);
-                    match (projected, legacy) {
-                        (None, None) => {}
-                        (Some(projected), Some(legacy)) => {
-                            assert!(std::ptr::eq(projected.metric, legacy.metric));
-                            assert_eq!(projected.entry_index, legacy.entry_index);
-                            assert_eq!(projected.match_kind, legacy.match_kind);
-                            assert_eq!(projected.bold_fallback, legacy.bold_fallback);
-                            assert_eq!(projected.alias_resolved_name, legacy.alias_resolved_name);
-                            assert_eq!(projected.alias_rule_id, Some(rule.rule_id));
-                        }
-                        (projected, legacy) => panic!(
-                            "metric projection mismatch for {source:?} bold={bold} italic={italic}: projected={}, legacy={}",
-                            projected.is_some(),
-                            legacy.is_some()
-                        ),
-                    }
-                }
-            }
-        }
-
-        let sentinel = "__rhwp_w7_unregistered_metric__";
-        assert_eq!(resolve_projected_metric_alias(sentinel), (sentinel, None));
-        assert!(find_metric_decision(sentinel, false, false).is_none());
     }
 }

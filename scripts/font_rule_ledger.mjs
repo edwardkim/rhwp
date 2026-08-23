@@ -448,6 +448,79 @@ export function collectSourceCandidates(manifest, repositoryRoot, sourceCommit) 
   };
 }
 
+// Frozen W1 source candidates are historical evidence after an ownership migration.
+// Validate their selectors and digests against the recorded Git object instead of
+// requiring the old symbols to remain in the current checkout.
+export function verifyHistoricalSourceCandidates(snapshot, repositoryRoot = SCRIPT_ROOT) {
+  const errors = [];
+  if (!isObject(snapshot)
+      || snapshot.kind !== 'font-rule-source-candidates'
+      || !Array.isArray(snapshot.candidates)
+      || !Array.isArray(snapshot.ruleCandidates)) {
+    return ['historical source candidate snapshot is invalid'];
+  }
+  if (typeof snapshot.sourceCommit !== 'string'
+      || !/^[0-9a-f]{40}$/.test(snapshot.sourceCommit)) {
+    return ['historical sourceCommit must be a lowercase 40-character Git SHA'];
+  }
+
+  const root = path.resolve(repositoryRoot);
+  const blobs = new Map();
+  const blob = relativePath => {
+    if (path.isAbsolute(relativePath)
+        || path.resolve(root, relativePath) === root
+        || !path.resolve(root, relativePath).startsWith(`${root}${path.sep}`)) {
+      throw new Error(`historical source path escapes repository: ${relativePath}`);
+    }
+    if (!blobs.has(relativePath)) {
+      blobs.set(relativePath, execFileSync(
+        'git',
+        ['cat-file', 'blob', `${snapshot.sourceCommit}:${relativePath}`],
+        { cwd: root, maxBuffer: 32 * 1024 * 1024 },
+      ));
+    }
+    return blobs.get(relativePath);
+  };
+
+  const boundaries = new Map();
+  for (const boundary of snapshot.candidates) {
+    const boundaryId = `${boundary.ownerId}.${boundary.selectorId}`;
+    boundaries.set(boundaryId, boundary);
+    try {
+      const bytes = blob(boundary.path);
+      const digest = crypto.createHash('sha256').update(bytes).digest('hex');
+      if (digest !== boundary.sourceSha256) {
+        errors.push(`${boundaryId}: historical source digest mismatch`);
+      }
+      const matches = countLiteral(bytes.toString('utf8'), boundary.selector);
+      if (matches < boundary.minMatches || matches !== boundary.matchCount) {
+        errors.push(
+          `${boundaryId}: historical selector matched ${matches}, `
+          + `recorded ${boundary.matchCount} with minimum ${boundary.minMatches}`,
+        );
+      }
+    } catch (error) {
+      errors.push(`${boundaryId}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  for (const candidate of snapshot.ruleCandidates) {
+    const boundary = boundaries.get(candidate.sourceBoundaryId);
+    if (!boundary) {
+      errors.push(`${candidate.candidateId}: historical source boundary is missing`);
+      continue;
+    }
+    const location = candidate.sourceLocation;
+    if (location?.path !== boundary.path
+        || location?.symbol !== boundary.symbol
+        || location?.selector !== boundary.selector
+        || location?.sourceSha256 !== boundary.sourceSha256) {
+      errors.push(`${candidate.candidateId}: historical source location differs from boundary`);
+    }
+  }
+  return errors;
+}
+
 function extractBalanced(source, startAt, openCharacter, closeCharacter) {
   const openAt = source.indexOf(openCharacter, startAt);
   if (openAt === -1) throw new Error(`opening ${openCharacter} not found`);

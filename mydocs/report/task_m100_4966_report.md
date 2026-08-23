@@ -1,20 +1,21 @@
 ---
 kind: report
-status: completed
+status: active
 canonical: mydocs/plans/task_m100_4966.md
 last_verified: 2026-08-23
 ---
 
 # Task M100 #4966 최종 보고서 — W7 canonical font registry
 
-## 1. 완료 판정
+## 1. 현재 판정
 
 W7의 구현 목표는 충족됐다. 서로 다른 backend가 같은 face를 선택하도록 강제하지 않고, Rust layout,
 Canvas2D paint, webfont supply와 CanvasKit SFNT의 유한 규칙을 하나의 canonical registry에서 각 결정면에
 맞는 정적 projection으로 생성한다. 전환 전후 선택 결과·순서·metric·renderer output은 동일하다.
 
-현재 결과는 **Stage W7 완료·메인테이너 최종 결과 승인**이다. GitHub push·PR·issue close는 아직
-수행하지 않았으며 각각 후속 승인 게이트로 남아 있다.
+최초 로컬 결과와 메인테이너 승인은 있었지만, PR #5950의 CI가 PR-base unit-tier 정책 위반을 발견해
+**완료 판정을 철회하고 Stage W7-R 영향도 재감사로 되돌렸다**. 최신 CI, self-review, merge와 issue
+close는 근본 정정과 전체 재검증 뒤의 후속 승인 게이트다.
 
 ## 2. 단계별 산출
 
@@ -65,7 +66,27 @@ generator가 `src/schema_registry.rs`의 단일 상수를 참조하도록 정정
 그 뒤 `upstream/devel@343ed2c013606319b6418dd8c637c5e04047e304`을 병합하고 늘어난 integration
 source를 포함한 8,201건을 다시 전건 통과했다. 이 보정은 semantic projection hash를 바꾸지 않았다.
 
-세부 명령·환경·hash는 [Stage W7-6 보고서](../working/task_m100_4966_w7_stage6.md)에 있다.
+PR #5950의 최초 head `4a7c0f431`에서 CI lint가 기존 함수에 새로 붙인 `#[cfg(test)]`를 신규 test
+support 6개로 판정했다. 로컬 사전 검사가 `--base-ref upstream/devel` 없이 현재 inventory만 확인해 이를
+놓쳤다. 수기 함수를 runtime scope로 되돌려 통과시키는 최초 대응은 가드레일 우회이므로 커밋하지 않고
+철회했다.
+
+재감사에서 W1 `sourceCommit`의 Rust 파일 2개는 snapshot SHA-256과 일치했고, W1 Rust 후보 238개와
+canonical registry 사이의 candidate ID·boundary·조건·source·target·order 불일치는 0건이었다. 반면
+W3 계약은 W6의 metric table selector가 고정 배열에서 composed view로 이동한 sourceLocation 변화만으로
+600개 후보를 의미 변경으로 오판했고, W7의 77개 검증 묶음은 이 W3 계약을 포함하지 않았다. 따라서 현재
+증거는 font 선택 회귀보다 **역사 계측과 현재 authority의 수명주기 혼합 및 교차 단계 검증 누락**을
+원인으로 가리킨다.
+
+기존 전체 검증의 명령·환경·hash는 [Stage W7-6 보고서](../working/task_m100_4966_w7_stage6.md), 재감사와
+근본 정정 절차는 [Stage W7-R1 기록](../working/task_m100_4966_w7_rework_stage1.md)에 있다.
+
+W7-R2·R3 정정에서는 W1의 30개 boundary·1,352개 candidate를 현재 checkout이 아니라 기록된 Git blob에서
+검증하도록 바꿨고, 600개 metric source 이동을 의미 회귀와 분리했다. 제품 source의 전환 전 수기 mapping과
+oracle helper는 제거하고 `tests/cases/issue_4966_font_rule_projection.rs`에서 public trace 171개
+(직접 관측 137·우선순위 shadow 34)와 metric alias 67개를 검증한다. focused 결과는 W1·W2·W3·W6·W7
+87/87, source Rust 35/35, integration 2/2, PR-base unit-tier와 Clippy 통과다. 세부 내용은
+[Stage W7-R2·R3 기록](../working/task_m100_4966_w7_rework_stage2.md)에 있다.
 
 ## 5. 운영 경계
 

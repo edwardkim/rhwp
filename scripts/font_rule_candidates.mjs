@@ -707,7 +707,11 @@ export function collectRuleCandidates(sourceBoundarySnapshot, repositoryRoot = R
   return snapshot;
 }
 
-export function validateCandidateSnapshot(snapshot, repositoryRoot = REPOSITORY_ROOT) {
+export function validateCandidateSnapshot(
+  snapshot,
+  repositoryRoot = REPOSITORY_ROOT,
+  { verifyCurrentSources = true } = {},
+) {
   const errors = [];
   if (!isObject(snapshot)
       || snapshot.kind !== 'font-rule-source-candidates'
@@ -766,7 +770,7 @@ export function validateCandidateSnapshot(snapshot, repositoryRoot = REPOSITORY_
     const sourcePath = path.resolve(repositoryRoot, candidateEntry.sourceLocation.path);
     if (!sourcePath.startsWith(`${path.resolve(repositoryRoot)}${path.sep}`)) {
       errors.push(`${candidateEntry.candidateId}: source path escapes repository`);
-    } else {
+    } else if (verifyCurrentSources) {
       const digest = currentDigests.get(sourcePath) ?? sha256File(sourcePath);
       currentDigests.set(sourcePath, digest);
       if (digest !== candidateEntry.sourceLocation.sourceSha256) {

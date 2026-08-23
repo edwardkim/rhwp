@@ -46,6 +46,24 @@ src/renderer/font_rule_projections/layout_name.rs: "1.0"
 산출물을 수동 편집하지 않고 generator template과 중앙 schema registry를 고쳤다. focused 계약을 다시
 통과한 뒤 전체 nextest를 처음부터 재실행해 8,174/8,174를 확인했다.
 
+### 3.1 PR-base unit-tier 실패와 완료 판정 철회
+
+PR #5950 최초 head `4a7c0f431`의 CI lint는 `font_metrics_data.rs` 2개와 `style_resolver.rs` 4개를
+PR base에 없던 `#[cfg(test)]` support item으로 거부했다. 로컬에서는 base 인자 없는 inventory check만
+실행해 현재 정책 수치만 확인했고 PR-base 증가를 놓쳤다.
+
+기존 hand-written mapping 함수의 `#[cfg(test)]`를 제거해 runtime scope로 되돌리는 최초 대응은 exact
+base check를 통과했지만, canonical registry 이관 뒤에도 중복 수기 표를 제품 source에 남기는 우회였다.
+메인테이너 지적 뒤 해당 미커밋 source 변경을 철회하고 완료 판정을 취소했다.
+
+추가 재감사에서 unit-tier는 정책대로 신규 support 6개를 정확히 탐지한 것으로 판정했다. 별도로 W3의
+current-source 의미 유지 계약 10건 중 1건이 실패했다. 600개 metric candidate의 ID·metric tuple은
+유지됐지만 `sourceLocation.selector`가 W6의 고정 배열에서 composed view로 이동한 것을 의미 회귀로 센
+계측 오판이다. W7 검증 목록이 W3 계약을 포함하지 않았기 때문에 Stage W7-6의 77/77만으로 이 누락을
+발견하지 못했다. 근본 정정은 [Stage W7-R 계획](../plans/task_m100_4966.md#stage-w7-r--pr-ci-실패-원인-귀속과-소유권-이전-완결)으로
+분리한다. 후속 구현과 focused 검증 결과는 [Stage W7-R2·R3 기록](task_m100_4966_w7_rework_stage2.md)에
+있다.
+
 ## 4. 검증 결과
 
 ### 4.1 schema·계보·생성

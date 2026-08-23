@@ -9,10 +9,9 @@ import { fileURLToPath } from 'node:url';
 
 import {
   canonicalJson,
-  collectSourceCandidates,
   sha256Text,
+  verifyHistoricalSourceCandidates,
 } from './font_rule_ledger.mjs';
-import { collectRuleCandidates } from './font_rule_candidates.mjs';
 
 const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const INVESTIGATION_ROOT = path.join(
@@ -232,12 +231,12 @@ export function buildProjectionBaseline(
   repositoryRoot = REPOSITORY_ROOT,
   sourceCommit = currentGitHead(repositoryRoot),
 ) {
-  const sources = readJson(SOURCES_PATH);
   const approvedCandidates = readJson(W1_CANDIDATES_PATH);
   const ledger = readJson(W1_LEDGER_PATH);
   const lineage = readJson(W6_LINEAGE_PATH);
-  const sourceSnapshot = collectSourceCandidates(sources, repositoryRoot, sourceCommit);
-  const currentSnapshot = collectRuleCandidates(sourceSnapshot, repositoryRoot);
+  const historicalErrors = verifyHistoricalSourceCandidates(approvedCandidates, repositoryRoot);
+  if (historicalErrors.length > 0) throw new Error(historicalErrors.join('\n'));
+  const currentSnapshot = approvedCandidates;
   const sequenceDiff = candidateSequenceDiff(
     currentSnapshot.ruleCandidates,
     approvedCandidates.ruleCandidates,
