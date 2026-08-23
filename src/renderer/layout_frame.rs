@@ -265,6 +265,77 @@ impl LayoutFrame {
         true
     }
 
+    /// Admit stored rows only when this frame carves the same ordered slots.
+    /// A mismatch restores the exact entry checkpoint so strict reflow can run.
+    pub(crate) fn try_admit_stored_rows(
+        &mut self,
+        line_segs: &[LineSeg],
+        metrics_for: impl Fn(&[LineSeg]) -> Option<FrameRowMetrics>,
+    ) -> bool {
+        let checkpoint = self.clone();
+        let admitted = (|| -> Option<()> {
+            if line_segs.is_empty()
+                || line_segs
+                    .windows(2)
+                    .any(|pair| pair[0].text_start > pair[1].text_start)
+            {
+                return None;
+            }
+
+            let mut consumed = 0usize;
+            while consumed < line_segs.len() {
+                if !line_segs[consumed].is_first_segment() {
+                    return None;
+                }
+                let count = line_segs[consumed..]
+                    .iter()
+                    .position(LineSeg::is_last_segment)?
+                    + 1;
+                let stored_row = &line_segs[consumed..consumed + count];
+                let metrics = metrics_for(stored_row)?;
+                if metrics.line_height <= 0 {
+                    return None;
+                }
+
+                let candidate_top = self.top;
+                let intervals = self.carve(metrics.line_height).to_vec();
+                if self.top != candidate_top
+                    || intervals.len() != count
+                    || intervals.iter().zip(stored_row).any(|(expected, stored)| {
+                        expected.start != stored.column_start
+                            || stored
+                                .column_start
+                                .checked_add(stored.segment_width)
+                                .is_none_or(|end| expected.end != end)
+                    })
+                {
+                    return None;
+                }
+
+                let segments = intervals
+                    .iter()
+                    .zip(stored_row)
+                    .map(|(expected, stored)| {
+                        RowSegment::new(
+                            stored.text_start..stored.text_start,
+                            expected.clone(),
+                            stored.tag,
+                        )
+                    })
+                    .collect();
+                self.commit_carved_row(metrics, segments)?;
+                consumed += count;
+            }
+            Some(())
+        })()
+        .is_some();
+
+        if !admitted {
+            self.restore_checkpoint(checkpoint);
+        }
+        admitted
+    }
+
     /// Commit the row carved at the current frame position.
     ///
     /// The caller supplies exactly one text result for every interval returned
@@ -364,6 +435,17 @@ mod tests {
         }
     }
 
+    fn echo_metrics(row: &[LineSeg]) -> Option<FrameRowMetrics> {
+        let first = row.first()?;
+        Some(FrameRowMetrics {
+            vertical_pos: first.vertical_pos,
+            line_height: first.line_height,
+            text_height: first.text_height,
+            baseline_distance: first.baseline_distance,
+            line_spacing: first.line_spacing,
+        })
+    }
+
     fn frame(horizontal: Range<i32>, top: i32, exclusions: Vec<FrameExclusion>) -> LayoutFrame {
         LayoutFrame {
             horizontal,
@@ -374,6 +456,29 @@ mod tests {
             minimum_width: 1,
             rows: Vec::new(),
         }
+    }
+
+    #[test]
+    fn stored_rows_are_admitted_only_on_exact_frame_geometry() {
+        let original = frame(0..100, 200, Vec::new());
+        let row = |segment_width| {
+            [LineSeg {
+                vertical_pos: 200,
+                line_height: 400,
+                segment_width,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }]
+        };
+
+        let mut mismatch = original.clone();
+        assert!(!mismatch.try_admit_stored_rows(&row(98), echo_metrics));
+        assert_eq!(mismatch, original, "a miss must roll back the whole frame");
+
+        let mut exact = original;
+        assert!(exact.try_admit_stored_rows(&row(100), echo_metrics));
+        assert_eq!(exact.row_count(), 1);
+        assert_eq!(exact.top, 600);
     }
 
     #[test]
