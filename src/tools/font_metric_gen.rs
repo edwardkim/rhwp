@@ -16,9 +16,13 @@ use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 const GENERATOR_SOURCE_BYTES: &[u8] = include_bytes!("font_metric_gen.rs");
+static STAGED_OUTPUT_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 // ─── TTF 바이너리 파싱 헬퍼 ───
 
@@ -939,6 +943,58 @@ fn validate_relative_path(path: &str, field: &str) -> Result<PathBuf, String> {
     Ok(parsed)
 }
 
+fn checkout_root_from(start: &Path) -> Option<PathBuf> {
+    start.ancestors().find_map(|candidate| {
+        let is_checkout = candidate.join("Cargo.toml").is_file()
+            && candidate
+                .join("src/renderer/font_metrics_data.rs")
+                .is_file()
+            && candidate.join("src/tools/font_metric_gen.rs").is_file();
+        is_checkout.then(|| candidate.to_path_buf())
+    })
+}
+
+fn find_repository_root() -> Result<PathBuf, String> {
+    let current = env::current_dir()
+        .and_then(|path| path.canonicalize())
+        .map_err(|error| format!("현재 경로 확인 실패: {}", error))?;
+    if let Some(root) = checkout_root_from(&current) {
+        return Ok(root);
+    }
+
+    // checkout 밖에서 checkout 내부의 binary를 직접 실행하는 경우만 실행 파일 경로를 fallback으로 쓴다.
+    // checkout/worktree 내부에서는 공유 target binary보다 현재 worktree를 우선해 계보가 섞이지 않게 한다.
+    let executable = env::current_exe()
+        .and_then(|path| path.canonicalize())
+        .map_err(|error| format!("실행 파일 경로 확인 실패: {}", error))?;
+    checkout_root_from(&executable).ok_or_else(|| {
+        "rhwp checkout root를 찾을 수 없음; checkout 내부에서 실행하거나 checkout의 binary를 사용해야 함"
+            .to_string()
+    })
+}
+
+fn resolve_checkout_file(
+    repository_root: &Path,
+    path: &str,
+    field: &str,
+) -> Result<PathBuf, String> {
+    let relative = validate_relative_path(path, field)?;
+    let resolved = repository_root
+        .join(relative)
+        .canonicalize()
+        .map_err(|error| format!("{}({}): {}", field, path, error))?;
+    if !resolved.starts_with(repository_root) {
+        return Err(format!(
+            "{}는 symlink를 포함해 checkout 밖을 가리킬 수 없음: {}",
+            field, path
+        ));
+    }
+    if !resolved.is_file() {
+        return Err(format!("{}는 파일이어야 함: {}", field, path));
+    }
+    Ok(resolved)
+}
+
 fn validate_evidence(declaration: &EvidenceDeclaration, field: &str) -> Result<(), String> {
     match declaration.status.as_str() {
         "verified" => {
@@ -1026,11 +1082,17 @@ fn load_generation_plan(path: &Path) -> Result<(GenerationPlan, String), String>
     Ok((plan, sha256_bytes(&bytes)))
 }
 
-fn evidence_metadata(declaration: &EvidenceDeclaration) -> Result<EvidenceMetadata, String> {
+fn evidence_metadata(
+    repository_root: &Path,
+    declaration: &EvidenceDeclaration,
+    field: &str,
+) -> Result<EvidenceMetadata, String> {
     let evidence_sha256 = declaration
         .evidence_path
         .as_deref()
-        .map(Path::new)
+        .map(|path| resolve_checkout_file(repository_root, path, field))
+        .transpose()?
+        .as_deref()
         .map(sha256_file)
         .transpose()?;
     Ok(EvidenceMetadata {
@@ -1074,28 +1136,34 @@ fn protected_output_name(path: &Path) -> bool {
     )
 }
 
-fn resolved_output_path(path: &Path) -> Result<PathBuf, String> {
-    if path.exists() {
-        return path
+fn resolved_output_path(repository_root: &Path, path: &Path) -> Result<PathBuf, String> {
+    let anchored = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        repository_root.join(path)
+    };
+    if anchored.exists() {
+        return anchored
             .canonicalize()
-            .map_err(|error| format!("{}: {}", path.display(), error));
+            .map_err(|error| format!("{}: {}", anchored.display(), error));
     }
-    let parent = path.parent().unwrap_or_else(|| Path::new("."));
-    let file_name = path
+    let parent = anchored.parent().unwrap_or(repository_root);
+    let file_name = anchored
         .file_name()
-        .ok_or_else(|| format!("출력 파일명이 없음: {}", path.display()))?;
+        .ok_or_else(|| format!("출력 파일명이 없음: {}", anchored.display()))?;
     parent
         .canonicalize()
         .map(|canonical_parent| canonical_parent.join(file_name))
         .map_err(|error| format!("{}: {}", parent.display(), error))
 }
 
-fn validate_output_paths(generated: &Path, metadata: &Path) -> Result<(), String> {
-    let generated_resolved = resolved_output_path(generated)?;
-    let metadata_resolved = resolved_output_path(metadata)?;
-    let repository_root = env::current_dir()
-        .and_then(|path| path.canonicalize())
-        .map_err(|error| format!("현재 checkout 경로 확인 실패: {}", error))?;
+fn validate_output_paths(
+    repository_root: &Path,
+    generated: &Path,
+    metadata: &Path,
+) -> Result<(PathBuf, PathBuf), String> {
+    let generated_resolved = resolved_output_path(repository_root, generated)?;
+    let metadata_resolved = resolved_output_path(repository_root, metadata)?;
     let protected_paths = [
         repository_root.join("src/renderer/font_metrics_data.rs"),
         repository_root.join("src/renderer/font_metrics_overlays.rs"),
@@ -1119,15 +1187,123 @@ fn validate_output_paths(generated: &Path, metadata: &Path) -> Result<(), String
     if metadata.extension().and_then(|ext| ext.to_str()) != Some("json") {
         return Err("metadata output 확장자는 .json이어야 함".to_string());
     }
-    Ok(())
+    Ok((generated_resolved, metadata_resolved))
 }
 
-fn is_canonical_generated_output(path: &Path) -> Result<bool, String> {
-    let repository_root = env::current_dir()
-        .and_then(|current| current.canonicalize())
-        .map_err(|error| format!("현재 checkout 경로 확인 실패: {}", error))?;
-    Ok(resolved_output_path(path)?
-        == repository_root.join("src/renderer/font_metrics_generated.rs"))
+fn is_canonical_generated_output(repository_root: &Path, path: &Path) -> bool {
+    path == repository_root.join("src/renderer/font_metrics_generated.rs")
+}
+
+struct StagedOutput {
+    path: Option<PathBuf>,
+    target: PathBuf,
+}
+
+impl StagedOutput {
+    fn new(target: &Path, bytes: &[u8]) -> Result<Self, String> {
+        let parent = target
+            .parent()
+            .ok_or_else(|| format!("출력 부모 경로가 없음: {}", target.display()))?;
+        let file_name = target
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or_else(|| format!("출력 파일명이 올바른 UTF-8이 아님: {}", target.display()))?;
+
+        for _ in 0..100 {
+            let sequence = STAGED_OUTPUT_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+            let staged_path = parent.join(format!(
+                ".{}.{}.{}.rhwp-stage",
+                file_name,
+                std::process::id(),
+                sequence
+            ));
+            match OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&staged_path)
+            {
+                Ok(mut file) => {
+                    if let Err(error) = file.write_all(bytes).and_then(|_| file.sync_all()) {
+                        let _ = fs::remove_file(&staged_path);
+                        return Err(format!("{}: {}", staged_path.display(), error));
+                    }
+                    return Ok(Self {
+                        path: Some(staged_path),
+                        target: target.to_path_buf(),
+                    });
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+                Err(error) => return Err(format!("{}: {}", staged_path.display(), error)),
+            }
+        }
+        Err(format!(
+            "고유한 sibling staging 파일을 만들 수 없음: {}",
+            target.display()
+        ))
+    }
+
+    fn commit(mut self) -> Result<(), String> {
+        let staged_path = self.path.take().expect("staged path는 commit 전 존재");
+        if !self.target.exists() {
+            return match fs::rename(&staged_path, &self.target) {
+                Ok(()) => Ok(()),
+                Err(error) => {
+                    self.path = Some(staged_path);
+                    Err(format!("{}: {}", self.target.display(), error))
+                }
+            };
+        }
+        if !self.target.is_file() {
+            self.path = Some(staged_path);
+            return Err(format!(
+                "출력 대상은 기존 일반 파일이거나 새 파일이어야 함: {}",
+                self.target.display()
+            ));
+        }
+
+        let file_name = self
+            .target
+            .file_name()
+            .and_then(|name| name.to_str())
+            .expect("StagedOutput::new에서 UTF-8 파일명 검증됨");
+        let parent = self.target.parent().expect("target 부모는 검증됨");
+        let sequence = STAGED_OUTPUT_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let backup_path = parent.join(format!(
+            ".{}.{}.{}.rhwp-backup",
+            file_name,
+            std::process::id(),
+            sequence
+        ));
+        if let Err(error) = fs::rename(&self.target, &backup_path) {
+            self.path = Some(staged_path);
+            return Err(format!("{} backup 실패: {}", self.target.display(), error));
+        }
+        if let Err(error) = fs::rename(&staged_path, &self.target) {
+            self.path = Some(staged_path);
+            let restore = fs::rename(&backup_path, &self.target);
+            return match restore {
+                Ok(()) => Err(format!("{} commit 실패: {}", self.target.display(), error)),
+                Err(restore_error) => Err(format!(
+                    "{} commit 실패: {}; backup 복원 실패({}): {}",
+                    self.target.display(),
+                    error,
+                    backup_path.display(),
+                    restore_error
+                )),
+            };
+        }
+        fs::remove_file(&backup_path)
+            .map_err(|error| format!("{} backup 정리 실패: {}", backup_path.display(), error))?;
+        Ok(())
+    }
+}
+
+impl Drop for StagedOutput {
+    fn drop(&mut self) {
+        if let Some(path) = self.path.as_deref() {
+            let _ = fs::remove_file(path);
+        }
+    }
 }
 
 fn generate_from_plan(
@@ -1135,9 +1311,16 @@ fn generate_from_plan(
     generated_output: &Path,
     metadata_output: &Path,
 ) -> Result<(), String> {
-    validate_output_paths(generated_output, metadata_output)?;
-    let (plan, input_plan_sha256) = load_generation_plan(plan_path)?;
-    if is_canonical_generated_output(generated_output)?
+    let repository_root = find_repository_root()?;
+    let plan_path = if plan_path.is_absolute() {
+        plan_path.to_path_buf()
+    } else {
+        repository_root.join(plan_path)
+    };
+    let (generated_output, metadata_output) =
+        validate_output_paths(&repository_root, generated_output, metadata_output)?;
+    let (plan, input_plan_sha256) = load_generation_plan(&plan_path)?;
+    if is_canonical_generated_output(&repository_root, &generated_output)
         && plan.target_region != "historical-generated-0-594"
     {
         return Err(
@@ -1146,8 +1329,13 @@ fn generate_from_plan(
         );
     }
     let mut metrics = Vec::with_capacity(plan.inputs.len());
-    for input in &plan.inputs {
-        let metric = parse_ttf_face(Path::new(&input.path), input.face_index)?;
+    for (index, input) in plan.inputs.iter().enumerate() {
+        let input_path = resolve_checkout_file(
+            &repository_root,
+            &input.path,
+            &format!("inputs[{}].path", index),
+        )?;
+        let metric = parse_ttf_face(&input_path, input.face_index)?;
         if metric.family_name != input.expected_identity.family_name
             || metric.bold != input.expected_identity.bold
             || metric.italic != input.expected_identity.italic
@@ -1173,7 +1361,8 @@ fn generate_from_plan(
         .inputs
         .iter()
         .zip(metrics.iter())
-        .map(|(input, metric)| {
+        .enumerate()
+        .map(|(index, (input, metric))| {
             Ok(GeneratedEntryMetadata {
                 order: input.order,
                 source_path: input.path.clone(),
@@ -1184,8 +1373,16 @@ fn generate_from_plan(
                 italic: metric.italic,
                 units_per_em: metric.em_size,
                 naming_records: metric.naming_records.clone(),
-                license: evidence_metadata(&input.license)?,
-                provenance: evidence_metadata(&input.provenance)?,
+                license: evidence_metadata(
+                    &repository_root,
+                    &input.license,
+                    &format!("inputs[{}].license.evidencePath", index),
+                )?,
+                provenance: evidence_metadata(
+                    &repository_root,
+                    &input.provenance,
+                    &format!("inputs[{}].provenance.evidencePath", index),
+                )?,
                 hangul_compression: hangul_compression_metadata(metric),
             })
         })
@@ -1206,11 +1403,12 @@ fn generate_from_plan(
         .map_err(|error| format!("metadata 직렬화 실패: {}", error))?
         + "\n";
 
-    // 모든 입력 파싱과 산출물 직렬화를 끝낸 뒤에만 쓰기 시작한다.
-    fs::write(generated_output, generated_source)
-        .map_err(|error| format!("{}: {}", generated_output.display(), error))?;
-    fs::write(metadata_output, metadata)
-        .map_err(|error| format!("{}: {}", metadata_output.display(), error))?;
+    // 두 산출물을 sibling 임시 파일에 완성한 뒤 metadata를 먼저 반영한다.
+    // generated 파일이 마지막 commit point이므로 metadata 실패 시 기존 generated는 불변이다.
+    let generated_staged = StagedOutput::new(&generated_output, generated_source.as_bytes())?;
+    let metadata_staged = StagedOutput::new(&metadata_output, metadata.as_bytes())?;
+    metadata_staged.commit()?;
+    generated_staged.commit()?;
     Ok(())
 }
 

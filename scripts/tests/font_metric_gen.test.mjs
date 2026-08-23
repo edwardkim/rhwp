@@ -21,14 +21,15 @@ const CORE = path.join(ROOT, 'src', 'renderer', 'font_metrics_data.rs');
 const OVERLAY = path.join(ROOT, 'src', 'renderer', 'font_metrics_overlays.rs');
 const GENERATED = path.join(ROOT, 'src', 'renderer', 'font_metrics_generated.rs');
 let temporaryDirectory;
+let checkoutScratchDirectory;
 
 function sha256File(file) {
   return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 }
 
-function runGenerator(arguments_, expectedStatus = 0) {
+function runGenerator(arguments_, expectedStatus = 0, cwd = ROOT) {
   const result = spawnSync(BINARY, arguments_, {
-    cwd: ROOT,
+    cwd,
     encoding: 'utf8',
   });
   assert.equal(
@@ -40,16 +41,26 @@ function runGenerator(arguments_, expectedStatus = 0) {
 }
 
 before(() => {
-  const build = spawnSync('cargo', ['build', '--bin', 'font-metric-gen'], {
-    cwd: ROOT,
-    encoding: 'utf8',
-  });
+  const build = spawnSync(
+    'cargo',
+    ['build', '--locked', '--bin', 'font-metric-gen'],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+    },
+  );
   assert.equal(build.status, 0, `cargo build failed\n${build.stdout}\n${build.stderr}`);
   temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'rhwp-font-metric-gen-'));
+  checkoutScratchDirectory = fs.mkdtempSync(
+    path.join(ROOT, 'target', 'rhwp-font-metric-gen-'),
+  );
 });
 
 after(() => {
   if (temporaryDirectory) fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+  if (checkoutScratchDirectory) {
+    fs.rmSync(checkoutScratchDirectory, { recursive: true, force: true });
+  }
 });
 
 test('tracked public canary emits deterministic generated data and provenance metadata', () => {
@@ -58,14 +69,18 @@ test('tracked public canary emits deterministic generated data and provenance me
   const secondSource = path.join(temporaryDirectory, 'second-generated.rs');
   const secondMetadata = path.join(temporaryDirectory, 'second-metadata.json');
 
-  runGenerator([
-    '--plan',
-    PLAN,
-    '--generated-output',
-    firstSource,
-    '--metadata-output',
-    firstMetadata,
-  ]);
+  runGenerator(
+    [
+      '--plan',
+      PLAN,
+      '--generated-output',
+      firstSource,
+      '--metadata-output',
+      firstMetadata,
+    ],
+    0,
+    path.join(ROOT, 'src'),
+  );
   runGenerator([
     '--plan',
     PLAN,
@@ -127,6 +142,7 @@ test('generator refuses ownership of core and measured overlay outputs', () => {
   const incompleteGeneratedAttempt = runGenerator(
     ['--plan', PLAN, '--generated-output', GENERATED, '--metadata-output', metadata],
     1,
+    path.dirname(ROOT),
   );
   assert.match(incompleteGeneratedAttempt.stderr, /595-entry historical-generated/);
 
@@ -134,6 +150,51 @@ test('generator refuses ownership of core and measured overlay outputs', () => {
   assert.equal(sha256File(OVERLAY), overlayBefore);
   assert.equal(sha256File(GENERATED), generatedBefore);
   assert.equal(fs.existsSync(metadata), false);
+});
+
+test('generation rejects checkout-relative symlinks that escape the checkout', () => {
+  const plan = JSON.parse(fs.readFileSync(PLAN, 'utf8'));
+  const originalInput = path.join(ROOT, plan.inputs[0].path);
+  const externalFont = path.join(temporaryDirectory, 'external-font.ttf');
+  const escapedLink = path.join(checkoutScratchDirectory, 'escaped-font.ttf');
+  const escapedPlan = path.join(temporaryDirectory, 'escaped-plan.json');
+  const source = path.join(temporaryDirectory, 'escaped-generated.rs');
+  const metadata = path.join(temporaryDirectory, 'escaped-metadata.json');
+
+  fs.copyFileSync(originalInput, externalFont);
+  fs.symlinkSync(externalFont, escapedLink);
+  plan.inputs[0].path = path.relative(ROOT, escapedLink).replaceAll(path.sep, '/');
+  fs.writeFileSync(escapedPlan, `${JSON.stringify(plan, null, 2)}\n`);
+
+  const attempt = runGenerator(
+    [
+      '--plan',
+      escapedPlan,
+      '--generated-output',
+      source,
+      '--metadata-output',
+      metadata,
+    ],
+    1,
+  );
+  assert.match(attempt.stderr, /checkout 밖/);
+  assert.equal(fs.existsSync(source), false);
+  assert.equal(fs.existsSync(metadata), false);
+});
+
+test('metadata commit failure preserves the existing generated output', () => {
+  const source = path.join(temporaryDirectory, 'atomic-generated.rs');
+  const metadata = path.join(temporaryDirectory, 'blocked.json');
+  const sentinel = '// existing generated output\n';
+  fs.writeFileSync(source, sentinel);
+  fs.mkdirSync(metadata);
+
+  const attempt = runGenerator(
+    ['--plan', PLAN, '--generated-output', source, '--metadata-output', metadata],
+    1,
+  );
+  assert.match(attempt.stderr, /기존 일반 파일이거나 새 파일/);
+  assert.equal(fs.readFileSync(source, 'utf8'), sentinel);
 });
 
 test('generation rejects implicit directory reconstruction and non-contiguous order', () => {
