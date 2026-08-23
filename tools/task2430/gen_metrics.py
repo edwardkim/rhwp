@@ -54,7 +54,24 @@ HY_OF = {
     "HumanMyeongJo": "HYSinMyeongJo-Medium",
 }
 
-data = open(SRC, encoding="utf-8").read()
+def load_metric_source(src, seen=None):
+    """단일 legacy source 또는 #4964 include fragment를 같은 논리 source로 읽는다."""
+    seen = set() if seen is None else seen
+    src = os.path.abspath(src)
+    if src in seen:
+        raise RuntimeError(f"font metric include cycle: {src}")
+    seen.add(src)
+    text = open(src, encoding="utf-8").read()
+    fragments = [text]
+    for included in re.findall(r'include!\("(font_metrics_[^"]+\.rs)"\);', text):
+        included_path = os.path.join(os.path.dirname(src), included)
+        if not os.path.isfile(included_path):
+            raise RuntimeError(f"font metric include 없음: {included_path}")
+        fragments.append(load_metric_source(included_path, seen))
+    return "\n".join(fragments)
+
+
+data = load_metric_source(SRC)
 
 def hy_latin0_of(metric_name):
     m = re.search(r'name: "%s",.*?latin_ranges: &(\w+)_LATIN_RANGES' % re.escape(metric_name), data, re.S)

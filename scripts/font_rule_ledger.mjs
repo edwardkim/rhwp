@@ -7,6 +7,8 @@ import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
+import { analyzeMetricRepository } from './font_metric_lineage.mjs';
+
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SCHEMA_PATH = path.join(
   SCRIPT_ROOT,
@@ -688,7 +690,22 @@ export function buildBaseline(candidates, repositoryRoot = SCRIPT_ROOT) {
 
   const metricsPath = path.join(repositoryRoot, 'src', 'renderer', 'font_metrics_data.rs');
   const metricsSource = fs.readFileSync(metricsPath, 'utf8');
-  const entries = parseMetricEntries(metricsSource);
+  const metricAnalysis = analyzeMetricRepository(repositoryRoot);
+  const latinRangeCounts = new Map(
+    metricAnalysis.entryLatinRangeCounts.map(row => [row.index, row.count]),
+  );
+  const entries = metricAnalysis.composition.map(entry => ({
+    index: entry.index,
+    name: entry.name,
+    bold: entry.bold,
+    italic: entry.italic,
+    emSize: entry.emSize,
+    latinRanges: {
+      symbol: entry.latinRangesSymbol,
+      count: latinRangeCounts.get(entry.index),
+    },
+    hangulSymbol: entry.hangulSymbol,
+  }));
   const aliases = parseMetricAliases(metricsSource);
   const { knownInputs, projection } = metricProjection(entries, aliases);
   const styleCounts = {

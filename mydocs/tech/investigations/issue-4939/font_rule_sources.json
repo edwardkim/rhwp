@@ -62,8 +62,8 @@
           "path": "src/renderer/font_metrics_data.rs",
           "symbol": "FONT_METRICS",
           "matchMode": "literal",
-          "selector": "static FONT_METRICS: [FontMetric;",
-          "extractionMode": "rust-static-array",
+          "selector": "static FONT_METRICS: FontMetrics",
+          "extractionMode": "rust-composed-metric-view",
           "minMatches": 1
         },
         {
