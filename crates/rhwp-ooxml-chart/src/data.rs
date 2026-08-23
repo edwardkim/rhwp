@@ -40,6 +40,12 @@ pub struct ChartPoint {
     /// 구간의 바이트 그대로. **이스케이프를 해제하지 않는다** — 이 문자열을 되쓰면
     /// 바이트가 원본과 같아야 한다는 것이 최소 diff 의 기준이다.
     pub text: String,
+    /// [#5652] `<c:pt …>…</c:pt>` **요소** 구간 `[start, end)`.
+    ///
+    /// `span` 이 텍스트를 고치는 주소라면 이것은 점을 **지우는** 주소다. 빈 값
+    /// `<c:v/>` 도 요소 구간은 있다 — 지울 수는 있고 고칠 수만 없다. `c:pt` 없이
+    /// 오는 `c:tx` 리터럴 `<c:tx><c:v>이름</c:v></c:tx>` 의 `c:v` 는 점이 아니라 `None`.
+    pub element_span: Option<Range<usize>>,
 }
 
 /// 계열의 가로축 표현.
@@ -49,6 +55,52 @@ pub enum SeriesAxis {
     Category,
     /// `c:xVal` + `c:yVal` (분산형) — X 도 수치이고 편집 대상이다.
     Scatter,
+}
+
+/// [#5652] 계열을 둘러싼 plot 요소(`c:barChart`·`c:pieChart`…)의 종류.
+///
+/// B2 의 종류별 가드(원형은 계열 1 고정, 주식형은 계열 수 고정)가 쓴다. 렌더용 손실
+/// 파서(`OoxmlChart::parse`)를 두 번째로 불러 얻지 않고 **같은 스캔에서** 기록한다 —
+/// 같은 바이트를 두 파서로 읽으면 콤보 차트 같은 경계에서 두 판정이 갈릴 수 있다.
+/// 콤보(plot 요소가 둘 이상)에서는 계열마다 자기 plot 이 실린다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PlotKind {
+    Bar,
+    Line,
+    Area,
+    Pie,
+    OfPie,
+    Doughnut,
+    Radar,
+    Scatter,
+    Bubble,
+    Stock,
+    /// `…Chart` 로 끝나지만 위 목록에 없는 plot 요소(`surfaceChart` 등).
+    Other,
+}
+
+/// [#5652] `c:ptCount` 선언 — 속성값 텍스트 구간과 선언값.
+///
+/// 구조 편집은 점 개수를 바꾸므로 이 값을 **항상 재계산**해 되쓴다(#5447 실측 — 28/28
+/// 한컴 불변식). 구간은 속성값 텍스트(`val="2"` 의 `2`)만이라 치환이 최소 diff 다.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PtCount {
+    pub span: Range<usize>,
+    pub value: u32,
+}
+
+/// [#5652] 라벨/값 블록(`c:cat`·`c:val`·`c:xVal`·`c:yVal`) 하나의 구조 좌표.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BlockShape {
+    /// `<c:val>…</c:val>` 블록 전체 구간.
+    pub element_span: Range<usize>,
+    /// 캐시/리터럴 안의 `c:ptCount`. 없거나(리터럴에서 생략 가능) 속성값 구간을 확정하지
+    /// 못하면 `None` — 그 블록의 개수 변경은 거부된다(fail-closed).
+    pub pt_count: Option<PtCount>,
+    /// 점 삽입 앵커 — 마지막 `c:pt` 요소 끝. 점이 없으면 `c:ptCount` 요소 끝, 그것도
+    /// 없으면 캐시 닫는 태그 직전. 캐시(`numCache`/`strCache`/`numLit`/`strLit`)가 아예
+    /// 없으면(다층 `multiLvlStrCache` 포함) `None`.
+    pub insert_at: Option<usize>,
 }
 
 /// 계열 하나.
@@ -67,6 +119,23 @@ pub struct ChartSeries {
     /// 는 캐시 목록에 없어 층 라벨이 실리지 않는다(`labels` 빈 목록). 라벨을 행
     /// 머리로 쓰는 CSV 층이 이 표지를 보고 거부한다. 값 편집 자체는 막지 않는다.
     pub labels_multi_level: bool,
+    /// [#5652] 둘러싼 plot 요소의 종류.
+    pub plot: PlotKind,
+    /// [#5652] `c:ser` qname 의 접두어(코퍼스 `"c:"`, 접두어 없으면 `""`). 스캐너는
+    /// 접두어를 고정하지 않으므로 새 요소(`<c:pt>`)를 합성할 때 이것을 쓴다.
+    pub prefix: String,
+    /// [#5652] `<c:ser>…</c:ser>` 요소 구간 — 계열 복제 템플릿이자 삭제 주소.
+    pub element_span: Range<usize>,
+    /// [#5652] 계열명 `c:tx` 캐시 텍스트 구간. 이름이 없으면 `None`.
+    pub name_span: Option<Range<usize>>,
+    /// [#5652] `c:idx val` 속성값 구간 — 복제 계열의 채번 자리.
+    pub idx_span: Option<Range<usize>>,
+    /// [#5652] `c:order val` 속성값 구간.
+    pub order_span: Option<Range<usize>>,
+    /// [#5652] 라벨 블록(`c:cat`/`c:xVal`) 좌표. 블록이 없으면 `None`.
+    pub labels_shape: Option<BlockShape>,
+    /// [#5652] 값 블록(`c:val`/`c:yVal`) 좌표.
+    pub values_shape: Option<BlockShape>,
 }
 
 /// 차트 하나의 편집 가능한 데이터 지도.
@@ -133,7 +202,17 @@ impl std::fmt::Display for ChartScanError {
 ///
 /// 같은 이유로 `c:dLbls`/`c:dLbl` 도 뺀다. 데이터 라벨의 `c:tx` 가 계열명으로 새어
 /// 들어올 수 있는데, B1 은 라벨을 읽지도 쓰지도 않는다.
-const SKIPPED_SUBTREES: &[&[u8]] = &[b"extLst", b"dLbls", b"dLbl", b"trendline", b"errBars"];
+///
+/// [#5652] `c:dPt`(점별 서식)도 뺀다 — 안에 `c:idx` 가 있어 계열의 `c:idx` 구간을 덮을 수
+/// 있다(코퍼스 0건, 방어).
+const SKIPPED_SUBTREES: &[&[u8]] = &[
+    b"extLst",
+    b"dLbls",
+    b"dLbl",
+    b"trendline",
+    b"errBars",
+    b"dPt",
+];
 
 fn is_skipped(local: &[u8]) -> bool {
     SKIPPED_SUBTREES.contains(&local)
@@ -155,6 +234,14 @@ enum Section {
     YVal,
 }
 
+/// [#5652] 열려 있는 라벨/값 블록의 좌표를 모으는 중간 상태.
+struct BlockBuild {
+    /// 블록 여는 태그 `<` 오프셋.
+    start: usize,
+    pt_count: Option<PtCount>,
+    insert_at: Option<usize>,
+}
+
 /// 스캔 진행 상태.
 struct ScanState {
     series: Vec<ChartSeries>,
@@ -168,6 +255,16 @@ struct ScanState {
     v_start: Option<usize>,
     /// 현재 계열의 라벨이 다층 참조에서 왔는가.
     multi_level: bool,
+    /// [#5652] 지금 둘러싼 plot 요소의 종류. plot 요소 밖이면 `Other`.
+    plot: PlotKind,
+    /// [#5652] 현재 `<c:ser>` 여는 태그 `<` 오프셋.
+    ser_start: usize,
+    /// [#5652] 현재 `<c:pt>` 여는 태그 `<` 오프셋과, 그 시점의 블록 점 개수.
+    /// 개수를 함께 두는 이유 — `c:v` 없는 `c:pt` 는 점을 싣지 않으므로 `End(pt)` 에서
+    /// "이 pt 가 점을 실었는가"를 개수 증가로 판정해 엉뚱한 앞 점에 구간을 달지 않는다.
+    pt_start: Option<(usize, usize)>,
+    /// [#5652] 열려 있는 라벨/값 블록.
+    block: Option<BlockBuild>,
 }
 
 impl ScanState {
@@ -180,6 +277,41 @@ impl ScanState {
             cur_idx: None,
             v_start: None,
             multi_level: false,
+            plot: PlotKind::Other,
+            ser_start: 0,
+            pt_start: None,
+            block: None,
+        }
+    }
+
+    /// 현재 섹션이 라벨/값 블록(`c:tx` 가 아닌 쪽)인가.
+    fn in_block(&self) -> bool {
+        matches!(
+            self.section,
+            Section::Cat | Section::Val | Section::XVal | Section::YVal
+        )
+    }
+
+    /// 현재 블록의 점 목록 길이 — `pt_start` 의 개수 판정용.
+    fn block_len(&self) -> usize {
+        let Some(cur) = self.cur.as_ref() else {
+            return 0;
+        };
+        match self.section {
+            Section::Cat | Section::XVal => cur.labels.len(),
+            Section::Val | Section::YVal => cur.values.len(),
+            _ => 0,
+        }
+    }
+
+    /// 현재 블록의 마지막 점.
+    fn last_point_mut(&mut self) -> Option<&mut ChartPoint> {
+        let section = self.section;
+        let cur = self.cur.as_mut()?;
+        match section {
+            Section::Cat | Section::XVal => cur.labels.last_mut(),
+            Section::Val | Section::YVal => cur.values.last_mut(),
+            _ => None,
         }
     }
 
@@ -213,7 +345,96 @@ fn pt_index(e: &BytesStart) -> u32 {
     0
 }
 
-fn open_section(state: &mut ScanState, local: &[u8]) {
+/// [#5652] plot 요소 local name → 종류. plot 요소가 아니면 `None`.
+///
+/// `…Chart` 로 끝나는 요소만 plot 이다 — `chart`·`chartSpace` 는 아니다(대소문자 구분).
+fn plot_kind(local: &[u8]) -> Option<PlotKind> {
+    Some(match local {
+        b"barChart" | b"bar3DChart" => PlotKind::Bar,
+        b"lineChart" | b"line3DChart" => PlotKind::Line,
+        b"areaChart" | b"area3DChart" => PlotKind::Area,
+        b"pieChart" | b"pie3DChart" => PlotKind::Pie,
+        b"ofPieChart" => PlotKind::OfPie,
+        b"doughnutChart" => PlotKind::Doughnut,
+        b"radarChart" => PlotKind::Radar,
+        b"scatterChart" => PlotKind::Scatter,
+        b"bubbleChart" => PlotKind::Bubble,
+        b"stockChart" => PlotKind::Stock,
+        other if other.ends_with(b"Chart") => PlotKind::Other,
+        _ => return None,
+    })
+}
+
+/// [#5652] qname 에서 local name 을 뺀 접두어 — `c:ser` → `"c:"`, `ser` → `""`.
+fn prefix_of(e: &BytesStart) -> String {
+    let qname = e.name();
+    let qname = qname.as_ref();
+    let local_len = e.local_name().as_ref().len();
+    String::from_utf8_lossy(&qname[..qname.len().saturating_sub(local_len)]).into_owned()
+}
+
+/// [#5652] 속성 `name` 의 값 — quick_xml 이 파싱한 그대로(이스케이프 해제 없음).
+fn attr_value(e: &BytesStart, name: &[u8]) -> Option<String> {
+    e.attributes()
+        .flatten()
+        .find(|attr| attr.key.local_name().as_ref() == name)
+        .map(|attr| String::from_utf8_lossy(&attr.value).into_owned())
+}
+
+/// [#5652] 태그 하나의 raw 구간(`tag`, `<` 부터 `>` 까지) 안에서 속성 `name` 의 값 텍스트
+/// 구간을 찾는다. 반환 구간은 `tag` 기준 상대 오프셋이다.
+///
+/// quick_xml 은 속성의 바이트 오프셋을 주지 않으므로 **그 태그 하나의 바이트 안에서만**
+/// 수동으로 찾는다(이벤트 경계 밖을 보지 않는다). 호출자는 찾은 구간을 다시 잘라
+/// [`attr_value`] 와 같은지 확인한다 — 다르면 구간을 버린다(fail-closed).
+fn attr_value_span_in_tag(tag: &str, name: &str) -> Option<Range<usize>> {
+    let bytes = tag.as_bytes();
+    let mut from = 0usize;
+    while let Some(found) = tag[from..].find(name) {
+        let start = from + found;
+        let after_name = start + name.len();
+        // 속성 이름은 공백 뒤에 오고(`<c:ptCount val=`), 뒤에는 `=` 가 온다.
+        let preceded_by_space = start > 0 && bytes[start - 1].is_ascii_whitespace();
+        let mut i = after_name;
+        while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+            i += 1;
+        }
+        if preceded_by_space && i < bytes.len() && bytes[i] == b'=' {
+            i += 1;
+            while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+                i += 1;
+            }
+            let quote = *bytes.get(i)?;
+            if quote != b'"' && quote != b'\'' {
+                return None;
+            }
+            let value_start = i + 1;
+            let value_len = tag[value_start..].find(quote as char)?;
+            return Some(value_start..value_start + value_len);
+        }
+        from = after_name;
+    }
+    None
+}
+
+/// [#5652] `Start`/`Empty` 이벤트 하나의 속성값 구간을 **입력 기준 절대 오프셋**으로 얻는다.
+///
+/// `tag_range` 는 그 이벤트의 raw 태그 구간(이터레이션 read 직전 위치 .. 직후 위치).
+/// 재슬라이스가 quick_xml 의 속성값과 다르면 `None`.
+fn attr_value_span(
+    text: &str,
+    tag_range: Range<usize>,
+    e: &BytesStart,
+    name: &str,
+) -> Option<(Range<usize>, String)> {
+    let value = attr_value(e, name.as_bytes())?;
+    let tag = text.get(tag_range.clone())?;
+    let rel = attr_value_span_in_tag(tag, name)?;
+    let abs = tag_range.start + rel.start..tag_range.start + rel.end;
+    (text.get(abs.clone())? == value).then_some((abs, value))
+}
+
+fn open_section(state: &mut ScanState, local: &[u8], pos_before: usize) {
     let section = match local {
         b"tx" => Section::Tx,
         b"cat" => Section::Cat,
@@ -230,6 +451,34 @@ fn open_section(state: &mut ScanState, local: &[u8]) {
                 cur.axis = SeriesAxis::Scatter;
             }
         }
+        // [#5652] 라벨/값 블록이면 구조 좌표 수집을 시작한다.
+        if state.in_block() {
+            state.block = Some(BlockBuild {
+                start: pos_before,
+                pt_count: None,
+                insert_at: None,
+            });
+        }
+    }
+}
+
+/// [#5652] 블록이 닫힐 때 모은 좌표를 계열에 싣는다.
+fn close_block(state: &mut ScanState, end: usize) {
+    let section = state.section;
+    let Some(build) = state.block.take() else {
+        return;
+    };
+    let shape = BlockShape {
+        element_span: build.start..end,
+        pt_count: build.pt_count,
+        insert_at: build.insert_at,
+    };
+    if let Some(cur) = state.cur.as_mut() {
+        match section {
+            Section::Cat | Section::XVal => cur.labels_shape = Some(shape),
+            Section::Val | Section::YVal => cur.values_shape = Some(shape),
+            _ => {}
+        }
     }
 }
 
@@ -241,6 +490,8 @@ fn push_point(state: &mut ScanState, point: ChartPoint) {
     match section {
         Section::Tx => {
             if cur.name.is_none() {
+                // [#5652] 구간도 함께 둔다 — 계열명 제자리 치환의 주소다.
+                cur.name_span = point.span;
                 cur.name = Some(point.text);
             }
         }
@@ -250,10 +501,51 @@ fn push_point(state: &mut ScanState, point: ChartPoint) {
     }
 }
 
+/// [#5652] 라벨/값 블록 캐시 안의 `c:ptCount` 를 기록한다 — 첫 것만, 캐시 밖(`c:tx`·다층)은 무시.
+fn note_pt_count(state: &mut ScanState, text: &str, tag_range: Range<usize>, e: &BytesStart) {
+    if !(state.in_cache && state.in_block() && state.cur.is_some()) {
+        return;
+    }
+    let Some(block) = state.block.as_mut() else {
+        return;
+    };
+    if block.pt_count.is_some() {
+        return;
+    }
+    // 구간을 못 잡거나 수치가 아니면 `None` 으로 둔다 — 그 블록의 개수 변경만 거부된다.
+    block.pt_count = attr_value_span(text, tag_range, e, "val").and_then(|(span, value)| {
+        value
+            .parse::<u32>()
+            .ok()
+            .map(|value| PtCount { span, value })
+    });
+}
+
+/// [#5652] 계열 직속 `c:idx`/`c:order` 의 속성값 구간 — 첫 것만, 블록·캐시 안은 무시.
+fn note_series_index(state: &mut ScanState, text: &str, tag_range: Range<usize>, e: &BytesStart) {
+    if state.section != Section::None || state.in_cache {
+        return;
+    }
+    let Some(cur) = state.cur.as_mut() else {
+        return;
+    };
+    let slot = match e.local_name().as_ref() {
+        b"idx" => &mut cur.idx_span,
+        b"order" => &mut cur.order_span,
+        _ => return,
+    };
+    if slot.is_none() {
+        *slot = attr_value_span(text, tag_range, e, "val").map(|(span, _)| span);
+    }
+}
+
 /// 차트 XML 을 훑어 계열별 값의 바이트 구간을 얻는다.
 ///
 /// 반환된 [`ChartPoint::span`] 은 **입력 `xml` 슬라이스 기준**이며
 /// `&xml[span] == text.as_bytes()` 가 항상 성립한다.
+///
+/// [#5652] 같은 스캔에서 구조 좌표(점·계열 요소 구간, `ptCount`, 삽입 앵커, 계열명·idx·order
+/// 구간, plot 종류)도 함께 기록한다 — 두 번 읽지 않는다(두 좌표계가 어긋날 수 있다).
 pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
     let text = std::str::from_utf8(xml).map_err(|_| ChartScanError::NotUtf8)?;
 
@@ -277,6 +569,8 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
             Ok(Event::Empty(_)) if skip_depth > 0 => {}
             Ok(Event::Start(ref e)) if is_skipped(e.local_name().as_ref()) => skip_depth = 1,
             Ok(Event::Start(ref e)) => {
+                // 이번 이벤트의 raw 태그 구간 — `<` 부터 `>` 까지. 속성값 구간은 이 안에서만 찾는다.
+                let tag_range = pos_before..reader.buffer_position() as usize;
                 match e.local_name().as_ref() {
                     b"ser" => {
                         state.cur = Some(ChartSeries {
@@ -285,70 +579,151 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
                             labels: Vec::new(),
                             values: Vec::new(),
                             labels_multi_level: false,
+                            plot: state.plot,
+                            prefix: prefix_of(e),
+                            element_span: pos_before..pos_before,
+                            name_span: None,
+                            idx_span: None,
+                            order_span: None,
+                            labels_shape: None,
+                            values_shape: None,
                         });
                         state.multi_level = false;
+                        state.ser_start = pos_before;
+                        state.block = None;
                     }
                     b"multiLvlStrRef" => state.multi_level = true,
                     b"numCache" | b"numLit" | b"strCache" | b"strLit" => state.in_cache = true,
-                    b"pt" => state.cur_idx = Some(pt_index(e)),
+                    b"pt" => {
+                        state.cur_idx = Some(pt_index(e));
+                        state.pt_start = Some((pos_before, state.block_len()));
+                    }
                     b"v" => {
                         if state.capturing() {
                             // 여는 태그 `<c:v>` 직후 = 텍스트 시작.
                             state.v_start = Some(reader.buffer_position() as usize);
                         }
                     }
-                    local => open_section(&mut state, local),
+                    // `<c:ptCount val="n"></c:ptCount>` 꼴(코퍼스 0건) — 빈 요소와 같이 다룬다.
+                    b"ptCount" => note_pt_count(&mut state, text, tag_range, e),
+                    b"idx" | b"order" => note_series_index(&mut state, text, tag_range, e),
+                    local => {
+                        if let Some(kind) = plot_kind(local) {
+                            state.plot = kind;
+                        } else {
+                            open_section(&mut state, local, pos_before);
+                        }
+                    }
                 }
             }
             Ok(Event::Empty(ref e)) => {
-                // 빈 요소 `<c:v/>` — 결측치다. 텍스트 구간이 없으니 구간 없이 싣는다.
-                // 읽기는 되고 그 점의 편집만 거부된다.
-                if e.local_name().as_ref() == b"v" && state.capturing() {
-                    let idx = state.cur_idx.unwrap_or(0);
-                    push_point(
-                        &mut state,
-                        ChartPoint {
-                            idx,
-                            span: None,
-                            text: String::new(),
-                        },
-                    );
-                }
-            }
-            Ok(Event::End(ref e)) => match e.local_name().as_ref() {
-                b"v" => {
-                    if let Some(start) = state.v_start.take() {
-                        // 닫는 태그 직전 = 텍스트 끝. 닫는 태그 길이를 계산하지 않는다.
-                        let span = start..pos_before;
+                let tag_range = pos_before..reader.buffer_position() as usize;
+                match e.local_name().as_ref() {
+                    // 빈 요소 `<c:v/>` — 결측치다. 텍스트 구간이 없으니 구간 없이 싣는다.
+                    // 읽기는 되고 그 점의 편집만 거부된다.
+                    b"v" if state.capturing() => {
                         let idx = state.cur_idx.unwrap_or(0);
-                        let body = text
-                            .get(span.clone())
-                            .map(str::to_string)
-                            .unwrap_or_default();
                         push_point(
                             &mut state,
                             ChartPoint {
                                 idx,
-                                span: Some(span),
-                                text: body,
+                                span: None,
+                                text: String::new(),
+                                element_span: None,
                             },
                         );
                     }
-                }
-                b"pt" => state.cur_idx = None,
-                b"numCache" | b"numLit" | b"strCache" | b"strLit" => state.in_cache = false,
-                b"tx" | b"cat" | b"val" | b"xVal" | b"yVal" => state.section = Section::None,
-                b"ser" => {
-                    if let Some(mut cur) = state.cur.take() {
-                        cur.labels_multi_level = state.multi_level;
-                        state.series.push(cur);
+                    b"ptCount" => {
+                        note_pt_count(&mut state, text, tag_range.clone(), e);
+                        // 점이 하나도 없으면 ptCount 요소 끝이 삽입 앵커다.
+                        if state.in_cache {
+                            if let Some(block) = state.block.as_mut() {
+                                block.insert_at = Some(tag_range.end);
+                            }
+                        }
                     }
-                    state.section = Section::None;
-                    state.in_cache = false;
-                    state.cur_idx = None;
+                    b"idx" | b"order" => note_series_index(&mut state, text, tag_range, e),
+                    _ => {}
                 }
-                _ => {}
-            },
+            }
+            Ok(Event::End(ref e)) => {
+                let end = reader.buffer_position() as usize;
+                match e.local_name().as_ref() {
+                    b"v" => {
+                        if let Some(start) = state.v_start.take() {
+                            // 닫는 태그 직전 = 텍스트 끝. 닫는 태그 길이를 계산하지 않는다.
+                            let span = start..pos_before;
+                            let idx = state.cur_idx.unwrap_or(0);
+                            let body = text
+                                .get(span.clone())
+                                .map(str::to_string)
+                                .unwrap_or_default();
+                            push_point(
+                                &mut state,
+                                ChartPoint {
+                                    idx,
+                                    span: Some(span),
+                                    text: body,
+                                    element_span: None,
+                                },
+                            );
+                        }
+                    }
+                    b"pt" => {
+                        state.cur_idx = None;
+                        if let Some((start, len_before)) = state.pt_start.take() {
+                            // 이 pt 가 점을 실었을 때만 마지막 점에 요소 구간을 단다.
+                            if state.in_block() && state.block_len() > len_before {
+                                if let Some(point) = state.last_point_mut() {
+                                    point.element_span = Some(start..end);
+                                }
+                            }
+                            // 캐시 안의 pt 요소 끝이 곧 다음 점의 삽입 앵커다.
+                            if state.in_cache {
+                                if let Some(block) = state.block.as_mut() {
+                                    block.insert_at = Some(end);
+                                }
+                            }
+                        }
+                    }
+                    b"ptCount" => {
+                        if state.in_cache {
+                            if let Some(block) = state.block.as_mut() {
+                                block.insert_at = Some(end);
+                            }
+                        }
+                    }
+                    b"numCache" | b"numLit" | b"strCache" | b"strLit" => {
+                        if state.in_cache {
+                            if let Some(block) = state.block.as_mut() {
+                                // 점도 ptCount 도 없는 빈 캐시 — 닫는 태그 직전.
+                                block.insert_at.get_or_insert(pos_before);
+                            }
+                        }
+                        state.in_cache = false;
+                    }
+                    b"tx" | b"cat" | b"val" | b"xVal" | b"yVal" => {
+                        close_block(&mut state, end);
+                        state.section = Section::None;
+                    }
+                    b"ser" => {
+                        if let Some(mut cur) = state.cur.take() {
+                            cur.labels_multi_level = state.multi_level;
+                            cur.element_span = state.ser_start..end;
+                            state.series.push(cur);
+                        }
+                        state.section = Section::None;
+                        state.in_cache = false;
+                        state.cur_idx = None;
+                        state.block = None;
+                    }
+                    local => {
+                        if plot_kind(local).is_some() {
+                            state.plot = PlotKind::Other;
+                        }
+                    }
+                }
+            }
             Ok(Event::Eof) => break,
             Err(e) => return Err(ChartScanError::Xml(e.to_string())),
             _ => {}

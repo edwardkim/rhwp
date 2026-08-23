@@ -46,11 +46,16 @@ fn scan_refusal(e: &ChartScanError) -> String {
 /// 바이트 동일성은 요구하지 않는다. OOXML은 확장 속성·요소 순서 같은 편집 밖 바이트가
 /// 다를 수 있으므로, B1이 주소로 삼는 계열/축/점의 `idx`와 텍스트만 비교한다. 이 계약이
 /// 깨진 문서는 어느 사본을 기준으로 고쳐도 다른 사본의 의미를 덮어쓸 수 있으므로 쓴다.
+///
+/// [#5652] 논리 필드만 명시 비교한다 — 구조 좌표(`span`·`element_span`·`*_shape`)는 ①②의
+/// 바이트 오프셋이라 같을 이유가 없고, `PartialEq` 파생을 쓰면 포맷 차이만으로 어긋난다.
+/// plot 종류는 종류별 가드의 입력이라 논리 필드로 본다.
 fn same_chart_data(left: &ChartData, right: &ChartData) -> bool {
     left.series.len() == right.series.len()
         && left.series.iter().zip(&right.series).all(|(left, right)| {
             left.name == right.name
                 && left.axis == right.axis
+                && left.plot == right.plot
                 && left.labels_multi_level == right.labels_multi_level
                 && left.labels.len() == right.labels.len()
                 && left.values.len() == right.values.len()

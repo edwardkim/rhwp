@@ -2592,3 +2592,128 @@ fn b2_judgment_assets_match_the_manifest() {
         assert_eq!(counted, 38, "{dir}: 판정 자산이 38건이 아니다");
     }
 }
+
+// ---------------------------------------------------------------------------
+// Stage 9 — B2 엔진 본구현 (#5652)
+// ---------------------------------------------------------------------------
+//
+// #5447 이 손으로 만든 변종을 한컴이 통과시켰고, 이제 같은 바이트를 **엔진이** 만든다.
+// S1 은 스캐너가 구조 좌표(점·계열 요소 구간, ptCount, 삽입 앵커, 계열명·idx·order 구간,
+// plot 종류)를 같은 스캔에서 기록하는 것이고, 합성 계약은
+// `tests/cases/ooxml_chart_structure_contract.rs` 가 고정한다. 여기서는 코퍼스 56건
+// 전건에 대해 그 좌표가 실제 바이트와 정합하는지 — 특히 **선언 ptCount 가 실제 점 수와
+// 같다**는 한컴 불변식(#5447 §3-2) — 를 잰다.
+
+/// [#5652 S1] 코퍼스 전건 — 구조 좌표가 입력 바이트로 되읽힌다.
+///
+/// `&xml[span]` 재슬라이스는 스캐너 자기충족이라(#4100 §9-2 오라클 공모 교훈) 모양
+/// 단언을 함께 둔다: 점 요소는 `<c:pt` 로 시작해 `</c:pt>` 로 끝나고, 계열 요소는
+/// `<c:ser>`…`</c:ser>`, ptCount 는 십진수 텍스트이며 그 값이 점 수와 같다.
+#[test]
+fn structure_spans_slice_back_across_the_corpus() {
+    use rhwp::ooxml_chart::data::PlotKind;
+
+    let mut points = 0usize;
+    let mut series_count = 0usize;
+    for (path, xml) in corpus_charts() {
+        let name = path.display();
+        let text = std::str::from_utf8(&xml).expect("UTF-8");
+        let data = scan_chart_values(&xml).unwrap_or_else(|e| panic!("{name}: {e:?}"));
+        for (si, series) in data.series.iter().enumerate() {
+            series_count += 1;
+            let ser = &text[series.element_span.clone()];
+            assert!(
+                ser.starts_with("<c:ser>") && ser.ends_with("</c:ser>"),
+                "{name} ser{si}: {ser:.40}"
+            );
+            assert_eq!(series.prefix, "c:", "{name} ser{si}");
+            assert_ne!(
+                series.plot,
+                PlotKind::Other,
+                "{name} ser{si}: plot 종류를 못 읽었다"
+            );
+            assert_eq!(
+                &text[series
+                    .idx_span
+                    .clone()
+                    .unwrap_or_else(|| panic!("{name} ser{si}: idx 구간"))],
+                si.to_string(),
+                "{name} ser{si}: c:idx 가 위치와 다르다"
+            );
+            assert_eq!(
+                &text[series
+                    .order_span
+                    .clone()
+                    .unwrap_or_else(|| panic!("{name} ser{si}: order 구간"))],
+                si.to_string(),
+                "{name} ser{si}: c:order 가 위치와 다르다"
+            );
+            match (&series.name, &series.name_span) {
+                (Some(n), Some(span)) => {
+                    assert_eq!(&text[span.clone()], n, "{name} ser{si}: 이름 구간")
+                }
+                (None, None) => {}
+                other => panic!("{name} ser{si}: 이름과 구간이 어긋난다 {other:?}"),
+            }
+
+            for (block, pts, shape) in [
+                ("labels", &series.labels, &series.labels_shape),
+                ("values", &series.values, &series.values_shape),
+            ] {
+                if pts.is_empty() && shape.is_none() {
+                    continue; // c:cat 이 없는 계열(실사용 문서에 있다 — samples/issue2006)
+                }
+                let shape = shape
+                    .as_ref()
+                    .unwrap_or_else(|| panic!("{name} ser{si} {block}: 블록 좌표 없음"));
+                let pt_count = shape
+                    .pt_count
+                    .as_ref()
+                    .unwrap_or_else(|| panic!("{name} ser{si} {block}: ptCount 없음"));
+                assert_eq!(
+                    pt_count.value as usize,
+                    pts.len(),
+                    "{name} ser{si} {block}: 선언 ptCount ≠ 실제 점 수 (한컴 불변식 위반)"
+                );
+                assert_eq!(&text[pt_count.span.clone()], pt_count.value.to_string());
+                let at = shape
+                    .insert_at
+                    .unwrap_or_else(|| panic!("{name} ser{si} {block}: 삽입 앵커 없음"));
+                let last_end = pts
+                    .last()
+                    .and_then(|p| p.element_span.as_ref())
+                    .map(|s| s.end);
+                assert_eq!(
+                    Some(at),
+                    last_end,
+                    "{name} ser{si} {block}: 앵커 ≠ 마지막 점 요소 끝"
+                );
+                assert!(
+                    text[at..].starts_with("</c:"),
+                    "{name} ser{si} {block}: 앵커 뒤가 캐시 닫는 태그가 아니다: {:.30}",
+                    &text[at..]
+                );
+                for (pi, p) in pts.iter().enumerate() {
+                    points += 1;
+                    let element = p
+                        .element_span
+                        .clone()
+                        .unwrap_or_else(|| panic!("{name} ser{si} {block}[{pi}]: 요소 구간"));
+                    let raw = &text[element.clone()];
+                    assert!(
+                        raw.starts_with("<c:pt ") && raw.ends_with("</c:pt>"),
+                        "{name}: {raw}"
+                    );
+                    if let Some(span) = &p.span {
+                        assert!(element.start < span.start && span.end < element.end);
+                        assert_eq!(&text[span.clone()], p.text);
+                    }
+                }
+            }
+        }
+    }
+    assert!(
+        series_count >= 56 && points >= 56 * 4,
+        "코퍼스가 비었다: {series_count} 계열 / {points} 점"
+    );
+}
