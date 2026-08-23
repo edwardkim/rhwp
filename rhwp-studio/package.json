@@ -61,7 +61,8 @@
     "e2e:render-diff:ci": "node e2e/run-render-diff.mjs",
     "metrics:frontend": "node ../scripts/frontend-metrics.mjs",
     "e2e:manifest-check": "python3 ../scripts/check_e2e_manifest.py",
-    "e2e:undo-delete-fragment-bytes": "node e2e/undo-delete-fragment-bytes.test.mjs --mode=headless"
+    "e2e:undo-delete-fragment-bytes": "node e2e/undo-delete-fragment-bytes.test.mjs --mode=headless",
+    "e2e:undo-depth": "node e2e/undo-depth-issue5769.test.mjs --mode=headless"
   },
   "devDependencies": {
     "@types/chrome": "^0.2.6",
