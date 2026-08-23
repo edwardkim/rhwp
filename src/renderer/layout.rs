@@ -10419,10 +10419,7 @@ impl LayoutEngine {
             if let Some(ctrl) = para.controls.get(control_index) {
                 if let Control::Picture(pic) = ctrl {
                     if pic.common.treat_as_char {
-                        let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi).max(
-                            hwpunit_to_px(pic.shape_attr.current_height as i32, self.dpi),
-                        );
-                        let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
+                        let (pic_w, pic_h) = self.resolve_inline_picture_size(pic, col_area);
                         // 같은 paragraph 의 sibling wrap=TopAndBottom 개체(tac=false)가
                         // 차지하는 vertical 영역만큼 picture y 보정.
                         let sibling_reserved_hu =
@@ -10434,11 +10431,17 @@ impl LayoutEngine {
                         // [Task #1151 v9 결함 D] sibling TAC picture 시퀀스 위치 판별.
                         // 한컴 native 정합: 동일 paragraph 안 sibling tac=true picture 들이
                         // 가로로 inline 분배 (inline glyph 처럼).
-                        let tac_pic_seq =
-                            super::layout::paragraph_layout::collect_sibling_tac_picture_widths_px(
-                                &para.controls,
-                                self.dpi,
-                            );
+                        let tac_pic_seq: Vec<(usize, f64)> = para
+                            .controls
+                            .iter()
+                            .enumerate()
+                            .filter_map(|(ci, control)| match control {
+                                Control::Picture(sibling) if sibling.common.treat_as_char => Some(
+                                    (ci, self.resolve_inline_picture_size(sibling, col_area).0),
+                                ),
+                                _ => None,
+                            })
+                            .collect();
                         let position_in_seq =
                             tac_pic_seq.iter().position(|(ci, _)| *ci == control_index);
                         let is_single_pic = tac_pic_seq.len() == 1;

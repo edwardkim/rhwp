@@ -2402,6 +2402,36 @@ impl LayoutEngine {
     /// `bin_data_content`: 이미지 데이터 (treat_as_char 이미지 인라인 렌더링에 사용)
     /// [Task #2067] run 루프 종료 후, run 범위 밖(pos >= run_char_pos)의 미매칭
     /// TAC 이미지 배치. 갱신된 x 를 반환한다.
+    /// HWP `treat_as_char` 그림도 일반 개체와 같이 size criterion을 해석한다.
+    /// HWP5의 `PAPER`/`PAGE` 값은 HWPUNIT가 아니라 기준 영역의 1/100 % 단위다.
+    /// 이 경로에서 원시 `common.width`를 HWPUNIT으로 바꾸면 42520(=425.20%) 같은
+    /// 그림을 42.52 mm로 축소해 렌더한다.
+    pub(crate) fn resolve_inline_picture_size(
+        &self,
+        picture: &crate::model::image::Picture,
+        col_area: &LayoutRect,
+    ) -> (f64, f64) {
+        let (body_x, body_y, body_w, body_h) = self.current_body_area.get();
+        let body_area = if body_w > 0.0 && body_h > 0.0 {
+            LayoutRect {
+                x: body_x,
+                y: body_y,
+                width: body_w,
+                height: body_h,
+            }
+        } else {
+            *col_area
+        };
+        let paper_area = LayoutRect {
+            x: 0.0,
+            y: 0.0,
+            width: self.current_paper_width.get().max(col_area.width),
+            height: self.current_page_height.get().max(col_area.height),
+        };
+
+        self.resolve_object_size(&picture.common, col_area, &body_area, &paper_area)
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn place_unmatched_line_tac_pictures(
         &self,
@@ -2411,6 +2441,7 @@ impl LayoutEngine {
         para: Option<&Paragraph>,
         bin_data_content: Option<&[BinDataContent]>,
         tac_offsets_px: &[(usize, f64, usize)],
+        col_area: &LayoutRect,
         cell_ctx: Option<&CellContext>,
         reserved_tac_picture_height: &mut Option<f64>,
         v: TacPictureLineVars,
@@ -2439,7 +2470,7 @@ impl LayoutEngine {
                     }
                     if let Some(ctrl) = p.controls.get(tac_ci) {
                         if let Control::Picture(pic) = ctrl {
-                            let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                            let (_, pic_h) = self.resolve_inline_picture_size(pic, col_area);
                             if raw_lh + 4.0 >= pic_h {
                                 *reserved_tac_picture_height = Some(pic_h);
                             }
@@ -2927,7 +2958,18 @@ impl LayoutEngine {
             let mut v: Vec<(usize, f64, usize)> = composed
                 .tac_controls
                 .iter()
-                .map(|(pos, w_hu, ci)| (*pos, hwpunit_to_px(*w_hu, self.dpi), *ci))
+                .map(|(pos, w_hu, ci)| {
+                    let width = para
+                        .and_then(|p| p.controls.get(*ci))
+                        .and_then(|ctrl| match ctrl {
+                            Control::Picture(pic) => {
+                                Some(self.resolve_inline_picture_size(pic, col_area).0)
+                            }
+                            _ => None,
+                        })
+                        .unwrap_or_else(|| hwpunit_to_px(*w_hu, self.dpi));
+                    (*pos, width, *ci)
+                })
                 .collect();
             v.sort_by_key(|(p, _, _)| *p);
             v
@@ -4379,6 +4421,7 @@ impl LayoutEngine {
                 para,
                 bin_data_content,
                 &tac_offsets_px,
+                col_area,
                 cell_ctx.as_ref(),
                 &mut current_line_reserved_tac_picture_height,
                 TacPictureLineVars {
@@ -4422,6 +4465,7 @@ impl LayoutEngine {
                     styles,
                     &cell_ctx,
                     &line_tac_offsets,
+                    col_area,
                     EmptyRunsLineVars {
                         alignment,
                         available_width,
@@ -5537,7 +5581,7 @@ impl LayoutEngine {
                     if let (Some(p), Some(bdc)) = (para, bin_data_content) {
                         if let Some(ctrl) = p.controls.get(tac_ci) {
                             if let Control::Picture(pic) = ctrl {
-                                let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                                let (_, pic_h) = self.resolve_inline_picture_size(pic, col_area);
                                 // LINE_SEG vpos가 TopAndBottom 흐름 위치를 이미 담고 있으면
                                 // sibling 예약 높이를 다시 더하지 않는다.
                                 let sibling_reserved_px = if para_topbottom_line_vpos_base.is_some()
@@ -6644,6 +6688,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         cell_ctx: &Option<CellContext>,
         line_tac_offsets: &[(usize, f64, usize)],
+        col_area: &LayoutRect,
         vars: EmptyRunsLineVars,
         current_line_reserved_tac_picture_height: &mut Option<f64>,
     ) {
@@ -6724,7 +6769,7 @@ impl LayoutEngine {
                                 empty_line_logical_end += 1;
                                 continue;
                             }
-                            let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                            let (_, pic_h) = self.resolve_inline_picture_size(pic, col_area);
                             // LINE_SEG vpos가 TopAndBottom 흐름 위치를 이미 담고 있으면
                             // sibling 예약 높이를 다시 더하지 않는다.
                             let sibling_reserved_px = if vars.has_topbottom_vpos_base {

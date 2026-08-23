@@ -73,9 +73,10 @@ fn p122_picture_sits_alone_on_second_page() {
     );
 }
 
-/// 2쪽 SVG 의 그림은 본문 영역 맨 위(상단 여백 20mm + 머리말 15mm = 35mm)에 놓인다.
+/// 2쪽 SVG 의 그림은 본문 영역 맨 위(상단 여백 20mm + 머리말 15mm = 35mm)에 놓이고,
+/// HWP5 `PAPER` 기준 크기(425.20% × 222.38%)를 유지한다.
 #[test]
-fn p122_second_page_picture_starts_at_body_top() {
+fn p122_second_page_picture_uses_paper_relative_size_at_body_top() {
     let out_dir: PathBuf = std::env::temp_dir().join(format!(
         "rhwp-p122-{}-{}",
         std::process::id(),
@@ -118,11 +119,36 @@ fn p122_second_page_picture_starts_at_body_top() {
         .and_then(|rest| rest.split('"').next())
         .and_then(|v| v.parse::<f64>().ok())
         .expect("<image> 의 y 값을 읽어야 한다");
+    let width = image_tag
+        .split("width=\"")
+        .nth(1)
+        .and_then(|rest| rest.split('"').next())
+        .and_then(|v| v.parse::<f64>().ok())
+        .expect("<image> 의 width 값을 읽어야 한다");
+    let height = image_tag
+        .split("height=\"")
+        .nth(1)
+        .and_then(|rest| rest.split('"').next())
+        .and_then(|v| v.parse::<f64>().ok())
+        .expect("<image> 의 height 값을 읽어야 한다");
 
     // 35mm = 35 / 25.4 * 96 px = 132.28px (본문 영역 상단).
     let body_top_px = 35.0 / 25.4 * 96.0;
     assert!(
         (y - body_top_px).abs() < 1.0,
         "그림은 본문 상단({body_top_px:.2}px)에 놓여야 하는데 y={y}"
+    );
+    // A4 210×297mm @96dpi에서 425.20%×222.38%.
+    let paper_width_px = 210.0 / 25.4 * 96.0;
+    let paper_height_px = 297.0 / 25.4 * 96.0;
+    let expected_width = paper_width_px * 4.252;
+    let expected_height = paper_height_px * 2.2238;
+    assert!(
+        (width - expected_width).abs() < 2.0,
+        "그림 너비는 PAPER 425.20%({expected_width:.2}px)여야 하는데 width={width}"
+    );
+    assert!(
+        (height - expected_height).abs() < 2.0,
+        "그림 높이는 PAPER 222.38%({expected_height:.2}px)여야 하는데 height={height}"
     );
 }
