@@ -2254,12 +2254,6 @@ export class WasmBridge {
     return typeof doc?.applyShapeZOrderPairs === 'function';
   }
 
-  /** [#5769 후속2] 지정 구역들에 각자 다른 old SectionDef 일괄 재적용(재조판 1회). */
-  applySectionDefsBulk(itemsJson: string): { ok: boolean; applied?: number } {
-    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse((this.doc as any).applySectionDefsBulk(itemsJson));
-  }
-
   groupShapes(sec: number, targets: { paraIdx: number; controlIdx: number }[]): { ok: boolean; paraIdx: number; controlIdx: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const json = JSON.stringify({ sectionIdx: sec, targets });

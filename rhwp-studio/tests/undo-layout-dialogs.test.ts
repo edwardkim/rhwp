@@ -80,10 +80,10 @@ test('[#5769 Stage 4→후속2] section-settings 는 현재 구역·문서 전�
     assert.match(body, all ? /setSectionDefAll/ : /wasm\.setSectionDef\(this\.sectionIdx, this\.after\)/,
       'execute 는 after 를 적용해야 한다');
     if (all) {
-      // [#5769 후속2] undo 의 old 재적용은 bulk 네이티브(재조판 1회) — 구역별 setter
-      // 반복은 전체 재조판을 N 번 반복하는 성능 회귀다(gpt 3차 리뷰).
-      assert.match(body, /applySectionDefsBulk[\s\S]{0,200}?restoreSectionRaw/,
-        'undo 는 bulk 일괄 적용 뒤 raw 를 복원해야 한다');
+      // undo 의 old 재적용은 구역별 setter 루프 — bulk 네이티브는 측정 결과
+      // 불필요로 빼았다(실문서 구역 수에서 서브밀리초, 2026-08-23).
+      assert.match(body, /setSectionDef\(s\.idx, s\.before\)[\s\S]{0,160}?restoreSectionRaw/,
+        'undo 는 구역별 old 재적용 뒤 raw 를 복원해야 한다');
     } else {
       assert.match(body, /wasm\.setSectionDef\(this\.sectionIdx, this\.before\)/,
         'undo 는 old 재적용으로 raw 를 재무효화해야 한다');
