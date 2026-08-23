@@ -2228,9 +2228,20 @@ export class WasmBridge {
     return JSON.parse(this.doc.deleteEquationControl(sec, para, ci));
   }
 
-  changeShapeZOrder(sec: number, para: number, ci: number, operation: string): { ok: boolean; zOrder?: number } {
+  changeShapeZOrder(
+    sec: number,
+    para: number,
+    ci: number,
+    operation: string,
+  ): { ok: boolean; zOrder?: number; moves?: { ppi: number; ci: number; before: number; after: number }[] } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.changeShapeZOrder(sec, para, ci, operation));
+  }
+
+  /** [#5769 후속] z 순서 절대 대입 — SetZOrderCommand 의 undo/redo 가 쓴다. */
+  applyShapeZOrderPairs(sec: number, pairsJson: string): { ok: boolean; applied?: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).applyShapeZOrderPairs(sec, pairsJson));
   }
 
   groupShapes(sec: number, targets: { paraIdx: number; controlIdx: number }[]): { ok: boolean; paraIdx: number; controlIdx: number } {

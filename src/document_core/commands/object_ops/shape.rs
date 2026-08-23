@@ -1677,6 +1677,20 @@ impl DocumentCore {
             }
         };
 
+        // [#5769 후속] 자기기술 변경 레코드 — SetZOrderCommand 가 이대로 소비해 undo/redo
+        // 의 절대 대입 쌍으로 쓴다. 교환인 경우 이웃의 이전 값은 new_z 와 같다(둘의 z 를
+        // 맞바꾼 것). 기존 소비자는 zOrder 키만 읽으므로 추가 필드는 안전하다.
+        let mut moves_json = format!(
+            "{{\"ppi\":{},\"ci\":{},\"before\":{},\"after\":{}}}",
+            para_idx, control_idx, current_z, new_z
+        );
+        if let Some((n_pi, n_ci, n_z)) = neighbor_change {
+            moves_json.push_str(&format!(
+                ",{{\"ppi\":{},\"ci\":{},\"before\":{},\"after\":{}}}",
+                n_pi, n_ci, new_z, n_z
+            ));
+        }
+
         // z_order 변경: 대상 + 이웃
         {
             let section = &mut self.document.sections[section_idx];
@@ -1695,8 +1709,79 @@ impl DocumentCore {
         self.paginate_if_needed();
 
         Ok(crate::document_core::helpers::json_ok_with(&format!(
-            "\"zOrder\":{}",
-            new_z
+            "\"zOrder\":{},\"moves\":[{}]",
+            new_z, moves_json
+        )))
+    }
+
+    /// [#5769 후속] z 순서 절대 대입 — `SetZOrderCommand` 의 undo/redo 가 쓴다.
+    ///
+    /// pairs_json: `[{"ppi":N,"ci":N,"z":N},...]`. 상대 연산(front/forward/…)과 달리 값
+    /// 자체를 복원하므로 [`Self::change_shape_z_order_native`] 이 남긴 `moves` 를 뒤집어
+    /// 넣으면 정확한 역연산이다 — Shape z 대입에는 대입 외 부작용이 없다(#5769 선결 규약).
+    /// 적용 후 passthrough 무효화·파생 상태 재구성 후처리는 상대 연산과 동일하다. 하나라도
+    /// 검증에 어긋나면 아무것도 적용하지 않고 거절한다 — 부분 적용은 undo 도중의 문서 오염이다.
+    pub fn apply_shape_z_order_pairs_native(
+        &mut self,
+        section_idx: usize,
+        pairs_json: &str,
+    ) -> Result<String, HwpError> {
+        let pairs: Vec<serde_json::Value> = serde_json::from_str(pairs_json)
+            .map_err(|e| HwpError::RenderError(format!("pairs JSON 파싱 실패: {}", e)))?;
+        if pairs.is_empty() {
+            return Ok(crate::document_core::helpers::json_ok_with("\"applied\":0"));
+        }
+
+        // 1차 — 전수 검증. 지목이 Shape 가 아니면 기록 이후 문서가 바뀐 것이므로 실패다.
+        {
+            let section = self.document.sections.get(section_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+            })?;
+            for pair in &pairs {
+                let err = |what: &str| HwpError::RenderError(format!("pairs 항목 {} 누락", what));
+                let pi = pair["ppi"].as_u64().ok_or_else(|| err("ppi"))? as usize;
+                let ci = pair["ci"].as_u64().ok_or_else(|| err("ci"))? as usize;
+                if pair["z"].as_i64().is_none() {
+                    return Err(err("z"));
+                }
+                let para = section.paragraphs.get(pi).ok_or_else(|| {
+                    HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", pi))
+                })?;
+                match para.controls.get(ci) {
+                    Some(Control::Shape(_)) => {}
+                    _ => {
+                        return Err(HwpError::RenderError(format!(
+                            "지목 (ppi={}, ci={}) 은 Shape 가 아니다 — 기록 이후 문서가 바뀌었다",
+                            pi, ci
+                        )))
+                    }
+                }
+            }
+        }
+
+        // 2차 — 적용.
+        let applied = {
+            let section = &mut self.document.sections[section_idx];
+            let mut applied = 0usize;
+            for pair in &pairs {
+                let pi = pair["ppi"].as_u64().expect("1차에서 검증됨") as usize;
+                let ci = pair["ci"].as_u64().expect("1차에서 검증됨") as usize;
+                let z = pair["z"].as_i64().expect("1차에서 검증됨") as i32;
+                if let Some(Control::Shape(shape)) = section.paragraphs[pi].controls.get_mut(ci) {
+                    shape.common_mut().z_order = z;
+                    applied += 1;
+                }
+            }
+            applied
+        };
+
+        self.document.sections[section_idx].raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+
+        Ok(crate::document_core::helpers::json_ok_with(&format!(
+            "\"applied\":{}",
+            applied
         )))
     }
     /// 도형 내부 좌표만 스케일 (common/shape_attr은 변경하지 않음)
