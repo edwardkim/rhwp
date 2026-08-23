@@ -1350,7 +1350,13 @@ impl DocumentCore {
     /// 원본은 일반적으로 BOTH 하나만 가지므로, adapter가 채운 EVEN/ODD는 저장 직후
     /// `SectionDef`와 serializer가 읽는 `Control::SectionDef`에서 함께 복원한다.
     fn snapshot_hwpx_page_border_fill_overlay(&self) -> Option<HwpPageBorderFillOverlay> {
-        (self.source_format == crate::parser::FileFormat::Hwpx).then(|| {
+        // [#5933] HML 출처도 저장 직전에 PBF 를 3개로 채우므로(HWP5 스트림 계약),
+        // 저장 뒤 live IR 은 원래 형상(단일 BOTH)으로 되돌린다 — HWPX 와 같은 계약.
+        matches!(
+            self.source_format,
+            crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
+        )
+        .then(|| {
             self.document
                 .sections
                 .iter()
