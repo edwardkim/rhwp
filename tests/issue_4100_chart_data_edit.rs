@@ -310,16 +310,18 @@ fn scatter_series_expose_editable_x_values_shared_across_series() {
     assert_eq!(scatter_files, 10, "분산형 5종 × 2포맷");
 }
 
-/// 카테고리 라벨은 B1 에서 편집 대상이 아니다 — 구조 변경이라 B2 다.
+/// [#5652] 카테고리 라벨은 **패처 층**에서는 캐시 텍스트 치환으로 적용된다 — B1 의
+/// `LabelNotEditable` 은 사라졌다. 허용 여부는 코어의 의도 플래그(`structure`)가 정한다
+/// (S3 — `structure_flag_off_keeps_every_b1_refusal` 가 `categoryMismatch` 로 거부를 고정).
 #[test]
-fn category_labels_are_not_editable() {
+fn category_labels_patch_at_the_byte_layer() {
     let path = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
     let bytes = std::fs::read(&path).expect("샘플 읽기");
     let (_legacy, ooxml) = chart_streams(&bytes).expect("차트 스트림");
     let scan = scan_chart_values(&ooxml).expect("스캔");
     assert_eq!(scan.series[0].axis, SeriesAxis::Category);
 
-    let err = apply_value_edits(
+    let out = apply_value_edits(
         &ooxml,
         &scan,
         &[ValueEdit {
@@ -329,10 +331,15 @@ fn category_labels_are_not_editable() {
             text: "새 라벨".to_string(),
         }],
     )
-    .expect_err("카테고리 라벨 편집은 거부되어야 한다");
-    assert!(
-        matches!(err, PatchError::LabelNotEditable { series: 0 }),
-        "{err:?}"
+    .expect("패처 층은 라벨 치환을 적용한다");
+    let text = String::from_utf8(out).expect("UTF-8");
+    assert!(text.contains("<c:v>새 라벨</c:v>"), "라벨이 바뀌지 않았다");
+    assert!(text.contains("Sheet1!$A$2:$A$5"), "c:f 가 사라졌다");
+    let rescan = scan_chart_values(text.as_bytes()).expect("재스캔");
+    assert_eq!(rescan.series[0].labels[0].text, "새 라벨");
+    assert_eq!(
+        rescan.series[1].labels[0].text, "항목 1",
+        "다른 계열 라벨은 그대로다"
     );
 }
 
@@ -2716,4 +2723,157 @@ fn structure_spans_slice_back_across_the_corpus() {
         series_count >= 56 && points >= 56 * 4,
         "코퍼스가 비었다: {series_count} 계열 / {points} 점"
     );
+}
+
+/// [#5652 S2] 엔진 패처의 산출이 #5447 스파이크의 **문자열 수술** 산출과 바이트 동일하다.
+///
+/// 스파이크 수술(`b2_*`)은 스캐너와 무관한 문자열 탐색 경로라 독립 오라클이 된다(#4100 §9-2
+/// 오라클 공모 교훈). 위치 기반 꼬리 증감 모델에서 "중간 행 삭제"는 뒤 행 값을 앞으로 당겨
+/// 쓰고 꼬리를 지우는 것인데, 코퍼스 `c:pt` 가 `idx` 와 `c:v` 만 가진 균일 요소라 스파이크의
+/// "요소 제거 + idx 재번호"와 같은 바이트가 나온다 — 계획서 §3-1 의 주장을 여기서 잰다.
+#[test]
+fn engine_patch_matches_the_spike_surgery_byte_for_byte() {
+    use rhwp::ooxml_chart::patch::{apply_chart_edits, ChartEdit};
+
+    fn engine(xml: &str, edits: &[ChartEdit]) -> String {
+        let data = scan_chart_values(xml.as_bytes()).expect("스캔");
+        String::from_utf8(apply_chart_edits(xml.as_bytes(), &data, edits).expect("엔진 패치"))
+            .expect("UTF-8")
+    }
+    fn strs(items: &[&str]) -> Vec<String> {
+        items.iter().map(|s| s.to_string()).collect()
+    }
+
+    let src = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    let (_legacy, ooxml) = chart_streams(&std::fs::read(&src).expect("샘플")).expect("차트 스트림");
+    let xml = String::from_utf8(ooxml).expect("UTF-8");
+    let data = scan_chart_values(xml.as_bytes()).expect("스캔");
+    assert_eq!(data.series.len(), 3);
+    assert_eq!(data.series[0].values.len(), 4);
+
+    // 행추가 — 전 계열 cat/val 꼬리에 1점.
+    let mut row_add = Vec::new();
+    for (s, v) in ["45", "44", "43"].iter().enumerate() {
+        row_add.push(ChartEdit::AppendPoints {
+            series: s,
+            target: EditTarget::Label,
+            texts: strs(&["추가항목"]),
+        });
+        row_add.push(ChartEdit::AppendPoints {
+            series: s,
+            target: EditTarget::Value,
+            texts: strs(&[v]),
+        });
+    }
+    assert_eq!(engine(&xml, &row_add), b2_bar_like_row_add(&xml), "행추가");
+
+    // 행삭제(「항목 2」) — 뒤 행을 앞으로 당겨 쓰고 꼬리 1점 삭제 == 요소 제거 + idx 재번호.
+    let mut row_del = Vec::new();
+    for (s, series) in data.series.iter().enumerate() {
+        for p in 1..3 {
+            row_del.push(ChartEdit::Value(ValueEdit {
+                series: s,
+                point: p,
+                target: EditTarget::Label,
+                text: series.labels[p + 1].text.clone(),
+            }));
+            row_del.push(ChartEdit::Value(ValueEdit {
+                series: s,
+                point: p,
+                target: EditTarget::Value,
+                text: series.values[p + 1].text.clone(),
+            }));
+        }
+        row_del.push(ChartEdit::TruncatePoints {
+            series: s,
+            target: EditTarget::Label,
+            keep: 3,
+        });
+        row_del.push(ChartEdit::TruncatePoints {
+            series: s,
+            target: EditTarget::Value,
+            keep: 3,
+        });
+    }
+    assert_eq!(
+        engine(&xml, &row_del),
+        b2_remove_point(&b2_remove_point(&xml, "c:cat", 1), "c:val", 1),
+        "행삭제"
+    );
+
+    // 계열추가 — 마지막 계열 복제 + 채번 + 이름·값 교체 (c:f 는 복제분 그대로).
+    assert_eq!(
+        engine(
+            &xml,
+            &[ChartEdit::AppendSeries {
+                name: Some("추가계열".to_string()),
+                labels: None,
+                values: strs(&["6", "6", "6", "6"]),
+            }]
+        ),
+        b2_clone_last_series(&xml, "추가계열", &["6", "6", "6", "6"]),
+        "계열추가"
+    );
+
+    // 계열삭제(마지막) — 꼬리 c:ser 제거.
+    assert_eq!(
+        engine(&xml, &[ChartEdit::TruncateSeries { keep: 2 }]),
+        b2_remove_series(&xml, 2),
+        "계열삭제"
+    );
+
+    // 계열명변경 — c:tx 캐시 텍스트만.
+    assert_eq!(
+        engine(
+            &xml,
+            &[ChartEdit::SeriesName {
+                series: 0,
+                text: "이름바뀐계열".to_string()
+            }]
+        ),
+        b2_rename_series(&xml, 0, "이름바뀐계열"),
+        "계열명변경"
+    );
+
+    // 라벨변경 — 전 계열 c:cat 동기 교체.
+    let relabel: Vec<ChartEdit> = (0..3)
+        .map(|s| {
+            ChartEdit::Value(ValueEdit {
+                series: s,
+                point: 0,
+                target: EditTarget::Label,
+                text: "바뀐항목".to_string(),
+            })
+        })
+        .collect();
+    assert_eq!(
+        engine(&xml, &relabel),
+        b2_relabel_category(&xml, 0, "바뀐항목"),
+        "라벨변경"
+    );
+
+    // 분산형 점추가 — xVal/yVal 동기.
+    let scatter_src = manifest("samples/chart/분산형/직선및표식이있는분산형.hwpx");
+    let (_legacy, ooxml) =
+        chart_streams(&std::fs::read(&scatter_src).expect("샘플")).expect("차트 스트림");
+    let sxml = String::from_utf8(ooxml).expect("UTF-8");
+    let mut point_add = Vec::new();
+    for (s, y) in ["27", "10"].iter().enumerate() {
+        point_add.push(ChartEdit::AppendPoints {
+            series: s,
+            target: EditTarget::Label,
+            texts: strs(&["9"]),
+        });
+        point_add.push(ChartEdit::AppendPoints {
+            series: s,
+            target: EditTarget::Value,
+            texts: strs(&[y]),
+        });
+    }
+    let spike = b2_add_point(
+        &b2_add_point(&sxml, "c:xVal", &["9", "9"]),
+        "c:yVal",
+        &["27", "10"],
+    );
+    assert_eq!(engine(&sxml, &point_add), spike, "분산형 점추가");
 }
