@@ -1,14 +1,14 @@
 {
-  "contentBundleSha256": "07cc556414620e4361c2cf0efb85422d27487216a5500b2e7c5a571ebf612920",
+  "contentBundleSha256": "497a249d2e363d7289fe96df40e74780f857f807a7900de61c4fe8e416b4269e",
   "generatedBy": {
     "path": "scripts/font_rule_projection_gen.mjs",
-    "sha256": "4ffa352261d006ff60bf8abda19c64b5c4e39ba11b1e2385bdaf79103bc54c4d"
+    "sha256": "db6cc28ab3b21ea2aff40e352f6601b388207a6b8da767977e044b170b011373"
   },
   "issue": 4966,
   "kind": "font-rule-backend-projection-manifest",
   "outputs": [
     {
-      "contentSha256": "424867b5cc17f307f80b58461b676f1c03aa6385a0b2a3a875448fc10643afa0",
+      "contentSha256": "fb16d4219f641e84702ddee52df84a15f13b28dcddee64161f598dcb982ba7ea",
       "inputSha256": "de601d99bd52db63459f281a011b8cec0f7aa01ba4c70fdfea7dad1078ff3199",
       "language": "rust",
       "ownership": "generated-whole-file",
@@ -18,7 +18,7 @@
       "ruleCount": 171
     },
     {
-      "contentSha256": "09b7604bc757efe4ddca811a6fb3c81b2fe0ccc0c805ca7f1f34621def8ce92c",
+      "contentSha256": "adea2db08707ce3737904005bc566e790d919294db5b52927770b02ef9c81171",
       "inputSha256": "674d150322895e19ccb3cd8f98dfda37fade93987938486437b3fe2eeab42883",
       "language": "rust",
       "ownership": "generated-whole-file",

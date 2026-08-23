@@ -222,7 +222,8 @@ pub(crate) struct GeneratedFontRuleProjection {
     pub(crate) metric_entry_ids: &'static [&'static str],
 }
 
-pub(crate) const ${config.constantStem}_SCHEMA_VERSION: &str = ${rustString(metadata.schemaVersion)};
+pub(crate) const ${config.constantStem}_SCHEMA_VERSION: &str =
+    crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const ${config.constantStem}_INPUT_SHA256: &str =
     ${rustString(metadata.inputSha256)};
 pub(crate) const ${config.constantStem}_PROJECTION_SHA256: &str =

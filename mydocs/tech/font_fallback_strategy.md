@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/font_fallback_strategy.md
-last_verified: 2026-08-15
+last_verified: 2026-08-23
 ---
 
 # CJK 폰트 폴백 전략 보고서
@@ -15,6 +15,12 @@ last_verified: 2026-08-15
 >
 > 2026-08-15 현행화: Local Font Access API의 성공 응답은 설치 face 전체 열거를 보장하지 않는다.
 > 문서 후보 coverage와 Canvas2D/CanvasKit 조달 능력을 분리하는 hybrid 감지 계약을 6.2에 반영했다.
+>
+> 2026-08-23 현행화: Rust layout-name·layout-metric, Studio Canvas2D paint·webfont와 CanvasKit SFNT의
+> 유한 규칙은 `assets/font-rules/font_rule_registry.json`에서 생성한 backend projection이 소유한다.
+> 아래 `font-substitution.ts`·`font-loader.ts`의 대형 literal 표 언급은 당시 구현 기록이다. 현재 두
+> 파일은 generated projection을 소비하며, document substitution·local probe·glyph/capability 판정은
+> hand-written 알고리즘으로 남는다.
 
 ## 목차
 
@@ -70,6 +76,24 @@ canonical source `assets/fonts/`에는 재배포 가능한 WOFF2 36개가 Git으
 2. **MS 폰트 woff2** (Arial, Calibri 등)도 재배포 불가
 3. 폴백 체인이 저작권 폰트에 의존하여, 해당 파일 제거 시 렌더링 품질 저하
 4. `font-loader.ts`에서 40+개 폰트명을 모두 저작권 woff2에 매핑
+
+### 1.5 현재 규칙 권위와 결정면
+
+현재 유한 mapping의 정본은 `assets/font-rules/font_rule_registry.json`이고, runtime은 JSON을 직접 읽지
+않는다. `scripts/font_rule_projection_gen.mjs`가 다음 다섯 정적 산출물을 만들며 각 소비자는 자기
+결정면만 읽는다.
+
+| projection | 의미 |
+| --- | --- |
+| `rust-layout-name` | HWP font name의 layout용 정규화 |
+| `rust-layout-metric` | metric alias와 W6 metric entry 연결 |
+| `canvas2d-paint` | Canvas2D 대체·successor·paint chain의 유한 규칙 |
+| `canvas2d-webfont` | CSS `FontFace` 공급 payload |
+| `canvaskit-sfnt` | CanvasKit SFNT plan·capability 규칙 |
+
+같은 source/target 문자열이 보여도 layout, paint, supply와 detection을 합치지 않는다. 특히 Canvas2D
+CSS 사용 가능, webfont URL 계획, CanvasKit SFNT bytes 확보는 서로 다른 사실이다. W2 Font Decision
+Trace는 실제 선택이 끝난 뒤 generated `ruleId`를 설명할 뿐 규칙 선택 권위가 아니다.
 
 ---
 
@@ -730,14 +754,18 @@ HWP 문서에서 다음 폰트명들은 FONT_METRICS DB 에 정식 엔트리가 
 
 ### A.5 유지보수 체크리스트
 
-**새 한글 폰트 추가 시 반드시 확인**:
+**새 한글 폰트 규칙을 제안할 때 반드시 확인**:
 
-- [ ] `style_resolver.rs` 에 Layer 1 (별칭 → 정규명) 등록
-- [ ] `font_metrics_data.rs::resolve_metric_alias` 에 Layer 2 (정규명 → 영문 DB 이름) 등록
+- [ ] layout-name, layout-metric, paint, supply, detection 중 결정면과 relation을 먼저 확정한다.
+- [ ] `assets/font-rules/font_rule_registry.json`의 현재 schema 판이 그 변경을 허용하는지 확인한다.
+- [ ] Rust/Studio generated 파일을 직접 편집하지 않고 `font_rule_projection_gen.mjs`로 재생성한다.
+- [ ] layout-name 규칙이면 `rust-layout-name`, metric alias면 `rust-layout-metric` projection만 바뀌는지
+      manifest digest로 확인한다.
 - [ ] FONT_METRICS 배열에 영문 DB 이름으로 엔트리 존재하는지 확인. 없으면:
   - (A) `extract_metrics` 로 TTF 추가 (정식), 또는
   - (B) 기존 유사 폰트로 근사 매핑 (본한글 → Pretendard 사례)
-- [ ] 단위 테스트 추가 (`mod tests` in `font_metrics_data.rs`)
+- [ ] W2 trace가 generated `ruleId`와 W1 evidence를 정확히 연결하는지 확인한다.
+- [ ] registry·projection·pre-migration baseline과 backend focused test를 통과한다.
 
 Layer 2 누락 시 증상: `find_metric` None 반환 → 기본 폭 → SVG 에서 글자 겹침.
 
@@ -784,7 +812,8 @@ pyftsubset SourceHanSerifK-Regular.otf \
 **WASM 웹 빌드만**:
 - canonical source: `assets/fonts/SourceHanSerifK-OldHangul-subset.woff2`
 - runtime URL: `fonts/SourceHanSerifK-OldHangul-subset.woff2` (`rhwp-studio/public/fonts` 링크로 배포)
-- `rhwp-studio/src/core/font-loader.ts` 의 `FONT_LIST` 에 등록
+- webfont 공급은 canonical registry의 `canvas2d-webfont` projection에서 생성하고
+  `rhwp-studio/src/core/font-loader.ts`가 이를 소비한다.
 - `unicode-range: U+1100-11FF, U+A960-A97F, U+D7B0-D7FF` 으로 옛한글 영역만 매칭 → 일반 한글 미영향
 
 **네이티브 SVG 출력**:
@@ -864,7 +893,7 @@ OFL, 한글 11,172 완비. `ttfs/opensource/NotoSansKR-ExtraLight.ttf`(네이티
 
 | 경로 | 동작 | 충실도 |
 |------|------|--------|
-| **웹(rhwp-studio)** | `font-loader.ts` `@font-face` 로 ExtraLight 로드. `Haansoft Dotum`·돋움·굴림 → ExtraLight 매핑 | 자동·결정적 |
+| **웹(rhwp-studio)** | generated webfont supply를 `font-loader.ts`가 `@font-face`로 로드하고 generated Canvas2D paint 규칙이 `Haansoft Dotum`·돋움·굴림 → ExtraLight를 선택 | 자동·결정적 |
 | **네이티브 CLI(rsvg)** | SVG 의 `font-family` 체인을 fontconfig 가 해석 → ExtraLight 가 **설치돼 있어야** 적용 (`cp ttfs/opensource/*.ttf ~/.fonts && fc-cache`) | 설치 시 적용 |
 | **`--embed-fonts` @font-face** | typst `subsetter` 가 **cmap 제거** → 브라우저 `<text>` 문자 매핑 불가 | **현재 무효** |
 
@@ -881,6 +910,6 @@ OFL, 한글 11,172 완비. `ttfs/opensource/NotoSansKR-ExtraLight.ttf`(네이티
 - [ ] `renderer/mod.rs::generic_fallback` sans 체인의 무거운 폰트 직전에 경량 대체 삽입.
 - [ ] `svg.rs::korean_gothic_substitute` 에 대체 파일명 등록(임베딩 후보).
 - [ ] 번들 폰트는 **독립 family 명명**(타 family 의 weight-variant 금지).
-- [ ] 웹은 `font-loader.ts FONT_LIST` + `assets/fonts/*.woff2` canonical source를 동반하고 runtime
-      `fonts/...` URL은 유지.
+- [ ] 웹은 canonical registry의 `canvas2d-webfont` 규칙 + `assets/fonts/*.woff2` canonical source를
+      동반하고 runtime `fonts/...` URL은 유지한다. generated TypeScript는 직접 편집하지 않는다.
 - [ ] **레이아웃 불변 확인**: 렌더 폰트만 교체, 메트릭 DB 무변경 → `dump-pages` 전후 동일.

@@ -23,7 +23,8 @@ pub(crate) struct GeneratedFontRuleProjection {
     pub(crate) metric_entry_ids: &'static [&'static str],
 }
 
-pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str = "1.0";
+pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str =
+    crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_NAME_INPUT_SHA256: &str =
     "de601d99bd52db63459f281a011b8cec0f7aa01ba4c70fdfea7dad1078ff3199";
 pub(crate) const FONT_RULE_LAYOUT_NAME_PROJECTION_SHA256: &str =
