@@ -630,243 +630,6 @@ fn resolve_projected_font_rule(
     find_font_rule_layout_name(boundary.source_boundary_id(), name, lang_index)
 }
 
-#[cfg(test)]
-fn resolve_legacy_latin_font(name: &str, lang_index: usize) -> Option<&'static str> {
-    if lang_index != 1 {
-        return None;
-    }
-
-    match name {
-        "HCI Poppy" => Some("Palatino Linotype"),
-        "HCI Tulip"
-        | "HCI Morning Glory"
-        | "HCI Centaurea"
-        | "HCI Bellflower"
-        | "AmeriGarmnd BT"
-        | "Bodoni Bd BT"
-        | "Bodoni Bk BT"
-        | "Baskerville BT"
-        | "GoudyOlSt BT"
-        | "Cooper Blk BT"
-        | "Stencil BT"
-        | "BrushScript BT"
-        | "CommercialScript BT"
-        | "Liberty BT"
-        | "MurrayHill Bd BT"
-        | "ParkAvenue BT"
-        | "CentSchbook BT"
-        | "펜흘림" => Some("HY견명조"),
-        "HCI Hollyhock"
-        | "HCI Hollyhock Narrow"
-        | "HCI Acacia"
-        | "Swis721 BT"
-        | "Hobo BT"
-        | "Orbit-B BT"
-        | "Blippo Blk BT"
-        | "BroadwayEngraved BT"
-        | "FuturaBlack BT"
-        | "Newtext Bk BT"
-        | "DomCasual BT"
-        | "가는안상수체영문"
-        | "중간안상수체영문"
-        | "굵은안상수체영문" => Some("HY중고딕"),
-        "HCI Columbine" | "Courier10 BT" | "OCR-A BT" | "OCR-B-10 BT" | "Orator10 BT" => {
-            Some("Calibri")
-        }
-        "BernhardFashion BT" | "Freehand591 BT" => Some("HY중고딕"),
-        _ => None,
-    }
-}
-
-/// HFT 폰트 → @font-face 등록 폰트 치환 (언어별)
-///
-/// 한국어(0)와 영어(1)가 다른 결과를 가지는 폰트는 언어별 분기 처리.
-/// 대부분의 HFT 폰트는 언어에 무관하게 동일한 결과를 갖는다.
-#[cfg(test)]
-fn resolve_hft_font(name: &str, lang_index: usize) -> Option<&'static str> {
-    // === 직접 TTF 매핑 (모든 언어 공통) ===
-    let common = match name {
-        // [#2430] 한양 4종·휴먼명조는 치환하지 않고 원명 유지 — 한글 실측
-        // (COM 무신축 래더 2026-07-20)상 HY 대응 폰트와 ASCII 폭이 다른
-        // 별개 페이스(숫자 0.497/0.565em vs HY 0.583~0.668em). 자체 메트릭은
-        // font_metrics_data 의 Hanyang*/HumanMyeongJo, CSS 폴백은
-        // generic_fallback 의 명조/고딕 substring 분류가 동일 체인을 준다.
-        "한양그래픽" => Some("굴림"),
-        "한양궁서" => Some("궁서"),
-        "신명 태고딕" => Some("HY중고딕"),
-        "신명 태명조" => Some("HY신명조"),
-        "신명 견고딕" => Some("HY견고딕"),
-        "신명 견명조" => Some("HY견명조"),
-        "신명 태그래픽" => Some("HY그래픽"),
-        "신명 중고딕" => Some("HY중고딕"),
-        "태 가는 헤드라인T" => Some("HY헤드라인M"),
-        "태 가는 헤드라인D" => Some("HY헤드라인M"),
-        "양재 튼튼B" => Some("양재튼튼체B"),
-        // 명조 계열 → HY견명조
-        "명조" => Some("HY견명조"),
-        // 체인 평탄화: 다단계 HFT→HFT→...→TTF 체인의 최종 결과
-        // ("휴먼명조" 는 [#2430] 원명 유지 — 위 한양 계열 주석 참조)
-        "문화바탕" | "문화바탕제목" | "문화쓰기" | "문화쓰기흘림" => {
-            Some("HY신명조")
-        }
-        "신명 세명조"
-        | "신명 신명조"
-        | "신명 신신명조"
-        | "신명 중명조"
-        | "신명 순명조"
-        | "신명 신문명조" => Some("HY신명조"),
-        "옛한글" | "양재 다운명조M" => Some("HY신명조"),
-        "#세명조" | "#신명조" | "#중명조" | "#신중명조" | "#화명조A" | "#화명조B" | "#태명조"
-        | "#신태명조" | "#태신명조" | "#견명조" | "#신문명조" | "#신문태명" => {
-            Some("HY신명조")
-        }
-        // 고딕 계열
-        "휴먼고딕" | "문화돋움" | "문화돋움제목" | "태 나무" => Some("돋움"),
-        "휴먼옛체" | "딸기" => Some("돋움"),
-        "샘물" | "가는한" | "중간한" | "굵은한" => Some("돋움"),
-        "휴먼가는샘체" | "휴먼중간샘체" | "휴먼굵은샘체" => Some("돋움"),
-        "휴먼가는팸체" | "휴먼중간팸체" | "휴먼굵은팸체" => Some("돋움"),
-        "가는안상수체" | "중간안상수체" | "굵은안상수체" => Some("돋움"),
-        "양재 매화" | "양재 소슬" | "양재 샤넬" | "옥수수" => Some("돋움"),
-        "양재 본목각M" | "복숭아" => Some("돋움"),
-        "신명 세고딕" | "신명 디나루" | "신명 세나루" => Some("돋움"),
-        "#세고딕" | "#신세고딕" | "#중고딕" | "#태고딕" | "#신문고딕" | "#신문태고" | "#세나루"
-        | "#신세나루" | "#디나루" | "#신디나루" => Some("돋움"),
-        // 그래픽/궁서/기타
-        "신명 신그래픽" | "강낭콩" => Some("굴림"),
-        "#그래픽" | "#신그래픽" | "#공작" => Some("굴림"),
-        "양재 참숯B" | "양재 와당" | "양재 이니셜" => Some("HY견고딕"),
-        "#빅" => Some("HY견고딕"),
-        "태 헤드라인T" => Some("HY견고딕"),
-        "태 헤드라인D" => Some("HY견명조"),
-        "가는공한" | "중간공한" | "굵은공한" | "필기" | "타이프" => {
-            Some("HY견명조")
-        }
-        "가지" | "오이" | "양재 둘기" => Some("HY견명조"),
-        "신명 궁서" | "#궁서" => Some("궁서"),
-        "#수암A" | "#수암B" => Some("돋움"),
-        // 시스템
-        "시스템" | "HY둥근고딕" => Some("돋움"),
-        "고딕" => Some("돋움"),
-        // 영문 HFT
-        "산세리프" => Some("Calibri"),
-        "HCI Poppy" => Some("Palatino Linotype"),
-        "수식" => Some("HY신명조"),
-        "한글 풀어쓰기" => Some("HY견명조"),
-        _ => None,
-    };
-
-    if common.is_some() {
-        return common;
-    }
-
-    // 영어(1) 전용 HFT 치환
-    if lang_index == 1 {
-        match name {
-            "HCI Tulip"
-            | "HCI Morning Glory"
-            | "HCI Centaurea"
-            | "HCI Bellflower"
-            | "AmeriGarmnd BT"
-            | "Bodoni Bd BT"
-            | "Bodoni Bk BT"
-            | "Baskerville BT"
-            | "GoudyOlSt BT"
-            | "Cooper Blk BT"
-            | "Stencil BT"
-            | "BrushScript BT"
-            | "CommercialScript BT"
-            | "Liberty BT"
-            | "MurrayHill Bd BT"
-            | "ParkAvenue BT"
-            | "CentSchbook BT"
-            | "펜흘림" => Some("HY견명조"),
-            "HCI Hollyhock"
-            | "HCI Hollyhock Narrow"
-            | "HCI Acacia"
-            | "Swis721 BT"
-            | "Hobo BT"
-            | "Orbit-B BT"
-            | "Blippo Blk BT"
-            | "BroadwayEngraved BT"
-            | "FuturaBlack BT"
-            | "Newtext Bk BT"
-            | "DomCasual BT"
-            | "가는안상수체영문"
-            | "중간안상수체영문"
-            | "굵은안상수체영문" => Some("HY중고딕"),
-            "HCI Columbine" | "Courier10 BT" | "OCR-A BT" | "OCR-B-10 BT" | "Orator10 BT" => {
-                Some("Calibri")
-            }
-            "BernhardFashion BT" | "Freehand591 BT" => Some("HY중고딕"),
-            _ => None,
-        }
-    } else {
-        None
-    }
-}
-
-/// TTF 폰트 → @font-face 등록 폰트 치환 (모든 언어 공통)
-#[cfg(test)]
-fn resolve_ttf_font(name: &str) -> Option<&'static str> {
-    match name {
-        // 영문 별칭
-        "Gulim" => Some("굴림"),
-        "HYHeadLine Medium" => Some("HY헤드라인M"),
-        "Malgun Gothic" => Some("맑은 고딕"),
-        "HY그래픽M" => Some("HY그래픽"),
-        "SPOQAHANSANS" => Some("SpoqaHanSans"),
-        // [#2279] 한컴바탕/한컴돋움은 함초롬 계열로 치환하지 않는다.
-        // TTF name table 실측: 한컴바탕 = Haansoft Batang(HBATANG.TTF),
-        // 한컴돋움 = Haansoft Dotum(HDOTUM.TTF) — 함초롬(HCR)과 별개 폰트로
-        // 메트릭이 다르다 ('*' 0.583 vs 0.498em, 한글 음절 1.0 vs 0.97em).
-        // 종전 치환은 한컴돋움 문서의 폭 측정을 HCR Dotum 메트릭으로 보내
-        // 줄수 ±1 오차를 만들었다 (한글 PDF 실측: '*' 0.583em, 음절 1.0em).
-        // 메트릭은 generated layout-metric projection이 Haansoft 엔트리로 연결하고,
-        // SVG 렌더 폴백 체인(svg.rs)은 한컴* 이름을 직접 처리한다.
-        // 영어(1) 전용 TTF 치환 (webhwp lang=1)
-        "MS Sans Serif" => Some("함초롬돋움"),
-        "Tahoma" => Some("함초롬돋움"),
-        // "Times New Roman" — 메트릭 DB에 있으므로 치환하지 않음
-        // 백묵 계열
-        "백묵 굴림" => Some("굴림"),
-        "백묵 돋움" => Some("돋움"),
-        "백묵 바탕" => Some("바탕"),
-        "백묵 헤드라인" => Some("돋움"),
-        // Gulimche (lang=6)
-        "Gulimche" => Some("돋움"),
-        // 새~ 계열 → 함초롬 (TS 체인 최종 결과 평탄화)
-        "새바탕" => Some("함초롬바탕"),
-        "새돋움" => Some("함초롬돋움"),
-        "새굴림" => Some("함초롬돋움"),
-        "새궁서" => Some("함초롬바탕"),
-        // 맑은 고딕: 웹폰트(@font-face)로 등록되어 있으므로 치환하지 않음
-        // 안상수체 TTF 타입
-        "가는안상수체" => Some("돋움"),
-        "중간안상수체" => Some("돋움"),
-        "굵은안상수체" => Some("돋움"),
-        _ => None,
-    }
-}
-
-/// W7 전환 전 hand-written 우선순위의 테스트 전용 오라클.
-#[cfg(test)]
-fn legacy_resolve_font_substitution_decision(
-    name: &str,
-    alt_type: u8,
-    lang_index: usize,
-) -> Option<(&'static str, FontSubstitutionBoundary)> {
-    if let Some(face) = resolve_legacy_latin_font(name, lang_index) {
-        return Some((face, FontSubstitutionBoundary::LegacyLatin));
-    }
-    if alt_type == 2 {
-        if let Some(face) = resolve_hft_font(name, lang_index) {
-            return Some((face, FontSubstitutionBoundary::Hft));
-        }
-    }
-    resolve_ttf_font(name).map(|face| (face, FontSubstitutionBoundary::Ttf))
-}
-
 /// Heavy display 계열 face 여부 판정.
 ///
 /// HY헤드라인M, HY견고딕 등 face 이름 자체가 굵은 display 폰트들은
@@ -1154,6 +917,199 @@ mod tests {
     use crate::renderer::font_rule_layout_name_projection::FONT_RULE_LAYOUT_NAME_RULES;
     use crate::renderer::DEFAULT_DPI;
     use std::collections::BTreeSet;
+
+    fn resolve_legacy_latin_font(name: &str, lang_index: usize) -> Option<&'static str> {
+        if lang_index != 1 {
+            return None;
+        }
+
+        match name {
+            "HCI Poppy" => Some("Palatino Linotype"),
+            "HCI Tulip"
+            | "HCI Morning Glory"
+            | "HCI Centaurea"
+            | "HCI Bellflower"
+            | "AmeriGarmnd BT"
+            | "Bodoni Bd BT"
+            | "Bodoni Bk BT"
+            | "Baskerville BT"
+            | "GoudyOlSt BT"
+            | "Cooper Blk BT"
+            | "Stencil BT"
+            | "BrushScript BT"
+            | "CommercialScript BT"
+            | "Liberty BT"
+            | "MurrayHill Bd BT"
+            | "ParkAvenue BT"
+            | "CentSchbook BT"
+            | "펜흘림" => Some("HY견명조"),
+            "HCI Hollyhock"
+            | "HCI Hollyhock Narrow"
+            | "HCI Acacia"
+            | "Swis721 BT"
+            | "Hobo BT"
+            | "Orbit-B BT"
+            | "Blippo Blk BT"
+            | "BroadwayEngraved BT"
+            | "FuturaBlack BT"
+            | "Newtext Bk BT"
+            | "DomCasual BT"
+            | "가는안상수체영문"
+            | "중간안상수체영문"
+            | "굵은안상수체영문" => Some("HY중고딕"),
+            "HCI Columbine" | "Courier10 BT" | "OCR-A BT" | "OCR-B-10 BT" | "Orator10 BT" => {
+                Some("Calibri")
+            }
+            "BernhardFashion BT" | "Freehand591 BT" => Some("HY중고딕"),
+            _ => None,
+        }
+    }
+
+    /// HFT 폰트 → @font-face 등록 폰트 치환 (언어별).
+    fn resolve_hft_font(name: &str, lang_index: usize) -> Option<&'static str> {
+        let common = match name {
+            "한양그래픽" => Some("굴림"),
+            "한양궁서" => Some("궁서"),
+            "신명 태고딕" => Some("HY중고딕"),
+            "신명 태명조" => Some("HY신명조"),
+            "신명 견고딕" => Some("HY견고딕"),
+            "신명 견명조" => Some("HY견명조"),
+            "신명 태그래픽" => Some("HY그래픽"),
+            "신명 중고딕" => Some("HY중고딕"),
+            "태 가는 헤드라인T" => Some("HY헤드라인M"),
+            "태 가는 헤드라인D" => Some("HY헤드라인M"),
+            "양재 튼튼B" => Some("양재튼튼체B"),
+            "명조" => Some("HY견명조"),
+            "문화바탕" | "문화바탕제목" | "문화쓰기" | "문화쓰기흘림" => {
+                Some("HY신명조")
+            }
+            "신명 세명조"
+            | "신명 신명조"
+            | "신명 신신명조"
+            | "신명 중명조"
+            | "신명 순명조"
+            | "신명 신문명조" => Some("HY신명조"),
+            "옛한글" | "양재 다운명조M" => Some("HY신명조"),
+            "#세명조" | "#신명조" | "#중명조" | "#신중명조" | "#화명조A" | "#화명조B"
+            | "#태명조" | "#신태명조" | "#태신명조" | "#견명조" | "#신문명조" | "#신문태명" => {
+                Some("HY신명조")
+            }
+            "휴먼고딕" | "문화돋움" | "문화돋움제목" | "태 나무" => Some("돋움"),
+            "휴먼옛체" | "딸기" => Some("돋움"),
+            "샘물" | "가는한" | "중간한" | "굵은한" => Some("돋움"),
+            "휴먼가는샘체" | "휴먼중간샘체" | "휴먼굵은샘체" => Some("돋움"),
+            "휴먼가는팸체" | "휴먼중간팸체" | "휴먼굵은팸체" => Some("돋움"),
+            "가는안상수체" | "중간안상수체" | "굵은안상수체" => Some("돋움"),
+            "양재 매화" | "양재 소슬" | "양재 샤넬" | "옥수수" => Some("돋움"),
+            "양재 본목각M" | "복숭아" => Some("돋움"),
+            "신명 세고딕" | "신명 디나루" | "신명 세나루" => Some("돋움"),
+            "#세고딕" | "#신세고딕" | "#중고딕" | "#태고딕" | "#신문고딕" | "#신문태고"
+            | "#세나루" | "#신세나루" | "#디나루" | "#신디나루" => Some("돋움"),
+            "신명 신그래픽" | "강낭콩" => Some("굴림"),
+            "#그래픽" | "#신그래픽" | "#공작" => Some("굴림"),
+            "양재 참숯B" | "양재 와당" | "양재 이니셜" => Some("HY견고딕"),
+            "#빅" => Some("HY견고딕"),
+            "태 헤드라인T" => Some("HY견고딕"),
+            "태 헤드라인D" => Some("HY견명조"),
+            "가는공한" | "중간공한" | "굵은공한" | "필기" | "타이프" => {
+                Some("HY견명조")
+            }
+            "가지" | "오이" | "양재 둘기" => Some("HY견명조"),
+            "신명 궁서" | "#궁서" => Some("궁서"),
+            "#수암A" | "#수암B" => Some("돋움"),
+            "시스템" | "HY둥근고딕" => Some("돋움"),
+            "고딕" => Some("돋움"),
+            "산세리프" => Some("Calibri"),
+            "HCI Poppy" => Some("Palatino Linotype"),
+            "수식" => Some("HY신명조"),
+            "한글 풀어쓰기" => Some("HY견명조"),
+            _ => None,
+        };
+
+        if common.is_some() {
+            return common;
+        }
+
+        if lang_index == 1 {
+            match name {
+                "HCI Tulip"
+                | "HCI Morning Glory"
+                | "HCI Centaurea"
+                | "HCI Bellflower"
+                | "AmeriGarmnd BT"
+                | "Bodoni Bd BT"
+                | "Bodoni Bk BT"
+                | "Baskerville BT"
+                | "GoudyOlSt BT"
+                | "Cooper Blk BT"
+                | "Stencil BT"
+                | "BrushScript BT"
+                | "CommercialScript BT"
+                | "Liberty BT"
+                | "MurrayHill Bd BT"
+                | "ParkAvenue BT"
+                | "CentSchbook BT"
+                | "펜흘림" => Some("HY견명조"),
+                "HCI Hollyhock"
+                | "HCI Hollyhock Narrow"
+                | "HCI Acacia"
+                | "Swis721 BT"
+                | "Hobo BT"
+                | "Orbit-B BT"
+                | "Blippo Blk BT"
+                | "BroadwayEngraved BT"
+                | "FuturaBlack BT"
+                | "Newtext Bk BT"
+                | "DomCasual BT"
+                | "가는안상수체영문"
+                | "중간안상수체영문"
+                | "굵은안상수체영문" => Some("HY중고딕"),
+                "HCI Columbine" | "Courier10 BT" | "OCR-A BT" | "OCR-B-10 BT" | "Orator10 BT" => {
+                    Some("Calibri")
+                }
+                "BernhardFashion BT" | "Freehand591 BT" => Some("HY중고딕"),
+                _ => None,
+            }
+        } else {
+            None
+        }
+    }
+
+    /// TTF 폰트 → @font-face 등록 폰트 치환 (모든 언어 공통).
+    fn resolve_ttf_font(name: &str) -> Option<&'static str> {
+        match name {
+            "Gulim" => Some("굴림"),
+            "HYHeadLine Medium" => Some("HY헤드라인M"),
+            "Malgun Gothic" => Some("맑은 고딕"),
+            "HY그래픽M" => Some("HY그래픽"),
+            "SPOQAHANSANS" => Some("SpoqaHanSans"),
+            "MS Sans Serif" | "Tahoma" => Some("함초롬돋움"),
+            "백묵 굴림" => Some("굴림"),
+            "백묵 돋움" | "백묵 헤드라인" | "Gulimche" => Some("돋움"),
+            "백묵 바탕" => Some("바탕"),
+            "새바탕" | "새궁서" => Some("함초롬바탕"),
+            "새돋움" | "새굴림" => Some("함초롬돋움"),
+            "가는안상수체" | "중간안상수체" | "굵은안상수체" => Some("돋움"),
+            _ => None,
+        }
+    }
+
+    /// W7 전환 전 hand-written 우선순위의 테스트 전용 오라클.
+    fn legacy_resolve_font_substitution_decision(
+        name: &str,
+        alt_type: u8,
+        lang_index: usize,
+    ) -> Option<(&'static str, FontSubstitutionBoundary)> {
+        if let Some(face) = resolve_legacy_latin_font(name, lang_index) {
+            return Some((face, FontSubstitutionBoundary::LegacyLatin));
+        }
+        if alt_type == 2 {
+            if let Some(face) = resolve_hft_font(name, lang_index) {
+                return Some((face, FontSubstitutionBoundary::Hft));
+            }
+        }
+        resolve_ttf_font(name).map(|face| (face, FontSubstitutionBoundary::Ttf))
+    }
 
     fn make_doc_info_with_font() -> DocInfo {
         DocInfo {
