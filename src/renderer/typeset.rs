@@ -3212,9 +3212,11 @@ fn para_has_floating_object(para: &Paragraph) -> bool {
 /// 하나만 올린 뒤 쪽을 넘기기도 하고, 그때 직전 문단의 vpos 는 0 이라 트리거가
 /// 침묵한다 — 세 문단이 각각 한 쪽씩 차지하는 `samples/p122.hwp` 가 그 예다.
 ///
-/// 앞 문단이 vpos 0 에서 시작해 0 보다 큰 위치에서 끝났는데 바로 다음 문단이 다시
-/// vpos 0 을 주장하면 두 문단은 같은 단에 함께 놓일 수 없다. 넘침이 사유가 아니어서
-/// rhwp 자체 흐름으로는 재현되지 않으므로 저장값을 그대로 신뢰한다.
+/// 이 규칙은 본문 텍스트의 일반적인 0-vpos 연속에는 적용하지 않는다. `p122`처럼
+/// 양쪽 텍스트는 비어 있지만 구역/글자처럼 개체 컨트롤을 단독으로 가진 문단이 다시
+/// 0 에서 시작하면, 그 컨트롤 앵커는 앞 쪽의 흐름과 같은 단에 함께 놓일 수 없다.
+/// 넘침이 사유가 아니어서 rhwp 자체 흐름으로는 재현되지 않으므로 저장값을 그대로
+/// 신뢰한다.
 ///
 /// 오탐을 막기 위해 두 문단이 같은 단 기하(`column_start`/`segment_width`)를 쓰고,
 /// 어울림 개체가 없으며, 양쪽 LINE_SEG 가 합성본이 아닌 경우로만 좁힌다.
@@ -3222,10 +3224,12 @@ fn stored_vpos_top_collision(prev: &Paragraph, curr: &Paragraph) -> bool {
     if para_has_floating_object(prev) || para_has_floating_object(curr) {
         return false;
     }
-    // 앞 문단이 실제로 무언가를 담고 단 맨 위를 차지했어야 한다. 내용도 컨트롤도 없는
-    // 빈 문단이 줄줄이 이어지는 문서 말미(#1663 자리차지 표 뒤 trailing 빈 문단)는
-    // 저장 vpos 0 이 그대로 남아 있을 뿐 쪽 경계가 아니다.
-    if !para_has_visible_text(prev) && prev.controls.is_empty() {
+    // 일반 본문/생성 HWPX는 모든 문단의 LINE_SEG vpos를 0으로 저장할 수 있다. 그
+    // 경우까지 쪽 경계로 읽으면 매 문단마다 새 쪽이 생긴다. p122의 증거는 양쪽 모두
+    // 텍스트 없이 실제 컨트롤/빈 앵커를 단독으로 둔 경우이므로, 그 좁은 경우만
+    // 인정한다. 컨트롤도 없는 trailing 빈 문단(#1663) 역시 저장 0이 남아 있을 뿐 쪽
+    // 경계가 아니다.
+    if para_has_visible_text(prev) || para_has_visible_text(curr) || prev.controls.is_empty() {
         return false;
     }
 
