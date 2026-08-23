@@ -118,6 +118,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `typesetting.test.mjs` | 상시 | active | 조판 품질 검증 (문단부호 표시 상태) | — | 수동 |  |
 | `undo-contracts.test.mjs` | 상시 | active | 편집 undo 계약 실동작 검증 (Task #2301) | — | npm e2e:undo |  |
 | `undo-delete-fragment-bytes.test.mjs` | 상시 | active | [#5769] 다문단 선택 삭제 조각 undo 저장 바이트 왕복 동일성 (Delete 키 → Ctrl+Z → exportHwp 대조) | — | npm e2e:undo-delete-fragment-bytes |  |
+| `undo-depth-issue5769.test.mjs` | 상시 | active | [#5769] 혼합 세션(선택 삭제+재입력 R라운드) 실효 undo 깊이 무축출 계약 — 슬롯 합 0·조각 경로 전 라운드·스택 전량 복원·새 문서 상태 복귀. 회귀 시 예산 축출로 ③④가 깨진다 | — | npm e2e:undo-depth | E2E_DEPTH_ROUNDS 로 스모크 |
 | `undo-object-selection.test.mjs` | 상시 | active | E2E: undo/redo 후 개체/표 선택 stale ref 해제 (Task #2303) /  / 계약: undo/r | — | npm e2e:undo-object-selection |  |
 | `unsaved-changes-guard.test.mjs` | 상시 | active | #886 저장되지 않은 변경사항 보호 모달 | — | npm e2e:unsaved-guard |  |
 | `unsupported-format-error.test.mjs` | 상시 | active | 미지원 문서 오류 알림 후 정상 문서 재로드 | field-01.hwp | 수동 |  |
