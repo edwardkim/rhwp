@@ -1,0 +1,174 @@
+{
+  "candidate": {
+    "documentFace": "휴먼명조",
+    "queueRank": 13
+  },
+  "environment": {
+    "ambientFontManifestSha256": {
+      "reason": "The 2026-07-21 measurement did not preserve an ambient font manifest.",
+      "status": "unavailable",
+      "value": null
+    },
+    "exportRoute": {
+      "reason": null,
+      "status": "observed",
+      "value": "HwpObject save_as(format=PDF)"
+    },
+    "hancomVersion": {
+      "reason": null,
+      "status": "observed",
+      "value": "HwpObject 12.0.0.4547 (Hancom Office Hangeul 2022)"
+    },
+    "locale": {
+      "reason": "The 2026-07-21 measurement did not record the Windows locale.",
+      "status": "unavailable",
+      "value": null
+    },
+    "oracleAuthority": "secondary-historical",
+    "os": {
+      "reason": null,
+      "status": "observed",
+      "value": "Microsoft Windows 11 Pro 10.0.26200.8655"
+    },
+    "pdfProducer": {
+      "reason": "The per-face probe PDFs were not retained and their producer strings were not recorded.",
+      "status": "unavailable",
+      "value": null
+    },
+    "processReset": {
+      "reason": null,
+      "status": "observed",
+      "value": true
+    },
+    "rebooted": {
+      "reason": "The 2026-07-21 measurement did not record reboot state.",
+      "status": "unavailable",
+      "value": null
+    }
+  },
+  "exactMissingState": "exact-installed",
+  "execution": {
+    "evidenceClass": "historical-import",
+    "finishedAt": {
+      "reason": "Only the measurement date was preserved.",
+      "status": "unavailable",
+      "value": null
+    },
+    "measurementDate": "2026-07-21",
+    "repeatIndex": 1,
+    "startedAt": {
+      "reason": "Only the measurement date was preserved.",
+      "status": "unavailable",
+      "value": null
+    }
+  },
+  "fontState": {
+    "installedFontSha256": {
+      "reason": "The selected HFT bytes were not exposed or hashed by the historical run.",
+      "status": "unavailable",
+      "value": null
+    },
+    "readbackFace": {
+      "reason": null,
+      "status": "observed",
+      "value": "휴먼명조"
+    },
+    "readbackFontType": {
+      "reason": null,
+      "status": "observed",
+      "value": 2
+    },
+    "relatedFaceSet": [
+      "휴먼명조"
+    ],
+    "requestedFace": "휴먼명조"
+  },
+  "input": {
+    "fixtureContractVersion": "task2430-ascii-ladder-v1",
+    "fixtureGeneratorCommit": "cf64793211ee9266d520772f62f06323e2024462",
+    "sha256": {
+      "reason": "The COM-generated source document was never persisted, so no input bytes exist to hash.",
+      "status": "unavailable",
+      "value": null
+    },
+    "sourceFormat": {
+      "reason": null,
+      "status": "observed",
+      "value": "in-memory-hwp"
+    }
+  },
+  "issue": 4963,
+  "kind": "font-oracle-profile",
+  "observations": {
+    "firstTypesettingDivergence": {
+      "reason": "The historical measurement has no paired missing-font ladder state.",
+      "status": "not-applicable",
+      "value": null
+    },
+    "glyphOutlineDigest": {
+      "reason": "The historical probe PDFs were not retained for canonical outline extraction.",
+      "status": "unavailable",
+      "value": null
+    },
+    "hmtxAdvance": {
+      "reason": "The historical exact selection was HFT FontType 2, not a verified source SFNT face.",
+      "status": "not-applicable",
+      "value": null
+    },
+    "lineCount": {
+      "reason": "The historical evidence did not preserve line counts.",
+      "status": "unavailable",
+      "value": null
+    },
+    "pageCount": {
+      "reason": "The historical evidence did not preserve page counts.",
+      "status": "unavailable",
+      "value": null
+    },
+    "pdfObservedAdvance": {
+      "reason": "The stored ladder is an em-normalized ASCII aggregate, not a W5 glyph-level PDF user-space observation.",
+      "status": "unavailable",
+      "value": null
+    },
+    "subsetFontName": {
+      "reason": null,
+      "status": "observed",
+      "value": "INPILL+휴먼명조"
+    }
+  },
+  "privacy": {
+    "absoluteFontPathIncluded": false,
+    "fontBytesEmbedded": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "questionId": "exact-installed",
+  "relationEvidence": {
+    "anchor": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "evidenceSha256": "975e827841449182bc7154ba945835b5776e6f078db9bb1bae51f1359bd0dd5e",
+        "ladderSha256": "7e4c2a8d8734f2c7809135e08f18063df12d1dd26a9801fe5260ea3f934038f9",
+        "ladderSummary": {
+          "excludedAutocorrectCodepoints": [
+            34,
+            39
+          ],
+          "maximumCodepoint": 126,
+          "minimumCodepoint": 32,
+          "storedMeasuredCharacterCount": 93
+        },
+        "measurementScriptSha256": "8bbfd1078927464c6d98ee81d8271bd660aad2b2dd34c8e71f26e9f9fd7f5e92",
+        "pdfFontClassification": "Type0",
+        "preflightSha256": "d82042076d15cfcfd4520f1582d4a5c2586b46d7321b8158d6c12d8126f4abed",
+        "readbackFace": "휴먼명조",
+        "readbackFontType": 2,
+        "repeatCount": 2,
+        "requestedFace": "휴먼명조",
+        "verdict": "OK"
+      }
+    },
+    "type": "identity-exact"
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-oracle-profile-contract",
+  "issue": 4963,
+  "parentIssue": 4960,
+  "predecessorIssue": 4962,
+  "inputPreconditions": {
+    "ranking": {
+      "artifact": "mydocs/report/assets/task_m100_4962/font_typesetting_risk_rank.json",
+      "fileSha256": "6947e9e8a6c67a60a54b04dc6f1abf75e3cc66d9096a978d301ba2c10bb4ee3a",
+      "outputSha256": "95e7a41d1ed92a60cb66e1705b038c3e9086829b3c8aee48af57e8c2da111a68",
+      "kind": "font-typesetting-risk-public-ranking",
+      "queueFaceCount": 17,
+      "queueRiskCharacters": 1562076,
+      "queueBaseRiskMass": 7015182,
+      "queueBaseRiskMassPpm": 810374
+    },
+    "queueFaces": [
+      "문체부 바탕체",
+      "-윤명조120",
+      "-윤고딕110",
+      "산돌명조 L",
+      "-윤고딕310",
+      "-윤고딕120",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld바탕체 Light",
+      "맑은 고딕",
+      "한양신명조",
+      "-윤명조320",
+      "-윤명조130",
+      "휴먼명조",
+      "-윤고딕320",
+      "-윤고딕130",
+      "한컴 윤고딕 230",
+      "산돌고딕 M"
+    ],
+    "existingHancom2022Evidence": [
+      {
+        "artifact": "tools/task2430/EVIDENCE.md",
+        "sha256": "975e827841449182bc7154ba945835b5776e6f078db9bb1bae51f1359bd0dd5e",
+        "role": "environment-and-measurement-evidence"
+      },
+      {
+        "artifact": "tools/task2430/measured/preflight_report.tsv",
+        "sha256": "d82042076d15cfcfd4520f1582d4a5c2586b46d7321b8158d6c12d8126f4abed",
+        "role": "hft-exact-readback-evidence"
+      }
+    ],
+    "reusePolicy": "reuse-hash-matched-evidence-without-full-remeasurement"
+  },
+  "profilePolicy": {
+    "questionIds": [
+      "exact-installed",
+      "exact-removed",
+      "document-subst-font-only",
+      "curated-official-successor-only",
+      "all-related-fonts-missing"
+    ],
+    "observationStatuses": [
+      "observed",
+      "unavailable",
+      "not-applicable",
+      "blocked"
+    ],
+    "evidenceClasses": [
+      "synthetic-contract-fixture",
+      "historical-import",
+      "oracle-run"
+    ],
+    "relationTypes": [
+      "identity-exact",
+      "identity-alias",
+      "official-successor",
+      "document-substitution",
+      "metric-surrogate",
+      "hancom-missing-font",
+      "unknown"
+    ],
+    "firstDivergencePlanes": [
+      "selection",
+      "glyph",
+      "advance",
+      "line",
+      "page",
+      "none"
+    ],
+    "requiredW4Fields": [
+      "inputSha256",
+      "hancomVersion",
+      "pdfProducer",
+      "installedFontSha256",
+      "exactMissingState",
+      "subsetFontName",
+      "glyphOutlineDigest",
+      "hmtxAdvance",
+      "firstTypesettingDivergence",
+      "relationEvidence"
+    ],
+    "requiredEvidenceFields": [
+      "installedFontSha256",
+      "readbackFace",
+      "readbackFontType",
+      "subsetFontName",
+      "glyphOutlineDigest",
+      "hmtxAdvance",
+      "pdfObservedAdvance",
+      "firstTypesettingDivergence",
+      "lineCount",
+      "pageCount"
+    ],
+    "questionAndExactMissingStateMustMatch": true,
+    "plainNullForbidden": true,
+    "observedRequiresValue": true,
+    "unobservedRequiresNullAndReason": true,
+    "historicalImportMissingProvenanceExplicit": true,
+    "hmtxAndPdfAdvanceSeparated": true,
+    "officialSuccessorRequiresObservedDirectAnchor": true,
+    "unknownIdentityGuessing": false
+  },
+  "environmentPolicy": {
+    "acceptanceOracle": "hancom-2020-or-2022-controlled-environment",
+    "hancom2010Role": "secondary-historical-only",
+    "versionBranching": false,
+    "featureAndEvidenceDetection": true,
+    "ambientFontManifestRequired": true,
+    "processResetRequired": true,
+    "mutableFontState": "disposable-snapshot-explicit-approval-only",
+    "immutableBundleDisposition": "blocked"
+  },
+  "privacy": {
+    "fontBytesTracked": false,
+    "privateCorpusUsedAsPublicFixture": false,
+    "privateDocumentIdentityPublished": false,
+    "absoluteFontPathsPublished": false,
+    "fontRootProvisioning": "runtime-argument-outside-repository",
+    "localInventoryMode": "0600",
+    "publicFields": [
+      "font-names",
+      "font-digests",
+      "license-and-embedding-status",
+      "aggregate-observations",
+      "evidence-status-and-reason"
+    ]
+  },
+  "resourcePolicy": {
+    "regularFilesOnly": true,
+    "rejectSymlinks": true,
+    "rejectPathTraversal": true,
+    "perItemTimeoutRequired": true,
+    "inputByteLimitRequired": true,
+    "pdfPageLimitRequired": true,
+    "pdfObjectLimitRequired": true,
+    "pdfGlyphLimitRequired": true,
+    "temporaryDirectoryCleanupRequired": true,
+    "batchFailureIsolation": true
+  },
+  "scope": {
+    "productMetricDatabaseChanged": false,
+    "productFallbackChanged": false,
+    "productPaintChanged": false,
+    "all351FacesInvestigated": false,
+    "githubWrite": false
+  }
+}

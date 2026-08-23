@@ -1,0 +1,74 @@
+{
+  "environment": {
+    "baselineFontManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+    "baselineSnapshotIdentitySha256": "7961e64697b76e8985d918abcf52a8fa0eca1d7cb5d5d46bea0af7f926b4dbe8",
+    "unrelatedFontProjectionSha256": "437a36e513cce9d2909d904f3d07d2341051cc017e21be9ec6d35bbb9d87bc78",
+    "vmIdentitySha256": "466349124f6411dc1460697f8c2959256c28d682daf5f48376d05c83a1f5346d"
+  },
+  "evidenceClass": "acceptance-primary",
+  "issue": 4963,
+  "kind": "font-oracle-stage4-acceptance-projection",
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "hostNameIncluded": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "schemaVersion": 1,
+  "targets": [
+    {
+      "documentFace": "문체부 바탕체",
+      "fixtureSha256": "deb4566e2be357959c22db06460f485a12bb61521b22179495fcb1cda79ca511",
+      "profiles": [
+        {
+          "questionId": "exact-installed",
+          "sha256": "2b0059e5ba67be55fec28a3326903762bd2c8ff354de0f08487447783e41d607",
+          "typesettingProjectionSha256": "eb44a80f60df7eacb0f7f1e884972749931b74bc037d9e37e81aed9cf13a0042"
+        },
+        {
+          "questionId": "document-subst-font-only",
+          "sha256": "5835c5c97220b1be0da66f474c2aedee6233fda7ceac369b7610c948d128b25d",
+          "typesettingProjectionSha256": "c5b00c879412d9f370ed2291b7f24b1cb5dfdd69efd892da20e6a280eecc5f36"
+        },
+        {
+          "questionId": "exact-removed",
+          "sha256": "83131367a71a3bd8b173d116f9f65e3903ccf2ad9810b640d336420ddfdde861",
+          "typesettingProjectionSha256": "c5b00c879412d9f370ed2291b7f24b1cb5dfdd69efd892da20e6a280eecc5f36"
+        },
+        {
+          "questionId": "all-related-fonts-missing",
+          "sha256": "967fe8c83a1a1a4e103b9218e1d9ea4e3b43c487f87705007aa7b5a3ed3546f7",
+          "typesettingProjectionSha256": "c5b00c879412d9f370ed2291b7f24b1cb5dfdd69efd892da20e6a280eecc5f36"
+        }
+      ],
+      "queueRank": 1
+    },
+    {
+      "documentFace": "KoPubWorld돋움체 Light",
+      "fixtureSha256": "1cc8062c6fd0da39cfddc4182115226717516d4250e693b43596293374236f9e",
+      "profiles": [
+        {
+          "questionId": "exact-installed",
+          "sha256": "e1952e4136b6ad756c9b51f424e56db032389f4848960f7e75342a322794beca",
+          "typesettingProjectionSha256": "726ffb04c0b27231cfc1f4aeb3d8b17036bb3563529dcf883bfbc01f02181e4b"
+        },
+        {
+          "questionId": "document-subst-font-only",
+          "sha256": "17ce42c5af78cc6a739791848191d5f23f60fc4314228a8b86046c3b93671e3a",
+          "typesettingProjectionSha256": "c5b00c879412d9f370ed2291b7f24b1cb5dfdd69efd892da20e6a280eecc5f36"
+        },
+        {
+          "questionId": "exact-removed",
+          "sha256": "1f822eb4cf8f16187bf5463c8c458288db549fcf711f9027289d197231d2f29a",
+          "typesettingProjectionSha256": "c5b00c879412d9f370ed2291b7f24b1cb5dfdd69efd892da20e6a280eecc5f36"
+        },
+        {
+          "questionId": "all-related-fonts-missing",
+          "sha256": "d2b75f37b789f03c95382bc793f5ff4ed1a7c06e7a54f289c7ee26efc0d7f4c5",
+          "typesettingProjectionSha256": "c5b00c879412d9f370ed2291b7f24b1cb5dfdd69efd892da20e6a280eecc5f36"
+        }
+      ],
+      "queueRank": 7
+    }
+  ]
+}

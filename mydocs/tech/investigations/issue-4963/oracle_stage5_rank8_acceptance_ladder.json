@@ -1,0 +1,173 @@
+{
+  "attestation": {
+    "baselineFontManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+    "baselineSnapshotIdentitySha256": "7961e64697b76e8985d918abcf52a8fa0eca1d7cb5d5d46bea0af7f926b4dbe8",
+    "evidenceClass": "acceptance-primary",
+    "externalControlPlane": true,
+    "issue": 4963,
+    "kind": "font-oracle-disposable-environment-attestation",
+    "privacy": {
+      "absolutePathIncluded": false,
+      "fontBytesIncluded": false,
+      "hostNameIncluded": false
+    },
+    "provider": "hyper-v-checkpoint",
+    "restoreProbe": {
+      "beforeManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+      "performed": true,
+      "recoveredManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40"
+    },
+    "schemaVersion": 1,
+    "vmIdentitySha256": "466349124f6411dc1460697f8c2959256c28d682daf5f48376d05c83a1f5346d"
+  },
+  "dispositions": [
+    {
+      "question": "curated-official-successor-only",
+      "reason": "No direct publisher or byte lineage establishes an official successor.",
+      "status": "not-provided"
+    }
+  ],
+  "evidenceClass": "acceptance-primary",
+  "fixture": {
+    "documentSubstitution": {
+      "face": "KoPubWorld돋움체 Light",
+      "identityAliasOrSuccessor": false,
+      "relationAnchor": "fixture-declared-substFont",
+      "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f"
+    },
+    "semanticSha256": "4a72d8cc641e88e9aa0e4cdc7f10eb192b2811759546efc5ac974730944ec4de",
+    "sha256": "f6edc8fc43dfd3256385e9752979c14a7041e50c06d36be47cef6e3486835084"
+  },
+  "issue": 4963,
+  "kind": "font-oracle-stage5-ladder-evidence",
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "hostNameIncluded": false,
+    "privateCorpusAccessed": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "profiles": [
+    {
+      "questionId": "exact-installed",
+      "sha256": "94e5cb958a10b9e9398091f81bc07547b22e89781070918ee6287c724fc8b26d"
+    },
+    {
+      "questionId": "document-subst-font-only",
+      "sha256": "861859b308df21f307fe4cb7a29c6fdad499dc0a98ebbe58e5934b13bdf32ba2"
+    },
+    {
+      "questionId": "exact-removed",
+      "sha256": "2e8e7b44f36737447bb02cdda50d6188e0eaa196963d0c48bbbd97ca2518fc3d"
+    },
+    {
+      "questionId": "all-related-fonts-missing",
+      "sha256": "9b3818f561dfd6ab6cf3f1d595ec12d4594eed6393471b00e1bdbf998a5f61fb"
+    }
+  ],
+  "runs": [
+    {
+      "ambientFontManifestSha256": "b6804297959be101efb8f446029ae0921ef920cc5d439a54e21f1fabf7cd4820",
+      "executionId": "rank-8-exact-only-20260822",
+      "fontCacheAction": "font-cache-refresh-and-process-reset",
+      "inputSha256": "f6edc8fc43dfd3256385e9752979c14a7041e50c06d36be47cef6e3486835084",
+      "managedFonts": [
+        {
+          "face": "KoPubWorld바탕체 Light",
+          "present": true,
+          "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18"
+        },
+        {
+          "face": "KoPubWorld돋움체 Light",
+          "present": false,
+          "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f"
+        }
+      ],
+      "outputProfileSha256": "94e5cb958a10b9e9398091f81bc07547b22e89781070918ee6287c724fc8b26d",
+      "physicalState": "exact-only",
+      "processReset": true,
+      "questions": [
+        "exact-installed"
+      ],
+      "restore": {
+        "baselineManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+        "recoveredManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+        "restoredAfterRun": true,
+        "restoredBeforeRun": true
+      },
+      "typesettingProjectionSha256": "38f83a7973aaa49b4464b4e8d7579c05dfd47f8209997ceb1a740fa0baf2b4c7",
+      "unrelatedFontProjectionSha256": "437a36e513cce9d2909d904f3d07d2341051cc017e21be9ec6d35bbb9d87bc78"
+    },
+    {
+      "ambientFontManifestSha256": "d825dd3db24df0f344cf5737fd76beb711c6445a98146c8bbf93ca1c01c98a9a",
+      "executionId": "rank-8-subst-only-20260822",
+      "fontCacheAction": "font-cache-refresh-and-process-reset",
+      "inputSha256": "f6edc8fc43dfd3256385e9752979c14a7041e50c06d36be47cef6e3486835084",
+      "managedFonts": [
+        {
+          "face": "KoPubWorld바탕체 Light",
+          "present": false,
+          "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18"
+        },
+        {
+          "face": "KoPubWorld돋움체 Light",
+          "present": true,
+          "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f"
+        }
+      ],
+      "outputProfileSha256": "861859b308df21f307fe4cb7a29c6fdad499dc0a98ebbe58e5934b13bdf32ba2",
+      "physicalState": "subst-only",
+      "processReset": true,
+      "questions": [
+        "document-subst-font-only"
+      ],
+      "restore": {
+        "baselineManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+        "recoveredManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+        "restoredAfterRun": true,
+        "restoredBeforeRun": true
+      },
+      "typesettingProjectionSha256": "59801255a8663ef14c9796be76942bc95b2fa46f80bc6b0631bf5bd220c827be",
+      "unrelatedFontProjectionSha256": "437a36e513cce9d2909d904f3d07d2341051cc017e21be9ec6d35bbb9d87bc78"
+    },
+    {
+      "ambientFontManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+      "executionId": "rank-8-none-related-20260822",
+      "fontCacheAction": "process-reset",
+      "inputSha256": "f6edc8fc43dfd3256385e9752979c14a7041e50c06d36be47cef6e3486835084",
+      "managedFonts": [
+        {
+          "face": "KoPubWorld바탕체 Light",
+          "present": false,
+          "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18"
+        },
+        {
+          "face": "KoPubWorld돋움체 Light",
+          "present": false,
+          "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f"
+        }
+      ],
+      "outputProfileSha256": "2e8e7b44f36737447bb02cdda50d6188e0eaa196963d0c48bbbd97ca2518fc3d",
+      "physicalState": "none-related",
+      "processReset": true,
+      "questions": [
+        "exact-removed",
+        "all-related-fonts-missing"
+      ],
+      "restore": {
+        "baselineManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+        "recoveredManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+        "restoredAfterRun": true,
+        "restoredBeforeRun": true
+      },
+      "typesettingProjectionSha256": "59801255a8663ef14c9796be76942bc95b2fa46f80bc6b0631bf5bd220c827be",
+      "unrelatedFontProjectionSha256": "437a36e513cce9d2909d904f3d07d2341051cc017e21be9ec6d35bbb9d87bc78"
+    }
+  ],
+  "schemaVersion": 1,
+  "target": {
+    "documentFace": "KoPubWorld바탕체 Light",
+    "queueRank": 8
+  },
+  "unrelatedFontProjectionSha256": "437a36e513cce9d2909d904f3d07d2341051cc017e21be9ec6d35bbb9d87bc78"
+}

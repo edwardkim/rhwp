@@ -1,0 +1,201 @@
+{
+  "candidate": {
+    "documentFace": "문체부 바탕체",
+    "queueRank": 1
+  },
+  "environment": {
+    "ambientFontManifestSha256": {
+      "reason": null,
+      "status": "observed",
+      "value": "21ab57e274238b7bcd823f3feca01c8ba9b9eb5ea88f5345ca7c7b1f46533bc3"
+    },
+    "exportRoute": {
+      "reason": null,
+      "status": "observed",
+      "value": "HAction.FileSaveAsPdf"
+    },
+    "hancomVersion": {
+      "reason": null,
+      "status": "observed",
+      "value": "11, 0, 0, 9136"
+    },
+    "locale": {
+      "reason": null,
+      "status": "observed",
+      "value": "ko-KR"
+    },
+    "oracleAuthority": "acceptance-primary",
+    "os": {
+      "reason": null,
+      "status": "observed",
+      "value": "Microsoft Windows 11 Pro"
+    },
+    "pdfProducer": {
+      "reason": null,
+      "status": "observed",
+      "value": "Hancom PDF 1.3.0.550"
+    },
+    "processReset": {
+      "reason": null,
+      "status": "observed",
+      "value": true
+    },
+    "rebooted": {
+      "reason": null,
+      "status": "observed",
+      "value": true
+    }
+  },
+  "exactMissingState": "exact-installed",
+  "execution": {
+    "evidenceClass": "oracle-run",
+    "finishedAt": {
+      "reason": null,
+      "status": "observed",
+      "value": "2026-08-22T13:08:56.8539321Z"
+    },
+    "measurementDate": "2026-08-22",
+    "repeatIndex": 2,
+    "startedAt": {
+      "reason": null,
+      "status": "observed",
+      "value": "2026-08-22T13:08:44.4094300Z"
+    }
+  },
+  "fontState": {
+    "installedFontSha256": {
+      "reason": null,
+      "status": "observed",
+      "value": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44"
+    },
+    "readbackFace": {
+      "reason": null,
+      "status": "observed",
+      "value": "함초롬바탕"
+    },
+    "readbackFontType": {
+      "reason": null,
+      "status": "observed",
+      "value": 5
+    },
+    "relatedFaceSet": [
+      "문체부 바탕체",
+      "KoPubWorld바탕체 Light"
+    ],
+    "requestedFace": "문체부 바탕체"
+  },
+  "input": {
+    "fixtureContractVersion": "w5-oracle-typesetting-v1-subst-v1",
+    "fixtureGeneratorCommit": "04c1d874d67b84afced3061b80d4e22d4d827f72",
+    "sha256": {
+      "reason": null,
+      "status": "observed",
+      "value": "deb4566e2be357959c22db06460f485a12bb61521b22179495fcb1cda79ca511"
+    },
+    "sourceFormat": {
+      "reason": null,
+      "status": "observed",
+      "value": "hwpx"
+    }
+  },
+  "issue": 4963,
+  "kind": "font-oracle-profile",
+  "observations": {
+    "firstTypesettingDivergence": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "characterIndex": 18,
+        "lineIndex": 0,
+        "pageIndex": 0,
+        "plane": "selection"
+      }
+    },
+    "glyphOutlineDigest": {
+      "reason": null,
+      "status": "observed",
+      "value": "f58553d9c1b1107c0f633e79188a20dba4eae63e938755a75936fd9fbb423e20"
+    },
+    "hmtxAdvance": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "advance": 1000,
+        "faceIndex": 0,
+        "sourceFontSha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+        "unitsPerEm": 1000
+      }
+    },
+    "lineCount": {
+      "reason": null,
+      "status": "observed",
+      "value": 30
+    },
+    "pageCount": {
+      "reason": null,
+      "status": "observed",
+      "value": 1
+    },
+    "pdfObservedAdvance": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "advance": 8.012243,
+        "glyphOrCid": "U+AC00/4",
+        "unit": "pdf-user-space"
+      }
+    },
+    "subsetFontName": {
+      "reason": null,
+      "status": "observed",
+      "value": "INPILL+MBatang"
+    }
+  },
+  "privacy": {
+    "absoluteFontPathIncluded": false,
+    "fontBytesEmbedded": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "questionId": "exact-installed",
+  "relationEvidence": {
+    "anchor": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "documentFaceReadback": "함초롬바탕",
+        "exactSfntAlias": "MBatang",
+        "exportSubsetFontName": "INPILL+MBatang",
+        "exportUsedExactBytes": true,
+        "firstDivergenceComparedWith": "all-related-fonts-missing",
+        "pdfObservationCanonicalSha256": "5391d3359e56c0133cbe40ec46010ef4d96d73178a2a8fe96abd48548c8316c8",
+        "pdfSha256": "68fff42b7d4ff823ae95d25424e60eb2a70c14b3bd67bf7814dfea28247d7451",
+        "requestedDocumentFace": "문체부 바탕체",
+        "runEvidenceSha256": "3b505e88c5aa574cbe0f81d0cf34a6c31b985103e09624b421034801b6fff30c",
+        "sourceFontSha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+        "sourceGlyphOutlineSha256": "f58553d9c1b1107c0f633e79188a20dba4eae63e938755a75936fd9fbb423e20",
+        "sourceNameTable": {
+          "family": [
+            "MBatang",
+            "문체부 바탕체"
+          ],
+          "fullName": [
+            "MBatang",
+            "문체부 바탕체"
+          ],
+          "postScriptName": [
+            "MBatang",
+            "문체부 바탕체"
+          ],
+          "preferredFamily": [],
+          "preferredSubfamily": [],
+          "subfamily": [
+            "Regular"
+          ]
+        },
+        "typesettingProjectionSha256": "eb44a80f60df7eacb0f7f1e884972749931b74bc037d9e37e81aed9cf13a0042"
+      }
+    },
+    "type": "identity-alias"
+  },
+  "schemaVersion": 2
+}

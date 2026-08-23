@@ -1,0 +1,173 @@
+{
+  "candidate": {
+    "documentFace": "문체부 바탕체",
+    "queueRank": 1
+  },
+  "environment": {
+    "ambientFontManifestSha256": {
+      "reason": null,
+      "status": "observed",
+      "value": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40"
+    },
+    "exportRoute": {
+      "reason": null,
+      "status": "observed",
+      "value": "HAction.FileSaveAsPdf"
+    },
+    "hancomVersion": {
+      "reason": null,
+      "status": "observed",
+      "value": "11, 0, 0, 9136"
+    },
+    "locale": {
+      "reason": null,
+      "status": "observed",
+      "value": "ko-KR"
+    },
+    "oracleAuthority": "acceptance-primary",
+    "os": {
+      "reason": null,
+      "status": "observed",
+      "value": "Microsoft Windows 11 Pro"
+    },
+    "pdfProducer": {
+      "reason": null,
+      "status": "observed",
+      "value": "Hancom PDF 1.3.0.550"
+    },
+    "processReset": {
+      "reason": null,
+      "status": "observed",
+      "value": true
+    },
+    "rebooted": {
+      "reason": null,
+      "status": "observed",
+      "value": true
+    }
+  },
+  "exactMissingState": "all-related-fonts-missing",
+  "execution": {
+    "evidenceClass": "oracle-run",
+    "finishedAt": {
+      "reason": null,
+      "status": "observed",
+      "value": "2026-08-22T13:13:16.4453441Z"
+    },
+    "measurementDate": "2026-08-22",
+    "repeatIndex": 1,
+    "startedAt": {
+      "reason": null,
+      "status": "observed",
+      "value": "2026-08-22T13:13:04.7134451Z"
+    }
+  },
+  "fontState": {
+    "installedFontSha256": {
+      "reason": "The controlled none-related state contains neither managed related font.",
+      "status": "not-applicable",
+      "value": null
+    },
+    "readbackFace": {
+      "reason": null,
+      "status": "observed",
+      "value": "함초롬바탕"
+    },
+    "readbackFontType": {
+      "reason": null,
+      "status": "observed",
+      "value": 5
+    },
+    "relatedFaceSet": [
+      "문체부 바탕체",
+      "KoPubWorld바탕체 Light"
+    ],
+    "requestedFace": "문체부 바탕체"
+  },
+  "input": {
+    "fixtureContractVersion": "w5-oracle-typesetting-v1-subst-v1",
+    "fixtureGeneratorCommit": "04c1d874d67b84afced3061b80d4e22d4d827f72",
+    "sha256": {
+      "reason": null,
+      "status": "observed",
+      "value": "deb4566e2be357959c22db06460f485a12bb61521b22179495fcb1cda79ca511"
+    },
+    "sourceFormat": {
+      "reason": null,
+      "status": "observed",
+      "value": "hwpx"
+    }
+  },
+  "issue": 4963,
+  "kind": "font-oracle-profile",
+  "observations": {
+    "firstTypesettingDivergence": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "characterIndex": 18,
+        "lineIndex": 0,
+        "pageIndex": 0,
+        "plane": "selection"
+      }
+    },
+    "glyphOutlineDigest": {
+      "reason": "The selected HCR fallback source bytes were outside the managed two-font set.",
+      "status": "unavailable",
+      "value": null
+    },
+    "hmtxAdvance": {
+      "reason": "The selected HCR fallback hmtx source was not frozen by this controlled run.",
+      "status": "unavailable",
+      "value": null
+    },
+    "lineCount": {
+      "reason": null,
+      "status": "observed",
+      "value": 30
+    },
+    "pageCount": {
+      "reason": null,
+      "status": "observed",
+      "value": 1
+    },
+    "pdfObservedAdvance": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "advance": 7.774934,
+        "glyphOrCid": "U+AC00/15",
+        "unit": "pdf-user-space"
+      }
+    },
+    "subsetFontName": {
+      "reason": null,
+      "status": "observed",
+      "value": "INPILL+HCRBatang-Bold"
+    }
+  },
+  "privacy": {
+    "absoluteFontPathIncluded": false,
+    "fontBytesEmbedded": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "questionId": "all-related-fonts-missing",
+  "relationEvidence": {
+    "anchor": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "exportSubsetFontName": "INPILL+HCRBatang-Bold",
+        "firstDivergenceComparedWith": "exact-installed",
+        "managedDocumentSubstitutionPresent": false,
+        "managedExactPresent": false,
+        "pdfObservationCanonicalSha256": "ddf887c1f0cc112f3b33f33fad6414fa6ea85286f5f89bfde48468e6920ce02a",
+        "pdfSha256": "e46713378530c836fb129387dfac13757605506a05f5b39a00578ba69f2558a1",
+        "runEvidenceSha256": "70f4aec4fca48c1fcce7541e0a7dc30a5924899ff9e291cbbcf2d0c8ba78a573",
+        "typesettingProjectionSha256": "c5b00c879412d9f370ed2291b7f24b1cb5dfdd69efd892da20e6a280eecc5f36"
+      }
+    },
+    "type": "hancom-missing-font"
+  },
+  "schemaVersion": 2
+}
