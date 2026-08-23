@@ -93,15 +93,14 @@ fn section_first_paragraph_document() -> Document {
         char_count: 57,
         ..Default::default()
     };
-    para.controls
-        .push(Control::SectionDef(Box::new(secdef())));
-    para.controls
-        .push(Control::ColumnDef(ColumnDef::default()));
+    para.controls.push(Control::SectionDef(Box::new(secdef())));
+    para.controls.push(Control::ColumnDef(ColumnDef::default()));
     for _ in 0..4 {
         para.controls
             .push(Control::PageNumberPos(PageNumberPos::default()));
     }
-    para.controls.push(Control::Table(Box::new(one_cell_table())));
+    para.controls
+        .push(Control::Table(Box::new(one_cell_table())));
     para.line_segs = vec![line_seg(0), line_seg(48)];
 
     let mut section = Section {
