@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/font_fallback_strategy.md
-last_verified: 2026-08-23
+last_verified: 2026-08-24
 ---
 
 # CJK 폰트 폴백 전략 보고서
@@ -21,6 +21,10 @@ last_verified: 2026-08-23
 > 아래 `font-substitution.ts`·`font-loader.ts`의 대형 literal 표 언급은 당시 구현 기록이다. 현재 두
 > 파일은 generated projection을 소비하며, document substitution·local probe·glyph/capability 판정은
 > hand-written 알고리즘으로 남는다.
+>
+> 2026-08-24 현행화: 현재 registry schema 1.0은 W1/W6에서 이행한 830개 active rule을 봉인한
+> read-only authority다. 제품 규칙의 추가·의미 수정·폐기는 schema 1.0 JSON이나 generated projection을
+> 직접 고치지 않고, 별도 승인된 다음 schema 판과 evidence delta 계약을 먼저 마련한다.
 
 ## 목차
 
@@ -94,6 +98,12 @@ canonical source `assets/fonts/`에는 재배포 가능한 WOFF2 36개가 Git으
 같은 source/target 문자열이 보여도 layout, paint, supply와 detection을 합치지 않는다. 특히 Canvas2D
 CSS 사용 가능, webfont URL 계획, CanvasKit SFNT bytes 확보는 서로 다른 사실이다. W2 Font Decision
 Trace는 실제 선택이 끝난 뒤 generated `ruleId`를 설명할 뿐 규칙 선택 권위가 아니다.
+
+schema 1.0은 현재 결과를 재현하는 봉인판이다. 동일 의미의 generator·serialization 결함은 registry
+semantic bytes를 유지한 채 정정할 수 있지만, 제품 규칙 변경을 위해 수량·status·historical evidence
+제약을 느슨하게 만들지 않는다. 새 규칙·의미 수정·폐기는 별도 이슈에서 다음 schema 판, migration
+manifest, `active`·`retired` lifecycle과 pre/post semantic delta를 먼저 승인한다. 폐기된 rule도 삭제하지
+않고 trace·감사 계보에 남긴다.
 
 ---
 
@@ -758,6 +768,9 @@ HWP 문서에서 다음 폰트명들은 FONT_METRICS DB 에 정식 엔트리가 
 
 - [ ] layout-name, layout-metric, paint, supply, detection 중 결정면과 relation을 먼저 확정한다.
 - [ ] `assets/font-rules/font_rule_registry.json`의 현재 schema 판이 그 변경을 허용하는지 확인한다.
+      schema 1.0은 read-only이므로 제품 규칙 변경이면 다음 schema 판의 별도 이슈·계획·승인이 먼저다.
+- [ ] 기존 W1 snapshot을 갱신하지 않고 새 evidence parent·digest와 rule 유지·신규·retirement 판정을
+      migration manifest에 기록한다.
 - [ ] Rust/Studio generated 파일을 직접 편집하지 않고 `font_rule_projection_gen.mjs`로 재생성한다.
 - [ ] layout-name 규칙이면 `rust-layout-name`, metric alias면 `rust-layout-metric` projection만 바뀌는지
       manifest digest로 확인한다.

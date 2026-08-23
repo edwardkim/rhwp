@@ -1,8 +1,8 @@
 ---
 kind: report
-status: active
-canonical: mydocs/plans/task_m100_4966.md
-last_verified: 2026-08-23
+status: completed
+canonical: mydocs/report/task_m100_4966_report.md
+last_verified: 2026-08-24
 ---
 
 # Task M100 #4966 최종 보고서 — W7 canonical font registry
@@ -14,8 +14,9 @@ Canvas2D paint, webfont supply와 CanvasKit SFNT의 유한 규칙을 하나의 c
 맞는 정적 projection으로 생성한다. 전환 전후 선택 결과·순서·metric·renderer output은 동일하다.
 
 최초 로컬 결과와 메인테이너 승인은 있었지만, PR #5950의 CI가 PR-base unit-tier 정책 위반을 발견해
-완료 판정을 철회하고 Stage W7-R 영향도 재감사로 되돌렸다. 이후 근본 정정과 W7-R4 전체 로컬 재검증은
-완료했다. 최신 원격 CI, self-review, merge와 issue close는 후속 승인 게이트다.
+완료 판정을 철회하고 Stage W7-R 영향도 재감사로 되돌렸다. 이후 근본 정정과 W7-R4 전체 로컬·원격
+검증을 완료했고, PR #5950을 일반 merge commit 방식으로 병합했다. Issue #4966은 자동 종료됐으며
+merge commit은 `5057a7fcaf055b928e76115cdee4bc20bf0936f9`다.
 
 ## 2. 단계별 산출
 
@@ -107,14 +108,23 @@ schema 1.0은 W1/W6 일회 이행 결과 830개를 봉인한 read-only canonical
 identity가 바뀌는 수정, 삭제 대신 `retired` 상태·후속 rule·사유를 먼저 계약으로 만든다. 상세 절차는
 [Issue #4966 조사 정본](../tech/investigations/issue-4966/README.md)에 있다.
 
-## 6. W8 인계 조건
+## 6. W7.5와 W8 인계 조건
 
-W8은 개별 mapping의 정확성을 보정하는 단계다. 시작 조건은 다음과 같다.
+schema 1.0은 제품 규칙 변경을 지원하지 않으므로 W8 첫 mapping 보정 전에 별도 W7.5 이슈에서 변경
+가능한 다음 registry 판을 승인하고 기존 830개 active rule을 의미 변화 없이 이행해야 한다. W7.5는
+rule 추가·의미 수정·retirement, evidence parent/digest와 backend별 semantic delta를 계약하되 제품
+선택 결과는 바꾸지 않는다.
 
-1. 변경 가능한 다음 registry schema와 evidence 계보를 승인한다.
+그 뒤 W8은 개별 mapping의 정확성을 보정한다. 시작 조건은 다음과 같다.
+
+1. W7.5의 변경 가능한 다음 registry schema와 evidence 계보가 통합돼 있다.
 2. 한 번에 한 decision plane과 한 backend projection만 의미상 바꾸는 change set을 만든다.
 3. 변경 전후 `ruleId`, metric entry, selection tuple과 renderer output을 대사한다.
 4. Canvas2D availability를 CanvasKit SFNT capability로, plan을 load 성공으로 승격하지 않는다.
 5. public fixture와 필요한 경우 비식별 aggregate만 사용하고 private corpus 식별 정보는 내보내지 않는다.
 
 이 조건 전에는 schema 1.0을 느슨하게 만들거나 generated source를 직접 수정하지 않는다.
+
+W8 tracker 전체 완료는 W9의 조건이 아니다. kerning cohort가 사용하는 metric·face와 진행 중 W8
+변경의 겹침을 대사하고, 겹치는 face가 교정 완료 또는 no-change disposition으로 동결되면 W9를 독립
+진행할 수 있다. 상세 방향은 [#4960 수정 수행계획](../plans/task_m100_4960.md)을 따른다.

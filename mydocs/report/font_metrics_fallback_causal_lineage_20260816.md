@@ -2,7 +2,7 @@
 kind: investigation
 status: active
 canonical: mydocs/tech/font_fallback_strategy.md
-last_verified: 2026-08-16
+last_verified: 2026-08-24
 ---
 
 # 폰트 메트릭·fallback 원인 계보 및 보호 불변식
@@ -14,6 +14,10 @@ last_verified: 2026-08-16
 - 기준 HEAD: `44125461187c158073daf5b6b317b08042e7332a`
 - 장기 정책 authority: [CJK 폰트 폴백 전략](../tech/font_fallback_strategy.md)
 - 사고 진단 절차 authority: [폰트 incident 대응 절차](../manual/font_incident_response.md)
+
+> 2026-08-24 현행화: W0~W7 완료 결과를 반영해 W7 이후의 단일 임계 경로를 registry evolution,
+> face별 correction qualification과 kerning cohort 동결 게이트로 수정했다. 2026-08-16의 역사·수치와
+> FI-01~FI-14는 변경하지 않는다.
 
 ## 1. 결론
 
@@ -441,10 +445,12 @@ font selection test 등가, 생성 산출물 deterministic hash 일치.
 **Stage C 개별 변경 게이트:** target controlled ladder, exact/missing oracle profile 분리, 첫 divergence와
 glyph position 비교, HWP/HWPX 포맷별 corpus cohort, native/WASM parity, Canvas2D/CanvasKit backend별 판정.
 
-## 10. 실제 실행 순서 — 하나씩 닫는 단일 임계 경로
+## 10. 실제 실행 순서 — 증거 기반 게이트와 분기 경로
 
 Stage A~C는 방향을 설명하지만 실제 작업 단위로는 너무 크다. 전체를 한 이슈에서 동시에 고치지
-않고, 아래의 W0~W10을 앞 단계의 산출물이 다음 단계의 입력이 되도록 순서대로 닫는다.
+않고 W0~W7은 앞 단계의 산출물이 다음 단계의 입력이 되는 단일 경로로 닫았다. W7 이후에는 source와
+provider evidence가 사건별로 도착하고 W8이 장기 tracker가 되므로, registry 변경·face 교정·kerning을
+하나의 직선 완료 조건으로 묶지 않는다.
 
 ```mermaid
 flowchart LR
@@ -455,13 +461,21 @@ flowchart LR
     W4 --> W5[W5 상위 후보 oracle]
     W5 --> W6[W6 데이터 계보 분리]
     W6 --> W7[W7 canonical projection]
-    W7 --> W8[W8 face별 교정 반복]
-    W8 --> W9[W9 kerning]
+    W7 --> W75[W7.5 registry evolution]
+    W75 --> Q[W8 correction qualification]
+    Q --> W8[W8 face별 교정 반복]
+    D[source·provider·identity 새 evidence] --> Q
+    W75 --> K[kerning cohort metric·face 동결]
+    Q --> K
+    W8 --> K
+    K --> W9[W9 kerning]
     W9 --> W10[W10 vertical·shaping]
 ```
 
 핵심은 W7까지 제품의 font 선택 결과를 바꾸지 않는 것이다. 먼저 현재 동작을 설명하고 재현할 수
-있게 만든 뒤, W8부터 근거가 확보된 face 하나씩 동작을 바꾼다.
+있게 만든 뒤, W7.5에서 변경 가능한 registry 계약을 별도로 승인한다. W8은 근거가 확보된 face 하나씩
+동작을 바꾸되, source 발견을 기다리는 다른 face 때문에 kerning이 무기한 막히지 않도록 관련 cohort만
+동결해 W9로 진행한다.
 
 ### 10.1 W0 — 현재 기준선과 보호 계약 고정
 
@@ -569,21 +583,41 @@ W4가 끝날 때까지 새로운 metric face를 대량 추가하지 않는다.
 - 제품 동작 변경: 없음
 - 완료 조건: 생성 전후 Rust·TypeScript table과 lookup 결과가 전수 동일하고 산출물 hash가 결정론적
 
-W7까지 끝나면 새로운 규칙 하나를 원장에 기록하고 필요한 backend 산출물만 갱신할 수 있다.
+W7 결과인 schema 1.0은 830개 active rule을 봉인한 read-only canonical authority다. 생성기나 직렬화의
+동일 의미 결함은 semantic bytes를 유지한 채 고칠 수 있지만, 새 규칙·의미 수정·폐기는 schema 1.0을
+직접 편집해 처리하지 않는다.
 
-### 10.9 W8 — font face 하나를 하나의 이슈로 교정
+### 10.9 W7.5 — registry 규칙 생명주기와 evidence delta 계약
+
+**질문:** 역사 snapshot을 거짓으로 갱신하지 않고 제품 규칙을 어떻게 추가·수정·폐기하는가?
+
+- 입력: W1 historical ledger, W5 Oracle evidence, W6 metric lineage와 W7 schema 1.0
+- 산출물: 다음 registry schema 판, migration manifest, rule lifecycle와 semantic delta 계약
+- 최소 계약: `active`·`retired`, 후속 rule, evidence parent/digest, pre/post selection tuple,
+  backend projection별 semantic delta
+- 제품 동작 변경: 없음. 기존 830개 active rule을 의미 변화 없이 다음 판으로 이행한다.
+- 완료 조건: 새 evidence가 W1 snapshot을 다시 쓰지 않고 연결되며, 필요한 backend projection만
+  변경되는 것을 validator와 mutation test가 fail-closed한다.
+
+정확한 schema version과 field 이름은 W7.5 별도 이슈·수행계획에서 확정한다. 이 단계 전에 schema 1.0을
+느슨하게 만들거나 generated Rust·TypeScript 산출물을 직접 편집하지 않는다.
+
+### 10.10 W8 — font face 하나를 하나의 이슈로 교정
 
 **질문:** 어떤 실제 사용자 문서가 이 교정으로 좋아지고 무엇이 그대로 유지되는가?
 
-W4 순위의 face를 한 번에 하나씩 다음 반복으로 처리한다.
+W8은 evidence 재개, correction qualification과 실제 product correction의 세 lane을 구분한다. W4의 A/B
+band와 W5 profile만으로 구현 이슈를 만들지 않고 현재 rhwp의 오류, 목표 decision plane, portable 정책과
+재배포·조달 가능성을 먼저 설명한다. 조건을 통과한 face만 한 번에 하나씩 다음 반복으로 처리한다.
 
 ```text
 후보 선택
   → W5 oracle 재확인
-  → 원장 relation 추가·정정
+  → correction hypothesis·decision plane 확정
+  → W7.5 계약으로 registry relation 추가·정정·retirement
   → exact metric 또는 명시적 surrogate 적용
   → controlled ladder
-  → 압축·고정 프레임 cohort
+  → 장평·자간·실제 fixed frame geometry cohort
   → native/WASM parity
   → Canvas2D/CanvasKit 시각 판정
   → 통과한 face만 merge
@@ -594,32 +628,35 @@ W4 순위의 face를 한 번에 하나씩 다음 반복으로 처리한다.
 - 중단 조건: oracle profile 충돌, source provenance 불명, page count만 맞고 glyph position이 발산
 
 여러 face를 한 PR에 넣지 않는다. 한 face가 실패해도 다른 후보의 증거와 rollback 경계를 오염시키지
-않기 위해서다.
+않기 위해서다. source가 없는 face는 source discovery 사건이 있을 때만 W5 disposition을 재개하며,
+반복 계측으로 억지로 actionable하게 만들지 않는다.
 
-### 10.10 W9 — kerning을 독립 축으로 연결
+### 10.11 W9 — kerning을 독립 축으로 연결
 
 **질문:** 명시된 kerning flag를 적용하면 어떤 문서가 달라지는가?
 
-- 입력: W3에서 식별한 kerning 사용 문서와 안정화된 metric registry
+- 입력: W3에서 식별한 kerning 사용 문서, W7.5 완료 registry와 kerning cohort에서 동결한 metric·face
 - 산출물: `ResolvedCharStyle.kerning` → TextStyle → shaping/measurement의 end-to-end 전달
 - 제품 동작 변경: 있음
 - 완료 조건: kerning on/off controlled pair, LineSeg/fresh layout 분리, 157개 문서 cohort와 backend parity
 
 kerning은 fallback 정리와 함께 구현하지 않는다. pair adjustment가 face advance 교정과 섞이면 원인을
-분리할 수 없기 때문이다.
+분리할 수 없기 때문이다. W8 tracker 전체 완료를 기다리지 않고, kerning cohort와 겹치는 face가 교정
+완료 또는 no-change disposition으로 동결되면 진입할 수 있다.
 
-### 10.11 W10 — vertical metrics·variation·shaping 확장
+### 10.12 W10 — vertical metrics·variation·shaping 확장
 
 **질문:** 가로 단일 glyph advance만으로 설명할 수 없는 조판을 어떻게 지원하는가?
 
-- 입력: W7 registry, W8 안정 metric, W9 shaping 경계
+- 입력: W7.5 registry provenance, 대상 fixture face 집합의 안정 metric과 W9 shaping 경계
 - 산출물: `vhea`·`vmtx`, GPOS·GSUB, variable axis, script/language별 shaping profile
 - 제품 동작 변경: 있음
 - 완료 조건: 세로쓰기와 복합 script 전용 fixture, backend별 glyph positioning, portable replay 계약
 
-이 단계는 현재 fallback 문제의 선결 조건이 아니다. W0~W8을 건너뛰고 먼저 시작하지 않는다.
+이 단계는 현재 fallback 문제의 선결 조건이 아니다. W9 shaping·capability 경계를 건너뛰고 먼저 시작하지
+않으며, 모든 W8 face가 아니라 대상 script·vertical·variation fixture의 face 집합이 안정됐는지 판정한다.
 
-### 10.12 공식 이슈를 나누는 경계
+### 10.13 공식 이슈를 나누는 경계
 
 첫 공식 이슈는 전체 로드맵이 아니라 **W0~W1만** 다룬다. 진단 코드가 필요한 W2, private corpus
 계측인 W3, 구조 변경인 W6~W7, 동작 변경인 W8 이후를 한 이슈에 묶지 않는다.
@@ -632,49 +669,48 @@ kerning은 fallback 정리와 함께 구현하지 않는다. pair adjustment가 
 | Issue D | W5 상위 후보 oracle | font별 근거 자료, 제품 동작 불변 |
 | Issue E | W6 generated/overlay 분리 | 데이터 구조만 변경, 전수 등가 |
 | Issue F | W7 canonical projection | 중복 table 생성화, 전수 등가 |
+| 별도 Issue | W7.5 registry evolution | lifecycle·migration·evidence delta, 제품 규칙 불변 |
 | Issue G1, G2, ... | W8의 face 하나씩 | 근거가 있는 작은 동작 변경 |
-| 별도 Issue | W9 kerning | pair positioning 변경 |
+| 별도 Issue | W9 kerning | 관련 cohort 동결 뒤 pair positioning 변경 |
 | 별도 Issue | W10 vertical·shaping | 고급 조판 변경 |
 
 즉 첫 실행은 “새 fallback을 고른다”가 아니다. **현재 규칙을 하나도 빠뜨리지 않고 원장에 옮기고,
-그 원장이 현재 결과를 설명할 수 있는지 확인하는 것**이다. 그 다음에야 실제 누락을 다시 세고,
-가장 위험한 face 하나를 고른다.
+그 원장이 현재 결과를 설명할 수 있는지 확인하는 것**이다. 그 다음에는 위험 band와 evidence 준비도를
+함께 사용해 correction hypothesis를 세우고, 변경 가능한 registry 계약을 통과한 face만 교정한다.
 
 ## 11. 우선순위 제안
 
 | 우선순위 | 과제 | 이유 |
 | ---: | --- | --- |
-| P0 | Font Rule Ledger와 Decision Trace | 현재 규칙을 잃지 않고 구조를 바꾸기 위한 선결 조건 |
-| P0 | 실제 renderer 기반 문자별 metric coverage 재계측 | 현재 91.16% 잠정치로는 누락 우선순위를 정할 수 없음 |
-| P0 | Oracle Profile schema | #4701과 #4739 유형의 잘못된 정답지 혼합 재발 방지 |
-| P1 | generated metric / measured overlay 분리 | 재생성 안전성과 provenance 확보 |
-| P1 | 상위 실제 사용·압축·고정 프레임 font의 exact profile | 적은 font로 대부분의 조판 위험을 줄일 수 있음 |
-| P1 | 중복 Rust/TS/CanvasKit projection의 canonical registry화 | 의미 drift와 후속 누락 감소 |
-| P2 | kerning end-to-end | 문서 비율은 1.57%지만 현재 명시 flag를 완전히 누락 |
-| P2 | vertical metrics·GPOS·variation 지원 | 세로쓰기·고급 조판·가변 폰트 정확성 |
+| 완료 | W0~W7 기준선·원장·trace·coverage·oracle·lineage·projection | 제품 동작을 바꾸기 전 계보와 0-delta 기반 확보 |
+| P0 | W7.5 registry evolution contract | schema 1.0 직접 수정 없이 최초 제품 규칙 변경을 수용하는 선결 조건 |
+| P1 | rank 1·7·8 correction qualification | W5 완료 profile을 실제 오류·목표 decision plane·portable 정책으로 변환 |
+| P1 | source·provider evidence 재개 lane | blocked face를 반복 계측하지 않고 새 증거가 생길 때만 재개 |
+| P2 | kerning end-to-end | 관련 cohort 동결 뒤 장기 W8 전체 완료와 독립적으로 처리 |
+| P3 | vertical metrics·GPOS·variation 지원 | W9 shaping 경계와 대상 face 집합 안정화 뒤 확장 |
 | P3 | opt-in exact-local fresh layout | portability와 환경 재현성을 분리한 고급 profile |
 
-## 12. 미확정 질문
+## 12. 잔여 질문과 W0~W7 disposition
 
-다음은 공식 이슈의 수행 계획서에서 실험으로 답해야 하며 이 보고서에서 추정으로 닫지 않는다.
+최초 미확정 질문을 지우지 않고 W0~W7이 어디까지 답했는지와 다음 owner를 기록한다.
 
-1. 실제 renderer 경로를 통과한 문자별 exact/alias/overlay/heuristic coverage는 얼마인가?
-2. 상위 20·50개 실사용 font 중 원본 bytes와 합법적 보존 가능한 provenance가 있는 face는 무엇인가?
-3. Hangul 4×6×3 압축 오차가 95% 장평·-5% 자간·고정 셀에서 줄바꿈 임계로 얼마나 증폭되는가?
-4. measured ASCII overlay가 필요한 face와 원본 `hmtx`로 되돌릴 수 있는 face는 각각 무엇인가?
-5. 한컴의 missing-font PDF fallback은 face category, 문서 `substFont`, 설치 집합에 따라 어떤 순서로
-   결정되는가?
-6. kerning flag가 켜진 157개 문서에서 pair positioning을 적용했을 때 LineSeg·fresh layout 차이는
-   어느 정도인가?
-7. HWP와 HWPX의 저장 LineSeg 신뢰도 차이를 font profile 평가에 어떤 cohort로 반영할 것인가?
-8. CanvasKit에 합법적으로 전달 가능한 exact SFNT와 Canvas2D에서만 사용 가능한 local face의 경계는
-   어디인가?
+| 질문 | 현재 disposition | 다음 owner |
+| --- | --- | --- |
+| 실제 renderer 문자별 coverage | W3에서 54,326,042자를 분류하고 2회 hash를 고정해 완료 | 새 corpus 입력 identity가 바뀔 때만 재계측 |
+| 상위 실사용 face의 source·provenance | W5 A+B 17개 중 ladder 완료 3, source unavailable 10, protected partial 3, capability mismatch 1 | evidence reopen lane |
+| 압축 오차의 실제 줄·frame 임계 증폭 | W4 risk mass는 proxy이며 실제 geometry를 완료로 주장하지 않음 | W8 개별 face fixture |
+| measured overlay와 원본 `hmtx` 복귀 가능성 | W6 overlay 5개는 보존했지만 historical generated 595개의 fully source-exact는 0 | W8 qualification·source discovery |
+| 한컴 missing-font 선택 순서 | W5 rank 1·7·8의 controlled ladder는 완료, 전체 category 규칙으로 일반화하지 않음 | 신규 font incident와 W8 |
+| kerning 157개 문서의 pair positioning | flag·cohort만 식별, 제품 연결 미착수 | W9 |
+| HWP/HWPX LineSeg 신뢰도와 font profile | stored/fresh lane을 분리했으나 format/version 규칙으로 일반화하지 않음 | W8·W9 feature detection |
+| CanvasKit exact SFNT와 Canvas2D local face 경계 | W2 trace와 W7 projection이 capability를 분리, 실제 rule 변경은 schema 1.0에서 금지 | W7.5·W8 backend disposition |
 
 ## 13. 다음 승인 지점
 
-메인테이너의 보고서 승인에 따라 동일 증상·선행 이슈 검색을 마치고 Issue #4939를 등록했다. 다음
-단계는 구현이 아니라 W0 기준선과 W1 Font Rule Ledger만 포함하는 수행 계획서 작성과 승인이다.
-W2 이후는 앞 작업의 산출물과 완료 게이트를 확인한 뒤 각각 별도 이슈와 승인으로 진행한다.
+W0~W7은 #4939와 #4961~#4966에서 완료됐다. 다음 승인 지점은
+[#4960 수정 수행계획](../plans/task_m100_4960.md)의 Stage R1 결과다. 승인 뒤 별도 원격 mutation 게이트로
+W7.5 이슈와 #4960·#4967~#4969 topology를 현행화한다. W7.5 구현, W8 face qualification과 W9·W10은
+각각 별도 이슈·계획·승인 전에는 시작하지 않는다.
 
 ## 14. 기술 약어·테이블 태그 미주
 
