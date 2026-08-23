@@ -7,7 +7,8 @@ last_verified: 2026-08-23
 
 # Issue #4966 canonical font registry와 backend projection
 
-이 디렉터리는 W7 migration 전 font 규칙과 backend별 선택 결과를 재현 가능한 기준선으로 고정한다.
+이 디렉터리는 W7 migration 전 font 규칙과 backend별 선택 결과, canonical registry로의 일회 이행
+대응을 재현 가능하게 고정한다.
 
 ## 권위와 소비 경계
 
@@ -16,8 +17,10 @@ last_verified: 2026-08-23
 - [W6 metric lineage](../issue-4964/README.md)는 600개 metric 값·순서·계보의 정본이다.
 - `font_rule_projection_baseline.json`은 W7 migration 전 행동 snapshot이며 canonical runtime registry가
   아니다.
-- 제품 runtime은 이 조사 JSON을 읽지 않는다. W7의 canonical registry와 정적 projection은 Stage
-  W7-2·3의 schema·generator 승인 뒤 별도 파일로 만든다.
+- `font_rule_registry_migration.json`은 W1/W6에서 canonical registry로의 일회 이행 감사 증거이며,
+  이후 제품 규칙의 정본은 `assets/font-rules/font_rule_registry.json`이다.
+- 제품 runtime은 이 조사 JSON이나 canonical JSON을 직접 읽지 않는다. 정적 projection은 Stage
+  W7-3에서 만들고 소비자 전환은 W7-4·5에서 별도 승인한다.
 - private corpus, host 절대 경로와 font bytes를 이 디렉터리에 기록하지 않는다.
 
 ## Stage W7-1 산출물
@@ -59,3 +62,20 @@ node scripts/font_rule_projection_baseline.mjs generate
 `generate` 뒤에는 `check`와 mutation negative contract를 다시 통과해야 한다. Stage W7-2 이후에는
 이 파일을 registry 입력으로 직접 import하지 않고, 승인된 migration manifest의 전환 전 비교
 기준으로만 사용한다.
+
+## Stage W7-2 산출물
+
+- `font_rule_registry_migration.schema.json`
+- `font_rule_registry_migration.json`
+- [`assets/font-rules/font_rule_registry.schema.json`](../../../../assets/font-rules/font_rule_registry.schema.json)
+- [`assets/font-rules/font_rule_registry.json`](../../../../assets/font-rules/font_rule_registry.json)
+- [Stage W7-2 보고서](../../../working/task_m100_4966_w7_stage2.md)
+
+```bash
+node scripts/font_rule_registry.mjs check
+node --test scripts/tests/font_rule_registry.test.mjs
+```
+
+830개 registry rule은 다섯 projection에 정확히 한 번씩 배치된다. active unknown metric alias 43개는
+legacy-preservation으로 유지되며, Rust metric은 W6 안정 ID 97개만 참조한다. CanvasKit의 W1 SFNT
+판정과 현재 URL plan은 합치지 않고 별도 필드로 보존한다.
