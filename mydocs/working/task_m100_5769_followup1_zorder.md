@@ -41,19 +41,29 @@ z 순서 변경(정렬 메뉴 front/forward/backward/back 4모드 + 개체 선�
 
 ### 검증
 
-- **Rust 게이트** `tests/cases/issue_5769_zorder_inverse_byte_identity.rs` 6종:
+- **Rust 게이트** `tests/cases/issue_5769_zorder_inverse_byte_identity.rs` 7종:
   forward 교환 undo 바이트 수렴 / front 단일 inverse 수렴 / redo 재현 /
   무변경 경계(moves 없음·바이트 무흔적) / 오염 pairs 거절(부분 적용 없음) /
-  빈 pairs no-op. — **6/6 통과**
+  빈 pairs no-op / 기저장 파일 passthrough Some 스트림 수렴. — **7/7 통과**
 - **#2724 가드**: 새 네이티브는 위임 대상이 직접 무효화(raw_stream=None)라
   EXEMPT 불필요 — 가드 5/5 통과로 확인.
 - clippy `-D warnings` clean, `cargo fmt --check` 통과.
-- **npm test 1072 pass / 0 fail**. 구형 가드 3건(스냅샷 구현 고정분)을 새
+- **npm test 1069 pass / 0 fail(총 1070)**. 구형 가드 3건(스냅샷 구현 고정분)을 새
   계약으로 의식 갱신: undo-drag-click-routing(mouse 경로),
   undo-menu-object-ops(changeShapeZOrder 목록 제외+전용 가드 추가),
   undo-noop-skip(무변경 판정 주체가 TS 값 비교→Rust moves 로 이동).
-  신규 소스 가드 `issue-5769-zorder-inverse.test.ts` 4종 추가.
+  신규 소스 가드 `issue-5769-zorder-inverse.test.ts` 추가 — 후속 정리
+  (`cf6150a59`)에서 퍼널·마우스 배선 핀은 기존 가드 2건이 이미 담당한다 하여
+  SetZOrderCommand 저널 생명주기 순서 핀 1건으로 수렴.
 - tsc: 내 파일 신규 에러 없음(stale d.ts 3건은 Stage 4 선행 노이즈).
+
+### 후속 정정 (2026-08-24, 최종 head `cf6150a59` 기준 재조정)
+
+- 본 문서는 `feat/5769-zorder-inverse` 스택 시점 작성분으로, #5915 흡수 뒤
+  devel 팁에서 cherry-pick 재배치(`feat/5769-followups`, PR #5951)되었다.
+  검증 수치를 최종 head 기준으로 갱신했다 — Rust 게이트 7종(7/7), npm 실측
+  위와 같음. 유일한 제거 커밋은 all-undo 임시 bulk 네이티브 철회
+  (`1eaa0ba39`, 후속 2 보고 참조)와 가드 중복 정리(`cf6150a59`)다.
 
 ### 슬롯 효과
 
