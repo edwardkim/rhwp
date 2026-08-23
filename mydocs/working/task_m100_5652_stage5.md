@@ -1,6 +1,6 @@
 ---
 kind: working
-status: active
+status: done
 canonical: mydocs/working/task_m100_5652_stage5.md
 last_verified: 2026-08-23
 ---
@@ -42,7 +42,18 @@ last_verified: 2026-08-23
 | `issue_4100_chart_data_edit` | 56 passed / 3 ignored |
 | fmt `--check` · suite-manifest `--prepare`→`--check` · unit-tiers `--base-ref upstream/devel`(4225 불변) · clippy `-D warnings` | 통과 |
 
-## 3. S5-b — 한컴 재판정 (사용자 수행, 진행 중)
+## 3. S5-b — 한컴 재판정 (2026-08-23 완료)
+
+작업지시자가 번들 32 파일을 한글 2022 로 열어 같은 폴더에 PDF 로 저장했다(개봉 실패 0). 원본 32건은
+번들과 SHA-256 전건 동일을 확인한 뒤 `samples/issue5652/` 로, PDF 는 `<기준문서>-<변종>-<포맷>-2022.pdf`
+로 정규화해 `pdf/issue5652/` 로 옮겼다. 원장 `MANIFEST.json`(`rhwp/hancom-judgment-manifest@1`) —
+PyMuPDF 1.28.2·poppler 26.06 2축 래스터, 판정(대조군 대비 변화) 13 단위 **전건 반영**, invariants
+`raster_equal` 12쌍 + 변환본 + page_geometry 1190×1682 + counts, 교차 참조 `cross_reference_issue5447`
+**25/25 픽셀 동일**. 재계산 `tools/hancom_chart_judgment_verify.py --manifest samples/issue5652/MANIFEST.json`
+3모드 전건 통과. 트립와이어 `b2_engine_judgment_assets_match_the_manifest` 추가. 편집기 행·열 수는
+원장 `editor_observation` 에 사람 관측 칸으로 남겼다(미기입).
+
+### 원래 절차 (참고)
 
 절차(#5447 §1 과 동일):
 
@@ -56,4 +67,4 @@ last_verified: 2026-08-23
 
 ## 4. 다음
 
-S5-b 판정 결과 반영 → PR 직전 전체 release-test 1회 → PR.
+전체 release-test 1회 실측(보고서 §6) → PR.

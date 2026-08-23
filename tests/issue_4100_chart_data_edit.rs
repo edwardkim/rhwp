@@ -3848,3 +3848,133 @@ fn engine_documents_match_spike_documents_except_positional_series_delete() {
         "변종 10종 × 2 바이트 동일 + 계열삭제 2종 × 2 논리 동일"
     );
 }
+
+/// [#5652 S5] 엔진 판정 원장(`samples/issue5652/MANIFEST.json`)이 가리키는 자산이 지금도 그 바이트인가.
+///
+/// `b2_judgment_assets_match_the_manifest`(#5447) 와 같은 트립와이어 — 원장 32행의 원본·한컴 PDF
+/// SHA-256 을 다시 재고, 두 디렉터리를 거꾸로 훑어 등재되지 않은 자산을 잡는다(해시 집합으로 —
+/// NFC/NFD 파일명 사고 대비). 래스터 재계산은 `tools/hancom_chart_judgment_verify.py --manifest
+/// samples/issue5652/MANIFEST.json` 이 로컬에서 맡는다.
+#[test]
+fn b2_engine_judgment_assets_match_the_manifest() {
+    fn sha256_of(path: &std::path::Path) -> String {
+        use sha2::Digest as _;
+        let bytes = std::fs::read(path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        let mut hasher = sha2::Sha256::new();
+        hasher.update(&bytes);
+        hasher
+            .finalize()
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect()
+    }
+
+    let ledger_path = manifest("samples/issue5652/MANIFEST.json");
+    let ledger: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&ledger_path).expect("판정 원장 읽기"))
+            .expect("판정 원장 JSON");
+    assert_eq!(ledger["schema"], "rhwp/hancom-judgment-manifest@1");
+    let entries = ledger["entries"].as_array().expect("entries");
+    assert_eq!(entries.len(), 32, "대조군 7 + 변종 12 × 2포맷 + 변환본 1");
+
+    let mut registered: std::collections::BTreeSet<String> = Default::default();
+    let mut verdict_of_unit: std::collections::BTreeMap<String, String> = Default::default();
+
+    for entry in entries {
+        let name = entry["name"].as_str().expect("name");
+        for (path_key, hash_key) in [
+            ("original_path", "original_sha256"),
+            ("hancom_pdf_path", "hancom_pdf_sha256"),
+        ] {
+            let rel = entry[path_key]
+                .as_str()
+                .unwrap_or_else(|| panic!("{name}: {path_key} 가 없다"));
+            let recorded = entry[hash_key]
+                .as_str()
+                .unwrap_or_else(|| panic!("{name}: {hash_key} 가 없다"));
+            assert_eq!(
+                recorded.len(),
+                64,
+                "{name}: {hash_key} 가 SHA-256 이 아니다"
+            );
+            let path = manifest(rel);
+            assert!(path.is_file(), "{name}: 원장이 가리키는 {rel} 이 없다");
+            assert_eq!(
+                sha256_of(&path),
+                recorded,
+                "{name}: {rel} 의 바이트가 원장과 다르다"
+            );
+            registered.insert(recorded.to_string());
+        }
+        if entry["role"] != "control" {
+            let unit = if entry["role"] == "conversion" {
+                name.rsplit_once('.')
+                    .map_or(name, |(stem, _)| stem)
+                    .to_string()
+            } else {
+                format!(
+                    "{}-{}",
+                    entry["base_document"].as_str().expect("base_document"),
+                    entry["variant"].as_str().expect("variant")
+                )
+            };
+            let verdict = entry["verdict"].as_str().expect("verdict").to_string();
+            if let Some(seen) = verdict_of_unit.insert(unit.clone(), verdict.clone()) {
+                assert_eq!(seen, verdict, "{unit}: 포맷 간 판정이 갈린다");
+            }
+        }
+    }
+
+    // 원장 머리의 집계 == 본문 재집계. 보고서가 인용하는 숫자가 이것이다 — 13 단위 전건 반영.
+    let counts = &ledger["counts"];
+    assert_eq!(
+        verdict_of_unit.len() as u64,
+        counts["judgment_units"].as_u64().expect("judgment_units")
+    );
+    assert_eq!(verdict_of_unit.len(), 13, "12 변종 + 변환본 1");
+    assert!(
+        verdict_of_unit.values().all(|v| v == "반영"),
+        "전건 반영이어야 한다: {verdict_of_unit:?}"
+    );
+    assert_eq!(counts["tally"]["반영"].as_u64(), Some(13));
+
+    // 교차 참조 — #5447 판정 PDF 와 픽셀 동일 25/25 (원장에 기록된 값의 자기정합).
+    let cross = ledger["cross_reference_issue5447"]["entries"]
+        .as_array()
+        .expect("cross_reference");
+    assert_eq!(cross.len(), 25, "변종 24 + 변환본 1");
+    assert!(
+        cross.iter().all(|c| c["issue5447_raster_equal"] == true),
+        "#5447 판정 PDF 와 렌더가 다른 항목이 있다"
+    );
+
+    for (dir, ignored) in [
+        (
+            "samples/issue5652",
+            ["MANIFEST.json", "README.md", "PANJEONG.md"].as_slice(),
+        ),
+        ("pdf/issue5652", ["README.md"].as_slice()),
+    ] {
+        let mut counted = 0usize;
+        for item in std::fs::read_dir(manifest(dir)).expect("판정 자산 디렉터리") {
+            let path = item.expect("디렉터리 항목").path();
+            if !path.is_file() {
+                continue;
+            }
+            let file_name = path
+                .file_name()
+                .and_then(|s| s.to_str())
+                .unwrap_or_default()
+                .to_string();
+            if ignored.contains(&file_name.as_str()) {
+                continue;
+            }
+            assert!(
+                registered.contains(&sha256_of(&path)),
+                "{dir}/{file_name}: 원장에 등재되지 않은 자산이다"
+            );
+            counted += 1;
+        }
+        assert_eq!(counted, 32, "{dir}: 판정 자산이 32건이 아니다");
+    }
+}
