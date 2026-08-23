@@ -1974,11 +1974,11 @@ impl DocumentCore {
 
     /// [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목 절단.
     ///
-    /// 저널 계약(캡처~복원 사이 그 표 편집 금지)과 TS 선형 히스토리 하에서
-    /// `from_len` 위의 항목은 이 커맨드의 apply 가 push 한 것뿐이다 — LIFO undo
-    /// 에서 꼬리부터 사라지므로 `from_len` 까지 자르는 것만으로 안전하다. 잘라내지
-    /// 못하면(중간 삽입 등 계약 위반) 고아가 남으므로 dirty 플래그를 원복하지
-    /// 않는다 — 저장 바이트 게이트가 그 차이를 잡는다.
+    /// 정상 경로(TS 선형 히스토리 + 저널 계약)에서는 `from_len` 위의 항목이 곧
+    /// 이 커맨드의 push 분이다. 그러나 계약 밖 경로(hwpctl 직접 뮤테이션 등)가
+    /// apply 와 undo 사이에 꼬리를 더 push 할 수 있으므로, **문서 어디에서도
+    /// 참조하지 않는 꼬리만** 자른다 — 참조 중인 꼬리를 만나면 거기서 멈추고
+    /// 나머지는 고아로 남긴다. 고아는 저장 바이트 게이트가 잡는다.
     pub fn remove_border_fill_tails_native(&mut self, json: &str) -> Result<String, HwpError> {
         #[derive(serde::Deserialize)]
         #[serde(rename_all = "camelCase")]
@@ -1990,8 +1990,15 @@ impl DocumentCore {
         let payload: Payload = serde_json::from_str(json)
             .map_err(|e| HwpError::RenderError(format!("discard tails 파싱 실패: {}", e)))?;
 
+        let mut referenced = std::collections::HashSet::new();
+        self.collect_border_fill_refs(&mut referenced);
+
         let mut discarded = 0usize;
         while self.document.doc_info.border_fills.len() > payload.from_len {
+            let tail_id = self.document.doc_info.border_fills.len() as u16;
+            if referenced.contains(&tail_id) {
+                break;
+            }
             self.document.doc_info.border_fills.pop();
             discarded += 1;
         }
@@ -2005,6 +2012,48 @@ impl DocumentCore {
             "fullyDiscarded": fully_discarded,
         });
         Ok(response.to_string())
+    }
+
+    /// [#5959] 문서 전역에서 border_fills 참조를 수집한다(보수적 상위집합).
+    ///
+    /// 셀·zone(중첩 표 재귀 포함), 글자/문단 스타일 정의, 구역 쪽 테두리까지 훑는다.
+    /// 스타일 정의는 전부 포함하는 쪽이 안전하다 — 정의가 우리 항목을 참조할 수
+    /// 없다면 스캔이 넓어도 절단이 보수적으로 줄어들 뿐이다.
+    fn collect_border_fill_refs(&self, refs: &mut std::collections::HashSet<u16>) {
+        for cs in &self.document.doc_info.char_shapes {
+            refs.insert(cs.border_fill_id);
+        }
+        for ps in &self.document.doc_info.para_shapes {
+            refs.insert(ps.border_fill_id);
+        }
+        for section in &self.document.sections {
+            for pbf in &section.section_def.extra_page_border_fills {
+                refs.insert(pbf.border_fill_id);
+            }
+            for para in &section.paragraphs {
+                Self::collect_control_border_fill_refs(&para.controls, refs);
+            }
+        }
+    }
+
+    fn collect_control_border_fill_refs(
+        controls: &[Control],
+        refs: &mut std::collections::HashSet<u16>,
+    ) {
+        for control in controls {
+            let Control::Table(table) = control else {
+                continue;
+            };
+            for cell in &table.cells {
+                refs.insert(cell.border_fill_id);
+                for para in &cell.paragraphs {
+                    Self::collect_control_border_fill_refs(&para.controls, refs);
+                }
+            }
+            for zone in &table.zones {
+                refs.insert(zone.border_fill_id);
+            }
+        }
     }
 
     fn strip_center_line_for_cellzone_json(json: &str) -> String {

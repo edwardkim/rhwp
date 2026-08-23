@@ -191,3 +191,23 @@ test('소스 핀 — 다이얼로그는 커맨드 경유, 레지스트리는 신
   const bridgeSrc = readFileSync(join(rootDir, 'src/core/wasm-bridge.ts'), 'utf8');
   assert.match(bridgeSrc, /hasCellBorderFillInverse/, 'probe 가 브리지에 있어야 한다');
 });
+
+test('execute 실패가 아무 뮤테이션 전이면 롤백 호출 없이 캡처만 해제한다', () => {
+  const calls: Call[] = [];
+  const wasm: any = {
+    hasCellBorderFillInverse: () => true,
+    captureSectionRaw: () => { calls.push({ fn: 'captureSectionRaw', args: [] }); return 801; },
+    discardSectionRaw: (...args: unknown[]) => { calls.push({ fn: 'discardSectionRaw', args }); },
+    runInBatch: (fn: () => void) => fn(),
+    setCellProperties: () => { calls.push({ fn: 'setCellProperties', args: [] }); throw new Error('셀 인덱스 초과'); },
+  };
+  const cmd = new SetCellBorderFillCommand(
+    0, 12, 5, { kind: 'cells', cellIdxes: [5] }, { fillType: 'solid' }, { sectionIndex: 0 },
+  );
+  assert.throws(() => cmd.execute(wasm), /셀 인덱스 초과/);
+  const names = calls.map((c) => c.fn);
+  assert.ok(names.includes('discardSectionRaw'), '캡처 해제는 해야 한다');
+  assert.ok(!names.includes('applyCellBorderFillIds'), '뮤테이션 전 실패엔 빈 롤백 대입을 낭비하지 않는다');
+  assert.ok(!names.includes('removeBorderFillTails'), '빈 절단은 table.dirty 만 세운다');
+  assert.throws(() => cmd.undo(wasm), /변경 기록이 없다/);
+});
