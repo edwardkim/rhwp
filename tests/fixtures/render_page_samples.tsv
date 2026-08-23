@@ -66,7 +66,7 @@ samples/hwp3-sample5-hwpx.hwpx	64	64	0
 samples/hwp3-sample5.hwp	64	64	0
 samples/hwp_table_test-m.hwp	3	3	0
 samples/hwp_table_test.hwp	3	3	0
-samples/hwpctl_API_v2.4.hwp	105	106	1
+samples/hwpctl_API_v2.4.hwp	105	105	0
 samples/hwpctl_Action_Table__v1.1.hwp	16	16	0
 samples/hwpctl_ParameterSetID_Item_v1.2.hwp	74	74	0
 samples/hwpspec.hwp	178	178	0

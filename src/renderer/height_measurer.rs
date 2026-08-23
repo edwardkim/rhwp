@@ -1697,17 +1697,15 @@ impl HeightMeasurer {
                                                         && is_cell_last_line),
                                             )
                                         };
-                                        // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
-                                        // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
-                                        // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
-                                        // trailing 을 제외(k-water-rfp pi=180).
-                                        let is_block_rowbreak =
-                                            matches!(table.page_break, TablePageBreak::RowBreak)
-                                                && !table.common.treat_as_char;
-                                        let include_trailing_ls =
-                                            !is_cell_last_line || cell_para_count > 1;
-                                        let include_trailing_ls = include_trailing_ls
-                                            && (!is_cell_last_line || !is_block_rowbreak);
+                                        // [#5923] 셀 마지막 줄 trailing 줄간격은 비-TAC
+                                        // 표에서 문단 수와 무관하게 제외한다 — 렌더 행높이
+                                        // 회계와 정본이 같다. 다문단 셀만 포함하던 구규칙은
+                                        // hwpctl_API_v2.4 75쪽 유령 쪽(행마다 +2.7px 과대
+                                        // 측정)을 낳았다. TAC(글자처럼) 표의 다문단 셀은
+                                        // [Task #874/#1086] 보존 핀(KTX TOC 등)을 위해
+                                        // 기존 포함 회계를 유지한다.
+                                        let include_trailing_ls = !is_cell_last_line
+                                            || (cell_para_count > 1 && table.common.treat_as_char);
                                         if include_trailing_ls {
                                             h + hwpunit_to_px(line.line_spacing, self.dpi)
                                         } else {
@@ -2353,17 +2351,15 @@ impl HeightMeasurer {
                                                         && is_cell_last_line),
                                             )
                                         };
-                                        // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
-                                        // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
-                                        // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
-                                        // trailing 을 제외(k-water-rfp pi=180).
-                                        let is_block_rowbreak =
-                                            matches!(table.page_break, TablePageBreak::RowBreak)
-                                                && !table.common.treat_as_char;
-                                        let include_trailing_ls =
-                                            !is_cell_last_line || cell_para_count > 1;
-                                        let include_trailing_ls = include_trailing_ls
-                                            && (!is_cell_last_line || !is_block_rowbreak);
+                                        // [#5923] 셀 마지막 줄 trailing 줄간격은 비-TAC
+                                        // 표에서 문단 수와 무관하게 제외한다 — 렌더 행높이
+                                        // 회계와 정본이 같다. 다문단 셀만 포함하던 구규칙은
+                                        // hwpctl_API_v2.4 75쪽 유령 쪽(행마다 +2.7px 과대
+                                        // 측정)을 낳았다. TAC(글자처럼) 표의 다문단 셀은
+                                        // [Task #874/#1086] 보존 핀(KTX TOC 등)을 위해
+                                        // 기존 포함 회계를 유지한다.
+                                        let include_trailing_ls = !is_cell_last_line
+                                            || (cell_para_count > 1 && table.common.treat_as_char);
                                         if include_trailing_ls {
                                             h + hwpunit_to_px(line.line_spacing, self.dpi)
                                         } else {
