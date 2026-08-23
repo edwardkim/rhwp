@@ -380,7 +380,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `headersFooters` | array | 머리말/꼬리말 목록 `{sectionIdx,isHeader,applyTo,label}` | `headers-footers` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
-| `lastSavedWith` | object\|null | HWP5 `HwpSummaryInformation.revisionNumber`에서 읽은 마지막 저장 제품 `{product,version,confidence}`. `product`는 알려진 주버전만 `hancom-office-2018`·`hancom-office-2022`·`hancom-office-2024`로 분류하고, 알 수 없는 주버전은 `null`; HWP3/HWPX, 요약정보 부재·손상은 필드 전체가 `null`. 원 작성 제품이 아니라 수정 가능한 마지막 저장 메타데이터다 | `info` |
+| `lastSavedWith` | object\|null | HWP5 `HwpSummaryInformation.revisionNumber`에서 읽은 마지막 저장 제품 `{product,version,confidence}`. `product`는 알려진 주버전만 `hancom-office-2010`·`hancom-office-2018`·`hancom-office-2022`·`hancom-office-2024`로 분류하고, 알 수 없는 주버전은 `null`; HWP3/HWPX, 요약정보 부재·손상은 필드 전체가 `null`. 원 작성 제품이 아니라 수정 가능한 마지막 저장 메타데이터다 | `info` |
 | `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |
 | `summary` | string | 사람용 여러 줄 요약(형식·쪽수·표·누름틀·각주) — **문서 파생** | `explain` |
 | `encrypted` | bool | 암호화 문서 여부 | `explain` |
