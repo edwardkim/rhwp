@@ -782,7 +782,7 @@ fn plan_edits(
                 let texts: Vec<String> = want.values[have.values.len()..].to_vec();
                 changed.push(serde_json::json!({
                     "op": "appendPoints", "series": i, "block": block_name(scatter, EditTarget::Value),
-                    "from": have.values.len(), "to": want.values.len(),
+                    "before": have.values.len(), "after": want.values.len(),
                 }));
                 plan.push(ChartEdit::AppendPoints {
                     series: i,
@@ -792,7 +792,7 @@ fn plan_edits(
             } else if want.values.len() < have.values.len() {
                 changed.push(serde_json::json!({
                     "op": "truncatePoints", "series": i, "block": block_name(scatter, EditTarget::Value),
-                    "from": have.values.len(), "to": want.values.len(),
+                    "before": have.values.len(), "after": want.values.len(),
                 }));
                 plan.push(ChartEdit::TruncatePoints {
                     series: i,
@@ -831,7 +831,7 @@ fn plan_edits(
                     if labels.len() > series.labels.len() {
                         changed.push(serde_json::json!({
                             "op": "appendPoints", "series": i, "block": block_name(scatter, EditTarget::Label),
-                            "from": series.labels.len(), "to": labels.len(),
+                            "before": series.labels.len(), "after": labels.len(),
                         }));
                         plan.push(ChartEdit::AppendPoints {
                             series: i,
@@ -841,7 +841,7 @@ fn plan_edits(
                     } else if labels.len() < series.labels.len() {
                         changed.push(serde_json::json!({
                             "op": "truncatePoints", "series": i, "block": block_name(scatter, EditTarget::Label),
-                            "from": series.labels.len(), "to": labels.len(),
+                            "before": series.labels.len(), "after": labels.len(),
                         }));
                         plan.push(ChartEdit::TruncatePoints {
                             series: i,
@@ -868,7 +868,7 @@ fn plan_edits(
             }
         } else if k_new < k {
             changed.push(serde_json::json!({
-                "op": "truncateSeries", "from": k, "to": k_new,
+                "op": "truncateSeries", "before": k, "after": k_new,
             }));
             plan.push(ChartEdit::TruncateSeries { keep: k_new });
         }

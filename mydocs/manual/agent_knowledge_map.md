@@ -455,7 +455,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `charts` | array | 차트 목록. `charts` 명령은 `{index,section,paragraph,control}`(`--chart N`=`index+1`). `chart-to-csv` 는 `{chart,rowCount,colCount,csv,output?}` — `csv` 는 **문서 파생** | `charts`·`chart-to-csv` |
 | `chart` | number | 대상 차트 번호. **문서 순서 1부터**(표의 `table` 은 0부터 — 다른 규약이다) | `chart-to-csv`·`csv-to-chart` |
 | `wrote` | array | **어느 표현에 실제로 썼나** — `["zipPart","nestedCopy"]`(HWPX) / `["nestedCopy"]`(HWP5) / `[]`(거부·dry-run·무변경). 값이 OOXML 두 곳에 중복 저장돼 있어 한쪽만 쓰면 HWP 변환에서 편집이 사라진다 | `csv-to-chart`·`edit set-chart-data` |
-| `changed[].op` | string | [#5652] 구조 편집 항목 — `appendPoints`/`truncatePoints`(`series`,`block`,`from`,`to`) · `renameSeries`(`series`,`from`,`to`) · `relabel`(`series`,`point`,`from`,`to`) · `appendSeries`(`series`,`name`) · `truncateSeries`(`from`,`to`). `--structure`/`structure:true` 에서만 나온다 | `csv-to-chart`·`edit set-chart-data` |
+| `changed[].op` | string | [#5652] 구조 편집 항목 — `appendPoints`/`truncatePoints`(`series`,`block`,`before`,`after` = 점 개수) · `renameSeries`(`series`,`from`,`to`) · `relabel`(`series`,`point`,`from`,`to`) · `appendSeries`(`series`,`name`) · `truncateSeries`(`before`,`after` = 계열 수). `from`/`to` 는 문서 파생(변경 전 이름·라벨), `before`/`after` 는 엔진 개수다. `--structure`/`structure:true` 에서만 나온다 | `csv-to-chart`·`edit set-chart-data` |
 
 `rowCount`/`colCount`/`changed`/`changedCount`/`invalid` 는 표 소절과 같은 뜻이되 좌표가
 다르다 — 차트의 `changed[]` 는 `{series,point|x,from,to}` 또는 구조 항목 `{op,…}` 다.

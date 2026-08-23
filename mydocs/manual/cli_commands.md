@@ -451,7 +451,8 @@ CSV 내용으로 기존 차트 N 의 숫자 값을 덮어쓴다. `chart-to-csv` 
     (`pointsNotInsertable`·`seriesNotClonable`).
   - 쓰기 전에 산출을 다시 읽어 목표와 같을 때만 쓴다(`selfCheckFailed` 면 한 바이트도 안 씀).
     봉투 `changed[]` 에 구조 항목 `{"op":"appendPoints"|"truncatePoints"|"renameSeries"|"relabel"|
-    "appendSeries"|"truncateSeries", …}` 이 값 항목과 함께 실린다.
+    "appendSeries"|"truncateSeries", …}` 이 값 항목과 함께 실린다 — 개수 변경 op 는 `before`/`after`(엔진 개수),
+    `renameSeries`·`relabel` 은 `from`/`to`(문서 파생 — 출처 표지 `changed[].from`).
 - **값 하나가 OOXML 두 표현에 중복 저장돼 있어 각 원본에 독립적으로 쓴다** — HWPX zip 파트
   `Chart/chartN.xml`(①)과 중첩 CFB 의 `OOXMLChartContents`(②). ①만 쓰면 HWP 변환에서 편집이
   조용히 사라진다(#4055 한컴 실측). 두 표현의 계열·라벨·값이 다르면
