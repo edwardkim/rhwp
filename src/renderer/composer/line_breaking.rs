@@ -11,7 +11,7 @@ use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
     is_cjk_char, resolved_to_text_style,
 };
-use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, RowSegment};
+use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
 use crate::renderer::px_to_hwpunit;
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use std::ops::Range;
@@ -23,6 +23,46 @@ use std::ops::Range;
 pub(crate) struct PictureBandLayout {
     pub(crate) paragraph_range: Range<usize>,
     pub(crate) line_segs: Vec<Vec<LineSeg>>,
+}
+
+/// How the frame resolved a paragraph's stored rows.
+///
+/// Stored rows are a cache of a prior frame computation. Reuse is therefore
+/// allowed only after the current frame reproduces their physical-row key:
+/// interval count plus exact `column_start`/`segment_width` for every slot.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum StoredRowResolution {
+    /// The current frame admitted every stored physical row exactly.
+    ///
+    /// This is the right answer rather than a placeholder, and the reason is
+    /// worth stating because "the frame owns both routes" makes it sound wrong.
+    /// The frame is licensed to write two lanes, and on this arm neither one
+    /// has anything to say:
+    ///
+    /// - **Geometry** (`column_start`, `segment_width`). Publishing is a no-op
+    ///   by construction: exact equality is the admission test.
+    /// - **Row metrics** (`line_height`, `baseline_distance`, `line_spacing`).
+    ///   Deliberately not published: §1.4.1's accept-arm write-back is not
+    ///   implemented. [`LayoutFrame::try_admit_stored_rows`] records the
+    ///   measurement that settled it — publishing them took the suite from
+    ///   5983 passed / 2 failed to 5979 / 6.
+    ///
+    /// So the stored partition may stand only after the frame has checked it.
+    Stored,
+    /// The stored rows were stale or their physical-row key did not match the
+    /// current frame, so strict reflow carved replacement rows. The rows live in
+    /// the frame; take them with `project_line_segs()`.
+    Reflowed,
+}
+
+/// What a caller may conclude from an exact stored-row geometry miss.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum StoredRowMissPolicy {
+    /// The caller knows its Frame inputs are current and may publish fresh rows.
+    Reflow,
+    /// Imported geometry is not derivable from this Frame. A dirty text/style
+    /// partition still reflows; a clean geometry miss stays with its source owner.
+    UnmodelledUnlessStale,
 }
 
 /// 줄 나눔 토큰
@@ -210,13 +250,42 @@ pub(crate) fn tokenize_paragraph(
         styles,
         english_break_unit,
         korean_break_unit,
-        false,
+        SpaceMetric::Stored,
         &[],
     )
 }
 
-/// `regenerated_line_space_metric`은 한컴이 폭 변경 뒤 다시 저장하는 공백 규칙을
-/// 쓴다. 일반 HWP/HWPX tokenization은 저장 LINE_SEG 호환성을 위해 끈다.
+/// 공백 토큰의 advance 를 어느 규칙으로 재는가.
+///
+/// 종전에는 `bool` 이었고, 그래서 세 번째 규칙이 필요해졌을 때 표현할 자리가 없었다.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub(crate) enum SpaceMetric {
+    /// 글꼴 고유 U+0020 advance. 저장 `LINE_SEG` 와의 호환이 걸려 있는 기본값이다.
+    Stored,
+    /// 한컴이 폭 변경 뒤 다시 저장할 때 쓰는 공백 폭 (legacy bullet 계열).
+    HancomRegenerated,
+    /// [#3128] 들여쓴 셀 문단의 반각 칸.
+    ///
+    /// 한컴은 이 계급에서 글꼴 고유 U+0020 폭이 반각보다 넓어도 선행 들여쓰기와
+    /// 재조판된 내부 공백을 **0.5em 칸**으로 잰다. 그 규칙이 없으면 프레임이 셀
+    /// 안에서 한컴보다 넓게 재고, 줄이 밀려 셀이 쪽 밖으로 자란다.
+    HalfCell,
+}
+
+impl SpaceMetric {
+    /// 이 규칙에서 공백 하나의 advance.
+    fn space_advance(self, style: &crate::renderer::TextStyle) -> f64 {
+        match self {
+            Self::Stored => estimate_text_width_unrounded(" ", style),
+            Self::HancomRegenerated => hancom_regenerated_space_width(style)
+                .unwrap_or_else(|| estimate_text_width_unrounded(" ", style)),
+            Self::HalfCell => super::regenerated_half_space_width(style),
+        }
+    }
+}
+
+/// `space_metric` 은 공백 advance 규칙이다. 일반 HWP/HWPX tokenization 은 저장
+/// `LINE_SEG` 호환성을 위해 [`SpaceMetric::Stored`] 를 쓴다.
 fn tokenize_paragraph_with_regenerated_space_metric(
     text_chars: &[char],
     char_offsets: &[u32],
@@ -224,7 +293,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
     styles: &ResolvedStyleSet,
     english_break_unit: u8,
     korean_break_unit: u8,
-    regenerated_line_space_metric: bool,
+    space_metric: SpaceMetric,
     inline_controls: &[FlowInlineControl],
 ) -> Vec<BreakToken> {
     let text_len = text_chars.len();
@@ -282,12 +351,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
             } else {
                 12.0
             };
-            let w = if regenerated_line_space_metric {
-                hancom_regenerated_space_width(&ts)
-                    .unwrap_or_else(|| estimate_text_width_unrounded(" ", &ts))
-            } else {
-                estimate_text_width_unrounded(" ", &ts)
-            } + inline_width_px_at(inline_controls, i);
+            let w = space_metric.space_advance(&ts) + inline_width_px_at(inline_controls, i);
             tokens.push(BreakToken::Space {
                 idx: i,
                 width: w,
@@ -756,6 +820,61 @@ fn condense_fit_can_pull_next_token(
     remaining_hwp >= min_remaining_hwp
 }
 
+/// Letter spacing is excluded from the fit test and included in the pen.
+///
+/// The pen already carries every earlier glyph's letter spacing. The fit
+/// comparison omits only the candidate token's trailing letter space—one per
+/// candidate, not one per character.
+///
+/// Dropping it from every character instead — the reading a summary of this
+/// divergence invites — is arithmetically the single-shape blindness of
+/// `compose_lines`' NO_LS fallback, which measures a paragraph with
+/// `char_shapes[0]`'s spacing throughout. Measured, it reproduced the retired
+/// cell wrap character for character against Hancom's own PDF and cost 12 tests
+/// across six unrelated fixture families. At this stage the suite is unchanged.
+///
+/// Negative spacing is legal, so the sign is not fixed. For non-negative 자간
+/// the candidate becomes narrower; under compressed 자간 the omission makes
+/// the candidate wider and the fit stricter (`76076_regulatory_analysis` runs
+/// `-0.16…-1.76` px).
+/// Forced to 0 under an active character grid, which is inert here: every
+/// corpus section has `char_grid == 0`.
+fn fit_test_letter_spacing_trim_hwp(letter_spacing_px: &[f64], token_end_idx: usize) -> i32 {
+    if token_end_idx == 0 {
+        return 0;
+    }
+    letter_spacing_px
+        .get(token_end_idx - 1)
+        .map(|spacing| to_hwp(*spacing))
+        .unwrap_or(0)
+}
+
+/// Resolved per-character letter spacing in px, indexed by character position.
+///
+/// The fill needs the candidate glyph's own spacing at the moment it tests a
+/// token, and the token carries only a total width, so it is resolved once for
+/// the paragraph rather than re-derived per test.
+fn resolved_letter_spacing_px(
+    text_chars: &[char],
+    char_offsets: &[u32],
+    char_shapes: &[CharShapeRef],
+    styles: &ResolvedStyleSet,
+) -> Vec<f64> {
+    let mut lang = 0usize;
+    text_chars
+        .iter()
+        .enumerate()
+        .map(|(idx, ch)| {
+            if !is_lang_neutral(*ch) {
+                lang = detect_lang_category(*ch);
+            }
+            let utf16_pos = char_offsets.get(idx).copied().unwrap_or(idx as u32);
+            let style_id = find_active_char_shape(char_shapes, utf16_pos);
+            resolved_to_text_style(styles, style_id, lang).letter_spacing
+        })
+        .collect()
+}
+
 fn text_token_fits_line_hwp(
     current_width_hwp: i32,
     token_width_hwp: i32,
@@ -833,6 +952,7 @@ fn fill_lines(
     default_tab_width: f64,
     korean_break_unit: u8,
     condense_min_space: u8,
+    letter_spacing_px: &[f64],
     initial_start_idx: usize,
     initial_is_first_line: bool,
 ) -> Vec<LineBreakResult> {
@@ -847,6 +967,7 @@ fn fill_lines(
         default_tab_width,
         korean_break_unit,
         condense_min_space,
+        letter_spacing_px,
         &mut cursor,
     ) {
         results.push(interval.line);
@@ -864,6 +985,7 @@ fn fill_one_interval(
     default_tab_width: f64,
     korean_break_unit: u8,
     condense_min_space: u8,
+    letter_spacing_px: &[f64],
     cursor: &mut FillCursor,
 ) -> Option<FilledInterval> {
     if cursor.finished {
@@ -1099,11 +1221,35 @@ fn fill_one_interval(
                 }
 
                 let w_hwp = to_hwp(*width);
+                let effective_width = eff_w(cursor.is_first_line);
+                // The pen keeps the full width; only the comparison drops the
+                // candidate's trailing letter space.
+                let w_hwp_fit =
+                    w_hwp - fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx);
+                let token_fits = text_token_fits_line_hwp(
+                    cursor.lw,
+                    w_hwp_fit,
+                    cursor.line_space_savings,
+                    effective_width,
+                    *max_font_size,
+                );
 
                 // 단일 문자 CJK/한글 토큰의 줄바꿈 가능 지점 처리
                 // 이 글자를 포함한 후 break point 갱신 (end_idx 사용)
                 // → 초과 시 이 글자까지 L0에 포함하고 다음 토큰부터 다음 줄
-                if *end_idx - *start_idx == 1 && *start_idx > cursor.line_start_idx {
+                //
+                // **One predicate governs.** This used to ask its own question —
+                // the condensed width against the box, without
+                // `condense_pull_allowed` — so a glyph the fit test refused could
+                // still be registered as a legal line end, and the emitted row
+                // runs to the registered point, which put the refused glyph on
+                // the line anyway. Measured on `76076_regulatory_analysis` p81
+                // (`직접비용 근거설명`, box 36572 HWPUNIT): the fit test refuses
+                // at pen 35566 + 1400 = 36966 > 36572, while the recorder
+                // admitted the same glyph on 36966 − 980 = 35708 ≤ 36587. Sharing
+                // `text_token_fits_line_hwp` makes all six rows of that cell
+                // character-identical to the HWP 2024 PDF.
+                if *end_idx - *start_idx == 1 && *start_idx > cursor.line_start_idx && token_fits {
                     let c = text_chars[*start_idx];
                     let allow_break = if is_hangul(c) {
                         // [#2185] bit7=1 = 글자 단위 break 허용 (위 주석 참조)
@@ -1111,27 +1257,15 @@ fn fill_one_interval(
                     } else {
                         is_cjk_ideograph(c)
                     };
-                    let candidate_w = cursor.lw + w_hwp;
-                    // 이 글자가 줄에 들어가는 경우에만 break point 갱신
-                    if allow_break
-                        && condensed_line_width_hwp(candidate_w, cursor.line_space_savings)
-                            <= eff_w(cursor.is_first_line) + LINE_BREAK_TOLERANCE
-                    {
+                    if allow_break {
                         cursor.last_break_token_idx = Some(ti);
                         cursor.last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
-                        cursor.width_at_last_break = candidate_w; // 이 글자 폭 포함
+                        cursor.width_at_last_break = cursor.lw + w_hwp; // 이 글자 폭 포함
                         cursor.space_savings_at_last_break = cursor.line_space_savings;
                         cursor.fs_at_last_break = cursor.line_max_fs;
                     }
                 }
-                let effective_width = eff_w(cursor.is_first_line);
-                if !text_token_fits_line_hwp(
-                    cursor.lw,
-                    w_hwp,
-                    cursor.line_space_savings,
-                    effective_width,
-                    *max_font_size,
-                ) {
+                if !token_fits {
                     if *start_idx > cursor.line_start_idx {
                         if let Some(break_token_idx) = cursor.last_break_token_idx {
                             let result = LineBreakResult {
@@ -1371,7 +1505,16 @@ fn fill_lines_before_cursor(
                 // 단일 문자 CJK/한글 토큰의 줄바꿈 가능 지점 처리
                 // 이 글자를 포함한 후 break point 갱신 (end_idx 사용)
                 // → 초과 시 이 글자까지 L0에 포함하고 다음 토큰부터 다음 줄
-                if *end_idx - *start_idx == 1 && *start_idx > line_start_idx {
+                let effective_width = eff_w(is_first_line);
+                let token_fits = text_token_fits_line_hwp(
+                    lw,
+                    w_hwp,
+                    line_space_savings,
+                    effective_width,
+                    *max_font_size,
+                );
+                // Same single predicate as the live fill — see the note there.
+                if *end_idx - *start_idx == 1 && *start_idx > line_start_idx && token_fits {
                     let c = text_chars[*start_idx];
                     let allow_break = if is_hangul(c) {
                         // [#2185] bit7=1 = 글자 단위 break 허용 (위 주석 참조)
@@ -1379,20 +1522,14 @@ fn fill_lines_before_cursor(
                     } else {
                         is_cjk_ideograph(c)
                     };
-                    let candidate_w = lw + w_hwp;
-                    // 이 글자가 줄에 들어가는 경우에만 break point 갱신
-                    if allow_break
-                        && condensed_line_width_hwp(candidate_w, line_space_savings)
-                            <= eff_w(is_first_line) + LINE_BREAK_TOLERANCE
-                    {
+                    if allow_break {
                         last_break_token_idx = Some(ti);
                         last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
-                        width_at_last_break = candidate_w; // 이 글자 폭 포함
+                        width_at_last_break = lw + w_hwp; // 이 글자 폭 포함
                         space_savings_at_last_break = line_space_savings;
                         fs_at_last_break = line_max_fs;
                     }
                 }
-                let effective_width = eff_w(is_first_line);
                 if !text_token_fits_line_hwp(
                     lw,
                     w_hwp,
@@ -1681,9 +1818,83 @@ fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
         .collect()
 }
 
-/// The picture-band frame intentionally admits only its floating host and the
-/// already-supported treat-as-character Equation flow. Other controls have
-/// their own layout owners and must leave this transaction untouched.
+/// Controls that claim no inline advance and own no layout box of their own.
+///
+/// Structural section/column markers qualify because the caller's current
+/// Frame already embodies their resolved page/column geometry. A field
+/// (`ClickHere` and friends) qualifies for a different reason that reaches the
+/// same place: it is a *marker pair* around ordinary paragraph text.
+/// `inline_control_size_hwp` returns `None` for it, so `flow_inline_controls`
+/// never emits a token for it and the fill measures it as nothing.
+///
+/// Fields have to be in this set, because the alternative is that a body
+/// paragraph carrying one has **no layout owner at all**. That is the state
+/// `hwp_doc_fill_fields` leaves behind: `set_field_text_at`
+/// (`queries/field_query.rs`) replaces the field's text and shifts the stored
+/// `LineSeg` offsets, but never calls `reflow_line_segs`, so a paragraph that
+/// went from 9 bytes to 5,109 still carries the one record that described the
+/// empty form. Nothing downstream re-wraps it if the frame declines to look.
+/// **A property, not a list.** This used to enumerate three variants, and the
+/// enumeration was the defect: `Bookmark`, `PageNumberPos`, `PageHide`,
+/// `HiddenComment` and HWP3's `Hyperlink` are every bit as width-neutral as a
+/// `Field`, and a body paragraph carrying one had no layout owner at all — it
+/// fell to `compose_lines`' 45-character heuristic with no stored record, or
+/// got no repair with a stale one. HWP5/HWPX hyperlinks escaped only by an
+/// accident of parsing: `%hlk` becomes a `Control::Field` through a prefix
+/// test. Fields were added to the list for exactly this reason once already;
+/// the class was the thing to fix.
+///
+/// The property is: **contributes no inline width, and owns no layout box.**
+///
+/// - No inline width is `inline_control_size_hwp` returning `None` — the same
+///   oracle `flow_inline_controls` uses, so a control the fill would measure as
+///   nothing is a control the frame may ignore. That is one source of truth
+///   rather than two lists that must be kept in step.
+/// - No layout box of its own is the closed set below. It cannot come from the
+///   width oracle, because a *floating* Picture, Shape or Table also returns
+///   `None` there — they contribute no inline width precisely because they are
+///   laid out elsewhere. A body frame carries no exclusion for them
+///   (`models_exclusions()` is false), so it must decline and leave them with
+///   their established owner; that is what `layout_picture_band` exists for.
+///
+/// Enumerating the controls that *have* geometry rather than the ones that do
+/// not also fails in the safer direction. A control variant nobody has
+/// classified is laid out as ordinary text by the frame, which is at worst the
+/// same treatment its text would get anyway — where the previous shape left the
+/// whole paragraph unowned.
+fn control_is_width_neutral_marker(control: &Control) -> bool {
+    inline_control_size_hwp(control).is_none() && !control_owns_a_layout_box(control)
+}
+
+/// Controls that resolve their own geometry, inline or floating, and therefore
+/// have a layout owner that is not this frame.
+///
+/// `Header`/`Footer`/`Footnote`/`Endnote` are nested flows with their own
+/// frames; the rest carry a `CommonObjAttr` box. `Footnote`/`Endnote` also
+/// occupy a flow slot (`Control::is_logical_inline`).
+fn control_owns_a_layout_box(control: &Control) -> bool {
+    matches!(
+        control,
+        Control::Table(_)
+            | Control::Shape(_)
+            | Control::Picture(_)
+            | Control::Equation(_)
+            | Control::Form(_)
+            | Control::Header(_)
+            | Control::Footer(_)
+            | Control::Footnote(_)
+            | Control::Endnote(_)
+    )
+}
+
+pub(super) fn supports_cached_body_frame_controls(para: &Paragraph) -> bool {
+    para.controls.iter().all(control_is_width_neutral_marker)
+}
+
+/// The picture-band frame intentionally admits only its floating host, the
+/// already-supported treat-as-character Equation flow, and width-neutral
+/// markers. Other controls have their own layout owners and must leave this
+/// transaction untouched.
 fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
     let mut non_tac_pictures = 0usize;
     for control in &para.controls {
@@ -1692,6 +1903,7 @@ fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
                 non_tac_pictures += 1;
             }
             Control::Equation(equation) if equation.common.treat_as_char => {}
+            other if control_is_width_neutral_marker(other) => {}
             _ => return false,
         }
     }
@@ -1794,11 +2006,22 @@ fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
         })
 }
 
+/// `baseline_distance` from a row's height — the one expression, so the frame
+/// and the edit path cannot publish different baselines for the same paragraph.
+///
+/// They did: `frame_metrics_for_line` rounded while `make_line_seg` truncated,
+/// and `make_line_seg`'s output is written to the file. Any half-point font
+/// size split them — 10.5pt gives `1050 * 0.85 = 892.5`, so one published 893
+/// and the other 892.
+fn baseline_distance_hwp(line_height_hwp: i32) -> i32 {
+    (line_height_hwp as f64 * 0.85).round() as i32
+}
+
 fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
     if height_hwp > seg.line_height {
         seg.line_height = height_hwp;
         seg.text_height = height_hwp;
-        seg.baseline_distance = (height_hwp as f64 * 0.85).round() as i32;
+        seg.baseline_distance = baseline_distance_hwp(height_hwp);
     }
 }
 
@@ -1806,7 +2029,7 @@ fn apply_inline_control_frame_height(metrics: &mut FrameRowMetrics, height_hwp: 
     if height_hwp > metrics.line_height {
         metrics.line_height = height_hwp;
         metrics.text_height = height_hwp;
-        metrics.baseline_distance = (height_hwp as f64 * 0.85).round() as i32;
+        metrics.baseline_distance = baseline_distance_hwp(height_hwp);
     }
 }
 
@@ -1827,7 +2050,7 @@ fn frame_metrics_for_line(
         vertical_pos: 0,
         line_height,
         text_height: line_height,
-        baseline_distance: (line_height as f64 * 0.85) as i32,
+        baseline_distance: baseline_distance_hwp(line_height),
         line_spacing: compute_line_spacing_hwp(
             line_spacing_type,
             line_spacing_value,
@@ -1874,6 +2097,16 @@ pub(crate) fn layout_paragraph_in_frame(
     // `FlowInlineControl` path. A non-TAC Picture deliberately contributes no
     // inline token: it is represented by the caller's exclusion instead.
     let inline_controls = flow_inline_controls(para);
+    // [#3128] 프레임이 들여쓰기 추적을 잃던 자리. 종전에는 여기서 `false` 를 박아
+    // 두어, 저장 `LINE_SEG` 가 없는 들여쓴 셀 문단도 글꼴 고유 공백 폭으로 쟀다.
+    // 실측: `76076_regulatory_analysis.hwp` 에서 이 술어를 만족하는 문단이 74 개고,
+    // 그 전부가 이 경로로 들어온다.
+    let space_metric =
+        if super::missing_lineseg_indented_cell_has_uniform_metrics_with_tracking(para, styles) {
+            SpaceMetric::HalfCell
+        } else {
+            SpaceMetric::Stored
+        };
     let tokens = tokenize_paragraph_with_regenerated_space_metric(
         &text_chars,
         &para.char_offsets,
@@ -1881,9 +2114,11 @@ pub(crate) fn layout_paragraph_in_frame(
         styles,
         english_break_unit,
         korean_break_unit,
-        false,
+        space_metric,
         &inline_controls,
     );
+    let letter_spacing_px =
+        resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles);
     let fallback_font_size = if para.text.is_empty() {
         para.char_shapes
             .first()
@@ -1922,11 +2157,14 @@ pub(crate) fn layout_paragraph_in_frame(
             Some((height_hwp, baseline_distance_hwp))
         })
         .flatten();
+    // Fresh rows inherit only provenance. Page/column-first, empty, indent,
+    // paragraph-head, and FIRST/LAST are properties of the newly projected
+    // physical row and must not leak from the cached first row.
     let source_tag = para
         .line_segs
         .first()
-        .map(|segment| segment.tag)
-        .unwrap_or(LineSeg::TAG_IMPLEMENTATION_PROPERTY | LineSeg::TAG_SINGLE_SEGMENT_LINE);
+        .map(|segment| segment.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY)
+        .unwrap_or(LineSeg::TAG_IMPLEMENTATION_PROPERTY);
     let first_row = frame.row_count();
     let frame_checkpoint = frame.clone();
     let mut cursor = FillCursor::new(0, true);
@@ -1950,11 +2188,10 @@ pub(crate) fn layout_paragraph_in_frame(
                 frame.restore_checkpoint(row_frame_checkpoint.clone());
                 cursor = cursor_checkpoint.clone();
                 let intervals = frame.carve(candidate_height).to_vec();
-                if intervals.is_empty()
-                    || intervals
-                        .iter()
-                        .any(|interval| interval.start >= interval.end)
-                {
+                // Asked before filling so a degenerate carve costs no
+                // tokenization, but it is the same question
+                // `commit_carved_row` asks — one rule, not two.
+                if !frame.carved_row_is_usable() {
                     return None;
                 }
                 let trial = (frame.top, candidate_height, intervals.clone());
@@ -1984,6 +2221,7 @@ pub(crate) fn layout_paragraph_in_frame(
                         default_tab_width,
                         korean_break_unit,
                         condense_min_space,
+                        &letter_spacing_px,
                         &mut cursor,
                     )?;
                     let line = &filled.line;
@@ -2072,6 +2310,264 @@ pub(crate) fn layout_paragraph_in_frame(
     result
 }
 
+/// The metrics for one stored physical row, computed — never read off the
+/// record.
+///
+/// §1.4.1 recomputes `vertical_pos`, `line_height`, `text_height`,
+/// `baseline_distance` and `line_spacing` on both arms and writes them back
+/// over the stored values, so the frame must never take them from the file.
+/// The row's span is its own `text_start` to the next row's, and its size is
+/// the largest char shape active over that span.
+///
+/// `line_spacing` agrees with HWP's stored value on 98.53% of rows
+/// (1,133,166 measured); the residual is §2.14's metricCtx settlement — three
+/// independent ceilings — and is characterised, not modelled.
+pub(crate) fn stored_row_metrics(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    row: &[LineSeg],
+) -> Option<FrameRowMetrics> {
+    let para_style = styles.para_styles.get(para.para_shape_id as usize);
+    let line_spacing_type = para_style
+        .map(|style| style.line_spacing_type)
+        .unwrap_or(LineSpacingType::Percent);
+    let line_spacing_value = para_style.map(|style| style.line_spacing).unwrap_or(160.0);
+    let fallback_font_size = para
+        .char_shapes
+        .first()
+        .and_then(|shape| styles.char_styles.get(shape.char_shape_id as usize))
+        .map(|style| style.font_size)
+        .unwrap_or(12.0);
+
+    let span_start = row.first()?.text_start;
+    let row_end = row.last()?.text_start;
+    let span_end = para
+        .line_segs
+        .iter()
+        .map(|segment| segment.text_start)
+        .filter(|start| *start > row_end)
+        .min()
+        .unwrap_or(u32::MAX);
+    let active = para
+        .char_shapes
+        .iter()
+        .filter(|shape| shape.start_pos <= span_start)
+        .map(|shape| shape.start_pos)
+        .max();
+    let max_font_size = para
+        .char_shapes
+        .iter()
+        .filter(|shape| {
+            (shape.start_pos >= span_start && shape.start_pos < span_end)
+                || Some(shape.start_pos) == active
+        })
+        .filter_map(|shape| styles.char_styles.get(shape.char_shape_id as usize))
+        .map(|style| style.font_size)
+        .fold(0.0f64, f64::max);
+
+    Some(frame_metrics_for_line(
+        max_font_size,
+        fallback_font_size,
+        line_spacing_type,
+        line_spacing_value,
+        dpi,
+    ))
+}
+
+/// Resolve a paragraph's stored rows through the caller's frame.
+///
+/// The stored records are a cache, not frame inputs. The frame always computes
+/// the physical-row key `(count, column_start, segment_width)` first and admits
+/// the cache only on exact equality. Staleness is an additional invalidator: a
+/// geometrically matching record that describes obsolete text is still rebuilt.
+pub(crate) fn resolve_stored_line_segs_in_frame(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    legacy_hwp3_stored_geometry: bool,
+    miss_policy: StoredRowMissPolicy,
+    stale: bool,
+) -> Option<StoredRowResolution> {
+    if !supports_picture_band_frame_controls(para) {
+        return None;
+    }
+
+    // NO_LS: there is no stored record to compare, so this is the rebuild case
+    // outright and belongs to the frame's fill. The fill tokenizes through
+    // `para.char_shapes`, which is the char-shape re-splitting #2632 needed —
+    // a mixed-char-shape paragraph must measure the way it renders.
+    if para.line_segs.is_empty() {
+        let mut fill_input = para.clone();
+        fill_input.line_segs.clear();
+        return layout_paragraph_in_frame(&fill_input, frame, styles, dpi)
+            .map(|_| StoredRowResolution::Reflowed);
+    }
+
+    // HWP3-lineage stored rows use a legacy horizontal-origin lane that the
+    // common ParaShape does not carry. The first sample16 mismatch is a
+    // non-stale row stored at 2500..50024 while the common style resolves a
+    // 5000..50024 Frame (margin 5000, hanging indent -2500). HWP3→HWP5 keeps
+    // that stored origin too (#1892 round-trip: stored 0..42520 versus Frame
+    // 1200..42520), so provenance — not the current container — owns the gate.
+    // This is not a cache-key mismatch the common Frame can repair; it lacks
+    // jurisdiction. Edited/stale text still takes the fresh fill below, and
+    // NO_LS already took the Frame-owned branch above.
+    if legacy_hwp3_stored_geometry && !stale {
+        return None;
+    }
+
+    // #4755 §1 recomputes a FIRST..LAST split row as one physical row, and the
+    // picture-band frame does exactly that because it holds the exclusion that
+    // split it. A frame with no exclusions cannot: it carves one full-width
+    // interval, so reflowing a split row there flattens it and destroys the
+    // stored fragment geometry (#4690 `30098` p3 pi=48 stores `0..3402` and
+    // `45305..48188` around a float; a full-width recompute loses the right
+    // fragment entirely).
+    //
+    // An exclusion need not split one physical row into multiple slots. It can
+    // leave one narrowed slot for several rows and then end, returning later
+    // rows to the full frame width. #4090 pi=45 is exactly that shape: six
+    // `0+26319` rows beside a Square table, followed by one `0+48188` row below
+    // it. Different single-slot row extents therefore prove the same missing
+    // per-band geometry as FIRST..LAST splitting. That is a limit of
+    // jurisdiction, not a comparison tolerance — the frame declines rather
+    // than claiming rows whose geometry it cannot compute, and the paragraph
+    // stays with its established owner.
+    //
+    // This guard is live and load-bearing: it keeps cache admission and strict
+    // reflow from flattening a split row when this frame lacks the exclusion
+    // geometry that originally produced it. The multi-slot comparison becomes
+    // live when a caller supplies those exclusions.
+    if !frame.models_exclusions() && stored_rows_require_external_geometry(para, frame) {
+        return None;
+    }
+
+    let entry_checkpoint = frame.clone();
+    let cache_geometry_matches = stored_rows_reproduce_frame_expectation(para, frame, styles, dpi);
+    if cache_geometry_matches && !stale {
+        return Some(StoredRowResolution::Stored);
+    }
+
+    // Admission commits recomputed rows into the frame. A stale cache must not
+    // leave those rows behind before the fresh fill starts. Rejection already
+    // restores internally, so this is deliberately idempotent on that arm.
+    frame.restore_checkpoint(entry_checkpoint);
+    if !cache_geometry_matches
+        && !stale
+        && miss_policy == StoredRowMissPolicy::UnmodelledUnlessStale
+    {
+        return None;
+    }
+    if !cache_geometry_matches {
+        report_stored_row_key_mismatch(para, frame, styles, dpi);
+    }
+
+    let mut reflow_input = para.clone();
+    // A rejected row cannot remain the provenance template for fresh rows:
+    // placement/empty flags describe the stored physical rows, not this
+    // frame's newly carved projection.
+    reflow_input.line_segs.clear();
+    layout_paragraph_in_frame(&reflow_input, frame, styles, dpi)
+        .map(|_| StoredRowResolution::Reflowed)
+}
+
+/// Whether stored physical rows prove that their frame changed by vertical
+/// band and therefore required exclusion geometry.
+///
+/// A multi-slot FIRST..LAST row is direct evidence. A sequence of complete
+/// single-slot rows with different horizontal extents is equivalent evidence:
+/// a scalar frame has one immutable horizontal range, so it cannot produce the
+/// transition without an exclusion entering or leaving the row band.
+fn stored_rows_require_external_geometry(para: &Paragraph, frame: &LayoutFrame) -> bool {
+    let line_segs = &para.line_segs;
+    let split_or_varying = line_segs
+        .iter()
+        .any(|segment| !segment.is_first_segment() || !segment.is_last_segment())
+        || line_segs.windows(2).any(|pair| {
+            pair[0].column_start != pair[1].column_start
+                || pair[0].segment_width != pair[1].segment_width
+        });
+    if split_or_varying {
+        return true;
+    }
+
+    // Empty carrier rows can hold a narrowed origin supplied by a surrounding
+    // legacy/wrap owner even when every physical row is one complete slot.
+    // With no text and no control, this paragraph provides no local geometry
+    // from which a scalar Frame could derive that inset. Reflowing it full
+    // width destroys the carrier contract; leave it with the external owner.
+    let empty_carrier = para.controls.is_empty()
+        && para
+            .text
+            .chars()
+            .all(|ch| ch.is_whitespace() || ch == '\r' || ch == '\n');
+    empty_carrier
+        && line_segs.iter().any(|segment| {
+            segment.column_start != frame.horizontal.start
+                || segment.column_start.checked_add(segment.segment_width)
+                    != Some(frame.horizontal.end)
+        })
+}
+
+/// Whether the frame's own carve reproduces every stored row — §1.4.1's
+/// `(count, horzpos, horzsize)` cache key, computed before reuse.
+///
+/// Takes the frame by `&mut` and leaves an admitted paragraph's rows committed
+/// in it, because that is what makes the answer checkable — a caller that wants
+/// the frame's version of an admitted paragraph can `project_line_segs()` it.
+/// A rejection restores the entry checkpoint, so the frame is exactly as it was
+/// handed in.
+///
+/// **One reachability limit, stated rather than implied.** The multi-slot
+/// FIRST..LAST comparison inside `try_admit_stored_rows` has no production
+/// caller and cannot acquire one until float exclusions are wired through:
+/// `ParagraphBox::frame` builds every body frame with an empty exclusion list,
+/// so `models_exclusions()` is false at the only production call site and the
+/// guard above turns split rows away before the comparison sees them. The
+/// picture-band frame does hold exclusions, but it clears `line_segs` and
+/// reflows rather than comparing. Until a float set reaches a body frame, the
+/// multi-slot path is exercised by unit tests only.
+pub(crate) fn stored_rows_reproduce_frame_expectation(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> bool {
+    frame.try_admit_stored_rows(&para.line_segs, |row| {
+        stored_row_metrics(para, styles, dpi, row)
+    })
+}
+
+/// Report a cache-key mismatch already found by the production admission gate.
+///
+/// Off unless `RHWP_DIAG_STORED_ROW_KEY` is set, so the production path pays
+/// one `var_os` and no allocation. Probes a clone: a report must not be able to
+/// move the frame it is reporting on.
+fn report_stored_row_key_mismatch(
+    para: &Paragraph,
+    frame: &LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) {
+    if std::env::var_os("RHWP_DIAG_STORED_ROW_KEY").is_none() {
+        return;
+    }
+    let mut probe = frame.clone();
+    if !stored_rows_reproduce_frame_expectation(para, &mut probe, styles, dpi) {
+        eprintln!(
+            "DIAG_STORED_ROW_KEY mismatch rows={} stored=[{}]",
+            para.line_segs.len(),
+            para.line_segs
+                .iter()
+                .map(|segment| format!("{}+{}", segment.column_start, segment.segment_width))
+                .collect::<Vec<_>>()
+                .join(" "),
+        );
+    }
+}
+
 /// This mirrors `float_placement::horizontal_range`'s `HorzRelTo::Para`
 /// rule: the host's left paragraph margin shifts the object reference, but
 /// the right text margin does not shrink it.
@@ -2090,30 +2586,61 @@ fn picture_band_paragraph_reference(
 /// This is intentionally a fail-closed transaction. It accepts one host
 /// Picture, treats only TAC Equations as inline flow, and rejects any
 /// paragraph boundary that would require another layout owner.
+///
+/// Takes the column width in **pixels**, because that is what makes the
+/// paragraph box here the same object the body path builds. It used to take
+/// HWPUNIT and derive its own horizontal range as
+/// `column_width_hwp - px_to_hwpunit(margin_right)`, where `ParagraphBox::body`
+/// computes `px_to_hwpunit(column_width_px - margin_right_px)` — one truncation
+/// against two. Those disagree by one HWPUNIT often enough to matter, and the
+/// geometry pitch turns a one-unit disagreement into **four** whenever it
+/// straddles a multiple of the pitch, because flooring `x - 1` where `x ≡ 0`
+/// gives `x - 4`. Both routes publish `line_segs` that are persisted, so the
+/// same paragraph could be written to disk with two different
+/// `segment_width`s depending on whether a float was in its band.
+///
+/// The *column* box stays a local range rather than becoming a `ParagraphBox`:
+/// float placement needs the column's own edges, unindented by paragraph
+/// margins ([`picture_band_paragraph_reference`],
+/// `float_placement::resolve_picture_exclusion`), and that is not what
+/// `ParagraphBox` models. Stretching the type to cover both would put the
+/// two coordinate systems back into one object, which is the confusion it
+/// exists to prevent.
 pub(crate) fn layout_picture_band(
     paragraphs: &[Paragraph],
     host_index: usize,
-    column_width_hwp: i32,
+    column_width_px: f64,
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<PictureBandLayout> {
     let host = paragraphs.get(host_index)?;
-    let column_horizontal = 0..column_width_hwp;
+    let column_horizontal = 0..px_to_hwpunit(column_width_px, dpi);
     let margins_for = |paragraph: &Paragraph| {
         let style = styles.para_styles.get(paragraph.para_shape_id as usize);
         (
-            px_to_hwpunit(style.map(|value| value.margin_left).unwrap_or(0.0), dpi),
-            px_to_hwpunit(style.map(|value| value.margin_right).unwrap_or(0.0), dpi),
+            style.map(|value| value.margin_left).unwrap_or(0.0),
+            style.map(|value| value.margin_right).unwrap_or(0.0),
         )
     };
-    let horizontal_for = |paragraph: &Paragraph| {
-        let (margin_left, margin_right) = margins_for(paragraph);
-        let start = column_horizontal.start.saturating_add(margin_left);
-        let end = column_horizontal.end.saturating_sub(margin_right);
-        (start < end).then_some(start..end)
+    // `body_for_style`, like every other body route. An earlier revision used
+    // bare `body` here on the argument that the list-origin blocker was a
+    // separate decision — that was scope deferral, not a reason, and it left
+    // this route publishing a different origin from the edit route for the same
+    // list paragraph.
+    let box_for = |paragraph: &Paragraph| {
+        let paragraph_box = ParagraphBox::body_for_style(
+            column_width_px,
+            styles.para_styles.get(paragraph.para_shape_id as usize),
+            dpi,
+        );
+        // Supersedes the old `(start < end)` test, and is strictly stronger:
+        // that one ran before the geometry pitch, so a base of width 1..3 with
+        // a misaligned left edge passed it and then inverted.
+        paragraph_box.is_usable().then_some(paragraph_box)
     };
-    let host_horizontal = horizontal_for(host)?;
-    let (host_margin_left, _) = margins_for(host);
+    let host_box = box_for(host)?;
+    let host_horizontal = host_box.effective();
+    let host_margin_left = px_to_hwpunit(margins_for(host).0, dpi);
     let host_paragraph_horizontal =
         picture_band_paragraph_reference(&column_horizontal, host_margin_left)?;
 
@@ -2142,7 +2669,7 @@ pub(crate) fn layout_picture_band(
         .copied()?;
     let mut anchor_input = host.clone();
     anchor_input.line_segs.clear();
-    let mut anchor_frame = LayoutFrame::new(host_horizontal.clone(), 0, Vec::new());
+    let mut anchor_frame = host_box.frame(0);
     let anchor_rows = layout_paragraph_in_frame(&anchor_input, &mut anchor_frame, styles, dpi)?;
     let anchor_top = anchor_rows
         .iter()
@@ -2156,7 +2683,7 @@ pub(crate) fn layout_picture_band(
         anchor_top,
     )?;
     let exclusion_end = exclusion.vertical.end;
-    let mut frame = LayoutFrame::new(host_horizontal.clone(), 0, vec![exclusion]);
+    let mut frame = host_box.frame_with(0, vec![exclusion]);
     let mut line_segs = Vec::new();
 
     for (paragraph_index, paragraph) in paragraphs.iter().enumerate().skip(host_index) {
@@ -2171,7 +2698,7 @@ pub(crate) fn layout_picture_band(
                     || style.spacing_after.abs() > f64::EPSILON
                     || style.page_break_before
             })
-            || horizontal_for(paragraph)? != host_horizontal
+            || box_for(paragraph)?.effective() != host_horizontal
             || (paragraph_index != host_index
                 && paragraph.controls.iter().any(|control| {
                     matches!(control, Control::Picture(picture) if !picture.common.treat_as_char)
@@ -2181,9 +2708,10 @@ pub(crate) fn layout_picture_band(
         }
 
         let mut input = paragraph.clone();
-        // Clones carry only source content. A failed band leaves every cached
-        // LineSeg exactly as it was; only the finished projection is published
-        // by the document owner.
+        // A picture-band projection is freshly computed implementation state,
+        // even when the source paragraph had authentic cached rows. Clearing
+        // the cache prevents row-local flags from leaking and keeps vpos ladder
+        // repair from treating the fresh zero-origin row as a saved reset.
         input.line_segs.clear();
         let paragraph_lines = layout_paragraph_in_frame(&input, &mut frame, styles, dpi)?;
         line_segs.push(paragraph_lines);
@@ -2195,17 +2723,21 @@ pub(crate) fn layout_picture_band(
     })
 }
 
-/// 문단의 line_segs를 텍스트 내용과 컬럼 너비에 맞게 재계산한다.
+/// 문단의 line_segs를 텍스트 내용과 **문단 상자**에 맞게 재계산한다.
 ///
 /// 텍스트 편집(삽입/삭제) 후 호출하여 줄 바꿈을 재배치한다.
-/// `available_width_px`는 문단 여백을 제외한 사용 가능 너비(px)이다.
+///
+/// 인자는 폭이 아니라 [`ParagraphBox`] 다 — 호출자가 자기 좌표계를 말해야 한다.
+/// 폭만 받던 종전 계약은 원점을 잃었고, 그 결과 본문 편집이 `column_start=0`,
+/// `segment_width=가용폭` 을 발행해 HWP 의 저장 기록(열 기준 `column_start=여백`)
+/// 과도, 렌더 프레임이 깎는 상자와도 어긋났다.
 pub(crate) fn reflow_line_segs(
     para: &mut Paragraph,
-    available_width_px: f64,
+    paragraph_box: ParagraphBox,
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    let _ = reflow_line_segs_impl(para, available_width_px, styles, dpi, None, false);
+    let _ = reflow_line_segs_impl(para, paragraph_box, styles, dpi, None, false);
 }
 
 /// 셀 분할로 저장 폭이 stale해진 문단을 다시 조판한다.
@@ -2216,11 +2748,11 @@ pub(crate) fn reflow_line_segs(
 /// 복구 경로로 한정한다.
 pub(crate) fn reflow_line_segs_after_cell_split(
     para: &mut Paragraph,
-    available_width_px: f64,
+    paragraph_box: ParagraphBox,
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    let _ = reflow_line_segs_impl(para, available_width_px, styles, dpi, None, true);
+    let _ = reflow_line_segs_impl(para, paragraph_box, styles, dpi, None, true);
 }
 
 /// 저장 LINE_SEG가 유효한 셀 텍스트 편집은 수정된 줄 이전의 경계를 그대로 둔다.
@@ -2231,14 +2763,14 @@ pub(crate) fn reflow_line_segs_after_cell_split(
 /// 기존 full reflow로 안전하게 폴백한다.
 pub(crate) fn reflow_line_segs_after_cell_text_edit(
     para: &mut Paragraph,
-    available_width_px: f64,
+    paragraph_box: ParagraphBox,
     styles: &ResolvedStyleSet,
     dpi: f64,
     edit_char_offset: usize,
 ) -> bool {
     reflow_line_segs_impl(
         para,
-        available_width_px,
+        paragraph_box,
         styles,
         dpi,
         Some(edit_char_offset),
@@ -2248,21 +2780,44 @@ pub(crate) fn reflow_line_segs_after_cell_text_edit(
 
 fn reflow_line_segs_impl(
     para: &mut Paragraph,
-    available_width_px: f64,
+    paragraph_box: ParagraphBox,
     styles: &ResolvedStyleSet,
     dpi: f64,
     preserve_prefix_for_edit: Option<usize>,
     split_stale_cell_reflow: bool,
 ) -> bool {
+    // An impossible box publishes nothing, and this must be the first thing
+    // that happens — before the memo invalidation below, which is already a
+    // mutation.
+    //
+    // The render path has refused since it had a box to refuse
+    // (`recompose_stored_lines_in_frame`); the edit path never did, so a
+    // paragraph whose margins exceed its column reached `make_line_seg` with a
+    // negative `seg_width_hwp` and published `segment_width < 0` on every row.
+    // That is not a rendering artifact: `segment_width` goes to disk through
+    // `serializer::body_text`'s `write_i32` and raw into the HWPX
+    // `linesegarray`, so the corrupt extent is written to the file. Both paths
+    // now ask `ParagraphBox::is_usable()`, which is where the reasoning for
+    // refusing rather than flooring lives.
+    //
+    // `false` is the right return: it is the "prefix was not preserved" value,
+    // so the one consumer that reads it (`reflow_cell_paragraph`) takes its
+    // conservative branch.
+    if !paragraph_box.is_usable() {
+        return false;
+    }
     // [#4149] 셀 편집의 단일 관문(reflow_cell_paragraph[_by_path])과 서식 적용
     // (formatting.rs) 이 모두 여기로 수렴한다 — 단일줄 과밀 memo 무효화.
     para.invalidate_single_line_overflow_memo();
     // [#4677] 줄을 다시 계산하면 이전에 붙여 둔 조판 전용 보강 줄은 사라진다 — 표식을
     // 남겨 두면 실제 줄을 저장에서 잘라 내게 된다.
     para.layout_only_fill_lines = 0;
-    // 기존 LineSeg에서 dimension 값 보존 (원본 HWP 호환성 유지)
-    let seg_width_hwp = px_to_hwpunit(available_width_px, dpi);
     let orig = para.line_segs.first().cloned();
+    // 상자 하나가 발행 기록과 프레임 둘 다의 출처다 — 종전엔 `segment_width` 를
+    // 폭에서, 프레임 상자를 또 폭에서 따로 만들어 둘이 어긋날 수 있었다.
+    let published_horizontal = paragraph_box.effective();
+    let seg_width_hwp = paragraph_box.width_hwp();
+    let available_width_px = paragraph_box.width_px(dpi);
 
     // ParaPr의 줄간격 설정 (합성 LineSeg에서 line_spacing 계산에 사용)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
@@ -2281,7 +2836,7 @@ fn reflow_line_segs_impl(
         };
         let line_height_hwp = font_size_to_line_height(fs, dpi);
         let text_height_hwp = line_height_hwp;
-        let baseline_distance_hwp = (line_height_hwp as f64 * 0.85) as i32;
+        let baseline_distance_hwp = baseline_distance_hwp(line_height_hwp);
         let line_spacing_hwp = compute_line_spacing_hwp(ls_type, ls_value, line_height_hwp, dpi);
         // [Task #1811] 원본 linesegarray 부재(orig=None) 시 합성 seg 에 구현속성
         // 태그를 부여 — vpos 보정 등에서 실제 저장 증거와 구분한다 (컨버터의
@@ -2296,6 +2851,7 @@ fn reflow_line_segs_impl(
             text_height: text_height_hwp,
             baseline_distance: baseline_distance_hwp,
             line_spacing: line_spacing_hwp,
+            column_start: published_horizontal.start,
             segment_width: seg_width_hwp,
             tag: if orig_tag != 0 {
                 orig_tag
@@ -2374,7 +2930,7 @@ fn reflow_line_segs_impl(
                 seg.vertical_pos = vpos;
                 vpos += seg.line_height.saturating_add(seg.line_spacing);
             }
-            para.line_segs = new_line_segs;
+            para.replace_line_segs(new_line_segs);
         } else {
             // 빈 문단도 활성 글자 모양의 크기로 줄을 만든다. 앞 문단 LINE_SEG의
             // 치수를 복사하면 TAC 그림 높이까지 상속되므로 vpos 원점만 보존한다.
@@ -2391,7 +2947,7 @@ fn reflow_line_segs_impl(
             if let Some(height_hwp) = inline_control_line_height_hwp(para) {
                 apply_inline_control_line_height(&mut seg, height_hwp);
             }
-            para.line_segs = vec![seg];
+            para.replace_line_segs(vec![seg]);
         }
         return false;
     }
@@ -2416,7 +2972,12 @@ fn reflow_line_segs_impl(
         styles,
         english_break_unit,
         korean_break_unit,
-        split_stale_cell_reflow,
+        // 종전 동작 보존: 이 인자가 곧 공백 규칙이었다.
+        if split_stale_cell_reflow {
+            SpaceMetric::HancomRegenerated
+        } else {
+            SpaceMetric::Stored
+        },
         &inline_controls,
     );
     // 저장 LINE_SEG 기반 incremental edit는 앞선 줄을 유지한다. LINE_SEG start가 현재
@@ -2503,13 +3064,12 @@ fn reflow_line_segs_impl(
         && para.controls.is_empty()
         && preserved_prefix.is_empty();
     if frame_eligible {
-        let mut frame = LayoutFrame::new(
-            0..seg_width_hwp,
-            orig.as_ref().map(|line| line.vertical_pos).unwrap_or(0),
-            Vec::new(),
-        );
+        // 편집 프레임과 렌더 프레임이 이제 같은 상자에서 나온다 — 종전엔 이쪽만
+        // `0..seg_width_hwp`(문단 기준, 미스냅)라 열 기준 렌더 프레임과 어긋났다.
+        let mut frame =
+            paragraph_box.frame(orig.as_ref().map(|line| line.vertical_pos).unwrap_or(0));
         if let Some(projected) = layout_paragraph_in_frame(para, &mut frame, styles, dpi) {
-            para.line_segs = projected;
+            para.replace_line_segs(projected);
             return false;
         }
     }
@@ -2522,6 +3082,7 @@ fn reflow_line_segs_impl(
         tab_width,
         korean_break_unit,
         condense_min_space,
+        &resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles),
         reflow_start_idx,
         reflow_is_first_line,
     );
@@ -2614,7 +3175,7 @@ fn reflow_line_segs_impl(
         vpos += new_line_segs[i].line_height + new_line_segs[i].line_spacing;
     }
 
-    para.line_segs = new_line_segs;
+    para.replace_line_segs(new_line_segs);
     preserved_prefix_len > 0
 }
 
@@ -2823,7 +3384,18 @@ pub(crate) fn paragraph_flow_end(para: &Paragraph) -> Option<i32> {
 /// HWP의 LineSeg.line_height = 폰트 크기 (HWPUNIT).
 /// 실증 데이터: 10pt → lh=1000, 12pt → lh=1200, 25pt → lh=2500
 fn font_size_to_line_height(font_size_px: f64, dpi: f64) -> i32 {
-    px_to_hwpunit(font_size_px, dpi)
+    // Round, don't truncate. `px_to_hwpunit` is `(px * 7200 / dpi) as i32`,
+    // which floors toward zero, and the px it is handed came from a HWPUNIT
+    // font size in the first place — so the round trip loses a unit whenever
+    // the division is inexact. Measured over 1,133,228 admitted rows, that
+    // truncation is 5,012 of the 5,215 `line_height` disagreements against
+    // HWP's stored records, every one of them exactly -1.
+    round_px_to_hwpunit(font_size_px, dpi)
+}
+
+/// `px_to_hwpunit` with round-half-away-from-zero instead of truncation.
+fn round_px_to_hwpunit(px: f64, dpi: f64) -> i32 {
+    (px * 7_200.0 / dpi).round() as i32
 }
 
 /// ParaPr의 줄간격 설정으로부터 LineSeg.line_spacing(HWPUNIT)을 계산한다.
@@ -2847,7 +3419,7 @@ fn compute_line_spacing_hwp(
             // 합성을 lh 그대로(+9px/문단) 팽창시켰다.
             // ls_value<=0 은 결손 데이터(속성 미지정 파싱 0) — 음수 적용 금지.
             if ls_value > 0.0 {
-                (line_height_hwp as f64 * (ls_value - 100.0) / 100.0) as i32
+                (line_height_hwp as f64 * (ls_value - 100.0) / 100.0).round() as i32
             } else {
                 0
             }
@@ -2855,16 +3427,16 @@ fn compute_line_spacing_hwp(
         LineSpacingType::Fixed => {
             // ls_value = 고정 줄 피치 (px, resolver가 HWPUNIT→px 변환 완료)
             // line_spacing = 고정값 - line_height
-            let fixed_hwp = px_to_hwpunit(ls_value, dpi);
+            let fixed_hwp = round_px_to_hwpunit(ls_value, dpi);
             (fixed_hwp - line_height_hwp).max(0)
         }
         LineSpacingType::SpaceOnly => {
             // ls_value = 줄 사이 추가 간격만 (px)
-            px_to_hwpunit(ls_value, dpi)
+            round_px_to_hwpunit(ls_value, dpi)
         }
         LineSpacingType::Minimum => {
             // 최소값: 콘텐츠가 최소값보다 크면 추가 간격 없음
-            let min_hwp = px_to_hwpunit(ls_value, dpi);
+            let min_hwp = round_px_to_hwpunit(ls_value, dpi);
             (min_hwp - line_height_hwp).max(0)
         }
     }
@@ -2895,6 +3467,7 @@ mod fill_cursor_tests {
             default_tab_width,
             korean_break_unit,
             condense_min_space,
+            &[],
             &mut cursor,
         ) {
             results.push(result.line);
@@ -2932,6 +3505,7 @@ mod fill_cursor_tests {
             default_tab_width,
             korean_break_unit,
             condense_min_space,
+            &[],
             initial_start_idx,
             initial_is_first_line,
         );
@@ -3134,7 +3708,7 @@ mod frame_reflow_tests {
             styles,
             english_break_unit,
             korean_break_unit,
-            false,
+            SpaceMetric::Stored,
             &[],
         );
         let line_breaks = fill_lines_before_cursor(
@@ -3185,7 +3759,7 @@ mod frame_reflow_tests {
                     vertical_pos,
                     line_height,
                     text_height: line_height,
-                    baseline_distance: (line_height as f64 * 0.85) as i32,
+                    baseline_distance: baseline_distance_hwp(line_height),
                     line_spacing,
                     column_start: 0,
                     segment_width,
@@ -3247,6 +3821,12 @@ mod frame_reflow_tests {
 
     #[test]
     fn frame_reflow_retries_a_taller_row_without_consuming_the_cursor() {
+        a_frame_that_expects_the_stored_rows_admits_them_and_skips_the_reflow();
+        width_neutrality_is_a_property_of_geometry_not_a_list_of_variants();
+        body_stored_route_admits_only_width_neutral_structural_controls();
+        hwp3_formatting_rebuild_preserves_legacy_stored_geometry_jurisdiction();
+        frame_rejected_rows_reflow_without_propagating_cached_source_flags();
+        picture_band_frame_fill_inherits_provenance_not_cached_row_state();
         let styles = styles(&[12.0, 20.0]);
         let para = paragraph(
             "abcdef ghijk",
@@ -3297,6 +3877,466 @@ mod frame_reflow_tests {
         assert_eq!(frame.top, 2_400);
     }
 
+    fn a_frame_that_expects_the_stored_rows_admits_them_and_skips_the_reflow() {
+        let styles = styles(&[12.0]);
+        let mut para = paragraph(
+            "alpha beta gamma delta",
+            vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+        );
+        para.line_segs = vec![
+            LineSeg {
+                text_start: 0,
+                vertical_pos: 700,
+                line_height: 321,
+                text_height: 300,
+                baseline_distance: 250,
+                line_spacing: 17,
+                column_start: 1_000,
+                segment_width: 4_000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            },
+            LineSeg {
+                // This deliberately is not a fresh word boundary. A matching
+                // Frame must preserve the cached text partition verbatim.
+                text_start: 2,
+                vertical_pos: 1_038,
+                line_height: 654,
+                text_height: 600,
+                baseline_distance: 500,
+                line_spacing: 23,
+                column_start: 1_000,
+                segment_width: 4_000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            },
+        ];
+        let mut frame = LayoutFrame::new(1_000..5_000, 700, Vec::new());
+
+        // Reuse requires the current frame to reproduce the stored physical-row
+        // key exactly. Only then may the cached text partition stand.
+        let resolution = resolve_stored_line_segs_in_frame(
+            &para,
+            &mut frame,
+            &styles,
+            96.0,
+            false,
+            StoredRowMissPolicy::Reflow,
+            false,
+        )
+        .expect("a scalar cached paragraph is frame-resolvable");
+        assert_eq!(resolution, StoredRowResolution::Stored);
+        assert_eq!(frame.row_count(), 2);
+
+        // Geometry is preserved because the carve reproduced it — that is the
+        // admission test. Vertical metrics are **not**: §1.4.1 recomputes them
+        // on both arms and writes them back over the stored record, so the
+        // frame publishes what it computed, not what the file carried. The
+        // stored heights here (321/654) are fixture values with no relation to
+        // the 12pt char shape the provider measures.
+        let projected = frame.project_line_segs();
+        assert_eq!(projected.len(), 2);
+        assert!(projected
+            .iter()
+            .zip(&para.line_segs)
+            .all(|(row, stored)| row.text_start == stored.text_start
+                && row.column_start == stored.column_start
+                && row.segment_width == stored.segment_width));
+        let computed = frame_metrics_for_line(12.0, 12.0, LineSpacingType::Percent, 160.0, 96.0);
+        assert!(projected
+            .iter()
+            .all(|row| row.line_height == computed.line_height
+                && row.line_spacing == computed.line_spacing));
+        assert_eq!(
+            frame.top,
+            700 + 2 * (computed.line_height + computed.line_spacing)
+        );
+    }
+
+    fn width_neutrality_is_a_property_of_geometry_not_a_list_of_variants() {
+        // Every one of these contributes no inline width and owns no layout
+        // box, so the frame owns their paragraph. Only `SectionDef`,
+        // `ColumnDef` and `Field` used to qualify; a body paragraph carrying
+        // any of the others had no layout owner at all.
+        for control in [
+            Control::SectionDef(Box::default()),
+            Control::ColumnDef(Default::default()),
+            Control::Field(Default::default()),
+            Control::Bookmark(Default::default()),
+            Control::PageNumberPos(Default::default()),
+            Control::PageHide(Default::default()),
+            Control::HiddenComment(Box::default()),
+            // HWP3 keeps hyperlinks as their own control. HWP5/HWPX turn `%hlk`
+            // into a `Control::Field` by a prefix test, which is the only
+            // reason those ever reached the frame.
+            Control::Hyperlink(Default::default()),
+            Control::AutoNumber(Default::default()),
+            Control::NewNumber(Default::default()),
+            Control::Unknown(Default::default()),
+        ] {
+            assert!(
+                control_is_width_neutral_marker(&control),
+                "{control:?} has no geometry, so the frame must own its paragraph"
+            );
+        }
+
+        // These resolve their own geometry — inline or floating — so the frame
+        // must decline and leave them with their established owner. A body
+        // frame carries no exclusion, so claiming a floating object's paragraph
+        // would flatten the wrap it cannot see.
+        for control in [
+            Control::Table(Box::default()),
+            Control::Shape(Box::new(crate::model::shape::ShapeObject::Rectangle(
+                Default::default(),
+            ))),
+            Control::Picture(Box::default()),
+            Control::Equation(Box::default()),
+            Control::Form(Box::default()),
+            Control::Header(Box::default()),
+            Control::Footer(Box::default()),
+            Control::Footnote(Box::default()),
+            Control::Endnote(Box::default()),
+        ] {
+            assert!(
+                !control_is_width_neutral_marker(&control),
+                "{control:?} owns its own layout box"
+            );
+        }
+    }
+
+    fn body_stored_route_admits_only_width_neutral_structural_controls() {
+        let styles = styles(&[12.0]);
+        let mut structural = paragraph(
+            "section body",
+            vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+        );
+        structural.line_segs = vec![LineSeg {
+            vertical_pos: 100,
+            line_height: 900,
+            text_height: 900,
+            baseline_distance: 765,
+            line_spacing: 540,
+            column_start: 0,
+            segment_width: 9_000,
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            ..Default::default()
+        }];
+        structural.controls = vec![
+            Control::SectionDef(Box::default()),
+            Control::ColumnDef(Default::default()),
+        ];
+        assert!(supports_cached_body_frame_controls(&structural));
+        let mut structural_frame = LayoutFrame::new(0..9_000, 100, Vec::new());
+        assert!(matches!(
+            resolve_stored_line_segs_in_frame(
+                &structural,
+                &mut structural_frame,
+                &styles,
+                96.0,
+                false,
+                StoredRowMissPolicy::Reflow,
+                false
+            ),
+            Some(StoredRowResolution::Stored)
+        ));
+        // Width-neutral markers do not move the carve, so production admission
+        // has committed the matching cached row into the frame.
+        assert_eq!(structural_frame.row_count(), 1);
+        assert_eq!(
+            structural_frame
+                .project_line_segs()
+                .iter()
+                .map(|line| (line.column_start, line.segment_width))
+                .collect::<Vec<_>>(),
+            vec![(0, 9_000)]
+        );
+
+        let mut specialized = structural.clone();
+        specialized.controls = vec![Control::Table(Box::default())];
+        assert!(!supports_cached_body_frame_controls(&specialized));
+        let mut specialized_frame = LayoutFrame::new(0..9_000, 100, Vec::new());
+        let checkpoint = specialized_frame.clone();
+        assert!(resolve_stored_line_segs_in_frame(
+            &specialized,
+            &mut specialized_frame,
+            &styles,
+            96.0,
+            false,
+            StoredRowMissPolicy::Reflow,
+            true
+        )
+        .is_none());
+        assert_eq!(specialized_frame, checkpoint);
+
+        // A Square exclusion can leave one slot per row and still change that
+        // slot when the band ends. An exclusion-less body frame cannot infer
+        // the missing band from these cached outputs, so varying single-slot
+        // geometry is unmodelled rather than a reason to flatten and reflow.
+        let mut varying_single_slot = structural.clone();
+        varying_single_slot.controls.clear();
+        varying_single_slot.line_segs = vec![
+            LineSeg {
+                text_start: 0,
+                column_start: 0,
+                segment_width: 4_000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..structural.line_segs[0].clone()
+            },
+            LineSeg {
+                text_start: 4,
+                column_start: 0,
+                segment_width: 9_000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..structural.line_segs[0].clone()
+            },
+        ];
+        let mut scalar_frame = LayoutFrame::new(0..9_000, 100, Vec::new());
+        let scalar_checkpoint = scalar_frame.clone();
+        assert!(resolve_stored_line_segs_in_frame(
+            &varying_single_slot,
+            &mut scalar_frame,
+            &styles,
+            96.0,
+            false,
+            StoredRowMissPolicy::Reflow,
+            false
+        )
+        .is_none());
+        assert_eq!(scalar_frame, scalar_checkpoint);
+
+        let mut empty_external_carrier = structural.clone();
+        empty_external_carrier.text.clear();
+        empty_external_carrier.char_offsets.clear();
+        empty_external_carrier.char_count = 1;
+        empty_external_carrier.controls.clear();
+        empty_external_carrier.line_segs = vec![LineSeg {
+            text_start: 0,
+            column_start: 4_000,
+            segment_width: 5_000,
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            ..structural.line_segs[0].clone()
+        }];
+        let mut carrier_frame = LayoutFrame::new(0..9_000, 100, Vec::new());
+        let carrier_checkpoint = carrier_frame.clone();
+        assert!(resolve_stored_line_segs_in_frame(
+            &empty_external_carrier,
+            &mut carrier_frame,
+            &styles,
+            96.0,
+            false,
+            StoredRowMissPolicy::Reflow,
+            false
+        )
+        .is_none());
+        assert_eq!(carrier_frame, carrier_checkpoint);
+    }
+
+    fn hwp3_formatting_rebuild_preserves_legacy_stored_geometry_jurisdiction() {
+        use crate::document_core::DocumentCore;
+        use std::fs;
+        use std::path::Path;
+
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/issue1892_hwp3_drawing_group_roundtrip.hwp");
+        let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {path:?}: {error}"));
+        let mut core = DocumentCore::from_bytes(&bytes).expect("load HWP3 formatting fixture");
+        assert!(
+            core.document.layout_profile().legacy_hwp3_stored_geometry(),
+            "the HWP3 fixture must retain legacy stored-geometry jurisdiction"
+        );
+
+        // Choose a plain, nonempty single-row paragraph. With no controls and
+        // no varying slots, only HWP3 lineage can make this mismatching Frame
+        // unmodelled; clearing the lineage flag below proves the reversal.
+        let (section_index, paragraph_index) = core
+            .document
+            .sections
+            .iter()
+            .enumerate()
+            .find_map(|(section_index, section)| {
+                section
+                    .paragraphs
+                    .iter()
+                    .enumerate()
+                    .find(|(_, paragraph)| {
+                        !paragraph.text.trim().is_empty()
+                            && paragraph.controls.is_empty()
+                            && paragraph.line_segs.len() == 1
+                            && paragraph.line_segs[0].is_first_segment()
+                            && paragraph.line_segs[0].is_last_segment()
+                            && paragraph.line_segs[0].segment_width > 2_400
+                    })
+                    .map(|(paragraph_index, _)| (section_index, paragraph_index))
+            })
+            .expect("fixture has a plain legacy stored row");
+        let stored_before = line_fields(
+            &core.document.sections[section_index].paragraphs[paragraph_index].line_segs,
+        );
+
+        // Underline is paint-only, but the public formatting lifecycle still
+        // calls rebuild_section(). The legacy row itself must remain untouched.
+        core.apply_char_format_native(
+            section_index,
+            paragraph_index,
+            0,
+            1,
+            r#"{"underline":true}"#,
+        )
+        .expect("apply paint-only format");
+        assert_eq!(
+            line_fields(
+                &core.document.sections[section_index].paragraphs[paragraph_index].line_segs,
+            ),
+            stored_before
+        );
+        assert!(core.document.layout_profile().legacy_hwp3_stored_geometry());
+
+        let paragraph = &core.document.sections[section_index].paragraphs[paragraph_index];
+        let stored = &paragraph.line_segs[0];
+        let frame_horizontal = stored.column_start.saturating_add(1_200)
+            ..stored.column_start.saturating_add(stored.segment_width);
+
+        let mut ordinary_frame =
+            LayoutFrame::new(frame_horizontal.clone(), stored.vertical_pos, Vec::new());
+        assert!(matches!(
+            resolve_stored_line_segs_in_frame(
+                paragraph,
+                &mut ordinary_frame,
+                &core.styles,
+                96.0,
+                false,
+                StoredRowMissPolicy::Reflow,
+                false
+            ),
+            Some(StoredRowResolution::Reflowed)
+        ));
+
+        let mut legacy_frame = LayoutFrame::new(frame_horizontal, stored.vertical_pos, Vec::new());
+        assert!(
+            resolve_stored_line_segs_in_frame(
+                paragraph,
+                &mut legacy_frame,
+                &core.styles,
+                96.0,
+                true,
+                StoredRowMissPolicy::Reflow,
+                false
+            )
+            .is_none(),
+            "untouched HWP3 stored origin remains outside the common Frame's jurisdiction"
+        );
+    }
+
+    fn frame_rejected_rows_reflow_without_propagating_cached_source_flags() {
+        let styles = styles(&[12.0]);
+        let mut para = paragraph(
+            "abcdef ghijkl",
+            vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+        );
+        para.line_segs = vec![LineSeg {
+            text_start: 0,
+            vertical_pos: 100,
+            line_height: 900,
+            text_height: 900,
+            baseline_distance: 765,
+            line_spacing: 540,
+            column_start: 0,
+            segment_width: 9_000,
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE
+                | LineSeg::TAG_FIRST_LINE_OF_PAGE
+                | LineSeg::TAG_FIRST_LINE_OF_COLUMN
+                | LineSeg::TAG_EMPTY_SEGMENT,
+        }];
+        let mut frame = LayoutFrame::new(
+            0..9_000,
+            100,
+            vec![FrameExclusion {
+                horizontal: 3_000..5_000,
+                vertical: 0..10_000,
+                policy: FrameExclusionPolicy::BothSides,
+            }],
+        );
+
+        let resolution = resolve_stored_line_segs_in_frame(
+            &para,
+            &mut frame,
+            &styles,
+            96.0,
+            false,
+            StoredRowMissPolicy::Reflow,
+            false,
+        )
+        .expect("a scalar cached paragraph is frame-resolvable");
+
+        let StoredRowResolution::Reflowed = resolution else {
+            panic!("rows differing from the frame expectation must reflow");
+        };
+        // The frame holds the rows now; projecting is the only way out.
+        let lines = frame.project_line_segs();
+        assert_eq!(
+            lines
+                .iter()
+                .map(|line| (line.text_start, line.column_start, line.segment_width))
+                .collect::<Vec<_>>(),
+            vec![(0, 0, 3_000), (7, 5_000, 4_000)]
+        );
+        assert_eq!(frame.row_count(), 1);
+        assert_eq!(frame.top, 1_540);
+        let rejected_cache_flags = LineSeg::TAG_FIRST_LINE_OF_PAGE
+            | LineSeg::TAG_FIRST_LINE_OF_COLUMN
+            | LineSeg::TAG_EMPTY_SEGMENT;
+        assert!(lines
+            .iter()
+            .all(|line| line.tag & rejected_cache_flags == 0));
+        assert!(lines
+            .iter()
+            .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0));
+    }
+
+    fn picture_band_frame_fill_inherits_provenance_not_cached_row_state() {
+        let styles = styles(&[12.0]);
+        let mut para = paragraph(
+            "alpha beta gamma delta epsilon zeta eta theta iota kappa",
+            vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+        );
+        let cached_row_flags = LineSeg::TAG_FIRST_LINE_OF_PAGE
+            | LineSeg::TAG_FIRST_LINE_OF_COLUMN
+            | LineSeg::TAG_EMPTY_SEGMENT
+            | LineSeg::TAG_AUTO_HYPHENATION
+            | LineSeg::TAG_INDENTATION
+            | LineSeg::TAG_PARAGRAPH_HEAD;
+        para.line_segs = vec![LineSeg {
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE | cached_row_flags,
+            ..Default::default()
+        }];
+
+        let fill = |paragraph: &Paragraph| {
+            let mut frame = LayoutFrame::new(0..3_000, 0, Vec::new());
+            layout_paragraph_in_frame(paragraph, &mut frame, &styles, 96.0)
+                .expect("Picture-band fill must produce fresh rows")
+        };
+        let mut picture_band_input = para;
+        picture_band_input.line_segs.clear();
+        let synthetic = fill(&picture_band_input);
+        assert!(synthetic.len() > 1, "fixture must exercise later rows");
+        assert!(synthetic
+            .iter()
+            .all(|line| line.tag & cached_row_flags == 0));
+        assert!(synthetic
+            .iter()
+            .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0));
+    }
+
     #[test]
     fn eligible_scalar_reflow_projects_the_frozen_scalar_oracle() {
         let styles = styles(&[12.0]);
@@ -3315,7 +4355,12 @@ mod frame_reflow_tests {
         let expected = frozen_scalar_projection(&para, 50.0, &styles, 96.0);
         assert!(expected.len() > 1, "fixture must exercise row recurrence");
 
-        reflow_line_segs(&mut para, 50.0, &styles, 96.0);
+        reflow_line_segs(
+            &mut para,
+            ParagraphBox::content_width_px(50.0, 96.0),
+            &styles,
+            96.0,
+        );
 
         assert_eq!(line_fields(&para.line_segs), line_fields(&expected));
         assert!(para
@@ -3377,8 +4422,14 @@ mod frame_reflow_tests {
         );
         host.controls.push(Control::Picture(Box::new(picture)));
 
-        let band = layout_picture_band(&[host], 0, COLUMN_WIDTH, &styles, DPI)
-            .expect("the one-row Paragraph-relative Picture band");
+        let band = layout_picture_band(
+            &[host],
+            0,
+            crate::renderer::hwpunit_to_px(COLUMN_WIDTH, DPI),
+            &styles,
+            DPI,
+        )
+        .expect("the one-row Paragraph-relative Picture band");
 
         assert_eq!(band.paragraph_range, 0..1);
         assert_eq!(band.line_segs[0].len(), 1);
@@ -3414,7 +4465,7 @@ mod frame_reflow_tests {
             .unwrap_or_else(ColumnDef::default);
         let page_layout =
             PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, DPI);
-        let column_width = crate::renderer::px_to_hwpunit(page_layout.column_areas[0].width, DPI);
+        let column_width = page_layout.column_areas[0].width;
         let styles = crate::renderer::style_resolver::resolve_styles(&document.doc_info, DPI);
 
         let band = layout_picture_band(&section.paragraphs, 325, column_width, &styles, DPI)
@@ -3499,7 +4550,7 @@ mod frame_reflow_tests {
             .unwrap_or_else(ColumnDef::default);
         let page_layout =
             PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, DPI);
-        let column_width = crate::renderer::px_to_hwpunit(page_layout.column_areas[0].width, DPI);
+        let column_width = page_layout.column_areas[0].width;
         let styles = crate::renderer::style_resolver::resolve_styles(&document.doc_info, DPI);
 
         assert!(
@@ -3532,7 +4583,7 @@ mod frame_reflow_tests {
             .unwrap_or_else(ColumnDef::default);
         let page_layout =
             PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, DPI);
-        let column_width = crate::renderer::px_to_hwpunit(page_layout.column_areas[0].width, DPI);
+        let column_width = page_layout.column_areas[0].width;
         let styles = crate::renderer::style_resolver::resolve_styles(&document.doc_info, DPI);
 
         assert_eq!(
@@ -3566,7 +4617,12 @@ mod utf16_offset_tests {
             ..Default::default()
         };
 
-        reflow_line_segs(&mut para, 500.0, &ResolvedStyleSet::default(), 96.0);
+        reflow_line_segs(
+            &mut para,
+            ParagraphBox::content_width_px(500.0, 96.0),
+            &ResolvedStyleSet::default(),
+            96.0,
+        );
 
         assert_eq!(para.line_segs.len(), 2);
         assert_eq!(para.line_segs[1].text_start, 18);

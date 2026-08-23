@@ -88,8 +88,10 @@ pub struct Paragraph {
     /// None = 앞 번호 목록에 이어 (기본)
     /// Some(NumberingRestart) = 이전 번호 이어 / 새 번호 시작
     pub numbering_restart: Option<NumberingRestart>,
-    /// [#4149] 셀 단일줄 과밀 판정 memo — `recompose_stored_single_line_if_overflowing`
-    /// 전용 파생 캐시. 판정 입력은 (text, char_shapes, 셀 내폭)뿐이다. 제약:
+    /// [#4149] 문단 조판 입력 상태. 낮은 63비트는 셀 단일줄 과밀 판정 memo,
+    /// 최상위 비트는 저장 LineSeg의 텍스트 분할이 text/char_shapes 변이 뒤
+    /// 무효가 되었음을 기록한다. 두 상태는 같은 입력에서 함께 무효화된다.
+    /// 과밀 판정 입력은 (text, char_shapes, 셀 내폭)뿐이다. 제약:
     /// - 직렬화 금지: `Paragraph` 는 serde derive 가 없고 HWP/HWPX 저장기는 필드를
     ///   명시 기록하므로 파일로 새지 않는다. 새 직렬화 경로를 추가하면 이 필드를 제외할 것.
     /// - 스레드: `DocumentCore` 의 `Send` 단언이 `Arc<Vec<Paragraph>>`
@@ -115,6 +117,9 @@ pub struct Paragraph {
 pub struct SingleLineOverflowMemo(std::sync::atomic::AtomicU64);
 
 impl SingleLineOverflowMemo {
+    const STORED_PARTITION_DIRTY: u64 = 1 << 63;
+    const OVERFLOW_MEMO_MASK: u64 = !Self::STORED_PARTITION_DIRTY;
+
     /// 셀 내폭(px) → memo 폭 키.
     #[inline]
     pub fn width_key(cell_inner_width_px: f64) -> u32 {
@@ -124,7 +129,7 @@ impl SingleLineOverflowMemo {
     /// 저장된 판정 조회 — 폭 키가 일치할 때만 `Some(overflowed)`.
     #[inline]
     pub fn get(&self, width_key: u32) -> Option<bool> {
-        let v = self.0.load(std::sync::atomic::Ordering::Relaxed);
+        let v = self.0.load(std::sync::atomic::Ordering::Relaxed) & Self::OVERFLOW_MEMO_MASK;
         if v != 0 && (v >> 1) as u32 == width_key {
             Some(v & 1 == 1)
         } else {
@@ -138,20 +143,49 @@ impl SingleLineOverflowMemo {
         if width_key == 0 {
             return;
         }
-        let v = ((width_key as u64) << 1) | (overflowed as u64);
-        self.0.store(v, std::sync::atomic::Ordering::Relaxed);
+        let memo = ((width_key as u64) << 1) | (overflowed as u64);
+        let _ = self.0.fetch_update(
+            std::sync::atomic::Ordering::Relaxed,
+            std::sync::atomic::Ordering::Relaxed,
+            |current| Some((current & Self::STORED_PARTITION_DIRTY) | memo),
+        );
     }
 
-    /// 미판정 상태로 되돌린다.
+    /// Clear the width memo and record that stored row text boundaries no
+    /// longer describe the paragraph's current layout inputs.
+    #[inline]
+    pub fn invalidate_layout_inputs(&self) {
+        self.0.store(
+            Self::STORED_PARTITION_DIRTY,
+            std::sync::atomic::Ordering::Relaxed,
+        );
+    }
+
+    #[inline]
+    pub fn stored_partition_is_dirty(&self) -> bool {
+        self.0.load(std::sync::atomic::Ordering::Relaxed) & Self::STORED_PARTITION_DIRTY != 0
+    }
+
+    /// Publish freshly computed rows and reset every value derived from the
+    /// superseded partition in one transition.
+    #[inline]
+    fn publish_current_partition(&self) {
+        self.0.store(0, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    /// Clear only the width memo, preserving text-partition provenance.
     #[inline]
     pub fn clear(&self) {
-        self.0.store(0, std::sync::atomic::Ordering::Relaxed);
+        self.0.fetch_and(
+            Self::STORED_PARTITION_DIRTY,
+            std::sync::atomic::Ordering::Relaxed,
+        );
     }
 
     /// 미판정 여부 (invalidation 검증용).
     #[inline]
     pub fn is_unjudged(&self) -> bool {
-        self.0.load(std::sync::atomic::Ordering::Relaxed) == 0
+        self.0.load(std::sync::atomic::Ordering::Relaxed) & Self::OVERFLOW_MEMO_MASK == 0
     }
 }
 
@@ -638,10 +672,29 @@ impl Paragraph {
         }
     }
 
-    /// [#4149] 단일줄 과밀 판정 memo 무효화 — text/char_shapes 를 바꾸는 경로 필수.
+    /// Clear only the derived single-line width memo.
     #[inline]
     pub fn invalidate_single_line_overflow_memo(&self) {
         self.single_line_overflow_memo.clear();
+    }
+
+    /// Invalidate every layout result derived from text or CharShapeRef input.
+    /// Existing rows remain as edit-reflow metric templates, but cannot be
+    /// admitted or serialized as the current text partition.
+    #[inline]
+    pub fn invalidate_layout_inputs(&self) {
+        self.single_line_overflow_memo.invalidate_layout_inputs();
+    }
+
+    #[inline]
+    pub fn stored_text_partition_is_dirty(&self) -> bool {
+        self.single_line_overflow_memo.stored_partition_is_dirty()
+    }
+
+    /// Replace stored rows and their validity state at one owner boundary.
+    pub(crate) fn replace_line_segs(&mut self, line_segs: Vec<LineSeg>) {
+        self.line_segs = line_segs;
+        self.single_line_overflow_memo.publish_current_partition();
     }
 
     /// 문자의 UTF-16 코드 유닛 수를 반환한다.

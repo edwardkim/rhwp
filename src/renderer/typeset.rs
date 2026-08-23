@@ -27,6 +27,7 @@ use crate::renderer::height_measurer::{
     fit_measured_table_nested_tail_to_declared_height, fit_measured_table_to_declared_height,
     MeasuredTable,
 };
+use crate::renderer::layout::table_layout::native_terminal_child_host_line_spacing;
 use crate::renderer::layout::{border_width_to_px, ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -164,6 +165,9 @@ struct BlockTableContinuationPreparedState {
     host_spacing_total: f64,
     host_spacing_before: f64,
     host_spacing_after_only: f64,
+    /// 마지막 RowBreak child 뒤의 저장 empty-host line spacing. 첫 anchor
+    /// fragment가 아니라 terminal continuation 뒤에서 한 번만 소비한다.
+    terminal_nested_child_host_line_spacing: f64,
     strict_following_plain_text_fit: bool,
     budget_para_start_height: f64,
     /// native HWP5 RowBreak 표가 기존 FootnoteArea 직전까지의 물리 경계를
@@ -3164,42 +3168,24 @@ fn table_declared_object_covers_cell_row_frames(
     declared_row_geometry.is_some_and(|height| height <= declared_object_height + 0.5)
 }
 
-fn missing_lineseg_trailing_line_break(
+pub(crate) fn missing_lineseg_trailing_line_break(
     para: &Paragraph,
     line_count: usize,
     current_height: f64,
     available: f64,
+    trailing_line_spacing: f64,
     source_uses_inline_field_reset: bool,
     hwp3_converted_missing_lineseg: bool,
 ) -> Option<usize> {
-    // HWP3 변환 HWP5는 저장 lineSeg가 전부 생략된 경우만 formatter의 마지막
-    // 줄을 다음 물리 조각으로 추론한다. 고정 여유값 대신 "마지막 한 줄"의
-    // 비율로 최소 페이지 채움을 계산한다. 예를 들어 5줄 문단은 4/5 이상이
-    // 채워졌을 때만 4+1 조각을 추론하므로, 같은 5줄이라도 페이지 상단의
-    // 정상 RDBMS 문단은 분할하지 않는다.
-    let minimum_fill_ratio = if hwp3_converted_missing_lineseg {
-        1.0 - 1.0 / line_count as f64
-    } else {
-        0.75
-    };
-    if !para.line_segs.is_empty()
-        || line_count < 4
-        || current_height < available * minimum_fill_ratio
-        || !para_has_visible_text(para)
-        || !source_uses_inline_field_reset
-        || !controls_are_inline_text_metadata(para)
-    {
-        return None;
-    }
-
-    if hwp3_converted_missing_lineseg {
-        // 저장 좌표가 전부 사라진 변환본은 기존 source fragment의 줄 수를 알 수 없다.
-        // 현재 formatter가 만든 줄을 두 조각으로 가능한 한 균등하게 나누면, 원래
-        // 3+3 저장 조각이 5줄로 재래핑된 경우에도 3+2 경계를 유지한다.
-        Some((line_count + 1) / 2)
-    } else {
-        Some(line_count - 1)
-    }
+    crate::renderer::pagination::missing_lineseg_fragment_boundary(
+        para,
+        line_count,
+        current_height,
+        available,
+        trailing_line_spacing,
+        source_uses_inline_field_reset,
+        hwp3_converted_missing_lineseg,
+    )
 }
 
 fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
@@ -15422,36 +15408,28 @@ impl TypesetEngine {
                 let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                 let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                 let inner = (cw - margin_l - margin_r).max(0.0);
-                if inner > 0.0 && para.line_segs.is_empty() {
-                    let mut cloned = c.clone();
-                    // [#2279] 본문 NO_LS 는 글자모양 재분할 포함 래퍼 사용 —
-                    // paragraph_layout(렌더)와 동일 (측정/렌더 줄수·pitch 정합).
-                    crate::renderer::composer::recompose_for_body_width(
-                        &mut cloned,
-                        para,
-                        inner,
-                        styles,
-                    );
-                    Some(cloned)
-                } else if inner > 0.0
-                    && crate::renderer::composer::stored_body_lines_stale(
+                // 문단 상자는 편집 경로(`DocumentCore::reflow_paragraph`)의 가용 폭과
+                // 같아야 한다 — 한 문단이 어느 경로로 왔는지에 따라 다른 폭을 갖지
+                // 않게 한다. 들여쓰기/내어쓰기는 이 상자 **안에서**
+                // `layout_paragraph_in_frame` 의 indent_px 가 적용한다.
+                // `body_for_style`, not `body`: the list-origin blocker is part of
+                // the box, so a route that skips it publishes a different origin
+                // for the same paragraph.
+                let paragraph_box = crate::renderer::composer::ParagraphBox::body_for_style(
+                    cw, para_style, self.dpi,
+                );
+                // NO_LS 와 저장분할 both go to the frame.
+                if inner > 0.0 {
+                    crate::renderer::composer::recompose_stored_lines_in_frame(
                         c,
                         para,
+                        paragraph_box,
                         inner,
                         styles,
-                        hwp3_body_reflow,
+                        self.dpi,
+                        self.profile.get().legacy_hwp3_stored_geometry(),
+                        crate::renderer::composer::StoredRowMissPolicy::Reflow,
                     )
-                {
-                    // stale 저장분할 본문 문단을 fresh 재래핑한다.
-                    let mut cloned = c.clone();
-                    crate::renderer::composer::recompose_stale_body_lines(
-                        &mut cloned,
-                        para,
-                        inner,
-                        styles,
-                        hwp3_body_reflow,
-                    );
-                    Some(cloned)
                 } else {
                     None
                 }
@@ -16140,6 +16118,7 @@ impl TypesetEngine {
                     fmt.line_heights.len(),
                     st.current_height,
                     available,
+                    fmt.line_spacings.last().copied().unwrap_or(0.0),
                     st.profile.hwpx_stored_layout() || hwp3_converted_hwp5,
                     hwp3_converted_hwp5,
                 )
@@ -23089,6 +23068,11 @@ impl TypesetEngine {
             host_spacing_total,
             host_spacing_before: ft.host_spacing.before,
             host_spacing_after_only: ft.host_spacing.spacing_after_only,
+            terminal_nested_child_host_line_spacing: native_terminal_child_host_line_spacing(
+                self.profile.get().hwp5_stored_pagination_layout(),
+                table,
+                self.dpi,
+            ),
             strict_following_plain_text_fit: ft.strict_following_plain_text_fit,
             budget_para_start_height,
             first_fragment_actual_footnote_boundary:
@@ -23405,6 +23389,8 @@ impl TypesetEngine {
             let host_spacing_total = prepared.host_spacing_total;
             let host_spacing_before = prepared.host_spacing_before;
             let host_spacing_after_only = prepared.host_spacing_after_only;
+            let terminal_nested_child_host_line_spacing =
+                prepared.terminal_nested_child_host_line_spacing;
             let strict_following_plain_text_fit = prepared.strict_following_plain_text_fit;
             let budget_para_start_height = prepared.budget_para_start_height;
             let first_fragment_actual_footnote_boundary =
@@ -24028,7 +24014,8 @@ impl TypesetEngine {
                         + partial_height
                         + bottom_caption_extra
                         + fragment_outer_bottom_overhead
-                        + host_spacing_after_only;
+                        + host_spacing_after_only
+                        + terminal_nested_child_host_line_spacing;
                 }
                 if queue_table_footnotes {
                     self.register_queued_table_footnotes(
@@ -26178,6 +26165,7 @@ mod tests {
             host_spacing_total: 0.0,
             host_spacing_before: 0.0,
             host_spacing_after_only: 0.0,
+            terminal_nested_child_host_line_spacing: 0.0,
             strict_following_plain_text_fit: false,
             budget_para_start_height: 0.0,
             first_fragment_actual_footnote_boundary: None,

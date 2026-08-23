@@ -356,6 +356,14 @@ impl DocumentCore {
             .with_hangul2024_layout(self.hangul2024_compat)
     }
 
+    /// Rebuild the resolved-style aggregate with the document format's style
+    /// normalization. Layout provenance remains in `Document::layout_profile`
+    /// and is passed separately to cache-admission consumers.
+    pub(crate) fn rebuild_resolved_styles(&mut self) {
+        self.styles =
+            crate::renderer::style_resolver::resolve_styles_for_document(&self.document, self.dpi);
+    }
+
     /// 한글 2024 계열 조판 에뮬레이션을 켜거나 끈다.
     /// 변경 시 페이지네이션 결과가 달라지므로 모든 섹션을 재페이지네이션한다.
     pub fn set_hangul2024_compat(&mut self, enabled: bool) {
@@ -371,13 +379,8 @@ impl DocumentCore {
 
     /// DPI를 설정하고 스타일을 재해소한 후 재페이지네이션한다.
     pub fn set_dpi(&mut self, dpi: f64) {
-        use crate::renderer::style_resolver::resolve_styles_with_variant;
         self.dpi = dpi;
-        self.styles = resolve_styles_with_variant(
-            &self.document.doc_info,
-            dpi,
-            self.document.layout_profile().hwp3_layout(),
-        );
+        self.rebuild_resolved_styles();
         self.paginate();
     }
 

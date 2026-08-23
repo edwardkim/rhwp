@@ -10263,6 +10263,22 @@ impl LayoutEngine {
                     y_offset += hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
                 }
             }
+
+            // The terminal nested child owns the visible table bbox, while its saved
+            // empty host Enter owns only the following flow advance. Typeset records
+            // the same value on the terminal continuation; consume it here after
+            // `last_item_content_bottom` so it cannot enlarge the table border.
+            if is_continuation && end_cut.is_empty() {
+                if let Some(Control::Table(table)) = para.controls.get(control_index) {
+                    if end_row >= table.row_count as usize {
+                        y_offset += table_layout::native_terminal_child_host_line_spacing(
+                            self.profile.get().hwp5_stored_pagination_layout(),
+                            table,
+                            self.dpi,
+                        );
+                    }
+                }
+            }
         }
         // ── 분할 표: 어울림 문단 렌더링 ──
         if let Some(para) = paragraphs.get(para_index) {

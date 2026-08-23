@@ -9,9 +9,9 @@ use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
-use crate::renderer::composer::reflow_line_segs;
+use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
+use crate::renderer::style_resolver::{resolve_styles_for_document, ResolvedStyleSet};
 
 fn char_shape_mods_affect_text_flow(mods: &crate::model::style::CharShapeMods) -> bool {
     mods.base_size.is_some()
@@ -58,35 +58,14 @@ pub(super) fn para_shape_mods_affect_text_flow(mods: &crate::model::style::ParaS
         || mods.korean_break_unit.is_some()
 }
 
-/// 문단 하나를 주어진 영역 폭으로 다시 접는다. 영역 폭에서 그 문단의 좌우 여백을 뺀 것이
-/// 실제 줄 폭이다.
-fn reflow_paragraph_to_width(
-    para: &mut Paragraph,
-    area_width: f64,
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-) {
-    let para_style = styles.para_styles.get(para.para_shape_id as usize);
-    let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-    let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-    para.line_segs.clear();
-    para.invalidate_single_line_overflow_memo();
-    reflow_line_segs(
-        para,
-        (area_width - margin_left - margin_right).max(1.0),
-        styles,
-        dpi,
-    );
-}
-
-fn body_available_width_for_para_shape(
+fn body_paragraph_box_for_para_shape(
     core: &DocumentCore,
     sec_idx: usize,
     para_shape_id: u16,
     styles: &ResolvedStyleSet,
-) -> f64 {
+) -> ParagraphBox {
     let Some(section) = core.document.sections.get(sec_idx) else {
-        return 1.0;
+        return ParagraphBox::content(0..1);
     };
     let page_def = &section.section_def.page_def;
     let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
@@ -97,9 +76,7 @@ fn body_available_width_for_para_shape(
         .map(|a| a.width)
         .unwrap_or(layout.body_area.width);
     let para_style = styles.para_styles.get(para_shape_id as usize);
-    let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-    let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-    (col_width - margin_left - margin_right).max(1.0)
+    ParagraphBox::body_for_style(col_width, para_style, core.dpi)
 }
 
 impl DocumentCore {
@@ -1048,7 +1025,7 @@ impl DocumentCore {
         // 텍스트 폭/높이에 영향을 주는 글자 모양 변경 시 LineSeg 재계산.
         // 장평/자간은 글꼴 크기처럼 줄나눔과 페이지네이션을 바꾼다.
         if char_shape_mods_affect_text_flow(&mods) {
-            let styles = resolve_styles(&self.document.doc_info, self.dpi);
+            let styles = resolve_styles_for_document(&self.document, self.dpi);
             let section = &self.document.sections[sec_idx];
             let page_def = &section.section_def.page_def;
             let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
@@ -1062,14 +1039,15 @@ impl DocumentCore {
             let para_style = styles.para_styles.get(para_shape_id as usize);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
             let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-            let available_width = (col_width - margin_left - margin_right).max(1.0);
+            // 본문: 열 상자.
+            let paragraph_box = ParagraphBox::body_for_style(col_width, para_style, self.dpi);
             // 원본 LineSeg 무효화 → reflow가 max_font_size에서 새로 계산
             self.document.sections[sec_idx].paragraphs[para_idx]
                 .line_segs
                 .clear();
             reflow_line_segs(
                 &mut self.document.sections[sec_idx].paragraphs[para_idx],
-                available_width,
+                paragraph_box,
                 &styles,
                 self.dpi,
             );
@@ -1116,8 +1094,8 @@ impl DocumentCore {
             )));
         }
 
-        let styles = resolve_styles(&self.document.doc_info, self.dpi);
-        let available_width = {
+        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let available_box = {
             let section = &self.document.sections[sec_idx];
             let page_def = &section.section_def.page_def;
             let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
@@ -1131,13 +1109,14 @@ impl DocumentCore {
             let para_style = styles.para_styles.get(para_shape_id as usize);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
             let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-            (col_width - margin_left - margin_right).max(1.0)
+            // 본문: 열 상자.
+            ParagraphBox::body_for_style(col_width, para_style, self.dpi)
         };
 
         {
             let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
             para.apply_char_shape_range(start_offset, end_offset, char_shape_id);
-            reflow_line_segs(para, available_width, &styles, self.dpi);
+            reflow_line_segs(para, available_box, &styles, self.dpi);
         }
 
         self.document.sections[sec_idx].raw_stream = None;
@@ -1496,7 +1475,7 @@ impl DocumentCore {
         // 사용하므로). 줄간격뿐 아니라 여백/들여쓰기/줄나눔 단위도 사용 가능 폭·토큰
         // 경계를 바꾼다 — [#4324] para_shape_mods_affect_text_flow(:16 부근) 참고.
         if para_shape_mods_affect_text_flow(&mods) {
-            let styles = resolve_styles(&self.document.doc_info, self.dpi);
+            let styles = resolve_styles_for_document(&self.document, self.dpi);
             let section = &self.document.sections[sec_idx];
             let page_def = &section.section_def.page_def;
             let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
@@ -1509,10 +1488,10 @@ impl DocumentCore {
             let para_style = styles.para_styles.get(new_id as usize);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
             let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-            let available_width = (col_width - margin_left - margin_right).max(1.0);
+            // 본문: 열 상자.
             reflow_line_segs(
                 &mut self.document.sections[sec_idx].paragraphs[para_idx],
-                available_width,
+                ParagraphBox::body_for_style(col_width, para_style, self.dpi),
                 &styles,
                 self.dpi,
             );
@@ -1555,8 +1534,8 @@ impl DocumentCore {
             )));
         }
 
-        let styles = resolve_styles(&self.document.doc_info, self.dpi);
-        let available_width = {
+        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let available_box = {
             let section = &self.document.sections[sec_idx];
             let page_def = &section.section_def.page_def;
             let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
@@ -1569,13 +1548,14 @@ impl DocumentCore {
             let para_style = styles.para_styles.get(para_shape_id as usize);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
             let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-            (col_width - margin_left - margin_right).max(1.0)
+            // 본문: 열 상자.
+            ParagraphBox::body_for_style(col_width, para_style, self.dpi)
         };
 
         {
             let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
             para.para_shape_id = para_shape_id;
-            reflow_line_segs(para, available_width, &styles, self.dpi);
+            reflow_line_segs(para, available_box, &styles, self.dpi);
         }
 
         self.document.sections[sec_idx].raw_stream = None;
@@ -1881,9 +1861,9 @@ impl DocumentCore {
             Some(para) => para.para_shape_id,
             None => return,
         };
-        let styles = resolve_styles(&self.document.doc_info, self.dpi);
-        let available_width =
-            body_available_width_for_para_shape(self, sec_idx, para_shape_id, &styles);
+        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let paragraph_box =
+            body_paragraph_box_for_para_shape(self, sec_idx, para_shape_id, &styles);
         if let Some(para) = self
             .document
             .sections
@@ -1891,7 +1871,7 @@ impl DocumentCore {
             .and_then(|s| s.paragraphs.get_mut(para_idx))
         {
             para.line_segs.clear();
-            reflow_line_segs(para, available_width, &styles, self.dpi);
+            reflow_line_segs(para, paragraph_box, &styles, self.dpi);
         }
     }
 
@@ -1912,14 +1892,24 @@ impl DocumentCore {
     /// 분할 1줄 그대로인 꼬리말이 본문을 절반으로 좁힌 뒤에도 렌더에서 386.7px 로 본문
     /// 오른쪽 끝(396.9px) 안에 들어온다 (samples/hwp3-sample19-hwp5.hwp).
     pub(crate) fn reflow_body_paragraphs_in_section(&mut self, sec_idx: usize) {
-        let styles = resolve_styles(&self.document.doc_info, self.dpi);
+        let styles = resolve_styles_for_document(&self.document, self.dpi);
         let dpi = self.dpi;
         let wrap_width = self.body_wrap_width(sec_idx);
         let Some(section) = self.document.sections.get_mut(sec_idx) else {
             return;
         };
         for para in section.paragraphs.iter_mut() {
-            reflow_paragraph_to_width(para, wrap_width, &styles, dpi);
+            // 영역 폭에서 그 문단의 좌우 여백을 빼는 일은
+            // `ParagraphBox::body_for_style` 하나가 소유한다 — 여기서 같은 뺄셈을
+            // 다시 하면 본문 상자의 주인이 둘이 된다. 폭이 남지 않는 문단은
+            // 1.0px 로 바닥을 대는 대신 `reflow_line_segs` 가 거절한다.
+            let paragraph_box = ParagraphBox::body_for_style(
+                wrap_width,
+                styles.para_styles.get(para.para_shape_id as usize),
+                dpi,
+            );
+            para.line_segs.clear();
+            reflow_line_segs(para, paragraph_box, &styles, dpi);
         }
     }
 
@@ -2315,7 +2305,10 @@ impl DocumentCore {
 
 #[cfg(test)]
 mod tests {
-    use super::{char_shape_mods_affect_text_flow, para_shape_mods_affect_text_flow, DocumentCore};
+    use super::{
+        body_paragraph_box_for_para_shape, char_shape_mods_affect_text_flow,
+        para_shape_mods_affect_text_flow, DocumentCore,
+    };
     use crate::model::control::Control;
     use crate::model::paragraph::{CharShapeRef, Paragraph};
     use crate::model::style::{CharShapeMods, ParaShapeMods};
@@ -2343,6 +2336,67 @@ mod tests {
             ..Default::default()
         };
         assert!(!char_shape_mods_affect_text_flow(&mods));
+        hwp3_converted_flow_formatting_uses_document_resolved_paragraph_box();
+    }
+
+    fn hwp3_converted_flow_formatting_uses_document_resolved_paragraph_box() {
+        let mut core =
+            DocumentCore::from_bytes(include_bytes!("../../../samples/hwp3-sample16-hwp5.hwp"))
+                .expect("load HWP3-converted HWP5 fixture");
+        assert!(core.document.layout_profile().hwp3_layout());
+
+        let document_styles =
+            crate::renderer::style_resolver::resolve_styles_for_document(&core.document, core.dpi);
+        let plain_styles =
+            crate::renderer::style_resolver::resolve_styles(&core.document.doc_info, core.dpi);
+        assert!(document_styles.hwp3_variant);
+        assert!(!plain_styles.hwp3_variant);
+        let (section_index, paragraph_index, para_shape_id) = core
+            .document
+            .sections
+            .iter()
+            .enumerate()
+            .find_map(|(section_index, section)| {
+                section
+                    .paragraphs
+                    .iter()
+                    .enumerate()
+                    .find(|(_, paragraph)| {
+                        let id = paragraph.para_shape_id as usize;
+                        !paragraph.text.is_empty()
+                            && !paragraph.char_offsets.is_empty()
+                            && paragraph.controls.is_empty()
+                            && !paragraph.line_segs.is_empty()
+                            && document_styles.para_styles.get(id).is_some()
+                    })
+                    .map(|(paragraph_index, paragraph)| {
+                        (section_index, paragraph_index, paragraph.para_shape_id)
+                    })
+            })
+            .expect("fixture has a plain flow paragraph");
+
+        let expected_box = body_paragraph_box_for_para_shape(
+            &core,
+            section_index,
+            para_shape_id,
+            &document_styles,
+        );
+        core.apply_char_format_native(section_index, paragraph_index, 0, 1, r#"{"fontSize":1800}"#)
+            .expect("flow-affecting format succeeds");
+
+        let paragraph = &core.document.sections[section_index].paragraphs[paragraph_index];
+        let expected = expected_box.effective();
+        assert!(!paragraph.line_segs.is_empty());
+        assert!(paragraph.line_segs.iter().all(|row| {
+            row.column_start == expected.start
+                && row.column_start.saturating_add(row.segment_width) == expected.end
+        }));
+
+        let consumer_style = &core.styles.para_styles[para_shape_id as usize];
+        let expected_style = &document_styles.para_styles[para_shape_id as usize];
+        assert!(core.styles.hwp3_variant);
+        assert_eq!(consumer_style.margin_left, expected_style.margin_left);
+        assert_eq!(consumer_style.margin_right, expected_style.margin_right);
     }
 
     /// [#4324] margin/indent/줄나눔 단위 변경도 사용 가능 폭·토큰 경계를 바꾸므로

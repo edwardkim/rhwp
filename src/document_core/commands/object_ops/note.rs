@@ -580,22 +580,11 @@ impl DocumentCore {
         self.reflow_footnote_paragraph(section_idx, para_idx, insert_idx, 0);
 
         // 본문 문단 리플로우 (각주 마커 폭으로 인한 줄넘김 변경 반영)
-        {
-            use crate::renderer::composer::reflow_line_segs;
-            use crate::renderer::hwpunit_to_px;
-            let page_def = &self.document.sections[section_idx].section_def.page_def;
-            let text_width =
-                page_def.width as i32 - page_def.margin_left as i32 - page_def.margin_right as i32;
-            let available_width = hwpunit_to_px(text_width, self.dpi);
-            let para_style = self.styles.para_styles.get(
-                self.document.sections[section_idx].paragraphs[para_idx].para_shape_id as usize,
-            );
-            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-            let final_width = (available_width - margin_left - margin_right).max(0.0);
-            let body_para = &mut self.document.sections[section_idx].paragraphs[para_idx];
-            reflow_line_segs(body_para, final_width, &self.styles, self.dpi);
-        }
+        // 본문 문단의 상자는 쪽 폭이 아니라 **열** 폭에서 나온다. 직접 계산하면
+        // ColumnDef(다단)·margin_gutter·가로 용지·양면 짝수쪽 여백 교환·손상
+        // PageDef 의 A4 폴백을 모두 놓친다 — 그리고 그 결과가 디스크로 나간다.
+        // 대화형 편집의 관문과 같은 한 곳을 쓴다.
+        self.reflow_paragraph(section_idx, para_idx);
 
         // 리플로우 + 페이지네이션
         self.recompose_section(section_idx);
@@ -785,22 +774,11 @@ impl DocumentCore {
 
         self.reflow_footnote_paragraph(section_idx, para_idx, insert_idx, 0);
 
-        {
-            use crate::renderer::composer::reflow_line_segs;
-            use crate::renderer::hwpunit_to_px;
-            let page_def = &self.document.sections[section_idx].section_def.page_def;
-            let text_width =
-                page_def.width as i32 - page_def.margin_left as i32 - page_def.margin_right as i32;
-            let available_width = hwpunit_to_px(text_width, self.dpi);
-            let para_style = self.styles.para_styles.get(
-                self.document.sections[section_idx].paragraphs[para_idx].para_shape_id as usize,
-            );
-            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-            let final_width = (available_width - margin_left - margin_right).max(0.0);
-            let body_para = &mut self.document.sections[section_idx].paragraphs[para_idx];
-            reflow_line_segs(body_para, final_width, &self.styles, self.dpi);
-        }
+        // 본문 문단의 상자는 쪽 폭이 아니라 **열** 폭에서 나온다. 직접 계산하면
+        // ColumnDef(다단)·margin_gutter·가로 용지·양면 짝수쪽 여백 교환·손상
+        // PageDef 의 A4 폴백을 모두 놓친다 — 그리고 그 결과가 디스크로 나간다.
+        // 대화형 편집의 관문과 같은 한 곳을 쓴다.
+        self.reflow_paragraph(section_idx, para_idx);
 
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -845,9 +823,67 @@ mod char_shape_inherit_tests {
         core
     }
 
+    /// 각주를 넣은 본문 문단의 상자는 **열** 폭이지 쪽 폭이 아니다.
+    ///
+    /// 종전 세 자리(`equation.rs`, `note.rs` ×2)는
+    /// `page_def.width - margin_left - margin_right` 를 직접 계산했다. 2단 구역에서
+    /// 그 값은 열 폭의 약 두 배이고, `segment_width` 는 저장된다 — 화면만의 문제가
+    /// 아니라 파일이 틀린다. `ColumnDef` 말고도 `margin_gutter`, 가로 용지
+    /// (`PageAreas::from_page_def_for_page` 가 width/height 를 먼저 바꾼다),
+    /// 양면 짝수쪽 여백 교환, 손상 `PageDef` 의 A4 폴백을 모두 놓쳤다.
+    fn a_footnote_host_paragraph_is_reflowed_on_its_column_not_the_page() {
+        use crate::model::page::ColumnDef;
+
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "0123456789abcdefghij")
+            .unwrap();
+
+        // 2단으로 바꾼다. 열 폭 ≈ (본문 폭 - 단 간격) / 2.
+        let column_def = ColumnDef {
+            column_count: 2,
+            same_width: true,
+            spacing: 0,
+            ..Default::default()
+        };
+        core.document.sections[0]
+            .paragraphs
+            .first_mut()
+            .expect("본문 문단")
+            .controls
+            .push(Control::ColumnDef(column_def));
+        core.recompose_section(0);
+        core.paginate();
+
+        let page_text_width_hwp = {
+            let page_def = &core.document.sections[0].section_def.page_def;
+            page_def.width as i32 - page_def.margin_left as i32 - page_def.margin_right as i32
+        };
+
+        core.insert_footnote_native(0, 0, 10).unwrap();
+
+        let published = core.document.sections[0].paragraphs[0]
+            .line_segs
+            .first()
+            .map(|seg| seg.segment_width)
+            .expect("본문 첫 줄");
+
+        // 쪽 폭을 그대로 쓰면 열 폭의 두 배 가까이 나온다. 절반 근처여야 한다.
+        assert!(
+            published < page_text_width_hwp * 3 / 4,
+            "2단 본문이 쪽 폭으로 발행되었다: segment_width={published}, \
+             쪽 본문 폭={page_text_width_hwp}"
+        );
+        assert!(
+            published > 0,
+            "열 상자는 양수여야 한다: segment_width={published}"
+        );
+    }
+
     /// 기존 각주가 없는 문서의 폴백 — 커서 offset 글자모양(37) 상속.
     #[test]
     fn insert_footnote_fallback_inherits_char_shape_at_cursor_offset() {
+        a_footnote_host_paragraph_is_reflowed_on_its_column_not_the_page();
         let mut core = core_with_mixed_shape_paragraph();
         core.insert_footnote_native(0, 0, 10).unwrap();
 

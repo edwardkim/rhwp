@@ -27,8 +27,59 @@ fn make_paragraph_with_height(line_height: i32) -> Paragraph {
     }
 }
 
+fn missing_lineseg_fragment_boundary_is_identical_in_both_paginators() {
+    let para = Paragraph {
+        text: "visible converted paragraph".to_string(),
+        ..Default::default()
+    };
+    let operands = (6, 797.973, 967.253, 10.4);
+    let typeset = crate::renderer::typeset::missing_lineseg_trailing_line_break(
+        &para, operands.0, operands.1, operands.2, operands.3, true, true,
+    );
+    let fallback = super::engine::missing_lineseg_trailing_line_break(
+        &para, operands.0, operands.1, operands.2, operands.3, true, true,
+    );
+    assert_eq!(typeset, Some(3));
+    assert_eq!(fallback, typeset);
+
+    let hwpx_typeset = crate::renderer::typeset::missing_lineseg_trailing_line_break(
+        &para, operands.0, operands.1, operands.2, operands.3, true, false,
+    );
+    let hwpx_fallback = super::engine::missing_lineseg_trailing_line_break(
+        &para, operands.0, operands.1, operands.2, operands.3, true, false,
+    );
+    assert_eq!(hwpx_typeset, Some(5));
+    assert_eq!(hwpx_fallback, hwpx_typeset);
+
+    assert_eq!(
+        crate::renderer::typeset::missing_lineseg_trailing_line_break(
+            &para, operands.0, operands.1, operands.2, operands.3, false, true,
+        ),
+        None
+    );
+    assert_eq!(
+        super::engine::missing_lineseg_trailing_line_break(
+            &para, operands.0, operands.1, operands.2, operands.3, false, true,
+        ),
+        None
+    );
+    assert_eq!(
+        crate::renderer::typeset::missing_lineseg_trailing_line_break(
+            &para, operands.0, operands.1, operands.2, operands.3, false, false,
+        ),
+        None
+    );
+    assert_eq!(
+        super::engine::missing_lineseg_trailing_line_break(
+            &para, operands.0, operands.1, operands.2, operands.3, false, false,
+        ),
+        None
+    );
+}
+
 #[test]
 fn tac_picture_and_shape_require_partial_paragraph_page_routing() {
+    missing_lineseg_fragment_boundary_is_identical_in_both_paginators();
     use crate::model::control::Control;
     use crate::model::image::Picture;
     use crate::model::page::ColumnDef;

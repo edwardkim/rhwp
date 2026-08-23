@@ -7118,10 +7118,7 @@ impl HwpDocument {
         self.core.document.doc_info.raw_stream_dirty = true;
         let new_id = (self.core.document.doc_info.styles.len() - 1) as i32;
         // 스타일 캐시 갱신
-        self.core.styles = crate::renderer::style_resolver::resolve_styles(
-            &self.core.document.doc_info,
-            self.core.dpi,
-        );
+        self.core.rebuild_resolved_styles();
         new_id
     }
 
@@ -7166,10 +7163,7 @@ impl HwpDocument {
             }
         }
         // 스타일 캐시 갱신
-        self.core.styles = crate::renderer::style_resolver::resolve_styles(
-            &self.core.document.doc_info,
-            self.core.dpi,
-        );
+        self.core.rebuild_resolved_styles();
         // DocInfo(styles 목록)와 문단 style_id 가 함께 바뀌었으므로 저장 스트림을 무효화한다.
         // raw_stream_dirty 미설정 시 DocInfo 가, 섹션 raw_stream 잔존 시 본문이 각각 원본
         // 바이트로 재방출돼 스타일 삭제·문단 재배정이 .hwp 저장에서 유실된다.

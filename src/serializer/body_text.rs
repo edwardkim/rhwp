@@ -295,11 +295,17 @@ fn serialize_paragraph_with_msb(
     // PARA_TEXT 밖을 가리키는 줄 두 갈래다(판정은 `line_segs_within_text` 주석 참조).
     // 한글 2022 는 그런 문단을 만나면 본문 전체를 버리고 빈 1쪽 문서로 연다 — rhwp 재파싱만
     // 통과하는 함정이라 `--verify` 로는 잡히지 않는다 (10k 전수 스윕 x2h 소실군).
-    let line_segs_in_range = line_segs_within_text(
-        &para.line_segs,
-        actual_char_count,
-        para.layout_only_fill_lines,
-    );
+    let line_segs_in_range = if para.stored_text_partition_is_dirty() {
+        // Text/style mutation retained the old rows only as an edit-reflow
+        // template. They are not a serializable partition of the new text.
+        &para.line_segs[..0]
+    } else {
+        line_segs_within_text(
+            &para.line_segs,
+            actual_char_count,
+            para.layout_only_fill_lines,
+        )
+    };
 
     // PARA_HEADER (effective_char_shapes 길이 반영)
     // MSB는 모델 값이 아닌 위치 기반으로 결정: 마지막 문단만 MSB=true
@@ -1813,6 +1819,7 @@ mod tests {
     /// PARA_LINE_SEG 라운드트립
     #[test]
     fn test_roundtrip_line_segs() {
+        dirty_text_partition_is_not_serialized_as_current_linesegs();
         let para = Paragraph {
             char_count: 3,
             text: "AB".to_string(),
@@ -1851,6 +1858,38 @@ mod tests {
         assert_eq!(seg.line_height, 500);
         assert_eq!(seg.segment_width, 42000);
         assert!(seg.is_first_line_of_page());
+    }
+
+    fn dirty_text_partition_is_not_serialized_as_current_linesegs() {
+        let mut para = Paragraph {
+            char_count: 3,
+            text: "AB".to_string(),
+            char_offsets: vec![0, 1],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                line_height: 500,
+                segment_width: 42_000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        para.insert_text_at(2, " moderately wider");
+        para.invalidate_layout_inputs();
+        assert!(para.stored_text_partition_is_dirty());
+
+        let bytes = serialize_section(&Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            raw_provenance: None,
+            ..Default::default()
+        });
+        let parsed = parse_body_text_section(&bytes).unwrap();
+        assert!(parsed.paragraphs[0].line_segs.is_empty());
     }
 
     /// [#4677] PARA_TEXT 밖을 가리키는 lineseg 는 파일에 나가지 않는다.

@@ -46,6 +46,56 @@ pub fn footnote_between_notes_margin_px(shape: &FootnoteShape, dpi: f64) -> f64 
     super::hwpunit_to_px(shape.between_notes_margin_hu() as i32, dpi)
 }
 
+/// Infer the source fragment boundary for a visible paragraph whose stored
+/// LineSegs disappeared during conversion.
+///
+/// Both pagination engines call this function. Geometry proximity alone is
+/// insufficient: the source-format reset provenance is what permits turning a
+/// near-page-end fit into a physical fragment boundary.
+pub(crate) fn missing_lineseg_fragment_boundary(
+    para: &Paragraph,
+    line_count: usize,
+    current_height: f64,
+    available: f64,
+    trailing_line_spacing: f64,
+    source_uses_inline_field_reset: bool,
+    hwp3_converted_missing_lineseg: bool,
+) -> Option<usize> {
+    let minimum_fill_ratio = if hwp3_converted_missing_lineseg {
+        1.0 - 1.0 / line_count as f64
+    } else {
+        0.75
+    };
+    let fill_height = if hwp3_converted_missing_lineseg {
+        current_height + trailing_line_spacing.max(0.0)
+    } else {
+        current_height
+    };
+    let has_visible_text = para
+        .text
+        .chars()
+        .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}');
+    let controls_are_inline_text_metadata = para
+        .controls
+        .iter()
+        .all(|control| matches!(control, Control::Field(_) | Control::Hyperlink(_)));
+    if !para.line_segs.is_empty()
+        || line_count < 4
+        || fill_height < available * minimum_fill_ratio
+        || !has_visible_text
+        || !source_uses_inline_field_reset
+        || !controls_are_inline_text_metadata
+    {
+        return None;
+    }
+
+    if hwp3_converted_missing_lineseg {
+        Some((line_count + 1) / 2)
+    } else {
+        Some(line_count - 1)
+    }
+}
+
 /// 미주 참조
 #[derive(Debug, Clone)]
 pub struct EndnoteRef {
@@ -983,6 +1033,34 @@ pub struct PaginationOpts {
     pub is_hwp3_variant: bool,
     /// 현재 구역의 각주 모양. 각주 예약 영역을 렌더 영역과 같은 metric으로 계산한다.
     pub footnote_shape: Option<FootnoteShape>,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+struct PaginationSourceContext {
+    source_uses_inline_field_reset: bool,
+    hwp3_converted_missing_lineseg: bool,
+    legacy_hwp3_stored_geometry: bool,
+}
+
+impl PaginationSourceContext {
+    fn from_profile(profile: crate::model::provenance::LayoutCompatibilityProfile) -> Self {
+        let hwp3_converted_missing_lineseg =
+            profile.hwp3_layout() && !profile.hwp3_native_layout() && !profile.hwpx_container();
+        Self {
+            source_uses_inline_field_reset: profile.hwpx_stored_layout()
+                || hwp3_converted_missing_lineseg,
+            hwp3_converted_missing_lineseg,
+            legacy_hwp3_stored_geometry: profile.legacy_hwp3_stored_geometry(),
+        }
+    }
+
+    fn from_public_variant(is_hwp3_variant: bool) -> Self {
+        Self {
+            source_uses_inline_field_reset: is_hwp3_variant,
+            hwp3_converted_missing_lineseg: is_hwp3_variant,
+            legacy_hwp3_stored_geometry: is_hwp3_variant,
+        }
+    }
 }
 
 /// 페이지 분할 엔진

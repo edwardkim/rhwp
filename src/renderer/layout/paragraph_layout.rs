@@ -1008,6 +1008,7 @@ fn compute_line_extra_spacing(
     justify_spaces_only: bool,
     needs_distribute: bool,
     has_tabs: bool,
+    renders_synthetic_wrap_trailing_space: bool,
     suppress_cell_overflow_spacing: bool,
     total_char_count: usize,
     total_text_width: f64,
@@ -1171,7 +1172,23 @@ fn compute_line_extra_spacing(
             } else {
                 0.0
             };
-            let effective_used = total_text_width - trailing_width + split_ink_overhang;
+            // A fresh soft-wrap consumes the separator before starting the next
+            // row, but LineSeg can encode only the next row's start. Composition
+            // therefore leaves that separator at the end of this row. The run
+            // painter advances every preserved space, so its distribution must
+            // account for that slot and its natural width; otherwise a corrected
+            // break immediately before a word can push the trailing separator
+            // beyond the line box (#4956).
+            let rendered_space_slots = if renders_synthetic_wrap_trailing_space {
+                interior_spaces + trailing_spaces
+            } else {
+                interior_spaces
+            };
+            let effective_used = if renders_synthetic_wrap_trailing_space {
+                total_text_width + split_ink_overhang
+            } else {
+                total_text_width - trailing_width + split_ink_overhang
+            };
             let slack = available_width - effective_used;
             if leader_dashes > 0 && slack > 0.0 {
                 // Task #352: 라인에 dash leader 가 있고 슬랙이 양수면
@@ -1184,7 +1201,7 @@ fn compute_line_extra_spacing(
                 (0.0, 0.0, 0.0)
             } else {
                 // 양쪽 정렬: 단어 간격 분배 (또는 음수 슬랙 시 압축)
-                let raw_ews = slack / interior_spaces as f64;
+                let raw_ews = slack / rendered_space_slots as f64;
                 let space_base_w = estimate_text_width(
                     " ",
                     &resolved_to_text_style(
@@ -1199,7 +1216,7 @@ fn compute_line_extra_spacing(
                 // 실폰트보다 넓으면 공백 -50% 클램프만으로는 잔여 초과가 남아 우측
                 // 테두리에서 클리핑된다. 공백-없는 분기와 동일하게 잔여 음수 슬랙을
                 // 자간으로 흡수한다 (narrow glyph 역진은 #229 per-char 클램프가 방어).
-                let leftover = slack - ews * interior_spaces as f64;
+                let leftover = slack - ews * rendered_space_slots as f64;
                 let ecs = if in_cell && leftover < 0.0 && total_char_count > 1 && !has_tabs {
                     let avg_char_w = total_text_width / total_char_count as f64;
                     let min_ecs = -avg_char_w * 0.5;
@@ -2309,36 +2326,29 @@ impl LayoutEngine {
                 let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                 let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                 let column_inner_width = (col_area.width - margin_l - margin_r).max(0.0);
-                if column_inner_width > 0.0 && para.line_segs.is_empty() {
-                    let mut cloned = comp.clone();
-                    // [#2279] 본문 NO_LS 는 글자모양 재분할 포함 래퍼 사용 —
-                    // typeset(format_paragraph)과 동일 (측정/렌더 줄수·pitch 정합).
-                    crate::renderer::composer::recompose_for_body_width(
-                        &mut cloned,
-                        para,
-                        column_inner_width,
-                        styles,
-                    );
-                    Some(cloned)
-                } else if column_inner_width > 0.0
-                    && crate::renderer::composer::stored_body_lines_stale(
+                // 문단 상자는 편집 경로(`DocumentCore::reflow_paragraph`)의 가용 폭과
+                // 같아야 한다 — 한 문단이 어느 경로로 왔는지에 따라 다른 폭을 갖지
+                // 않게 한다(typeset 의 동일 산출과 맞춘다). 들여쓰기/내어쓰기는 이
+                // 상자 **안에서** `layout_paragraph_in_frame` 의 indent_px 가 적용한다.
+                // `body_for_style`, not `body` — see the note in `typeset.rs`.
+                let paragraph_box = crate::renderer::composer::ParagraphBox::body_for_style(
+                    col_area.width,
+                    para_style,
+                    self.dpi,
+                );
+                // NO_LS 와 저장분할 both go to the frame: no stored record means
+                // the rebuild case outright, and the frame's fill owns it.
+                if column_inner_width > 0.0 {
+                    crate::renderer::composer::recompose_stored_lines_in_frame(
                         comp,
                         para,
+                        paragraph_box,
                         column_inner_width,
                         styles,
-                        hwp3_body_reflow,
+                        self.dpi,
+                        self.profile.get().legacy_hwp3_stored_geometry(),
+                        crate::renderer::composer::StoredRowMissPolicy::Reflow,
                     )
-                {
-                    // stale 저장분할 본문 문단을 fresh 재래핑한다.
-                    let mut cloned = comp.clone();
-                    crate::renderer::composer::recompose_stale_body_lines(
-                        &mut cloned,
-                        para,
-                        column_inner_width,
-                        styles,
-                        hwp3_body_reflow,
-                    );
-                    Some(cloned)
                 } else {
                     None
                 }
@@ -3986,6 +3996,16 @@ impl LayoutEngine {
                 && is_header_footer_para;
 
             let has_tabs = comp_line.runs.iter().any(|r| r.text.contains('\t'));
+            let renders_synthetic_wrap_trailing_space = !is_last_line_of_para
+                && para
+                    .and_then(|p| p.line_segs.get(line_idx))
+                    .is_some_and(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+                && comp_line
+                    .runs
+                    .iter()
+                    .rev()
+                    .find_map(|run| run.text.chars().next_back())
+                    == Some(' ');
             // 자간은 **그려지는 글자**에 나눠 붙으므로 폭(`total_text_width`)과 같은
             // 텍스트로 센다. 머리말 필드처럼 모델 1자가 표시 N자면 모델로 세었을 때
             // 글자당 몫이 N배로 부풀어 글자가 흩어진다 (Task #3216).
@@ -4019,6 +4039,7 @@ impl LayoutEngine {
                     justify_spaces_only,
                     needs_distribute,
                     has_tabs,
+                    renders_synthetic_wrap_trailing_space,
                     suppress_cell_overflow_spacing,
                     total_char_count,
                     total_text_width,
@@ -7331,6 +7352,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             5,
             30.0,
             90.0,
@@ -7338,6 +7360,44 @@ mod issue_2809_split_alignment_tests {
         );
 
         assert!((extra_word - 30.0).abs() < 0.001);
+        assert_eq!(extra_char, 0.0);
+        assert_eq!(extra_dash, 0.0);
+
+        // A synthetic soft-wrap keeps its consumed separator in the projected
+        // run. The renderer advances that final space too, so it participates
+        // in the slot count and the complete run stays inside the line box.
+        let trailing_line = ComposedLine {
+            runs: vec![ComposedTextRun {
+                text: "다 같 이 ".to_string(),
+                ..Default::default()
+            }],
+            ..line
+        };
+        let styles = ResolvedStyleSet::default();
+        let text_style = resolved_to_text_style(&styles, 0, 0);
+        let natural_width = estimate_text_width("다 같 이 ", &text_style);
+        let available_width = natural_width + 60.0;
+        let (extra_word, extra_char, extra_dash) = compute_line_extra_spacing(
+            &trailing_line,
+            &styles,
+            Alignment::Justify,
+            false,
+            true,
+            false,
+            false,
+            false,
+            true,
+            false,
+            6,
+            natural_width,
+            available_width,
+            40.0,
+        );
+        let mut distributed_style = text_style;
+        distributed_style.extra_word_spacing = extra_word;
+        assert!(
+            (estimate_text_width("다 같 이 ", &distributed_style) - available_width).abs() < 0.001
+        );
         assert_eq!(extra_char, 0.0);
         assert_eq!(extra_dash, 0.0);
     }
@@ -7361,6 +7421,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Split,
             true,
             true,
+            false,
             false,
             false,
             false,
@@ -7412,6 +7473,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             12,
             62.5,
             481.8,
@@ -7428,6 +7490,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
+            false,
             false,
             false,
             false,
@@ -7474,6 +7537,7 @@ mod issue_4657_distribute_alignment_tests {
             false,
             false,
             true,
+            false,
             false,
             false,
             char_count,
