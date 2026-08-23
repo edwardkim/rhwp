@@ -3463,3 +3463,388 @@ fn guards_fire_in_dry_run_too() {
         }));
     });
 }
+
+// ---------------------------------------------------------------------------
+// Stage 9 (S5) — 엔진 산출 회귀 + 한컴 판정 번들 (#5652)
+// ---------------------------------------------------------------------------
+//
+// #5447 은 문자열 수술로 만든 변종을 한컴이 판정했다. 본구현은 **엔진이 만든 바이트**를
+// 판정해야 한다(이슈 §검증). 변종 카탈로그(`b2_variants`)의 `what`·`expect_shape` 를 그대로
+// 쓰되, 수술 클로저 대신 `set_chart_data_by_index_native(…, structure:true)` 로 만든다.
+// 경계 2종(원형 계열추가·주식형 계열삭제)은 가드가 막으므로 번들에서 빠지고 거부 테스트가
+// 대신한다(`pie_series_count_is_fixed`·`stock_series_count_is_fixed`).
+
+/// 변종 (기준 문서, 라벨) → 엔진 편집 입력. 가드가 막는 경계 변종은 `None`.
+fn b2_engine_edits(core: &DocumentCore, stem: &str, label: &str) -> Option<serde_json::Value> {
+    let mut e = edits_from(core, 0);
+    e["structure"] = serde_json::json!(true);
+    match (stem, label) {
+        (_, "행추가") => {
+            b2_push_str(&mut e["labels"], "추가항목");
+            for (s, v) in e["series"]
+                .as_array_mut()
+                .unwrap()
+                .iter_mut()
+                .zip(["45", "44", "43"])
+            {
+                b2_push_str(&mut s["values"], v);
+            }
+        }
+        (_, "행삭제") => {
+            e["labels"].as_array_mut().unwrap().remove(1);
+            for s in e["series"].as_array_mut().unwrap() {
+                s["values"].as_array_mut().unwrap().remove(1);
+            }
+        }
+        ("묶은세로막대형", "계열추가") => {
+            e["series"].as_array_mut().unwrap().push(serde_json::json!({
+                "name": "추가계열", "values": ["6", "6", "6", "6"],
+            }));
+        }
+        ("묶은세로막대형", "계열삭제") | ("누적세로막대형", "계열삭제") => {
+            // 「계열 2」 삭제 — 위치 기반이라 뒤 계열이 앞으로 당겨지고 꼬리가 지워진다.
+            e["series"].as_array_mut().unwrap().remove(1);
+        }
+        (_, "계열명변경") => {
+            e["series"][0]["name"] = serde_json::json!("이름바뀐계열");
+        }
+        (_, "라벨변경") => {
+            e["labels"][0] = serde_json::json!("바뀐항목");
+        }
+        ("직선및표식이있는분산형", "점추가") => {
+            b2_push_str(&mut e["labels"], "9");
+            for (s, y) in e["series"]
+                .as_array_mut()
+                .unwrap()
+                .iter_mut()
+                .zip(["27", "10"])
+            {
+                b2_push_str(&mut s["values"], y);
+            }
+        }
+        ("가로막대형_하나만있을떄_단일시리즈제목", "점추가") => {
+            b2_push_str(&mut e["labels"], "추가항목");
+            b2_push_str(&mut e["series"][0]["values"], "43");
+        }
+        // 경계 — 가드가 막는다.
+        ("원형대원형", "계열추가") | ("시가고가저가종가", "계열삭제") => {
+            return None
+        }
+        other => panic!("엔진 편집 입력이 정의되지 않은 변종: {other:?}"),
+    }
+    Some(e)
+}
+
+/// 변종 1건을 **엔진으로** 양 포맷으로 만들어 자기검증 후 기록한다. 반환은 쓴 파일 수.
+///
+/// 자기검증은 #5447 `b2_write_variant` 의 4단 그대로 — 재개방 + 봉투 구조 확인(`v.check`),
+/// ①==②(HWPX), ③④ 바이트 불변. `out_dir` 이 `None` 이면 파일을 쓰지 않는다(상시 회귀).
+fn b2_engine_write_variant(
+    out_dir: Option<&std::path::Path>,
+    v: &B2Variant,
+    sheet: &mut String,
+) -> usize {
+    let mut written = 0usize;
+    for ext in ["hwpx", "hwp"] {
+        let src = manifest(&format!("samples/chart/{}/{}.{ext}", v.folder, v.stem));
+        let name = format!("{}-{}.{ext}", v.stem, v.label);
+        let mut core = core_of(&src);
+        let Some(edits) = b2_engine_edits(&core, v.stem, v.label) else {
+            return 0;
+        };
+        let (legacy_before, emf_before) = b2_legacy_and_emf(&core);
+
+        let out = set_chart(&mut core, &edits);
+        assert_eq!(out["ok"], true, "{name}: 엔진이 거부했다 — {out}");
+        assert!(
+            !out["wrote"].as_array().unwrap().is_empty(),
+            "{name}: 쓴 표현이 없다 — {out}"
+        );
+
+        let bytes = if ext == "hwpx" {
+            core.export_hwpx_native().expect("HWPX 저장")
+        } else {
+            core.export_hwp_native().expect("HWP5 저장")
+        };
+
+        // 자기검증 1 — 재개방 + 스캔 게이트 + 구조 확인.
+        let reread = DocumentCore::from_bytes(&bytes)
+            .unwrap_or_else(|e| panic!("{name}: rhwp 가 다시 열지 못한다 — {e:?}"));
+        let env = b2_envelope(&reread);
+        assert_eq!(env["ok"], true, "{name}: {env}");
+        (v.check)(&env, &name);
+
+        // 자기검증 2 — ①==②, ③④ 불변.
+        let (zip_after, nested_after) = b2_representations(&reread);
+        if let Some(zip) = zip_after {
+            assert_eq!(zip, nested_after, "{name}: ① ≠ ②");
+        }
+        let (legacy_after, emf_after) = b2_legacy_and_emf(&reread);
+        assert_eq!(legacy_after, legacy_before, "{name}: ③ 이 변했다");
+        assert_eq!(emf_after, emf_before, "{name}: ④ 가 변했다");
+
+        if let Some(dir) = out_dir {
+            std::fs::write(dir.join(&name), &bytes).expect("산출 쓰기");
+            written += 1;
+            sheet.push_str(&format!(
+                "| `{name}` | {} | {} | {} | {} |\n",
+                v.folder, v.what, v.expect_shape, v.stale
+            ));
+        }
+    }
+    written
+}
+
+/// [#5652 S5] 엔진 구조 편집 후 재렌더에 반영된다 — 행추가·행삭제·계열추가.
+#[test]
+fn b2_engine_row_and_series_edits_render_after_reopen() {
+    let src = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+
+    // 행추가 — 새 카테고리 라벨이 실제로 그려진다.
+    let mut core = core_of(&src);
+    let e = b2_engine_edits(&core, "묶은세로막대형", "행추가").unwrap();
+    assert_eq!(set_chart(&mut core, &e)["ok"], true);
+    let reread =
+        DocumentCore::from_bytes(&core.export_hwpx_native().expect("저장")).expect("재개방");
+    let svg = reread.render_page_svg_layer_native(0).expect("렌더");
+    assert!(svg.contains("추가항목"), "행추가: 새 라벨이 렌더에 없다");
+
+    // 행삭제 — 지운 라벨이 사라진다.
+    let mut core = core_of(&src);
+    let e = b2_engine_edits(&core, "묶은세로막대형", "행삭제").unwrap();
+    assert_eq!(set_chart(&mut core, &e)["ok"], true);
+    let reread =
+        DocumentCore::from_bytes(&core.export_hwpx_native().expect("저장")).expect("재개방");
+    let svg = reread.render_page_svg_layer_native(0).expect("렌더");
+    assert!(
+        !svg.contains("항목 2"),
+        "행삭제: 지운 라벨이 여전히 그려진다"
+    );
+    assert!(svg.contains("항목 3"), "행삭제: 남은 라벨이 렌더에 없다");
+
+    // 계열추가 — 범례에 새 계열명이 등장한다.
+    let mut core = core_of(&src);
+    let e = b2_engine_edits(&core, "묶은세로막대형", "계열추가").unwrap();
+    assert_eq!(set_chart(&mut core, &e)["ok"], true);
+    let reread =
+        DocumentCore::from_bytes(&core.export_hwpx_native().expect("저장")).expect("재개방");
+    let svg = reread.render_page_svg_layer_native(0).expect("렌더");
+    assert!(
+        svg.contains("추가계열"),
+        "계열추가: 새 계열명이 렌더에 없다"
+    );
+}
+
+/// [#5652 S5] 변종 12종 × 2포맷의 엔진 산출이 재독·①②·③④ 자기검증을 전건 통과한다 (상시).
+#[test]
+fn b2_engine_output_passes_the_scanner_for_every_variant() {
+    let mut sheet = String::new();
+    let mut produced = 0usize;
+    for v in b2_variants() {
+        if b2_engine_edits(
+            &core_of(&manifest(&format!(
+                "samples/chart/{}/{}.hwpx",
+                v.folder, v.stem
+            ))),
+            v.stem,
+            v.label,
+        )
+        .is_none()
+        {
+            continue; // 경계 2종 — 가드 테스트가 대신한다.
+        }
+        b2_engine_write_variant(None, &v, &mut sheet);
+        produced += 1;
+    }
+    assert_eq!(produced, 12, "경계 2종을 뺀 변종 수");
+}
+
+/// Stage 9 — B2 **엔진 산출** 한컴 판정 꾸러미(#5652 S5)를 만든다.
+///
+/// `output/` 에 파일을 쓰는 부작용이 있어 기본 실행에서 뺀다. 판정 직전에만 돌린다:
+///
+/// ```text
+/// cargo test --profile release-test --test issue_4100_chart_data_edit \
+///     generate_b2_engine_judgment_bundle -- --ignored --nocapture
+/// ```
+///
+/// #5447 번들(`generate_b2_structure_judgment_bundle`)과 같은 변종·같은 판정 방법(144DPI 래스터
+/// 해시 + 편집기 행·열 수)이되, 바이트는 엔진(`set_chart_data_by_index_native`)이 만든다.
+/// 기존 38건 원장(`samples/issue5447/`)은 손대지 않는다 — 판정 결과는 `samples/issue5652/` 에
+/// 별도 원장으로 쌓는다.
+#[test]
+#[ignore = "output/ 에 파일을 쓴다 — 한컴 판정 직전에만 실행"]
+fn generate_b2_engine_judgment_bundle() {
+    let out_dir = manifest("output/issue_5652_b2_engine_judgment");
+    std::fs::create_dir_all(&out_dir).expect("출력 디렉터리");
+
+    let mut sheet = String::new();
+    sheet.push_str("# #5652 B2 엔진 — 한컴 판정표 (엔진 산출 구조 변종)\n\n");
+    sheet.push_str(
+        "#5447 스파이크와 같은 변종을 이번에는 **엔진**(`set_chart_data_by_index_native`,\n\
+         `structure:true`)이 만들었습니다. 행·열·라벨이 바뀌므로 파일마다 「기대 모양」 칸과\n\
+         대조해 주세요. `c:f`·③레거시 Contents·④프리뷰는 설계대로 **갱신하지 않습니다**(#5447 확정).\n\n\
+         경계 2종(원형 계열추가·주식형 계열삭제)은 엔진 가드가 거부하므로 이 번들에 없습니다 —\n\
+         거부는 `pie_series_count_is_fixed`·`stock_series_count_is_fixed` 가 상시로 고정합니다.\n\n",
+    );
+    sheet.push_str("## 보는 법\n\n");
+    sheet.push_str(
+        "1. `*-대조군.hwpx` 로 원본 모습을 눈에 익힙니다.\n\
+         2. 변종 파일마다 **네 가지**를 봐 주세요:\n   \
+         (a) 열 때 오류·복구 대화상자가 뜨는가\n   \
+         (b) 차트가 **기대 모양대로** 그려지는가\n   \
+         (c) 차트를 더블클릭하면 편집기가 열리는가\n   \
+         (d) **편집기(데이터 편집)의 행·열 수가 기대 모양과 일치하는가**\n\n\
+         계열삭제 변종은 위치 기반(뒤 계열이 앞으로 당겨지고 꼬리가 지워짐)이라 잔여 계열의\n\
+         색이 원래 2번째 계열 색일 수 있습니다 — 이름·값이 맞으면 정상입니다.\n\n",
+    );
+    sheet.push_str("## 산출물\n\n");
+    sheet.push_str("| 파일 | 종류 | 무엇을 바꿨나 | 기대 모양 | 낡게 남긴 것 |\n");
+    sheet.push_str("|---|---|---|---|---|\n");
+
+    let variants: Vec<B2Variant> = b2_variants()
+        .into_iter()
+        .filter(|v| {
+            b2_engine_edits(
+                &core_of(&manifest(&format!(
+                    "samples/chart/{}/{}.hwpx",
+                    v.folder, v.stem
+                ))),
+                v.stem,
+                v.label,
+            )
+            .is_some()
+        })
+        .collect();
+    assert_eq!(variants.len(), 12, "경계 2종을 뺀 변종 수");
+    let mut written = 0usize;
+
+    let mut controls: Vec<(&str, &str)> = Vec::new();
+    for v in &variants {
+        if !controls.contains(&(v.folder, v.stem)) {
+            controls.push((v.folder, v.stem));
+        }
+    }
+    for (folder, stem) in &controls {
+        std::fs::copy(
+            manifest(&format!("samples/chart/{folder}/{stem}.hwpx")),
+            out_dir.join(format!("{stem}-대조군.hwpx")),
+        )
+        .expect("대조군 복사");
+        written += 1;
+        sheet.push_str(&format!(
+            "| `{stem}-대조군.hwpx` | {folder} | (무편집 원본) | 원본 그대로 | — |\n"
+        ));
+    }
+
+    for v in &variants {
+        written += b2_engine_write_variant(Some(&out_dir), v, &mut sheet);
+    }
+
+    // 변환 축 — 행추가를 HWPX 에서 엔진으로 만들고 HWP5 로 변환한다(①이 ②로 접힌다, #4099).
+    {
+        let src = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+        let mut core = core_of(&src);
+        let e = b2_engine_edits(&core, "묶은세로막대형", "행추가").unwrap();
+        assert_eq!(set_chart(&mut core, &e)["ok"], true);
+        let bytes = core
+            .export_hwp_with_adapter_snapshot()
+            .expect("HWP5 변환 저장");
+        let reread = DocumentCore::from_bytes(&bytes).expect("변환본 재파스");
+        let env = b2_envelope(&reread);
+        assert_eq!(env["ok"], true, "변환본: {env}");
+        b2_check_row_add(&env, "변환본");
+        let name = "묶은세로막대형-행추가-HWPX에서변환.hwp";
+        std::fs::write(out_dir.join(name), &bytes).expect("변환본 쓰기");
+        written += 1;
+        sheet.push_str(&format!(
+            "| `{name}` | 세로막대형 | 행추가 후 HWPX→HWP5 변환 (구조가 ② 로 접힘) | 그룹 4→5 | c:f·③·④ |\n"
+        ));
+    }
+
+    sheet.push_str(&format!("\n총 {written} 파일.\n\n"));
+    sheet.push_str(
+        "## PDF 회신\n\n\
+         각 파일을 한컴에서 열어 **같은 폴더에 PDF 로 저장**해 주시면, 대조군과 변종의 렌더를\n\
+         144DPI 래스터 해시로 갈라 반영 여부를 데이터로 판정하겠습니다(#5447 절차 —\n\
+         `tools/hancom_chart_judgment_verify.py`). (d) 편집기 행·열 수는 **파일별로 한 줄씩**\n\
+         남겨 주세요.\n\n상세 설계는 #5652, 전제는 #5447.\n",
+    );
+
+    std::fs::write(out_dir.join("PANJEONG.md"), sheet).expect("판정표 쓰기");
+    println!("\n  판정 번들: {}", out_dir.display());
+    println!("  파일 {written}개 + 판정표 PANJEONG.md");
+    assert_eq!(written, 32, "대조군 7 + 변종 12 × 2포맷 + 변환본 1");
+}
+
+/// [#5652 S5] **문서 바이트 수준** 동치 — 엔진 경로(`set_chart_data_by_index_native`, structure)와
+/// 스파이크 경로(문자열 수술 + 표현 주입)가 같은 현재 라이터로 저장하면, 계열삭제 2종을 뺀
+/// 12변종 × 2포맷 전건이 **바이트 동일**하다. 계열삭제는 위치 기반(뒤 계열을 앞으로 당겨 쓰고 꼬리
+/// 삭제)이라 바이트는 다르되 논리 데이터(이름·라벨·값)는 같다.
+///
+/// 이것이 S5 한컴 재판정의 근거다 — 10종은 #5447 이 판정한 것과 같은 차트 XML 을 엔진이 만들고,
+/// 계열삭제 2종만 새 바이트다.
+#[test]
+fn engine_documents_match_spike_documents_except_positional_series_delete() {
+    let mut same = 0usize;
+    let mut logical_only = 0usize;
+    for v in b2_variants() {
+        for ext in ["hwpx", "hwp"] {
+            let src = manifest(&format!("samples/chart/{}/{}.{ext}", v.folder, v.stem));
+            let name = format!("{}-{}.{ext}", v.stem, v.label);
+            let is_hwpx = ext == "hwpx";
+
+            // 엔진 경로.
+            let mut engine = core_of(&src);
+            let Some(edits) = b2_engine_edits(&engine, v.stem, v.label) else {
+                continue; // 경계 2종
+            };
+            assert_eq!(set_chart(&mut engine, &edits)["ok"], true, "{name}");
+            let engine_bytes = if is_hwpx {
+                engine.export_hwpx_native().expect("저장")
+            } else {
+                engine.export_hwp_native().expect("저장")
+            };
+
+            // 스파이크 경로 — 같은 원본에 문자열 수술을 주입.
+            let (_legacy, ooxml) =
+                chart_streams(&std::fs::read(&src).expect("샘플")).expect("차트 스트림");
+            let xml = String::from_utf8(ooxml).expect("UTF-8");
+            let surgery = (v.surgery)(&xml);
+            let mut spike = core_of(&src);
+            let spike_bytes = if is_hwpx {
+                replace_chart_representations(&mut spike, surgery.as_bytes(), surgery.as_bytes());
+                spike.export_hwpx_native().expect("저장")
+            } else {
+                replace_chart_nested_only(&mut spike, surgery.as_bytes());
+                spike.export_hwp_native().expect("저장")
+            };
+
+            if v.label == "계열삭제" {
+                assert_ne!(
+                    engine_bytes, spike_bytes,
+                    "{name}: 위치 기반 계열삭제는 바이트가 달라야 정상"
+                );
+                let e = b2_envelope(&DocumentCore::from_bytes(&engine_bytes).expect("재개방"));
+                let s = b2_envelope(&DocumentCore::from_bytes(&spike_bytes).expect("재개방"));
+                assert_eq!(b2_series_names(&e), b2_series_names(&s), "{name}");
+                assert_eq!(b2_labels(&e), b2_labels(&s), "{name}");
+                for i in 0..b2_series_names(&e).len() {
+                    assert_eq!(b2_values(&e, i), b2_values(&s, i), "{name} 계열 {i}");
+                }
+                logical_only += 1;
+            } else {
+                assert_eq!(
+                    engine_bytes, spike_bytes,
+                    "{name}: 엔진 산출 ≠ 스파이크 산출"
+                );
+                same += 1;
+            }
+        }
+    }
+    assert_eq!(
+        (same, logical_only),
+        (20, 4),
+        "변종 10종 × 2 바이트 동일 + 계열삭제 2종 × 2 논리 동일"
+    );
+}
