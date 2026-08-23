@@ -7,6 +7,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import { canonicalJson, sha256Text } from './font_rule_ledger.mjs';
+import { analyzeMetricRepository } from './font_metric_lineage.mjs';
 
 const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const GENERATOR_VERSION = '3.0.0';
@@ -207,33 +208,26 @@ function parseMetricAliases(boundary, source) {
   return extracted('rust-string-match-arms', rows, recognizedMappingBlocks);
 }
 
-function parseMetricTable(boundary, source) {
-  const declarationAt = source.indexOf('static FONT_METRICS:');
-  const assignmentAt = source.indexOf('=', declarationAt);
-  const body = extractBalanced(source, assignmentAt, '[', ']');
-  const pattern = /FontMetric\s*\{\s*name:\s*"((?:\\.|[^"\\])*)",\s*bold:\s*(true|false),\s*italic:\s*(true|false),\s*em_size:\s*(\d+),\s*latin_ranges:\s*&([A-Z0-9_]+),\s*hangul:\s*(?:Some\(&([A-Z0-9_]+)\)|None),\s*\}/g;
-  const rows = [...body.matchAll(pattern)].map((match, index) => candidate(
+function parseMetricTable(boundary, _source) {
+  const entries = analyzeMetricRepository(REPOSITORY_ROOT).composition;
+  const rows = entries.map(entry => candidate(
     boundary,
     'metric-entry',
     'layout-metric',
-    decodeDoubleQuoted(match[1]),
-    `metric-entry:${index}`,
+    entry.name,
+    `metric-entry:${entry.index}`,
     {
       conditions: {
-        bold: match[2] === 'true',
-        italic: match[3] === 'true',
-        emSize: Number.parseInt(match[4], 10),
-        latinRangeSymbol: match[5],
-        hangulSymbol: match[6] ?? null,
+        bold: entry.bold,
+        italic: entry.italic,
+        emSize: entry.emSize,
+        latinRangeSymbol: entry.latinRangesSymbol,
+        hangulSymbol: entry.hangulSymbol,
       },
     },
   ));
-  const declared = Number.parseInt(
-    source.slice(declarationAt, assignmentAt).match(/\[FontMetric;\s*(\d+)\]/)?.[1] ?? '',
-    10,
-  );
-  if (rows.length !== declared) throw new Error(`FONT_METRICS parsed ${rows.length}/${declared}`);
-  return extracted('rust-metric-table', rows, declared);
+  if (rows.length !== 600) throw new Error(`composed FONT_METRICS parsed ${rows.length}/600`);
+  return extracted('rust-composed-metric-view', rows, 600);
 }
 
 function parseInstalledAliases(boundary, source) {

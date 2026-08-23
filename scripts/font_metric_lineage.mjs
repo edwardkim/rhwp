@@ -257,10 +257,6 @@ function parseHangulDeclarations(source, integerArrays) {
 }
 
 function parseMetricEntries(source, latinRanges, hangul) {
-  const declarationAt = source.indexOf('static FONT_METRICS:');
-  if (declarationAt === -1) throw new Error('FONT_METRICS declaration not found');
-  const assignmentAt = source.indexOf('=', declarationAt);
-  const balanced = extractBalanced(source, assignmentAt, '[', ']');
   const lineStarts = [0];
   for (let index = 0; index < source.length; index += 1) {
     if (source[index] === '\n') lineStarts.push(index + 1);
@@ -275,31 +271,59 @@ function parseMetricEntries(source, latinRanges, hangul) {
     }
     return low;
   };
+  const declarations = source.includes('static FONT_METRICS: [FontMetric;')
+    ? [{ symbol: 'FONT_METRICS', expectedCount: 600 }]
+    : [
+      { symbol: 'GENERATED_FONT_METRICS', expectedCount: 595 },
+      { symbol: 'MEASURED_FONT_METRIC_OVERLAYS', expectedCount: 5 },
+    ];
   const pattern = /FontMetric\s*\{\s*name:\s*"((?:\\.|[^"\\])*)",\s*bold:\s*(true|false),\s*italic:\s*(true|false),\s*em_size:\s*(\d+),\s*latin_ranges:\s*&([A-Z0-9_]+),\s*hangul:\s*(?:Some\(&([A-Z0-9_]+)\)|None),\s*\}/g;
-  const entries = [...balanced.body.matchAll(pattern)].map((match, index) => {
-    if (!latinRanges.has(match[5])) throw new Error(`metric ${index} references missing ${match[5]}`);
-    if (match[6] !== undefined && !hangul.has(match[6])) {
-      throw new Error(`metric ${index} references missing ${match[6]}`);
+  const entries = [];
+  for (const declaration of declarations) {
+    const declarationAt = source.indexOf(`static ${declaration.symbol}:`);
+    if (declarationAt === -1) throw new Error(`${declaration.symbol} declaration not found`);
+    const assignmentAt = source.indexOf('=', declarationAt);
+    const declared = Number.parseInt(
+      source.slice(declarationAt, assignmentAt).match(/\[FontMetric;\s*(\d+)\]/)?.[1] ?? '',
+      10,
+    );
+    const balanced = extractBalanced(source, assignmentAt, '[', ']');
+    const baseIndex = entries.length;
+    const parsed = [...balanced.body.matchAll(pattern)].map((match, localIndex) => {
+      const index = baseIndex + localIndex;
+      if (!latinRanges.has(match[5])) throw new Error(`metric ${index} references missing ${match[5]}`);
+      if (match[6] !== undefined && !hangul.has(match[6])) {
+        throw new Error(`metric ${index} references missing ${match[6]}`);
+      }
+      return {
+        index,
+        sourceLine: sourceLineAt(balanced.openAt + 1 + match.index),
+        name: decodeQuotedString(match[1]),
+        bold: match[2] === 'true',
+        italic: match[3] === 'true',
+        emSize: Number.parseInt(match[4], 10),
+        latinRangesSymbol: match[5],
+        hangulSymbol: match[6] ?? null,
+      };
+    });
+    if (!Number.isInteger(declared) || parsed.length !== declared || declared !== declaration.expectedCount) {
+      throw new Error(`${declaration.symbol} parsed ${parsed.length}/${declared}, expected ${declaration.expectedCount}`);
     }
-    return {
-      index,
-      sourceLine: sourceLineAt(balanced.openAt + 1 + match.index),
-      name: decodeQuotedString(match[1]),
-      bold: match[2] === 'true',
-      italic: match[3] === 'true',
-      emSize: Number.parseInt(match[4], 10),
-      latinRangesSymbol: match[5],
-      hangulSymbol: match[6] ?? null,
-    };
-  });
-  const declared = Number.parseInt(
-    source.slice(declarationAt, assignmentAt).match(/\[FontMetric;\s*(\d+)\]/)?.[1] ?? '',
-    10,
-  );
-  if (!Number.isInteger(declared) || entries.length !== declared) {
-    throw new Error(`FONT_METRICS parsed ${entries.length}/${declared}`);
+    entries.push(...parsed);
   }
   return entries;
+}
+
+export function loadMetricRepositorySource(root = ROOT) {
+  const corePath = path.join(root, 'src', 'renderer', 'font_metrics_data.rs');
+  const core = fs.readFileSync(corePath, 'utf8');
+  if (core.includes('static FONT_METRICS: [FontMetric;')) return core;
+  const generatedPath = path.join(root, 'src', 'renderer', 'font_metrics_generated.rs');
+  const overlaysPath = path.join(root, 'src', 'renderer', 'font_metrics_overlays.rs');
+  if (!fs.existsSync(generatedPath) || !fs.existsSync(overlaysPath)) {
+    throw new Error('split font metric source is incomplete');
+  }
+  return `${core}\n${fs.readFileSync(generatedPath, 'utf8')}\n${fs.readFileSync(overlaysPath, 'utf8')}`;
 }
 
 function parseAliases(source) {
@@ -506,6 +530,10 @@ export function analyzeMetricSource(source) {
       index: entry.index,
       sha256: sha256Text(canonicalJson(entry)),
     })),
+    entryLatinRangeCounts: entries.map(entry => ({
+      index: entry.index,
+      count: latinRanges.get(entry.latinRangesSymbol).length,
+    })),
     entrySourceLines: entries.map(entry => ({ index: entry.index, sourceLine: entry.sourceLine })),
     entryWidthHashes: widths.entryHashes,
     metricDataSha256: sha256Text(canonicalJson(metricData)),
@@ -513,6 +541,10 @@ export function analyzeMetricSource(source) {
     uniqueNameCount: new Set(entries.map(entry => entry.name)).size,
     widthProjection: widths,
   };
+}
+
+export function analyzeMetricRepository(root = ROOT) {
+  return analyzeMetricSource(loadMetricRepositorySource(root));
 }
 
 export function assertMeasuredOverlayRegion(composition) {
@@ -532,7 +564,7 @@ export function buildPreSplitBaseline(root = ROOT) {
     'issue-4939',
     'font_rule_baseline.json',
   );
-  const source = fs.readFileSync(metricSourcePath, 'utf8');
+  const source = loadMetricRepositorySource(root);
   const analysis = analyzeMetricSource(source);
   const w1 = JSON.parse(fs.readFileSync(w1BaselinePath, 'utf8'));
   if (analysis.entryCount !== w1.fontMetrics.entryCount) {
@@ -606,6 +638,29 @@ export function compareBaseline(expected, actual) {
   return expectedText === actualText
     ? []
     : ['font metric pre-split baseline differs; run --generate only in an approved baseline stage'];
+}
+
+export function verifyApprovedBaseline(root = ROOT) {
+  const expected = JSON.parse(fs.readFileSync(
+    path.join(root, 'mydocs', 'tech', 'investigations', 'issue-4964', 'font_metric_pre_split_baseline.json'),
+    'utf8',
+  ));
+  const analysis = analyzeMetricRepository(root);
+  const errors = [];
+  if (analysis.entryCount !== expected.fontMetrics.entryCount) errors.push('entry count differs from W6-1');
+  if (analysis.uniqueNameCount !== expected.fontMetrics.uniqueNameCount) errors.push('unique name count differs from W6-1');
+  if (canonicalJson(analysis.styleCounts) !== canonicalJson(expected.fontMetrics.styleCounts)) {
+    errors.push('style counts differ from W6-1');
+  }
+  const hashes = {
+    compositionSha256: analysis.compositionSha256,
+    lookupProjectionSha256: analysis.lookupProjectionSha256,
+    metricDataSha256: analysis.metricDataSha256,
+    widthProjectionSha256: analysis.widthProjection.sha256,
+  };
+  if (canonicalJson(hashes) !== canonicalJson(expected.hashes)) errors.push('semantic hashes differ from W6-1');
+  assertMeasuredOverlayRegion(analysis.composition);
+  return errors;
 }
 
 function statusValue(status, reason, value, evidenceIds = []) {
@@ -684,6 +739,14 @@ function parseSfntNamingRecords(file) {
   ));
   if (records.length === 0) throw new Error(`${path.relative(ROOT, file)} has no decodable naming records`);
   return records;
+}
+
+function historicalMetricSource(root) {
+  return execFileSync(
+    'git',
+    ['show', `${SOURCE_COMMIT}:src/renderer/font_metrics_data.rs`],
+    { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+  );
 }
 
 function blameCommitsByLine(root) {
@@ -824,8 +887,9 @@ function oracleLinksFor(entry, catalogByPath, root) {
 }
 
 export function buildLineageManifest(root = ROOT) {
-  const source = fs.readFileSync(path.join(root, 'src', 'renderer', 'font_metrics_data.rs'), 'utf8');
+  const source = loadMetricRepositorySource(root);
   const analysis = analyzeMetricSource(source);
+  const historicalAnalysis = analyzeMetricSource(historicalMetricSource(root));
   assertMeasuredOverlayRegion(analysis.composition);
   const baseline = JSON.parse(fs.readFileSync(
     path.join(root, 'mydocs', 'tech', 'investigations', 'issue-4964', 'font_metric_pre_split_baseline.json'),
@@ -842,13 +906,14 @@ export function buildLineageManifest(root = ROOT) {
   const catalogByPath = evidenceIdByPath(evidenceCatalog);
   const w1Rules = metricRulesByIndex(root);
   const blame = blameCommitsByLine(root);
-  const sourceLines = new Map(analysis.entrySourceLines.map(row => [row.index, row.sourceLine]));
+  const sourceLines = new Map(historicalAnalysis.entrySourceLines.map(row => [row.index, row.sourceLine]));
   const metricHashes = new Map(analysis.entryMetricDataHashes.map(row => [row.index, row.sha256]));
   const widthHashes = new Map(analysis.entryWidthHashes.map(row => [row.index, row.sha256]));
   const notoRegular = analysis.composition.find(
     entry => entry.name === 'Noto Sans KR' && !entry.bold && !entry.italic,
   );
   if (notoRegular === undefined) throw new Error('Noto Sans KR regular metric entry not found');
+  const splitSource = fs.existsSync(path.join(root, 'src', 'renderer', 'font_metrics_generated.rs'));
 
   const entries = analysis.composition.map(entry => {
     const measured = entry.index >= 595;
@@ -885,7 +950,11 @@ export function buildLineageManifest(root = ROOT) {
       },
       storageRegion: {
         kind: measured ? 'measured-overlay' : 'historical-generated-region',
-        sourcePath: 'src/renderer/font_metrics_data.rs',
+        sourcePath: splitSource
+          ? measured
+            ? 'src/renderer/font_metrics_overlays.rs'
+            : 'src/renderer/font_metrics_generated.rs'
+          : 'src/renderer/font_metrics_data.rs',
         latinRangesSymbol: entry.latinRangesSymbol,
         hangulSymbol: entry.hangulSymbol,
       },
@@ -1000,8 +1069,7 @@ export function validateLineageManifest(manifest, root = ROOT) {
     || sha256File(schemaPath) !== manifest.schema?.sha256) {
     errors.push('schema path or digest does not match the tracked schema');
   }
-  const source = fs.readFileSync(path.join(root, 'src', 'renderer', 'font_metrics_data.rs'), 'utf8');
-  const analysis = analyzeMetricSource(source);
+  const analysis = analyzeMetricRepository(root);
   const expectedMetricHashes = new Map(analysis.entryMetricDataHashes.map(row => [row.index, row.sha256]));
   const expectedWidthHashes = new Map(analysis.entryWidthHashes.map(row => [row.index, row.sha256]));
   const expectedRules = metricRulesByIndex(root);
@@ -1097,10 +1165,8 @@ if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLTo
     fs.writeFileSync(OUTPUT, canonicalJson(baseline), 'utf8');
     console.log(`generated ${path.relative(ROOT, OUTPUT)}`);
   } else if (mode === '--check') {
-    const baseline = buildPreSplitBaseline();
     if (!fs.existsSync(OUTPUT)) throw new Error(`baseline does not exist: ${path.relative(ROOT, OUTPUT)}`);
-    const expected = JSON.parse(fs.readFileSync(OUTPUT, 'utf8'));
-    const errors = compareBaseline(expected, baseline);
+    const errors = verifyApprovedBaseline();
     if (errors.length > 0) {
       for (const error of errors) console.error(error);
       process.exit(1);

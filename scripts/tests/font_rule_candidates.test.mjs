@@ -9,24 +9,32 @@ import {
   parseStudioSubstitutions,
   validateCandidateSnapshot,
 } from '../font_rule_candidates.mjs';
-import { canonicalJson, sha256Text } from '../font_rule_ledger.mjs';
+import {
+  canonicalJson,
+  collectSourceCandidates,
+  sha256Text,
+} from '../font_rule_ledger.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const CANDIDATE_PATH = path.join(
+const SOURCE_PATH = path.join(
   ROOT,
   'mydocs',
   'tech',
   'investigations',
   'issue-4939',
-  'font_rule_candidates.json',
+  'font_rule_sources.json',
 );
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
+function currentBoundarySnapshot() {
+  return collectSourceCandidates(readJson(SOURCE_PATH), ROOT, '0'.repeat(40));
+}
+
 test('all 30 source boundaries close with extracted candidates', () => {
-  const snapshot = collectRuleCandidates(readJson(CANDIDATE_PATH), ROOT);
+  const snapshot = collectRuleCandidates(currentBoundarySnapshot(), ROOT);
 
   assert.equal(snapshot.candidates.length, 30);
   assert.equal(snapshot.dispositions.length, 30);
@@ -37,7 +45,7 @@ test('all 30 source boundaries close with extracted candidates', () => {
 });
 
 test('finite inventories preserve metric, Studio substitution and font supply populations', () => {
-  const snapshot = collectRuleCandidates(readJson(CANDIDATE_PATH), ROOT);
+  const snapshot = collectRuleCandidates(currentBoundarySnapshot(), ROOT);
   const count = boundaryId => snapshot.ruleCandidates
     .filter(candidate => candidate.sourceBoundaryId === boundaryId).length;
 
@@ -50,7 +58,7 @@ test('finite inventories preserve metric, Studio substitution and font supply po
 });
 
 test('supply, detection and runtime fallback candidates remain on separate decision planes', () => {
-  const snapshot = collectRuleCandidates(readJson(CANDIDATE_PATH), ROOT);
+  const snapshot = collectRuleCandidates(currentBoundarySnapshot(), ROOT);
   const byOwner = owner => snapshot.ruleCandidates.filter(candidate => candidate.ownerId === owner);
 
   assert.equal(byOwner('studio-supply').every(candidate => candidate.decisionPlane === 'supply'), true);
@@ -60,7 +68,7 @@ test('supply, detection and runtime fallback candidates remain on separate decis
 });
 
 test('candidate IDs are unique and every row carries the current source digest', () => {
-  const snapshot = collectRuleCandidates(readJson(CANDIDATE_PATH), ROOT);
+  const snapshot = collectRuleCandidates(currentBoundarySnapshot(), ROOT);
   const ids = snapshot.ruleCandidates.map(candidate => candidate.candidateId);
 
   assert.equal(new Set(ids).size, ids.length);
@@ -74,7 +82,7 @@ test('candidate IDs are unique and every row carries the current source digest',
 });
 
 test('candidate collection is byte deterministic', () => {
-  const input = readJson(CANDIDATE_PATH);
+  const input = currentBoundarySnapshot();
   const first = collectRuleCandidates(input, ROOT);
   const second = collectRuleCandidates(input, ROOT);
 
@@ -106,14 +114,14 @@ test('Studio substitution tuple parsing keeps escape and plain character paths d
 });
 
 test('a zero-count disposition fails closed', () => {
-  const snapshot = collectRuleCandidates(readJson(CANDIDATE_PATH), ROOT);
+  const snapshot = collectRuleCandidates(currentBoundarySnapshot(), ROOT);
   snapshot.dispositions[0].candidateCount = 0;
 
   assert.match(validateCandidateSnapshot(snapshot, ROOT).join('\n'), /candidateCount must be positive/);
 });
 
 test('an orphan candidate source boundary fails closed', () => {
-  const snapshot = collectRuleCandidates(readJson(CANDIDATE_PATH), ROOT);
+  const snapshot = collectRuleCandidates(currentBoundarySnapshot(), ROOT);
   snapshot.ruleCandidates[0].sourceBoundaryId = 'missing.owner';
 
   assert.match(validateCandidateSnapshot(snapshot, ROOT).join('\n'), /unknown sourceBoundaryId/);

@@ -9,22 +9,13 @@ import {
   assertMeasuredOverlayRegion,
   buildLineageManifest,
   buildPreSplitBaseline,
-  canonicalJson,
-  compareBaseline,
   compareManifest,
+  loadMetricRepositorySource,
   validateLineageManifest,
+  verifyApprovedBaseline,
 } from '../font_metric_lineage.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const SOURCE_PATH = path.join(ROOT, 'src', 'renderer', 'font_metrics_data.rs');
-const BASELINE_PATH = path.join(
-  ROOT,
-  'mydocs',
-  'tech',
-  'investigations',
-  'issue-4964',
-  'font_metric_pre_split_baseline.json',
-);
 const MANIFEST_PATH = path.join(
   ROOT,
   'mydocs',
@@ -33,10 +24,6 @@ const MANIFEST_PATH = path.join(
   'issue-4964',
   'font_metric_lineage_manifest.json',
 );
-
-function readBaseline() {
-  return JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8'));
-}
 
 function readManifest() {
   return JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
@@ -52,11 +39,7 @@ function swapFirstTwoMetricEntries(source) {
 }
 
 test('pre-split baseline is deterministic and matches the committed snapshot', () => {
-  const first = buildPreSplitBaseline(ROOT);
-  const second = buildPreSplitBaseline(ROOT);
-
-  assert.equal(canonicalJson(first), canonicalJson(second));
-  assert.deepEqual(compareBaseline(readBaseline(), first), []);
+  assert.deepEqual(verifyApprovedBaseline(ROOT), []);
 });
 
 test('baseline closes the W1 population and the five measured overlays', () => {
@@ -81,14 +64,16 @@ test('baseline closes the W1 population and the five measured overlays', () => {
 });
 
 test('a declared entry count mismatch is rejected instead of silently truncating', () => {
-  const source = fs.readFileSync(SOURCE_PATH, 'utf8')
-    .replace('[FontMetric; 600]', '[FontMetric; 599]');
+  const original = loadMetricRepositorySource(ROOT);
+  const source = original.includes('[FontMetric; 600]')
+    ? original.replace('[FontMetric; 600]', '[FontMetric; 599]')
+    : original.replace('[FontMetric; 595]', '[FontMetric; 594]');
 
-  assert.throws(() => analyzeMetricSource(source), /FONT_METRICS parsed 600\/599/);
+  assert.throws(() => analyzeMetricSource(source), /parsed .*expected/);
 });
 
 test('swapping metric order changes composition and lookup projections', () => {
-  const source = fs.readFileSync(SOURCE_PATH, 'utf8');
+  const source = loadMetricRepositorySource(ROOT);
   const original = analyzeMetricSource(source);
   const swapped = analyzeMetricSource(swapFirstTwoMetricEntries(source));
 
@@ -97,7 +82,7 @@ test('swapping metric order changes composition and lookup projections', () => {
 });
 
 test('a one-unit stored width change changes metric and exhaustive width projections', () => {
-  const source = fs.readFileSync(SOURCE_PATH, 'utf8');
+  const source = loadMetricRepositorySource(ROOT);
   const changedSource = source.replace(
     'static FONT_0_LATIN_0: [u16; 95] = [\n    300,',
     'static FONT_0_LATIN_0: [u16; 95] = [\n    301,',
@@ -111,7 +96,7 @@ test('a one-unit stored width change changes metric and exhaustive width project
 });
 
 test('changing the final overlay identity is rejected by the population contract', () => {
-  const source = fs.readFileSync(SOURCE_PATH, 'utf8');
+  const source = loadMetricRepositorySource(ROOT);
   const changed = source.replace(
     'name: "HanyangSinMyeongJo"',
     'name: "HanyangSinMyeongJoChanged"',

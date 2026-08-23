@@ -14,6 +14,17 @@
 | `scripts/tests/font_metric_lineage.test.mjs` | 누락·순서 변경·폭 변경·overlay identity 변경의 negative contract |
 | `mydocs/plans/task_m100_4964.md` | W6 범위·불변식·승인 게이트 정본 |
 
+## Runtime source 경계
+
+| 경로 | 소유권 |
+| --- | --- |
+| `src/renderer/font_metrics_data.rs` | type·alias·lookup/index와 600-entry 논리 view |
+| `src/renderer/font_metrics_generated.rs` | historical generated region 0..594 |
+| `src/renderer/font_metrics_overlays.rs` | #2430 measured/manual overlay 595..599 |
+
+facade의 `FONT_METRICS.iter()`는 generated 배열 다음에 overlay 배열을 `chain`한다. 따라서 기존
+first-match index는 유지되지만 두 data 영역은 서로 다른 파일 소유권을 갖는다.
+
 pre-split 기준선은 provenance manifest가 아니다. 0..594가 역사적 generated 영역이고 595..599가
 #2430 measured overlay라는 분리 전 경계를 고정한다. lineage manifest가 600행 각각의 provenance
 상태와 W1/W5 evidence를 소유한다. generated 영역이라는 위치만으로 source-exact를 선언하지 않는다.
