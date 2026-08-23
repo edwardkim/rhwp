@@ -1100,6 +1100,15 @@ impl HwpDocument {
         self.set_section_def_all_native(json).map_err(|e| e.into())
     }
 
+    /// [#5769 후속2] 지정 구역들에 각자 다른 old SectionDef 를 일괄 재적용 —
+    /// SetSectionPropsAllCommand.undo 의 bulk 경로(재조판 1회).
+    /// items_json: `[{"idx":N,"def":{...}},...]`
+    #[wasm_bindgen(js_name = applySectionDefsBulk)]
+    pub fn apply_section_defs_bulk(&mut self, items_json: &str) -> Result<String, JsValue> {
+        self.apply_section_defs_bulk_native(items_json)
+            .map_err(|e| e.into())
+    }
+
     /// 구역의 쪽 테두리/배경 설정을 JSON으로 반환한다.
     #[wasm_bindgen(js_name = getPageBorderFill)]
     pub fn get_page_border_fill(&self, section_idx: u32) -> Result<String, JsValue> {
