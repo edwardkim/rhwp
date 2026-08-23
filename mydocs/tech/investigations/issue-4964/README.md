@@ -15,6 +15,8 @@
 | `scripts/tests/font_metric_lineage.test.mjs` | 누락·순서 변경·폭 변경·overlay identity 변경의 negative contract |
 | `scripts/tests/font_metric_gen.test.mjs` | generator 결정성·TTC face·core/overlay ownership·fail-closed 계약 |
 | `mydocs/plans/task_m100_4964.md` | W6 범위·불변식·승인 게이트 정본 |
+| `mydocs/working/task_m100_4964_w6_stage5.md` | 통합 불변식·native/WASM 검증과 환경 경계 |
+| `mydocs/report/task_m100_4964_report.md` | W6 결과·잔여 unknown·후행 W7 인계 최종 보고 |
 
 ## Runtime source 경계
 

@@ -274,7 +274,7 @@ struct NamingRecord {
 
 fn decode_name_record(platform_id: u16, bytes: &[u8]) -> Option<String> {
     if platform_id == 0 || platform_id == 3 {
-        if bytes.len() % 2 != 0 {
+        if !bytes.len().is_multiple_of(2) {
             return None;
         }
         let units = bytes
