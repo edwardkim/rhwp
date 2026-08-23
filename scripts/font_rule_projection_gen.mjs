@@ -90,8 +90,8 @@ function pathDigest(file, root = ROOT) {
   return { path: relativePath(file, root), sha256: sha256File(file) };
 }
 
-function projectionRow(rule) {
-  return {
+function projectionRow(rule, config) {
+  const row = {
     ruleId: rule.ruleId,
     relationType: rule.relationType,
     decisionPlane: rule.decisionPlane,
@@ -103,6 +103,13 @@ function projectionRow(rule) {
     metricEntryIds: rule.metricEntryIds,
     supply: rule.supply,
   };
+  if (config.language === 'rust') {
+    if (rule.evidence.sourceBoundaryIds.length !== 1) {
+      throw new Error(`${rule.ruleId}: Rust projection requires exactly one source boundary`);
+    }
+    row.sourceBoundaryId = rule.evidence.sourceBoundaryIds[0];
+  }
+  return row;
 }
 
 function rustString(value) {
@@ -131,10 +138,52 @@ function rustMetricEntryLines(values) {
   ];
 }
 
+function renderRustLookup(config, rows) {
+  if (config.projectionId === 'rust-layout-name') {
+    const arms = rows.map((row, index) => {
+      const condition = row.conditions.languageSlot === 'all'
+        ? ''
+        : ` if language_slot == ${Number.parseInt(row.conditions.languageSlot, 10)}`;
+      return `        (${rustString(row.sourceBoundaryId)}, ${rustString(row.sourceFace)})${condition} => {
+            Some(&${config.constantStem}_RULES[${index}])
+        }`;
+    }).join('\n');
+    return `
+#[rustfmt::skip]
+pub(crate) fn find_font_rule_layout_name(
+    source_boundary_id: &str,
+    source_face: &str,
+    language_slot: usize,
+) -> Option<&'static GeneratedFontRuleProjection> {
+    match (source_boundary_id, source_face) {
+${arms}
+        _ => None,
+    }
+}`;
+  }
+  if (config.projectionId === 'rust-layout-metric') {
+    const arms = rows.map((row, index) => `        ${rustString(row.sourceFace)} => {
+            Some(&${config.constantStem}_RULES[${index}])
+        }`).join('\n');
+    return `
+#[rustfmt::skip]
+pub(crate) fn find_font_rule_layout_metric(
+    source_face: &str,
+) -> Option<&'static GeneratedFontRuleProjection> {
+    match source_face {
+${arms}
+        _ => None,
+    }
+}`;
+  }
+  throw new Error(`${config.projectionId}: unsupported Rust projection lookup`);
+}
+
 function renderRust(config, metadata, rows) {
   const entries = rows.map(row => [
     '    GeneratedFontRuleProjection {',
     `        rule_id: ${rustString(row.ruleId)},`,
+    `        source_boundary_id: ${rustString(row.sourceBoundaryId)},`,
     `        relation_type: ${rustString(row.relationType)},`,
     `        decision_plane: ${rustString(row.decisionPlane)},`,
     `        source_face: ${rustOptionString(row.sourceFace)},`,
@@ -164,6 +213,7 @@ pub(crate) struct GeneratedFontRuleConditions {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct GeneratedFontRuleProjection {
     pub(crate) rule_id: &'static str,
+    pub(crate) source_boundary_id: &'static str,
     pub(crate) relation_type: &'static str,
     pub(crate) decision_plane: &'static str,
     pub(crate) source_face: Option<&'static str>,
@@ -183,6 +233,7 @@ pub(crate) const ${config.constantStem}_PROJECTION_SHA256: &str =
 pub(crate) static ${config.constantStem}_RULES: &[GeneratedFontRuleProjection] = &[
 ${entries}
 ];
+${renderRustLookup(config, rows)}
 `;
 }
 
@@ -240,7 +291,7 @@ export function buildProjectionBundle(
   const outputs = OUTPUT_CONFIGS.map(config => {
     const inputRules = registry.rules
       .filter(rule => rule.projections[0].id === config.projectionId);
-    const rows = inputRules.map(projectionRow);
+    const rows = inputRules.map(rule => projectionRow(rule, config));
     const inputSha256 = sha256Text(canonicalJson(inputRules));
     const projectionSha256 = sha256Text(canonicalJson(rows));
     const metadata = {

@@ -6,6 +6,8 @@
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
+use crate::renderer::font_rule_layout_metric_projection::find_font_rule_layout_metric;
+
 #[derive(Debug)]
 pub struct HangulMetric {
     pub cho_groups: u8,
@@ -101,15 +103,18 @@ struct MetricSelection {
 pub(crate) struct MetricLookupDecision<'a> {
     pub(crate) requested_name: &'a str,
     pub(crate) alias_resolved_name: &'a str,
+    pub(crate) alias_rule_id: Option<&'static str>,
     pub(crate) metric: &'static FontMetric,
     pub(crate) bold_fallback: bool,
     pub(crate) match_kind: MetricMatchKind,
     pub(crate) entry_index: usize,
 }
 
-/// 한국어 폰트 이름 → 내장 메트릭 영문 이름 별칭.
+/// W7 전환 전 한국어 폰트 이름 → 내장 메트릭 영문 이름 별칭 오라클.
 ///
-/// 계층:
+/// runtime은 canonical registry에서 생성한 `layout_metric` projection을 사용한다.
+/// 이 표와 근거 주석은 생성 결과의 전건 동등성을 검증하기 위해 test build에만 보존한다.
+/// 기존 계층:
 /// 1. style_resolver.rs 가 한국어 별칭 → 한국어 정규명 (예: 한양중고딕 → HY중고딕)
 /// 2. 본 함수가 한국어 정규명 → 영문 DB 이름 (예: HY중고딕 → HYGothic-Medium)
 /// 3. find_metric 이 FONT_METRICS 에서 영문 이름으로 조회
@@ -119,6 +124,7 @@ pub(crate) struct MetricLookupDecision<'a> {
 /// 한계: Latin 폭 미세 차이, weight 축은 2단계로 근사 (본한글vf 는 wght 중간값을
 /// Regular/Bold 중 가까운 쪽으로). CJK 폰트는 weight 별 한글 폭 차이가 작으므로
 /// 실무 허용. 정식 DB 엔트리 추가는 별도 이슈.
+#[cfg(test)]
 fn resolve_metric_alias(name: &str) -> &str {
     match name {
         "함초롬돋움" => "HCR Dotum",
@@ -192,6 +198,14 @@ fn resolve_metric_alias(name: &str) -> &str {
         | "SourceHanSerifK"
         | "Noto Serif CJK KR" => "Noto Serif KR",
         _ => name,
+    }
+}
+
+/// Canonical font rule projection에서 metric alias와 W2 ruleId를 함께 해소한다.
+fn resolve_projected_metric_alias(name: &str) -> (&str, Option<&'static str>) {
+    match find_font_rule_layout_metric(name) {
+        Some(rule) => (rule.target_face_or_policy, Some(rule.rule_id)),
+        None => (name, None),
     }
 }
 
@@ -291,12 +305,13 @@ pub(crate) fn find_metric_decision<'a>(
     bold: bool,
     italic: bool,
 ) -> Option<MetricLookupDecision<'a>> {
-    let alias_resolved_name = resolve_metric_alias(name);
+    let (alias_resolved_name, alias_rule_id) = resolve_projected_metric_alias(name);
     let slots = metric_index().get(alias_resolved_name)?;
     let selected = slots[metric_slot_index(bold, italic)];
     Some(MetricLookupDecision {
         requested_name: name,
         alias_resolved_name,
+        alias_rule_id,
         metric: selected.metric,
         bold_fallback: selected.bold_fallback,
         match_kind: selected.match_kind,
@@ -362,6 +377,49 @@ fn legacy_find_metric(name: &str, bold: bool, italic: bool) -> Option<MetricMatc
         })
 }
 
+#[cfg(test)]
+fn legacy_find_metric_decision<'a>(
+    name: &'a str,
+    bold: bool,
+    italic: bool,
+) -> Option<MetricLookupDecision<'a>> {
+    let alias_resolved_name = resolve_metric_alias(name);
+    let exact = FONT_METRICS
+        .iter()
+        .enumerate()
+        .find(|(_, metric)| {
+            metric.name == alias_resolved_name && metric.bold == bold && metric.italic == italic
+        })
+        .map(|(index, metric)| (metric, index, MetricMatchKind::Exact, false));
+    let bold_only = || {
+        FONT_METRICS
+            .iter()
+            .enumerate()
+            .find(|(_, metric)| {
+                metric.name == alias_resolved_name && metric.bold == bold && !metric.italic
+            })
+            .map(|(index, metric)| (metric, index, MetricMatchKind::BoldOnly, false))
+    };
+    let name_first = || {
+        FONT_METRICS
+            .iter()
+            .enumerate()
+            .find(|(_, metric)| metric.name == alias_resolved_name)
+            .map(|(index, metric)| (metric, index, MetricMatchKind::NameFirst, bold))
+    };
+    let (metric, entry_index, match_kind, bold_fallback) =
+        exact.or_else(bold_only).or_else(name_first)?;
+    Some(MetricLookupDecision {
+        requested_name: name,
+        alias_resolved_name,
+        alias_rule_id: None,
+        metric,
+        bold_fallback,
+        match_kind,
+        entry_index,
+    })
+}
+
 include!("font_metrics_generated.rs");
 include!("font_metrics_overlays.rs");
 
@@ -383,6 +441,7 @@ impl FontMetrics {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::renderer::font_rule_layout_metric_projection::FONT_RULE_LAYOUT_METRIC_RULES;
     use sha2::{Digest, Sha256};
 
     const NOTO_SANS_KR_REGULAR: &[u8] =
@@ -656,5 +715,41 @@ mod tests {
                 }
             }
         }
+
+        for rule in FONT_RULE_LAYOUT_METRIC_RULES {
+            assert_eq!(rule.source_boundary_id, "rust-metric.metric-alias");
+            let source = rule.source_face.expect("metric alias source face");
+            let (projected_alias, projected_rule_id) = resolve_projected_metric_alias(source);
+            assert_eq!(projected_alias, resolve_metric_alias(source));
+            assert_eq!(projected_alias, rule.target_face_or_policy);
+            assert_eq!(projected_rule_id, Some(rule.rule_id));
+
+            for bold in [false, true] {
+                for italic in [false, true] {
+                    let projected = find_metric_decision(source, bold, italic);
+                    let legacy = legacy_find_metric_decision(source, bold, italic);
+                    match (projected, legacy) {
+                        (None, None) => {}
+                        (Some(projected), Some(legacy)) => {
+                            assert!(std::ptr::eq(projected.metric, legacy.metric));
+                            assert_eq!(projected.entry_index, legacy.entry_index);
+                            assert_eq!(projected.match_kind, legacy.match_kind);
+                            assert_eq!(projected.bold_fallback, legacy.bold_fallback);
+                            assert_eq!(projected.alias_resolved_name, legacy.alias_resolved_name);
+                            assert_eq!(projected.alias_rule_id, Some(rule.rule_id));
+                        }
+                        (projected, legacy) => panic!(
+                            "metric projection mismatch for {source:?} bold={bold} italic={italic}: projected={}, legacy={}",
+                            projected.is_some(),
+                            legacy.is_some()
+                        ),
+                    }
+                }
+            }
+        }
+
+        let sentinel = "__rhwp_w7_unregistered_metric__";
+        assert_eq!(resolve_projected_metric_alias(sentinel), (sentinel, None));
+        assert!(find_metric_decision(sentinel, false, false).is_none());
     }
 }

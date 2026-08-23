@@ -564,9 +564,17 @@ export function validateProjectionBaseline(baseline) {
 }
 
 export function compareProjectionBaseline(expected, actual) {
-  return canonicalJson(expected) === canonicalJson(actual)
+  const semanticView = baseline => {
+    const view = structuredClone(baseline);
+    delete view.sourceCommit;
+    delete view.hashes.registryInputSha256;
+    delete view.inventory.currentCandidateProjectionSha256;
+    for (const input of view.inputs) delete input.sha256;
+    return view;
+  };
+  return canonicalJson(semanticView(expected)) === canonicalJson(semanticView(actual))
     ? []
-    : ['font rule projection pre-migration baseline differs from current source'];
+    : ['font rule projection pre-migration semantics differ from current source'];
 }
 
 function argumentValue(args, name) {

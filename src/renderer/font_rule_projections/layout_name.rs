@@ -12,6 +12,7 @@ pub(crate) struct GeneratedFontRuleConditions {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct GeneratedFontRuleProjection {
     pub(crate) rule_id: &'static str,
+    pub(crate) source_boundary_id: &'static str,
     pub(crate) relation_type: &'static str,
     pub(crate) decision_plane: &'static str,
     pub(crate) source_face: Option<&'static str>,
@@ -26,11 +27,12 @@ pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str = "1.0";
 pub(crate) const FONT_RULE_LAYOUT_NAME_INPUT_SHA256: &str =
     "de601d99bd52db63459f281a011b8cec0f7aa01ba4c70fdfea7dad1078ff3199";
 pub(crate) const FONT_RULE_LAYOUT_NAME_PROJECTION_SHA256: &str =
-    "263c10796acc1a3d63541d324f852c4e4a965e4485b499e4f493493cd28328cc";
+    "595cdcc1c8d81441c9e4585acb393e734f52e6da3e822babf0f722df2c791cee";
 
 pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.fc3aabaf8bef3e4397ee",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Poppy"),
@@ -47,6 +49,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.cfa1a327e1950286b4d3",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Tulip"),
@@ -63,6 +66,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.2ab752f4b38fb27e16f3",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Morning Glory"),
@@ -79,6 +83,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.daa98f429a4507d01d19",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Centaurea"),
@@ -95,6 +100,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.3b1cb2c54020ab8d4053",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Bellflower"),
@@ -111,6 +117,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.7467600cfa2242bc7c2b",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("AmeriGarmnd BT"),
@@ -127,6 +134,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.ab92f6bc5dbab65783d2",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Bodoni Bd BT"),
@@ -143,6 +151,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.2a6d056cbb4af06d5ea5",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Bodoni Bk BT"),
@@ -159,6 +168,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.493744598397f50d32cf",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Baskerville BT"),
@@ -175,6 +185,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.77c1a7227a32ffe6c464",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("GoudyOlSt BT"),
@@ -191,6 +202,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.e4f24a6c5198bffc6948",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Cooper Blk BT"),
@@ -207,6 +219,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.946fd561a455cf1fe8b1",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Stencil BT"),
@@ -223,6 +236,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.bdf587f1fd8ee07b0318",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("BrushScript BT"),
@@ -239,6 +253,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.331ac7dc08df32a6d68d",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("CommercialScript BT"),
@@ -255,6 +270,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.0a0e557d2e4ace942486",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Liberty BT"),
@@ -271,6 +287,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.6e99b59bcaee54609bfd",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("MurrayHill Bd BT"),
@@ -287,6 +304,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.eb8645d18113ed99a855",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("ParkAvenue BT"),
@@ -303,6 +321,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.e56076a5b95269996a0e",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("CentSchbook BT"),
@@ -319,6 +338,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.1bfb5dd9c7e75a41889a",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("펜흘림"),
@@ -335,6 +355,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.5e76092e98cf6cd5c5bc",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Hollyhock"),
@@ -351,6 +372,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.ab0f5ec30617da0dcfa0",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Hollyhock Narrow"),
@@ -367,6 +389,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.fbaac0d133ba80ac5d19",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Acacia"),
@@ -383,6 +406,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.b7d915e27c0e7bb0513a",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Swis721 BT"),
@@ -399,6 +423,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.4f2992e7da6ca8abe276",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Hobo BT"),
@@ -415,6 +440,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.2f026b93ecae19a4fe40",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Orbit-B BT"),
@@ -431,6 +457,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.24be13ce4a72c605c980",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Blippo Blk BT"),
@@ -447,6 +474,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.696247e9e33ee5e25352",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("BroadwayEngraved BT"),
@@ -463,6 +491,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.39065d773a1c38b89be8",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("FuturaBlack BT"),
@@ -479,6 +508,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.cf1e502b10ef52eba61c",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Newtext Bk BT"),
@@ -495,6 +525,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.da500e70d7a733c7411e",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("DomCasual BT"),
@@ -511,6 +542,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.73c52b755b2fcf5bdedf",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("가는안상수체영문"),
@@ -527,6 +559,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.6939320ca9b786507f64",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("중간안상수체영문"),
@@ -543,6 +576,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.b12bfa519e5a01dea03b",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("굵은안상수체영문"),
@@ -559,6 +593,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.a7ff9476a211d4ffc00a",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("BernhardFashion BT"),
@@ -575,6 +610,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.954fd34e7c5338aca2a3",
+        source_boundary_id: "rust-style-resolution.legacy-latin",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Freehand591 BT"),
@@ -591,6 +627,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.02e481cb4cd895d42cb8",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("한양그래픽"),
@@ -607,6 +644,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.335e7e02ee5e319e82a9",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("한양궁서"),
@@ -623,6 +661,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.f9faa0fe7f673e3ec69e",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 태고딕"),
@@ -639,6 +678,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.ef0a59949401f7b21935",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 태명조"),
@@ -655,6 +695,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.dd71fd1d77caefc9cc3f",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 견고딕"),
@@ -671,6 +712,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.35874f44f668277d74ab",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 견명조"),
@@ -687,6 +729,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.6337fb554819c64ebd08",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 태그래픽"),
@@ -703,6 +746,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.abc5e3a7005a5e757fd8",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 중고딕"),
@@ -719,6 +763,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.a8687f69e4b9444eae05",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("태 가는 헤드라인T"),
@@ -735,6 +780,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.44b8acc2c452fffe0518",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("태 가는 헤드라인D"),
@@ -751,6 +797,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.8c3e6b1b184eb370ec56",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("양재 튼튼B"),
@@ -767,6 +814,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.efb8a753026e6ac5db7e",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("명조"),
@@ -783,6 +831,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.72c81b75f23f71cb3572",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 세명조"),
@@ -799,6 +848,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.724b61029eb7199a7ac9",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 신명조"),
@@ -815,6 +865,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.6d2335c3364ef323a32c",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 신신명조"),
@@ -831,6 +882,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.11ec547f3b636f51831b",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 중명조"),
@@ -847,6 +899,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.0e530934964837c0a925",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 순명조"),
@@ -863,6 +916,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.ab4e7c8a37108b142af2",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 신문명조"),
@@ -879,6 +933,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.999a6dea00517e914c8a",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("옛한글"),
@@ -895,6 +950,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.9fb0d1683d73d88f2cb6",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("양재 다운명조M"),
@@ -911,6 +967,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.1bbdcd3693e1df8e21c4",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("휴먼고딕"),
@@ -927,6 +984,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.2537c70d25a73d701453",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("문화돋움"),
@@ -943,6 +1001,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.4acb9543c94173d1d873",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("문화돋움제목"),
@@ -959,6 +1018,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.d158cc3bf8eff141841d",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("태 나무"),
@@ -975,6 +1035,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.b1ce9b655c3078eb4c09",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("휴먼옛체"),
@@ -991,6 +1052,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.ae14b7ee1f36c1e44616",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("딸기"),
@@ -1007,6 +1069,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.8741bde95986bad53ebf",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("샘물"),
@@ -1023,6 +1086,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.cd1013740683cbb5efba",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("가는한"),
@@ -1039,6 +1103,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.37c84ace92007f1a5a3e",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("중간한"),
@@ -1055,6 +1120,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.0082ea45bcb1213b5839",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("굵은한"),
@@ -1071,6 +1137,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.e0cf8fd848d86c657647",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("휴먼가는샘체"),
@@ -1087,6 +1154,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.0bfee6a3e6b8466b4925",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("휴먼중간샘체"),
@@ -1103,6 +1171,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.964cf4dc554ce179696e",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("휴먼굵은샘체"),
@@ -1119,6 +1188,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.09c58d600691e5fce7f6",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("휴먼가는팸체"),
@@ -1135,6 +1205,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.c23ce0f3a9a0d07e9bc9",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("휴먼중간팸체"),
@@ -1151,6 +1222,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.b4e57812ec6a57175419",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("휴먼굵은팸체"),
@@ -1167,6 +1239,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.6790f00e7f93802c6796",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("가는안상수체"),
@@ -1183,6 +1256,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.c817ba1d7ee0edf0cf0c",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("중간안상수체"),
@@ -1199,6 +1273,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.141914fd950330a9b54e",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("굵은안상수체"),
@@ -1215,6 +1290,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.b4719a915ed21038bf89",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("양재 매화"),
@@ -1231,6 +1307,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.2ecf1577590d2f7d58b4",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("양재 소슬"),
@@ -1247,6 +1324,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.d0c9c9a5e2ddcf48b69e",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("양재 샤넬"),
@@ -1263,6 +1341,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.142cb4bd8e5e7d6a4eb7",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("옥수수"),
@@ -1279,6 +1358,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.fbc4e07acd8698f1435a",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("양재 본목각M"),
@@ -1295,6 +1375,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.6797fa7fb04c47004e17",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("복숭아"),
@@ -1311,6 +1392,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.8a7becdc5e91c74f6ae1",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 세고딕"),
@@ -1327,6 +1409,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.384184a35b09f8ad440c",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 디나루"),
@@ -1343,6 +1426,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.dfee70a03d6eb52d3067",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 세나루"),
@@ -1359,6 +1443,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.f14451bea39ec48eda54",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#세고딕"),
@@ -1375,6 +1460,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.6f95e36b29388ac0aeee",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#신세고딕"),
@@ -1391,6 +1477,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.c0310c8eb48d9110e69d",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#중고딕"),
@@ -1407,6 +1494,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.af74acf16dacb21405e9",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#태고딕"),
@@ -1423,6 +1511,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.16bbe2aa0ca5f9356074",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#신문고딕"),
@@ -1439,6 +1528,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.03705e26bef062d2fea4",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#신문태고"),
@@ -1455,6 +1545,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.499ce08aa8442d11bb6c",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#세나루"),
@@ -1471,6 +1562,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.74031b6360c28e8a9506",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#신세나루"),
@@ -1487,6 +1579,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.f786ba053ba33ef914b0",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#디나루"),
@@ -1503,6 +1596,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.6ed537220880f93ce19f",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#신디나루"),
@@ -1519,6 +1613,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.1716ad49c147b8c84420",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 신그래픽"),
@@ -1535,6 +1630,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.2e69d80418309c26bb51",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("강낭콩"),
@@ -1551,6 +1647,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.254c7987a7a9d684ec97",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#그래픽"),
@@ -1567,6 +1664,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.cc0619b2e72e5443f990",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#신그래픽"),
@@ -1583,6 +1681,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.3befdf61c18da613b2fa",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#공작"),
@@ -1599,6 +1698,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.3170f7ec41c0008fb550",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("양재 참숯B"),
@@ -1615,6 +1715,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.abe7658cb4952ef7b209",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("양재 와당"),
@@ -1631,6 +1732,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.0b1499844be2677b939f",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("양재 이니셜"),
@@ -1647,6 +1749,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.b683bb5b0b2e4249328b",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#빅"),
@@ -1663,6 +1766,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.b45bc61fca5d5a3384bd",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("태 헤드라인T"),
@@ -1679,6 +1783,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.b1b74ce4199220fa07c3",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("태 헤드라인D"),
@@ -1695,6 +1800,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.50d0732d7799aa805797",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("가지"),
@@ -1711,6 +1817,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.a6e4e8c456f64b3f7fcb",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("오이"),
@@ -1727,6 +1834,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.db8cef84ee45592a3af4",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("양재 둘기"),
@@ -1743,6 +1851,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.e0a7336b5ccca079c480",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("신명 궁서"),
@@ -1759,6 +1868,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.4675c79b25bc310531ac",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#궁서"),
@@ -1775,6 +1885,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.1fb32302f37d1a8baecd",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#수암A"),
@@ -1791,6 +1902,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.2b64bff1127d703d8154",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("#수암B"),
@@ -1807,6 +1919,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.4f192ee25b0d928ff5df",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("시스템"),
@@ -1823,6 +1936,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.11c781ddc235b0b724a2",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HY둥근고딕"),
@@ -1839,6 +1953,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.8f25b3e47e0252990a6b",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("고딕"),
@@ -1855,6 +1970,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.d07421d3e41ba6b0a9c9",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("산세리프"),
@@ -1871,6 +1987,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.eb0b829ae3212decbe71",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Poppy"),
@@ -1887,6 +2004,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.db62f9a8c305ba324711",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("수식"),
@@ -1903,6 +2021,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.995aace5f10cfd3366e2",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("한글 풀어쓰기"),
@@ -1919,6 +2038,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.7685e796764fd2f669e6",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Tulip"),
@@ -1935,6 +2055,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.ca0e3cb6e0a94442a2db",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Morning Glory"),
@@ -1951,6 +2072,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.360dedc9af1d14b16ae0",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Centaurea"),
@@ -1967,6 +2089,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.3685289f41866a18b716",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Bellflower"),
@@ -1983,6 +2106,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.cc82ca044119c37d82ac",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("AmeriGarmnd BT"),
@@ -1999,6 +2123,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.04c041de8b9f884c575b",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Bodoni Bd BT"),
@@ -2015,6 +2140,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.fd204f8e16e125817f33",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Bodoni Bk BT"),
@@ -2031,6 +2157,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.ccdce96a051c1a4544af",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Baskerville BT"),
@@ -2047,6 +2174,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.d79eed565805df4119f3",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("GoudyOlSt BT"),
@@ -2063,6 +2191,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.46b3d7fa9d7e3537e546",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Cooper Blk BT"),
@@ -2079,6 +2208,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.1de3e0224480818feee1",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Stencil BT"),
@@ -2095,6 +2225,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.7f0c742519af39666553",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("BrushScript BT"),
@@ -2111,6 +2242,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.f871fdbecaa3806d425b",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("CommercialScript BT"),
@@ -2127,6 +2259,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.abe9e4dd7995194d5388",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Liberty BT"),
@@ -2143,6 +2276,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.499618dc693950c24cca",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("MurrayHill Bd BT"),
@@ -2159,6 +2293,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.0c1df57b3a54a828436d",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("ParkAvenue BT"),
@@ -2175,6 +2310,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.6c2f84bb0cd45303467e",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("CentSchbook BT"),
@@ -2191,6 +2327,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.761e02130ed3040df406",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("펜흘림"),
@@ -2207,6 +2344,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.5fc3ef51fb83d8bd8d05",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Hollyhock"),
@@ -2223,6 +2361,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.4bbc02a8dce705747e0b",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Hollyhock Narrow"),
@@ -2239,6 +2378,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.06f53c69d72347f684e5",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HCI Acacia"),
@@ -2255,6 +2395,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.3a60122ba95261d074b4",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Swis721 BT"),
@@ -2271,6 +2412,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.2648d62f7625c0ae42a5",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Hobo BT"),
@@ -2287,6 +2429,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.c57bfb0233f6b93090a5",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Orbit-B BT"),
@@ -2303,6 +2446,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.3123cf58094857acbcc5",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Blippo Blk BT"),
@@ -2319,6 +2463,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.28ffb9edd41241a3cfb4",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("BroadwayEngraved BT"),
@@ -2335,6 +2480,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.a6eed45eefdf22329986",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("FuturaBlack BT"),
@@ -2351,6 +2497,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.1fba868e3d01b9b5f754",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Newtext Bk BT"),
@@ -2367,6 +2514,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.29d40b5d650b4e74394a",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("DomCasual BT"),
@@ -2383,6 +2531,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.e91dad891aeb5ff39176",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("가는안상수체영문"),
@@ -2399,6 +2548,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.32ac0d453858895ad38e",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("중간안상수체영문"),
@@ -2415,6 +2565,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.65c88a9cc5c45d92d7f9",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("굵은안상수체영문"),
@@ -2431,6 +2582,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.604ac4b713470897c519",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("BernhardFashion BT"),
@@ -2447,6 +2599,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.0064f153365f6768f27c",
+        source_boundary_id: "rust-style-resolution.hft",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Freehand591 BT"),
@@ -2463,6 +2616,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.74d15d00a15380e32218",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Gulim"),
@@ -2479,6 +2633,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.f44baa08bc64ee3871ce",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HYHeadLine Medium"),
@@ -2495,6 +2650,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.4c66bb0692f34ee929e6",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Malgun Gothic"),
@@ -2511,6 +2667,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.ab04651e8e20b0f20d3d",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("HY그래픽M"),
@@ -2527,6 +2684,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.3df3f342d69d2bbf69d4",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("SPOQAHANSANS"),
@@ -2543,6 +2701,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.3670d3ec591f4267b6ff",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("MS Sans Serif"),
@@ -2559,6 +2718,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.5d3d004ccd2e631b46f4",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Tahoma"),
@@ -2575,6 +2735,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.a3b329005d470f58d7a2",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("백묵 굴림"),
@@ -2591,6 +2752,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.549497a13401ed0e8834",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("백묵 돋움"),
@@ -2607,6 +2769,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.e7b1d4e290f9ad8a864f",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("백묵 바탕"),
@@ -2623,6 +2786,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.a8178f3792764a5f2724",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("백묵 헤드라인"),
@@ -2639,6 +2803,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.807495745bc6884f8989",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("Gulimche"),
@@ -2655,6 +2820,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.40d222b48e9365d1e410",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("새바탕"),
@@ -2671,6 +2837,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.cfd93ffc273e3f1ea2e0",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("새돋움"),
@@ -2687,6 +2854,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.b6c97b846cf79ce168fa",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("새굴림"),
@@ -2703,6 +2871,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.2775b9106ebf924c65e0",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("새궁서"),
@@ -2719,6 +2888,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.e64d2c87eb21cda8fbb0",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("가는안상수체"),
@@ -2735,6 +2905,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.1aafe225cdf81aaac580",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("중간안상수체"),
@@ -2751,6 +2922,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-style-resolution.89b2495660cce4cce96f",
+        source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("굵은안상수체"),
@@ -2766,3 +2938,527 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         metric_entry_ids: &[],
     },
 ];
+
+#[rustfmt::skip]
+pub(crate) fn find_font_rule_layout_name(
+    source_boundary_id: &str,
+    source_face: &str,
+    language_slot: usize,
+) -> Option<&'static GeneratedFontRuleProjection> {
+    match (source_boundary_id, source_face) {
+        ("rust-style-resolution.legacy-latin", "HCI Poppy") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[0])
+        }
+        ("rust-style-resolution.legacy-latin", "HCI Tulip") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[1])
+        }
+        ("rust-style-resolution.legacy-latin", "HCI Morning Glory") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[2])
+        }
+        ("rust-style-resolution.legacy-latin", "HCI Centaurea") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[3])
+        }
+        ("rust-style-resolution.legacy-latin", "HCI Bellflower") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[4])
+        }
+        ("rust-style-resolution.legacy-latin", "AmeriGarmnd BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[5])
+        }
+        ("rust-style-resolution.legacy-latin", "Bodoni Bd BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[6])
+        }
+        ("rust-style-resolution.legacy-latin", "Bodoni Bk BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[7])
+        }
+        ("rust-style-resolution.legacy-latin", "Baskerville BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[8])
+        }
+        ("rust-style-resolution.legacy-latin", "GoudyOlSt BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[9])
+        }
+        ("rust-style-resolution.legacy-latin", "Cooper Blk BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[10])
+        }
+        ("rust-style-resolution.legacy-latin", "Stencil BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[11])
+        }
+        ("rust-style-resolution.legacy-latin", "BrushScript BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[12])
+        }
+        ("rust-style-resolution.legacy-latin", "CommercialScript BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[13])
+        }
+        ("rust-style-resolution.legacy-latin", "Liberty BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[14])
+        }
+        ("rust-style-resolution.legacy-latin", "MurrayHill Bd BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[15])
+        }
+        ("rust-style-resolution.legacy-latin", "ParkAvenue BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[16])
+        }
+        ("rust-style-resolution.legacy-latin", "CentSchbook BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[17])
+        }
+        ("rust-style-resolution.legacy-latin", "펜흘림") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[18])
+        }
+        ("rust-style-resolution.legacy-latin", "HCI Hollyhock") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[19])
+        }
+        ("rust-style-resolution.legacy-latin", "HCI Hollyhock Narrow") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[20])
+        }
+        ("rust-style-resolution.legacy-latin", "HCI Acacia") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[21])
+        }
+        ("rust-style-resolution.legacy-latin", "Swis721 BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[22])
+        }
+        ("rust-style-resolution.legacy-latin", "Hobo BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[23])
+        }
+        ("rust-style-resolution.legacy-latin", "Orbit-B BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[24])
+        }
+        ("rust-style-resolution.legacy-latin", "Blippo Blk BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[25])
+        }
+        ("rust-style-resolution.legacy-latin", "BroadwayEngraved BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[26])
+        }
+        ("rust-style-resolution.legacy-latin", "FuturaBlack BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[27])
+        }
+        ("rust-style-resolution.legacy-latin", "Newtext Bk BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[28])
+        }
+        ("rust-style-resolution.legacy-latin", "DomCasual BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[29])
+        }
+        ("rust-style-resolution.legacy-latin", "가는안상수체영문") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[30])
+        }
+        ("rust-style-resolution.legacy-latin", "중간안상수체영문") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[31])
+        }
+        ("rust-style-resolution.legacy-latin", "굵은안상수체영문") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[32])
+        }
+        ("rust-style-resolution.legacy-latin", "BernhardFashion BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[33])
+        }
+        ("rust-style-resolution.legacy-latin", "Freehand591 BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[34])
+        }
+        ("rust-style-resolution.hft", "한양그래픽") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[35])
+        }
+        ("rust-style-resolution.hft", "한양궁서") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[36])
+        }
+        ("rust-style-resolution.hft", "신명 태고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[37])
+        }
+        ("rust-style-resolution.hft", "신명 태명조") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[38])
+        }
+        ("rust-style-resolution.hft", "신명 견고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[39])
+        }
+        ("rust-style-resolution.hft", "신명 견명조") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[40])
+        }
+        ("rust-style-resolution.hft", "신명 태그래픽") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[41])
+        }
+        ("rust-style-resolution.hft", "신명 중고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[42])
+        }
+        ("rust-style-resolution.hft", "태 가는 헤드라인T") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[43])
+        }
+        ("rust-style-resolution.hft", "태 가는 헤드라인D") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[44])
+        }
+        ("rust-style-resolution.hft", "양재 튼튼B") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[45])
+        }
+        ("rust-style-resolution.hft", "명조") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[46])
+        }
+        ("rust-style-resolution.hft", "신명 세명조") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[47])
+        }
+        ("rust-style-resolution.hft", "신명 신명조") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[48])
+        }
+        ("rust-style-resolution.hft", "신명 신신명조") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[49])
+        }
+        ("rust-style-resolution.hft", "신명 중명조") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[50])
+        }
+        ("rust-style-resolution.hft", "신명 순명조") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[51])
+        }
+        ("rust-style-resolution.hft", "신명 신문명조") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[52])
+        }
+        ("rust-style-resolution.hft", "옛한글") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[53])
+        }
+        ("rust-style-resolution.hft", "양재 다운명조M") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[54])
+        }
+        ("rust-style-resolution.hft", "휴먼고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[55])
+        }
+        ("rust-style-resolution.hft", "문화돋움") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[56])
+        }
+        ("rust-style-resolution.hft", "문화돋움제목") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[57])
+        }
+        ("rust-style-resolution.hft", "태 나무") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[58])
+        }
+        ("rust-style-resolution.hft", "휴먼옛체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[59])
+        }
+        ("rust-style-resolution.hft", "딸기") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[60])
+        }
+        ("rust-style-resolution.hft", "샘물") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[61])
+        }
+        ("rust-style-resolution.hft", "가는한") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[62])
+        }
+        ("rust-style-resolution.hft", "중간한") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[63])
+        }
+        ("rust-style-resolution.hft", "굵은한") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[64])
+        }
+        ("rust-style-resolution.hft", "휴먼가는샘체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[65])
+        }
+        ("rust-style-resolution.hft", "휴먼중간샘체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[66])
+        }
+        ("rust-style-resolution.hft", "휴먼굵은샘체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[67])
+        }
+        ("rust-style-resolution.hft", "휴먼가는팸체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[68])
+        }
+        ("rust-style-resolution.hft", "휴먼중간팸체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[69])
+        }
+        ("rust-style-resolution.hft", "휴먼굵은팸체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[70])
+        }
+        ("rust-style-resolution.hft", "가는안상수체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[71])
+        }
+        ("rust-style-resolution.hft", "중간안상수체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[72])
+        }
+        ("rust-style-resolution.hft", "굵은안상수체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[73])
+        }
+        ("rust-style-resolution.hft", "양재 매화") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[74])
+        }
+        ("rust-style-resolution.hft", "양재 소슬") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[75])
+        }
+        ("rust-style-resolution.hft", "양재 샤넬") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[76])
+        }
+        ("rust-style-resolution.hft", "옥수수") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[77])
+        }
+        ("rust-style-resolution.hft", "양재 본목각M") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[78])
+        }
+        ("rust-style-resolution.hft", "복숭아") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[79])
+        }
+        ("rust-style-resolution.hft", "신명 세고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[80])
+        }
+        ("rust-style-resolution.hft", "신명 디나루") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[81])
+        }
+        ("rust-style-resolution.hft", "신명 세나루") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[82])
+        }
+        ("rust-style-resolution.hft", "#세고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[83])
+        }
+        ("rust-style-resolution.hft", "#신세고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[84])
+        }
+        ("rust-style-resolution.hft", "#중고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[85])
+        }
+        ("rust-style-resolution.hft", "#태고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[86])
+        }
+        ("rust-style-resolution.hft", "#신문고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[87])
+        }
+        ("rust-style-resolution.hft", "#신문태고") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[88])
+        }
+        ("rust-style-resolution.hft", "#세나루") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[89])
+        }
+        ("rust-style-resolution.hft", "#신세나루") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[90])
+        }
+        ("rust-style-resolution.hft", "#디나루") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[91])
+        }
+        ("rust-style-resolution.hft", "#신디나루") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[92])
+        }
+        ("rust-style-resolution.hft", "신명 신그래픽") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[93])
+        }
+        ("rust-style-resolution.hft", "강낭콩") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[94])
+        }
+        ("rust-style-resolution.hft", "#그래픽") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[95])
+        }
+        ("rust-style-resolution.hft", "#신그래픽") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[96])
+        }
+        ("rust-style-resolution.hft", "#공작") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[97])
+        }
+        ("rust-style-resolution.hft", "양재 참숯B") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[98])
+        }
+        ("rust-style-resolution.hft", "양재 와당") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[99])
+        }
+        ("rust-style-resolution.hft", "양재 이니셜") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[100])
+        }
+        ("rust-style-resolution.hft", "#빅") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[101])
+        }
+        ("rust-style-resolution.hft", "태 헤드라인T") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[102])
+        }
+        ("rust-style-resolution.hft", "태 헤드라인D") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[103])
+        }
+        ("rust-style-resolution.hft", "가지") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[104])
+        }
+        ("rust-style-resolution.hft", "오이") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[105])
+        }
+        ("rust-style-resolution.hft", "양재 둘기") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[106])
+        }
+        ("rust-style-resolution.hft", "신명 궁서") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[107])
+        }
+        ("rust-style-resolution.hft", "#궁서") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[108])
+        }
+        ("rust-style-resolution.hft", "#수암A") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[109])
+        }
+        ("rust-style-resolution.hft", "#수암B") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[110])
+        }
+        ("rust-style-resolution.hft", "시스템") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[111])
+        }
+        ("rust-style-resolution.hft", "HY둥근고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[112])
+        }
+        ("rust-style-resolution.hft", "고딕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[113])
+        }
+        ("rust-style-resolution.hft", "산세리프") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[114])
+        }
+        ("rust-style-resolution.hft", "HCI Poppy") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[115])
+        }
+        ("rust-style-resolution.hft", "수식") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[116])
+        }
+        ("rust-style-resolution.hft", "한글 풀어쓰기") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[117])
+        }
+        ("rust-style-resolution.hft", "HCI Tulip") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[118])
+        }
+        ("rust-style-resolution.hft", "HCI Morning Glory") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[119])
+        }
+        ("rust-style-resolution.hft", "HCI Centaurea") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[120])
+        }
+        ("rust-style-resolution.hft", "HCI Bellflower") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[121])
+        }
+        ("rust-style-resolution.hft", "AmeriGarmnd BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[122])
+        }
+        ("rust-style-resolution.hft", "Bodoni Bd BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[123])
+        }
+        ("rust-style-resolution.hft", "Bodoni Bk BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[124])
+        }
+        ("rust-style-resolution.hft", "Baskerville BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[125])
+        }
+        ("rust-style-resolution.hft", "GoudyOlSt BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[126])
+        }
+        ("rust-style-resolution.hft", "Cooper Blk BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[127])
+        }
+        ("rust-style-resolution.hft", "Stencil BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[128])
+        }
+        ("rust-style-resolution.hft", "BrushScript BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[129])
+        }
+        ("rust-style-resolution.hft", "CommercialScript BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[130])
+        }
+        ("rust-style-resolution.hft", "Liberty BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[131])
+        }
+        ("rust-style-resolution.hft", "MurrayHill Bd BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[132])
+        }
+        ("rust-style-resolution.hft", "ParkAvenue BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[133])
+        }
+        ("rust-style-resolution.hft", "CentSchbook BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[134])
+        }
+        ("rust-style-resolution.hft", "펜흘림") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[135])
+        }
+        ("rust-style-resolution.hft", "HCI Hollyhock") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[136])
+        }
+        ("rust-style-resolution.hft", "HCI Hollyhock Narrow") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[137])
+        }
+        ("rust-style-resolution.hft", "HCI Acacia") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[138])
+        }
+        ("rust-style-resolution.hft", "Swis721 BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[139])
+        }
+        ("rust-style-resolution.hft", "Hobo BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[140])
+        }
+        ("rust-style-resolution.hft", "Orbit-B BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[141])
+        }
+        ("rust-style-resolution.hft", "Blippo Blk BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[142])
+        }
+        ("rust-style-resolution.hft", "BroadwayEngraved BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[143])
+        }
+        ("rust-style-resolution.hft", "FuturaBlack BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[144])
+        }
+        ("rust-style-resolution.hft", "Newtext Bk BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[145])
+        }
+        ("rust-style-resolution.hft", "DomCasual BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[146])
+        }
+        ("rust-style-resolution.hft", "가는안상수체영문") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[147])
+        }
+        ("rust-style-resolution.hft", "중간안상수체영문") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[148])
+        }
+        ("rust-style-resolution.hft", "굵은안상수체영문") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[149])
+        }
+        ("rust-style-resolution.hft", "BernhardFashion BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[150])
+        }
+        ("rust-style-resolution.hft", "Freehand591 BT") if language_slot == 1 => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[151])
+        }
+        ("rust-style-resolution.ttf", "Gulim") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[152])
+        }
+        ("rust-style-resolution.ttf", "HYHeadLine Medium") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[153])
+        }
+        ("rust-style-resolution.ttf", "Malgun Gothic") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[154])
+        }
+        ("rust-style-resolution.ttf", "HY그래픽M") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[155])
+        }
+        ("rust-style-resolution.ttf", "SPOQAHANSANS") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[156])
+        }
+        ("rust-style-resolution.ttf", "MS Sans Serif") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[157])
+        }
+        ("rust-style-resolution.ttf", "Tahoma") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[158])
+        }
+        ("rust-style-resolution.ttf", "백묵 굴림") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[159])
+        }
+        ("rust-style-resolution.ttf", "백묵 돋움") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[160])
+        }
+        ("rust-style-resolution.ttf", "백묵 바탕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[161])
+        }
+        ("rust-style-resolution.ttf", "백묵 헤드라인") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[162])
+        }
+        ("rust-style-resolution.ttf", "Gulimche") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[163])
+        }
+        ("rust-style-resolution.ttf", "새바탕") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[164])
+        }
+        ("rust-style-resolution.ttf", "새돋움") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[165])
+        }
+        ("rust-style-resolution.ttf", "새굴림") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[166])
+        }
+        ("rust-style-resolution.ttf", "새궁서") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[167])
+        }
+        ("rust-style-resolution.ttf", "가는안상수체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[168])
+        }
+        ("rust-style-resolution.ttf", "중간안상수체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[169])
+        }
+        ("rust-style-resolution.ttf", "굵은안상수체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[170])
+        }
+        _ => None,
+    }
+}

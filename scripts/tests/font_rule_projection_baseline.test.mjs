@@ -28,12 +28,29 @@ function clone(value) {
   return structuredClone(value);
 }
 
-test('W7 pre-migration baseline is deterministic and matches current source', () => {
+test('W7 pre-migration semantics remain equal after source ownership migration', () => {
   const expected = readBaseline();
   const actual = buildProjectionBaseline(ROOT, expected.sourceCommit);
 
   assert.deepEqual(validateProjectionBaseline(expected), []);
   assert.deepEqual(compareProjectionBaseline(expected, actual), []);
+});
+
+test('source provenance drift is allowed but projection semantic drift fails closed', () => {
+  const expected = readBaseline();
+  const provenanceOnly = clone(expected);
+  provenanceOnly.sourceCommit = 'post-migration-commit';
+  provenanceOnly.hashes.registryInputSha256 = 'post-migration-registry-input';
+  provenanceOnly.inventory.currentCandidateProjectionSha256 = 'post-migration-candidates';
+  provenanceOnly.inputs[0].sha256 = 'post-migration-source';
+  assert.deepEqual(compareProjectionBaseline(expected, provenanceOnly), []);
+
+  const semanticChange = clone(provenanceOnly);
+  semanticChange.projections.rustLayoutName.rules[0].targetOrPolicy = 'changed';
+  assert.match(
+    compareProjectionBaseline(expected, semanticChange).join('\n'),
+    /semantics differ/,
+  );
 });
 
 test('all 30 W1 boundaries and all 1,352 candidates have an explicit disposition', () => {

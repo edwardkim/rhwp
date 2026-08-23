@@ -12,6 +12,7 @@ pub(crate) struct GeneratedFontRuleConditions {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct GeneratedFontRuleProjection {
     pub(crate) rule_id: &'static str,
+    pub(crate) source_boundary_id: &'static str,
     pub(crate) relation_type: &'static str,
     pub(crate) decision_plane: &'static str,
     pub(crate) source_face: Option<&'static str>,
@@ -26,11 +27,12 @@ pub(crate) const FONT_RULE_LAYOUT_METRIC_SCHEMA_VERSION: &str = "1.0";
 pub(crate) const FONT_RULE_LAYOUT_METRIC_INPUT_SHA256: &str =
     "674d150322895e19ccb3cd8f98dfda37fade93987938486437b3fe2eeab42883";
 pub(crate) const FONT_RULE_LAYOUT_METRIC_PROJECTION_SHA256: &str =
-    "26e643ff0a0baf615467049d4b9014cafed43fb82dd61775b5e55ebe9157c2bf";
+    "c4659fc40246c5d4ad903578a61807c646681638cb4c8f9b7c802fb3f0c37cc2";
 
 pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.cf9164c17319ba49ddd8",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("함초롬돋움"),
@@ -50,6 +52,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.50e8b4fe44e2633d21f9",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("한컴돋움"),
@@ -66,6 +69,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.1378b1b9d9506f86a014",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("돋움"),
@@ -82,6 +86,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.1de1fcb9b17d66d599b5",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("함초롬바탕"),
@@ -101,6 +106,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.7a2702136cc80f952133",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("한컴바탕"),
@@ -117,6 +123,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.699fcfcdb4b25070dc37",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("바탕"),
@@ -133,6 +140,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.e69131207a16d7535d80",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("맑은 고딕"),
@@ -152,6 +160,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.5ff808f5409744c0a1b0",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("나눔고딕"),
@@ -171,6 +180,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.1464fe2bf651f25c3060",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("나눔명조"),
@@ -190,6 +200,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.980ac0a95716c7a62c4a",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("바탕체"),
@@ -206,6 +217,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.34c100f7862575a46540",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("굴림"),
@@ -222,6 +234,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.8cdee6ea2e6a2099d9dc",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("궁서"),
@@ -238,6 +251,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.b2b4b3bf73bbdcae40b5",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("굴림체"),
@@ -254,6 +268,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.9bdad5ff6a5c5fe55bf7",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("돋움체"),
@@ -270,6 +285,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.7e74e1181bd29a93343b",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("궁서체"),
@@ -286,6 +302,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.ee88ac9b7256e14b1034",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("D2Coding"),
@@ -302,6 +319,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.a8941ceca1bf044e21bd",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("D2 Coding"),
@@ -318,6 +336,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.c90981a0f93928779824",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("고운바탕"),
@@ -334,6 +353,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.0be3736c8eb2a5dd33fb",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("Gowun Batang"),
@@ -350,6 +370,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.a2509235152a1ac5c875",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("고운돋움"),
@@ -366,6 +387,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.b4f149e0beb1732c1da7",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("Gowun Dodum"),
@@ -382,6 +404,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.851b868ea4a0e030660b",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("Pretendard"),
@@ -401,6 +424,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.f21ebe3ed64dcd2ad18e",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("프리텐다드"),
@@ -420,6 +444,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.bedc15cfc3048b3367e7",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY중고딕"),
@@ -436,6 +461,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.04b2e35585c329e276eb",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY견고딕"),
@@ -452,6 +478,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.1f9388631aac491d3380",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY헤드라인M"),
@@ -468,6 +495,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.f1450144ca329b7be879",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY견명조"),
@@ -484,6 +512,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.1444c98cb745d946782a",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY신명조"),
@@ -500,6 +529,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.b5c0f0d1efa629d562f2",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY그래픽"),
@@ -516,6 +546,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.e648f19ca68dd7c3cebe",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY궁서"),
@@ -532,6 +563,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.e3b10e6770cafa77ff71",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("한양신명조"),
@@ -548,6 +580,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.f87d4d432ef2820f9c8f",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("한양중고딕"),
@@ -564,6 +597,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.d51ea95a4f72143e4b51",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("한양견명조"),
@@ -580,6 +614,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.c28b0b6b6dfd7f3adf86",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("한양견고딕"),
@@ -596,6 +631,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.4f65d46263459fd6e3eb",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("휴먼명조"),
@@ -612,6 +648,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.a1d58eacfc8e7abdaf9b",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("신명조"),
@@ -628,6 +665,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.d1edee136a66e4703a19",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY수평선B"),
@@ -644,6 +682,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.7867c1d6f35f35f56fee",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY수평선M"),
@@ -660,6 +699,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.2dc7a889b1fdf42b4e88",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY울릉도B"),
@@ -676,6 +716,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.c38460dc5362fdf16080",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY울릉도M"),
@@ -692,6 +733,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.48163357a589b288e4f3",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY태백B"),
@@ -708,6 +750,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.e5beb2bc96916f59b69c",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY동녘B"),
@@ -724,6 +767,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.9bbf1f249a62f66d4ebf",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "unknown",
         decision_plane: "layout-metric",
         source_face: Some("HY동녘M"),
@@ -740,6 +784,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.0b74264b87ed459ef5db",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("HY각헤드라인M"),
@@ -756,6 +801,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.93f116972afe7a9e11eb",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("본한글"),
@@ -775,6 +821,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.d96477e4644e99cd7691",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("본한글vf"),
@@ -794,6 +841,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.dab0a6bfa6a6808c7e85",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("본한글 Medium"),
@@ -813,6 +861,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.886d1096849aa4cda4f7",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("본한글M"),
@@ -832,6 +881,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.400afb74baa546fb4d4e",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("본고딕"),
@@ -851,6 +901,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.0903e43e3f6a5ae0a529",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("본고딕vf"),
@@ -870,6 +921,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.367693a49a433a73e7c6",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("Source Han Sans"),
@@ -889,6 +941,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.e8f8e8dcdae67262e1f7",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("Source Han Sans K"),
@@ -908,6 +961,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.77b342ddf3e5f56a93b2",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("Source Han Sans KR"),
@@ -927,6 +981,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.ee40ac70aabb4cc9e6b7",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("SourceHanSans"),
@@ -946,6 +1001,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.8c43678832f0128a5dbd",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("SourceHanSansKR"),
@@ -965,6 +1021,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.e68b648ce9e0bf03e8af",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("SourceHanSansK"),
@@ -984,6 +1041,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.3fe706a98ce06e43fcdc",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("Noto Sans CJK KR"),
@@ -1003,6 +1061,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.d00a815cbc70ff4e6431",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("본명조"),
@@ -1022,6 +1081,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.5e3db6b9c199a391c020",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("본명조vf"),
@@ -1041,6 +1101,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.101b5492e9ee5f51c63d",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("본명조M"),
@@ -1060,6 +1121,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.62ca200fda3d5dcdd29e",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("Source Han Serif"),
@@ -1079,6 +1141,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.c0042ffc793ee3e4eb89",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("Source Han Serif K"),
@@ -1098,6 +1161,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.ec2620f215badc37ea34",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("Source Han Serif KR"),
@@ -1117,6 +1181,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.bb4f965303acb84d2aed",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("SourceHanSerif"),
@@ -1136,6 +1201,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.a4a9d604841fce9ca663",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("SourceHanSerifKR"),
@@ -1155,6 +1221,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.44f727b9ee703362b848",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("SourceHanSerifK"),
@@ -1174,6 +1241,7 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
     },
     GeneratedFontRuleProjection {
         rule_id: "rule.rust-metric.4cbb2d8c4a64bf90fdc8",
+        source_boundary_id: "rust-metric.metric-alias",
         relation_type: "metric-surrogate",
         decision_plane: "layout-metric",
         source_face: Some("Noto Serif CJK KR"),
@@ -1192,3 +1260,213 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
         ],
     },
 ];
+
+#[rustfmt::skip]
+pub(crate) fn find_font_rule_layout_metric(
+    source_face: &str,
+) -> Option<&'static GeneratedFontRuleProjection> {
+    match source_face {
+        "함초롬돋움" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[0])
+        }
+        "한컴돋움" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[1])
+        }
+        "돋움" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[2])
+        }
+        "함초롬바탕" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[3])
+        }
+        "한컴바탕" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[4])
+        }
+        "바탕" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[5])
+        }
+        "맑은 고딕" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[6])
+        }
+        "나눔고딕" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[7])
+        }
+        "나눔명조" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[8])
+        }
+        "바탕체" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[9])
+        }
+        "굴림" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[10])
+        }
+        "궁서" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[11])
+        }
+        "굴림체" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[12])
+        }
+        "돋움체" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[13])
+        }
+        "궁서체" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[14])
+        }
+        "D2Coding" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[15])
+        }
+        "D2 Coding" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[16])
+        }
+        "고운바탕" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[17])
+        }
+        "Gowun Batang" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[18])
+        }
+        "고운돋움" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[19])
+        }
+        "Gowun Dodum" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[20])
+        }
+        "Pretendard" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[21])
+        }
+        "프리텐다드" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[22])
+        }
+        "HY중고딕" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[23])
+        }
+        "HY견고딕" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[24])
+        }
+        "HY헤드라인M" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[25])
+        }
+        "HY견명조" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[26])
+        }
+        "HY신명조" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[27])
+        }
+        "HY그래픽" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[28])
+        }
+        "HY궁서" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[29])
+        }
+        "한양신명조" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[30])
+        }
+        "한양중고딕" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[31])
+        }
+        "한양견명조" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[32])
+        }
+        "한양견고딕" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[33])
+        }
+        "휴먼명조" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[34])
+        }
+        "신명조" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[35])
+        }
+        "HY수평선B" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[36])
+        }
+        "HY수평선M" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[37])
+        }
+        "HY울릉도B" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[38])
+        }
+        "HY울릉도M" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[39])
+        }
+        "HY태백B" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[40])
+        }
+        "HY동녘B" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[41])
+        }
+        "HY동녘M" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[42])
+        }
+        "HY각헤드라인M" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[43])
+        }
+        "본한글" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[44])
+        }
+        "본한글vf" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[45])
+        }
+        "본한글 Medium" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[46])
+        }
+        "본한글M" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[47])
+        }
+        "본고딕" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[48])
+        }
+        "본고딕vf" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[49])
+        }
+        "Source Han Sans" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[50])
+        }
+        "Source Han Sans K" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[51])
+        }
+        "Source Han Sans KR" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[52])
+        }
+        "SourceHanSans" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[53])
+        }
+        "SourceHanSansKR" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[54])
+        }
+        "SourceHanSansK" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[55])
+        }
+        "Noto Sans CJK KR" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[56])
+        }
+        "본명조" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[57])
+        }
+        "본명조vf" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[58])
+        }
+        "본명조M" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[59])
+        }
+        "Source Han Serif" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[60])
+        }
+        "Source Han Serif K" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[61])
+        }
+        "Source Han Serif KR" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[62])
+        }
+        "SourceHanSerif" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[63])
+        }
+        "SourceHanSerifKR" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[64])
+        }
+        "SourceHanSerifK" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[65])
+        }
+        "Noto Serif CJK KR" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[66])
+        }
+        _ => None,
+    }
+}

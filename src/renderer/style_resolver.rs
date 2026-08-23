@@ -11,6 +11,9 @@ use crate::model::style::{
     HeadType, ImageFillMode, LineSpacingType, Numbering, ParaShape, TabDef, UnderlineType,
 };
 use crate::model::ColorRef;
+use crate::renderer::font_rule_layout_name_projection::{
+    find_font_rule_layout_name, GeneratedFontRuleProjection,
+};
 
 /// HWP 언어 카테고리 수 (한국어, 영어, 한자, 일본어, 기타, 기호, 사용자)
 pub const LANG_COUNT: usize = 7;
@@ -470,7 +473,12 @@ impl FontSubstitutionBoundary {
         match self {
             Self::LegacyLatin => "1",
             Self::Ttf => "all",
-            Self::Hft if resolve_hft_font(source_face, 0).is_some() => "all",
+            Self::Hft
+                if find_font_rule_layout_name(self.source_boundary_id(), source_face, 0)
+                    .is_some() =>
+            {
+                "all"
+            }
             Self::Hft => "1",
         }
     }
@@ -487,6 +495,7 @@ pub(crate) struct FontNameDecision {
     pub(crate) subst_font: Option<String>,
     pub(crate) css_family_chain: Vec<String>,
     pub(crate) substitution_boundary: Option<FontSubstitutionBoundary>,
+    pub(crate) substitution_rule_id: Option<&'static str>,
 }
 
 pub(crate) fn lookup_font_name_decision(
@@ -504,6 +513,7 @@ pub(crate) fn lookup_font_name_decision(
         subst_font: None,
         css_family_chain: Vec::new(),
         substitution_boundary: None,
+        substitution_rule_id: None,
     };
     if lang_index < doc_info.font_faces.len() {
         let lang_fonts = &doc_info.font_faces[lang_index];
@@ -516,11 +526,12 @@ pub(crate) fn lookup_font_name_decision(
             // 폰트 치환: HFT 등 웹 미지원 폰트를 렌더링 가능한 폰트로 완전 대체
             let substitution = resolve_font_substitution_decision(name, font.alt_type, lang_index);
             let resolved = substitution
-                .map(|(face, _)| face)
+                .map(|(face, _, _)| face)
                 .unwrap_or(name)
                 .to_string();
             decision.normalized_face = Some(resolved.clone());
-            decision.substitution_boundary = substitution.map(|(_, boundary)| boundary);
+            decision.substitution_boundary = substitution.map(|(_, boundary, _)| boundary);
+            decision.substitution_rule_id = substitution.map(|(_, _, rule_id)| rule_id);
             decision.css_family_chain.push(resolved.clone());
             if let Some(substitute) = font
                 .subst_font
@@ -559,32 +570,59 @@ pub(crate) fn resolve_font_substitution(
     alt_type: u8,
     lang_index: usize,
 ) -> Option<&'static str> {
-    resolve_font_substitution_decision(name, alt_type, lang_index).map(|(face, _)| face)
+    resolve_font_substitution_decision(name, alt_type, lang_index).map(|(face, _, _)| face)
 }
 
 pub(crate) fn resolve_font_substitution_decision(
     name: &str,
     alt_type: u8,
     lang_index: usize,
-) -> Option<(&'static str, FontSubstitutionBoundary)> {
+) -> Option<(&'static str, FontSubstitutionBoundary, &'static str)> {
     // HWP3 원본/일부 한컴 재저장본은 HCI 영문 폰트를 TTF(type=1) 또는
     // unknown(type=0)으로 싣기도 한다. 한컴은 같은 face를 보여주므로
     // alt_type 차이와 무관하게 legacy 영문 HFT 치환을 우선 적용한다.
-    if let Some(result) = resolve_legacy_latin_font(name, lang_index) {
-        return Some((result, FontSubstitutionBoundary::LegacyLatin));
+    if let Some(rule) =
+        resolve_projected_font_rule(FontSubstitutionBoundary::LegacyLatin, name, lang_index)
+    {
+        return Some((
+            rule.target_face_or_policy,
+            FontSubstitutionBoundary::LegacyLatin,
+            rule.rule_id,
+        ));
     }
 
     // HFT(type=2) 폰트 치환
     if alt_type == 2 {
-        if let Some(result) = resolve_hft_font(name, lang_index) {
-            return Some((result, FontSubstitutionBoundary::Hft));
+        if let Some(rule) =
+            resolve_projected_font_rule(FontSubstitutionBoundary::Hft, name, lang_index)
+        {
+            return Some((
+                rule.target_face_or_policy,
+                FontSubstitutionBoundary::Hft,
+                rule.rule_id,
+            ));
         }
     }
 
     // TTF(type=1) 또는 알수없음(type=0) 치환
-    resolve_ttf_font(name).map(|face| (face, FontSubstitutionBoundary::Ttf))
+    resolve_projected_font_rule(FontSubstitutionBoundary::Ttf, name, lang_index).map(|rule| {
+        (
+            rule.target_face_or_policy,
+            FontSubstitutionBoundary::Ttf,
+            rule.rule_id,
+        )
+    })
 }
 
+fn resolve_projected_font_rule(
+    boundary: FontSubstitutionBoundary,
+    name: &str,
+    lang_index: usize,
+) -> Option<&'static GeneratedFontRuleProjection> {
+    find_font_rule_layout_name(boundary.source_boundary_id(), name, lang_index)
+}
+
+#[cfg(test)]
 fn resolve_legacy_latin_font(name: &str, lang_index: usize) -> Option<&'static str> {
     if lang_index != 1 {
         return None;
@@ -636,6 +674,7 @@ fn resolve_legacy_latin_font(name: &str, lang_index: usize) -> Option<&'static s
 ///
 /// 한국어(0)와 영어(1)가 다른 결과를 가지는 폰트는 언어별 분기 처리.
 /// 대부분의 HFT 폰트는 언어에 무관하게 동일한 결과를 갖는다.
+#[cfg(test)]
 fn resolve_hft_font(name: &str, lang_index: usize) -> Option<&'static str> {
     // === 직접 TTF 매핑 (모든 언어 공통) ===
     let common = match name {
@@ -760,6 +799,7 @@ fn resolve_hft_font(name: &str, lang_index: usize) -> Option<&'static str> {
 }
 
 /// TTF 폰트 → @font-face 등록 폰트 치환 (모든 언어 공통)
+#[cfg(test)]
 fn resolve_ttf_font(name: &str) -> Option<&'static str> {
     match name {
         // 영문 별칭
@@ -774,8 +814,8 @@ fn resolve_ttf_font(name: &str) -> Option<&'static str> {
         // 메트릭이 다르다 ('*' 0.583 vs 0.498em, 한글 음절 1.0 vs 0.97em).
         // 종전 치환은 한컴돋움 문서의 폭 측정을 HCR Dotum 메트릭으로 보내
         // 줄수 ±1 오차를 만들었다 (한글 PDF 실측: '*' 0.583em, 음절 1.0em).
-        // 메트릭은 font_metrics_data::resolve_metric_alias 가 Haansoft 엔트리로
-        // 연결하고, SVG 렌더 폴백 체인(svg.rs)은 한컴* 이름을 직접 처리한다.
+        // 메트릭은 generated layout-metric projection이 Haansoft 엔트리로 연결하고,
+        // SVG 렌더 폴백 체인(svg.rs)은 한컴* 이름을 직접 처리한다.
         // 영어(1) 전용 TTF 치환 (webhwp lang=1)
         "MS Sans Serif" => Some("함초롬돋움"),
         "Tahoma" => Some("함초롬돋움"),
@@ -799,6 +839,24 @@ fn resolve_ttf_font(name: &str) -> Option<&'static str> {
         "굵은안상수체" => Some("돋움"),
         _ => None,
     }
+}
+
+/// W7 전환 전 hand-written 우선순위의 테스트 전용 오라클.
+#[cfg(test)]
+fn legacy_resolve_font_substitution_decision(
+    name: &str,
+    alt_type: u8,
+    lang_index: usize,
+) -> Option<(&'static str, FontSubstitutionBoundary)> {
+    if let Some(face) = resolve_legacy_latin_font(name, lang_index) {
+        return Some((face, FontSubstitutionBoundary::LegacyLatin));
+    }
+    if alt_type == 2 {
+        if let Some(face) = resolve_hft_font(name, lang_index) {
+            return Some((face, FontSubstitutionBoundary::Hft));
+        }
+    }
+    resolve_ttf_font(name).map(|face| (face, FontSubstitutionBoundary::Ttf))
 }
 
 /// Heavy display 계열 face 여부 판정.
@@ -1085,7 +1143,9 @@ mod tests {
     use super::*;
     use crate::model::document::DocInfo;
     use crate::model::style::*;
+    use crate::renderer::font_rule_layout_name_projection::FONT_RULE_LAYOUT_NAME_RULES;
     use crate::renderer::DEFAULT_DPI;
+    use std::collections::BTreeSet;
 
     fn make_doc_info_with_font() -> DocInfo {
         DocInfo {
@@ -1540,6 +1600,37 @@ mod tests {
 
     #[test]
     fn test_resolve_ttf_new_fonts() {
+        let mut names: BTreeSet<&str> = FONT_RULE_LAYOUT_NAME_RULES
+            .iter()
+            .filter_map(|rule| rule.source_face)
+            .collect();
+        names.insert("__rhwp_w7_unregistered_font__");
+
+        for name in names {
+            for alt_type in [0, 1, 2, u8::MAX] {
+                for lang_index in 0..LANG_COUNT {
+                    let legacy =
+                        legacy_resolve_font_substitution_decision(name, alt_type, lang_index);
+                    let generated = resolve_font_substitution_decision(name, alt_type, lang_index)
+                        .map(|(face, boundary, _)| (face, boundary));
+                    assert_eq!(
+                        generated, legacy,
+                        "name={name:?}, alt_type={alt_type}, lang_index={lang_index}"
+                    );
+
+                    if let Some((face, boundary, rule_id)) =
+                        resolve_font_substitution_decision(name, alt_type, lang_index)
+                    {
+                        let rule = resolve_projected_font_rule(boundary, name, lang_index)
+                            .expect("resolved projection rule");
+                        assert_eq!(rule.target_face_or_policy, face);
+                        assert_eq!(rule.rule_id, rule_id);
+                        assert_eq!(rule.source_boundary_id, boundary.source_boundary_id());
+                    }
+                }
+            }
+        }
+
         assert_eq!(resolve_ttf_font("새바탕"), Some("함초롬바탕"));
         assert_eq!(resolve_ttf_font("새돋움"), Some("함초롬돋움"));
         assert_eq!(resolve_ttf_font("새굴림"), Some("함초롬돋움"));

@@ -1,30 +1,30 @@
 {
-  "contentBundleSha256": "6feb537db1dbfa42f2fb1a8e266f064a5d505c9af6b0fc77c11d55bca7d756b7",
+  "contentBundleSha256": "9a00372b45bb53e4759c1b4103b156f6040d3604ebb3c60bb64455e977e91fe9",
   "generatedBy": {
     "path": "scripts/font_rule_projection_gen.mjs",
-    "sha256": "cfd23b25fc26b13b5ca27497f841ac664238659ae2dabdedc30a4dfc7c7c78b0"
+    "sha256": "8d0749e2260f18a5e1652306cd9f5a5f4a2ce27e231cea6214127a3b330b8d4f"
   },
   "issue": 4966,
   "kind": "font-rule-backend-projection-manifest",
   "outputs": [
     {
-      "contentSha256": "031c6fc9941271e12b26380576cae8659218419c528cb16f52a86a1e5c973812",
+      "contentSha256": "424867b5cc17f307f80b58461b676f1c03aa6385a0b2a3a875448fc10643afa0",
       "inputSha256": "de601d99bd52db63459f281a011b8cec0f7aa01ba4c70fdfea7dad1078ff3199",
       "language": "rust",
       "ownership": "generated-whole-file",
       "path": "src/renderer/font_rule_projections/layout_name.rs",
       "projectionId": "rust-layout-name",
-      "projectionSha256": "263c10796acc1a3d63541d324f852c4e4a965e4485b499e4f493493cd28328cc",
+      "projectionSha256": "595cdcc1c8d81441c9e4585acb393e734f52e6da3e822babf0f722df2c791cee",
       "ruleCount": 171
     },
     {
-      "contentSha256": "565e23585ccad14bfd7ec4e86337184af489cdd9a269ad6d93c78fcf53b75a02",
+      "contentSha256": "09b7604bc757efe4ddca811a6fb3c81b2fe0ccc0c805ca7f1f34621def8ce92c",
       "inputSha256": "674d150322895e19ccb3cd8f98dfda37fade93987938486437b3fe2eeab42883",
       "language": "rust",
       "ownership": "generated-whole-file",
       "path": "src/renderer/font_rule_projections/layout_metric.rs",
       "projectionId": "rust-layout-metric",
-      "projectionSha256": "26e643ff0a0baf615467049d4b9014cafed43fb82dd61775b5e55ebe9157c2bf",
+      "projectionSha256": "c4659fc40246c5d4ad903578a61807c646681638cb4c8f9b7c802fb3f0c37cc2",
       "ruleCount": 67
     },
     {
@@ -58,7 +58,7 @@
       "ruleCount": 158
     }
   ],
-  "projectionBundleSha256": "a8a07043a689e91760e9a09d1e3ee2b0aaf416b006e1b9dce5dfde42f00699e1",
+  "projectionBundleSha256": "4f6a4915575c4476c19dc0b81582cf8ba1fff69a4513b732148702742c116320",
   "registry": {
     "path": "assets/font-rules/font_rule_registry.json",
     "rulesSha256": "34838af25531327b9e697b065ed5771a11f310c970a9923c83a0b6e1235a68bd",

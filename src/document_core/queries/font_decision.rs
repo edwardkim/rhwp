@@ -160,9 +160,10 @@ fn style_provenance(
     source: &str,
     target: &str,
     _language_slot: usize,
+    generated_rule_id: &str,
 ) -> Result<ProvenanceDecision, HwpError> {
     let language = boundary.language_condition(source);
-    linked_provenance(
+    let provenance = linked_provenance(
         json!({
             "sourceBoundaryId": boundary.source_boundary_id(),
             "candidateKind": "finite-mapping",
@@ -176,7 +177,13 @@ fn style_provenance(
         "verified-by-test",
         vec!["Name compatibility does not establish SFNT identity or metric equivalence.".into()],
     )
-    .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))
+    .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))?;
+    if provenance.rule_id.as_deref() != Some(generated_rule_id) {
+        return Err(HwpError::RenderError(format!(
+            "font trace provenance: generated style ruleId mismatch for {source}"
+        )));
+    }
+    Ok(provenance)
 }
 
 fn subst_font_provenance(
@@ -206,10 +213,14 @@ pub(super) fn metric_alias_relation(source: &str, target: &str) -> (&'static str
     }
 }
 
-fn metric_alias_provenance(source: &str, target: &str) -> Result<ProvenanceDecision, HwpError> {
+fn metric_alias_provenance(
+    source: &str,
+    target: &str,
+    generated_rule_id: &str,
+) -> Result<ProvenanceDecision, HwpError> {
     let (relation_type, evidence_status) = metric_alias_relation(source, target);
     let is_surrogate = relation_type == "metric-surrogate";
-    linked_provenance(
+    let provenance = linked_provenance(
         json!({
             "sourceBoundaryId": "rust-metric.metric-alias",
             "candidateKind": "finite-mapping",
@@ -227,7 +238,13 @@ fn metric_alias_provenance(source: &str, target: &str) -> Result<ProvenanceDecis
             Vec::new()
         },
     )
-    .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))
+    .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))?;
+    if provenance.rule_id.as_deref() != Some(generated_rule_id) {
+        return Err(HwpError::RenderError(format!(
+            "font trace provenance: generated metric ruleId mismatch for {source}"
+        )));
+    }
+    Ok(provenance)
 }
 
 fn metric_entry_provenance(
@@ -415,6 +432,11 @@ impl DocumentCore {
                         font.requested_face.as_deref(),
                         font.normalized_face.as_deref(),
                     ) {
+                        let rule_id = font.substitution_rule_id.ok_or_else(|| {
+                            HwpError::RenderError(format!(
+                                "font trace provenance: generated style ruleId missing for {source}"
+                            ))
+                        })?;
                         name_steps.push(DecisionStep {
                             kind: "styleSubstitution".into(),
                             input: Some(source.into()),
@@ -426,6 +448,7 @@ impl DocumentCore {
                             source,
                             target,
                             font.language_slot,
+                            rule_id,
                         )?);
                     }
                     if let (Some(source), Some(substitute)) =
@@ -450,6 +473,12 @@ impl DocumentCore {
                         provenance.push(metric_alias_provenance(
                             metric.requested_name,
                             metric.alias_resolved_name,
+                            metric.alias_rule_id.ok_or_else(|| {
+                                HwpError::RenderError(format!(
+                                    "font trace provenance: generated metric ruleId missing for {}",
+                                    metric.requested_name
+                                ))
+                            })?,
                         )?);
                     }
                     provenance.push(metric_entry_provenance(&metric)?);
