@@ -79,3 +79,20 @@ node --test scripts/tests/font_rule_registry.test.mjs
 830개 registry rule은 다섯 projection에 정확히 한 번씩 배치된다. active unknown metric alias 43개는
 legacy-preservation으로 유지되며, Rust metric은 W6 안정 ID 97개만 참조한다. CanvasKit의 W1 SFNT
 판정과 현재 URL plan은 합치지 않고 별도 필드로 보존한다.
+
+## Stage W7-3 산출물
+
+- `assets/font-rules/font_rule_projection_manifest.schema.json`
+- `assets/font-rules/font_rule_projection_manifest.json`
+- `scripts/font_rule_projection_gen.mjs`
+- Rust generated source 2개와 Studio TypeScript generated source 3개
+- [Stage W7-3 보고서](../../../working/task_m100_4966_w7_stage3.md)
+
+```bash
+node scripts/font_rule_projection_gen.mjs check
+node --test scripts/tests/font_rule_projection_gen.test.mjs
+```
+
+다섯 generated source는 전용 디렉터리의 whole-file ownership을 가지며 아직 runtime이 import하지 않는다.
+전체 registry digest는 manifest에만 있고 source에는 backend별 input/projection digest를 넣어 한 규칙의
+변경이 무관한 backend source를 갱신하지 않도록 했다.

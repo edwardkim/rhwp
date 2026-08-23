@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/blob/devel/assets/font-rules/font_rule_projection_manifest.schema.json",
+  "title": "rhwp generated font rule projection manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "issue",
+    "sourceCommit",
+    "schema",
+    "generatedBy",
+    "registry",
+    "summary",
+    "projectionBundleSha256",
+    "contentBundleSha256",
+    "outputs"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "kind": { "const": "font-rule-backend-projection-manifest" },
+    "issue": { "const": 4966 },
+    "sourceCommit": { "$ref": "#/$defs/sha1" },
+    "schema": { "$ref": "#/$defs/pathDigest" },
+    "generatedBy": { "$ref": "#/$defs/pathDigest" },
+    "registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "rulesSha256"],
+      "properties": {
+        "path": { "const": "assets/font-rules/font_rule_registry.json" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "rulesSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outputCount", "ruleCount", "countsByProjection"],
+      "properties": {
+        "outputCount": { "const": 5 },
+        "ruleCount": { "const": 830 },
+        "countsByProjection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "canvas2d-paint",
+            "canvas2d-webfont",
+            "canvaskit-sfnt",
+            "rust-layout-metric",
+            "rust-layout-name"
+          ],
+          "properties": {
+            "canvas2d-paint": { "const": 281 },
+            "canvas2d-webfont": { "const": 153 },
+            "canvaskit-sfnt": { "const": 158 },
+            "rust-layout-metric": { "const": 67 },
+            "rust-layout-name": { "const": 171 }
+          }
+        }
+      }
+    },
+    "projectionBundleSha256": { "$ref": "#/$defs/sha256" },
+    "contentBundleSha256": { "$ref": "#/$defs/sha256" },
+    "outputs": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/output" }
+    }
+  },
+  "$defs": {
+    "sha1": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "pathDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1, "maxLength": 2048 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "projectionId",
+        "language",
+        "path",
+        "ownership",
+        "ruleCount",
+        "inputSha256",
+        "projectionSha256",
+        "contentSha256"
+      ],
+      "properties": {
+        "projectionId": {
+          "enum": [
+            "rust-layout-name",
+            "rust-layout-metric",
+            "canvas2d-paint",
+            "canvas2d-webfont",
+            "canvaskit-sfnt"
+          ]
+        },
+        "language": { "enum": ["rust", "typescript"] },
+        "path": {
+          "enum": [
+            "src/renderer/font_rule_projections/layout_name.rs",
+            "src/renderer/font_rule_projections/layout_metric.rs",
+            "rhwp-studio/src/core/generated/font-rule-projections/canvas2d-paint.ts",
+            "rhwp-studio/src/core/generated/font-rule-projections/webfont-supply.ts",
+            "rhwp-studio/src/core/generated/font-rule-projections/canvaskit-sfnt.ts"
+          ]
+        },
+        "ownership": { "const": "generated-whole-file" },
+        "ruleCount": { "type": "integer", "minimum": 1, "maximum": 830 },
+        "inputSha256": { "$ref": "#/$defs/sha256" },
+        "projectionSha256": { "$ref": "#/$defs/sha256" },
+        "contentSha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}
