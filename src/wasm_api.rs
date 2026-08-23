@@ -3092,7 +3092,9 @@ impl HwpDocument {
 
     /// 셀 속성을 수정한다.
     ///
-    /// 반환: JSON `{"ok":true}`
+    /// 반환: JSON `{"ok":true,"changes":[{cellIdx,beforeId,afterId}...],
+    /// "borderFillLenBefore":N,"docInfoDirtyBefore":bool}` — changes 는 [#5959]
+    /// borderFillId 전환 기록(target+이웃)이다.
     #[wasm_bindgen(js_name = setCellProperties)]
     pub fn set_cell_properties(
         &mut self,
@@ -3114,7 +3116,8 @@ impl HwpDocument {
 
     /// 선택 영역을 하나의 셀처럼 취급하는 cellzone 테두리/배경 속성을 적용한다.
     ///
-    /// 반환: JSON `{"ok":true,"startRow":...,"borderFillId":...}`
+    /// 반환: JSON `{"ok":true,"startRow":...,"borderFillId":...,"zoneBeforeId":...,
+    /// "borderFillLenBefore":...,"docInfoDirtyBefore":...}`
     #[wasm_bindgen(js_name = setCellZoneProperties)]
     pub fn set_cell_zone_properties(
         &mut self,
@@ -3138,6 +3141,40 @@ impl HwpDocument {
             json,
         )
         .map_err(|e| e.into())
+    }
+
+    /// [#5959] 셀/zone border_fill_id 직접 대입 (undo·redo 전용).
+    ///
+    /// 스타일 테이블을 건드리지 않고 execute 의 변경 기록을 되돌린다.
+    /// json: `{"cells":[{"cellIdx":0,"id":3}],"zones":[{"startRow":..,"startCol":..,
+    /// "endRow":..,"endCol":..,"id":5}]}` — zone `id` 가 null 이면 그 범위의 zone 을
+    /// 제거한다. 반환: JSON `{"ok":true}`
+    #[wasm_bindgen(js_name = applyCellBorderFillIds)]
+    pub fn apply_cell_border_fill_ids(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.apply_cell_border_fill_ids_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+            json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목을 절단한다.
+    ///
+    /// json: `{"fromLen":12,"dirtyWas":false}` — `from_len` 위 항목을 모두 잘라내고,
+    /// 원래 길이로 돌아왔으면 dirty 플래그를 `dirtyWas` 로 원복한다.
+    /// 반환: JSON `{"ok":true,"discarded":N,"fullyDiscarded":bool}`
+    #[wasm_bindgen(js_name = removeBorderFillTails)]
+    pub fn remove_border_fill_tails(&mut self, json: &str) -> Result<String, JsValue> {
+        self.remove_border_fill_tails_native(json)
+            .map_err(|e| e.into())
     }
 
     /// 여러 셀의 width/height를 한 번에 조절한다 (배치).

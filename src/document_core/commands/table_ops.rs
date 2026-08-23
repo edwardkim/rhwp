@@ -1382,6 +1382,14 @@ impl DocumentCore {
             None
         };
 
+        // [#5959] 역연산 기록 기준선 — 스타일 테이블 길이·dirty 플래그는 이 호출이
+        // 손대기 전 값이다. 응답으로 돌려 TS 커맨드가 undo 때 원상 복구에 쓴다.
+        let border_fill_len_before = self.document.doc_info.border_fills.len();
+        let doc_info_dirty_before = self.document.doc_info.raw_stream_dirty;
+        let mut bf_changes: Vec<(usize, u16, u16)> = Vec::new();
+        // 대상 셀의 적용 직전 id — 아래 borrow 블록이 정상 완료되면 채워진다.
+        let mut target_bf_before = 0u16;
+
         let (needs_reflow, reflow_para_count) = {
             let mut needs_reflow = false;
             let mut size_changed = false;
@@ -1402,6 +1410,7 @@ impl DocumentCore {
             let cell = table.cells.get_mut(cell_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("셀 인덱스 {} 범위 초과", cell_idx))
             })?;
+            target_bf_before = cell.border_fill_id;
 
             if let Some(v) = top_u32("width") {
                 needs_reflow |= cell.width != v;
@@ -1453,6 +1462,9 @@ impl DocumentCore {
                 cell.field_name = if v.is_empty() { None } else { Some(v) };
             }
             if let Some(v) = direct_border_fill_id {
+                if v != target_bf_before {
+                    bf_changes.push((cell_idx, target_bf_before, v));
+                }
                 cell.border_fill_id = v;
             }
             if size_changed {
@@ -1534,7 +1546,7 @@ impl DocumentCore {
 
             // 이웃 셀의 공유 엣지 테두리를 갱신
             // borders 배열: [좌(0), 우(1), 상(2), 하(3)]
-            self.update_neighbor_borders(
+            bf_changes.extend(self.update_neighbor_borders(
                 section_idx,
                 parent_para_idx,
                 control_idx,
@@ -1544,14 +1556,32 @@ impl DocumentCore {
                 target_col_span,
                 target_row_span,
                 &new_borders,
-            );
+            ));
+            if new_bf_id != target_bf_before {
+                bf_changes.push((cell_idx, target_bf_before, new_bf_id));
+            }
         }
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
 
-        Ok("{\"ok\":true}".to_string())
+        // [#5959] self-describing 변경 기록 — TS 커맨드가 undo 때 이대로 되돌린다
+        // (z-order moves[] 선례). changes 는 borderFillId 전환만 담는다.
+        let response = serde_json::json!({
+            "ok": true,
+            "changes": bf_changes
+                .iter()
+                .map(|(cell_idx, before, after)| serde_json::json!({
+                    "cellIdx": cell_idx,
+                    "beforeId": before,
+                    "afterId": after,
+                }))
+                .collect::<Vec<_>>(),
+            "borderFillLenBefore": border_fill_len_before,
+            "docInfoDirtyBefore": doc_info_dirty_before,
+        });
+        Ok(response.to_string())
     }
 
     fn border_fill_has_cell_diagonal(bf: &crate::model::style::BorderFill) -> bool {
@@ -1754,21 +1784,39 @@ impl DocumentCore {
         end_col: u16,
         json: &str,
     ) -> Result<String, HwpError> {
+        // [#5959] 역연산 기록 기준선 — 생성 전 스타일 테이블 길이·dirty 플래그와
+        // 매칭 zone 의 이전 id(None 이면 신설)를 응답으로 돌려 undo 가 쓴다.
+        let border_fill_len_before = self.document.doc_info.border_fills.len();
+        let doc_info_dirty_before = self.document.doc_info.raw_stream_dirty;
+        let (zone_before_id, sr, er, sc, ec) = {
+            let t = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            if t.row_count == 0 || t.col_count == 0 {
+                return Err(HwpError::RenderError(
+                    "빈 표에는 cellzone을 적용할 수 없습니다".to_string(),
+                ));
+            }
+            let max_row = t.row_count.saturating_sub(1);
+            let max_col = t.col_count.saturating_sub(1);
+            let sr = start_row.min(end_row).min(max_row);
+            let er = start_row.max(end_row).min(max_row);
+            let sc = start_col.min(end_col).min(max_col);
+            let ec = start_col.max(end_col).min(max_col);
+            let before = t
+                .zones
+                .iter()
+                .find(|zone| {
+                    zone.start_row == sr
+                        && zone.end_row == er
+                        && zone.start_col == sc
+                        && zone.end_col == ec
+                })
+                .map(|zone| zone.border_fill_id);
+            (before, sr, er, sc, ec)
+        };
+
         let cellzone_json = Self::strip_center_line_for_cellzone_json(json);
         let new_bf_id = self.create_border_fill_from_json(&cellzone_json);
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        if table.row_count == 0 || table.col_count == 0 {
-            return Err(HwpError::RenderError(
-                "빈 표에는 cellzone을 적용할 수 없습니다".to_string(),
-            ));
-        }
-
-        let max_row = table.row_count.saturating_sub(1);
-        let max_col = table.col_count.saturating_sub(1);
-        let sr = start_row.min(end_row).min(max_row);
-        let er = start_row.max(end_row).min(max_row);
-        let sc = start_col.min(end_col).min(max_col);
-        let ec = start_col.max(end_col).min(max_col);
 
         if let Some(zone) = table.zones.iter_mut().find(|zone| {
             zone.start_row == sr && zone.end_row == er && zone.start_col == sc && zone.end_col == ec
@@ -1789,10 +1837,174 @@ impl DocumentCore {
         self.recompose_section(section_idx);
         self.paginate_if_needed();
 
-        Ok(format!(
-            "{{\"ok\":true,\"startRow\":{},\"startCol\":{},\"endRow\":{},\"endCol\":{},\"borderFillId\":{}}}",
-            sr, sc, er, ec, new_bf_id
-        ))
+        let response = serde_json::json!({
+            "ok": true,
+            "startRow": sr,
+            "startCol": sc,
+            "endRow": er,
+            "endCol": ec,
+            "borderFillId": new_bf_id,
+            "zoneBeforeId": zone_before_id,
+            "borderFillLenBefore": border_fill_len_before,
+            "docInfoDirtyBefore": doc_info_dirty_before,
+        });
+        Ok(response.to_string())
+    }
+
+    /// [#5959] 셀/zone border_fill_id 직접 대입 (undo·redo 전용).
+    ///
+    /// 스타일 테이블(`doc_info.border_fills`)은 절대 건드리지 않는다 — 참조하는
+    /// id 만 바꾼다. execute 의 변경 기록(changes/zone 기록)을 그대로 되돌리는
+    /// 것이 계약이다. 전수 검증 후 적용한다(부분 적용 금지 — z-order 오염 pairs
+    /// 거절 선례).
+    pub fn apply_cell_border_fill_ids_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        json: &str,
+    ) -> Result<String, HwpError> {
+        #[derive(serde::Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct CellIdPair {
+            cell_idx: usize,
+            id: u16,
+        }
+        #[derive(serde::Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct ZoneIdEntry {
+            start_row: u16,
+            start_col: u16,
+            end_row: u16,
+            end_col: u16,
+            /// None 이면 이 범위의 zone 을 제거한다(적용 때 신설됐던 경우).
+            id: Option<u16>,
+        }
+        #[derive(serde::Deserialize)]
+        struct Payload {
+            #[serde(default)]
+            cells: Vec<CellIdPair>,
+            #[serde(default)]
+            zones: Vec<ZoneIdEntry>,
+        }
+
+        let payload: Payload = serde_json::from_str(json)
+            .map_err(|e| HwpError::RenderError(format!("border fill ids 파싱 실패: {}", e)))?;
+
+        let max_bf = self.document.doc_info.border_fills.len() as u16;
+
+        // 1단계 전수 검증 — 하나라도 어긋나면 아무것도 적용하지 않는다.
+        {
+            let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            for pair in &payload.cells {
+                if pair.cell_idx >= table.cells.len() {
+                    return Err(HwpError::RenderError(format!(
+                        "셀 인덱스 {} 범위 초과",
+                        pair.cell_idx
+                    )));
+                }
+                if pair.id == 0 || pair.id > max_bf {
+                    return Err(HwpError::RenderError(format!(
+                        "borderFillId {} 범위 초과 (최대 {})",
+                        pair.id, max_bf
+                    )));
+                }
+            }
+            for zone in &payload.zones {
+                let exists = table.zones.iter().any(|z| {
+                    z.start_row == zone.start_row.min(zone.end_row)
+                        && z.end_row == zone.end_row.max(zone.start_row)
+                        && z.start_col == zone.start_col.min(zone.end_col)
+                        && z.end_col == zone.end_col.max(zone.end_col)
+                });
+                if let Some(id) = zone.id {
+                    if id == 0 || id > max_bf {
+                        return Err(HwpError::RenderError(format!(
+                            "zone borderFillId {} 범위 초과 (최대 {})",
+                            id, max_bf
+                        )));
+                    }
+                } else if !exists {
+                    return Err(HwpError::RenderError(
+                        "제거할 zone 이 없다 — 변경 기록이 현재 문서와 어긋났다".to_string(),
+                    ));
+                }
+            }
+        }
+
+        // 2단계 적용
+        {
+            let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            for pair in &payload.cells {
+                table.cells[pair.cell_idx].border_fill_id = pair.id;
+            }
+            for zone in &payload.zones {
+                let sr = zone.start_row.min(zone.end_row);
+                let er = zone.start_row.max(zone.end_row);
+                let sc = zone.start_col.min(zone.end_col);
+                let ec = zone.start_col.max(zone.end_col);
+                let pos = table.zones.iter().position(|z| {
+                    z.start_row == sr && z.end_row == er && z.start_col == sc && z.end_col == ec
+                });
+                match (pos, zone.id) {
+                    (Some(pos), Some(id)) => table.zones[pos].border_fill_id = id,
+                    (Some(pos), None) => {
+                        table.zones.remove(pos);
+                    }
+                    (None, Some(id)) => table.zones.push(crate::model::table::TableZone {
+                        start_col: sc,
+                        start_row: sr,
+                        end_col: ec,
+                        end_row: er,
+                        border_fill_id: id,
+                    }),
+                    (None, None) => {}
+                }
+            }
+            table.dirty = true;
+        }
+        self.rebuild_resolved_styles();
+
+        self.document.sections[section_idx].raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+
+        Ok("{\"ok\":true}".to_string())
+    }
+
+    /// [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목 절단.
+    ///
+    /// 저널 계약(캡처~복원 사이 그 표 편집 금지)과 TS 선형 히스토리 하에서
+    /// `from_len` 위의 항목은 이 커맨드의 apply 가 push 한 것뿐이다 — LIFO undo
+    /// 에서 꼬리부터 사라지므로 `from_len` 까지 자르는 것만으로 안전하다. 잘라내지
+    /// 못하면(중간 삽입 등 계약 위반) 고아가 남으므로 dirty 플래그를 원복하지
+    /// 않는다 — 저장 바이트 게이트가 그 차이를 잡는다.
+    pub fn remove_border_fill_tails_native(&mut self, json: &str) -> Result<String, HwpError> {
+        #[derive(serde::Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Payload {
+            from_len: usize,
+            /// apply 직전의 raw_stream_dirty 값 — 완전 절단에 성공했을 때만 원복한다.
+            dirty_was: bool,
+        }
+        let payload: Payload = serde_json::from_str(json)
+            .map_err(|e| HwpError::RenderError(format!("discard tails 파싱 실패: {}", e)))?;
+
+        let mut discarded = 0usize;
+        while self.document.doc_info.border_fills.len() > payload.from_len {
+            self.document.doc_info.border_fills.pop();
+            discarded += 1;
+        }
+        let fully_discarded = self.document.doc_info.border_fills.len() == payload.from_len;
+        if fully_discarded {
+            self.document.doc_info.raw_stream_dirty = payload.dirty_was;
+        }
+        let response = serde_json::json!({
+            "ok": true,
+            "discarded": discarded,
+            "fullyDiscarded": fully_discarded,
+        });
+        Ok(response.to_string())
     }
 
     fn strip_center_line_for_cellzone_json(json: &str) -> String {
@@ -1827,15 +2039,19 @@ impl DocumentCore {
         target_col_span: usize,
         target_row_span: usize,
         new_borders: &[crate::model::style::BorderLine; 4],
-    ) {
+    ) -> Vec<(usize, u16, u16)> {
         use crate::model::style::BorderLine;
+
+        // [#5959] 되돌림 기록 — (셀 인덱스, 이전 id, 새 id). id 이동이 없던 이웃은
+        // 기록하지 않는다(복제 후 dedupe 가 원래 id 로 수렴한 경우).
+        let mut neighbor_changes: Vec<(usize, u16, u16)> = Vec::new();
 
         // 1단계: 이웃 셀 탐색 — (셀 인덱스, old_bf_id, 갱신할 방향, 새 테두리)
         let mut updates: Vec<(usize, u16, usize, BorderLine)> = Vec::new();
         {
             let table = match self.get_table_mut(section_idx, parent_para_idx, control_idx) {
                 Ok(t) => t,
-                Err(_) => return,
+                Err(_) => return neighbor_changes,
             };
             for (ci, cell) in table.cells.iter().enumerate() {
                 if ci == skip_cell_idx {
@@ -1887,7 +2103,6 @@ impl DocumentCore {
             if bf_idx >= self.document.doc_info.border_fills.len() {
                 continue;
             }
-
             let mut new_bf = self.document.doc_info.border_fills[bf_idx].clone();
             new_bf.borders[dir] = new_border;
             // 파싱된 문서의 BorderFill 은 원본 BORDER_FILL 레코드 바이트를 raw_data 로
@@ -1928,13 +2143,17 @@ impl DocumentCore {
 
             let table = match self.get_table_mut(section_idx, parent_para_idx, control_idx) {
                 Ok(t) => t,
-                Err(_) => return,
+                Err(_) => return neighbor_changes,
             };
+            if bf_id != old_bf_id {
+                neighbor_changes.push((ci, old_bf_id, bf_id));
+            }
             table.cells[ci].border_fill_id = bf_id;
         }
 
         // 스타일 재계산
         self.rebuild_resolved_styles();
+        neighbor_changes
     }
 
     /// 여러 셀의 width/height를 한 번에 조절한다 (네이티브).
