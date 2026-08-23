@@ -192,3 +192,85 @@ fn page_def_property_pair_does_not_converge_reflow_remains() {
          page_setup/page_margin 도 역연산화 대상으로 재판정하라"
     );
 }
+
+// ── [#5769 후속2] 문서 전체(all) 범위 — 다구역 raw 저널 ──────────────────
+
+/// 구역 2개 합성 코어 — TS SetSectionPropsAllCommand 가 다루는 최소 형태.
+fn two_section_core() -> DocumentCore {
+    use rhwp::model::document::{Document, Section, SectionDef};
+    use rhwp::model::page::PageDef;
+    use rhwp::model::paragraph::Paragraph;
+
+    let make_section = || Section {
+        section_def: SectionDef {
+            page_def: PageDef {
+                width: 59528,
+                height: 84188,
+                margin_left: 8504,
+                margin_right: 8504,
+                margin_top: 5668,
+                margin_bottom: 4252,
+                margin_header: 4252,
+                margin_footer: 4252,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        paragraphs: vec![Paragraph::default()],
+        raw_stream: None,
+        raw_provenance: None,
+    };
+    let mut doc = Document::default();
+    doc.sections.push(make_section());
+    doc.sections.push(make_section());
+
+    let mut core = DocumentCore::new_empty();
+    core.set_document(doc);
+    core
+}
+
+#[test]
+fn section_def_all_multi_section_with_journal_converges_byte_exact() {
+    // TS SetSectionPropsAllCommand 순서 그대로: 전 구역 before 수집 → 캡처 × N →
+    // setSectionDefAll(after) 한 번 → undo(구역별 old 재적용 → 캡처 복원).
+    let mut core = two_section_core();
+    let before = core.export_hwp_native().expect("변경 전 export");
+    // 구역 수 2는 생성자가 보장한다(get_section_count 네이티브는 코어에 없다).
+    let count = 2usize;
+
+    let olds: Vec<String> = (0..count)
+        .map(|s| core.get_section_def_native(s).expect("before"))
+        .collect();
+    let new_json = {
+        // hideHeader 를 뒤집은 부분 JSON — all 은 모든 구역에 같은 def 를 적용한다.
+        let old: serde_json::Value = serde_json::from_str(&olds[0]).expect("getter JSON");
+        format!(
+            "{{\"hideHeader\":{}}}",
+            !old["hideHeader"].as_bool().expect("hideHeader")
+        )
+    };
+
+    let caps: Vec<u32> = (0..count)
+        .map(|s| core.capture_section_raw_native(s).expect("캡처"))
+        .collect();
+    core.set_section_def_all_native(&new_json)
+        .expect("all 적용");
+    assert_ne!(
+        first_diff(&before, &core.export_hwp_native().expect("변경 후")),
+        None,
+        "all 적용 실재"
+    );
+
+    for s in 0..count {
+        core.set_section_def_native(s, &olds[s])
+            .expect("old 재적용");
+    }
+    for cap in &caps {
+        core.restore_section_raw_native(*cap).expect("raw 복원");
+    }
+
+    let after = core.export_hwp_native().expect("복원 후 export");
+    assert_eq!(before.len(), after.len(), "바이트 길이 수렴");
+    let diff = first_diff(&before, &after);
+    assert!(diff.is_none(), "다구역 all 왕복 수렴 — 첫 불일치 @{diff:?}");
+}

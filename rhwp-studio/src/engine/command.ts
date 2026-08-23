@@ -2334,6 +2334,92 @@ export class SetZOrderCommand implements EditCommand {
 }
 
 /**
+ * [#5769 후속] 문서 전체(all) 구역 설정의 역연산 커맨드 — 다구역 raw 저널.
+ *
+ * `setSectionDefAll` 은 네이티브에서 구역 루프+단일 재조판일 뿐이라(#5769 후속2 실측)
+ * Rust 확장 없이 조합으로 역연산화한다. 구역별 before 를 변경 전에 읽어 두고,
+ * execute 는 전 구역 캡처 후 `setSectionDefAll(after)` 한 번(네이티브 효율 유지),
+ * undo 는 구역별 old 재적용 뒤 캡처를 되돌린다. 저널 계약은 구역 단위라("그 구역의
+ * 캡처와 복원 사이 그 구역 편집 금지") 다구역 교차 적용과 정합이다.
+ *
+ * 슬롯 효과: all 범위 스냅샷 1슬롯 → 0. 양식 모드 게이트는 type 이 default 차단
+ * (종전 snapshot 차단과 동일)이므로 동작 변화 없다.
+ */
+export class SetSectionPropsAllCommand implements EditCommand {
+  readonly type = 'setSectionProps';
+  readonly timestamp = Date.now();
+
+  /** execute 가 잡아 둔 구역별 passthrough 캡처. undo 가 소비하고 discard 가 해제한다. */
+  private captureIds: Array<{ idx: number; id: number }> = [];
+  private noOp = false;
+
+  constructor(
+    private sections: Array<{ idx: number; before: SectionDef }>,
+    private after: SectionDef,
+    private cursorPos: DocumentPosition,
+  ) {}
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    if (this.sections.every((s) => this.propsEqual(s.before))) {
+      this.noOp = true;
+      return { ...this.cursorPos };
+    }
+    // redo 도 같은 순서다 — undo 가 저널 항목들을 소비하므로 항상 새로 캡처한다.
+    // 캡처를 전부 마친 뒤 한 번 적용한다 — 적용 도중 실패가 있으면 캡처만 낭비된다.
+    const captureIds: Array<{ idx: number; id: number }> = [];
+    try {
+      for (const s of this.sections) {
+        captureIds.push({ idx: s.idx, id: wasm.captureSectionRaw(s.idx) });
+      }
+      wasm.setSectionDefAll(this.after);
+      this.captureIds = captureIds;
+      return { ...this.cursorPos };
+    } catch (e) {
+      for (const c of captureIds) wasm.discardSectionRaw(c.id);
+      throw e;
+    }
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    if (this.captureIds.length === 0) {
+      throw new Error(`${this.type} undo 불가 — 살아있는 raw 캡처가 없다`);
+    }
+    const captureIds = this.captureIds;
+    // old 재적용(raw 재무효화) → 캡처 복원. 순서는 캡처와 동일하게 유지한다.
+    for (const s of this.sections) {
+      wasm.setSectionDef(s.idx, s.before);
+    }
+    for (const c of captureIds) {
+      wasm.restoreSectionRaw(c.id);
+    }
+    this.captureIds = [];
+    return { ...this.cursorPos };
+  }
+
+  discard(wasm: WasmBridge): void {
+    for (const c of this.captureIds) wasm.discardSectionRaw(c.id);
+    this.captureIds = [];
+  }
+
+  snapshotResourceCount(): number { return 0; }
+
+  isNoOp(): boolean { return this.noOp; }
+
+  /** 병합하지 않는다 — 다이얼로그 확인 1회가 되돌리기 단위 1회다(한컴 정합). */
+  mergeWith(): null { return null; }
+
+  /** SectionDef 전 필드 비교 — after 만 보면 된다(execute 가 적용하는 것이 그것뿐). */
+  private propsEqual(before: SectionDef): boolean {
+    const keys: (keyof SectionDef)[] = [
+      'pageNum', 'pageNumType', 'pictureNum', 'tableNum', 'equationNum',
+      'columnSpacing', 'defaultTabSpacing',
+      'hideHeader', 'hideFooter', 'hideMasterPage', 'hideBorder', 'hideFill', 'hideEmptyLine',
+    ];
+    return keys.every((key) => Object.is(before[key], this.after[key]));
+  }
+}
+
+/**
  * [Task #2374] 양식 값 변경 대상 — 본문 또는 표 셀 내 컨트롤 locator + 전/후 값 JSON.
  * before/after 는 setFormValue(InCell) 에 그대로 전달되는 JSON 문자열이다.
  */
