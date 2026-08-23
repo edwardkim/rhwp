@@ -6,7 +6,6 @@ use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
-use crate::renderer::style_resolver::resolve_styles;
 
 impl DocumentCore {
     pub fn paste_html_native(
@@ -928,7 +927,7 @@ impl DocumentCore {
         self.document.doc_info.char_shapes.push(cs);
         self.document.doc_info.raw_stream_dirty = true;
         // 스타일 세트 갱신
-        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
+        self.rebuild_resolved_styles();
         new_id
     }
 
@@ -992,7 +991,7 @@ impl DocumentCore {
         let new_id = self.document.doc_info.para_shapes.len() as u16;
         self.document.doc_info.para_shapes.push(ps);
         self.document.doc_info.raw_stream_dirty = true;
-        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
+        self.rebuild_resolved_styles();
         new_id
     }
 

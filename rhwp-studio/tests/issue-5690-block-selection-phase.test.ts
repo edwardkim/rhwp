@@ -46,7 +46,7 @@ test('[#5690] 삭제 커맨드가 블록 확장 단계를 함께 들고 있다',
 
 test('[#5690] 호출부가 커서에서 단계를 읽어 커맨드에 넘긴다', () => {
   const handler = src('src/engine/input-handler.ts');
-  const del = functionBodyFrom(handler, 'private deleteSelection()');
+  const del = functionBodyFrom(handler, 'private deleteSelection(');
   assert.match(del, /new DeleteSelectionCommand\(sel\.start, sel\.end, this\.cursor\.blockSelectionPhase\(\)\)/,
     '삭제 시점의 블록 단계를 기록해야 한다');
 

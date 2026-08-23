@@ -93,22 +93,24 @@ fn internal_vpos_page_break_line(
         })
 }
 
-fn missing_lineseg_trailing_line_break(
+pub(super) fn missing_lineseg_trailing_line_break(
     para: &Paragraph,
     line_count: usize,
     current_height: f64,
     available: f64,
+    trailing_line_spacing: f64,
+    source_uses_inline_field_reset: bool,
+    hwp3_converted_missing_lineseg: bool,
 ) -> Option<usize> {
-    if !para.line_segs.is_empty()
-        || line_count < 4
-        || current_height < available * 0.75
-        || !para_has_visible_text(para)
-        || !controls_are_inline_text_metadata(para)
-    {
-        return None;
-    }
-
-    Some(line_count - 1)
+    super::missing_lineseg_fragment_boundary(
+        para,
+        line_count,
+        current_height,
+        available,
+        trailing_line_spacing,
+        source_uses_inline_field_reset,
+        hwp3_converted_missing_lineseg,
+    )
 }
 
 fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
@@ -185,9 +187,60 @@ impl Paginator {
         para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
         opts: PaginationOpts,
     ) -> PaginationResult {
+        let source_context = PaginationSourceContext::from_public_variant(opts.is_hwp3_variant);
+        self.paginate_with_measured_context(
+            paragraphs,
+            measured,
+            page_def,
+            column_def,
+            section_index,
+            para_styles,
+            opts,
+            source_context,
+        )
+    }
+
+    pub(crate) fn paginate_with_measured_profile(
+        &self,
+        paragraphs: &[Paragraph],
+        measured: &MeasuredSection,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        section_index: usize,
+        para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
+        opts: PaginationOpts,
+        profile: crate::model::provenance::LayoutCompatibilityProfile,
+    ) -> PaginationResult {
+        self.paginate_with_measured_context(
+            paragraphs,
+            measured,
+            page_def,
+            column_def,
+            section_index,
+            para_styles,
+            opts,
+            PaginationSourceContext::from_profile(profile),
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn paginate_with_measured_context(
+        &self,
+        paragraphs: &[Paragraph],
+        measured: &MeasuredSection,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        section_index: usize,
+        para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
+        opts: PaginationOpts,
+        source_context: PaginationSourceContext,
+    ) -> PaginationResult {
         let hide_empty_line = opts.hide_empty_line;
         let respect_vpos_reset = opts.respect_vpos_reset;
         let is_hwp3_variant = opts.is_hwp3_variant;
+        let source_uses_inline_field_reset = source_context.source_uses_inline_field_reset;
+        let hwp3_converted_missing_lineseg = source_context.hwp3_converted_missing_lineseg;
+        let legacy_hwp3_stored_geometry = source_context.legacy_hwp3_stored_geometry;
         // [Task #1007] 페이지 본문 영역 높이 (HWPUNIT) — variant cross-paragraph
         // vpos reset 감지 THRESHOLD 계산용.
         let body_height_hu_for_variant = if is_hwp3_variant {
@@ -204,7 +257,9 @@ impl Paginator {
         };
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         let tac_seg_width_fallback_hu = layout.column_width_hu();
-        let measurer = HeightMeasurer::new(self.dpi).with_hwp3_variant(is_hwp3_variant);
+        let measurer = HeightMeasurer::new(self.dpi)
+            .with_hwp3_variant(is_hwp3_variant)
+            .with_legacy_hwp3_stored_geometry(legacy_hwp3_stored_geometry);
 
         // 머리말/꼬리말/쪽 번호 위치/새 번호 지정 컨트롤 수집
         let (hf_entries, page_number_pos, page_hides, new_page_numbers) =
@@ -785,6 +840,9 @@ impl Paginator {
                     para_height,
                     base_available_height,
                     respect_vpos_reset,
+                    is_hwp3_variant,
+                    source_uses_inline_field_reset,
+                    hwp3_converted_missing_lineseg,
                 );
             }
 
@@ -1196,6 +1254,9 @@ impl Paginator {
         para_height: f64,
         base_available_height: f64,
         respect_vpos_reset: bool,
+        is_hwp3_variant: bool,
+        source_uses_inline_field_reset: bool,
+        hwp3_converted_missing_lineseg: bool,
     ) {
         let available_now = st.available_height();
 
@@ -1229,6 +1290,13 @@ impl Paginator {
                 line_count_for_break,
                 st.current_height,
                 available_now,
+                measured
+                    .get_measured_paragraph(para_idx)
+                    .and_then(|paragraph| paragraph.line_spacings.last())
+                    .copied()
+                    .unwrap_or(0.0),
+                source_uses_inline_field_reset,
+                hwp3_converted_missing_lineseg,
             ) {
                 if !breaks.contains(&line) {
                     breaks.push(line);

@@ -9,10 +9,12 @@ use crate::model::control::Control;
 use crate::model::document::Document;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::{Caption, DrawingObjAttr, ShapeObject};
-use crate::renderer::composer::{compose_section, layout_picture_band, reflow_line_segs};
+use crate::renderer::composer::{
+    compose_section, layout_picture_band, reflow_line_segs, ParagraphBox,
+};
 use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
+use crate::renderer::style_resolver::{resolve_styles_for_document, ResolvedStyleSet};
 use crate::renderer::{px_to_hwpunit, DEFAULT_DPI};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -98,11 +100,7 @@ impl DocumentCore {
         }
 
         // [Task #1001] HWP3 변환본의 ParaShape 단위 1/2 추가 보정
-        let styles = crate::renderer::style_resolver::resolve_styles_with_variant(
-            &document.doc_info,
-            DEFAULT_DPI,
-            document.layout_profile().hwp3_layout(),
-        );
+        let styles = resolve_styles_for_document(&document, DEFAULT_DPI);
 
         let hwp5_origin_hwpx = matches!(source_format, crate::parser::FileFormat::Hwpx)
             && document
@@ -202,6 +200,10 @@ impl DocumentCore {
             overflow_links_cache: RefCell::new(HashMap::new()),
             snapshot_store: Vec::new(),
             next_snapshot_id: 0,
+            fragment_store: Vec::new(),
+            next_fragment_id: 0,
+            section_raw_store: Vec::new(),
+            next_section_raw_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),
             file_name: String::new(),
             active_field: None,
@@ -403,8 +405,13 @@ impl DocumentCore {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                     let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-                    let available_width = (col_width - margin_left - margin_right).max(1.0);
-                    reflow_line_segs(para, available_width, styles, dpi);
+                    // 본문: 열 상자를 그대로 넘긴다 — 렌더가 깎는 상자와 같아야 한다.
+                    reflow_line_segs(
+                        para,
+                        ParagraphBox::body_for_style(col_width, para_style, dpi),
+                        styles,
+                        dpi,
+                    );
                     body_line_seg_changed = true;
                     reflowed_paras.insert(pi);
                 }
@@ -505,15 +512,24 @@ impl DocumentCore {
                                         && cell_para.text.is_empty()
                                         && cell_para.controls.is_empty()
                                         && !cell_diagonal);
-                                // [#4898] 본문과 셀은 같은 구역의 저장 lineseg 좌표계를
-                                // 공유한다. 셀만 구역 권위를 무시하면 한컴이 0 높이로 접어
-                                // 둔 셀 내부 블록을 다시 조판해 표 높이와 뒤쪽 페이지가 변한다.
+                                // [#4898] 본문과 셀은 같은 구역의 저장 lineseg
+                                // 좌표계를 공유한다. 셀만 구역 권위를 무시하면 한컴이
+                                // 0 높이로 접어 둔 셀 내부 블록을 다시 조판해 표 높이와
+                                // 뒤쪽 페이지가 변한다.
                                 if Self::needs_line_seg_reflow_in_scope(
                                     cell_para,
                                     inc,
                                     section_sized,
                                 ) {
-                                    reflow_line_segs(cell_para, cell_inner_width, styles, dpi);
+                                    // 셀 내용 상자 — 열이 없으므로 원점은 셀 왼쪽
+                                    // 끝이고 기하 피치를 적용하지 않는다. 스냅하면
+                                    // 표 소유자가 이미 확정한 셀 폭을 흔든다.
+                                    reflow_line_segs(
+                                        cell_para,
+                                        ParagraphBox::content_width_px(cell_inner_width, dpi),
+                                        styles,
+                                        dpi,
+                                    );
                                 }
                             }
                             if include_empty && is_rowbreak_table {
@@ -1131,7 +1147,7 @@ impl DocumentCore {
         }
 
         // 스타일은 재해소해도 동일 결과이므로 재계산하여 borrow 충돌 회피.
-        let styles = resolve_styles(&self.document.doc_info, self.dpi);
+        let styles = resolve_styles_for_document(&self.document, self.dpi);
         let dpi = self.dpi;
         let mut reflowed = 0usize;
         let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
@@ -1175,7 +1191,7 @@ impl DocumentCore {
                         let picture_band = layout_picture_band(
                             &section.paragraphs,
                             host_index,
-                            px_to_hwpunit(picture_col_width, dpi),
+                            picture_col_width,
                             &styles,
                             dpi,
                         );
@@ -1203,8 +1219,7 @@ impl DocumentCore {
                             .iter_mut()
                             .zip(band.line_segs)
                         {
-                            paragraph.invalidate_single_line_overflow_memo();
-                            paragraph.line_segs = line_segs;
+                            paragraph.replace_line_segs(line_segs);
                         }
                         reflowed += band_len;
                         min_reflowed_idx =
@@ -1232,8 +1247,13 @@ impl DocumentCore {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                     let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-                    let available_width = (col_width - margin_left - margin_right).max(1.0);
-                    reflow_line_segs(para, available_width, &styles, dpi);
+                    // 본문: 열 상자.
+                    reflow_line_segs(
+                        para,
+                        ParagraphBox::body_for_style(col_width, para_style, dpi),
+                        &styles,
+                        dpi,
+                    );
                     reflowed += 1;
                     min_reflowed_idx.get_or_insert(pi);
                 }
@@ -1252,7 +1272,13 @@ impl DocumentCore {
                             let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
                             for cell_para in &mut cell.paragraphs {
                                 if Self::needs_reflow_broadly(cell_para) {
-                                    reflow_line_segs(cell_para, cell_inner_width, &styles, dpi);
+                                    // 셀 내용 상자 — 위와 같은 이유로 미스냅.
+                                    reflow_line_segs(
+                                        cell_para,
+                                        ParagraphBox::content_width_px(cell_inner_width, dpi),
+                                        &styles,
+                                        dpi,
+                                    );
                                     reflowed += 1;
                                 }
                             }
@@ -1281,7 +1307,7 @@ impl DocumentCore {
 
         if reflowed > 0 {
             // 재구성 · 페이지네이션 재실행 필요
-            self.styles = styles;
+            self.rebuild_resolved_styles();
             self.composed = self
                 .document
                 .sections
@@ -1303,7 +1329,6 @@ impl DocumentCore {
         let document = crate::parser::parse_hwp(BLANK_TEMPLATE)
             .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
 
-        let styles = resolve_styles(&document.doc_info, self.dpi);
         let composed = document
             .sections
             .iter()
@@ -1313,7 +1338,7 @@ impl DocumentCore {
 
         self.document = document;
         self.bump_bin_data_epoch();
-        self.styles = styles;
+        self.rebuild_resolved_styles();
         self.composed = composed;
         self.clipboard = None;
         self.table_transpose_clipboard = None;
@@ -1346,7 +1371,13 @@ impl DocumentCore {
     /// 원본은 일반적으로 BOTH 하나만 가지므로, adapter가 채운 EVEN/ODD는 저장 직후
     /// `SectionDef`와 serializer가 읽는 `Control::SectionDef`에서 함께 복원한다.
     fn snapshot_hwpx_page_border_fill_overlay(&self) -> Option<HwpPageBorderFillOverlay> {
-        (self.source_format == crate::parser::FileFormat::Hwpx).then(|| {
+        // [#5933] HML 출처도 저장 직전에 PBF 를 3개로 채우므로(HWP5 스트림 계약),
+        // 저장 뒤 live IR 은 원래 형상(단일 BOTH)으로 되돌린다 — HWPX 와 같은 계약.
+        matches!(
+            self.source_format,
+            crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
+        )
+        .then(|| {
             self.document
                 .sections
                 .iter()
@@ -2640,7 +2671,7 @@ mod validate_linesegs_tests {
     fn eager_reflow_uses_table_frame_owner_width_and_padding() {
         const RESOLVED_LAST_TRACK_WIDTH: i32 = 5_002;
         let mut document = short_table_frame_document();
-        let styles = resolve_styles(&document.doc_info, DEFAULT_DPI);
+        let styles = resolve_styles_for_document(&document, DEFAULT_DPI);
 
         DocumentCore::reflow_zero_height_paragraphs(
             &mut document,
@@ -2765,6 +2796,7 @@ mod validate_linesegs_tests {
         let stored_first_full_width = section.paragraphs[332].line_segs.clone();
 
         for paragraph in &mut section.paragraphs[325..332] {
+            paragraph.invalidate_layout_inputs();
             paragraph.single_line_overflow_memo.set(123, true);
         }
         section.paragraphs[332]
@@ -2827,6 +2859,40 @@ mod validate_linesegs_tests {
                 .all(|paragraph| paragraph.single_line_overflow_memo.is_unjudged()),
             "each published row invalidates its derived overflow memo"
         );
+        assert!(
+            section.paragraphs[325..332]
+                .iter()
+                .all(|paragraph| !paragraph.stored_text_partition_is_dirty()),
+            "the complete Picture-band publication makes every replacement row current"
+        );
+
+        let hwp_bytes = crate::serializer::body_text::serialize_section(section);
+        let hwp_roundtrip = crate::parser::body_text::parse_body_text_section(&hwp_bytes)
+            .expect("published Picture-band rows remain serializable as HWP");
+        assert!(!hwp_roundtrip.paragraphs[325].line_segs.is_empty());
+
+        let mut hwpx_context =
+            crate::serializer::hwpx::context::SerializeContext::collect_from_document(
+                &core.document,
+            );
+        // The whole band is one fresh implementation transaction. HWPX omits
+        // synthetic LineSeg arrays by policy so the consumer recomputes them;
+        // no successor may masquerade as authentic saved geometry.
+        let (_, p326_linesegs, _) = crate::serializer::hwpx::section::render_paragraph_parts(
+            &core.document.sections[0].paragraphs[326],
+            0,
+            &mut hwpx_context,
+        );
+        assert!(
+            p326_linesegs.is_empty(),
+            "fresh Picture-band rows remain implementation-owned in HWPX"
+        );
+        assert!(section.paragraphs[325..332]
+            .iter()
+            .all(|paragraph| paragraph
+                .line_segs
+                .iter()
+                .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)));
         assert_eq!(
             section.paragraphs[332].line_segs.len(),
             stored_first_full_width.len(),

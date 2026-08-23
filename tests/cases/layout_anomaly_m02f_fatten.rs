@@ -143,6 +143,7 @@ fn cell_node(bbox: BoundingBox) -> RenderNode {
             border_fill_id: 0,
             text_direction: 0,
             clip: false,
+            page_fragment: false,
             model_cell_index: None,
         }),
         bbox,

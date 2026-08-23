@@ -2008,25 +2008,28 @@ export class InputHandler {
       kind: 'snapshot',
       operationType: 'applyCharFormatCellBlock',
       operation: (wasm) => {
-        for (const cellIdx of block.cellIndices) {
-          if (block.cellPath) {
-            const path = block.cellPath;
-            const paraCount = wasm.getCellParagraphCountByPath(block.sec, block.ppi, JSON.stringify(withCellPathTarget(path, cellIdx)));
-            for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
-              const pathJson = JSON.stringify(withCellPathTarget(path, cellIdx, cellParaIdx));
-              const len = wasm.getCellParagraphLengthByPath(block.sec, block.ppi, pathJson);
-              if (len <= 0) continue;
-              wasm.applyCharFormatInCellByPath(block.sec, block.ppi, pathJson, 0, len, propsJson);
+        // 셀 수만큼 뮤테이터를 호출하므로 재페이지네이션을 묶는다(#4118).
+        wasm.runInBatch(() => {
+          for (const cellIdx of block.cellIndices) {
+            if (block.cellPath) {
+              const path = block.cellPath;
+              const paraCount = wasm.getCellParagraphCountByPath(block.sec, block.ppi, JSON.stringify(withCellPathTarget(path, cellIdx)));
+              for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
+                const pathJson = JSON.stringify(withCellPathTarget(path, cellIdx, cellParaIdx));
+                const len = wasm.getCellParagraphLengthByPath(block.sec, block.ppi, pathJson);
+                if (len <= 0) continue;
+                wasm.applyCharFormatInCellByPath(block.sec, block.ppi, pathJson, 0, len, propsJson);
+              }
+              continue;
             }
-            continue;
+            const paraCount = wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx);
+            for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
+              const len = wasm.getCellParagraphLength(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx);
+              if (len <= 0) continue;
+              wasm.applyCharFormatInCell(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx, 0, len, propsJson);
+            }
           }
-          const paraCount = wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx);
-          for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
-            const len = wasm.getCellParagraphLength(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx);
-            if (len <= 0) continue;
-            wasm.applyCharFormatInCell(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx, 0, len, propsJson);
-          }
-        }
+        });
         return { ...cursorBefore };
       },
     });
@@ -2514,8 +2517,14 @@ export class InputHandler {
     }
   }
 
-  /** 선택 영역을 삭제한다 */
-  private deleteSelection(): void {
+  /**
+   * 선택 영역을 삭제한다.
+   *
+   * @param options.deferRecord true 이면 히스토리 기록 없이 직접 실행만 한다 —
+   *   붙여넣기 등에서 스냅샷 콜백 안에 들어갈 때 사용. 호출자가 SnapshotCommand 로
+   *   기록하므로 중복 엔트리를 방지한다.
+   */
+  private deleteSelection(options?: { deferRecord?: boolean }): void {
     const sel = this.cursor.getSelectionOrdered();
     if (!sel) return;
     if (!this.canDeleteSelectionInFormMode()) return;
@@ -2523,7 +2532,21 @@ export class InputHandler {
     // [Task #3416] F3 블록이면 확장 단계도 함께 기록한다 — 한컴은 undo 뒤 단계까지 되돌린다.
     const cmd = new DeleteSelectionCommand(sel.start, sel.end, this.cursor.blockSelectionPhase());
     this.cursor.clearSelection();
-    this.executeOperation({ kind: 'command', command: cmd });
+    if (options?.deferRecord) {
+      // 붙여넣기 등 스냅샷 콜백에서 호출될 때 — 히스토리 기록 없이 직접 실행만.
+      // 호출자의 SnapshotCommand 가 before-snapshot 으로 전체 undo 를 커버한다.
+      //
+      // 반환값을 반드시 소비해 JS 커서를 옮긴다 — getPosition() 은 내부 캐시
+      // (`{ ...this.position }`)라 WASM 캐럿이 움직여도 갱신되지 않는다. 놓치면
+      // 이어지는 붙여넣기가 삭제 **전** 좌표(선택 끝)에 삽입된다(실측:
+      // "AAAABBBBCCCC" 에서 BBBB 선택+붙여넣기 → XYZ 가 끝에 붙는다).
+      // executeOperation('command') 의 moveTo·resetPreferredX 에 해당하는 최소 배선.
+      const newPos = cmd.execute(this.wasm);
+      this.cursor.moveTo(newPos);
+      this.cursor.resetPreferredX();
+    } else {
+      this.executeOperation({ kind: 'command', command: cmd });
+    }
   }
 
   /** Undo 처리 */
@@ -4990,9 +5013,12 @@ export class InputHandler {
           range,
           this.cursor.getExcludedCells(),
         );
-        for (const cellIdx of cellIndices) {
-          wasm.setCellProperties(ctx.sec, ctx.ppi, ctx.ci, cellIdx, props);
-        }
+        // 셀 수만큼 setCellProperties 를 호출하므로 재페이지네이션을 묶는다(#4118).
+        wasm.runInBatch(() => {
+          for (const cellIdx of cellIndices) {
+            wasm.setCellProperties(ctx.sec, ctx.ppi, ctx.ci, cellIdx, props);
+          }
+        });
         return this.cursor.getPosition();
       },
     });

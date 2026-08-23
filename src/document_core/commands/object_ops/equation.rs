@@ -478,22 +478,11 @@ impl DocumentCore {
         paragraph.has_para_text = true;
 
         // 본문 문단 리플로우
-        {
-            use crate::renderer::composer::reflow_line_segs;
-            use crate::renderer::hwpunit_to_px;
-            let page_def = &self.document.sections[section_idx].section_def.page_def;
-            let text_width =
-                page_def.width as i32 - page_def.margin_left as i32 - page_def.margin_right as i32;
-            let available_width = hwpunit_to_px(text_width, self.dpi);
-            let para_style = self.styles.para_styles.get(
-                self.document.sections[section_idx].paragraphs[para_idx].para_shape_id as usize,
-            );
-            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-            let final_width = (available_width - margin_left - margin_right).max(0.0);
-            let body_para = &mut self.document.sections[section_idx].paragraphs[para_idx];
-            reflow_line_segs(body_para, final_width, &self.styles, self.dpi);
-        }
+        // 본문 문단의 상자는 쪽 폭이 아니라 **열** 폭에서 나온다. 직접 계산하면
+        // ColumnDef(다단)·margin_gutter·가로 용지·양면 짝수쪽 여백 교환·손상
+        // PageDef 의 A4 폴백을 모두 놓친다 — 그리고 그 결과가 디스크로 나간다.
+        // 대화형 편집의 관문과 같은 한 곳을 쓴다.
+        self.reflow_paragraph(section_idx, para_idx);
 
         self.recompose_section(section_idx);
         self.paginate_if_needed();

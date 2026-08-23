@@ -1,6 +1,8 @@
 //! 도형/글상자/그룹 개체 레이아웃
 
-use super::super::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
+use super::super::composer::{
+    compose_paragraph, reflow_line_segs, ComposedParagraph, ParagraphBox,
+};
 use super::super::page_layout::LayoutRect;
 use super::super::pagination::PageItem;
 use super::super::render_tree::*;
@@ -451,7 +453,13 @@ fn reflow_matrix_textbox_para(
         }
     }
 
-    reflow_line_segs(para, available_width, styles, dpi);
+    // 도형/글상자 내용 상자 — 도형은 자기 열이 없으므로 미스냅.
+    reflow_line_segs(
+        para,
+        ParagraphBox::content_width_px(available_width, dpi),
+        styles,
+        dpi,
+    );
 }
 
 impl LayoutEngine {

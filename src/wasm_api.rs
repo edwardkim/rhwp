@@ -6688,6 +6688,60 @@ impl HwpDocument {
         self.discard_snapshot_native(id)
     }
 
+    /// 삭제 직전 문단 범위 원본을 조각으로 보관한다 (#5769).
+    ///
+    /// 반드시 `deleteRangeNative` 호출 **전**에 불린다. 반환 조각 ID 는
+    /// `restoreDeleteFragment`/`discardDeleteFragment` 에 쓴다.
+    #[wasm_bindgen(js_name = captureDeleteRange)]
+    pub fn capture_delete_range(
+        &mut self,
+        section_idx: usize,
+        start_para: usize,
+        end_para: usize,
+    ) -> Result<u32, JsValue> {
+        self.capture_delete_range_native(section_idx, start_para, end_para)
+            .map_err(|e| e.into())
+    }
+
+    /// 삭제 조각을 원래 자리에 되돌려 끼운다 — 삭제의 참 역연산 (#5769).
+    ///
+    /// 스냅샷 복원과 달리 문서 전체가 아니라 삭제 범위+꼬리 줄 좌표만 되돌린다.
+    /// 성공 시 조각은 소비(제거)된다.
+    #[wasm_bindgen(js_name = restoreDeleteFragment)]
+    pub fn restore_delete_fragment(&mut self, id: u32) -> Result<String, JsValue> {
+        self.restore_delete_fragment_native(id)
+            .map_err(|e| e.into())
+    }
+
+    /// 삭제 조각을 제거하여 메모리를 해제한다 — 히스토리 축출·클리어 시 스냅샷
+    /// `discardSnapshot` 과 짝으로 호출한다(#5769).
+    #[wasm_bindgen(js_name = discardDeleteFragment)]
+    pub fn discard_delete_fragment(&mut self, id: u32) {
+        self.discard_delete_fragment_native(id)
+    }
+
+    /// 속성 변경 직전 구역 raw 스트림+봉인을 보관한다 (#5769 Stage 4).
+    ///
+    /// 반드시 `setSectionDef` 호출 **전**에 불린다. 반환 ID 는
+    /// `restoreSectionRaw`/`discardSectionRaw` 에 쓴다.
+    #[wasm_bindgen(js_name = captureSectionRaw)]
+    pub fn capture_section_raw(&mut self, section_idx: usize) -> Result<u32, JsValue> {
+        self.capture_section_raw_native(section_idx)
+            .map_err(|e| e.into())
+    }
+
+    /// 캡처한 구역 raw 를 되돌린다 — old 속성 재적용(재무효화) **뒤** 에 불린다 (#5769 Stage 4).
+    #[wasm_bindgen(js_name = restoreSectionRaw)]
+    pub fn restore_section_raw(&mut self, id: u32) -> Result<String, JsValue> {
+        self.restore_section_raw_native(id).map_err(|e| e.into())
+    }
+
+    /// 구역 raw 캡처를 제거하여 메모리를 해제한다 — 히스토리 축출·클리어 계약 (#5769 Stage 4).
+    #[wasm_bindgen(js_name = discardSectionRaw)]
+    pub fn discard_section_raw(&mut self, id: u32) {
+        self.discard_section_raw_native(id)
+    }
+
     /// 캐럿 위치의 글자 속성을 조회한다.
     ///
     /// 반환값: JSON 객체 (fontFamily, fontSize, bold, italic, underline, strikethrough, textColor 등)
@@ -7064,10 +7118,7 @@ impl HwpDocument {
         self.core.document.doc_info.raw_stream_dirty = true;
         let new_id = (self.core.document.doc_info.styles.len() - 1) as i32;
         // 스타일 캐시 갱신
-        self.core.styles = crate::renderer::style_resolver::resolve_styles(
-            &self.core.document.doc_info,
-            self.core.dpi,
-        );
+        self.core.rebuild_resolved_styles();
         new_id
     }
 
@@ -7112,10 +7163,7 @@ impl HwpDocument {
             }
         }
         // 스타일 캐시 갱신
-        self.core.styles = crate::renderer::style_resolver::resolve_styles(
-            &self.core.document.doc_info,
-            self.core.dpi,
-        );
+        self.core.rebuild_resolved_styles();
         // DocInfo(styles 목록)와 문단 style_id 가 함께 바뀌었으므로 저장 스트림을 무효화한다.
         // raw_stream_dirty 미설정 시 DocInfo 가, 섹션 raw_stream 잔존 시 본문이 각각 원본
         // 바이트로 재방출돼 스타일 삭제·문단 재배정이 .hwp 저장에서 유실된다.

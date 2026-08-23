@@ -86,4 +86,13 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   'setActiveField', 'clearActiveField', // 편집 세션 상태 (직렬화 비대상)
   'moveVertical', 'moveVerticalByPath', // 캐럿 세로 탐색 (조회)
   'ensureParagraphStableIds', // 런타임 추적 id 부여
+  // [#5769] 삭제 조각(fragment) API — capture·discard 는 IR 비변경(캡처·저장소 정리).
+  // restoreDeleteFragment 는 IR 을 되살리는 변이지만 배선이 CommandHistory.undo 단일
+  // 경로로 고정돼 있어(SnapshotCommand.undo 의 restoreSnapshot 과 같은 취급)
+  // executeOperation 라우팅 강제 대상에서 제외한다. 히스토리 밖 직접 호출 금지.
+  'captureDeleteRange', 'restoreDeleteFragment', 'discardDeleteFragment',
+  // [#5769 Stage 4] 구역 raw 저널 API — capture·discard 는 IR 비변경.
+  // restoreSectionRaw 는 passthrough 를 되살리지만 SetSectionPropsCommand.undo 단일
+  // 경로로 고정돼 있어(restoreDeleteFragment 와 같은 취급) 제외한다. 히스토리 밖 직접 호출 금지.
+  'captureSectionRaw', 'restoreSectionRaw', 'discardSectionRaw',
 ];

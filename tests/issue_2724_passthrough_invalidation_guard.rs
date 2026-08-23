@@ -192,6 +192,30 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "`snapshot_store` 에서 항목 제거.",
     ),
     (
+        "commands/delete_fragment.rs",
+        "capture_delete_range_native",
+        Exempt::SessionState,
+        "[#5769] 삭제 직전 문단 범위를 `fragment_store` 에 적재. 원본 IR 을 읽기만 하고 바꾸지 않는다.",
+    ),
+    (
+        "commands/delete_fragment.rs",
+        "discard_delete_fragment_native",
+        Exempt::SessionState,
+        "[#5769] `fragment_store` 에서 조각 제거. 문서 IR 비변경.",
+    ),
+    (
+        "commands/section_raw_journal.rs",
+        "capture_section_raw_native",
+        Exempt::SessionState,
+        "[#5769] 속성 변경 직전 구역 raw+봉인을 저널에 적재. IR 비변경(읽기 전용).",
+    ),
+    (
+        "commands/section_raw_journal.rs",
+        "discard_section_raw_native",
+        Exempt::SessionState,
+        "[#5769] 구역 raw 저널에서 항목 제거. 문서 IR 비변경.",
+    ),
+    (
         "commands/formatting.rs",
         "get_cell_char_properties_at_by_path",
         Exempt::SessionState,
@@ -251,6 +275,20 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "restore_snapshot_native",
         Exempt::WholeDocument,
         "스냅샷 문서로 통째 복원. 스냅샷은 저장 시점의 패스스루 상태를 그대로 담고 있다.",
+    ),
+    (
+        "commands/delete_fragment.rs",
+        "restore_delete_fragment_native",
+        Exempt::WholeDocument,
+        "[#5769] 조각 복원 — 캡처 시점의 section raw_stream·raw_provenance·캐럿(DocProperties)을 \
+         통째로 되돌린다. 스냅샷 복원과 같은 원리로, 복원 뒤 패스스루는 되돌려진 IR 과 다시 일치한다.",
+    ),
+    (
+        "commands/section_raw_journal.rs",
+        "restore_section_raw_native",
+        Exempt::WholeDocument,
+        "[#5769] 구역 raw 복원 — 캡처 시점의 raw_stream·봉인을 되돌려 passthrough 와 IR 을 \
+         다시 일치시킨다. 문단 등 IR 은 건드리지 않는다(속성 복원은 setter 호출부 몫).",
     ),
     // ── 무효화 대신 원본 스트림 직접 수술 ──────────────────────────────────
     (

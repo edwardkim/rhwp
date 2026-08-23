@@ -4,7 +4,7 @@
 //! 해소된 스타일 목록(ResolvedStyleSet)으로 변환한다.
 
 use super::{hwpunit_to_px, GradientFillInfo, PatternFillInfo, TabStop};
-use crate::model::document::DocInfo;
+use crate::model::document::{DocInfo, Document};
 use crate::model::image::ImageEffect;
 use crate::model::style::{
     Alignment, BorderFill, BorderLine, Bullet, CenterLine, CharShape, DiagonalLine, FillType,
@@ -303,6 +303,14 @@ pub struct ResolvedStyleSet {
 /// DocInfo 참조 테이블을 해소된 스타일 목록으로 변환한다.
 pub fn resolve_styles(doc_info: &DocInfo, dpi: f64) -> ResolvedStyleSet {
     resolve_styles_with_variant(doc_info, dpi, false)
+}
+
+/// Resolve styles with the document's format-specific style normalization.
+/// Layout provenance itself remains owned by `LayoutCompatibilityProfile` and
+/// is passed separately to consumers that need it.
+pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> ResolvedStyleSet {
+    let profile = document.layout_profile();
+    resolve_styles_with_variant(&document.doc_info, dpi, profile.hwp3_layout())
 }
 
 /// [Task #1001] HWP3 → HWP5 변환본 인지하여 ParaShape spacing/margin 추가 보정.

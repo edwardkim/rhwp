@@ -2503,6 +2503,29 @@ fn adapt_cell_list_attr(cell: &mut Cell, report: &mut AdapterReport) {
 ///
 /// 호출자: `DocumentCore::export_hwp_with_adapter()` (Stage 5 에서 추가).
 pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> AdapterReport {
+    // [#5933] HWPML(HML) 출처는 HWPX 전용 보정을 타면 안 되지만, **HWP5 스트림 계약**인
+    // 구역당 `HWPTAG_PAGE_BORDER_FILL` 3개(#3676)는 출처와 무관하게 지켜야 한다.
+    //
+    // HML 파서는 `extra_page_border_fills` 를 채우지 않아 저장본에 PBF 가 **1개만** 나갔고,
+    // 한글은 그 파일을 열되 본문을 통째로 버렸다(08462: 4쪽 7,428자 → **1쪽 0자**, 컨트롤
+    // 인구조사가 `cold:1,secd:1` 로 붕괴). rhwp 자기 조판은 같은 산출을 4쪽으로 읽으므로
+    // `--verify-pages` 로는 보이지 않는 축이다.
+    //
+    // 한글 2022 오라클 돌연변이 검정(08462) — 이 패딩만이 본문을 되살린다:
+    //
+    // | 변형 | 결과 |
+    // |---|---|
+    // | 현행(PBF 1) | 1쪽 0자 |
+    // | OLE contract 스트림 9개 추가 | 1쪽 0자 |
+    // | 스트림 압축 + `FileHeader` flags bit0 | 1쪽 0자 |
+    // | **PBF 3개** | **4쪽 7,549자** |
+    // | PBF 3개 + 압축 + 스트림 | 4쪽 7,549자 (차이 없음) |
+    //
+    // 저장 시점 보정이라 IR 과 HWPX 산출(단일 BOTH)은 그대로 둔다 — HWPX 출처와 같은 계약.
+    if matches!(source_format, FileFormat::Hml) {
+        normalize_page_border_fills_for_hwp(doc);
+        return AdapterReport::new().no_op("Hml: page_border_fill 3개만 보정");
+    }
     if !matches!(source_format, FileFormat::Hwpx | FileFormat::Hwp3) {
         return AdapterReport::new().no_op("source_format != Hwpx/Hwp3");
     }

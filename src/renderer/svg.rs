@@ -3048,11 +3048,12 @@ impl Renderer for SvgRenderer {
         // 이중/삼중선(shape 7~10)의 선별 위치·굵기도 em 비례 실측표를 따른다.
         if !matches!(style.underline, UnderlineType::None) {
             let text_width = *char_positions.last().unwrap_or(&0.0);
-            let ul_color = if style.underline_color != 0 {
-                color_to_svg(style.underline_color)
-            } else {
-                color.to_string()
-            };
+            // 밑줄 색은 CHAR_SHAPE 의 **고정 위치 필수 필드**다(doc_info.rs 의
+            // text_color 바로 뒤). COLORREF 0 은 "미지정"이 아니라 **검정**이므로
+            // sentinel 로 쓸 수 없다 — 종전 `!= 0` 검사는 문서가 명시한 검정 밑줄을
+            // 글자색으로 바꿔 그렸다(hwpx_sample2 12쪽: 정답지 검정 25개 vs
+            // rhwp 글자색 #082108 24개). 저장값을 그대로 쓴다.
+            let ul_color = color_to_svg(style.underline_color);
             let multi = if matches!(style.underline, UnderlineType::Top) {
                 None
             } else {
