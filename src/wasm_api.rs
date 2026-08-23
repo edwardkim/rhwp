@@ -4249,6 +4249,9 @@ impl HwpDocument {
 
     /// Shape z-order 변경
     /// operation: "front" | "back" | "forward" | "backward"
+    /// 반환: `{"ok":true,"zOrder":N,"moves":[{"ppi","ci","before","after"}...]}`
+    /// [#5769 후속] moves 는 실제로 대입된 (대상+교환 이웃) before/after 쌍이다 —
+    /// SetZOrderCommand 가 undo/redo 절대 복원 쌍으로 소비한다.
     #[wasm_bindgen(js_name = changeShapeZOrder)]
     pub fn change_shape_z_order(
         &mut self,
@@ -4264,6 +4267,19 @@ impl HwpDocument {
             operation,
         )
         .map_err(|e| e.into())
+    }
+
+    /// Shape z 순서 절대 대입(#5769 후속) — 속성쌍 커맨드의 undo/redo 경로.
+    /// pairs_json: `[{"ppi":N,"ci":N,"z":N},...]`
+    /// 반환: JSON `{"ok":true,"applied":N}`
+    #[wasm_bindgen(js_name = applyShapeZOrderPairs)]
+    pub fn apply_shape_z_order_pairs(
+        &mut self,
+        section_idx: u32,
+        pairs_json: &str,
+    ) -> Result<String, JsValue> {
+        self.apply_shape_z_order_pairs_native(section_idx as usize, pairs_json)
+            .map_err(|e| e.into())
     }
 
     /// 선택된 개체들을 하나의 GroupShape로 묶는다.

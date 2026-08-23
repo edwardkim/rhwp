@@ -4,7 +4,7 @@
 import type { ContextMenuItem } from '@/ui/context-menu';
 import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
 import * as _connector from './input-handler-connector';
-import { MoveLineEndpointCommand } from './command';
+import { MoveLineEndpointCommand, SetZOrderCommand } from './command';
 import { computeLineEndpointRecord } from './object-drag-record';
 
 function protectedCellKey(hit: any): string | null {
@@ -1974,22 +1974,16 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
 function bringShapeToFront(this: any, picHit: any): void {
   if (picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'group' || picHit.type === 'ole') {
     try {
-      // [Task #2759] 선택 시 z순서 변경도 문서 뮤테이션 — 메뉴 정렬(insert.ts:427 등)의
-      // recordObjectMutation 과 동형으로 snapshot 기록해 undo 가능·redo 무효화·스냅샷 undo
-      // 동반 파괴를 막는다. UI 후처리(선택 진입·재렌더)는 호출부가 기존대로 수행한다.
-      // [Task #3351] 메뉴 경로와 같은 이유로 캐럿은 **개체 인접**을 기록한다. 여기서
-      // `getCursorPosition()` 을 잡으면 클릭 직전 캐럿(문서 상단일 수도 있다)이 남아 undo 가
-      // 조작과 무관한 자리로 착지한다. 이 지점은 선택 진입 **전**이라 선택 상태를 읽을 수 없어
-      // 클릭된 개체의 ref 로 위치를 구한다.
+      // [Task #2759 → #5769 후속] 선택 시 z순서 변경도 문서 뮤테이션 — 메뉴 정렬과 같은
+      // SetZOrderCommand 역연산 경로로 기록해 undo 가능·스냅샷 슬롯 무소비를 만든다.
+      // UI 후처리(선택 진입·재렌더)는 호출부가 기존대로 수행한다. [Task #3351] 캐럿은
+      // 클릭된 개체 인접을 기록한다 — 이 지점은 선택 진입 전이라 ref 로 위치를 구한다.
       const pos = this.cursor.positionOutsideObject(picHit.sec, picHit.ppi)
         ?? this.getCursorPosition();
       this.executeOperation({
-        kind: 'snapshot',
-        operationType: 'changeZOrder',
-        operation: (wasm: any) => {
-          wasm.changeShapeZOrder(picHit.sec, picHit.ppi, picHit.ci, 'front');
-          return pos;
-        },
+        kind: 'command',
+        command: new SetZOrderCommand(picHit.sec, picHit.ppi, picHit.ci, 'front', pos),
+        meta: { refresh: 'full' },
       });
       this.eventBus.emit('document-changed');
     } catch { /* ignore */ }

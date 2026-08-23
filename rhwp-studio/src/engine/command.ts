@@ -2224,6 +2224,106 @@ export class SetSectionPropsCommand implements EditCommand {
 }
 
 /**
+ * [#5769 후속] SetZOrderCommand 가 소비하는 자기기술 변경 레코드 항목(Rust moves 응답).
+ */
+export interface ZOrderMove {
+  ppi: number;
+  ci: number;
+  before: number;
+  after: number;
+}
+
+/**
+ * [#5769 후속] Shape z 순서 변경의 역연산 커맨드 — 스냅샷 대체.
+ *
+ * 최초 execute 는 기존 상대 연산(changeShapeZOrder)을 그대로 실행하고 Rust 가 돌려준
+ * 자기기술 레코드(moves — 대상+교환 이웃의 before/after)를 저장한다. undo/redo 는 상대
+ * 연산을 다시 머리로 계산하지 않고 저장된 쌍을 절대 대입(applyShapeZOrderPairs)해 되돌린다
+ * — front(max+1) 같은 연산엔 모드 역연산이 없으므로 값 복원이 유일한 참인 역연산이다
+ * (#5769 선결 규약). Shape z 대입에는 부작용이 없어 속성쌍 왕복이 수렴한다.
+ *
+ * passthrough 생명주기는 SetSectionPropsCommand 와 같다 — 첫 뮤테이션 전에 구역 raw 를
+ * capture 하고, undo 의 재무효화 뒤 restore 한다. redo 는 저널 항목이 소비됐으므로 재캡처한다.
+ * 슬롯 효과: changeZOrder 스냅샷 1슬롯 → 0.
+ */
+export class SetZOrderCommand implements EditCommand {
+  readonly type = 'changeZOrder';
+  readonly timestamp = Date.now();
+
+  /** 최초 실행에서 확정된 변경 레코드. null = 아직 실행 전. */
+  private moves: ZOrderMove[] | null = null;
+  private captureId: number | null = null;
+  private noOp = false;
+
+  constructor(
+    private sectionIdx: number,
+    private ppi: number,
+    private ci: number,
+    private operation: 'front' | 'forward' | 'backward' | 'back',
+    private cursorPos: DocumentPosition,
+  ) {}
+
+  private pairsJson(dir: 'before' | 'after'): string {
+    return JSON.stringify(
+      (this.moves ?? []).map((m) => ({ ppi: m.ppi, ci: m.ci, z: m[dir] })),
+    );
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    const captureId = wasm.captureSectionRaw(this.sectionIdx);
+    this.captureId = captureId;
+    try {
+      if (this.moves) {
+        // redo — 상대 연산은 멱등하지 않으므로(front=항상 max+1) 저장된 after 를 대입한다.
+        wasm.applyShapeZOrderPairs(this.sectionIdx, this.pairsJson('after'));
+      } else {
+        // 최초 실행 — 기존 상대 연산으로 적용하고 자기기술 레코드를 받는다.
+        const r = wasm.changeShapeZOrder(this.sectionIdx, this.ppi, this.ci, this.operation);
+        const moves = r.ok ? r.moves ?? [] : [];
+        if (!r.ok || moves.length === 0) {
+          // 이미 맨 앞/뒤 등 무변경 — phantom 엔트리와 캡처 잔류를 막는다(#2370 계약).
+          this.noOp = true;
+          wasm.discardSectionRaw(captureId);
+          this.captureId = null;
+          return { ...this.cursorPos };
+        }
+        this.moves = moves;
+      }
+      return { ...this.cursorPos };
+    } catch (e) {
+      wasm.discardSectionRaw(captureId);
+      this.captureId = null;
+      throw e;
+    }
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    if (!this.moves || this.captureId === null) {
+      throw new Error(`${this.type} undo 불가 — 살아있는 기록/캡처가 없다`);
+    }
+    const captureId = this.captureId;
+    wasm.applyShapeZOrderPairs(this.sectionIdx, this.pairsJson('before')); // old 재적용 — raw 재무효화 동반
+    wasm.restoreSectionRaw(captureId); // passthrough 복원 — 저널 항목 소비
+    this.captureId = null;
+    return { ...this.cursorPos };
+  }
+
+  discard(wasm: WasmBridge): void {
+    if (this.captureId !== null) {
+      wasm.discardSectionRaw(this.captureId);
+      this.captureId = null;
+    }
+  }
+
+  snapshotResourceCount(): number { return 0; }
+
+  isNoOp(): boolean { return this.noOp; }
+
+  /** 병합하지 않는다 — 정렬 메뉴 1회·클릭 1회가 되돌리기 단위다(한컴 정합). */
+  mergeWith(): null { return null; }
+}
+
+/**
  * [Task #2374] 양식 값 변경 대상 — 본문 또는 표 셀 내 컨트롤 locator + 전/후 값 JSON.
  * before/after 는 setFormValue(InCell) 에 그대로 전달되는 JSON 문자열이다.
  */

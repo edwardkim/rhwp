@@ -1,4 +1,4 @@
-import type { CommandDef } from '../types';
+﻿import type { CommandDef } from '../types';
 import { PicturePropsDialog } from '@/ui/picture-props-dialog';
 import { ChartDataDialog } from '@/ui/chart-data-dialog';
 import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
@@ -14,7 +14,7 @@ import type { ShapeType } from '@/ui/shape-picker';
 import type { CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { InputHandler } from '@/engine/input-handler';
-import { SetObjectPropsCommand, type RefreshPolicy } from '@/engine/command';
+import { SetObjectPropsCommand, SetZOrderCommand, type RefreshPolicy } from '@/engine/command';
 import { getObjectProps, setObjectProps, type ObjectPropsRef } from '@/engine/object-props';
 
 /** 스텁 커맨드 생성 헬퍼 */
@@ -482,7 +482,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      changeZOrder(services, ih, ref, 'front');
+      changeZOrder(ih, ref, 'front');
     },
   },
   {
@@ -494,7 +494,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      changeZOrder(services, ih, ref, 'forward');
+      changeZOrder(ih, ref, 'forward');
     },
   },
   {
@@ -506,7 +506,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      changeZOrder(services, ih, ref, 'backward');
+      changeZOrder(ih, ref, 'backward');
     },
   },
   {
@@ -518,7 +518,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      changeZOrder(services, ih, ref, 'back');
+      changeZOrder(ih, ref, 'back');
     },
   },
   {
@@ -673,26 +673,25 @@ function recordObjectMutation(
 const DEFER_REFRESH_TO_EXIT = { refresh: 'none' } as const;
 
 /**
- * [Task #2370 클러스터 A] z순서 변경 — 이미 맨 앞/뒤라 바뀔 것이 없으면 기록하지 않는다.
+ * [Task #2370 클러스터 A → #5769 후속] z순서 변경 — 스냅샷 대신 역연산 커맨드로 기록한다.
  *
- * `change_shape_z_order_native`(shape.rs)는 경계 케이스에서 문서를 건드리지 않고
- * `{ok:true, zOrder:<현재값>}` 을 그대로 돌려준다("이미 맨 앞/뒤" → `changes = None`).
- * 반대로 실제로 바뀌는 경우 새 z 는 항상 이전과 다르다(front=max+1 · back=min-1 ·
- * forward/backward=이웃 z 또는 ±1). 따라서 **반환 zOrder 와 호출 전 zOrder 의 일치가
- * 곧 무변경 신호**다 — 이를 no-op 으로 보고해 phantom undo 엔트리와 스냅샷 2슬롯 점유를
- * 막는다.
+ * 무변경 판정은 Rust 응답의 moves 로 한다 — change_shape_z_order_native 는 "이미 맨 앞/뒤"
+ * 경계에서 문서를 건드리지 않고 빈 moves 를 돌려주고, 실제 변경 시 대상(+교환 이웃)의
+ * before/after 쌍을 담는다. SetZOrderCommand 가 그 쌍을 undo/redo 의 절대 복원값으로
+ * 소비한다 — 되돌릴 것이 스칼라 1~2개인데 문서 전체 클론을 스택에 얹지 않는다(#5769).
+ * 양식 모드 게이트는 kind:'command' 라우팅이 execute 보다 먼저 통과시킨다(#3230 계약).
  */
 function changeZOrder(
-  services: import('../types').CommandServices,
   ih: InputHandler,
   ref: PictureRef,
   operation: 'front' | 'forward' | 'backward' | 'back',
 ): void {
-  const zBefore = (getProps(services, ref) as { zOrder?: number }).zOrder;
-  recordObjectMutation(ih, 'changeZOrder', (wasm) => {
-    const r = wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, operation);
-    return r.ok && r.zOrder !== zBefore;
-  }, DEFER_REFRESH_TO_EXIT);
+  const pos = ih.getPositionOutsideSelectedPicture() ?? ih.getCursorPosition();
+  ih.executeOperation({
+    kind: 'command',
+    command: new SetZOrderCommand(ref.sec, ref.ppi, ref.ci, operation, pos),
+    meta: DEFER_REFRESH_TO_EXIT,
+  });
   ih.exitPictureObjectSelectionAndAfterEdit();
 }
 
