@@ -1,6 +1,6 @@
 ---
 kind: report
-status: draft
+status: completed
 canonical: mydocs/report/task_m100_4964_report.md
 last_verified: 2026-08-23
 ---
@@ -8,6 +8,8 @@ last_verified: 2026-08-23
 # Task M100 #4964 — W6 metric 계보 분리 최종 보고
 
 Issue: #4964
+
+- **메인테이너 최종 승인**: 2026-08-23
 
 ## 1. 결론
 
@@ -114,7 +116,6 @@ runtime truth로 바로 import하지 않고, verified·partial·unknown 상태�
 수행계획의 12개 보호 불변식과 완료 조건을 모두 충족했다. 신규 font bytes, private corpus 식별 자료,
 ignored build·SVG 비교 산출물은 Git 변경에 포함하지 않았다.
 
-이 보고서는 메인테이너 승인 전 draft다. 승인 후 Stage W6-5 변경을 로컬 커밋하고, 최신
-`upstream/devel`과의 충돌·검증 범위를 다시 확인한 뒤 remote push와 PR 생성은 각각 별도 승인을 받아
-진행한다. CI 성공 뒤 self-review·merge·#4964 close와 상위 #4960의 W6 상태 갱신도 프로젝트 절차에
-따른다.
+메인테이너는 2026-08-23 이 최종 보고서를 승인했다. 최신 `upstream/devel`과의 충돌·검증 범위를
+다시 확인한 뒤 remote push와 PR 생성은 각각 별도 승인을 받아 진행한다. CI 성공 뒤
+self-review·merge·#4964 close와 상위 #4960의 W6 상태 갱신도 프로젝트 절차에 따른다.
