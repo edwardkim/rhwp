@@ -197,17 +197,24 @@ pub(super) fn print() {
     println!("      분산형은 첫 열이 X 값이고 머리 행 첫 칸이 X 로 표시된다");
     println!();
     println!("  csv-to-chart <파일.hwp|파일.hwpx> --csv <경로.csv> --chart <번호> [옵션]");
-    println!("      CSV 내용으로 기존 차트 N의 값을 덮어쓰기 (계열·값 개수는 바꾸지 않음)");
+    println!("      CSV 내용으로 기존 차트 N의 값을 덮어쓰기 (기본: 계열·값 개수는 바꾸지 않음)");
     println!();
     println!("      --csv <경로>            읽을 CSV 파일 (UTF-8, 선두 BOM 허용)");
     println!("      --chart <번호>          덮어쓸 차트 (문서 순서, 1부터)");
     println!("      -o, --output <파일>     출력 경로 (기본: <입력 stem>_chart.hwp/.hwpx)");
+    println!("      --structure             CSV 를 목표 상태로 — 행·열 증감(꼬리 기준)·계열명·");
+    println!(
+        "                              라벨 변경도 쓴다. 원형은 계열 1 고정, 주식형은 계열 수"
+    );
+    println!(
+        "                              고정, 마지막 1점/1계열 삭제는 거부 (invalid[] + exit 2)"
+    );
     println!("      --dry-run               파일을 쓰지 않고 바뀔 칸만 보고");
     println!("      --verify                저장 직후 재파싱 IR 자기검증 (차이 시 exit 3)");
     println!("      --json                  계약 봉투 JSON을 stdout에 출력");
     println!("      값은 OOXML 두 표현(zip 파트·중첩 CFB)에 함께 쓴다 — 한쪽만 쓰면 HWP");
     println!("      변환에서 편집이 사라진다. 어디에 썼는지는 봉투의 wrote[] 로 드러난다");
-    println!("      계열·값 개수나 계열명·라벨이 다르면 한 칸도 쓰지 않고 invalid[] + exit 2");
+    println!("      --structure 없이 계열·값 개수나 계열명·라벨이 다르면 한 칸도 쓰지 않고 invalid[] + exit 2");
     println!();
     println!("  export-pdf <파일.hwp|파일.hwpx|파일.hml> [옵션]");
     println!("      HWP/HWPX/HML 문서를 PDF로 내보내기 (기본: SVG 호환 backend)");
