@@ -414,3 +414,586 @@ fn legacy_spans_still_slice_back_to_their_text() {
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// S2 — 패처: 구간→바이트열 splice, 점·계열 꼬리 삽입·삭제, 계열명·라벨 치환
+// ---------------------------------------------------------------------------
+
+use rhwp::ooxml_chart::patch::{
+    apply_chart_edits, apply_value_edits, ChartEdit, EditTarget, PatchError, ValueEdit,
+};
+
+fn value(series: usize, point: usize, text: &str) -> ChartEdit {
+    ChartEdit::Value(ValueEdit {
+        series,
+        point,
+        target: EditTarget::Value,
+        text: text.to_string(),
+    })
+}
+
+fn label(series: usize, point: usize, text: &str) -> ChartEdit {
+    ChartEdit::Value(ValueEdit {
+        series,
+        point,
+        target: EditTarget::Label,
+        text: text.to_string(),
+    })
+}
+
+fn strs(items: &[&str]) -> Vec<String> {
+    items.iter().map(|s| s.to_string()).collect()
+}
+
+fn apply(xml: &str, edits: &[ChartEdit]) -> Result<String, PatchError> {
+    let data = scan_chart_values(xml.as_bytes()).expect("스캔");
+    apply_chart_edits(xml.as_bytes(), &data, edits).map(|b| String::from_utf8(b).expect("UTF-8"))
+}
+
+/// 카테고리 라벨도 캐시 텍스트 치환 대상이다 — B1 의 `LabelNotEditable` 은 사라진다.
+#[test]
+fn category_label_edit_patches_the_cache_text() {
+    let out = apply(TWO_SERIES_BAR, &[label(0, 0, "바뀐항목")]).expect("패치");
+    assert!(out.contains("<c:v>바뀐항목</c:v>"), "{out}");
+    assert!(out.contains("Sheet1!$A$2:$A$3"), "c:f 가 사라졌다");
+    let data = scan_chart_values(out.as_bytes()).expect("재스캔");
+    assert_eq!(data.series[0].labels[0].text, "바뀐항목");
+    assert_eq!(
+        data.series[1].labels[0].text, "항목 1",
+        "다른 계열 라벨이 바뀌었다"
+    );
+}
+
+/// 계열명은 `c:tx` 캐시 텍스트만 바뀌고 `c:f` 는 그대로다.
+#[test]
+fn series_name_edit_replaces_cache_text_only() {
+    let out = apply(
+        TWO_SERIES_BAR,
+        &[ChartEdit::SeriesName {
+            series: 0,
+            text: "이름바뀐계열".to_string(),
+        }],
+    )
+    .expect("패치");
+    assert!(out.contains("<c:v>이름바뀐계열</c:v>"), "{out}");
+    assert!(out.contains("Sheet1!$B$1"), "계열명 c:f 가 사라졌다");
+    let data = scan_chart_values(out.as_bytes()).expect("재스캔");
+    assert_eq!(data.series[0].name.as_deref(), Some("이름바뀐계열"));
+    assert_eq!(data.series[1].name.as_deref(), Some("계열 2"));
+}
+
+/// `c:tx` 가 없는 계열의 이름은 제자리 치환 대상이 아니다.
+#[test]
+fn series_name_edit_without_tx_is_refused() {
+    let xml = concat!(
+        r#"<c:chartSpace><c:chart><c:plotArea><c:barChart><c:ser>"#,
+        r#"<c:val><c:numLit><c:ptCount val="1"/><c:pt idx="0"><c:v>1</c:v></c:pt></c:numLit></c:val>"#,
+        r#"</c:ser></c:barChart></c:plotArea></c:chart></c:chartSpace>"#,
+    );
+    assert_eq!(
+        apply(
+            xml,
+            &[ChartEdit::SeriesName {
+                series: 0,
+                text: "이름".to_string()
+            }]
+        ),
+        Err(PatchError::SeriesNameNotPatchable { series: 0 })
+    );
+}
+
+/// 꼬리 점 추가 — `c:pt` 요소가 붙고 `ptCount` 가 재계산되며, 산출을 다시 읽을 수 있다.
+#[test]
+fn append_points_adds_pt_elements_and_recounts() {
+    let edits = [
+        ChartEdit::AppendPoints {
+            series: 0,
+            target: EditTarget::Label,
+            texts: strs(&["추가항목"]),
+        },
+        ChartEdit::AppendPoints {
+            series: 0,
+            target: EditTarget::Value,
+            texts: strs(&["9"]),
+        },
+        ChartEdit::AppendPoints {
+            series: 1,
+            target: EditTarget::Label,
+            texts: strs(&["추가항목"]),
+        },
+        ChartEdit::AppendPoints {
+            series: 1,
+            target: EditTarget::Value,
+            texts: strs(&["8"]),
+        },
+    ];
+    let out = apply(TWO_SERIES_BAR, &edits).expect("패치");
+    assert!(
+        out.contains(r#"<c:pt idx="2"><c:v>9</c:v></c:pt></c:numCache>"#),
+        "새 점이 캐시 끝에 없다: {out}"
+    );
+    assert!(
+        out.contains(r#"<c:pt idx="2"><c:v>추가항목</c:v></c:pt></c:strCache>"#),
+        "새 라벨이 캐시 끝에 없다: {out}"
+    );
+    assert_eq!(
+        out.matches(r#"<c:ptCount val="3"/>"#).count(),
+        4,
+        "라벨·값 블록 4개의 ptCount 가 3 이어야 한다"
+    );
+    assert_eq!(
+        out.matches(r#"<c:ptCount val="1"/>"#).count(),
+        2,
+        "c:tx 의 ptCount 는 그대로다"
+    );
+    let data =
+        scan_chart_values(out.as_bytes()).expect("산출 재스캔 — 비순차 idx 면 여기서 죽는다");
+    for s in &data.series {
+        assert_eq!(s.labels.len(), 3);
+        assert_eq!(s.values.len(), 3);
+        assert_eq!(
+            s.labels_shape
+                .as_ref()
+                .unwrap()
+                .pt_count
+                .as_ref()
+                .unwrap()
+                .value,
+            3
+        );
+        assert_eq!(
+            s.values_shape
+                .as_ref()
+                .unwrap()
+                .pt_count
+                .as_ref()
+                .unwrap()
+                .value,
+            3
+        );
+    }
+    assert_eq!(data.series[0].values[2].text, "9");
+    assert_eq!(data.series[1].labels[2].text, "추가항목");
+}
+
+/// 꼬리 점 삭제 — `keep` 개만 남고 `ptCount` 가 줄며, 지운 텍스트는 산출에 없다.
+#[test]
+fn truncate_points_removes_the_tail_and_recounts() {
+    let edits = [
+        ChartEdit::TruncatePoints {
+            series: 0,
+            target: EditTarget::Label,
+            keep: 1,
+        },
+        ChartEdit::TruncatePoints {
+            series: 0,
+            target: EditTarget::Value,
+            keep: 1,
+        },
+    ];
+    let out = apply(TWO_SERIES_BAR, &edits).expect("패치");
+    assert!(!out.contains("<c:v>2.5</c:v>"), "지운 값이 남았다");
+    let data = scan_chart_values(out.as_bytes()).expect("재스캔");
+    assert_eq!(data.series[0].labels.len(), 1);
+    assert_eq!(data.series[0].values.len(), 1);
+    assert_eq!(
+        data.series[0]
+            .values_shape
+            .as_ref()
+            .unwrap()
+            .pt_count
+            .as_ref()
+            .unwrap()
+            .value,
+        1
+    );
+    assert_eq!(data.series[1].values.len(), 2, "다른 계열이 줄었다");
+}
+
+/// 빈 점 `<c:v/>` 는 치환할 수 없지만 꼬리 삭제는 된다.
+#[test]
+fn blank_point_can_be_truncated_but_not_replaced() {
+    let xml = concat!(
+        r#"<c:chartSpace><c:chart><c:plotArea><c:barChart><c:ser>"#,
+        r#"<c:val><c:numLit><c:ptCount val="2"/>"#,
+        r#"<c:pt idx="0"><c:v>1</c:v></c:pt><c:pt idx="1"><c:v/></c:pt>"#,
+        r#"</c:numLit></c:val></c:ser></c:barChart></c:plotArea></c:chart></c:chartSpace>"#,
+    );
+    assert_eq!(
+        apply(xml, &[value(0, 1, "5")]),
+        Err(PatchError::ValueNotPatchable {
+            series: 0,
+            point: 1
+        })
+    );
+    let out = apply(
+        xml,
+        &[ChartEdit::TruncatePoints {
+            series: 0,
+            target: EditTarget::Value,
+            keep: 1,
+        }],
+    )
+    .expect("빈 점도 지운다");
+    assert!(!out.contains("<c:v/>"));
+    assert!(out.contains(r#"<c:ptCount val="1"/>"#));
+}
+
+/// 마지막 1점·1계열은 패처 층에서도 지우지 못한다 — 산출을 스캐너가 못 읽게 되는 하한.
+#[test]
+fn truncate_to_zero_is_refused() {
+    assert_eq!(
+        apply(
+            TWO_SERIES_BAR,
+            &[ChartEdit::TruncatePoints {
+                series: 0,
+                target: EditTarget::Value,
+                keep: 0
+            }]
+        ),
+        Err(PatchError::EmptyBlockRefused {
+            series: 0,
+            target: EditTarget::Value
+        })
+    );
+    assert_eq!(
+        apply(TWO_SERIES_BAR, &[ChartEdit::TruncateSeries { keep: 0 }]),
+        Err(PatchError::EmptySeriesRefused)
+    );
+}
+
+/// 앵커·ptCount 가 없는 블록(다층 캐시)은 개수를 바꿀 수 없다.
+#[test]
+fn block_without_anchor_cannot_be_resized() {
+    let xml = concat!(
+        r#"<c:chartSpace><c:chart><c:plotArea><c:barChart><c:ser>"#,
+        r#"<c:cat><c:multiLvlStrRef><c:multiLvlStrCache><c:ptCount val="1"/>"#,
+        r#"<c:lvl><c:pt idx="0"><c:v>상반기</c:v></c:pt></c:lvl>"#,
+        r#"</c:multiLvlStrCache></c:multiLvlStrRef></c:cat>"#,
+        r#"<c:val><c:numLit><c:ptCount val="1"/><c:pt idx="0"><c:v>1</c:v></c:pt></c:numLit></c:val>"#,
+        r#"</c:ser></c:barChart></c:plotArea></c:chart></c:chartSpace>"#,
+    );
+    assert_eq!(
+        apply(
+            xml,
+            &[ChartEdit::AppendPoints {
+                series: 0,
+                target: EditTarget::Label,
+                texts: strs(&["하반기"])
+            }]
+        ),
+        Err(PatchError::BlockNotResizable {
+            series: 0,
+            target: EditTarget::Label
+        })
+    );
+}
+
+/// 계열 신설 — 마지막 계열을 복제해 `c:idx`/`c:order` 채번, 이름·값 교체. `c:f` 는 복제분 그대로.
+#[test]
+fn append_series_clones_the_last_series_with_new_idx_order_name_values() {
+    let out = apply(
+        TWO_SERIES_BAR,
+        &[ChartEdit::AppendSeries {
+            name: Some("추가계열".to_string()),
+            labels: None,
+            values: strs(&["6", "7"]),
+        }],
+    )
+    .expect("패치");
+    assert!(
+        out.contains(r#"<c:idx val="2"/><c:order val="2"/>"#),
+        "채번이 안 됐다: {out}"
+    );
+    assert_eq!(
+        out.matches("Sheet1!$C$2:$C$3").count(),
+        2,
+        "복제 계열의 c:f 는 원본 그대로 둔다"
+    );
+    let data = scan_chart_values(out.as_bytes()).expect("재스캔");
+    assert_eq!(data.series.len(), 3);
+    let added = &data.series[2];
+    assert_eq!(added.name.as_deref(), Some("추가계열"));
+    assert_eq!(
+        added
+            .values
+            .iter()
+            .map(|p| p.text.as_str())
+            .collect::<Vec<_>>(),
+        ["6", "7"]
+    );
+    assert_eq!(
+        added
+            .labels
+            .iter()
+            .map(|p| p.text.as_str())
+            .collect::<Vec<_>>(),
+        ["항목 1", "항목 2"]
+    );
+    assert_eq!(
+        data.series[1].name.as_deref(),
+        Some("계열 2"),
+        "템플릿이 바뀌었다"
+    );
+    assert_eq!(data.series[1].values[0].text, "2.4");
+}
+
+/// 행 수가 같은 호출에서 바뀌면 신설 계열도 **최종** 행 수로 만들어진다.
+#[test]
+fn append_series_with_row_change_uses_the_final_row_count() {
+    let mut edits = Vec::new();
+    for s in 0..2 {
+        edits.push(ChartEdit::AppendPoints {
+            series: s,
+            target: EditTarget::Label,
+            texts: strs(&["항목 3"]),
+        });
+        edits.push(ChartEdit::AppendPoints {
+            series: s,
+            target: EditTarget::Value,
+            texts: strs(&["1"]),
+        });
+    }
+    edits.push(ChartEdit::AppendSeries {
+        name: Some("계열 3".to_string()),
+        labels: Some(strs(&["항목 1", "항목 2", "항목 3"])),
+        values: strs(&["3", "3", "3"]),
+    });
+    let out = apply(TWO_SERIES_BAR, &edits).expect("패치");
+    let data = scan_chart_values(out.as_bytes()).expect("재스캔");
+    assert_eq!(data.series.len(), 3);
+    for s in &data.series {
+        assert_eq!(s.labels.len(), 3, "{:?}", s.name);
+        assert_eq!(s.values.len(), 3, "{:?}", s.name);
+        assert_eq!(
+            s.values_shape
+                .as_ref()
+                .unwrap()
+                .pt_count
+                .as_ref()
+                .unwrap()
+                .value,
+            3
+        );
+        assert_eq!(
+            s.labels_shape
+                .as_ref()
+                .unwrap()
+                .pt_count
+                .as_ref()
+                .unwrap()
+                .value,
+            3
+        );
+    }
+    assert_eq!(data.series[2].values[2].text, "3");
+    assert_eq!(data.series[2].labels[2].text, "항목 3");
+}
+
+/// 신설 계열의 값 개수가 최종 행 수와 다르면 거부한다.
+#[test]
+fn append_series_length_mismatch_is_refused() {
+    assert_eq!(
+        apply(
+            TWO_SERIES_BAR,
+            &[ChartEdit::AppendSeries {
+                name: None,
+                labels: None,
+                values: strs(&["1", "2", "3", "4", "5"]),
+            }]
+        ),
+        Err(PatchError::LengthMismatch {
+            series: 2,
+            expected: 2,
+            actual: 5
+        })
+    );
+}
+
+/// 꼬리 계열 삭제 — `keep` 개만 남는다.
+#[test]
+fn truncate_series_removes_trailing_ser_elements() {
+    let out = apply(TWO_SERIES_BAR, &[ChartEdit::TruncateSeries { keep: 1 }]).expect("패치");
+    assert!(!out.contains("계열 2"), "지운 계열이 남았다");
+    assert!(out.contains("ho:hncChartStyle"), "모델 밖 요소가 사라졌다");
+    let data = scan_chart_values(out.as_bytes()).expect("재스캔");
+    assert_eq!(data.series.len(), 1);
+    assert_eq!(data.series[0].name.as_deref(), Some("계열 1"));
+}
+
+/// 같은 앵커의 삽입 여럿은 계획 순서대로 놓인다.
+#[test]
+fn same_offset_inserts_follow_plan_order() {
+    let out = apply(
+        TWO_SERIES_BAR,
+        &[
+            ChartEdit::AppendSeries {
+                name: Some("셋째".to_string()),
+                labels: None,
+                values: strs(&["1", "1"]),
+            },
+            ChartEdit::AppendSeries {
+                name: Some("넷째".to_string()),
+                labels: None,
+                values: strs(&["2", "2"]),
+            },
+        ],
+    )
+    .expect("패치");
+    let data = scan_chart_values(out.as_bytes()).expect("재스캔");
+    assert_eq!(
+        data.series
+            .iter()
+            .map(|s| s.name.clone().unwrap())
+            .collect::<Vec<_>>(),
+        ["계열 1", "계열 2", "셋째", "넷째"]
+    );
+    assert!(out.contains(r#"<c:idx val="2"/>"#) && out.contains(r#"<c:idx val="3"/>"#));
+}
+
+/// 지워질 점을 동시에 치환하려 하면 구간이 겹쳐 거부한다 — 한 바이트도 쓰지 않는다.
+#[test]
+fn overlapping_structure_edits_are_refused() {
+    let result = apply(
+        TWO_SERIES_BAR,
+        &[
+            ChartEdit::TruncatePoints {
+                series: 0,
+                target: EditTarget::Value,
+                keep: 1,
+            },
+            value(0, 1, "9"),
+        ],
+    );
+    assert!(
+        matches!(
+            result,
+            Err(PatchError::OverlappingSpans { series: 0, .. })
+                | Err(PatchError::OverlappingStructureEdits { series: 0, .. })
+        ),
+        "{result:?}"
+    );
+}
+
+/// 이름·라벨·새 점의 XML 특수문자는 이스케이프하지 않고 거부한다.
+#[test]
+fn unsafe_texts_are_refused_for_names_labels_and_new_points() {
+    assert_eq!(
+        apply(
+            TWO_SERIES_BAR,
+            &[ChartEdit::SeriesName {
+                series: 0,
+                text: "R&D".to_string()
+            }]
+        ),
+        Err(PatchError::UnsafeName { series: 0 })
+    );
+    assert_eq!(
+        apply(TWO_SERIES_BAR, &[label(0, 0, "a<b")]),
+        Err(PatchError::UnsafeText {
+            series: 0,
+            point: 0
+        })
+    );
+    assert_eq!(
+        apply(
+            TWO_SERIES_BAR,
+            &[ChartEdit::AppendPoints {
+                series: 0,
+                target: EditTarget::Value,
+                texts: strs(&["1", "x>y"])
+            }]
+        ),
+        Err(PatchError::UnsafeText {
+            series: 0,
+            point: 3
+        })
+    );
+}
+
+/// 구조 편집 산출을 다시 스캔해 모든 값을 그대로 되쓰면 바이트 동일이다 — 산출이 자기정합이다.
+#[test]
+fn structure_output_rescans_and_identity_reapplies_byte_identical() {
+    let out = apply(
+        TWO_SERIES_BAR,
+        &[
+            ChartEdit::AppendPoints {
+                series: 0,
+                target: EditTarget::Label,
+                texts: strs(&["항목 3"]),
+            },
+            ChartEdit::AppendPoints {
+                series: 0,
+                target: EditTarget::Value,
+                texts: strs(&["1"]),
+            },
+            ChartEdit::TruncatePoints {
+                series: 1,
+                target: EditTarget::Label,
+                keep: 1,
+            },
+            ChartEdit::TruncatePoints {
+                series: 1,
+                target: EditTarget::Value,
+                keep: 1,
+            },
+            ChartEdit::SeriesName {
+                series: 1,
+                text: "둘째".to_string(),
+            },
+            // 템플릿(마지막 계열)은 같은 목록에서 1행으로 줄었으므로 신설 계열도 1값이다.
+            ChartEdit::AppendSeries {
+                name: Some("셋째".to_string()),
+                labels: None,
+                values: strs(&["5"]),
+            },
+        ],
+    )
+    .expect("패치");
+    let data = scan_chart_values(out.as_bytes()).expect("재스캔");
+    assert_eq!(data.series.len(), 3);
+    assert_eq!(data.series[2].values.len(), 1);
+    assert_eq!(
+        data.series[2].labels.len(),
+        1,
+        "신설 계열은 템플릿의 라벨 편집(꼬리 삭제)을 물려받는다"
+    );
+    let mut identity = Vec::new();
+    for (si, s) in data.series.iter().enumerate() {
+        for (pi, p) in s.labels.iter().enumerate() {
+            identity.push(label(si, pi, &p.text));
+        }
+        for (pi, p) in s.values.iter().enumerate() {
+            identity.push(value(si, pi, &p.text));
+        }
+        if let Some(name) = &s.name {
+            identity.push(ChartEdit::SeriesName {
+                series: si,
+                text: name.clone(),
+            });
+        }
+    }
+    let again = apply_chart_edits(out.as_bytes(), &data, &identity).expect("항등 재적용");
+    assert_eq!(again, out.as_bytes());
+}
+
+/// `apply_value_edits` 는 `ChartEdit::Value` 로 감싼 호출과 같다 — B1 호출부는 그대로 돈다.
+#[test]
+fn apply_value_edits_is_an_unchanged_wrapper() {
+    let data = scan_chart_values(TWO_SERIES_BAR.as_bytes()).expect("스캔");
+    let edits = [ValueEdit {
+        series: 1,
+        point: 0,
+        target: EditTarget::Value,
+        text: "99".to_string(),
+    }];
+    let via_values = apply_value_edits(TWO_SERIES_BAR.as_bytes(), &data, &edits).expect("패치");
+    let via_chart = apply_chart_edits(
+        TWO_SERIES_BAR.as_bytes(),
+        &data,
+        &[ChartEdit::Value(edits[0].clone())],
+    )
+    .expect("패치");
+    assert_eq!(via_values, via_chart);
+    assert!(String::from_utf8_lossy(&via_values).contains("<c:v>99</c:v>"));
+}
