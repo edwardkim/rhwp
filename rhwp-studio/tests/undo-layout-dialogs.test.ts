@@ -44,7 +44,8 @@ for (const { file, op } of DIALOGS) {
     assert.match(s, /services\?:\s*CommandServices/, `${file}: 생성자에 services 주입`);
     assert.match(s, /import type \{ CommandServices \}/, `${file}: CommandServices import`);
     // onConfirm 이 공용 헬퍼 경유로 snapshot 기록(헬퍼가 getInputHandler 도달을 담당).
-    assert.match(s, /import \{ applyThroughRouter \} from '\.\/dialog-apply'/, `${file}: 공용 헬퍼 import`);
+    // [#5769 Stage 4] 헬퍼 계열 확장(applyCommandThroughRouter)을 수용 — 공용 헬퍼 경유 자체를 핀한다.
+    assert.match(s, /import \{[^}]*applyThroughRouter[^}]*\} from '\.\/dialog-apply'/, `${file}: 공용 헬퍼 import`);
     assert.match(s, /return applyThroughRouter\(\{/, `${file}: onConfirm 이 헬퍼 결과를 반환`);
     assert.match(s, new RegExp(`operationType:\\s*'${op}'`), `${file}: ${op} snapshot 라우팅`);
     // services 미주입 환경 호환 fallback(직접 적용 + emit) 유지.
@@ -53,3 +54,23 @@ for (const { file, op } of DIALOGS) {
     assert.doesNotMatch(s, /catch[^\n]*\n[^\n]*적용 실패/, `${file}: 실패 처리는 헬퍼가 담당`);
   });
 }
+
+test('[#5769 Stage 4] section-settings 는 현재 구역 적용을 속성쌍 커맨드로 역연산화한다', () => {
+  const s = src('section-settings-dialog.ts');
+  assert.match(s, /new SetSectionPropsCommand\(/,
+    '현재 구역 적용은 raw 저널 포함 속성쌍 커맨드로 기록해야 한다');
+  assert.match(s, /scope !== 'all'/,
+    "문서 전체(all)는 다구역 저널이 필요해 스냅샷 잔류임을 코드에 명시해야 한다");
+  assert.match(s, /kind: 'command',/, '커맨드 경로는 kind:command 다(snapshot 아님)');
+
+  // 커맨드 본체의 저널 배선 핀 — 캡처→적용 순서와 undo 의 old 재적용→복원 순서.
+  const cmdSrc = readFileSync(join(rootDir, 'src/engine/command.ts'), 'utf8');
+  const cls = cmdSrc.slice(cmdSrc.indexOf('export class SetSectionPropsCommand'));
+  const body = cls.slice(0, cls.indexOf('\nexport class ', 1) === -1 ? undefined : cls.indexOf('\nexport class ', 1));
+  assert.match(body, /wasm\.captureSectionRaw\(this\.sectionIdx\)[\s\S]{0,200}?wasm\.setSectionDef/,
+    'execute 는 캡처 먼저, 적용 나중이어야 한다');
+  assert.match(body, /wasm\.setSectionDef\(this\.sectionIdx, this\.before\)[\s\S]{0,120}?wasm\.restoreSectionRaw/,
+    'undo 는 old 재적용(raw 재무효화) 뒤 raw 를 복원해야 한다');
+  assert.match(body, /snapshotResourceCount\(\): number \{ return 0; \}/,
+    '속성쌍 경로는 스냅샷 예산을 쓰지 않는다');
+});

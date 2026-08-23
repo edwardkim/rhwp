@@ -406,6 +406,122 @@ pub fn fit_measured_table_nested_tail_to_declared_height(
     Some(fitted)
 }
 
+/// [#5906] 빈 host의 비-TAC RowBreak 표에서 **마지막 행만 저장 선언(cellSz)으로
+/// 잡히고 그 안에 여유가 남을 때**, 앞 행 경계는 그대로 두고 마지막 행에서만
+/// 측정−선언 드리프트를 회수한다.
+///
+/// 페인트 경로의 `fit_row_heights_to_common_height` 는 이미 같은 일을 **키우는
+/// 방향으로만** 한다 — 측정 합이 표 선언높이(hp:sz)보다 작으면 남는 몫을 마지막
+/// 행에 몰아준다. 줄어드는 방향은 그대로 버려져서, 측정이 선언을 몇 px 넘긴 표는
+/// 그 초과분 때문에 본문 바닥을 넘겨 쪽이 갈린다.
+///
+/// `samples/float-stack-defer.hwp` 의 두 번째 12행 표가 그 경우다. 한글 2022 정본은
+/// 2쪽 한 장에 12행을 모두 담고(괘선 실측 90.86pt→770.64pt = 679.78pt ≒ 선언
+/// 68051HU), 앞 11행 경계는 rhwp 측정과 ±1px 로 같다. 다른 것은 마지막 행뿐이다 —
+/// 정본 70.48px, rhwp 는 저장 cellSz 그대로 77.37px. 차이 6.89px 는 rhwp 측정 합이
+/// 표 선언높이를 넘긴 양과 정확히 같다. 그 6.89px 때문에 마지막 두 행이 3쪽으로
+/// 밀린다.
+///
+/// 그래서 회수는 마지막 행 한 곳에서만, 그리고 그 행의 저장 줄 내용(line_segs +
+/// 패딩) 아래로는 내려가지 않는 범위에서만 한다. 마지막 행이 콘텐츠에 밀려 커진
+/// 행이면(측정 ≠ 선언) 회수할 여유가 없다고 보고 손대지 않는다.
+///
+/// 호출자는 native HWP5 의 빈 TopAndBottom host 라는 저장 계약을 별도로 확인해야
+/// 한다. 이 helper 는 마지막 행의 형상과 측정/선언 차이만 검증한다.
+pub fn fit_measured_table_declared_tail_to_declared_height(
+    measured: &MeasuredTable,
+    table: &Table,
+    dpi: f64,
+) -> Option<MeasuredTable> {
+    let row_count = measured.row_heights.len();
+    if row_count < 2 || table.row_count as usize != row_count || table.common.height == 0 {
+        return None;
+    }
+    let last_row = row_count - 1;
+
+    // 마지막 행이 저장 선언으로만 잡힌 행인지 — 콘텐츠가 밀어 키운 행이면 여유가 없다.
+    let declared_tail = table
+        .cells
+        .iter()
+        .filter(|cell| {
+            cell.row as usize == last_row && cell.row_span == 1 && cell.height < 0x8000_0000
+        })
+        .map(|cell| hwpunit_to_px(cell.height as i32, dpi))
+        .fold(0.0f64, f64::max);
+    if declared_tail <= 0.0 || (measured.row_heights[last_row] - declared_tail).abs() > 0.5 {
+        return None;
+    }
+
+    // 축소 하한 = 마지막 행 셀들의 저장 줄 내용 높이 + 상하 패딩.
+    let mut content_floor = 0.0f64;
+    for cell in &table.cells {
+        if cell.row as usize != last_row || cell.row_span != 1 {
+            continue;
+        }
+        // 합성 줄 셀과 중첩 표 tail 은 여기서 판단하지 않는다 (후자는
+        // `fit_measured_table_nested_tail_to_declared_height` 담당).
+        if cell
+            .paragraphs
+            .iter()
+            .any(crate::renderer::para_has_no_stored_line_segs)
+            || cell.paragraphs.iter().any(|paragraph| {
+                paragraph
+                    .controls
+                    .iter()
+                    .any(|control| matches!(control, Control::Table(_)))
+            })
+        {
+            return None;
+        }
+        let content_hu = cell
+            .paragraphs
+            .iter()
+            .flat_map(|paragraph| paragraph.line_segs.iter())
+            .map(|seg| i64::from(seg.vertical_pos) + i64::from(seg.line_height))
+            .max()
+            .unwrap_or(0);
+        let pad = hwpunit_to_px(
+            (cell.padding.top as i32).saturating_add(cell.padding.bottom as i32),
+            dpi,
+        );
+        let floor = hwpunit_to_px(content_hu as i32, dpi) + pad;
+        if floor > content_floor {
+            content_floor = floor;
+        }
+    }
+    if content_floor <= 0.0 {
+        return None;
+    }
+
+    let spacing_total = measured.cell_spacing * row_count.saturating_sub(1) as f64;
+    let target_body_height = hwpunit_to_px(table.common.height as i32, dpi);
+    let target_row_sum = (target_body_height - spacing_total).max(0.0);
+    let current_row_sum = measured.row_heights.iter().sum::<f64>();
+    let reduction = current_row_sum - target_row_sum;
+    // 반올림 급(≤0.5px)은 건드리지 않는다. 선언의 2% 를 넘는 큰 모순은 선언이
+    // stale 한 문서일 수 있으므로 종전대로 콘텐츠 기반 분할에 맡긴다 (#672 의
+    // TAC 임계와 같은 폭).
+    if reduction <= 0.5 || reduction > (target_body_height * 0.02).max(1.0) {
+        return None;
+    }
+    let target_tail = measured.row_heights[last_row] - reduction;
+    if target_tail < content_floor - 0.5 {
+        return None;
+    }
+
+    let mut fitted = measured.clone();
+    fitted.row_heights[last_row] = target_tail;
+    fitted.cumulative_heights = vec![0.0; row_count + 1];
+    for (idx, row_height) in fitted.row_heights.iter().enumerate() {
+        let spacing = if idx > 0 { fitted.cell_spacing } else { 0.0 };
+        fitted.cumulative_heights[idx + 1] = fitted.cumulative_heights[idx] + row_height + spacing;
+    }
+    let previous_body_height = current_row_sum + spacing_total;
+    let caption_and_spacing = (measured.total_height - previous_body_height).max(0.0);
+    fitted.total_height = target_row_sum + spacing_total + caption_and_spacing;
+    Some(fitted)
+}
+
 /// 셀의 줄 단위 측정 정보 (행 내부 분할용)
 #[derive(Debug, Clone)]
 pub struct MeasuredCell {
@@ -462,6 +578,7 @@ pub struct MeasuredSection {
 pub struct HeightMeasurer {
     dpi: f64,
     is_hwp3_variant: bool,
+    legacy_hwp3_stored_geometry: bool,
     is_native_hwp5: bool,
     use_hwp3_origin_flow_spacing_before: bool,
     render_normalization:
@@ -473,6 +590,7 @@ impl HeightMeasurer {
         Self {
             dpi,
             is_hwp3_variant: false,
+            legacy_hwp3_stored_geometry: false,
             is_native_hwp5: false,
             use_hwp3_origin_flow_spacing_before: false,
             render_normalization: std::sync::Arc::new(
@@ -484,6 +602,11 @@ impl HeightMeasurer {
     pub fn with_hwp3_variant(mut self, enabled: bool) -> Self {
         self.is_hwp3_variant = enabled;
         self.use_hwp3_origin_flow_spacing_before = enabled;
+        self
+    }
+
+    pub fn with_legacy_hwp3_stored_geometry(mut self, enabled: bool) -> Self {
+        self.legacy_hwp3_stored_geometry = enabled;
         self
     }
 
@@ -694,11 +817,12 @@ impl HeightMeasurer {
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
 
         // [Task #1042 Stage 6c][#2632] line_segs.empty paragraph 의 compose_lines
-        // fallback 결과를 단 너비 기반으로 recompose — typeset(format_paragraph)·
-        // render(layout_partial_paragraph) 와 동일한 본문 래퍼(recompose_for_body_width)
-        // 사용. 종전엔 셀 전용 recompose_for_cell_width 를 써 restyle_fallback_runs_
-        // by_char_shapes(글자모양별 run 재분할)를 건너뛰어, 글자모양이 섞인 본문
-        // NO_LS 문단의 측정 폭/줄수가 typeset/render 와 어긋났다.
+        // fallback 결과를 단 상자 기반으로 recompose — typeset(format_paragraph)·
+        // render(layout_partial_paragraph) 와 동일한 프레임 소유자
+        // (`recompose_stored_lines_in_frame`) 사용. 종전엔 셀 전용 폭 기반 재래핑을
+        // 써 글자모양별 run 재분할을 건너뛰어, 글자모양이 섞인 본문 NO_LS 문단의
+        // 측정 폭/줄수가 typeset/render 와 어긋났다. #5193 으로 셀도 같은 소유자를
+        // 쓰므로 이제 세 경로가 한 메커니즘이다.
         let recomposed: Option<ComposedParagraph> = match (composed, column_width_px) {
             // [#2553] line_segs.is_empty() 를 match guard 에 두면 저장 line_segs 가 있는
             // 문단이 곧장 `_ => None` 으로 떨어져 아래 stale 재래핑 분기에 도달할 수 없다.
@@ -707,38 +831,25 @@ impl HeightMeasurer {
                 let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                 let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                 let inner = (cw - margin_l - margin_r).max(0.0);
-                if inner > 0.0 && para.line_segs.is_empty() {
-                    let mut cloned = c.clone();
-                    // [#2279] 본문 NO_LS 는 글자모양 재분할 포함 래퍼 사용 —
-                    // typeset/paragraph_layout(렌더)와 동일 (측정/렌더 줄수·pitch 정합).
-                    // cell 래퍼는 restyle_fallback_runs_by_char_shapes 를 빠뜨려
-                    // 혼합 글자모양 문단의 측정 폭이 렌더와 어긋났다.
-                    crate::renderer::composer::recompose_for_body_width(
-                        &mut cloned,
-                        para,
-                        inner,
-                        styles,
-                    );
-                    Some(cloned)
-                } else if inner > 0.0
-                    && crate::renderer::composer::stored_body_lines_stale(
+                // 측정도 렌더와 같은 소유자를 쓴다 — NO_LS 재구축도 저장분할
+                // 판정도 프레임이 소유하고, 측정기는 그 결과를 받는다.
+                // 프레임의 fill 은 `para.char_shapes` 로 토크나이즈하므로
+                // #2632 가 요구한 글자모양 재분할이 그 안에 있다.
+                // `body_for_style`, not `body` — see the note in `typeset.rs`.
+                let paragraph_box = crate::renderer::composer::ParagraphBox::body_for_style(
+                    cw, para_style, self.dpi,
+                );
+                if inner > 0.0 {
+                    crate::renderer::composer::recompose_stored_lines_in_frame(
                         c,
                         para,
+                        paragraph_box,
                         inner,
                         styles,
-                        styles.hwp3_variant,
+                        self.dpi,
+                        self.legacy_hwp3_stored_geometry,
+                        crate::renderer::composer::StoredRowMissPolicy::Reflow,
                     )
-                {
-                    // stale 저장분할 본문 문단을 fresh 재래핑한다.
-                    let mut cloned = c.clone();
-                    crate::renderer::composer::recompose_stale_body_lines(
-                        &mut cloned,
-                        para,
-                        inner,
-                        styles,
-                        styles.hwp3_variant,
-                    );
-                    Some(cloned)
                 } else {
                     None
                 }
@@ -1371,7 +1482,7 @@ impl HeightMeasurer {
                 };
                 let pad_top = hwpunit_to_px(eff_pad.top as i32, self.dpi);
                 let pad_bottom = hwpunit_to_px(eff_pad.bottom as i32, self.dpi);
-                // [Task #671] 좌우 패딩 — recompose_for_cell_width 의 inner_width 계산용
+                // [Task #671] 좌우 패딩 — 셀 content box 의 inner_width 계산용
                 let pad_left = hwpunit_to_px(eff_pad.left as i32, self.dpi);
                 let pad_right = hwpunit_to_px(eff_pad.right as i32, self.dpi);
                 let cell_w_px = if cell.width < 0x80000000 {
@@ -1411,12 +1522,17 @@ impl HeightMeasurer {
                             let mut comp = compose_paragraph(p);
                             // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine
                             // 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할.
-                            // 측정/렌더링 일관성 (layout 의 recompose_for_cell_width 호출과 동일).
-                            crate::renderer::composer::recompose_for_cell_width(
+                            // 측정/렌더링 일관성 (layout 의 같은 프레임 호출과 동일).
+                            crate::renderer::composer::recompose_cell_lines_in_frame(
                                 &mut comp,
                                 p,
-                                cell_inner_width,
+                                crate::renderer::composer::ParagraphBox::content_width_px(
+                                    cell_inner_width,
+                                    self.dpi,
+                                ),
                                 styles,
+                                self.dpi,
+                                self.legacy_hwp3_stored_geometry,
                             );
                             let para_style = styles.para_styles.get(p.para_shape_id as usize);
                             let is_last_para = pidx + 1 == cell_para_count;
@@ -1777,11 +1893,16 @@ impl HeightMeasurer {
                         .last()
                         .map(|p| {
                             let mut comp = compose_paragraph(p);
-                            crate::renderer::composer::recompose_for_cell_width(
+                            crate::renderer::composer::recompose_cell_lines_in_frame(
                                 &mut comp,
                                 p,
-                                cell_inner_width,
+                                crate::renderer::composer::ParagraphBox::content_width_px(
+                                    cell_inner_width,
+                                    self.dpi,
+                                ),
                                 styles,
+                                self.dpi,
+                                self.legacy_hwp3_stored_geometry,
                             );
                             comp.lines
                                 .last()
@@ -1814,6 +1935,7 @@ impl HeightMeasurer {
                         cell_inner_width,
                         cell_h_px - pad_top - pad_bottom,
                         styles,
+                        self.dpi,
                     ) {
                     cell_h_px
                 } else {
@@ -1852,11 +1974,16 @@ impl HeightMeasurer {
                     {
                         for (cell_para_index, cell_para) in cell.paragraphs.iter().enumerate() {
                             let mut comp = compose_paragraph(cell_para);
-                            crate::renderer::composer::recompose_for_cell_width(
+                            crate::renderer::composer::recompose_cell_lines_in_frame(
                                 &mut comp,
                                 cell_para,
-                                cell_inner_width,
+                                crate::renderer::composer::ParagraphBox::content_width_px(
+                                    cell_inner_width,
+                                    self.dpi,
+                                ),
                                 styles,
+                                self.dpi,
+                                self.legacy_hwp3_stored_geometry,
                             );
                             let para_style =
                                 styles.para_styles.get(cell_para.para_shape_id as usize);
@@ -2016,7 +2143,7 @@ impl HeightMeasurer {
                     hwpunit_to_px(eff_pad.top as i32, self.dpi),
                     hwpunit_to_px(eff_pad.bottom as i32, self.dpi),
                 );
-                // [Task #671] 좌우 패딩 (recompose_for_cell_width inner_width 계산용)
+                // [Task #671] 좌우 패딩 (셀 content box inner_width 계산용)
                 let (pad_left, pad_right) = (
                     hwpunit_to_px(eff_pad.left as i32, self.dpi),
                     hwpunit_to_px(eff_pad.right as i32, self.dpi),
@@ -2052,11 +2179,16 @@ impl HeightMeasurer {
                             let mut comp = compose_paragraph(p);
                             // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine
                             // 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할.
-                            crate::renderer::composer::recompose_for_cell_width(
+                            crate::renderer::composer::recompose_cell_lines_in_frame(
                                 &mut comp,
                                 p,
-                                cell_inner_width,
+                                crate::renderer::composer::ParagraphBox::content_width_px(
+                                    cell_inner_width,
+                                    self.dpi,
+                                ),
                                 styles,
+                                self.dpi,
+                                self.legacy_hwp3_stored_geometry,
                             );
                             let para_style = styles.para_styles.get(p.para_shape_id as usize);
                             let is_last_para = pidx + 1 == cell_para_count;

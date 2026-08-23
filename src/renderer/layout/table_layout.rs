@@ -2,6 +2,7 @@
 
 use super::super::composer::{compose_paragraph, ComposedLine, ComposedParagraph};
 use super::super::height_measurer::{
+    fit_measured_table_declared_tail_to_declared_height,
     fit_measured_table_nested_tail_to_declared_height, MeasuredTable,
 };
 use super::super::page_layout::LayoutRect;
@@ -953,6 +954,73 @@ fn reconstruct_nested_table_descendant_fragment_frames(
     }
 }
 
+/// 조각 clip 바닥에서 이만큼(줄 높이 배수) 안쪽에서 시작한 줄까지만 "잘려 나간 그 줄"로 본다.
+const SPLIT_FRAGMENT_RECOVER_LINE_GAP_RATIO: f64 = 1.5;
+
+/// [#5862] 쪽 분할 조각 셀이 **자기가 배치한 직계 글줄**을 clip 밖에 남기지 않게 한다.
+///
+/// 조각 셀의 clip 높이는 괘선이 아니라 쪽 컷 부기(`start_cut`/`end_cut`)가 정한다.
+/// 그 부기와 실제 조판 배치가 어긋나면 조각이 이미 자기 자식으로 붙인 마지막 글줄이
+/// clip 아래로 내려간다. 그 줄은 **다음 쪽이 다시 그리지도 않으므로** 어느 쪽에도
+/// 남지 않는다 — `samples/hwpx_sample2.hwp` 8쪽에서 clip 바닥 985.7 대 직계 글줄
+/// 바닥 1,018.2 로 `[청약신청주택] … 관리번호 …` 한 줄이 통째로 사라졌다(그 구간 잉크
+/// rhwp 0px / 한글 2024 정본 2,946px).
+///
+/// 세 겹으로 좁힌다.
+/// 1. `page_fragment` 셀만 — 일반 셀의 clip 은 괘선 그 자체라 넘기면 아래 칸을 침범한다.
+/// 2. **직계 `TextLine`** 만 — 중첩 표 자손은 다음 쪽 조각일 수 있다(#5863 이 억제한다).
+/// 3. 이미 배치된 것만 보이게 할 뿐, 새 콘텐츠를 만들지도 옮기지도 않는다.
+///
+/// 같은 파일의 `extend_clipped_cell_vertical_clip_to_nearby_nested_table_borders`(테두리
+/// stroke 포섭)와 같은 결의 보정이다.
+fn expand_page_fragment_clip_to_own_text_lines(node: &mut RenderNode, page_bottom: f64) {
+    let RenderNodeType::TableCell(meta) = &node.node_type else {
+        return;
+    };
+    if !meta.clip || !meta.page_fragment {
+        return;
+    }
+    let clip_bottom = node.bbox.y + node.bbox.height;
+
+    // 조각이 자기 자식으로 붙여 놓고 clip 밖으로 흘린 **바로 다음 한 줄**만 되살린다.
+    //
+    // 아래 줄을 전부 포섭하면 조각이 159px 까지 늘어나 뒤 내용이 통째로 밀리고,
+    // `hwpx_sample2.hwpx` 10쪽에서 글자 102개가 종이 밖으로 나갔다
+    // (`overflow_cell_baseline` 원장이 3줄 증가로 잡는다). 컷 부기와 조판이 어긋나는
+    // 폭은 줄 하나 남짓이므로 되살릴 대상도 줄 하나로 못박는다.
+    let mut recovered: Option<&RenderNode> = None;
+    for child in &node.children {
+        if !child.visible || !matches!(child.node_type, RenderNodeType::TextLine(_)) {
+            continue;
+        }
+        if child.bbox.y <= clip_bottom {
+            continue;
+        }
+        // 윗변이 이미 쪽 하단 밖인 줄은 어느 부분도 그려지지 않는다 — 되살릴 것이 없다.
+        if page_bottom > 0.0 && child.bbox.y > page_bottom {
+            continue;
+        }
+        // clip 바닥에서 한 줄 남짓 안쪽에서 시작한 줄만 "잘려 나간 그 줄"로 본다.
+        if child.bbox.y - clip_bottom > child.bbox.height * SPLIT_FRAGMENT_RECOVER_LINE_GAP_RATIO {
+            continue;
+        }
+        if recovered.is_none_or(|best| child.bbox.y < best.bbox.y) {
+            recovered = Some(child);
+        }
+    }
+
+    let Some(line) = recovered else {
+        return;
+    };
+    let mut owned_bottom = line.bbox.y + line.bbox.height;
+    if page_bottom > 0.0 {
+        owned_bottom = owned_bottom.min(page_bottom);
+    }
+    if owned_bottom > clip_bottom + NESTED_FRAGMENT_EDGE_EPSILON_PX {
+        node.bbox.height = owned_bottom - node.bbox.y;
+    }
+}
+
 /// Repair the frame and source-flow seam of a true nested-table continuation.
 ///
 /// A direct nested table keeps its document-global coordinates even when its
@@ -992,6 +1060,7 @@ fn repair_clipped_nested_table_fragment_frame(
     let clip_bottom = node.bbox.y + node.bbox.height;
     repair_clipped_cell_text_table_seam(node, suppress_bottom_text_residue);
     suppress_future_nested_table_border_residue(node, clip_bottom);
+    expand_page_fragment_clip_to_own_text_lines(node, tree.page_size().1);
     for table_index in 0..node.children.len() {
         if !node.children[table_index].visible
             || !matches!(
@@ -1317,7 +1386,16 @@ fn build_col_row_y_from_cell_heights(
         }
         // 저장 파일의 cell.height는 표 전체 높이와 맞지 않는 보조값일 수 있다.
         // 열별 누적 높이가 표 외곽과 맞을 때만 독립 horizontal segment로 해석한다.
-        if (col_row_y[c][row_count] - target_total).abs() > 0.5 && row_y.len() == row_count + 1 {
+        // A Shift-style vertical resize publishes one complete independent
+        // column of absolute height hints. Balanced row resize touches several
+        // columns and must keep the shared row grid even if some source columns
+        // happen to have complete historical hints.
+        let complete_independent_column =
+            table.local_resize_cols.len() == 1 && cell_height_grid[c].iter().all(Option::is_some);
+        if !complete_independent_column
+            && (col_row_y[c][row_count] - target_total).abs() > 0.5
+            && row_y.len() == row_count + 1
+        {
             col_row_y[c].clone_from_slice(row_y);
         }
     }
@@ -1624,6 +1702,64 @@ struct NestedFlowFragment {
     /// `None`은 기존 synthetic/row aggregate fragment이며 layout 값은 바꾸지 않는다.
     source_para_idx: Option<usize>,
     recursive_block_prelude_role: RecursiveBlockPreludeRole,
+}
+
+/// Native HWP5 terminal RowBreak child 뒤의 비가시 host Enter가 보존한
+/// trailing line spacing.
+///
+/// 이 값은 child/outer-table bbox가 아니라 terminal fragment 뒤의 flow advance다.
+/// 따라서 일반 `CellUnit` 높이에 섞지 않고 typeset/layout이 마지막 fragment를
+/// 실제로 방출한 뒤 한 번만 소비한다. 구조 gate는
+/// `native_terminal_rowbreak_child_source_cursor_eligible`와 의도적으로 같다.
+pub(crate) fn native_terminal_child_host_line_spacing(
+    hwp5_stored_pagination_layout: bool,
+    table: &crate::model::table::Table,
+    dpi: f64,
+) -> f64 {
+    if !hwp5_stored_pagination_layout
+        || table.common.treat_as_char
+        || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        || !matches!(table.common.vert_rel_to, VertRelTo::Para)
+        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || table.row_count <= 1
+    {
+        return 0.0;
+    }
+
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row_span == 1 && cell.row as usize + 1 == table.row_count as usize)
+        .filter_map(|cell| {
+            let host = cell.paragraphs.first()?;
+            let mut children = host.controls.iter().filter_map(|control| match control {
+                Control::Table(child) => Some(child.as_ref()),
+                _ => None,
+            });
+            let child = children.next()?;
+            if !host.text.trim().is_empty()
+                || children.next().is_some()
+                || child.row_count != 1
+                || child.col_count != 1
+                || child.common.treat_as_char
+                || child.cells.len() != 1
+                || !cell.paragraphs.iter().skip(1).all(|paragraph| {
+                    paragraph.text.trim().is_empty()
+                        && paragraph.controls.is_empty()
+                        && paragraph.line_segs.len() <= 1
+                })
+            {
+                return None;
+            }
+            cell.paragraphs
+                .iter()
+                .skip(1)
+                .rev()
+                .find_map(|paragraph| paragraph.line_segs.last())
+                .filter(|segment| segment.line_spacing > 0)
+                .map(|segment| hwpunit_to_px(segment.line_spacing, dpi))
+        })
+        .fold(0.0, f64::max)
 }
 
 #[derive(Debug, Clone)]
@@ -3359,9 +3495,25 @@ impl LayoutEngine {
                 && matches!(table.page_break, TablePageBreak::RowBreak)
                 && table.row_count > 1
                 && table.cells.iter().all(|cell| cell.row_span == 1);
+            // [#5906] 마지막 행이 저장 선언으로만 잡힌 표의 초과분 회수도 같은
+            // 이유로 조판/페인트가 함께 봐야 한다 — typeset 은 줄어든 tail 로
+            // 쪽을 잡는데 페인트가 원래 높이를 그리면 표가 본문 밖으로 넘친다.
+            let native_rowbreak_declared_tail = self.profile.get().hwp5_stored_pagination_layout()
+                && !table.common.treat_as_char
+                && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+                && matches!(table.common.vert_rel_to, VertRelTo::Para)
+                && matches!(table.page_break, TablePageBreak::RowBreak)
+                && table.row_count > 1;
             let tail_fitted = native_rowbreak_nested_tail
                 .then(|| fit_measured_table_nested_tail_to_declared_height(mt, table, self.dpi))
-                .flatten();
+                .flatten()
+                .or_else(|| {
+                    native_rowbreak_declared_tail
+                        .then(|| {
+                            fit_measured_table_declared_tail_to_declared_height(mt, table, self.dpi)
+                        })
+                        .flatten()
+                });
             let measured = tail_fitted.as_ref().unwrap_or(mt);
             let mut rh = measured.row_heights.clone();
             rh.resize(row_count, hwpunit_to_px(400, self.dpi));
@@ -3652,11 +3804,16 @@ impl LayoutEngine {
                 // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine
                 // 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할.
                 // 측정/렌더링 일관성 보장 (table_layout.rs:1226 의 렌더링 경로와 동일).
-                crate::renderer::composer::recompose_for_cell_width(
+                crate::renderer::composer::recompose_cell_lines_in_frame(
                     &mut comp,
                     p,
-                    cell_inner_width_px,
+                    crate::renderer::composer::ParagraphBox::content_width_px(
+                        cell_inner_width_px,
+                        self.dpi,
+                    ),
                     styles,
+                    self.dpi,
+                    self.profile.get().legacy_hwp3_stored_geometry(),
                 );
                 self.calc_para_lines_height(
                     &comp.lines,
@@ -6337,6 +6494,7 @@ impl LayoutEngine {
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
                     clip: true,
+                    page_fragment: false,
                     model_cell_index: Some(cell_idx as u32),
                 }),
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
@@ -6415,25 +6573,19 @@ impl LayoutEngine {
             // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
             // 한컴이 PARA_LINE_SEG 를 인코딩하지 않은 케이스 (samples/계획서.hwp) 의
             // 줄겹침 시각 결함 정정. 정상 line_segs 인코딩된 paragraph 는 무영향.
-            let restore_indented_tracking =
-                self.long_indented_tracking_uses_table_content_box(table, styles);
             for (cpi, para) in cell.paragraphs.iter().enumerate() {
                 if let Some(comp) = composed_paras.get_mut(cpi) {
-                    if restore_indented_tracking {
-                        crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
-                            comp,
-                            para,
+                    crate::renderer::composer::recompose_cell_lines_in_frame(
+                        comp,
+                        para,
+                        crate::renderer::composer::ParagraphBox::content_width_px(
                             inner_width,
-                            styles,
-                        );
-                    } else {
-                        crate::renderer::composer::recompose_for_cell_width(
-                            comp,
-                            para,
-                            inner_width,
-                            styles,
-                        );
-                    }
+                            self.dpi,
+                        ),
+                        styles,
+                        self.dpi,
+                        self.profile.get().legacy_hwp3_stored_geometry(),
+                    );
                 }
             }
 
@@ -6886,6 +7038,7 @@ impl LayoutEngine {
     ) -> f64 {
         let measurer = super::super::height_measurer::HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(self.profile.get().hwp3_layout())
+            .with_legacy_hwp3_stored_geometry(self.profile.get().legacy_hwp3_stored_geometry())
             .with_native_hwp5(self.profile.get().hwp5_stored_pagination_layout())
             .with_render_normalization(self.render_normalization_overlay());
         measurer.cell_controls_height(&cell.paragraphs, styles, 0, 0.0)
@@ -7610,28 +7763,22 @@ impl LayoutEngine {
             let inner_width = (cell_w - pad_left - pad_right).max(0.0);
             let mut cell_units = Vec::new();
             let mut after_completed_multiline_table = false;
-            let restore_indented_tracking =
-                self.long_indented_tracking_uses_table_content_box(table, styles);
             for (pi, para) in cell.paragraphs.iter().enumerate() {
                 let para_is_empty_spacer = para.text.trim().is_empty() && para.controls.is_empty();
                 let starts_after_completed_multiline_table =
                     after_completed_multiline_table && !para_is_empty_spacer;
                 let mut comp = compose_paragraph(para);
-                if restore_indented_tracking {
-                    crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
-                        &mut comp,
-                        para,
+                crate::renderer::composer::recompose_cell_lines_in_frame(
+                    &mut comp,
+                    para,
+                    crate::renderer::composer::ParagraphBox::content_width_px(
                         inner_width,
-                        styles,
-                    );
-                } else {
-                    crate::renderer::composer::recompose_for_cell_width(
-                        &mut comp,
-                        para,
-                        inner_width,
-                        styles,
-                    );
-                }
+                        self.dpi,
+                    ),
+                    styles,
+                    self.dpi,
+                    self.profile.get().legacy_hwp3_stored_geometry(),
+                );
                 // [#2279 axis A] 종전에는 comp.lines 빈 문단을 통째 skip 해 (a) 2단계
                 // 중첩 표(빈 문단 소속)와 (b) 빈 문단 줄박스가 유닛에서 누락됐다 —
                 // 86712 pi=172 r27 근거설명(25문단 + 3×12 + 5×4 내부표) 프래그먼트 합
@@ -7782,21 +7929,17 @@ impl LayoutEngine {
                     );
                     for (pi, para) in cell.paragraphs.iter().enumerate() {
                         let mut comp = compose_paragraph(para);
-                        if restore_indented_tracking {
-                            crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
-                                &mut comp,
-                                para,
+                        crate::renderer::composer::recompose_cell_lines_in_frame(
+                            &mut comp,
+                            para,
+                            crate::renderer::composer::ParagraphBox::content_width_px(
                                 inner_width,
-                                styles,
-                            );
-                        } else {
-                            crate::renderer::composer::recompose_for_cell_width(
-                                &mut comp,
-                                para,
-                                inner_width,
-                                styles,
-                            );
-                        }
+                                self.dpi,
+                            ),
+                            styles,
+                            self.dpi,
+                            self.profile.get().legacy_hwp3_stored_geometry(),
+                        );
                         let nctl = para.controls.len();
                         eprintln!(
                             "  p[{pi}] lines={} text_len={} ctrls={} ls_stored={} text={:?}",
@@ -8500,21 +8643,14 @@ impl LayoutEngine {
                 self.paragraph_cell_other_non_inline_control_heights(&p.controls);
             let para_non_inline_h = para_top_and_bottom_h + para_other_non_inline_h;
             let mut comp = compose_paragraph(p);
-            if self.long_indented_tracking_uses_table_content_box(table, styles) {
-                crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
-                    &mut comp,
-                    p,
-                    inner_width,
-                    styles,
-                );
-            } else {
-                crate::renderer::composer::recompose_for_cell_width(
-                    &mut comp,
-                    p,
-                    inner_width,
-                    styles,
-                );
-            }
+            crate::renderer::composer::recompose_cell_lines_in_frame(
+                &mut comp,
+                p,
+                crate::renderer::composer::ParagraphBox::content_width_px(inner_width, self.dpi),
+                styles,
+                self.dpi,
+                self.profile.get().legacy_hwp3_stored_geometry(),
+            );
             // [#2291] 부실 저장(ls==1 인데 실폭 초과) 문단 재분할 — 가로쓰기 셀 한정.
             if cell.text_direction == 0 {
                 crate::renderer::composer::recompose_stored_single_line_if_overflowing(
@@ -8522,6 +8658,7 @@ impl LayoutEngine {
                     p,
                     inner_width,
                     styles,
+                    self.dpi,
                 );
             }
             let para_style = styles.para_styles.get(p.para_shape_id as usize);
@@ -10091,6 +10228,52 @@ impl LayoutEngine {
         (line_spacing + paragraph_spacing).min(previous_unit.height.max(0.0))
     }
 
+    /// [#5920] 중첩 표만 든 문단 유닛에서 **상자 아래 보이지 않는 이송 여백**.
+    ///
+    /// 가시 텍스트 없이 표 control 만 든 문단의 유닛 높이는
+    /// `max(중첩 표 높이, 줄 이송 높이)` 다. 줄 이송이 표보다 크면 상자 아래에
+    /// 아무것도 그리지 않는 여백이 남는다. 한글은 이 여백을 쪽 하단 예산에 넣지
+    /// 않는다 — 상자 자체가 본문 안에 들어가면 그 쪽에 앉히고 여백은 쪽 경계
+    /// 밖으로 흘린다(#5920 정본 8쪽: 결론 상자 512.0~778.0pt, 본문 하단 785.2pt).
+    ///
+    /// 표가 아닌 유닛, 분할된 중첩 행/조각 유닛, 표와 글자가 섞인 문단은 상자
+    /// 아래가 비어 있다고 볼 수 없으므로 0 을 돌려준다.
+    fn nested_atom_invisible_tail(
+        &self,
+        cell: &crate::model::table::Cell,
+        unit: &CellUnit,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        if unit.empty_spacer
+            || unit.nested_row.is_some()
+            || unit.nested_table_fragment.is_some()
+            || unit.mixed_nested_fragment
+            || unit.mixed_nested_trailing
+        {
+            return 0.0;
+        }
+        let Some(para) = cell.paragraphs.get(unit.para_idx) else {
+            return 0.0;
+        };
+        // `cell_units` 의 atom 분기와 같은 가시 텍스트 판정 — 표와 글자가 함께
+        // 있는 문단은 높이가 `line_based_h + nested_h + 4.0` 이라 꼬리가 여백이 아니다.
+        if para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}') {
+            return 0.0;
+        }
+        let nested_h: f64 = para
+            .controls
+            .iter()
+            .map(|ctrl| match ctrl {
+                Control::Table(t) => self.calc_nested_table_height(t, styles),
+                _ => 0.0,
+            })
+            .sum();
+        if nested_h <= 0.0 {
+            return 0.0;
+        }
+        (unit.height - nested_h).max(0.0)
+    }
+
     fn is_non_inline_control_flow_unit(unit: &CellUnit) -> bool {
         unit.vis_start == unit.vis_end
             && !unit.empty_spacer
@@ -10951,6 +11134,18 @@ impl LayoutEngine {
                     break;
                 }
                 if j > start && h + u.height > avail_height {
+                    // [#5920] 마지막으로 놓이는 중첩 표 atom 유닛이 **상자 아래
+                    // 보이지 않는 이송 여백** 때문에만 예산을 넘으면 현재 쪽에
+                    // 앉힌다. 보이는 상자는 본문 안에 들어가므로 한글과 같은 쪽에
+                    // 놓이고 여백만 쪽 경계 밖으로 흘린다. `h` 에는 가시 높이만
+                    // 더해 조각 높이가 본문을 침범하지 않게 한다 —
+                    // `native_multirow_saved_reset_trailing_trim` 과 같은 부기.
+                    let nested_atom_tail = self.nested_atom_invisible_tail(cell, u, styles);
+                    if nested_atom_tail > 0.0 && h + u.height - nested_atom_tail <= avail_height {
+                        h += (u.height - nested_atom_tail).max(0.0);
+                        j += 1;
+                        break;
+                    }
                     // [#3931] 저장 reset 직전 마지막 가시 줄의 trailing 공백을
                     // 물리 쪽 경계에서 제외하면 예산에 들어가는 경우, 그 줄까지
                     // 현 조각에 넣고 다음 문단 hard break 직전에서 멈춘다. source
@@ -12279,6 +12474,33 @@ impl LayoutEngine {
                     && !unit.mixed_nested_trailing
             })
             .is_some_and(|unit| unit.mixed_nested_starts_after_table);
+        let nested = cell.paragraphs.get(para_idx).and_then(|p| {
+            p.controls.iter().find_map(|ctrl| match ctrl {
+                Control::Table(t) => Some(&**t),
+                _ => None,
+            })
+        });
+        // `terminal` 자체는 마지막 tail의 source cut을 끄는 기존 안전장치다.
+        // 그러나 마지막 RowBreak 행의 1×1 block child는 앞 fragment가 child 첫
+        // source unit을 이미 소비했어도 terminal이 될 수 있다. 이 경우 물리 clip만
+        // 쓰면 p33의 마지막 줄을 p34 top에 다시 paint한다(76076 p33→p34).
+        // `native_short_parent_child_fragment_eligible`는 짧은 child를 paginator
+        // unit으로 승격하는 별도 계약이고, 여기서는 이미 mixed source cut으로
+        // 도달한 terminal child의 시작 cursor만 보존한다.
+        let native_short_terminal_child = nested.is_some_and(|child| {
+            self.native_short_parent_child_fragment_eligible(
+                table,
+                cell,
+                child,
+                self.nested_table_mixed_fragment_heights(child, styles)
+                    .iter()
+                    .map(|fragment| fragment.height)
+                    .sum(),
+            )
+        });
+        let terminal_rowbreak_source_cursor = nested.is_some_and(|child| {
+            self.native_terminal_rowbreak_child_source_cursor_eligible(table, cell, child)
+        });
         // 1×1 host 안의 1×1 표 continuation은 이전 조각의 첫 unit을 물리
         // reservation으로 이미 전진시킨다. 다음 조각의 content origin까지 원래
         // `offset`만 쓰면 그 unit이 다시 페이지 상단에 그려져 이후 제목/표가 한 줄씩
@@ -12448,6 +12670,20 @@ impl LayoutEngine {
             // owner boundary (42065 p10/p11).
             (flow_visible + first_visible_content_height - 4.0 - last_visible_content_height)
                 .max(visible)
+        } else if terminal
+            && is_offset_continuation
+            && !compensate_first_visible
+            && terminal_rowbreak_source_cursor
+            && !native_short_terminal_child
+        {
+            // The long native terminal child starts from an exact source cursor, so the
+            // leading source advance is restored as for other offset continuations. Its
+            // terminal paint core is independently outside that flow slice: retain it in
+            // the child viewport while excluding the same 4px mixed-flow allowance at
+            // each exposed edge. 76076 p34: 354.68 + 24.2667 - 4 + 17.3333 - 4
+            // = 388.28px, matching the PDF's 388.3px child frame without changing flow.
+            (flow_visible + first_visible_content_height + last_visible_content_height - 8.0)
+                .max(visible)
         } else if is_offset_continuation && !compensate_first_visible {
             // Mixed text+nested-table units include a small layout allowance
             // (`nested_h + 4.0`) so pagination has enough flow room. That
@@ -12481,33 +12717,6 @@ impl LayoutEngine {
         //
         // 높이 필드는 유닛 회계에서 온 값을 그대로 쓴다 — 조각 경계는 이미 컷이
         // 정했고, 행 변환은 "그 조각이 어느 행들을 담는가" 만 정한다.
-        let nested = cell.paragraphs.get(para_idx).and_then(|p| {
-            p.controls.iter().find_map(|ctrl| match ctrl {
-                Control::Table(t) => Some(&**t),
-                _ => None,
-            })
-        });
-        // `terminal` 자체는 마지막 tail의 source cut을 끄는 기존 안전장치다.
-        // 그러나 마지막 RowBreak 행의 1×1 block child는 앞 fragment가 child 첫
-        // source unit을 이미 소비했어도 terminal이 될 수 있다. 이 경우 물리 clip만
-        // 쓰면 p33의 마지막 줄을 p34 top에 다시 paint한다(76076 p33→p34).
-        // `native_short_parent_child_fragment_eligible`는 짧은 child를 paginator
-        // unit으로 승격하는 별도 계약이고, 여기서는 이미 mixed source cut으로
-        // 도달한 terminal child의 시작 cursor만 보존한다.
-        let native_short_terminal_child = nested.is_some_and(|child| {
-            self.native_short_parent_child_fragment_eligible(
-                table,
-                cell,
-                child,
-                self.nested_table_mixed_fragment_heights(child, styles)
-                    .iter()
-                    .map(|fragment| fragment.height)
-                    .sum(),
-            )
-        });
-        let terminal_rowbreak_source_cursor = nested.is_some_and(|child| {
-            self.native_terminal_rowbreak_child_source_cursor_eligible(table, cell, child)
-        });
         let force_source_start_cut = offset > 0.5
             && terminal
             && (native_short_terminal_child || terminal_rowbreak_source_cursor);
@@ -12606,8 +12815,14 @@ impl LayoutEngine {
             // consumed content origin.
             // 긴 terminal child는 source cursor가 p33까지의 단위를 이미 버린다.
             // 같은 offset으로 물리 원점까지 올리면 p34의 새 첫 줄도 clip 위로
-            // 이중 소비된다. short-parent 계약은 기존 물리 inset을 유지한다.
-            offset_within_start: if terminal_rowbreak_source_cursor && !native_short_terminal_child
+            // 이중 소비된다. 이 예외는 실제 terminal fragment에만 속한다.
+            // #5705의 nonterminal 19..68 조각은 terminal cursor eligibility도 true였지만
+            // `terminal=false`; 여기서 327.213px source offset을 0으로 지우자 앞 조각을
+            // 재생해 셀 줄 26개가 쪽 밖으로 밀렸다. nonterminal은 계산한 offset을 보존한다.
+            // short-parent 계약은 기존 물리 inset을 유지한다.
+            offset_within_start: if terminal
+                && terminal_rowbreak_source_cursor
+                && !native_short_terminal_child
             {
                 0.0
             } else {
@@ -12788,6 +13003,56 @@ impl LayoutEngine {
         !para.text.trim().is_empty() || !para.controls.is_empty()
     }
 
+    /// A projected mixed child normally folds each line's `line_height + line_spacing`
+    /// into one [`CellUnit`]. The child-local final line is the exception: its spacing is
+    /// removed because it is terminal *inside the child*. When an outer RowBreak cut later
+    /// proves that this is only the child's terminal line, not the outer flow's terminal
+    /// owner, recover that spacing from the immediately preceding line of the same source
+    /// paragraph. Requiring equal content heights keeps this a lossless ledger recovery;
+    /// mixed-metric and one-line terminal paragraphs decline instead of guessing.
+    fn projected_terminal_line_spacing(
+        units: &[CellUnit],
+        lo: usize,
+        hi: usize,
+        outer_para_idx: usize,
+    ) -> f64 {
+        let Some((terminal_idx, terminal)) =
+            units
+                .iter()
+                .enumerate()
+                .take(hi)
+                .skip(lo)
+                .rev()
+                .find(|(_, unit)| {
+                    unit.para_idx == outer_para_idx
+                        && unit.mixed_nested_fragment
+                        && !unit.mixed_nested_trailing
+                        && unit.mixed_nested_content_height > 0.5
+                })
+        else {
+            return 0.0;
+        };
+        let Some(source_para_idx) = terminal.mixed_nested_source_para_idx else {
+            return 0.0;
+        };
+        units
+            .iter()
+            .take(terminal_idx)
+            .skip(lo)
+            .rev()
+            .find(|unit| {
+                unit.para_idx == outer_para_idx
+                    && unit.mixed_nested_fragment
+                    && !unit.mixed_nested_trailing
+                    && unit.mixed_nested_source_para_idx == Some(source_para_idx)
+                    && (unit.mixed_nested_content_height - terminal.mixed_nested_content_height)
+                        .abs()
+                        <= 0.5
+            })
+            .map(|unit| (unit.height - unit.mixed_nested_content_height).max(0.0))
+            .unwrap_or(0.0)
+    }
+
     /// [Task #1809] 종전 is_hwpx_source 조기 0 반환 제거 — 컷 이월 조각의 flow
     /// extra 는 소스 무관 기하다. 한글 편집기 대조(admrul_0072 서명 셀: 텍스트→
     /// 하단 경계 한글 25.5pt = extra 적용 25.9pt, 미적용 13.9pt)로 적용이 정답.
@@ -12938,7 +13203,13 @@ impl LayoutEngine {
                     // exact source cursor selected by the parent RowCut.  Its
                     // saved empty host Enter is not a visible successor, so the
                     // generic first-unit reservation would enlarge the final
-                    // frame and push following flow down (#3128 p34).
+                    // frame and push following flow down (#3128 p34). The exact
+                    // cursor does not, however, make the child-local final line
+                    // outer-flow-terminal: restore its folded line spacing and
+                    // retain only the mixed-flow clip guard, as the short-child
+                    // arm does. This keeps paint wrapping under LayoutFrame while
+                    // preserving the independent vertical advance ledger.
+                    extra += Self::projected_terminal_line_spacing(&units, lo, hi, para_idx) + 4.0;
                 } else if terminal && single_cell_nested_continuation {
                     // Keep the parent RowBreak cell in lockstep with the
                     // terminal nested-cell viewport.  Reserving only one
@@ -13037,6 +13308,7 @@ impl LayoutEngine {
                     (cell_w_px - pad_left - pad_right).max(0.0),
                     cell_h_px - pad_top - pad_bottom,
                     styles,
+                    self.dpi,
                 )
             };
             let h = if is_whole_row {

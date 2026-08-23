@@ -1352,6 +1352,7 @@ mod tests {
                 border_fill_id: 0,
                 text_direction: 0,
                 clip: false,
+                page_fragment: false,
                 model_cell_index: None,
             }),
             BoundingBox::new(0.0, 0.0, 30.0, 10.0),

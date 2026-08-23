@@ -1934,8 +1934,7 @@ impl DocumentCore {
         }
 
         // 스타일 재계산
-        self.styles =
-            crate::renderer::style_resolver::resolve_styles(&self.document.doc_info, self.dpi);
+        self.rebuild_resolved_styles();
     }
 
     /// 여러 셀의 width/height를 한 번에 조절한다 (네이티브).
@@ -2945,9 +2944,13 @@ impl DocumentCore {
                     };
                     let available_width_px =
                         crate::renderer::hwpunit_to_px(available_width_hu as i32, self.dpi);
+                    // 표 캡션 상자 — 캡션은 자기 열이 없으므로 미스냅.
                     crate::renderer::composer::reflow_line_segs(
                         &mut cap.paragraphs[0],
-                        available_width_px,
+                        crate::renderer::composer::ParagraphBox::content_width_px(
+                            available_width_px,
+                            self.dpi,
+                        ),
                         &self.styles,
                         self.dpi,
                     );
@@ -3417,7 +3420,7 @@ impl DocumentCore {
                         let new_len = cell_para.text.chars().count();
                         cell_para.char_offsets = (0..new_len).map(|i| i as u32).collect();
                         // [#4149] 원시 text 대입 — 단일줄 과밀 memo 무효화.
-                        cell_para.invalidate_single_line_overflow_memo();
+                        cell_para.invalidate_layout_inputs();
                     }
                 }
             }

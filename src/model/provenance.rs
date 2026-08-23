@@ -89,6 +89,14 @@ impl LayoutCompatibilityProfile {
         self.hwp3_native_layout
     }
 
+    /// Stored LineSeg horizontal origins whose legacy HWP3 provenance is not
+    /// reproducible from the common ParaShape alone. This covers native HWP3
+    /// and HWP3-lineage conversion layouts, while keeping the decision out of
+    /// the DocInfo-derived style aggregate.
+    pub fn legacy_hwp3_stored_geometry(&self) -> bool {
+        self.hwp3_native_layout || self.hwp3_layout
+    }
+
     /// 원본 HWP3가 비밀번호로 복호화된 문서인지 여부.
     ///
     /// 일부 HWP3 암호 문서는 일반 HWP3와 다른 저장 line-segment 계약을 쓴다.

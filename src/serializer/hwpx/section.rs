@@ -770,7 +770,11 @@ pub(crate) fn render_paragraph_parts(
     // 상한으로 쓰면 필드 뒤의 정상 lineseg까지 잘려 셀 세로 정렬이 달라진다
     // (issue1893의 `textpos=25`). 실제 방출한 축 끝도 함께 써야 한다.
     let line_seg_axis_end = para.char_count.max(serialized_axis_end);
-    let axis_line_segs = if line_seg_axis_end > 0 {
+    let axis_line_segs = if para.stored_text_partition_is_dirty() {
+        // The retained rows are an edit-reflow template, not a partition of
+        // the current text. Omit the cache and let the consumer recompute it.
+        &para.line_segs[..0]
+    } else if line_seg_axis_end > 0 {
         line_segs_within_text_axis(&para.line_segs, line_seg_axis_end)
     } else {
         &para.line_segs[..]
@@ -5051,6 +5055,7 @@ mod tests {
 
     #[test]
     fn task1380_linesegarray_omitted_when_ir_empty() {
+        dirty_text_partition_omits_hwpx_linesegarray();
         // IR 의 line_segs 가 비어있으면 linesegarray 요소 자체를 방출 생략 (#1380).
         // 종전 fallback(vertsize=1000 합성)은 원본 무 → RT 유 비대칭을 만들었다.
         let mut para = Paragraph::default();
@@ -5064,6 +5069,34 @@ mod tests {
             xml
         );
         assert!(!xml.contains("<hp:lineseg "));
+    }
+
+    fn dirty_text_partition_omits_hwpx_linesegarray() {
+        let mut para = Paragraph {
+            text: "AB".to_string(),
+            char_count: 3,
+            char_offsets: vec![0, 1],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                line_height: 500,
+                segment_width: 42_000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        para.insert_text_at(2, " moderately wider");
+        para.invalidate_layout_inputs();
+        assert!(para.stored_text_partition_is_dirty());
+
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(!xml.contains("<hp:linesegarray"));
     }
 
     #[test]

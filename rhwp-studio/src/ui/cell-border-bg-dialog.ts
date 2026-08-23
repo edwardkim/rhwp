@@ -1038,15 +1038,20 @@ export class CellBorderBgDialog extends ModalDialog {
         }
       } else if (scope === 'all') {
         const dims = this.wasm.getTableDimensions(sec, ppi, ci);
-        for (let i = 0; i < dims.cellCount; i++) {
-          this.wasm.setCellProperties(sec, ppi, ci, i, newProps as Partial<CellProperties>);
-        }
+        // 셀 수만큼 setCellProperties 를 호출하므로 재페이지네이션을 묶는다(#4118).
+        this.wasm.runInBatch(() => {
+          for (let i = 0; i < dims.cellCount; i++) {
+            this.wasm.setCellProperties(sec, ppi, ci, i, newProps as Partial<CellProperties>);
+          }
+        });
       } else if (this.selectionRange) {
         const cellIndices = this.selectedCellIndicesForRange(this.selectionRange);
         const targetIndices = cellIndices.length > 0 ? cellIndices : [this.cellIdx];
-        for (const cellIdx of targetIndices) {
-          this.wasm.setCellProperties(sec, ppi, ci, cellIdx, newProps as Partial<CellProperties>);
-        }
+        this.wasm.runInBatch(() => {
+          for (const cellIdx of targetIndices) {
+            this.wasm.setCellProperties(sec, ppi, ci, cellIdx, newProps as Partial<CellProperties>);
+          }
+        });
       } else {
         this.wasm.setCellProperties(sec, ppi, ci, this.cellIdx, newProps as Partial<CellProperties>);
       }
