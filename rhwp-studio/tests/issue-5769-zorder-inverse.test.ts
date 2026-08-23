@@ -61,10 +61,13 @@ test('SetZOrderCommand 배선 핀 — 캡처 선행, undo 는 old 대입 뒤 raw
   const capIdx = body.indexOf('captureSectionRaw(this.sectionIdx)');
   const redoIdx = body.indexOf("pairsJson('after')");
   const firstRunIdx = body.indexOf('changeShapeZOrder');
+  // [#5769 리뷰] 스큐 선제 차단 — probe 는 캡처·뮤테이션보다 먼저여야 한다.
+  const probeIdx = body.indexOf('hasShapeZOrderInverse()');
+  assert.notEqual(probeIdx, -1, '구버전 wasm 판별 probe 가 있어야 한다');
   assert.notEqual(capIdx, -1, 'execute 는 변경 전 구역 raw 를 캡처해야 한다');
   assert.ok(
-    capIdx !== -1 && capIdx < redoIdx && capIdx < firstRunIdx,
-    '캡처는 redo 절대 대입과 최초 상대 연산 양쪽보다 먼저여야 한다',
+    probeIdx < capIdx && capIdx !== -1 && capIdx < redoIdx && capIdx < firstRunIdx,
+    'probe → 캡처 → redo 절대 대입/최초 상대 연산 순서여야 한다',
   );
   assert.match(body, /pairsJson\('after'\)/, 'redo 는 저장된 after 쌍으로 절대 대입한다');
 

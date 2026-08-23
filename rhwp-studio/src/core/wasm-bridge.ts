@@ -2244,6 +2244,22 @@ export class WasmBridge {
     return JSON.parse((this.doc as any).applyShapeZOrderPairs(sec, pairsJson));
   }
 
+  /**
+   * [#5769 후속1] changeShapeZOrder 가 moves 응답과 절대 대입 쌍을 지원하는가.
+   * 구버전 wasm 과 짝이 어긋난 조합을 뮤테이션 **전에** 가린다 — 적용 뒤에
+   * 알아채면 실제 변이의 undo 기록을 잃는다(gpt 3차 리뷰).
+   */
+  hasShapeZOrderInverse(): boolean {
+    const doc = this.doc as unknown as Record<string, unknown> | null;
+    return typeof doc?.applyShapeZOrderPairs === 'function';
+  }
+
+  /** [#5769 후속2] 지정 구역들에 각자 다른 old SectionDef 일괄 재적용(재조판 1회). */
+  applySectionDefsBulk(itemsJson: string): { ok: boolean; applied?: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).applySectionDefsBulk(itemsJson));
+  }
+
   groupShapes(sec: number, targets: { paraIdx: number; controlIdx: number }[]): { ok: boolean; paraIdx: number; controlIdx: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const json = JSON.stringify({ sectionIdx: sec, targets });

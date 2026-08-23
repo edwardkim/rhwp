@@ -2270,6 +2270,11 @@ export class SetZOrderCommand implements EditCommand {
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
+    // 스큐 선제 차단(gpt 3차 리뷰) — 구버전 wasm 은 moves 를 주지 않아 실제 변경의
+    // 역연산 기록을 만들 수 없다. 적용 **전에** 거절해 무음 변이를 원천 차단한다.
+    if (!wasm.hasShapeZOrderInverse()) {
+      throw new Error('changeZOrder 역연산 불가 — wasm 이 moves 응답 이전 버전이다');
+    }
     const captureId = wasm.captureSectionRaw(this.sectionIdx);
     this.captureId = captureId;
     try {
@@ -2284,10 +2289,11 @@ export class SetZOrderCommand implements EditCommand {
         // 최초 실행 — 기존 상대 연산으로 적용하고 자기기술 레코드를 받는다.
         const r = wasm.changeShapeZOrder(this.sectionIdx, this.ppi, this.ci, this.operation);
         if (r.ok && r.moves === undefined) {
-          // ok:true 인데 moves 가 없으면 구버전 wasm 과 짝이 어긋난 것이다 — 실제
-          // 변경이 적용됐을 수 있어 noOp 로 흡수하면 무음 변이가 된다. 스큐를 소음
-          // 없이-않게 알리고 안전 쪽(noOp 아님)으로는 갈 수 없으므로 경고 후 기각한다.
-          console.error('[SetZOrderCommand] wasm 응답에 moves 가 없다 — JS/wasm 버전 스크우');
+          // 위 probe 를 통과했다면 도달하지 않는다(같은 릴리스가 moves 와 쌍 메서드를
+          // 함께 제공한다). 도달했다면 빈 moves 흡수가 실제 변이의 기록 상실이 되므로
+          // 소리 없이 넘기지 않고 실패시킨다 — 아래 catch 가 캡처를 폐기하고,
+          // history 의 catch 가 엔트리 없이 전파한다.
+          throw new Error(`${this.type}: wasm ok 응답에 moves 가 없다 — 빌드 짝이 어긋났다`);
         }
         const moves = r.ok ? r.moves ?? [] : [];
         if (!r.ok || moves.length === 0) {
@@ -2385,10 +2391,11 @@ export class SetSectionPropsAllCommand implements EditCommand {
       throw new Error(`${this.type} undo 불가 — 살아있는 raw 캡처가 없다`);
     }
     const captureIds = this.captureIds;
-    // old 재적용(raw 재무효화) → 캡처 복원. 순서는 캡처와 동일하게 유지한다.
-    for (const s of this.sections) {
-      wasm.setSectionDef(s.idx, s.before);
-    }
+    // old 일괄 재적용(재조판 1회 — 구역별 setter 반복의 성능 회귀 차단, gpt 3차
+    // 리뷰) → 캡처 복원. 순서는 캡처와 동일하게 유지한다.
+    wasm.applySectionDefsBulk(
+      JSON.stringify(this.sections.map((s) => ({ idx: s.idx, def: s.before }))),
+    );
     for (const c of captureIds) {
       wasm.restoreSectionRaw(c.id);
     }
