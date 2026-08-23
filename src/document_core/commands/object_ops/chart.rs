@@ -12,8 +12,12 @@ use crate::document_core::queries::chart_extract::{
 };
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
-use crate::ooxml_chart::data::{scan_chart_values, ChartData, ChartScanError, SeriesAxis};
-use crate::ooxml_chart::patch::{apply_value_edits, EditTarget, ValueEdit};
+use crate::ooxml_chart::data::{
+    scan_chart_values, ChartData, ChartScanError, ChartSeries, PlotKind, SeriesAxis,
+};
+use crate::ooxml_chart::patch::{
+    apply_chart_edits, is_safe_text, ChartEdit, EditTarget, ValueEdit,
+};
 use crate::serializer::ole_container::replace_ole_stream;
 
 /// 중첩 CFB 안 OOXML 차트 스트림 이름.
@@ -243,20 +247,30 @@ fn chart_data_json(chart: &ChartRef, data: &ChartData, source: ChartSource) -> s
 ///
 /// 값은 **문자열**로만 받는다. JSON 숫자로 받으면 `4.3` 이 `4.30` 으로 되쓰일 수 있어
 /// 무편집 왕복의 바이트 동일이 깨진다.
+///
+/// [#5652] `structure: true` 면 행렬은 **목표 상태**다 — 행(점)·열(계열) 수와 계열명·라벨이
+/// 차트와 달라도 되고, 치수 차이는 **위치 기반 꼬리 증감**으로 적용된다(행이 늘면 꼬리에
+/// 점 추가, 줄면 꼬리 점 삭제; 계열은 마지막 계열 복제/꼬리 삭제). `false`(기본)면 B1 그대로 —
+/// 개수·이름·라벨이 다르면 거부한다. 의도 없이 개수가 어긋난 입력은 여전히 사고다.
 #[derive(Debug, Deserialize)]
 struct ChartEdits {
-    /// 카테고리 라벨(분산형이면 X). 주면 대조하고, **분산형에서만** 기록한다.
+    /// 카테고리 라벨(분산형이면 X). `structure: false` 면 대조만 하고 분산형에서만 기록한다.
+    /// `structure: true` 면 목표 라벨이다 — 행 수가 바뀌면 필수.
     #[serde(default)]
     labels: Option<Vec<String>>,
     series: Vec<SeriesEdits>,
     /// 검증과 diff 만 하고 쓰지 않는다.
     #[serde(default, rename = "dryRun")]
     dry_run: bool,
+    /// [#5652] 구조 편집 의도.
+    #[serde(default)]
+    structure: bool,
 }
 
 #[derive(Debug, Deserialize)]
 struct SeriesEdits {
-    /// 주면 계열명을 대조한다. B1 은 계열명을 **바꾸지 않는다**(구조 변경 = B2).
+    /// `structure: false` 면 주면 대조만 한다. `structure: true` 면 목표 계열명이다 —
+    /// 기존 계열은 다르면 바꾸고(`c:tx` 가 없으면 거부), 신설 계열은 템플릿에 이름이 있으면 필수.
     #[serde(default)]
     name: Option<String>,
     values: Vec<String>,
@@ -271,7 +285,19 @@ fn is_number(text: &str) -> bool {
 }
 
 /// 검증 결과 — 하나라도 있으면 **한 칸도 쓰지 않는다**.
+///
+/// [#5652] `structure` 로 갈린다 — 없으면 B1 의 네 거부(개수·이름·라벨)가 그대로 서고,
+/// 있으면 [`validate_structure`] 가 목표 행렬의 규칙과 종류별 가드를 본다.
 fn validate(data: &ChartData, edits: &ChartEdits) -> Vec<serde_json::Value> {
+    if edits.structure {
+        validate_structure(data, edits)
+    } else {
+        validate_values(data, edits)
+    }
+}
+
+/// B1 검증 — 구조는 바꾸지 않는다.
+fn validate_values(data: &ChartData, edits: &ChartEdits) -> Vec<serde_json::Value> {
     let mut out = Vec::new();
 
     if edits.series.len() != data.series.len() {
@@ -280,7 +306,7 @@ fn validate(data: &ChartData, edits: &ChartEdits) -> Vec<serde_json::Value> {
             "expected": data.series.len(),
             "actual": edits.series.len(),
             "message": format!(
-                "계열 수 {} 가 차트의 계열 수 {} 와 다릅니다 — 계열 신설·삭제는 하지 않습니다.",
+                "계열 수 {} 가 차트의 계열 수 {} 와 다릅니다 — 계열 신설·삭제는 structure:true 로만 합니다.",
                 edits.series.len(), data.series.len()
             ),
         }));
@@ -297,7 +323,7 @@ fn validate(data: &ChartData, edits: &ChartEdits) -> Vec<serde_json::Value> {
                 "expected": have.values.len(),
                 "actual": want.values.len(),
                 "message": format!(
-                    "계열 {} 의 값 개수 {} 가 차트의 {} 와 다릅니다 — 점 신설·삭제는 하지 않습니다.",
+                    "계열 {} 의 값 개수 {} 가 차트의 {} 와 다릅니다 — 점 신설·삭제는 structure:true 로만 합니다.",
                     i, want.values.len(), have.values.len()
                 ),
             }));
@@ -312,7 +338,7 @@ fn validate(data: &ChartData, edits: &ChartEdits) -> Vec<serde_json::Value> {
                     "series": i,
                     "expected": have.name,
                     "actual": name,
-                    "message": format!("계열 {} 의 이름이 다릅니다 — B1 은 계열명을 바꾸지 않습니다.", i),
+                    "message": format!("계열 {} 의 이름이 다릅니다 — 계열명 변경은 structure:true 로만 합니다.", i),
                 }));
             }
         }
@@ -349,14 +375,7 @@ fn validate_labels(
     // 다른 뜻을 가리켜 조용한 오편집이 된다. 값만 주소로 편집하는 native 호출은 labels를
     // 생략할 수 있지만, CSV가 넘긴 labels는 반드시 공유됨을 증명해야 한다.
     if !labels_shared(data) {
-        out.push(serde_json::json!({
-            "reason": if scatter { "sharedXRequired" } else { "sharedCategoryRequired" },
-            "message": if scatter {
-                "계열마다 X 값이 달라 CSV 의 X 한 열로 표현할 수 없습니다."
-            } else {
-                "계열마다 카테고리 라벨이 달라 CSV 의 한 라벨 열로 표현할 수 없습니다."
-            },
-        }));
+        out.push(shared_labels_refusal(scatter));
         return;
     }
 
@@ -374,7 +393,8 @@ fn validate_labels(
                 "expected": series.labels.len(),
                 "actual": labels.len(),
                 "message": format!(
-                    "라벨 개수 {} 가 계열 {} 의 {} 와 다릅니다.", labels.len(), i, series.labels.len()
+                    "라벨 개수 {} 가 계열 {} 의 {} 와 다릅니다 — 행 신설·삭제는 structure:true 로만 합니다.",
+                    labels.len(), i, series.labels.len()
                 ),
             }));
             continue;
@@ -397,7 +417,7 @@ fn validate_labels(
                     "reason": "categoryMismatch", "point": p,
                     "expected": point.text, "actual": text,
                     "message": format!(
-                        "카테고리 라벨 {} 이 다릅니다 — B1 은 라벨을 바꾸지 않습니다.", p
+                        "카테고리 라벨 {} 이 다릅니다 — 라벨 변경은 structure:true 로만 합니다.", p
                     ),
                 }));
                 break; // 라벨은 한 열이라 첫 불일치로 충분하다.
@@ -409,52 +429,493 @@ fn validate_labels(
     }
 }
 
-/// 바뀐 칸만 골라 편집 목록과 `changed[]` 봉투를 만든다.
-fn plan_edits(
-    data: &ChartData,
-    edits: &ChartEdits,
-    scatter: bool,
-) -> (Vec<ValueEdit>, Vec<serde_json::Value>) {
-    let mut plan = Vec::new();
-    let mut changed = Vec::new();
+fn shared_labels_refusal(scatter: bool) -> serde_json::Value {
+    serde_json::json!({
+        "reason": if scatter { "sharedXRequired" } else { "sharedCategoryRequired" },
+        "message": if scatter {
+            "계열마다 X 값이 달라 CSV 의 X 한 열로 표현할 수 없습니다."
+        } else {
+            "계열마다 카테고리 라벨이 달라 CSV 의 한 라벨 열로 표현할 수 없습니다."
+        },
+    })
+}
 
-    for (i, (want, have)) in edits.series.iter().zip(&data.series).enumerate() {
-        for (p, (text, point)) in want.values.iter().zip(&have.values).enumerate() {
-            if text != &point.text {
-                plan.push(ValueEdit {
-                    series: i,
-                    point: p,
-                    target: EditTarget::Value,
-                    text: text.clone(),
-                });
-                changed.push(serde_json::json!({
-                    "series": i, "point": p, "from": point.text, "to": text,
+// ---------------------------------------------------------------------------
+// [#5652] 구조 편집 — 목표 행렬의 규칙과 종류별 가드
+// ---------------------------------------------------------------------------
+
+/// 계열이 라벨 블록(`c:cat`/`c:xVal`)을 가졌는가 — 점이 0개인 빈 캐시도 블록은 블록이다.
+fn has_labels(series: &ChartSeries) -> bool {
+    !series.labels.is_empty() || series.labels_shape.is_some()
+}
+
+/// 블록의 개수를 바꿀 수 있는가 — 삽입 앵커·`ptCount`·점 요소 구간이 있어야 한다.
+fn block_resizable(series: &ChartSeries, target: EditTarget) -> bool {
+    let (shape, points) = match target {
+        EditTarget::Value => (&series.values_shape, &series.values),
+        EditTarget::Label => (&series.labels_shape, &series.labels),
+    };
+    shape
+        .as_ref()
+        .is_some_and(|s| s.insert_at.is_some() && s.pt_count.is_some())
+        && points.iter().all(|p| p.element_span.is_some())
+}
+
+fn block_name(scatter: bool, target: EditTarget) -> &'static str {
+    match (scatter, target) {
+        (false, EditTarget::Value) => "val",
+        (false, EditTarget::Label) => "cat",
+        (true, EditTarget::Value) => "yVal",
+        (true, EditTarget::Label) => "xVal",
+    }
+}
+
+/// [#5652] 구조 편집 검증 — 목표 행렬이 차트에 적용 가능한가.
+///
+/// 순서: 행렬 모양 → 삭제 하한 → 종류별 가드 → 라벨 규칙 → 값 → 이름 → 삽입 가능성.
+/// 한컴은 잘못된 구조(원형 2계열, 주식형 3계열)를 막지 않고 조용히 무시하거나 틀리게
+/// 그리므로(#5447 §3-4) 여기서 fail-closed 로 막는다.
+fn validate_structure(data: &ChartData, edits: &ChartEdits) -> Vec<serde_json::Value> {
+    let mut out = Vec::new();
+    let k = data.series.len();
+    let k_new = edits.series.len();
+    let scatter = data.series.first().map(|s| s.axis) == Some(SeriesAxis::Scatter);
+
+    // 1) 행렬 모양 — 직사각형이어야 한다(CSV 동형).
+    if k_new == 0 {
+        out.push(serde_json::json!({
+            "reason": "lastSeriesDeleteRefused", "expected": 1, "actual": 0,
+            "message": "마지막 계열은 지울 수 없습니다 — 계열 0개인 차트는 다시 읽을 수 없습니다.",
+        }));
+        return out;
+    }
+    let rows = edits.series[0].values.len();
+    for (i, s) in edits.series.iter().enumerate().skip(1) {
+        if s.values.len() != rows {
+            out.push(serde_json::json!({
+                "reason": "rowCountMismatch", "series": i, "expected": rows, "actual": s.values.len(),
+                "message": format!(
+                    "계열 {} 의 값 개수 {} 가 계열 0 의 {} 와 다릅니다 — 행렬은 직사각형이어야 합니다.",
+                    i, s.values.len(), rows
+                ),
+            }));
+        }
+    }
+    if !out.is_empty() {
+        return out;
+    }
+    if rows == 0 {
+        out.push(serde_json::json!({
+            "reason": "lastPointDeleteRefused", "expected": 1, "actual": 0,
+            "message": "마지막 점은 지울 수 없습니다 — 점 0개인 블록은 다시 읽을 수 없습니다.",
+        }));
+        return out;
+    }
+
+    // 2) 종류별 가드 — 계열 수 변경.
+    if k_new != k {
+        if data
+            .series
+            .iter()
+            .any(|s| matches!(s.plot, PlotKind::Pie | PlotKind::OfPie))
+        {
+            out.push(serde_json::json!({
+                "reason": "pieSeriesCountFixed", "expected": k, "actual": k_new,
+                "message": "원형·3D원형·원형대원형 차트는 계열 수가 1 로 고정입니다 — 한컴은 2번째 계열을 조용히 무시합니다(#5447).",
+            }));
+        }
+        if data.series.iter().any(|s| s.plot == PlotKind::Stock) {
+            out.push(serde_json::json!({
+                "reason": "stockSeriesCountFixed", "expected": k, "actual": k_new,
+                "message": "주식형 차트는 계열 수가 종류에 묶입니다(HLC=3 / OHLC=4) — 변경은 종류 변환(B3)으로만 합니다. 한컴은 캔들 장치를 남긴 채 틀리게 그립니다(#5447).",
+            }));
+        }
+    }
+    // 다층 카테고리 — 행 수 변화나 라벨 지정은 거부, 값만 바꾸는 건 허용.
+    let row_change_anywhere = data
+        .series
+        .iter()
+        .take(k_new)
+        .any(|s| s.values.len() != rows);
+    if data.series.iter().any(|s| s.labels_multi_level)
+        && (row_change_anywhere || edits.labels.is_some())
+    {
+        out.push(serde_json::json!({
+            "reason": "multiLevelLabelsUnsupported",
+            "message": "다층 카테고리(multiLvlStrRef) 차트의 행·라벨 구조 편집은 지원하지 않습니다 — 값만 바꿀 수 있습니다.",
+        }));
+    }
+    if !out.is_empty() {
+        return out;
+    }
+
+    // 3) 라벨 규칙.
+    let labeled_rows_change = data
+        .series
+        .iter()
+        .take(k_new)
+        .any(|s| has_labels(s) && s.values.len() != rows);
+    match &edits.labels {
+        None => {
+            if labeled_rows_change {
+                out.push(serde_json::json!({
+                    "reason": if scatter { "scatterXYMismatch" } else { "labelsRequired" },
+                    "expected": rows,
+                    "message": if scatter {
+                        "분산형에서 행 수를 바꾸려면 X(labels)를 같은 개수로 함께 주어야 합니다 — xVal/yVal 은 동기로만 바뀝니다."
+                    } else {
+                        "행 수를 바꾸려면 카테고리 라벨(labels)을 목표 행 수만큼 함께 주어야 합니다."
+                    },
                 }));
             }
         }
-    }
-
-    if scatter {
-        if let Some(labels) = &edits.labels {
-            for (i, series) in data.series.iter().enumerate() {
-                for (p, (text, point)) in labels.iter().zip(&series.labels).enumerate() {
-                    if text != &point.text {
-                        plan.push(ValueEdit {
-                            series: i,
-                            point: p,
-                            target: EditTarget::Label,
-                            text: text.clone(),
-                        });
-                        changed.push(serde_json::json!({
-                            "series": i, "x": p, "from": point.text, "to": text,
+        Some(labels) => {
+            if labels.len() != rows {
+                out.push(serde_json::json!({
+                    "reason": if scatter { "scatterXYMismatch" } else { "labelCountMismatch" },
+                    "expected": rows, "actual": labels.len(),
+                    "message": format!(
+                        "라벨 개수 {} 가 목표 행 수 {} 와 다릅니다.", labels.len(), rows
+                    ),
+                }));
+            } else if !labels_shared(data) {
+                out.push(shared_labels_refusal(scatter));
+            } else {
+                // 라벨 텍스트 — 바뀌는 칸·새 칸만 본다.
+                let have = label_texts(data);
+                for (p, text) in labels.iter().enumerate() {
+                    let changed = have.get(p) != Some(&text.as_str());
+                    if !changed {
+                        continue;
+                    }
+                    if scatter && !is_number(text) {
+                        out.push(serde_json::json!({
+                            "reason": "notANumber", "point": p, "value": text,
+                            "message": format!("분산형 X `{}` 이 수치가 아닙니다.", text),
                         }));
+                    } else if !is_safe_text(text) {
+                        out.push(serde_json::json!({
+                            "reason": "unsafeText", "point": p, "value": text,
+                            "message": format!("라벨 `{}` 에 XML 특수문자(<, >, &, 제어문자)가 있습니다 — 이스케이프하지 않고 거부합니다.", text),
+                        }));
+                    } else if p < have.len() {
+                        // 기존 점 — 라벨을 가진 계열마다 구간이 있어야 한다.
+                        for (i, s) in data.series.iter().take(k_new).enumerate() {
+                            if let Some(point) = s.labels.get(p) {
+                                if point.text != *text && point.span.is_none() {
+                                    out.push(serde_json::json!({
+                                        "reason": "valueNotPatchable", "series": i, "point": p,
+                                        "message": format!("계열 {} 라벨 {} 은 빈 값이라 치환 대상이 아닙니다.", i, p),
+                                    }));
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
+    // 4) 기존 계열 — 값·이름.
+    for (i, (want, have)) in edits.series.iter().zip(&data.series).enumerate() {
+        for (p, text) in want.values.iter().enumerate() {
+            match have.values.get(p) {
+                Some(point) if point.text == *text => {}
+                Some(point) => {
+                    if !is_number(text) {
+                        out.push(serde_json::json!({
+                            "reason": "notANumber", "series": i, "point": p, "value": text,
+                            "message": format!("계열 {} 점 {} 의 값 `{}` 이 수치가 아닙니다.", i, p, text),
+                        }));
+                    } else if point.span.is_none() {
+                        out.push(serde_json::json!({
+                            "reason": "valueNotPatchable", "series": i, "point": p,
+                            "message": format!("계열 {} 점 {} 은 빈 값(<c:v/>)이라 제자리 치환 대상이 아닙니다.", i, p),
+                        }));
+                    }
+                }
+                None => {
+                    if !is_number(text) {
+                        out.push(serde_json::json!({
+                            "reason": "notANumber", "series": i, "point": p, "value": text,
+                            "message": format!("계열 {} 새 점 {} 의 값 `{}` 이 수치가 아닙니다.", i, p, text),
+                        }));
+                    }
+                }
+            }
+        }
+        if let Some(name) = &want.name {
+            match &have.name {
+                Some(h) if h == name => {}
+                Some(_) => {
+                    if !is_safe_text(name) {
+                        out.push(serde_json::json!({
+                            "reason": "unsafeText", "series": i, "field": "name", "value": name,
+                            "message": format!("계열 {} 의 새 이름에 XML 특수문자가 있습니다.", i),
+                        }));
+                    } else if have.name_span.is_none() {
+                        out.push(serde_json::json!({
+                            "reason": "seriesNameNotPatchable", "series": i,
+                            "message": format!("계열 {} 의 c:tx 계열명 캐시 구간을 특정하지 못했습니다.", i),
+                        }));
+                    }
+                }
+                None => {
+                    // c:tx 가 없는 계열 — 빈 이름은 무편집, 그 밖은 넣을 자리가 없다.
+                    if !name.is_empty() {
+                        out.push(serde_json::json!({
+                            "reason": "seriesNameNotPatchable", "series": i,
+                            "message": format!("계열 {} 은 c:tx 계열명이 없어 이름을 넣을 자리가 없습니다.", i),
+                        }));
+                    }
+                }
+            }
+        }
+        // 행 수 변화 — 블록이 개수를 바꿀 수 있어야 한다.
+        if have.values.len() != rows {
+            if !block_resizable(have, EditTarget::Value) {
+                out.push(serde_json::json!({
+                    "reason": "pointsNotInsertable", "series": i, "block": block_name(scatter, EditTarget::Value),
+                    "message": format!("계열 {} 의 값 블록은 캐시 구조 좌표(ptCount·삽입 앵커)가 없어 개수를 바꿀 수 없습니다.", i),
+                }));
+            }
+            if has_labels(have) && !block_resizable(have, EditTarget::Label) {
+                out.push(serde_json::json!({
+                    "reason": "pointsNotInsertable", "series": i, "block": block_name(scatter, EditTarget::Label),
+                    "message": format!("계열 {} 의 라벨 블록은 캐시 구조 좌표(ptCount·삽입 앵커)가 없어 개수를 바꿀 수 없습니다.", i),
+                }));
+            }
+        }
+    }
+
+    // 5) 신설 계열 — 템플릿은 마지막 계열.
+    if k_new > k {
+        let template = &data.series[k - 1];
+        if template.idx_span.is_none() || template.order_span.is_none() {
+            out.push(serde_json::json!({
+                "reason": "seriesNotClonable", "series": k,
+                "message": "마지막 계열의 c:idx/c:order 구간을 특정하지 못해 복제할 수 없습니다.",
+            }));
+        }
+        for (i, want) in edits.series.iter().enumerate().skip(k) {
+            match &want.name {
+                Some(name) if !is_safe_text(name) => {
+                    out.push(serde_json::json!({
+                        "reason": "unsafeText", "series": i, "field": "name", "value": name,
+                        "message": format!("신설 계열 {} 의 이름에 XML 특수문자가 있습니다.", i),
+                    }));
+                }
+                Some(_) if template.name_span.is_none() => {
+                    out.push(serde_json::json!({
+                        "reason": "seriesNameNotPatchable", "series": i,
+                        "message": format!("신설 계열 {} 에 이름을 줬지만 템플릿(마지막 계열)에 c:tx 가 없어 넣을 자리가 없습니다.", i),
+                    }));
+                }
+                None if template.name_span.is_some() => {
+                    out.push(serde_json::json!({
+                        "reason": "seriesNameRequired", "series": i,
+                        "message": format!("신설 계열 {} 의 이름(name)이 필요합니다 — 템플릿 계열에 이름이 있습니다.", i),
+                    }));
+                }
+                _ => {}
+            }
+            for (p, text) in want.values.iter().enumerate() {
+                if !is_number(text) {
+                    out.push(serde_json::json!({
+                        "reason": "notANumber", "series": i, "point": p, "value": text,
+                        "message": format!("신설 계열 {} 점 {} 의 값 `{}` 이 수치가 아닙니다.", i, p, text),
+                    }));
+                }
+            }
+        }
+    }
+
+    out
+}
+
+/// 바뀐 칸·구조를 편집 목록과 `changed[]` 봉투로 만든다.
+///
+/// [#5652] `structure: false` 는 B1 계획(값 치환, 분산형 X)이고, `true` 는 목표 행렬과의
+/// 위치 기반 diff — 겹치는 칸은 치환, 남는 행·열은 꼬리 증감, 라벨은 라벨 보유 전 계열에 동기.
+fn plan_edits(
+    data: &ChartData,
+    edits: &ChartEdits,
+    scatter: bool,
+) -> (Vec<ChartEdit>, Vec<serde_json::Value>) {
+    let mut plan = Vec::new();
+    let mut changed = Vec::new();
+
+    let k = data.series.len();
+    let k_new = edits.series.len();
+    let overlap = k.min(k_new);
+
+    for (i, (want, have)) in edits.series.iter().zip(&data.series).enumerate() {
+        let keep = want.values.len().min(have.values.len());
+        for (p, (text, point)) in want.values.iter().zip(&have.values).enumerate().take(keep) {
+            if text != &point.text {
+                plan.push(ChartEdit::Value(ValueEdit {
+                    series: i,
+                    point: p,
+                    target: EditTarget::Value,
+                    text: text.clone(),
+                }));
+                changed.push(serde_json::json!({
+                    "series": i, "point": p, "from": point.text, "to": text,
+                }));
+            }
+        }
+        if edits.structure {
+            if let Some(name) = &want.name {
+                if let Some(h) = &have.name {
+                    if h != name {
+                        plan.push(ChartEdit::SeriesName {
+                            series: i,
+                            text: name.clone(),
+                        });
+                        changed.push(serde_json::json!({
+                            "op": "renameSeries", "series": i, "from": h, "to": name,
+                        }));
+                    }
+                }
+            }
+            if want.values.len() > have.values.len() {
+                let texts: Vec<String> = want.values[have.values.len()..].to_vec();
+                changed.push(serde_json::json!({
+                    "op": "appendPoints", "series": i, "block": block_name(scatter, EditTarget::Value),
+                    "from": have.values.len(), "to": want.values.len(),
+                }));
+                plan.push(ChartEdit::AppendPoints {
+                    series: i,
+                    target: EditTarget::Value,
+                    texts,
+                });
+            } else if want.values.len() < have.values.len() {
+                changed.push(serde_json::json!({
+                    "op": "truncatePoints", "series": i, "block": block_name(scatter, EditTarget::Value),
+                    "from": have.values.len(), "to": want.values.len(),
+                }));
+                plan.push(ChartEdit::TruncatePoints {
+                    series: i,
+                    target: EditTarget::Value,
+                    keep: want.values.len(),
+                });
+            }
+        }
+    }
+
+    if let Some(labels) = &edits.labels {
+        // B1(분산형 X)과 B2(카테고리 라벨·X) 모두 — 라벨을 가진 계열마다 동기 적용.
+        let apply_labels = scatter || edits.structure;
+        if apply_labels {
+            for (i, series) in data.series.iter().enumerate().take(overlap) {
+                if !has_labels(series) {
+                    continue;
+                }
+                let keep = labels.len().min(series.labels.len());
+                for (p, (text, point)) in labels.iter().zip(&series.labels).enumerate().take(keep) {
+                    if text != &point.text {
+                        plan.push(ChartEdit::Value(ValueEdit {
+                            series: i,
+                            point: p,
+                            target: EditTarget::Label,
+                            text: text.clone(),
+                        }));
+                        changed.push(if scatter {
+                            serde_json::json!({ "series": i, "x": p, "from": point.text, "to": text })
+                        } else {
+                            serde_json::json!({ "op": "relabel", "series": i, "point": p, "from": point.text, "to": text })
+                        });
+                    }
+                }
+                if edits.structure {
+                    if labels.len() > series.labels.len() {
+                        changed.push(serde_json::json!({
+                            "op": "appendPoints", "series": i, "block": block_name(scatter, EditTarget::Label),
+                            "from": series.labels.len(), "to": labels.len(),
+                        }));
+                        plan.push(ChartEdit::AppendPoints {
+                            series: i,
+                            target: EditTarget::Label,
+                            texts: labels[series.labels.len()..].to_vec(),
+                        });
+                    } else if labels.len() < series.labels.len() {
+                        changed.push(serde_json::json!({
+                            "op": "truncatePoints", "series": i, "block": block_name(scatter, EditTarget::Label),
+                            "from": series.labels.len(), "to": labels.len(),
+                        }));
+                        plan.push(ChartEdit::TruncatePoints {
+                            series: i,
+                            target: EditTarget::Label,
+                            keep: labels.len(),
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    if edits.structure {
+        if k_new > k {
+            for (i, want) in edits.series.iter().enumerate().skip(k) {
+                changed.push(serde_json::json!({
+                    "op": "appendSeries", "series": i, "name": want.name,
+                }));
+                plan.push(ChartEdit::AppendSeries {
+                    name: want.name.clone(),
+                    labels: edits.labels.clone(),
+                    values: want.values.clone(),
+                });
+            }
+        } else if k_new < k {
+            changed.push(serde_json::json!({
+                "op": "truncateSeries", "from": k, "to": k_new,
+            }));
+            plan.push(ChartEdit::TruncateSeries { keep: k_new });
+        }
+    }
+
     (plan, changed)
+}
+
+/// [#5652] 패치 산출을 다시 읽어 목표 행렬과 같은지 본다 — "rhwp 가 자기 산출을 다시 읽을 수
+/// 있다"(수용 기준 2)를 쓰기 전에 코드로 강제한다. 다르면 한 바이트도 쓰지 않는다.
+fn rescan_matches(rescan: &ChartData, edits: &ChartEdits, scatter: bool) -> Result<(), String> {
+    if rescan.series.len() != edits.series.len() {
+        return Err(format!(
+            "계열 수 {} ≠ 목표 {}",
+            rescan.series.len(),
+            edits.series.len()
+        ));
+    }
+    for (i, (want, have)) in edits.series.iter().zip(&rescan.series).enumerate() {
+        let values: Vec<&str> = have.values.iter().map(|p| p.text.as_str()).collect();
+        let want_values: Vec<&str> = want.values.iter().map(String::as_str).collect();
+        if values != want_values {
+            return Err(format!("계열 {i} 값 {values:?} ≠ 목표 {want_values:?}"));
+        }
+        if let Some(name) = &want.name {
+            let have_name = have.name.as_deref().unwrap_or_default();
+            if have_name != name {
+                return Err(format!("계열 {i} 이름 {have_name:?} ≠ 목표 {name:?}"));
+            }
+        }
+    }
+    if let Some(labels) = &edits.labels {
+        let want: Vec<&str> = labels.iter().map(String::as_str).collect();
+        for (i, series) in rescan.series.iter().enumerate() {
+            if !has_labels(series) {
+                continue;
+            }
+            let have: Vec<&str> = series.labels.iter().map(|p| p.text.as_str()).collect();
+            if have != want {
+                return Err(format!(
+                    "계열 {i} {} {have:?} ≠ 목표 {want:?}",
+                    if scatter { "X" } else { "라벨" }
+                ));
+            }
+        }
+    }
+    Ok(())
 }
 
 impl DocumentCore {
@@ -603,16 +1064,58 @@ impl DocumentCore {
         }
 
         let zip_patched = match &representations.zip {
-            Some((xml, data)) => match apply_value_edits(xml, data, &plan) {
+            Some((xml, data)) => match apply_chart_edits(xml, data, &plan) {
                 Ok(v) => Some(v),
                 Err(e) => return refused("chartPatch", e.to_string()),
             },
             None => None,
         };
-        let nested_patched = match apply_value_edits(nested_xml, nested_data, &plan) {
+        let nested_patched = match apply_chart_edits(nested_xml, nested_data, &plan) {
             Ok(v) => v,
             Err(e) => return refused("chartPatch", e.to_string()),
         };
+
+        // [#5652] self-check — 산출을 다시 읽어 목표 행렬과 같을 때만 쓴다. 스캐너가 못 읽거나
+        // (비순차 idx·계열 0건) 목표와 다르면 한 바이트도 쓰지 않는다. ①② 둘 다 있으면 두
+        // 산출이 같은 논리 차트여야 한다.
+        let nested_rescan = match scan_chart_values(&nested_patched) {
+            Ok(v) => v,
+            Err(e) => {
+                return refused(
+                    "selfCheckFailed",
+                    format!("편집 산출(②)을 다시 읽지 못합니다 — 쓰지 않습니다: {e}"),
+                )
+            }
+        };
+        if let Err(why) = rescan_matches(&nested_rescan, &edits, scatter) {
+            return refused(
+                "selfCheckFailed",
+                format!("편집 산출(②)이 목표 행렬과 다릅니다 — 쓰지 않습니다: {why}"),
+            );
+        }
+        if let Some(zip_patched) = &zip_patched {
+            let zip_rescan = match scan_chart_values(zip_patched) {
+                Ok(v) => v,
+                Err(e) => {
+                    return refused(
+                        "selfCheckFailed",
+                        format!("편집 산출(①)을 다시 읽지 못합니다 — 쓰지 않습니다: {e}"),
+                    )
+                }
+            };
+            if let Err(why) = rescan_matches(&zip_rescan, &edits, scatter) {
+                return refused(
+                    "selfCheckFailed",
+                    format!("편집 산출(①)이 목표 행렬과 다릅니다 — 쓰지 않습니다: {why}"),
+                );
+            }
+            if !same_chart_data(&zip_rescan, &nested_rescan) {
+                return refused(
+                    "selfCheckFailed",
+                    "편집 산출 ①과 ②가 같은 논리 차트가 아닙니다 — 쓰지 않습니다.".to_string(),
+                );
+            }
+        }
 
         if edits.dry_run {
             return serde_json::json!({
