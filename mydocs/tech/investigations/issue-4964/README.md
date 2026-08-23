@@ -10,8 +10,10 @@
 | `font_metric_pre_split_baseline.json` | 분리 전 600개 composition·metric data·문자 폭·lookup hash |
 | `font_metric_lineage_manifest.schema.json` | 600행 provenance·evidence·상태 계약 |
 | `font_metric_lineage_manifest.json` | W1·W5·#2430·추적 font 증거를 연결한 W6 lineage 정본 |
+| `font_metric_generator_canary_plan.json` | 공개 추적 TTF와 합성 TTC face의 명시적 생성 순서·identity·license 계약 |
 | `scripts/font_metric_lineage.mjs` | 현재 Rust source를 읽어 기준선을 생성·검사하는 도구 |
 | `scripts/tests/font_metric_lineage.test.mjs` | 누락·순서 변경·폭 변경·overlay identity 변경의 negative contract |
+| `scripts/tests/font_metric_gen.test.mjs` | generator 결정성·TTC face·core/overlay ownership·fail-closed 계약 |
 | `mydocs/plans/task_m100_4964.md` | W6 범위·불변식·승인 게이트 정본 |
 
 ## Runtime source 경계
@@ -55,6 +57,27 @@ python3 tools/task2430/gen_metrics.py \
   --verify \
   --ladder-dir tools/task2430/measured
 ```
+
+generator 공개 canary와 ownership 검사:
+
+```bash
+node --test scripts/tests/font_metric_gen.test.mjs
+```
+
+수동 생성은 디렉터리 전체를 받지 않는다. plan에 `order`, `path`, `faceIndex`, 예상 family/style과
+license·provenance evidence를 명시하고 generated fragment와 metadata를 서로 다른 출력으로 지정한다.
+
+```bash
+cargo run --bin font-metric-gen -- \
+  --plan mydocs/tech/investigations/issue-4964/font_metric_generator_canary_plan.json \
+  --generated-output <generated-output.rs> \
+  --metadata-output <provenance-output.json>
+```
+
+`font_metrics_data.rs`와 `font_metrics_overlays.rs`는 직접 경로뿐 아니라 symlink로도 출력할 수 없다.
+기존 595개 전체의 원본 plan이 복원되지 않았으므로 `targetRegion: canary` 출력도 canonical generated
+DB에 쓸 수 없다. 그 경로는 `targetRegion: historical-generated-0-594`와 정확히 595개 입력을 선언한
+plan에만 열린다.
 
 ## hash 의미
 
