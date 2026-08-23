@@ -2,16 +2,16 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_integration_guide.md
-last_verified: 2026-08-22
+last_verified: 2026-08-24
 ---
 
 # MCP 통합 가이드 — AI 에이전트 호스트에 rhwp 붙이기
 
 rhwp 를 MCP(Model Context Protocol) 도구로 소비하는 **두 경로**를 공식화한다.
 반대 방향(한컴 앱을 원격 구동하는 내부 검증용 클라이언트)은
-2022 이하 저장본의 [HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md)과 2024 저장본의
-[HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md)이 각각 다루며 본 문서와 무관하다.
-두 원격 변환 서비스는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
+[HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md)이 다루며 본 문서와 무관하다. 2022 이하 저장본은
+통합 Windows service의 engine `2020`, 2024 저장본은 engine `2024`를 선택한다. 원격 변환 service는
+rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
 
 | 경로 | 무엇 | 언제 |
 |---|---|---|

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-22
+last_verified: 2026-08-24
 ---
 
 # 시각·fixture 증적
@@ -48,9 +48,8 @@ rhwp info --json <원본 HWP 또는 HWPX>
 ```
 
 `lastSavedWith.product`가 `hancom-office-2010`·`hancom-office-2018`·`hancom-office-2020`·
-`hancom-office-2022`이면 [HWP 2020 MCP 사용법](../mcp_hwp2020Convert_usage.md)의
-`hwp-convert-2020`을, `hancom-office-2024`이면
-[HWP 2024 MCP 사용법](../mcp_hwp2024Convert_usage.md)의 `hwp-convert-2024`를 사용한다.
+`hancom-office-2022`이면 [HWP 2024 MCP 사용법](../mcp_hwp2024Convert_usage.md)의 통합 Windows
+service에서 engine `2020`을, `hancom-office-2024`이면 같은 service의 engine `2024`를 사용한다.
 이 판정은 HWP5 `HwpSummaryInformation.revisionNumber`와 HWPX `version.xml/appVersion`의 마지막 저장
 메타데이터를 사용한다. 확장자와 파일 포맷 `version`만으로 서비스를 선택하지 않는다.
 
@@ -62,14 +61,14 @@ rhwp info --json <원본 HWP 또는 HWPX>
   `pdf/{원본 stem}-2024.pdf`에 저장한다.
 - 50MB 미만 MCP 산출 PDF는 commit 가능한 장기 증적이다. 큰 PDF는 pdf-large와 Git LFS 정책을 따른다.
 - 서버 URL, IP, 인증 token, .env.local 내용은 GitHub issue·PR·review 문서·로그에 기록하지 않는다.
-- 두 원격 서비스는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
+- 원격 service는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
 - 원본 크기와 예상 페이지 수를 먼저 확인한다. 페이지가 많거나 거대·중첩 표, 성능 sample은
   timeout_seconds를 900–1800초로 늘린다.
 - VS Code MCP 호출이 timeout되어도 서버 job이 성공했을 수 있다. CLI로 재호출해 로컬 PDF 수신까지 확인한다.
 
-HWP 2020 MCP의 성공 조건은 CLI `status: success`, server `run_status: 0`, `validation: ok`다.
-HWP 2024 MCP는 동기 `status: success` 또는 비동기 `succeeded → success`, client/server byte 수와
-SHA-256 일치를 확인한다. 공통으로 `pdf/` 아래 실제 PDF 존재와 `file` 또는 `pdfinfo` 확인이 필요하다.
+통합 Windows MCP는 동기 `status: success` 또는 비동기 `succeeded → success`, 요청한
+`engine_profile`, client/server byte 수와 SHA-256 일치를 확인한다. 공통으로 `pdf/` 아래 실제 PDF
+존재와 `file` 또는 `pdfinfo` 확인이 필요하다.
 review 문서에는 MCP 선택 전 `info --json`의 `format`·`lastSavedWith` 값, 사용한 서비스 버전, 원본
 경로·가능하면 SHA-256·출처 URL, PDF 경로·SHA-256, MCP job id, 서비스별 status·validation metadata·페이지 수,
 사용한 visual sweep asset과 지표를 적는다.

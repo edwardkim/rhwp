@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/README.md
-last_verified: 2026-08-23
+last_verified: 2026-08-24
 ---
 
 # manual 문서 지도
@@ -30,7 +30,7 @@ last_verified: 2026-08-23
 | 로컬 OWPML XML 스키마 자산 | [OWPML XML 스키마 reference](owpml_schema_reference.md) | [한컴 공식 OWPML 모델 참조 가이드](../tech/hwpx_hancom_reference.md) |
 | PDF/SVG 기준 비교의 정책 | [시각 검증 문서 지도](verification/README.md) | [시각 검증 거버넌스](verification/visual_verification_governance.md), [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md) |
 | RenderBackend 계약·픽스처 | [RenderBackend 계약 카탈로그](render_backend_contract_catalog.md) | [픽스처 목록](../tech/render_backend_fixture_catalog.md), [설계 배경](../tech/render_backend.md) |
-| HWP 2022 이하 저장본의 한컴 기준 PDF·원격 변환 | [HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md) | [PR review 시각·fixture 증적](pr_review/visual_fixture_evidence.md) |
+| HWP 2022 이하 저장본의 한컴 기준 PDF·원격 변환 | [HWP 2024 MCP client의 engine 2020 사용법](mcp_hwp2024Convert_usage.md) | [이전 HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md) |
 | HWP 2024 저장본의 한컴 기준 PDF·원격 변환 | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | [PR review 시각·fixture 증적](pr_review/visual_fixture_evidence.md) |
 | AI 에이전트 호스트에 rhwp 를 MCP 도구로 연결 | [MCP 통합 가이드](mcp_integration_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md), [CLI JSON 파이프라인 가이드](cli_json_pipeline_guide.md) |
 | 브라우저 확장 개발·배포 | [브라우저 확장 개발 가이드](browser_extension_dev_guide.md) | [Chrome/Edge 확장 빌드·배포](chrome_edge_extension_build_deploy.md) |
@@ -60,8 +60,8 @@ last_verified: 2026-08-23
 
 | 저장한 한컴오피스 버전 | 변환 서비스 | 권위 문서 | client artifact |
 | --- | --- | --- | --- |
-| 2022 이하 | `hwp-convert-2020` | [HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md) | `tools/hwp-convert-mcp-2022-client-20260805-071707.tar.gz` |
-| 2024 | `hwp-convert-2024` | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | `tools/hwp-convert-mcp-2024-client-20260822-225818.tar.gz` |
+| 2022 이하 | `hwp-convert-2024`, engine `2020` | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | `tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` |
+| 2024 | `hwp-convert-2024`, engine `2024` | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | `tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` |
 
 ## 문서 경계
 
