@@ -41,9 +41,17 @@ Stage 4 가 현재 구역만 역연산화했던 것의 완결이다.
   구역별 old 재적용 → 복원×2) 왕복 뒤 **저장 바이트 완전 수렴** + 적용 실재
   단정. 기존 6종도 회귀 없음 — **7/7**
 - clippy `-D warnings` clean · fmt --check 통과
-- npm test **1072 pass / 0 fail**: 공용 헬퍼 가드 2종(dialog-apply-standard,
+- npm test **1069 pass / 0 fail(총 1070)**: 공용 헬퍼 가드 2종(dialog-apply-standard,
   undo-layout-dialogs)을 헬퍼 계열 확장에 맞게 갱신 — snapshot 과 command
   어느 쪽이든 "공용 헬퍼 경유" 자체를 핀하도록(표준화 의미 보존)
+
+## 후속 정정 (2026-08-24, 최종 head `cf6150a59` 기준)
+
+- gpt 3차 리뷰 대응으로 all-undo 에 임시 도입했던 bulk 재적용 네이티브
+  (`apply_section_defs_bulk_native`)는 실측에서 불필요 확인되어 철회됨
+  (`6a0a9c748` 추가 → `1eaa0ba39` 제거). 최종 구현은 위 구현 섹션 그대로
+  **구역별 `setSectionDef` 루프 + 캡처 복원**이다. 검증 수치는 Rust 14/14
+  (본 게이트 7종 + z순서 7종), npm 실측 위와 같음.
 
 ## 메모
 
