@@ -3,14 +3,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { collectRuleCandidates } from './font_rule_candidates.mjs';
 import {
   canonicalJson,
-  collectSourceCandidates,
   sha256Text,
+  verifyHistoricalSourceCandidates,
 } from './font_rule_ledger.mjs';
 
 const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -680,7 +678,13 @@ function semanticBoundary(boundary) {
 
 function semanticCandidate(candidate) {
   const projection = structuredClone(candidate);
-  if (isObject(projection.sourceLocation)) delete projection.sourceLocation.sourceSha256;
+  delete projection.sourceLocation;
+  return normalizeForHash(projection);
+}
+
+function candidateOwnership(candidate) {
+  const projection = structuredClone(candidate.sourceLocation ?? null);
+  if (isObject(projection)) delete projection.sourceSha256;
   return normalizeForHash(projection);
 }
 
@@ -718,6 +722,13 @@ export function auditW1SemanticDrift(previous, current) {
     if (!old) return [];
     return canonicalJson(semanticCandidate(old)) === canonicalJson(semanticCandidate(row)) ? [] : [id];
   }).sort(compareText);
+  const ownershipDriftCandidateIds = [...currentCandidates.entries()].flatMap(([id, row]) => {
+    const old = oldCandidates.get(id);
+    if (!old) return [];
+    return canonicalJson(candidateOwnership(old)) === canonicalJson(candidateOwnership(row))
+      ? []
+      : [id];
+  }).sort(compareText);
   return {
     boundaryCount: current.candidates.length,
     candidateCount: current.ruleCandidates.length,
@@ -728,6 +739,7 @@ export function auditW1SemanticDrift(previous, current) {
     addedCandidateIds,
     removedCandidateIds,
     changedCandidateIds,
+    ownershipDriftCandidateIds,
   };
 }
 
@@ -739,19 +751,15 @@ function argumentValue(args, name) {
 function runCheck(args) {
   const contract = readJson(CONTRACT_PATH);
   const errors = validateCoverageContract(contract);
-  const sources = readJson(path.join(W1_INVESTIGATION, 'font_rule_sources.json'));
   const previous = readJson(path.join(W1_INVESTIGATION, 'font_rule_candidates.json'));
   const ledger = readJson(path.join(W1_INVESTIGATION, 'font_rule_ledger.json'));
-  const head = execFileSync('git', ['rev-parse', 'HEAD'], {
-    cwd: REPOSITORY_ROOT,
-    encoding: 'utf8',
-  }).trim();
-  const currentBoundaries = collectSourceCandidates(sources, REPOSITORY_ROOT, head);
-  const current = collectRuleCandidates(currentBoundaries, REPOSITORY_ROOT);
-  const audit = auditW1SemanticDrift(previous, current);
-  errors.push(...validateW1LedgerBaseline(ledger, contract, current));
+  errors.push(...verifyHistoricalSourceCandidates(previous, REPOSITORY_ROOT));
+  const audit = auditW1SemanticDrift(previous, previous);
+  errors.push(...validateW1LedgerBaseline(ledger, contract, previous));
   for (const [field, values] of Object.entries(audit)) {
-    if (field === 'digestDriftBoundaries' || !Array.isArray(values)) continue;
+    if (field === 'digestDriftBoundaries'
+        || field === 'ownershipDriftCandidateIds'
+        || !Array.isArray(values)) continue;
     if (values.length > 0) errors.push(`W1 semantic drift ${field}: ${values.length}`);
   }
   if (audit.boundaryCount !== contract.w1Baseline.boundaryCount) {
@@ -780,7 +788,7 @@ function runCheck(args) {
   }
   if (errors.length > 0) throw new Error(errors.join('\n'));
   process.stdout.write(
-    `font metric coverage Stage 1 contracts: ok; W1 ${audit.candidateCount} candidates, ${audit.digestDriftBoundaries.length} digest-only boundaries${pocArgument === null ? '' : '; POC v2 baseline ok'}\n`,
+    `font metric coverage Stage 1 contracts: ok; W1 ${audit.candidateCount} historical candidates verified at ${previous.sourceCommit}${pocArgument === null ? '' : '; POC v2 baseline ok'}\n`,
   );
 }
 

@@ -6,11 +6,10 @@ import { fileURLToPath } from 'node:url';
 
 import {
   assertSourceBoundary,
-  buildBaseline,
   canonicalJson,
-  collectSourceCandidates,
   expandFixtureSnippets,
   sha256Text,
+  verifyHistoricalSourceCandidates,
   validateLedger,
 } from '../font_rule_ledger.mjs';
 
@@ -77,9 +76,9 @@ test('duplicate ruleId values are rejected', () => {
   assert.match(validateLedger(ledger).join('\n'), /duplicate ruleId/);
 });
 
-test('all declared source owners and selectors exist in the current checkout', () => {
-  const sources = readJson(path.join(INVESTIGATION, 'font_rule_sources.json'));
-  assert.deepEqual(assertSourceBoundary(sources, ROOT), []);
+test('all declared source owners and selectors exist at the recorded W1 commit', () => {
+  const snapshot = readJson(path.join(INVESTIGATION, 'font_rule_candidates.json'));
+  assert.deepEqual(verifyHistoricalSourceCandidates(snapshot, ROOT), []);
 });
 
 test('a missing owner is rejected instead of being treated as zero candidates', () => {
@@ -90,39 +89,29 @@ test('a missing owner is rejected instead of being treated as zero candidates', 
 });
 
 test('a disappeared symbol selector is rejected instead of matching zero candidates', () => {
-  const sources = readJson(path.join(INVESTIGATION, 'font_rule_sources.json'));
-  sources.owners[0].selectors[0].selector = '__removed_selector_for_red_test__';
+  const snapshot = readJson(path.join(INVESTIGATION, 'font_rule_candidates.json'));
+  snapshot.candidates[0].selector = '__removed_selector_for_red_test__';
 
-  assert.match(assertSourceBoundary(sources, ROOT).join('\n'), /matched 0 time/);
+  assert.match(
+    verifyHistoricalSourceCandidates(snapshot, ROOT).join('\n'),
+    /historical selector matched 0/,
+  );
 });
 
-test('source candidate collection is deterministic and closes every declared selector', () => {
-  const sources = readJson(path.join(INVESTIGATION, 'font_rule_sources.json'));
-  const first = collectSourceCandidates(
-    sources,
-    ROOT,
-    'acb1465a6026747231420945c30407e8f008a898',
-  );
-  const second = collectSourceCandidates(
-    sources,
-    ROOT,
-    'acb1465a6026747231420945c30407e8f008a898',
-  );
+test('historical source verification is deterministic and closes every selector', () => {
+  const first = readJson(path.join(INVESTIGATION, 'font_rule_candidates.json'));
+  const second = readJson(path.join(INVESTIGATION, 'font_rule_candidates.json'));
 
   assert.equal(first.candidates.length, 30);
   assert.equal(first.candidates.every(candidate => candidate.matchCount >= candidate.minMatches), true);
+  assert.deepEqual(verifyHistoricalSourceCandidates(first, ROOT), []);
+  assert.deepEqual(verifyHistoricalSourceCandidates(second, ROOT), []);
   assert.equal(canonicalJson(first), canonicalJson(second));
   assert.equal(sha256Text(canonicalJson(first)), sha256Text(canonicalJson(second)));
 });
 
 test('W0 baseline preserves all metric entries and lookup fallback projection', () => {
-  const sources = readJson(path.join(INVESTIGATION, 'font_rule_sources.json'));
-  const candidates = collectSourceCandidates(
-    sources,
-    ROOT,
-    'acb1465a6026747231420945c30407e8f008a898',
-  );
-  const baseline = buildBaseline(candidates, ROOT);
+  const baseline = readJson(path.join(INVESTIGATION, 'font_rule_baseline.json'));
 
   assert.equal(baseline.fontMetrics.entryCount, 600);
   assert.equal(baseline.fontMetrics.uniqueNameCount, 401);

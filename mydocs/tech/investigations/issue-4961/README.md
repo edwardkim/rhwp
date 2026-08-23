@@ -1,3 +1,10 @@
+---
+kind: investigation
+status: active
+canonical: mydocs/plans/task_m100_4961.md
+last_verified: 2026-08-23
+---
+
 # Issue #4961 — Font Decision Trace
 
 ## 1. 목적
@@ -17,7 +24,8 @@ W2 Font Decision Trace의 계약과 공개 fixture 경계를 보존한다.
 
 W1의 `font_rule_ledger.json`은 historical investigation snapshot이다. W2는 실제 결정이 끝난 뒤
 candidate identity로 evidence link를 계산하고 원장과 교차 검사한다. 원장을 runtime font 선택 표로
-import하거나 W7 registry projection을 선행하지 않는다.
+import하지 않는다. W7 이후 실제 runtime 선택에 참여한 generated projection의 `ruleId`를 그대로 받아
+W1 evidence와 교차 검사하지만, trace가 projection을 선택하거나 registry를 수정하지는 않는다.
 
 ## 3. Stage 1 산출물
 
@@ -109,6 +117,22 @@ console.log(trace.layoutHash.value, trace.normalizedHash.value);
 
 PR self-review의 native snapshot 보정과 standalone fail-closed 회귀 근거는
 [`task_m100_4961_stage6.md`](../../../working/task_m100_4961_stage6.md)에 기록했다.
+
+## 3.5 W7 canonical registry 연결
+
+Issue #4966 W7은 Rust layout-name·layout-metric과 Studio Canvas2D·webfont·CanvasKit의 유한 규칙을
+`assets/font-rules/font_rule_registry.json`에서 생성한 backend projection으로 전환했다. W2 trace는
+선택이 끝난 뒤 projection이 반환한 `ruleId`만 운반한다. 이 ID가 W1 candidate identity로 계산한 값과
+다르면 조용히 바꾸지 않고 실패한다.
+
+따라서 권위 순서는 다음과 같다.
+
+1. canonical registry와 generated projection이 유한 runtime 규칙을 소유한다.
+2. hand-written resolver는 document 상태·local probe·glyph/capability처럼 동적인 결정을 소유한다.
+3. W2 trace는 두 결과를 읽어 설명하고 W1 evidence와 대사할 뿐 선택 권위가 아니다.
+
+Studio 보강도 Canvas2D paint, webfont supply와 CanvasKit SFNT의 서로 다른 generated rule 집합을 유지한다.
+Canvas2D에서 CSS family를 사용할 수 있다는 사실을 CanvasKit의 SFNT byte 확보로 승격하지 않는다.
 
 ## 4. identity와 ledger 연결
 

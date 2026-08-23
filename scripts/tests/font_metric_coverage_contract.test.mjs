@@ -16,8 +16,7 @@ import {
   validatePocV2Baseline,
   validateW1LedgerBaseline,
 } from '../font_metric_coverage_contract.mjs';
-import { collectRuleCandidates } from '../font_rule_candidates.mjs';
-import { collectSourceCandidates } from '../font_rule_ledger.mjs';
+import { verifyHistoricalSourceCandidates } from '../font_rule_ledger.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INVESTIGATION = path.join(
@@ -278,21 +277,27 @@ test('aggregate privacy rejects document identity, raw records, paths, tokens an
   }, CONTRACT), []);
 });
 
-test('current W1 source keeps all candidate meanings while reporting digest-only drift', () => {
+test('historical W1 source stays verifiable while ownership drift is not semantic drift', () => {
   const oldCandidates = readJson(path.join(W1, 'font_rule_candidates.json'));
   const ledger = readJson(path.join(W1, 'font_rule_ledger.json'));
-  const sources = readJson(path.join(W1, 'font_rule_sources.json'));
-  const currentBoundaries = collectSourceCandidates(sources, ROOT, 'f'.repeat(40));
-  const currentCandidates = collectRuleCandidates(currentBoundaries, ROOT);
+  const currentCandidates = structuredClone(oldCandidates);
+  for (const candidate of currentCandidates.ruleCandidates) {
+    if (candidate.sourceBoundaryId !== 'rust-metric.metric-table') continue;
+    candidate.sourceLocation.path = 'src/renderer/font_metrics_generated.rs';
+    candidate.sourceLocation.symbol = 'GENERATED_FONT_METRICS';
+    candidate.sourceLocation.selector = 'static GENERATED_FONT_METRICS:';
+    candidate.sourceLocation.sourceSha256 = 'f'.repeat(64);
+  }
   const audit = auditW1SemanticDrift(oldCandidates, currentCandidates);
 
+  assert.deepEqual(verifyHistoricalSourceCandidates(oldCandidates, ROOT), []);
   assert.equal(audit.boundaryCount, 30);
   assert.equal(audit.candidateCount, 1352);
   assert.deepEqual(audit.addedCandidateIds, []);
   assert.deepEqual(audit.removedCandidateIds, []);
   assert.deepEqual(audit.changedCandidateIds, []);
-  assert.equal(audit.digestDriftBoundaries.length > 0, true);
-  assert.deepEqual(validateW1LedgerBaseline(ledger, CONTRACT, currentCandidates), []);
+  assert.equal(audit.ownershipDriftCandidateIds.length, 600);
+  assert.deepEqual(validateW1LedgerBaseline(ledger, CONTRACT, oldCandidates), []);
 });
 
 test('the retained local POC v2 aggregate matches the de-identified frozen projection', {

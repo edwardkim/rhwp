@@ -6,6 +6,16 @@ import {
   type EmbedFontDecisionTraceV1,
   type FontDecisionBackendV1,
 } from '../src/core/font-decision-trace.ts';
+import { resolveCanvasKitFontPlanWithRules } from '../src/core/font-loader.ts';
+import {
+  FONT_RULE_CANVAS2D_PAINT_RULES,
+} from '../src/core/generated/font-rule-projections/canvas2d-paint.ts';
+import {
+  FONT_RULE_CANVAS2D_WEBFONT_RULES,
+} from '../src/core/generated/font-rule-projections/webfont-supply.ts';
+import {
+  FONT_RULE_CANVASKIT_SFNT_RULES,
+} from '../src/core/generated/font-rule-projections/canvaskit-sfnt.ts';
 import type { LocalFontState } from '../src/core/local-fonts.ts';
 import {
   normalizedTraceHash,
@@ -163,4 +173,34 @@ test('trace 보강은 font fetch나 Local Font Access 권한 요청을 시작하
     (globalThis as typeof globalThis & { queryLocalFonts?: () => Promise<unknown[]> })
       .queryLocalFonts = originalQueryLocalFonts;
   }
+});
+
+test('Studio trace ruleId는 실제 Canvas2D와 CanvasKit generated projection에 존재한다', () => {
+  const trace = baseTrace();
+  trace.records[0].document.face = '휴먼명조';
+  trace.records[0].layoutName.normalizedFace = '휴먼명조';
+  trace.records[0].paint.canvas2d.requested = '휴먼명조';
+  trace.records[0].paint.canvaskit.requested = '휴먼명조';
+  trace.layoutHash.value = portableLayoutHash(trace);
+  trace.normalizedHash.value = normalizedTraceHash(trace);
+
+  const enriched = enrichFontDecisionTrace(JSON.stringify(trace), {
+    localState: deniedLocalState,
+    detectedOsFonts: new Set(),
+  });
+  const record = enriched.records[0];
+  const canvasRuleIds = new Set([
+    ...FONT_RULE_CANVAS2D_PAINT_RULES.map(rule => rule.ruleId),
+    ...FONT_RULE_CANVAS2D_WEBFONT_RULES.map(rule => rule.ruleId),
+  ]);
+  const canvasKitRuleIds = new Set(FONT_RULE_CANVASKIT_SFNT_RULES.map(rule => rule.ruleId));
+
+  assert.ok((record.paint.canvas2d.ruleIds?.length ?? 0) > 0);
+  assert.equal(record.paint.canvas2d.ruleIds?.every(ruleId => canvasRuleIds.has(ruleId)), true);
+  assert.deepEqual(
+    record.paint.canvaskit.ruleIds,
+    resolveCanvasKitFontPlanWithRules(['휴먼명조']).ruleIds,
+  );
+  assert.equal(record.paint.canvaskit.ruleIds?.every(ruleId => canvasKitRuleIds.has(ruleId)), true);
+  assert.deepEqual(validateTraceEnvelope(enriched), []);
 });

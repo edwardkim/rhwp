@@ -1,8 +1,12 @@
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 
-import { getDetectedOSFonts, getWebFontSupplySnapshot, resolveCanvasKitFontPlan } from './font-loader.ts';
-import { fontFamilyCandidatesForDisplay } from './font-substitution.ts';
+import {
+  getDetectedOSFonts,
+  getWebFontSupplySnapshotWithRules,
+  resolveCanvasKitFontPlanWithRules,
+} from './font-loader.ts';
+import { fontFamilyCandidatesForDisplayWithRules } from './font-substitution.ts';
 import { getLocalFontState, resolveLocalFont, type LocalFontState } from './local-fonts.ts';
 
 export interface FontDecisionBackendV1 {
@@ -14,6 +18,7 @@ export interface FontDecisionBackendV1 {
   source: string | null;
   capabilities: string[];
   failures: string[];
+  ruleIds?: string[];
 }
 
 export interface FontDecisionTraceRecordV1 {
@@ -66,11 +71,13 @@ function canvas2dDecision(
     ?? record.layoutName.normalizedFace
     ?? record.paint.canvas2d.requested
     ?? '';
-  const candidates = fontFamilyCandidatesForDisplay(
+  const display = fontFamilyCandidatesForDisplayWithRules(
     requested,
     record.document.altType ?? 0,
     record.document.languageSlot ?? 0,
   );
+  const candidates = display.candidates;
+  const ruleIds = [...display.ruleIds];
   let source: string | null = null;
   let supplyStatus: string | null = null;
   for (const candidate of candidates) {
@@ -84,10 +91,11 @@ function canvas2dDecision(
       supplyStatus = 'available';
       break;
     }
-    const web = getWebFontSupplySnapshot(candidate);
+    const web = getWebFontSupplySnapshotWithRules(candidate);
     if (web.status !== 'absent') {
       source = 'web';
       supplyStatus = web.status;
+      ruleIds.push(...web.ruleIds);
       if (web.status === 'loaded') break;
     }
   }
@@ -114,6 +122,7 @@ function canvas2dDecision(
     source,
     capabilities: unique(capabilities),
     failures: unique(failures),
+    ruleIds: unique(ruleIds),
   };
 }
 
@@ -136,7 +145,7 @@ function canvaskitDecision(
     };
   }
   const local = resolveLocalFont(requested);
-  const plan = resolveCanvasKitFontPlan([requested]);
+  const plan = resolveCanvasKitFontPlanWithRules([requested]);
   if (local || plan.sources.length > 0) {
     return {
       status: 'notObserved', certainty: 'planned', requested: requested || null,
@@ -145,12 +154,13 @@ function canvaskitDecision(
       source: local ? 'local' : 'bundled',
       capabilities: ['canvaskitSfntPlanAvailable'],
       failures: ['canvaskitBackendSnapshotUnavailable'],
+      ruleIds: plan.ruleIds,
     };
   }
   return {
     status: 'unsupported', certainty: 'unsupported', requested: requested || null,
     candidates: requested ? [requested] : [], resolved: null, source: null, capabilities: [],
-    failures: ['canvaskitApiUnsupported', 'canvaskitSfntAbsent'],
+    failures: ['canvaskitApiUnsupported', 'canvaskitSfntAbsent'], ruleIds: plan.ruleIds,
   };
 }
 

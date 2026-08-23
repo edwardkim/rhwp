@@ -21,6 +21,12 @@ pub const SCAFFOLD_SCHEMA_VERSION: &str = "1";
 /// 호환 projection에서만 소비한다.
 pub(crate) const LEGACY_FONT_LAYOUT_HABITS_SCHEMA_VERSION: &str = "poc-font-layout-habits-v2";
 
+/// #4966의 정본 폰트 규칙 레지스트리에서 생성하는 backend projection의 schema 판.
+///
+/// Rust projection은 생성 파일마다 버전 리터럴을 복제하지 않고 이 단일 출처를
+/// 참조한다. JSON/TypeScript 산출물의 같은 판은 projection manifest로 대사한다.
+pub(crate) const FONT_RULE_PROJECTION_SCHEMA_VERSION: &str = "1.0";
+
 /// 공개 `rhwp` 제품의 릴리스 semver.
 pub fn crate_version() -> &'static str {
     env!("CARGO_PKG_VERSION")

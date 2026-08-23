@@ -323,7 +323,25 @@ export function loadMetricRepositorySource(root = ROOT) {
   if (!fs.existsSync(generatedPath) || !fs.existsSync(overlaysPath)) {
     throw new Error('split font metric source is incomplete');
   }
-  return `${core}\n${fs.readFileSync(generatedPath, 'utf8')}\n${fs.readFileSync(overlaysPath, 'utf8')}`;
+  const registryPath = path.join(root, 'assets', 'font-rules', 'font_rule_registry.json');
+  const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+  const aliases = registry.rules.filter(rule => (
+    rule.projections.some(projection => projection.id === 'rust-layout-metric')
+  ));
+  if (aliases.length !== 67) {
+    throw new Error(`canonical layout-metric projection has ${aliases.length}/67 aliases`);
+  }
+  const aliasProjection = [
+    'fn resolve_metric_alias(name: &str) -> &str {',
+    '    match name {',
+    ...aliases.map(rule => (
+      `        ${JSON.stringify(rule.sourceFace)} => ${JSON.stringify(rule.targetFaceOrPolicy)},`
+    )),
+    '        _ => name,',
+    '    }',
+    '}',
+  ].join('\n');
+  return `${core}\n${fs.readFileSync(generatedPath, 'utf8')}\n${fs.readFileSync(overlaysPath, 'utf8')}\n${aliasProjection}`;
 }
 
 function parseAliases(source) {

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/issue-4966/font_rule_registry_migration.schema.json",
+  "title": "rhwp W7 canonical font registry migration manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "issue",
+    "sourceCommit",
+    "schema",
+    "baseline",
+    "registry",
+    "summary",
+    "mappingsSha256",
+    "mappings"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "kind": { "const": "font-rule-registry-migration" },
+    "issue": { "const": 4966 },
+    "sourceCommit": { "$ref": "#/$defs/sha1" },
+    "schema": { "$ref": "#/$defs/pathDigest" },
+    "baseline": { "$ref": "#/$defs/pathDigest" },
+    "registry": { "$ref": "#/$defs/pathDigest" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mappingCount",
+        "directCount",
+        "legacyPreservationCount",
+        "w1CandidateLinkCount",
+        "w1UniqueCandidateCount",
+        "w6MetricEntryReferenceCount",
+        "canvasKitDeclaredUnavailableRuntimePlannedCount",
+        "canvasKitDeclaredAvailableRuntimeUnavailableCount"
+      ],
+      "properties": {
+        "mappingCount": { "const": 830 },
+        "directCount": { "const": 787 },
+        "legacyPreservationCount": { "const": 43 },
+        "w1CandidateLinkCount": { "type": "integer", "minimum": 830 },
+        "w1UniqueCandidateCount": { "const": 677 },
+        "w6MetricEntryReferenceCount": { "type": "integer", "minimum": 1 },
+        "canvasKitDeclaredUnavailableRuntimePlannedCount": { "const": 125 },
+        "canvasKitDeclaredAvailableRuntimeUnavailableCount": { "const": 0 }
+      }
+    },
+    "mappingsSha256": { "$ref": "#/$defs/sha256" },
+    "mappings": {
+      "type": "array",
+      "minItems": 830,
+      "maxItems": 830,
+      "items": { "$ref": "#/$defs/mapping" }
+    }
+  },
+  "$defs": {
+    "sha1": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "pathDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1, "maxLength": 2048 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleId",
+        "projectionId",
+        "mode",
+        "candidateIds",
+        "metricEntryIds",
+        "baselineRuleSha256",
+        "registryRuleSha256",
+        "disposition"
+      ],
+      "properties": {
+        "ruleId": { "type": "string", "minLength": 1, "maxLength": 2048 },
+        "projectionId": {
+          "enum": [
+            "rust-layout-name",
+            "rust-layout-metric",
+            "canvas2d-paint",
+            "canvas2d-webfont",
+            "canvaskit-sfnt"
+          ]
+        },
+        "mode": { "enum": ["direct", "legacy-preservation"] },
+        "candidateIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "metricEntryIds": {
+          "type": "array",
+          "maxItems": 600,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^font-metric\\.[0-9a-f]{20}$" }
+        },
+        "baselineRuleSha256": { "$ref": "#/$defs/sha256" },
+        "registryRuleSha256": { "$ref": "#/$defs/sha256" },
+        "disposition": { "enum": ["migrated-active", "migrated-active-unknown"] }
+      }
+    }
+  }
+}

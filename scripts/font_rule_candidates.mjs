@@ -254,9 +254,48 @@ function parseInstalledAliases(boundary, source) {
   return extracted('rust-array-match-arms', rows, matches.length);
 }
 
+function generatedTypeScriptProjectionRows(relativePath, constantName) {
+  const source = fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath), 'utf8');
+  const marker = `export const ${constantName}`;
+  const start = source.indexOf(marker);
+  if (start === -1) throw new Error(`generated projection constant not found: ${constantName}`);
+  const valueStart = source.indexOf('Object.freeze(', start);
+  if (valueStart === -1) throw new Error(`generated projection value not found: ${constantName}`);
+  const body = extractBalanced(source, valueStart, '[', ']');
+  return JSON.parse(`[${body}]`);
+}
+
 export function parseStudioSubstitutions(boundary, source) {
   const start = source.indexOf(boundary.selector);
   const assignment = source.indexOf('=', start);
+  if (!source.slice(assignment + 1).trimStart().startsWith('[')) {
+    const generated = generatedTypeScriptProjectionRows(
+      'rhwp-studio/src/core/generated/font-rule-projections/canvas2d-paint.ts',
+      'FONT_RULE_CANVAS2D_PAINT_RULES',
+    ).filter(rule => rule.sourceBoundaryId === 'studio-substitution.substitution-tables');
+    const rows = generated.map(rule => {
+      const altTypes = /^source:(\d+)->target:(\d+)$/.exec(rule.conditions.altType ?? '');
+      if (rule.sourceFace === null || !altTypes) {
+        throw new Error(`${rule.ruleId}: generated substitution projection is incomplete`);
+      }
+      return candidate(
+        boundary,
+        'finite-mapping',
+        'paint',
+        rule.sourceFace,
+        rule.targetFaceOrPolicy,
+        {
+          conditions: {
+            languageSlot: rule.conditions.languageSlot,
+            sourceAltType: Number.parseInt(altTypes[1], 10),
+            targetAltType: Number.parseInt(altTypes[2], 10),
+          },
+          backends: ['studio', 'canvas2d'],
+        },
+      );
+    });
+    return extracted('generated-typescript-substitution-projection', rows, rows.length);
+  }
   const body = extractBalanced(source, assignment, '[', ']');
   const rows = [];
   let languageSlot = null;
@@ -385,6 +424,45 @@ function unquoteSingle(value) {
 function parseFontList(boundary, source) {
   const start = source.indexOf(boundary.selector);
   const assignment = source.indexOf('=', start);
+  if (!source.slice(assignment + 1).trimStart().startsWith('[')) {
+    const webRules = generatedTypeScriptProjectionRows(
+      'rhwp-studio/src/core/generated/font-rule-projections/webfont-supply.ts',
+      'FONT_RULE_CANVAS2D_WEBFONT_RULES',
+    );
+    const canvasKitRules = generatedTypeScriptProjectionRows(
+      'rhwp-studio/src/core/generated/font-rule-projections/canvaskit-sfnt.ts',
+      'FONT_RULE_CANVASKIT_SFNT_RULES',
+    ).filter(rule => rule.sourceBoundaryId === 'studio-supply.font-list');
+    const canvasKitByFace = new Map(canvasKitRules.map(rule => [rule.sourceFace, rule]));
+    const rows = webRules.map(rule => {
+      if (rule.sourceFace === null) {
+        throw new Error(`${rule.ruleId}: generated webfont sourceFace is missing`);
+      }
+      const canvasKit = canvasKitByFace.get(rule.sourceFace);
+      if (!canvasKit) throw new Error(`${rule.ruleId}: generated CanvasKit pair is missing`);
+      const canvasKitTarget = canvasKit.targetFaceOrPolicy;
+      const canvasKitFile = canvasKitTarget.startsWith('unavailable:')
+        || canvasKitTarget === rule.targetFaceOrPolicy
+        ? null
+        : canvasKitTarget;
+      const profile = rule.conditions.profile;
+      const format = profile === 'canvas2d-css-unknown'
+        ? null
+        : profile?.replace('canvas2d-css-', '') ?? null;
+      return candidate(
+        boundary,
+        'supply-source',
+        'supply',
+        rule.sourceFace,
+        rule.targetFaceOrPolicy,
+        {
+          conditions: { format, canvasKitFile },
+          backends: ['studio', 'canvas2d', 'canvaskit'],
+        },
+      );
+    });
+    return extracted('generated-typescript-font-entry-projection', rows, rows.length);
+  }
   const body = extractBalanced(source, assignment, '[', ']');
   const objects = topLevelObjects(body);
   const rows = objects.map(objectSource => {
@@ -416,6 +494,21 @@ function parseCanvasKitPlan(boundary, source) {
   }
   const body = extractBalanced(source, bodyAt, '{', '}');
   const mapAt = body.indexOf('const canvasKitSubstitutes = new Map([');
+  if (mapAt === -1) {
+    const generated = generatedTypeScriptProjectionRows(
+      'rhwp-studio/src/core/generated/font-rule-projections/canvaskit-sfnt.ts',
+      'FONT_RULE_CANVASKIT_SFNT_RULES',
+    ).filter(rule => rule.sourceBoundaryId === 'studio-supply.canvaskit-plan');
+    const rows = generated.map(rule => candidate(
+      boundary,
+      rule.sourceFace === null ? 'predicate' : 'finite-mapping',
+      'supply',
+      rule.sourceFace,
+      rule.targetFaceOrPolicy,
+      { backends: ['canvaskit'] },
+    ));
+    return extracted('generated-typescript-canvaskit-plan', rows, rows.length);
+  }
   const mapBody = extractBalanced(body, mapAt, '[', ']');
   const mappings = [...mapBody.matchAll(
     /\[normalizeFontFamily\('([^']+)'\),\s*normalizeFontFamily\('([^']+)'\)\]/g,
@@ -614,7 +707,11 @@ export function collectRuleCandidates(sourceBoundarySnapshot, repositoryRoot = R
   return snapshot;
 }
 
-export function validateCandidateSnapshot(snapshot, repositoryRoot = REPOSITORY_ROOT) {
+export function validateCandidateSnapshot(
+  snapshot,
+  repositoryRoot = REPOSITORY_ROOT,
+  { verifyCurrentSources = true } = {},
+) {
   const errors = [];
   if (!isObject(snapshot)
       || snapshot.kind !== 'font-rule-source-candidates'
@@ -673,7 +770,7 @@ export function validateCandidateSnapshot(snapshot, repositoryRoot = REPOSITORY_
     const sourcePath = path.resolve(repositoryRoot, candidateEntry.sourceLocation.path);
     if (!sourcePath.startsWith(`${path.resolve(repositoryRoot)}${path.sep}`)) {
       errors.push(`${candidateEntry.candidateId}: source path escapes repository`);
-    } else {
+    } else if (verifyCurrentSources) {
       const digest = currentDigests.get(sourcePath) ?? sha256File(sourcePath);
       currentDigests.set(sourcePath, digest);
       if (digest !== candidateEntry.sourceLocation.sourceSha256) {
