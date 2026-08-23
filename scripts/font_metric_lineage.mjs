@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -24,7 +25,24 @@ const OUTPUT = path.join(
   'issue-4964',
   'font_metric_pre_split_baseline.json',
 );
-const GENERATOR_VERSION = '1.0.0';
+const MANIFEST_OUTPUT = path.join(
+  ROOT,
+  'mydocs',
+  'tech',
+  'investigations',
+  'issue-4964',
+  'font_metric_lineage_manifest.json',
+);
+const MANIFEST_SCHEMA = path.join(
+  ROOT,
+  'mydocs',
+  'tech',
+  'investigations',
+  'issue-4964',
+  'font_metric_lineage_manifest.schema.json',
+);
+const BASELINE_GENERATOR_VERSION = '1.0.0';
+const MANIFEST_GENERATOR_VERSION = '1.0.0';
 const SOURCE_COMMIT = 'd1ad0eb8784dbc55f0796e2ba8775f7363247b91';
 const OVERLAY_NAMES = [
   'HanyangSinMyeongJo',
@@ -33,6 +51,33 @@ const OVERLAY_NAMES = [
   'HanyangKyunGothic',
   'HumanMyeongJo',
 ];
+const OVERLAY_EVIDENCE = {
+  HanyangSinMyeongJo: {
+    displayName: '한양신명조',
+    ladder: 'tools/task2430/measured/ladder_한양신명조.tsv',
+    oracle: 'mydocs/tech/investigations/issue-4963/profiles/historical_hanyang_sinmyeongjo_exact_installed.json',
+  },
+  HanyangJungGothic: {
+    displayName: '한양중고딕',
+    ladder: 'tools/task2430/measured/ladder_한양중고딕.tsv',
+    oracle: null,
+  },
+  HanyangKyunMyeongJo: {
+    displayName: '한양견명조',
+    ladder: 'tools/task2430/measured/ladder_한양견명조.tsv',
+    oracle: null,
+  },
+  HanyangKyunGothic: {
+    displayName: '한양견고딕',
+    ladder: 'tools/task2430/measured/ladder_한양견고딕.tsv',
+    oracle: null,
+  },
+  HumanMyeongJo: {
+    displayName: '휴먼명조',
+    ladder: 'tools/task2430/measured/ladder_휴먼명조.tsv',
+    oracle: 'mydocs/tech/investigations/issue-4963/profiles/historical_human_myeongjo_exact_installed.json',
+  },
+};
 
 function canonicalValue(value) {
   if (Array.isArray(value)) return value.map(canonicalValue);
@@ -216,6 +261,20 @@ function parseMetricEntries(source, latinRanges, hangul) {
   if (declarationAt === -1) throw new Error('FONT_METRICS declaration not found');
   const assignmentAt = source.indexOf('=', declarationAt);
   const balanced = extractBalanced(source, assignmentAt, '[', ']');
+  const lineStarts = [0];
+  for (let index = 0; index < source.length; index += 1) {
+    if (source[index] === '\n') lineStarts.push(index + 1);
+  }
+  const sourceLineAt = offset => {
+    let low = 0;
+    let high = lineStarts.length;
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2);
+      if (lineStarts[middle] <= offset) low = middle + 1;
+      else high = middle;
+    }
+    return low;
+  };
   const pattern = /FontMetric\s*\{\s*name:\s*"((?:\\.|[^"\\])*)",\s*bold:\s*(true|false),\s*italic:\s*(true|false),\s*em_size:\s*(\d+),\s*latin_ranges:\s*&([A-Z0-9_]+),\s*hangul:\s*(?:Some\(&([A-Z0-9_]+)\)|None),\s*\}/g;
   const entries = [...balanced.body.matchAll(pattern)].map((match, index) => {
     if (!latinRanges.has(match[5])) throw new Error(`metric ${index} references missing ${match[5]}`);
@@ -224,6 +283,7 @@ function parseMetricEntries(source, latinRanges, hangul) {
     }
     return {
       index,
+      sourceLine: sourceLineAt(balanced.openAt + 1 + match.index),
       name: decodeQuotedString(match[1]),
       bold: match[2] === 'true',
       italic: match[3] === 'true',
@@ -285,6 +345,7 @@ function metricWidth(model, metric, codepoint) {
 function widthProjectionHash(model) {
   const hash = crypto.createHash('sha256');
   let dataBearingCodepointCount = 0;
+  const entryHashes = [];
   for (const metric of model.entries) {
     const ranges = model.latinRanges.get(metric.latinRangesSymbol);
     const latinCodepoints = [];
@@ -321,9 +382,14 @@ function widthProjectionHash(model) {
     }
     dataBearingCodepointCount += pairCount;
     hash.update(buffer);
+    entryHashes.push({
+      index: metric.index,
+      sha256: crypto.createHash('sha256').update(buffer).digest('hex'),
+    });
   }
   return {
     dataBearingCodepointCount,
+    entryHashes,
     sha256: hash.digest('hex'),
   };
 }
@@ -423,6 +489,7 @@ export function analyzeMetricSource(source) {
   }));
   const lookup = lookupProjection(entries, aliases);
   const widths = widthProjectionHash(model);
+  const metricData = metricDataProjection(model);
   const styleCounts = { regular: 0, bold: 0, italic: 0, boldItalic: 0 };
   for (const entry of entries) {
     const key = entry.bold ? (entry.italic ? 'boldItalic' : 'bold') : (entry.italic ? 'italic' : 'regular');
@@ -435,7 +502,13 @@ export function analyzeMetricSource(source) {
     entryCount: entries.length,
     lookupInputCount: lookup.inputNames.length,
     lookupProjectionSha256: sha256Text(canonicalJson(lookup.projection)),
-    metricDataSha256: sha256Text(canonicalJson(metricDataProjection(model))),
+    entryMetricDataHashes: metricData.map(entry => ({
+      index: entry.index,
+      sha256: sha256Text(canonicalJson(entry)),
+    })),
+    entrySourceLines: entries.map(entry => ({ index: entry.index, sourceLine: entry.sourceLine })),
+    entryWidthHashes: widths.entryHashes,
+    metricDataSha256: sha256Text(canonicalJson(metricData)),
     styleCounts,
     uniqueNameCount: new Set(entries.map(entry => entry.name)).size,
     widthProjection: widths,
@@ -477,7 +550,7 @@ export function buildPreSplitBaseline(root = ROOT) {
     schemaVersion: '1.0',
     kind: 'font-metric-pre-split-baseline',
     sourceCommit: SOURCE_COMMIT,
-    generatorVersion: GENERATOR_VERSION,
+    generatorVersion: BASELINE_GENERATOR_VERSION,
     inputs: [
       {
         path: 'src/renderer/font_metrics_data.rs',
@@ -535,22 +608,496 @@ export function compareBaseline(expected, actual) {
     : ['font metric pre-split baseline differs; run --generate only in an approved baseline stage'];
 }
 
+function statusValue(status, reason, value, evidenceIds = []) {
+  const result = { evidenceIds, reason, status };
+  if (value !== undefined) result.value = value;
+  return result;
+}
+
+function unknownValue(reason) {
+  return statusValue('unknown', reason, undefined, []);
+}
+
+function notApplicableValue(reason) {
+  return statusValue('not-applicable', reason, undefined, []);
+}
+
+function verifiedValue(value, reason, evidenceIds) {
+  return statusValue('verified', reason, value, evidenceIds);
+}
+
+function stableEntryId(entry) {
+  const identity = `${entry.name}\0${entry.bold ? 1 : 0}\0${entry.italic ? 1 : 0}`;
+  return `font-metric.${sha256Text(identity).slice(0, 20)}`;
+}
+
+function parseSfntNamingRecords(file) {
+  const data = fs.readFileSync(file);
+  if (data.subarray(0, 4).toString('ascii') === 'ttcf') {
+    throw new Error(`${path.relative(ROOT, file)} is a TTC; Stage W6-2 canary expects a single-face TTF`);
+  }
+  const numTables = data.readUInt16BE(4);
+  let nameOffset = null;
+  let nameLength = null;
+  for (let index = 0; index < numTables; index += 1) {
+    const record = 12 + index * 16;
+    if (data.subarray(record, record + 4).toString('ascii') !== 'name') continue;
+    nameOffset = data.readUInt32BE(record + 8);
+    nameLength = data.readUInt32BE(record + 12);
+    break;
+  }
+  if (nameOffset === null || nameOffset + nameLength > data.length) {
+    throw new Error(`${path.relative(ROOT, file)} has no valid name table`);
+  }
+  const count = data.readUInt16BE(nameOffset + 2);
+  const stringsAt = nameOffset + data.readUInt16BE(nameOffset + 4);
+  const records = [];
+  for (let index = 0; index < count; index += 1) {
+    const record = nameOffset + 6 + index * 12;
+    const platformId = data.readUInt16BE(record);
+    const encodingId = data.readUInt16BE(record + 2);
+    const languageId = data.readUInt16BE(record + 4);
+    const nameId = data.readUInt16BE(record + 6);
+    const length = data.readUInt16BE(record + 8);
+    const valueAt = stringsAt + data.readUInt16BE(record + 10);
+    if (![0, 3].includes(platformId) || valueAt + length > data.length || length % 2 !== 0) continue;
+    const encoded = data.subarray(valueAt, valueAt + length);
+    const littleEndian = Buffer.allocUnsafe(encoded.length);
+    for (let byte = 0; byte < encoded.length; byte += 2) {
+      littleEndian[byte] = encoded[byte + 1];
+      littleEndian[byte + 1] = encoded[byte];
+    }
+    records.push({
+      platformId,
+      encodingId,
+      languageId,
+      nameId,
+      value: littleEndian.toString('utf16le'),
+    });
+  }
+  records.sort((left, right) => (
+    left.platformId - right.platformId
+    || left.encodingId - right.encodingId
+    || left.languageId - right.languageId
+    || left.nameId - right.nameId
+    || left.value.localeCompare(right.value, 'en')
+  ));
+  if (records.length === 0) throw new Error(`${path.relative(ROOT, file)} has no decodable naming records`);
+  return records;
+}
+
+function blameCommitsByLine(root) {
+  const output = execFileSync(
+    'git',
+    ['blame', '--line-porcelain', SOURCE_COMMIT, '--', 'src/renderer/font_metrics_data.rs'],
+    { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+  );
+  const commits = new Map();
+  for (const match of output.matchAll(/^([0-9a-f]{40}) \d+ (\d+)(?: \d+)?$/gm)) {
+    commits.set(Number.parseInt(match[2], 10), match[1]);
+  }
+  return commits;
+}
+
+function evidenceRecord(root, id, kind, relativePath) {
+  const file = path.join(root, relativePath);
+  if (!fs.existsSync(file)) throw new Error(`evidence path does not exist: ${relativePath}`);
+  return { id, kind, path: relativePath, sha256: sha256File(file) };
+}
+
+function buildEvidenceCatalog(root) {
+  const records = [
+    evidenceRecord(root, 'w6-pre-split-baseline', 'baseline', 'mydocs/tech/investigations/issue-4964/font_metric_pre_split_baseline.json'),
+    evidenceRecord(root, 'w1-font-rule-ledger', 'ledger', 'mydocs/tech/investigations/issue-4939/font_rule_ledger.json'),
+    evidenceRecord(root, 'causal-lineage-report', 'report', 'mydocs/report/font_metrics_fallback_causal_lineage_20260816.md'),
+    evidenceRecord(root, 'task2430-evidence', 'measurement-report', 'tools/task2430/EVIDENCE.md'),
+    evidenceRecord(root, 'task2430-generator', 'measurement-tool', 'tools/task2430/gen_metrics.py'),
+    evidenceRecord(root, 'task2430-preflight', 'measurement-preflight', 'tools/task2430/measured/preflight_report.tsv'),
+    evidenceRecord(root, 'noto-sans-kr-regular-font', 'font', 'ttfs/opensource/NotoSansKR-Regular.ttf'),
+    evidenceRecord(root, 'noto-sans-kr-ofl', 'license', 'ttfs/opensource/NotoSansKR-OFL.txt'),
+    evidenceRecord(root, 'noto-sans-kr-readme', 'provenance', 'ttfs/opensource/README.md'),
+  ];
+  for (const [name, evidence] of Object.entries(OVERLAY_EVIDENCE)) {
+    records.push(evidenceRecord(root, `task2430-ladder-${stableEntryId({ name, bold: false, italic: false }).split('.')[1]}`, 'measurement-data', evidence.ladder));
+    if (evidence.oracle !== null) {
+      records.push(evidenceRecord(root, `w5-oracle-${stableEntryId({ name, bold: false, italic: false }).split('.')[1]}`, 'oracle-profile', evidence.oracle));
+    }
+  }
+  records.sort((left, right) => left.id.localeCompare(right.id, 'en'));
+  return records;
+}
+
+function evidenceIdByPath(catalog) {
+  return new Map(catalog.map(record => [record.path, record.id]));
+}
+
+function metricRulesByIndex(root) {
+  const ledger = JSON.parse(fs.readFileSync(
+    path.join(root, 'mydocs', 'tech', 'investigations', 'issue-4939', 'font_rule_ledger.json'),
+    'utf8',
+  ));
+  const rules = new Map();
+  for (const rule of ledger.rules) {
+    if (rule.relationType !== 'metric-entry') continue;
+    const match = rule.targetFaceOrPolicy.match(/^metric-entry:(\d+)$/);
+    if (match === null) throw new Error(`W1 metric rule has invalid target: ${rule.ruleId}`);
+    const index = Number.parseInt(match[1], 10);
+    if (rules.has(index)) throw new Error(`duplicate W1 metric rule for index ${index}`);
+    rules.set(index, rule);
+  }
+  if (rules.size !== 600) throw new Error(`W1 metric rule population is ${rules.size}/600`);
+  return rules;
+}
+
+function unknownFontSource() {
+  const reason = 'The repository does not preserve an item-level source font manifest for this legacy metric entry.';
+  return {
+    status: 'unknown',
+    reason,
+    verificationScope: 'none',
+    sha256: unknownValue(reason),
+    faceIndex: unknownValue(reason),
+    namingRecords: unknownValue(reason),
+    license: unknownValue(reason),
+    provenance: unknownValue(reason),
+  };
+}
+
+function notoRegularFontSource(root) {
+  const relativePath = 'ttfs/opensource/NotoSansKR-Regular.ttf';
+  const evidenceIds = ['noto-sans-kr-regular-font', 'noto-sans-kr-ofl', 'noto-sans-kr-readme'];
+  const sourceReason = 'The tracked subset is byte-identified, but #4442 verifies only printable ASCII advances; this does not prove full metric source-exactness.';
+  return {
+    status: 'verified',
+    reason: sourceReason,
+    verificationScope: 'printable-ascii-only',
+    sha256: verifiedValue(sha256File(path.join(root, relativePath)), 'Digest of the tracked TTF subset.', ['noto-sans-kr-regular-font']),
+    faceIndex: verifiedValue(0, 'The tracked artifact is a single-face TTF.', ['noto-sans-kr-regular-font']),
+    namingRecords: verifiedValue(parseSfntNamingRecords(path.join(root, relativePath)), 'Decoded Unicode-platform SFNT name records from the tracked TTF.', ['noto-sans-kr-regular-font']),
+    license: verifiedValue({ id: 'SIL-OFL-1.1', path: 'ttfs/opensource/NotoSansKR-OFL.txt' }, 'The tracked source documents SIL OFL 1.1.', ['noto-sans-kr-ofl', 'noto-sans-kr-readme']),
+    provenance: verifiedValue(['Google Fonts Noto Sans KR variable source', 'wght=400 instance', 'rhwp project subset'], 'The tracked README records the subset lineage.', evidenceIds),
+  };
+}
+
+function measurementSourceFor(entry, catalogByPath) {
+  const evidence = OVERLAY_EVIDENCE[entry.name];
+  if (evidence === undefined) {
+    const reason = 'This legacy region has no item-level record proving whether later manual or measured edits occurred.';
+    return {
+      status: 'unknown',
+      reason,
+      method: unknownValue(reason),
+      inputDigests: unknownValue(reason),
+      interpolation: unknownValue(reason),
+      evidenceIds: [],
+    };
+  }
+  const evidenceIds = [
+    'task2430-evidence',
+    'task2430-generator',
+    'task2430-preflight',
+    catalogByPath.get(evidence.ladder),
+  ];
+  return {
+    status: 'verified',
+    reason: 'The committed ASCII overlay reproduces the tracked Hancom COM ladder exactly.',
+    method: verifiedValue('Hancom COM unscaled printable-ASCII ladder', '93 characters were measured directly.', evidenceIds),
+    inputDigests: verifiedValue(evidenceIds.map(id => ({ evidenceId: id })), 'Every retained measurement input is addressed through the evidence catalog.', evidenceIds),
+    interpolation: verifiedValue({ measuredCodepoints: 93, interpolatedCodepoints: 2, method: 'median-ratio-against-corresponding-HY-metric' }, 'Double and single quotes were excluded by Hancom autocorrect and deterministically interpolated.', evidenceIds),
+    evidenceIds,
+  };
+}
+
+function oracleLinksFor(entry, catalogByPath, root) {
+  const oraclePath = OVERLAY_EVIDENCE[entry.name]?.oracle;
+  if (oraclePath === undefined || oraclePath === null) return [];
+  const profile = JSON.parse(fs.readFileSync(path.join(root, oraclePath), 'utf8'));
+  const expectedFace = OVERLAY_EVIDENCE[entry.name].displayName;
+  if (profile.candidate?.documentFace !== expectedFace) {
+    throw new Error(`${oraclePath} documentFace does not match ${entry.name}`);
+  }
+  return [{
+    evidenceId: catalogByPath.get(oraclePath),
+    relationType: profile.relationEvidence?.type ?? 'unknown',
+    scope: 'face-identity-not-metric-source-exactness',
+  }];
+}
+
+export function buildLineageManifest(root = ROOT) {
+  const source = fs.readFileSync(path.join(root, 'src', 'renderer', 'font_metrics_data.rs'), 'utf8');
+  const analysis = analyzeMetricSource(source);
+  assertMeasuredOverlayRegion(analysis.composition);
+  const baseline = JSON.parse(fs.readFileSync(
+    path.join(root, 'mydocs', 'tech', 'investigations', 'issue-4964', 'font_metric_pre_split_baseline.json'),
+    'utf8',
+  ));
+  if (analysis.compositionSha256 !== baseline.hashes.compositionSha256
+    || analysis.metricDataSha256 !== baseline.hashes.metricDataSha256
+    || analysis.widthProjection.sha256 !== baseline.hashes.widthProjectionSha256
+    || analysis.lookupProjectionSha256 !== baseline.hashes.lookupProjectionSha256) {
+    throw new Error('current metric source no longer matches the approved W6-1 baseline');
+  }
+
+  const evidenceCatalog = buildEvidenceCatalog(root);
+  const catalogByPath = evidenceIdByPath(evidenceCatalog);
+  const w1Rules = metricRulesByIndex(root);
+  const blame = blameCommitsByLine(root);
+  const sourceLines = new Map(analysis.entrySourceLines.map(row => [row.index, row.sourceLine]));
+  const metricHashes = new Map(analysis.entryMetricDataHashes.map(row => [row.index, row.sha256]));
+  const widthHashes = new Map(analysis.entryWidthHashes.map(row => [row.index, row.sha256]));
+  const notoRegular = analysis.composition.find(
+    entry => entry.name === 'Noto Sans KR' && !entry.bold && !entry.italic,
+  );
+  if (notoRegular === undefined) throw new Error('Noto Sans KR regular metric entry not found');
+
+  const entries = analysis.composition.map(entry => {
+    const measured = entry.index >= 595;
+    const sourceLine = sourceLines.get(entry.index);
+    const declarationCommit = blame.get(sourceLine);
+    if (declarationCommit === undefined) throw new Error(`git blame commit missing for metric ${entry.index}`);
+    const w1Rule = w1Rules.get(entry.index);
+    if (w1Rule.sourceFace !== entry.name) {
+      throw new Error(`W1 rule ${w1Rule.ruleId} name ${w1Rule.sourceFace} does not match ${entry.name}`);
+    }
+    const entryId = stableEntryId(entry);
+    const measurement = measurementSourceFor(entry, catalogByPath);
+    const relationEvidence = measured ? measurement.evidenceIds : ['causal-lineage-report'];
+    const relations = [{
+      relationId: w1Rule.ruleId,
+      relationType: 'metric-entry',
+      evidenceIds: ['w1-font-rule-ledger'],
+    }];
+    if (measured) {
+      relations.push({
+        relationId: `relation.task2430.${entryId.split('.')[1]}`,
+        relationType: 'measured-overlay',
+        evidenceIds: relationEvidence,
+      });
+    }
+    return {
+      entryId,
+      currentIndex: entry.index,
+      metricIdentity: {
+        name: entry.name,
+        bold: entry.bold,
+        italic: entry.italic,
+        emSize: entry.emSize,
+      },
+      storageRegion: {
+        kind: measured ? 'measured-overlay' : 'historical-generated-region',
+        sourcePath: 'src/renderer/font_metrics_data.rs',
+        latinRangesSymbol: entry.latinRangesSymbol,
+        hangulSymbol: entry.hangulSymbol,
+      },
+      origin: {
+        kind: measured ? 'measured-overlay' : 'historical-generated-snapshot',
+        status: measured ? 'verified' : 'unknown',
+        reason: measured
+          ? 'The #2430 generator exactly reproduces the committed 95-codepoint ASCII overlay from tracked measurement data.'
+          : 'No item-level generator input manifest survives; residence in the generated region does not prove source-exact origin.',
+        declarationCommit,
+        evidenceIds: measured ? relationEvidence : ['causal-lineage-report', 'w6-pre-split-baseline'],
+      },
+      fontSource: entry.index === notoRegular.index ? notoRegularFontSource(root) : unknownFontSource(),
+      measurementSource: measurement,
+      composition: {
+        latinRangesSymbol: entry.latinRangesSymbol,
+        hangulSymbol: entry.hangulSymbol,
+      },
+      compression: entry.hangulSymbol === null
+        ? {
+          status: 'not-applicable',
+          algorithm: 'none',
+          reason: 'This metric entry has no stored HangulMetric.',
+          maxAbsoluteError: notApplicableValue('No Hangul compression exists for this entry.'),
+          averageAbsoluteError: notApplicableValue('No Hangul compression exists for this entry.'),
+        }
+        : {
+          status: 'unknown',
+          algorithm: 'grouped-hangul-width-grid',
+          reason: 'The historical generator did not emit per-entry compression error metadata.',
+          maxAbsoluteError: unknownValue('The source font and historical compression run are unavailable.'),
+          averageAbsoluteError: unknownValue('The source font and historical compression run are unavailable.'),
+        },
+      relations,
+      oracleProfiles: oracleLinksFor(entry, catalogByPath, root),
+      semanticHashes: {
+        metricDataSha256: metricHashes.get(entry.index),
+        widthProjectionSha256: widthHashes.get(entry.index),
+      },
+    };
+  });
+
+  const entryIds = new Set(entries.map(entry => entry.entryId));
+  if (entryIds.size !== entries.length) throw new Error('stable metric entry ID collision');
+  return {
+    schemaVersion: '1.0',
+    kind: 'font-metric-lineage-manifest',
+    sourceCommit: SOURCE_COMMIT,
+    generatorVersion: MANIFEST_GENERATOR_VERSION,
+    schema: {
+      path: 'mydocs/tech/investigations/issue-4964/font_metric_lineage_manifest.schema.json',
+      sha256: sha256File(root === ROOT ? MANIFEST_SCHEMA : path.join(root, 'mydocs', 'tech', 'investigations', 'issue-4964', 'font_metric_lineage_manifest.schema.json')),
+    },
+    evidenceCatalog,
+    summary: {
+      entryCount: entries.length,
+      stableEntryIdCount: entryIds.size,
+      w1MetricEntryLinks: entries.filter(entry => entry.relations.some(relation => relation.relationType === 'metric-entry')).length,
+      measuredOverlayEntries: entries.filter(entry => entry.origin.kind === 'measured-overlay').length,
+      unknownOriginEntries: entries.filter(entry => entry.origin.status === 'unknown').length,
+      fullySourceExactEntries: 0,
+      partiallyByteVerifiedFontSources: entries.filter(entry => entry.fontSource.verificationScope === 'printable-ascii-only').length,
+      w5OracleProfileLinks: entries.reduce((total, entry) => total + entry.oracleProfiles.length, 0),
+    },
+    baselineHashes: baseline.hashes,
+    entriesSha256: sha256Text(canonicalJson(entries)),
+    entries,
+  };
+}
+
+function validateStatusValue(value, location, evidenceIds, errors) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    errors.push(`${location} must be a status object`);
+    return;
+  }
+  if (!['verified', 'historical', 'inferred', 'unknown', 'not-applicable'].includes(value.status)) {
+    errors.push(`${location}.status is invalid`);
+  }
+  if (typeof value.reason !== 'string' || value.reason.length === 0) {
+    errors.push(`${location}.reason must be non-empty`);
+  }
+  if (!Array.isArray(value.evidenceIds)) errors.push(`${location}.evidenceIds must be an array`);
+  else for (const id of value.evidenceIds) if (!evidenceIds.has(id)) errors.push(`${location} references missing evidence ${id}`);
+  if (value.status === 'verified' && !Object.hasOwn(value, 'value')) {
+    errors.push(`${location}.value is required for verified status`);
+  }
+  if (['unknown', 'not-applicable'].includes(value.status) && Object.hasOwn(value, 'value')) {
+    errors.push(`${location}.value must be absent for ${value.status} status`);
+  }
+}
+
+export function validateLineageManifest(manifest, root = ROOT) {
+  const errors = [];
+  if (manifest.kind !== 'font-metric-lineage-manifest') errors.push('kind is invalid');
+  if (!Array.isArray(manifest.entries) || manifest.entries.length !== 600) {
+    errors.push(`entries must contain exactly 600 rows, got ${manifest.entries?.length}`);
+    return errors;
+  }
+  const evidenceIds = new Set();
+  for (const evidence of manifest.evidenceCatalog ?? []) {
+    if (evidenceIds.has(evidence.id)) errors.push(`duplicate evidence id ${evidence.id}`);
+    evidenceIds.add(evidence.id);
+    if (path.isAbsolute(evidence.path) || evidence.path.includes('..')) errors.push(`unsafe evidence path ${evidence.path}`);
+    const file = path.join(root, evidence.path);
+    if (!fs.existsSync(file)) errors.push(`missing evidence path ${evidence.path}`);
+    else if (sha256File(file) !== evidence.sha256) errors.push(`evidence digest drift ${evidence.path}`);
+  }
+  const schemaPath = typeof manifest.schema?.path === 'string'
+    ? path.join(root, manifest.schema.path)
+    : null;
+  if (schemaPath === null || !fs.existsSync(schemaPath) || !fs.statSync(schemaPath).isFile()
+    || sha256File(schemaPath) !== manifest.schema?.sha256) {
+    errors.push('schema path or digest does not match the tracked schema');
+  }
+  const source = fs.readFileSync(path.join(root, 'src', 'renderer', 'font_metrics_data.rs'), 'utf8');
+  const analysis = analyzeMetricSource(source);
+  const expectedMetricHashes = new Map(analysis.entryMetricDataHashes.map(row => [row.index, row.sha256]));
+  const expectedWidthHashes = new Map(analysis.entryWidthHashes.map(row => [row.index, row.sha256]));
+  const expectedRules = metricRulesByIndex(root);
+  const ids = new Set();
+  for (const [index, entry] of manifest.entries.entries()) {
+    const location = `entries[${index}]`;
+    if (entry.currentIndex !== index) errors.push(`${location}.currentIndex must equal ${index}`);
+    if (!/^font-metric\.[0-9a-f]{20}$/.test(entry.entryId)) errors.push(`${location}.entryId is invalid`);
+    if (ids.has(entry.entryId)) errors.push(`${location}.entryId is duplicated`);
+    ids.add(entry.entryId);
+    if (entry.entryId !== stableEntryId(entry.metricIdentity)) errors.push(`${location}.entryId does not match metric identity`);
+    const expectedIdentity = analysis.composition[index];
+    if (canonicalJson(entry.metricIdentity) !== canonicalJson({
+      name: expectedIdentity.name,
+      bold: expectedIdentity.bold,
+      italic: expectedIdentity.italic,
+      emSize: expectedIdentity.emSize,
+    })) errors.push(`${location}.metricIdentity differs from Rust source`);
+    if (entry.storageRegion.latinRangesSymbol !== expectedIdentity.latinRangesSymbol
+      || entry.storageRegion.hangulSymbol !== expectedIdentity.hangulSymbol) {
+      errors.push(`${location}.storageRegion differs from Rust source`);
+    }
+    if (entry.origin.status === 'unknown' && (!entry.origin.reason || entry.origin.reason.length === 0)) {
+      errors.push(`${location}.origin unknown requires a reason`);
+    }
+    if (entry.origin.kind === 'historical-generated-snapshot' && entry.origin.status === 'verified') {
+      errors.push(`${location} promotes a legacy generated entry to verified without an item-level source manifest`);
+    }
+    for (const id of entry.origin.evidenceIds) if (!evidenceIds.has(id)) errors.push(`${location}.origin references missing evidence ${id}`);
+    for (const field of ['sha256', 'faceIndex', 'namingRecords', 'license', 'provenance']) {
+      validateStatusValue(entry.fontSource[field], `${location}.fontSource.${field}`, evidenceIds, errors);
+    }
+    for (const field of ['method', 'inputDigests', 'interpolation']) {
+      validateStatusValue(entry.measurementSource[field], `${location}.measurementSource.${field}`, evidenceIds, errors);
+    }
+    for (const field of ['maxAbsoluteError', 'averageAbsoluteError']) {
+      validateStatusValue(entry.compression[field], `${location}.compression.${field}`, evidenceIds, errors);
+    }
+    for (const relation of entry.relations) {
+      if (!['metric-entry', 'measured-overlay'].includes(relation.relationType)) errors.push(`${location} has invalid relation type`);
+      for (const id of relation.evidenceIds) if (!evidenceIds.has(id)) errors.push(`${location}.relations references missing evidence ${id}`);
+    }
+    const metricRelations = entry.relations.filter(relation => relation.relationType === 'metric-entry');
+    if (metricRelations.length !== 1 || metricRelations[0].relationId !== expectedRules.get(index).ruleId) {
+      errors.push(`${location} must link its exact W1 metric-entry rule`);
+    }
+    for (const oracle of entry.oracleProfiles) {
+      if (!evidenceIds.has(oracle.evidenceId)) errors.push(`${location}.oracleProfiles references missing evidence ${oracle.evidenceId}`);
+      if (oracle.scope !== 'face-identity-not-metric-source-exactness') errors.push(`${location}.oracleProfiles has unsafe scope`);
+    }
+    if (entry.semanticHashes.metricDataSha256 !== expectedMetricHashes.get(index)) {
+      errors.push(`${location}.semanticHashes.metricDataSha256 differs from Rust source`);
+    }
+    if (entry.semanticHashes.widthProjectionSha256 !== expectedWidthHashes.get(index)) {
+      errors.push(`${location}.semanticHashes.widthProjectionSha256 differs from Rust source`);
+    }
+  }
+  if (manifest.entriesSha256 !== sha256Text(canonicalJson(manifest.entries))) errors.push('entriesSha256 does not match entries');
+  if (manifest.summary?.entryCount !== 600 || manifest.summary?.stableEntryIdCount !== 600) errors.push('summary population is not closed');
+  if (manifest.summary?.unknownOriginEntries !== 595 || manifest.summary?.measuredOverlayEntries !== 5) errors.push('origin summary must remain 595 unknown + 5 measured');
+  if (manifest.summary?.fullySourceExactEntries !== 0) errors.push('Stage W6-2 must not claim fully source-exact entries');
+  if (manifest.summary?.w1MetricEntryLinks !== 600) errors.push('every entry must link one W1 metric rule');
+  if (manifest.summary?.w5OracleProfileLinks !== 2) errors.push('only the two retained W5 historical profiles may be linked');
+  const baseline = JSON.parse(fs.readFileSync(
+    path.join(root, 'mydocs', 'tech', 'investigations', 'issue-4964', 'font_metric_pre_split_baseline.json'),
+    'utf8',
+  ));
+  if (canonicalJson(manifest.baselineHashes) !== canonicalJson(baseline.hashes)) {
+    errors.push('baselineHashes differ from the approved W6-1 baseline');
+  }
+  return errors;
+}
+
+export function compareManifest(expected, actual) {
+  return canonicalJson(expected) === canonicalJson(actual)
+    ? []
+    : ['font metric lineage manifest differs; run --generate-manifest only in an approved lineage stage'];
+}
+
 function usage() {
-  console.error('usage: node scripts/font_metric_lineage.mjs --generate|--check');
+  console.error('usage: node scripts/font_metric_lineage.mjs --generate|--check|--generate-manifest|--check-manifest');
 }
 
 if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const mode = process.argv[2];
-  if (!['--generate', '--check'].includes(mode) || process.argv.length !== 3) {
+  if (!['--generate', '--check', '--generate-manifest', '--check-manifest'].includes(mode) || process.argv.length !== 3) {
     usage();
     process.exit(2);
   }
-  const baseline = buildPreSplitBaseline();
   if (mode === '--generate') {
+    const baseline = buildPreSplitBaseline();
     fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
     fs.writeFileSync(OUTPUT, canonicalJson(baseline), 'utf8');
     console.log(`generated ${path.relative(ROOT, OUTPUT)}`);
-  } else {
+  } else if (mode === '--check') {
+    const baseline = buildPreSplitBaseline();
     if (!fs.existsSync(OUTPUT)) throw new Error(`baseline does not exist: ${path.relative(ROOT, OUTPUT)}`);
     const expected = JSON.parse(fs.readFileSync(OUTPUT, 'utf8'));
     const errors = compareBaseline(expected, baseline);
@@ -559,5 +1106,22 @@ if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLTo
       process.exit(1);
     }
     console.log(`OK ${path.relative(ROOT, OUTPUT)}`);
+  } else {
+    const manifest = buildLineageManifest();
+    const validationErrors = validateLineageManifest(manifest);
+    if (validationErrors.length > 0) throw new Error(validationErrors.join('\n'));
+    if (mode === '--generate-manifest') {
+      fs.writeFileSync(MANIFEST_OUTPUT, canonicalJson(manifest), 'utf8');
+      console.log(`generated ${path.relative(ROOT, MANIFEST_OUTPUT)}`);
+    } else {
+      if (!fs.existsSync(MANIFEST_OUTPUT)) throw new Error(`manifest does not exist: ${path.relative(ROOT, MANIFEST_OUTPUT)}`);
+      const expected = JSON.parse(fs.readFileSync(MANIFEST_OUTPUT, 'utf8'));
+      const errors = [...validateLineageManifest(expected), ...compareManifest(expected, manifest)];
+      if (errors.length > 0) {
+        for (const error of errors) console.error(error);
+        process.exit(1);
+      }
+      console.log(`OK ${path.relative(ROOT, MANIFEST_OUTPUT)}`);
+    }
   }
 }

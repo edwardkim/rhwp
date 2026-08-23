@@ -8,13 +8,15 @@
 | 산출물 | 역할 |
 | --- | --- |
 | `font_metric_pre_split_baseline.json` | 분리 전 600개 composition·metric data·문자 폭·lookup hash |
+| `font_metric_lineage_manifest.schema.json` | 600행 provenance·evidence·상태 계약 |
+| `font_metric_lineage_manifest.json` | W1·W5·#2430·추적 font 증거를 연결한 W6 lineage 정본 |
 | `scripts/font_metric_lineage.mjs` | 현재 Rust source를 읽어 기준선을 생성·검사하는 도구 |
 | `scripts/tests/font_metric_lineage.test.mjs` | 누락·순서 변경·폭 변경·overlay identity 변경의 negative contract |
 | `mydocs/plans/task_m100_4964.md` | W6 범위·불변식·승인 게이트 정본 |
 
-이 기준선은 provenance manifest가 아니다. 0..594가 역사적 generated 영역이고 595..599가 #2430
-measured overlay라는 분리 전 경계를 고정할 뿐, generated 영역을 source-exact로 승격하지 않는다.
-600행 provenance와 W1/W5 evidence 연결은 Stage W6-2에서 별도 schema/manifest로 만든다.
+pre-split 기준선은 provenance manifest가 아니다. 0..594가 역사적 generated 영역이고 595..599가
+#2430 measured overlay라는 분리 전 경계를 고정한다. lineage manifest가 600행 각각의 provenance
+상태와 W1/W5 evidence를 소유한다. generated 영역이라는 위치만으로 source-exact를 선언하지 않는다.
 
 ## 재현
 
@@ -22,6 +24,7 @@ measured overlay라는 분리 전 경계를 고정할 뿐, generated 영역을 s
 
 ```bash
 node scripts/font_metric_lineage.mjs --check
+node scripts/font_metric_lineage.mjs --check-manifest
 node --test scripts/tests/font_metric_lineage.test.mjs
 ```
 
@@ -30,6 +33,8 @@ node --test scripts/tests/font_metric_lineage.test.mjs
 ```bash
 node scripts/font_metric_lineage.mjs --generate
 node scripts/font_metric_lineage.mjs --check
+node scripts/font_metric_lineage.mjs --generate-manifest
+node scripts/font_metric_lineage.mjs --check-manifest
 ```
 
 #2430 측정 TSV와 마지막 5개 ASCII 배열의 독립 검증:
@@ -49,6 +54,18 @@ python3 tools/task2430/gen_metrics.py \
 
 machine baseline에는 실행 시각, 절대 경로와 사용자명을 넣지 않는다. 같은 source에서 생성한 canonical
 JSON은 마지막 newline까지 같아야 한다.
+
+## lineage 판독
+
+- `entryId`는 name·bold·italic identity hash이며 현재 index를 포함하지 않는다.
+- `currentIndex`는 기존 first-match 순서를 보호하는 0..599 composition 좌표다.
+- `origin.status: unknown`은 실패나 누락이 아니라 source-exact 승격을 금지하는 명시적 상태다.
+- `origin.declarationCommit`은 현재 entry 선언 줄의 Git anchor다. 참조 width 배열 전체의 생성 commit을
+  뜻하지 않으며 origin 증명으로 단독 사용하지 않는다.
+- `fontSource.verificationScope: printable-ascii-only`는 추적 Noto Sans KR Regular가 ASCII 범위에서만
+  현재 metric과 대조됐다는 뜻이다.
+- W5 `identity-exact` 연결은 한컴 readback face identity 증거다. metric 전체가 SFNT-exact라는 뜻이
+  아니다.
 
 ## 범위 경계
 

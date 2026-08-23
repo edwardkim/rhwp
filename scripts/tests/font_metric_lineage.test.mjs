@@ -7,9 +7,12 @@ import { fileURLToPath } from 'node:url';
 import {
   analyzeMetricSource,
   assertMeasuredOverlayRegion,
+  buildLineageManifest,
   buildPreSplitBaseline,
   canonicalJson,
   compareBaseline,
+  compareManifest,
+  validateLineageManifest,
 } from '../font_metric_lineage.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -22,9 +25,21 @@ const BASELINE_PATH = path.join(
   'issue-4964',
   'font_metric_pre_split_baseline.json',
 );
+const MANIFEST_PATH = path.join(
+  ROOT,
+  'mydocs',
+  'tech',
+  'investigations',
+  'issue-4964',
+  'font_metric_lineage_manifest.json',
+);
 
 function readBaseline() {
   return JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8'));
+}
+
+function readManifest() {
+  return JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
 }
 
 function swapFirstTwoMetricEntries(source) {
@@ -107,4 +122,52 @@ test('changing the final overlay identity is rejected by the population contract
     () => assertMeasuredOverlayRegion(analysis.composition),
     /expected #2430 overlays are not the final five metric entries/,
   );
+});
+
+test('the 600-row lineage manifest is deterministic and closes W1/W5 evidence', () => {
+  const expected = readManifest();
+  const actual = buildLineageManifest(ROOT);
+
+  assert.deepEqual(validateLineageManifest(actual, ROOT), []);
+  assert.deepEqual(compareManifest(expected, actual), []);
+  assert.deepEqual(actual.summary, {
+    entryCount: 600,
+    stableEntryIdCount: 600,
+    w1MetricEntryLinks: 600,
+    measuredOverlayEntries: 5,
+    unknownOriginEntries: 595,
+    fullySourceExactEntries: 0,
+    partiallyByteVerifiedFontSources: 1,
+    w5OracleProfileLinks: 2,
+  });
+});
+
+test('unknown provenance cannot omit its reason or be promoted to verified', () => {
+  const missingReason = readManifest();
+  missingReason.entries[0].origin.reason = '';
+  assert.match(validateLineageManifest(missingReason, ROOT).join('\n'), /origin unknown requires a reason/);
+
+  const promoted = readManifest();
+  promoted.entries[0].origin.status = 'verified';
+  assert.match(validateLineageManifest(promoted, ROOT).join('\n'), /promotes a legacy generated entry/);
+});
+
+test('a broken W1 link and evidence digest fail closed', () => {
+  const brokenRule = readManifest();
+  brokenRule.entries[10].relations[0].relationId = 'rule.rust-metric.broken';
+  assert.match(validateLineageManifest(brokenRule, ROOT).join('\n'), /must link its exact W1 metric-entry rule/);
+
+  const brokenEvidence = readManifest();
+  brokenEvidence.evidenceCatalog[0].sha256 = '0'.repeat(64);
+  assert.match(validateLineageManifest(brokenEvidence, ROOT).join('\n'), /evidence digest drift/);
+});
+
+test('metric identity and semantic hashes must match the Rust source', () => {
+  const changedIdentity = readManifest();
+  changedIdentity.entries[20].metricIdentity.name = 'Changed Times';
+  assert.match(validateLineageManifest(changedIdentity, ROOT).join('\n'), /metricIdentity differs from Rust source/);
+
+  const changedWidth = readManifest();
+  changedWidth.entries[20].semanticHashes.widthProjectionSha256 = 'f'.repeat(64);
+  assert.match(validateLineageManifest(changedWidth, ROOT).join('\n'), /widthProjectionSha256 differs from Rust source/);
 });
