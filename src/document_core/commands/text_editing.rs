@@ -15,11 +15,11 @@ use crate::model::paragraph::{LineSeg, ParaMeta, Paragraph};
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::model::style::Alignment;
 use crate::renderer::composer::{
-    compose_paragraph, layout_picture_band, reflow_line_segs, ComposedParagraph,
+    compose_paragraph, layout_picture_band, reflow_line_segs, ComposedParagraph, ParagraphBox,
 };
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::PageItem;
-use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
+use crate::renderer::style_resolver::{resolve_styles_for_document, ResolvedStyleSet};
 
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
 
@@ -530,7 +530,7 @@ impl DocumentCore {
         &self,
         section_idx: usize,
         para_idx: usize,
-    ) -> Option<(usize, std::ops::Range<usize>, i32)> {
+    ) -> Option<(usize, std::ops::Range<usize>, f64)> {
         let section = self.document.sections.get(section_idx)?;
         let host_index = (0..=para_idx).rev().find(|&index| {
             section.paragraphs[index].controls.iter().any(|control| {
@@ -555,14 +555,16 @@ impl DocumentCore {
         let band = layout_picture_band(
             &section.paragraphs,
             host_index,
-            crate::renderer::px_to_hwpunit(column_width, self.dpi),
+            column_width,
             &self.styles,
             self.dpi,
         )?;
+        // Carries px, not HWPUNIT: the conversion belongs to `ParagraphBox`, so
+        // that one paragraph gets one box however it is reached.
         band.paragraph_range.contains(&para_idx).then_some((
             host_index,
             band.paragraph_range,
-            crate::renderer::px_to_hwpunit(column_width, self.dpi),
+            column_width,
         ))
     }
 
@@ -702,7 +704,7 @@ impl DocumentCore {
     where
         F: FnOnce(&mut Paragraph),
     {
-        let Some((host_index, old_range, column_width_hwp)) =
+        let Some((host_index, old_range, column_width_px)) =
             self.picture_band_owning_body_paragraph(section_idx, para_idx)
         else {
             return Ok(None);
@@ -723,7 +725,7 @@ impl DocumentCore {
         let Some(new_band) = layout_picture_band(
             &staged_paragraphs,
             host_index,
-            column_width_hwp,
+            column_width_px,
             &self.styles,
             self.dpi,
         ) else {
@@ -744,8 +746,7 @@ impl DocumentCore {
             .iter_mut()
             .zip(new_band.line_segs)
         {
-            paragraph.invalidate_single_line_overflow_memo();
-            paragraph.line_segs = line_segs;
+            paragraph.replace_line_segs(line_segs);
         }
 
         // When an edited paragraph clears the exclusion earlier than before,
@@ -775,9 +776,10 @@ impl DocumentCore {
                 .get(paragraph.para_shape_id as usize);
             let margin_left = para_style.map(|style| style.margin_left).unwrap_or(0.0);
             let margin_right = para_style.map(|style| style.margin_right).unwrap_or(0.0);
+            // 본문: 열 상자.
             reflow_line_segs(
                 paragraph,
-                column_area.width - margin_left - margin_right,
+                ParagraphBox::body_for_style(column_area.width, para_style, self.dpi),
                 &self.styles,
                 self.dpi,
             );
@@ -1676,11 +1678,11 @@ impl DocumentCore {
         let para_style = self.styles.para_styles.get(para.para_shape_id as usize);
         let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-        let available_width = col_area.width - margin_left - margin_right;
-
+        // 본문: 열 상자를 그대로 넘긴다. 이 자리가 대화형 편집의 관문이고,
+        // 종전에 두 끝점을 버려 `column_start=0` 을 발행했던 지점이다.
         reflow_line_segs(
             &mut self.document.sections[section_idx].paragraphs[para_idx],
-            available_width,
+            ParagraphBox::body_for_style(col_area.width, para_style, self.dpi),
             &self.styles,
             self.dpi,
         );
@@ -2779,7 +2781,7 @@ impl DocumentCore {
     ) {
         use crate::renderer::hwpunit_to_px;
 
-        let styles = resolve_styles(&self.document.doc_info, self.dpi);
+        let styles = resolve_styles_for_document(&self.document, self.dpi);
         let cell_width_px = hwpunit_to_px(cell_width, self.dpi);
         let pad_left_px = hwpunit_to_px(pad_left as i32, self.dpi);
         let pad_right_px = hwpunit_to_px(pad_right as i32, self.dpi);
@@ -2835,10 +2837,11 @@ impl DocumentCore {
                         let mut hwpx_full_reflow_candidate =
                             matches!(self.source_format, crate::parser::FileFormat::Hwpx)
                                 .then(|| cell_para.clone());
+                        // 셀 내용 상자 — 열이 없으므로 미스냅 (아래 셀 경로 모두 동일).
                         let preserved_prefix =
                             crate::renderer::composer::reflow_line_segs_after_cell_text_edit(
                                 cell_para,
-                                final_width,
+                                ParagraphBox::content_width_px(final_width, self.dpi),
                                 &styles,
                                 self.dpi,
                                 edit_char_offset,
@@ -2871,7 +2874,12 @@ impl DocumentCore {
                             && (hwpx_line_count_changed || hwpx_tail_text_start_only_changed)
                         {
                             if let Some(mut candidate) = hwpx_full_reflow_candidate.take() {
-                                reflow_line_segs(&mut candidate, final_width, &styles, self.dpi);
+                                reflow_line_segs(
+                                    &mut candidate,
+                                    ParagraphBox::content_width_px(final_width, self.dpi),
+                                    &styles,
+                                    self.dpi,
+                                );
                                 if candidate.line_segs.len() != stored_line_count {
                                     cell_para.line_segs = candidate.line_segs;
                                 } else {
@@ -2883,12 +2891,17 @@ impl DocumentCore {
                         if split_stale_cell_reflow {
                             crate::renderer::composer::reflow_line_segs_after_cell_split(
                                 cell_para,
-                                final_width,
+                                ParagraphBox::content_width_px(final_width, self.dpi),
                                 &styles,
                                 self.dpi,
                             );
                         } else {
-                            reflow_line_segs(cell_para, final_width, &styles, self.dpi);
+                            reflow_line_segs(
+                                cell_para,
+                                ParagraphBox::content_width_px(final_width, self.dpi),
+                                &styles,
+                                self.dpi,
+                            );
                         }
                     }
                 }
@@ -2896,14 +2909,24 @@ impl DocumentCore {
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
                     if let Some(cell_para) = tb.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(cell_para, final_width, &styles, self.dpi);
+                        reflow_line_segs(
+                            cell_para,
+                            ParagraphBox::content_width_px(final_width, self.dpi),
+                            &styles,
+                            self.dpi,
+                        );
                     }
                 }
             }
             Some(Control::Picture(pic)) => {
                 if let Some(ref mut cap) = pic.caption {
                     if let Some(cell_para) = cap.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(cell_para, final_width, &styles, self.dpi);
+                        reflow_line_segs(
+                            cell_para,
+                            ParagraphBox::content_width_px(final_width, self.dpi),
+                            &styles,
+                            self.dpi,
+                        );
                     }
                 }
             }
@@ -2911,7 +2934,7 @@ impl DocumentCore {
         }
     }
 
-    fn recalculate_cell_paragraph_vpos_native(
+    pub(crate) fn recalculate_cell_paragraph_vpos_native(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -3102,7 +3125,7 @@ impl DocumentCore {
         else {
             return;
         };
-        let styles = resolve_styles(&self.document.doc_info, self.dpi);
+        let styles = resolve_styles_for_document(&self.document, self.dpi);
         let dpi = self.dpi;
         let cell_width_px = hwpunit_to_px(cell_width, dpi);
         let pad_left_px = hwpunit_to_px(pad_left as i32, dpi);
@@ -3120,12 +3143,18 @@ impl DocumentCore {
         let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let final_width = (available_width - margin_left - margin_right).max(0.0);
-        reflow_line_segs(cell_para, final_width, &styles, dpi);
+        // 셀 내용 상자 — 열이 없으므로 미스냅.
+        reflow_line_segs(
+            cell_para,
+            ParagraphBox::content_width_px(final_width, dpi),
+            &styles,
+            dpi,
+        );
     }
 
     /// [#2755] path 기반 셀 문단 vpos 재계산 (깊이 ≥ 2 중첩 표 지원).
     /// `recalculate_cell_paragraph_vpos_native` 의 path 변형.
-    fn recalculate_cell_paragraph_vpos_by_path(
+    pub(crate) fn recalculate_cell_paragraph_vpos_by_path(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -3133,7 +3162,7 @@ impl DocumentCore {
         start_para: usize,
         ignore_reset_at: Option<usize>,
     ) {
-        let styles = resolve_styles(&self.document.doc_info, self.dpi);
+        let styles = resolve_styles_for_document(&self.document, self.dpi);
         let dpi = self.dpi;
         let is_hwp3_variant = self.document.layout_profile().hwp3_layout();
         if let Ok(paras) = self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)
@@ -5587,11 +5616,21 @@ impl DocumentCore {
             rebuild_char_offsets(cell_para);
         }
 
+        let inner_cell_para_idx = path.last().map(|entry| entry.2).unwrap_or(0);
+        self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, path, inner_cell_para_idx);
+        self.recalculate_cell_paragraph_vpos_by_path(
+            section_idx,
+            parent_para_idx,
+            path,
+            inner_cell_para_idx,
+            None,
+        );
+
         // 최외곽 표 dirty 마킹
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
 
-        // 리플로우 (최외곽 표 기준 — 중첩 표 셀 폭은 별도 계산이 필요하나 우선 section dirty로 처리)
+        // 최내곽 실제 셀 폭으로 위에서 reflow한 뒤 section pagination을 갱신한다.
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -6360,7 +6399,7 @@ mod tests {
     /// `line_seg_starts` 로 저장된 줄 경계를 직접 지정해 "실제 `.hwp`/`.hwpx` 에서 파싱한
     /// 셀 문단"(권위 `line_segs` 보유) 상태를 재현한다. 기존 `by_path` 테스트는
     /// `Paragraph::default()` 를 써 `line_segs` 가 비어 있었고, 그 경우 레이아웃의
-    /// `recompose_for_cell_width` 가 폭 기준으로 재래핑해 주므로 결함이 관측되지 않았다.
+    /// 셀 재조판(`recompose_cell_lines_in_frame`)이 재래핑해 주므로 결함이 관측되지 않았다.
     ///
     /// 페이지 본문 폭(수만 HWPUNIT)과 셀 폭(200 HWPUNIT)을 극단적으로 벌려, 어떤 폰트 폭
     /// 추정치를 쓰든 "페이지 폭 사용" 과 "셀 폭 사용" 이 줄 수로 갈리게 한다.
@@ -7603,19 +7642,16 @@ mod tests {
             .and_then(|columns| columns.get(HOST))
             .copied()
             .unwrap_or(0) as usize;
-        let column_width_hwp = crate::renderer::px_to_hwpunit(
-            page_layout
-                .column_areas
-                .get(host_column_index)
-                .or_else(|| page_layout.column_areas.first())
-                .unwrap_or(&page_layout.body_area)
-                .width,
-            DPI,
-        );
+        let column_width_px = page_layout
+            .column_areas
+            .get(host_column_index)
+            .or_else(|| page_layout.column_areas.first())
+            .unwrap_or(&page_layout.body_area)
+            .width;
         let initial_band = crate::renderer::composer::layout_picture_band(
             &original_paragraphs,
             HOST,
-            column_width_hwp,
+            column_width_px,
             &styles,
             DPI,
         )
@@ -7666,7 +7702,7 @@ mod tests {
             let margin_right = para_style.map(|style| style.margin_right).unwrap_or(0.0);
             reflow_line_segs(
                 paragraph,
-                column_area.width - margin_left - margin_right,
+                ParagraphBox::body_for_style(column_area.width, para_style, DPI),
                 &styles,
                 DPI,
             );
@@ -7679,7 +7715,7 @@ mod tests {
         let inserted_band = crate::renderer::composer::layout_picture_band(
             &expected_after_insert,
             HOST,
-            column_width_hwp,
+            column_width_px,
             &styles,
             DPI,
         )
@@ -7695,8 +7731,7 @@ mod tests {
             .iter_mut()
             .zip(inserted_band.line_segs)
         {
-            paragraph.invalidate_single_line_overflow_memo();
-            paragraph.line_segs = line_segs;
+            paragraph.replace_line_segs(line_segs);
         }
         for released_para_idx in inserted_range.end..initial_band.paragraph_range.end {
             reflow_released_body_paragraph(&mut expected_after_insert, released_para_idx);
@@ -7736,7 +7771,7 @@ mod tests {
         let before_delete_band = crate::renderer::composer::layout_picture_band(
             &before_delete,
             HOST,
-            column_width_hwp,
+            column_width_px,
             &styles,
             DPI,
         )
@@ -7747,7 +7782,7 @@ mod tests {
         let deleted_band = crate::renderer::composer::layout_picture_band(
             &expected_after_delete,
             HOST,
-            column_width_hwp,
+            column_width_px,
             &styles,
             DPI,
         )
@@ -7758,8 +7793,7 @@ mod tests {
             .iter_mut()
             .zip(deleted_band.line_segs)
         {
-            paragraph.invalidate_single_line_overflow_memo();
-            paragraph.line_segs = line_segs;
+            paragraph.replace_line_segs(line_segs);
         }
         for released_para_idx in deleted_range.end..before_delete_band.paragraph_range.end {
             reflow_released_body_paragraph(&mut expected_after_delete, released_para_idx);
@@ -8120,12 +8154,17 @@ mod tests {
         core.paginate();
 
         let before_col = core.para_column_map[0][HOST];
-        let (_, before_range, before_width_hwp) = core
+        let (_, before_range, before_width_px) = core
             .picture_band_owning_body_paragraph(0, HOST)
             .expect("supported Picture band in the wide source column");
         assert_eq!(before_col, 0, "fixture starts in the wide column");
         assert_eq!(before_range, HOST..326);
-        assert_eq!(before_width_hwp, 36_842);
+        // Same pin, same quantity — the tuple carries px now, so convert at
+        // the assertion rather than restating the number in another unit.
+        assert_eq!(
+            crate::renderer::px_to_hwpunit(before_width_px, core.dpi),
+            36_842
+        );
 
         let geometry = |paragraphs: &[Paragraph]| {
             paragraphs

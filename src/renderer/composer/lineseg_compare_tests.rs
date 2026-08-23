@@ -81,7 +81,12 @@ mod tests {
             // #3211 조사: 저장 LineSeg가 `orig` 템플릿으로 재사용되는 경로를 막고,
             // 실제 재조판 결과만 원본과 대조한다.
             para_clone.line_segs.clear();
-            reflow_line_segs(&mut para_clone, available_width, styles, dpi);
+            reflow_line_segs(
+                &mut para_clone,
+                crate::renderer::composer::ParagraphBox::content_width_px(available_width, dpi),
+                styles,
+                dpi,
+            );
 
             // 비교
             let diff = compare_line_segs(para_idx, &original_line_segs, &para_clone.line_segs);
@@ -414,7 +419,7 @@ mod tests {
                 let mut para_clone = para.clone();
                 crate::renderer::composer::reflow_line_segs(
                     &mut para_clone,
-                    available_width,
+                    crate::renderer::composer::ParagraphBox::content_width_px(available_width, dpi),
                     &styles,
                     dpi,
                 );
@@ -675,7 +680,7 @@ mod tests {
             let mut para_clone = para.clone();
             crate::renderer::composer::reflow_line_segs(
                 &mut para_clone,
-                available_width,
+                crate::renderer::composer::ParagraphBox::content_width_px(available_width, dpi),
                 &styles,
                 dpi,
             );

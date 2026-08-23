@@ -52,7 +52,7 @@ impl DocumentCore {
         // 포함해 단일줄 과밀 memo 를 무효화한다. 삽입 쌍둥이
         // `shift_for_inline_control_insert` 와 대칭 (셀 그림/도형/수식/각주 삭제
         // 가족이 전부 이 함수로 수렴).
-        para.invalidate_single_line_overflow_memo();
+        para.invalidate_layout_inputs();
         // 남은 컨트롤 중 가장 큰 높이 계산
         let max_remaining_ctrl_height = para
             .controls
@@ -82,10 +82,23 @@ impl DocumentCore {
                 ls.line_spacing = 600;
             }
         } else {
-            // 텍스트가 있으면 reflow_line_segs로 재계산
-            let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
-            let available_width_px = crate::renderer::hwpunit_to_px(seg_width, dpi);
-            crate::renderer::composer::reflow_line_segs(para, available_width_px, styles, dpi);
+            // 텍스트가 있으면 reflow_line_segs로 재계산.
+            //
+            // 이 자리의 상자는 문단이 이미 들고 있던 상자다 — 컨트롤 하나를 지운
+            // 것뿐이므로 원점도 폭도 종전 기록이 권위다. 스냅은 하지 않는다:
+            // 저장값이 이미 한컴이 확정한 값이고, 여기서 다시 격자에 맞추면
+            // 원본 기록을 우리 격자로 덮어쓴다.
+            let stored = para.line_segs.first();
+            let column_start = stored.map(|s| s.column_start).unwrap_or(0);
+            let seg_width = stored.map(|s| s.segment_width).unwrap_or(0);
+            crate::renderer::composer::reflow_line_segs(
+                para,
+                crate::renderer::composer::ParagraphBox::content(
+                    column_start..column_start.saturating_add(seg_width),
+                ),
+                styles,
+                dpi,
+            );
         }
     }
     /// CommonObjAttr → JSON 문자열 (Shape/Picture 공용 속성)

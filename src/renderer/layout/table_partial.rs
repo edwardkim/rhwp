@@ -12,7 +12,7 @@ use super::border_rendering::{
 };
 use super::table_layout::{
     calc_nested_split_rows, effective_margin_left_line, extend_completed_nested_table_border_clips,
-    NestedTableSplit,
+    native_terminal_child_host_line_spacing, NestedTableSplit,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::find_bin_data;
@@ -209,7 +209,7 @@ pub(crate) struct PartialTableCellProbe {
 /// [#4149] 셀 문단 compose 저장소 — windowed 프로브에서만 lazy.
 ///
 /// Lazy 슬롯의 compose 결과는 Eager 경로와 동일한 변환 순서
-/// (compose → recompose_for_cell_width → recompose_stored_single_line_if_overflowing)를
+/// (compose → recompose_cell_lines_in_frame → recompose_stored_single_line_if_overflowing)를
 /// 문단 단위로 적용한다. windowed 프로브 게이트가 shrink 를 조기탈출로 증명하므로
 /// Lazy 에서 inner_width 는 Eager 와 동일하다.
 enum CellComposedStore {
@@ -224,7 +224,8 @@ impl CellComposedStore {
         cell: &crate::model::table::Cell,
         inner_width: f64,
         styles: &ResolvedStyleSet,
-        restore_indented_tracking: bool,
+        dpi: f64,
+        legacy_hwp3_stored_geometry: bool,
     ) -> &ComposedParagraph {
         match self {
             CellComposedStore::Eager(v) => &v[cpi],
@@ -232,27 +233,21 @@ impl CellComposedStore {
                 if slots[cpi].is_none() {
                     let para = &cell.paragraphs[cpi];
                     let mut comp = compose_paragraph(para);
-                    if restore_indented_tracking {
-                        crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
-                            &mut comp,
-                            para,
-                            inner_width,
-                            styles,
-                        );
-                    } else {
-                        crate::renderer::composer::recompose_for_cell_width(
-                            &mut comp,
-                            para,
-                            inner_width,
-                            styles,
-                        );
-                    }
+                    crate::renderer::composer::recompose_cell_lines_in_frame(
+                        &mut comp,
+                        para,
+                        crate::renderer::composer::ParagraphBox::content_width_px(inner_width, dpi),
+                        styles,
+                        dpi,
+                        legacy_hwp3_stored_geometry,
+                    );
                     if cell.text_direction == 0 {
                         crate::renderer::composer::recompose_stored_single_line_if_overflowing(
                             &mut comp,
                             para,
                             inner_width,
                             styles,
+                            dpi,
                         );
                     }
                     slots[cpi] = Some(comp);
@@ -268,14 +263,22 @@ impl CellComposedStore {
         cell: &crate::model::table::Cell,
         inner_width: f64,
         styles: &ResolvedStyleSet,
-        restore_indented_tracking: bool,
+        dpi: f64,
+        legacy_hwp3_stored_geometry: bool,
     ) {
         if matches!(self, CellComposedStore::Lazy(_)) {
             let mut v = Vec::with_capacity(cell.paragraphs.len());
             for cpi in 0..cell.paragraphs.len() {
                 v.push(
-                    self.get(cpi, cell, inner_width, styles, restore_indented_tracking)
-                        .clone(),
+                    self.get(
+                        cpi,
+                        cell,
+                        inner_width,
+                        styles,
+                        dpi,
+                        legacy_hwp3_stored_geometry,
+                    )
+                    .clone(),
                 );
             }
             *self = CellComposedStore::Eager(v);
@@ -915,8 +918,6 @@ impl LayoutEngine {
             // 셀 패딩
             let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
                 self.resolve_cell_padding(cell, table);
-            let restore_indented_tracking =
-                self.long_indented_tracking_uses_table_content_box(table, styles);
 
             // [#4149] windowed 프로브면 창 문단만 lazy compose. 그 외에는 종전과
             // 동일한 순서로 전량 compose → shrink → recompose.
@@ -953,21 +954,17 @@ impl LayoutEngine {
                 // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
                 for (cpi, para) in cell.paragraphs.iter().enumerate() {
                     if let Some(comp) = composed_paras.get_mut(cpi) {
-                        if restore_indented_tracking {
-                            crate::renderer::composer::recompose_for_cell_width_with_indented_tracking(
-                                comp,
-                                para,
+                        crate::renderer::composer::recompose_cell_lines_in_frame(
+                            comp,
+                            para,
+                            crate::renderer::composer::ParagraphBox::content_width_px(
                                 inner_width_for_recompose,
-                                styles,
-                            );
-                        } else {
-                            crate::renderer::composer::recompose_for_cell_width(
-                                comp,
-                                para,
-                                inner_width_for_recompose,
-                                styles,
-                            );
-                        }
+                                self.dpi,
+                            ),
+                            styles,
+                            self.dpi,
+                            self.profile.get().legacy_hwp3_stored_geometry(),
+                        );
                         // [#2291] 부실 저장(ls==1·실폭 초과) 재분할 — 가로쓰기 셀 한정.
                         if cell.text_direction == 0 {
                             crate::renderer::composer::recompose_stored_single_line_if_overflowing(
@@ -975,6 +972,7 @@ impl LayoutEngine {
                                 para,
                                 inner_width_for_recompose,
                                 styles,
+                                self.dpi,
                             );
                         }
                     }
@@ -1270,7 +1268,13 @@ impl LayoutEngine {
             if cell.text_direction != 0 {
                 // [#4149] 프로브가 세로쓰기 셀을 대상으로 삼는 일은 게이트로 막지만,
                 // 방어적으로 전량 구성 후 동일 경로를 태운다 (좌표 동일).
-                composed_store.materialize(cell, inner_width, styles, restore_indented_tracking);
+                composed_store.materialize(
+                    cell,
+                    inner_width,
+                    styles,
+                    self.dpi,
+                    self.profile.get().legacy_hwp3_stored_geometry(),
+                );
                 let vert_inner_area = LayoutRect {
                     x: inner_x,
                     y: cell_y + pad_top,
@@ -1414,7 +1418,14 @@ impl LayoutEngine {
                     (
                         0,
                         composed_store
-                            .get(cp_idx, cell, inner_width, styles, restore_indented_tracking)
+                            .get(
+                                cp_idx,
+                                cell,
+                                inner_width,
+                                styles,
+                                self.dpi,
+                                self.profile.get().legacy_hwp3_stored_geometry(),
+                            )
                             .lines
                             .len(),
                     )
@@ -1479,7 +1490,8 @@ impl LayoutEngine {
                     cell,
                     inner_width,
                     styles,
-                    restore_indented_tracking,
+                    self.dpi,
+                    self.profile.get().legacy_hwp3_stored_geometry(),
                 );
 
                 if preserve_linear_single_cell_vpos {
@@ -3495,12 +3507,35 @@ impl LayoutEngine {
         // 역류시키지 않는다.
         {
             let physical_page_bottom = col_area.y + col_area.height;
-            fn descendant_bottom(node: &RenderNode, physical_page_bottom: f64) -> f64 {
-                let mut b = node.bbox.y + node.bbox.height;
-                if matches!(
+            let logical_table_bottom = table_node.bbox.y + table_node.bbox.height;
+            let terminal_long_child_clip_only = is_continuation
+                && end_row >= table.row_count as usize
+                && end_cut.is_empty()
+                && native_terminal_child_host_line_spacing(
+                    self.profile.get().hwp5_stored_pagination_layout(),
+                    table,
+                    self.dpi,
+                ) > 0.5;
+            fn descendant_bottom(
+                node: &RenderNode,
+                physical_page_bottom: f64,
+                logical_table_bottom: f64,
+                terminal_long_child_clip_only: bool,
+            ) -> f64 {
+                let clipped_cell = matches!(
                     node.node_type,
                     RenderNodeType::TableCell(TableCellNode { clip: true, .. })
-                ) {
+                );
+                // A terminal cell may widen its *paint clip* to retain a child table's
+                // bottom stroke. That clip is not new parent-row flow. Start clipped
+                // cells at the logical RowBreak bottom; only direct drawings proven to
+                // end on this page may extend the outer table bbox.
+                let mut b = if clipped_cell && terminal_long_child_clip_only {
+                    (node.bbox.y + node.bbox.height).min(logical_table_bottom)
+                } else {
+                    node.bbox.y + node.bbox.height
+                };
+                if clipped_cell {
                     for child in &node.children {
                         let is_direct_drawing = matches!(
                             child.node_type,
@@ -3516,7 +3551,12 @@ impl LayoutEngine {
                                 | RenderNodeType::RawSvg(_)
                         );
                         if is_direct_drawing {
-                            let drawing_bottom = descendant_bottom(child, physical_page_bottom);
+                            let drawing_bottom = descendant_bottom(
+                                child,
+                                physical_page_bottom,
+                                logical_table_bottom,
+                                terminal_long_child_clip_only,
+                            );
                             if drawing_bottom <= physical_page_bottom + 0.5 {
                                 b = b.max(drawing_bottom);
                             }
@@ -3525,14 +3565,26 @@ impl LayoutEngine {
                     return b;
                 }
                 for c in &node.children {
-                    b = b.max(descendant_bottom(c, physical_page_bottom));
+                    b = b.max(descendant_bottom(
+                        c,
+                        physical_page_bottom,
+                        logical_table_bottom,
+                        terminal_long_child_clip_only,
+                    ));
                 }
                 b
             }
             let content_bottom = table_node
                 .children
                 .iter()
-                .map(|child| descendant_bottom(child, physical_page_bottom))
+                .map(|child| {
+                    descendant_bottom(
+                        child,
+                        physical_page_bottom,
+                        logical_table_bottom,
+                        terminal_long_child_clip_only,
+                    )
+                })
                 .fold(table_node.bbox.y + table_node.bbox.height, f64::max);
             let grown = content_bottom - table_node.bbox.y;
             if grown > table_node.bbox.height {

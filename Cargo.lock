@@ -1496,7 +1496,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "11d3d7f243d5c5a8b9bb5d6dd2b1602c0cb0b9db1621bafc7ed66e35ff9fe092"
 
 [[package]]
-name = "llm-verifier-criteria-decomp"
+name = "llm-verifier-claim-bind"
 version = "0.1.0"
 dependencies = [
  "serde",
@@ -1504,7 +1504,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "llm-verifier-claim-bind"
+name = "llm-verifier-criteria-decomp"
 version = "0.1.0"
 dependencies = [
  "serde",

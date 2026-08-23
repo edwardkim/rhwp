@@ -475,6 +475,9 @@ impl DocumentCore {
 
         let mut count = 0usize;
         let mut affected_sections: Vec<usize> = Vec::new();
+        let mut affected_body_paragraphs: Vec<(usize, usize)> = Vec::new();
+        let mut affected_cell_paragraphs: Vec<(usize, usize, usize, usize, usize)> = Vec::new();
+        let mut body_flow_boundaries = std::collections::BTreeMap::new();
 
         for hit in &all_hits {
             if let Some((parent_para, ctrl_idx, cell_idx, cell_para_idx)) = hit.cell_context {
@@ -521,6 +524,13 @@ impl DocumentCore {
                 } else {
                     nested_para.delete_text_at(hit.char_offset, hit.length);
                     nested_para.insert_text_at(hit.char_offset, new_text);
+                    affected_cell_paragraphs.push((
+                        hit.sec,
+                        parent_para,
+                        ctrl_idx,
+                        cell_idx,
+                        cell_para_idx,
+                    ));
                 }
                 count += 1;
                 affected_sections.push(hit.sec);
@@ -548,6 +558,13 @@ impl DocumentCore {
             } else {
                 // 본문 문단 치환 — delete_text_native + insert_text_native는 recompose를 호출하므로
                 // 성능을 위해 직접 문단 수준 조작 후 마지막에 일괄 recompose
+                body_flow_boundaries
+                    .entry((hit.sec, hit.para))
+                    .or_insert_with(|| {
+                        crate::renderer::composer::paragraph_flow_end(
+                            &self.document.sections[hit.sec].paragraphs[hit.para],
+                        )
+                    });
                 let section = self
                     .document
                     .sections
@@ -559,6 +576,7 @@ impl DocumentCore {
                     .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
                 para.delete_text_at(hit.char_offset, hit.length);
                 para.insert_text_at(hit.char_offset, new_text);
+                affected_body_paragraphs.push((hit.sec, hit.para));
                 count += 1;
                 affected_sections.push(hit.sec);
             }
@@ -566,6 +584,63 @@ impl DocumentCore {
 
         // 변경된 섹션들 recompose
         if count > 0 {
+            affected_body_paragraphs.sort_unstable();
+            affected_body_paragraphs.dedup();
+            for (section_idx, para_idx) in affected_body_paragraphs {
+                self.reflow_paragraph(section_idx, para_idx);
+            }
+            let mut body_flow_starts = std::collections::BTreeMap::new();
+            for ((section_idx, para_idx), stored_end) in body_flow_boundaries {
+                body_flow_starts
+                    .entry(section_idx)
+                    .and_modify(|current: &mut (usize, Option<i32>)| {
+                        if para_idx < current.0 {
+                            *current = (para_idx, stored_end);
+                        }
+                    })
+                    .or_insert((para_idx, stored_end));
+            }
+            for (section_idx, (start_para, stored_end)) in body_flow_starts {
+                let hwp3_layout = self.document.layout_profile().hwp3_layout();
+                crate::renderer::composer::recalculate_section_vpos(
+                    &mut self.document.sections[section_idx].paragraphs,
+                    start_para,
+                    None,
+                    stored_end,
+                    &self.styles,
+                    self.dpi,
+                    hwp3_layout,
+                );
+            }
+            affected_cell_paragraphs.sort_unstable();
+            affected_cell_paragraphs.dedup();
+            let mut cell_flow_starts = std::collections::BTreeMap::new();
+            for &(section_idx, parent_para, control_idx, cell_idx, cell_para_idx) in
+                &affected_cell_paragraphs
+            {
+                self.reflow_cell_paragraph(
+                    section_idx,
+                    parent_para,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                );
+                cell_flow_starts
+                    .entry((section_idx, parent_para, control_idx, cell_idx))
+                    .and_modify(|start: &mut usize| *start = (*start).min(cell_para_idx))
+                    .or_insert(cell_para_idx);
+            }
+            for ((section_idx, parent_para, control_idx, cell_idx), start_para) in cell_flow_starts
+            {
+                self.recalculate_cell_paragraph_vpos_native(
+                    section_idx,
+                    parent_para,
+                    control_idx,
+                    cell_idx,
+                    start_para,
+                    None,
+                );
+            }
             affected_sections.sort();
             affected_sections.dedup();
             for sec_idx in affected_sections {
@@ -667,6 +742,55 @@ fn format_search_hit(hit: &SearchHit, wrapped: bool) -> String {
 mod tests {
     use super::*;
 
+    fn stored_search_paragraph(text: &str, width_hwp: i32) -> crate::model::paragraph::Paragraph {
+        crate::model::paragraph::Paragraph {
+            text: text.to_string(),
+            char_offsets: (0..text.chars().count() as u32).collect(),
+            char_count: text.chars().count() as u32 + 1,
+            char_shapes: vec![crate::model::paragraph::CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![crate::model::paragraph::LineSeg {
+                text_start: 0,
+                line_height: 1_000,
+                text_height: 900,
+                baseline_distance: 800,
+                segment_width: width_hwp,
+                tag: crate::model::paragraph::LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    fn core_with_search_section(paragraph: crate::model::paragraph::Paragraph) -> DocumentCore {
+        let mut core = DocumentCore::new_empty();
+        core.document.sections = vec![crate::model::document::Section {
+            section_def: crate::model::document::SectionDef {
+                page_def: crate::model::page::PageDef {
+                    width: 10_000,
+                    height: 84_188,
+                    margin_left: 0,
+                    margin_right: 0,
+                    margin_top: 0,
+                    margin_bottom: 0,
+                    margin_header: 0,
+                    margin_footer: 0,
+                    margin_gutter: 0,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![paragraph],
+            ..Default::default()
+        }];
+        core.composed = vec![Vec::new()];
+        core.dirty_sections = vec![true];
+        core.dirty_paragraphs = vec![None];
+        core
+    }
+
     #[test]
     fn find_in_text_case_sensitive() {
         assert_eq!(find_in_text("hello world", "world", true), vec![6]);
@@ -728,6 +852,8 @@ mod tests {
 
     #[test]
     fn replace_all_updates_equation_scripts_and_reports_actual_count() {
+        bulk_replace_materializes_a_current_body_partition();
+        bulk_replace_materializes_a_current_nested_cell_partition();
         let data = std::fs::read("samples/exam_math.hwp").expect("샘플 파일 읽기 실패");
         let mut doc = DocumentCore::from_bytes(&data).expect("샘플 파일 파싱 실패");
         let before: serde_json::Value = serde_json::from_str(
@@ -762,6 +888,80 @@ mod tests {
         assert_eq!(
             replaced.as_array().expect("치환 후 검색 결과 배열").len(),
             expected
+        );
+    }
+
+    fn bulk_replace_materializes_a_current_body_partition() {
+        let replacement = "A".repeat(30);
+        let mut core = core_with_search_section(stored_search_paragraph("old", 10_000));
+        let mut following = stored_search_paragraph("tail", 10_000);
+        following.line_segs[0].vertical_pos = 1_000;
+        core.document.sections[0].paragraphs.push(following);
+
+        core.replace_all_native("old", &replacement, true)
+            .expect("body replacement succeeds");
+        let paragraph = &core.document.sections[0].paragraphs[0];
+        assert!(paragraph.line_segs.len() > 1);
+        assert!(!paragraph.stored_text_partition_is_dirty());
+        let expected_following_vpos = crate::renderer::composer::paragraph_flow_end(paragraph)
+            .expect("replacement paragraph has flow end");
+        assert_eq!(
+            core.document.sections[0].paragraphs[1].line_segs[0].vertical_pos,
+            expected_following_vpos
+        );
+
+        let bytes = crate::serializer::body_text::serialize_section(&core.document.sections[0]);
+        let parsed = crate::parser::body_text::parse_body_text_section(&bytes).unwrap();
+        assert_eq!(
+            parsed.paragraphs[0].line_segs.len(),
+            paragraph.line_segs.len()
+        );
+        assert_eq!(
+            parsed.paragraphs[1].line_segs[0].vertical_pos,
+            expected_following_vpos
+        );
+    }
+
+    fn bulk_replace_materializes_a_current_nested_cell_partition() {
+        let replacement = "A".repeat(30);
+        let cell_para = stored_search_paragraph("old", 10_000);
+        let mut following = stored_search_paragraph("tail", 10_000);
+        following.line_segs[0].vertical_pos = 1_000;
+        let table = crate::model::table::Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![crate::model::table::Cell {
+                row: 0,
+                col: 0,
+                row_span: 1,
+                col_span: 1,
+                width: 10_000,
+                paragraphs: vec![cell_para, following],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut parent = crate::model::paragraph::Paragraph::default();
+        parent.controls.push(Control::Table(Box::new(table)));
+        let mut core = core_with_search_section(parent);
+
+        core.replace_all_native("old", &replacement, true)
+            .expect("nested replacement succeeds");
+        let Control::Table(table) = &core.document.sections[0].paragraphs[0].controls[0] else {
+            panic!("expected table");
+        };
+        let paragraph = &table.cells[0].paragraphs[0];
+        assert!(paragraph.line_segs.len() > 1);
+        assert!(!paragraph.stored_text_partition_is_dirty());
+        let expected_following_vpos = crate::renderer::composer::paragraph_flow_end(paragraph)
+            .expect("replacement cell paragraph has flow end");
+        assert_eq!(
+            table.cells[0].paragraphs[1].line_segs[0].vertical_pos,
+            expected_following_vpos
+        );
+
+        assert!(
+            !crate::serializer::body_text::serialize_section(&core.document.sections[0]).is_empty()
         );
     }
 }

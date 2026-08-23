@@ -112,7 +112,7 @@ fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph) {
     // [#4149] clip 사본이지만 다중 문단 붙여넣기에서 중간 문단이 통째로 문서에
     // 스플라이스되어 렌더 입력이 될 수 있다 — 컨트롤 제거로 compose 입력이
     // 바뀌므로 단일줄 과밀 memo 를 무효화한다.
-    para.invalidate_single_line_overflow_memo();
+    para.invalidate_layout_inputs();
     let old_controls = std::mem::take(&mut para.controls);
     let old_records = std::mem::take(&mut para.ctrl_data_records);
     let mut index_map = vec![None; old_controls.len()];
@@ -2224,7 +2224,6 @@ mod clipboard_border_fill_offset_tests {
     use crate::document_core::DocumentCore;
     use crate::model::style::{BorderFill, BorderLine, BorderLineType, Fill, FillType, SolidFill};
     use crate::model::table::{Cell, Table};
-    use crate::renderer::style_resolver::resolve_styles;
 
     /// 4방향 동일한 실선 테두리 + 단색 채우기를 갖는 BorderFill을 만든다.
     fn border_fill(border_color: u32, fill_color: u32) -> BorderFill {
@@ -2263,7 +2262,7 @@ mod clipboard_border_fill_offset_tests {
             border_fill(0x00FF00, 0xFFFF00), // index 3 → id 4 (REAL, 테두리#00ff00/배경#00ffff)
             border_fill(0x008CFF, 0xFF00FF), // index 4 → id 5 (decoy2, 테두리#ff8c00/배경#ff00ff)
         ];
-        core.styles = resolve_styles(&core.document.doc_info, core.dpi);
+        core.rebuild_resolved_styles();
 
         let table = Table {
             row_count: 1,

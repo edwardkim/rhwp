@@ -28,7 +28,6 @@ use crate::renderer::pagination::{MasterPageRef, PageContent, PaginationResult, 
 use crate::renderer::render_tree::{
     BoundingBox, FieldMarkerType, PageRenderTree, RenderNode, RenderNodeType, TextRunNode,
 };
-use crate::renderer::style_resolver::resolve_styles;
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::svg_layer::SvgLayerRenderer;
 use crate::renderer::typeset::TypesetEngine;
@@ -3768,7 +3767,7 @@ impl DocumentCore {
     /// 파생 순서는 소비 순서와 같다: 스타일 → 문단 구성 → (정규화·측정) → 페이지네이션 →
     /// 페이지 트리. 앞 단계를 뒤 단계보다 늦게 만들면 같은 패스 안에서 옛 값이 섞인다.
     pub(crate) fn rebuild_derived_state(&mut self) {
-        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
+        self.rebuild_resolved_styles();
         self.composed = self
             .document
             .sections
@@ -3854,6 +3853,7 @@ impl DocumentCore {
         let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
+            .with_legacy_hwp3_stored_geometry(profile.legacy_hwp3_stored_geometry())
             .with_native_hwp5(profile.native_hwp5_layout())
             .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before);
         let column_def = Self::find_initial_column_def(paragraphs);
@@ -4185,6 +4185,7 @@ impl DocumentCore {
         let profile = self.effective_layout_profile();
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
+            .with_legacy_hwp3_stored_geometry(profile.legacy_hwp3_stored_geometry())
             .with_native_hwp5(profile.native_hwp5_layout())
             .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before)
             .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
@@ -4395,7 +4396,8 @@ impl DocumentCore {
                 .map(|v| v == "1")
                 .unwrap_or(false);
             let mut result = if use_paginator {
-                paginator.paginate_with_measured_opts(
+                let profile = self.document.layout_profile();
+                paginator.paginate_with_measured_profile(
                     para_src,
                     &measured,
                     &section.section_def.page_def,
@@ -4405,9 +4407,10 @@ impl DocumentCore {
                     crate::renderer::pagination::PaginationOpts {
                         hide_empty_line: section.section_def.hide_empty_line,
                         respect_vpos_reset: self.respect_vpos_reset,
-                        is_hwp3_variant: self.document.layout_profile().hwp3_layout(),
+                        is_hwp3_variant: profile.hwp3_layout(),
                         footnote_shape: Some(section.section_def.footnote_shape.clone()),
                     },
+                    profile,
                 )
             } else {
                 use crate::renderer::pagination::{DeferredEndnote, EndnoteDeferral, EndnoteRef};
@@ -6692,7 +6695,7 @@ impl DocumentCore {
     }
 
     pub(crate) fn rebuild_section(&mut self, section_idx: usize) {
-        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
+        self.rebuild_resolved_styles();
         self.recompose_section(section_idx);
         self.paginate();
     }
