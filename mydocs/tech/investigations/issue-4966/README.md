@@ -170,9 +170,9 @@ schema 1.0 파일을 임시로 느슨하게 만들지 않는다.
 ## Stage W7-6 최종 검증
 
 - W1·W2·W6·W7 Node contract: 77/77
-- release-test nextest: 8,174/8,174, 정책 skip 39
+- release-test nextest: 최신 devel 통합 뒤 8,201/8,201, 정책 skip 41
 - native-skia library와 지정 회귀: 통과
-- Studio: TypeScript, 1,068 pass·1 skip, production build 통과
+- Studio: TypeScript, 1,070 pass·1 skip, production build 통과
 - Docker optimized WASM: 통과
 - 공개 W1 7문서 167쪽과 HWP/HWPX trace 대표 6문서 page 0의 native/WASM SVG mismatch 0
 - fresh WASM trace 3/3, Studio backend 집중 검사 38/38

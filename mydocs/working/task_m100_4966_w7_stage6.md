@@ -20,14 +20,17 @@ file content와 generator hash는 바뀌었지만 registry 입력과 다섯 sema
 
 ## 2. 검증 환경과 준비
 
-- 기준 task head: `f0057d419`
-- 통합 기준: `upstream/devel@87a8d3dcaf96cdde148b5a2e31b27d220d388f0a`
+- W7-6 정정 전 task head: `f0057d419`
+- W7-6 정정 commit: `855fbf738`
+- 최종 통합 기준: `upstream/devel@343ed2c013606319b6418dd8c637c5e04047e304`
+- 최신 devel 통합 검증 head: `bb8482263`
 - CPU 16개, RAM 31 GiB, Docker Server 29.7.2
 - cargo-nextest 0.9.137; 저장소 권고 0.9.140 경고는 비차단
-- review 전용 detached worktree에서 integration suite 881 source·4,126 static test attribute,
+- review 전용 detached worktree에서 integration suite 890 source·4,156 static test attribute,
   32 suite + 9 exception을 준비했다. generated suite와 manifest는 source diff에 포함하지 않았다.
-- `Cargo.lock` SHA-256은 전후
-  `a0a2ec455835cd85c7b2521d1accca069d32811c473bf64f7461470bc753113f`로 같다.
+- W7-6 정정 자체는 `Cargo.lock`을 바꾸지 않았다. 이후 최신 devel 병합이 workspace package 정렬만
+  가져와 최종 SHA-256은 `1eeaa945d41544d5c6172acb95c62a5b0d799dbc995642b46f01e5ad5919cec5`다.
+  병합 뒤 전체 gate를 새 integration source로 다시 실행했다.
 
 ## 3. 최초 실패와 정정
 
@@ -52,16 +55,16 @@ src/renderer/font_rule_projections/layout_name.rs: "1.0"
 | registry / projection / pre-migration baseline check | 통과 |
 | W6 metric baseline·lineage manifest check | 통과 |
 | W1·W2·W6·W7 Node contract | 77/77 |
-| Rust unit-tier inventory | 4,225 tests / 299 modules, drift 없음 |
+| Rust unit-tier inventory | 4,224 tests / 299 modules, drift 없음 |
 | projection generator | 830 rules / 5 outputs, deterministic check 통과 |
 
 ### 4.2 Rust
 
 | gate | 결과 |
 | --- | --- |
-| `cargo build --locked --release` | 통과, 최종 native rebuild 9분 28초 |
-| release library | 4,075 pass / 13 ignore |
-| release-test nextest | 8,174/8,174 pass, 39 skip, slow 4 |
+| `cargo build --locked --release` | 통과, 최신 통합 native build 9분 6초 |
+| release library | 4,074 pass / 13 ignore |
+| release-test nextest | 8,201/8,201 pass, 41 skip, slow 4 |
 | native-skia library | 통과 |
 | missing picture placeholder | 2/2 |
 | direct PDF export | 4/4 |
@@ -69,19 +72,20 @@ src/renderer/font_rule_projections/layout_name.rs: "1.0"
 | rustdoc | 8 pass / 3 ignore |
 | `cargo fmt --all -- --check` | 통과 |
 
-release library 수량은 root 3,893, contracts 15, OOXML chart 165, password crypto 2의 합이다.
-nextest의 장시간 검사는 security negative corpus 136.741초, IR field sweep 98.625초와 HWP5 baseline
-95.440초를 포함해 전부 통과했다.
+release library 수량은 root 3,892, contracts 15, OOXML chart 165, password crypto 2의 합이다.
+최신 devel 병합 전 8,174/8,174도 통과했으며, 병합 뒤 늘어난 integration source를 준비해
+8,201/8,201을 처음부터 다시 실행했다. 장시간 security corpus·IR field sweep·HWP5 baseline도
+전부 통과했다.
 
 ### 4.3 Studio·WASM·backend
 
 | gate | 결과 |
 | --- | --- |
 | `npx tsc --noEmit` | 통과 |
-| Studio 전체 Node test | 1,068 pass / 1 skip |
+| Studio 전체 Node test | 1,070 pass / 1 skip |
 | Studio production build | 통과, 223 modules |
 | Canvas2D·CanvasKit focused | 38/38 |
-| Docker optimized WASM | 통과, 5분 48초 |
+| Docker optimized WASM | 통과, 최신 통합 head 5분 43초 |
 | fresh WASM Decision Trace E2E | 3/3 |
 
 focused 검사는 CSS glyph face 비관찰, local permission·probe, CanvasKit SFNT source record와 TTC face,

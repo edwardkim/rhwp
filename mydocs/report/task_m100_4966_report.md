@@ -51,18 +51,19 @@ W7은 이 plan을 load 성공으로 승격하지 않고 capability와 계획을 
 ## 4. 최종 검증
 
 - W1·W2·W6·W7 Node contract 77/77
-- release library 4,075 pass·13 ignore
-- release-test nextest 8,174/8,174, 정책 skip 39
+- release library 4,074 pass·13 ignore
+- release-test nextest 8,201/8,201, 정책 skip 41
 - native-skia library, placeholder 2/2, direct PDF 4/4
 - Clippy `-D warnings`, rustdoc, fmt 통과
-- Studio TypeScript, 1,068 pass·1 skip, production build 통과
+- Studio TypeScript, 1,070 pass·1 skip, production build 통과
 - Canvas2D·CanvasKit focused 38/38
 - Docker optimized WASM과 fresh WASM trace 3/3
 - 공개 HWP 7문서 167쪽 + 대표 HWP/HWPX 6문서 page 0, SVG byte mismatch 0
 
 첫 nextest에서 새 generated Rust 파일의 schema version 리터럴 두 개가 중앙 스키마 계약에 걸렸다.
 generator가 `src/schema_registry.rs`의 단일 상수를 참조하도록 정정하고 전체 8,174건을 다시 실행했다.
-이 보정은 semantic projection hash를 바꾸지 않았다.
+그 뒤 `upstream/devel@343ed2c013606319b6418dd8c637c5e04047e304`을 병합하고 늘어난 integration
+source를 포함한 8,201건을 다시 전건 통과했다. 이 보정은 semantic projection hash를 바꾸지 않았다.
 
 세부 명령·환경·hash는 [Stage W7-6 보고서](../working/task_m100_4966_w7_stage6.md)에 있다.
 
