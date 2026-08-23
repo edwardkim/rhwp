@@ -40,11 +40,23 @@ PR 또는 관련 issue 본문·comment에 첨부된 HWP/HWPX/PDF/PNG와 외부�
 
 ## 3.5.1 기준 PDF 미첨부 시 버전별 HWP MCP
 
-PR에 기준 PDF가 없지만 원본 HWP/HWPX가 있으면, PDF 업로드 요청보다 먼저 문서를 저장한 한컴오피스
-버전을 확인해 해당 MCP로 기준 PDF를 산출한다. 2022 이하에서 저장한 `.hwp`는
-[HWP 2020 MCP 사용법](../mcp_hwp2020Convert_usage.md)의 `hwp-convert-2020`, 2024에서 저장한 `.hwp`는
+PR에 기준 PDF가 없지만 원본 HWP/HWPX가 있으면, PDF 업로드 요청보다 먼저 다음 명령으로 마지막 저장
+제품 메타데이터를 확인해 해당 MCP로 기준 PDF를 산출한다.
+
+```bash
+rhwp info --json <원본 HWP 또는 HWPX>
+```
+
+`lastSavedWith.product`가 `hancom-office-2010`·`hancom-office-2018`·`hancom-office-2020`·
+`hancom-office-2022`이면 [HWP 2020 MCP 사용법](../mcp_hwp2020Convert_usage.md)의
+`hwp-convert-2020`을, `hancom-office-2024`이면
 [HWP 2024 MCP 사용법](../mcp_hwp2024Convert_usage.md)의 `hwp-convert-2024`를 사용한다.
-확장자가 같다는 이유로 서비스를 자동 선택하지 않는다.
+이 판정은 HWP5 `HwpSummaryInformation.revisionNumber`와 HWPX `version.xml/appVersion`의 마지막 저장
+메타데이터를 사용한다. 확장자와 파일 포맷 `version`만으로 서비스를 선택하지 않는다.
+
+`lastSavedWith`가 `null`이거나 `product`가 `null`이면 서비스를 자동 선택하지 않는다. 기준 PDF, 제출자·원
+저장 환경의 확인 등 별도 근거를 확보하고 그 판단을 review 문서에 기록한다. 이 메타데이터는 원 작성 제품의
+증명이 아니며 재저장·삭제·변조될 수 있다.
 
 - 최종 기준 PDF는 output에만 두지 않고 2020 계열은 `pdf/{원본 stem}-2020.pdf`, 2024 계열은
   `pdf/{원본 stem}-2024.pdf`에 저장한다.
@@ -58,8 +70,9 @@ PR에 기준 PDF가 없지만 원본 HWP/HWPX가 있으면, PDF 업로드 요청
 HWP 2020 MCP의 성공 조건은 CLI `status: success`, server `run_status: 0`, `validation: ok`다.
 HWP 2024 MCP는 동기 `status: success` 또는 비동기 `succeeded → success`, client/server byte 수와
 SHA-256 일치를 확인한다. 공통으로 `pdf/` 아래 실제 PDF 존재와 `file` 또는 `pdfinfo` 확인이 필요하다.
-review 문서에는 사용한 서비스 버전, 원본 경로·가능하면 SHA-256·출처 URL, PDF 경로·SHA-256, MCP job id,
-서비스별 status·validation metadata·페이지 수, 사용한 visual sweep asset과 지표를 적는다.
+review 문서에는 MCP 선택 전 `info --json`의 `format`·`lastSavedWith` 값, 사용한 서비스 버전, 원본
+경로·가능하면 SHA-256·출처 URL, PDF 경로·SHA-256, MCP job id, 서비스별 status·validation metadata·페이지 수,
+사용한 visual sweep asset과 지표를 적는다.
 
 ## 대표 asset과 안정 URL
 
