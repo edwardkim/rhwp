@@ -133,5 +133,5 @@ registry를 다시 만들기 때문에 현 판에서 JSON 직접 추가·수정�
 
 ## 7. 잔여 절차
 
-Stage W7-6 구현·문서 diff를 로컬 commit한 뒤 메인테이너에게 최종 결과 승인을 요청한다. remote push,
-PR 생성, self-review, merge와 issue close는 각각 별도 승인 게이트다.
+Stage W7-6 구현·문서 diff와 최신 devel 통합 검증 기록을 로컬 commit했고 메인테이너가 최종 결과를
+승인했다. remote push, PR 생성, self-review, merge와 issue close는 각각 별도 승인 게이트다.

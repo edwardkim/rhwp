@@ -13,8 +13,8 @@ W7의 구현 목표는 충족됐다. 서로 다른 backend가 같은 face를 선
 Canvas2D paint, webfont supply와 CanvasKit SFNT의 유한 규칙을 하나의 canonical registry에서 각 결정면에
 맞는 정적 projection으로 생성한다. 전환 전후 선택 결과·순서·metric·renderer output은 동일하다.
 
-현재 결과는 **Stage W7-6 완료, 메인테이너 최종 결과 승인 대기**다. GitHub push·PR·issue close는 아직
-수행하지 않았다.
+현재 결과는 **Stage W7 완료·메인테이너 최종 결과 승인**이다. GitHub push·PR·issue close는 아직
+수행하지 않았으며 각각 후속 승인 게이트로 남아 있다.
 
 ## 2. 단계별 산출
 
