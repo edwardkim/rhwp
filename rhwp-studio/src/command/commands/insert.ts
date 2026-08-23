@@ -1,4 +1,4 @@
-﻿import type { CommandDef } from '../types';
+import type { CommandDef } from '../types';
 import { PicturePropsDialog } from '@/ui/picture-props-dialog';
 import { ChartDataDialog } from '@/ui/chart-data-dialog';
 import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
@@ -692,6 +692,9 @@ function changeZOrder(
     command: new SetZOrderCommand(ref.sec, ref.ppi, ref.ci, operation, pos),
     meta: DEFER_REFRESH_TO_EXIT,
   });
+  // 참고: 무변경(이미 맨 앞/뒤)일 때도 command 분기는 반환 위치로 커서를 앵커에
+  // 맞춘다 — 종전 snapshot 경로의 조기 break 와 다른 유일한 동작 델타로, 개체
+  // 선택 UX(캐럿이 개체 인접에 머무른다, #3351)와 같은 자리라 의도적으로 둔다.
   ih.exitPictureObjectSelectionAndAfterEdit();
 }
 

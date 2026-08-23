@@ -55,6 +55,18 @@ fn z_orders(doc: &HwpDocument) -> Vec<i32> {
     out
 }
 
+/// 첫 Shape 의 (para_idx, control_idx) — 재로드 문서는 파서 배치가 생성 시와 다르다.
+fn first_shape_at(doc: &HwpDocument) -> (usize, usize) {
+    for (pi, p) in doc.document().sections[0].paragraphs.iter().enumerate() {
+        for (ci, c) in p.controls.iter().enumerate() {
+            if matches!(c, Control::Shape(_)) {
+                return (pi, ci);
+            }
+        }
+    }
+    panic!("구역 0에 Shape 가 없다");
+}
+
 /// change_shape_z_order_native 응답에서 moves 를 파싱한다(없으면 빈 벡터).
 fn parse_moves(resp: &str) -> Vec<(usize, usize, i32, i64)> {
     let v: Value = serde_json::from_str(resp).expect("응답 JSON");
@@ -240,5 +252,39 @@ fn empty_pairs_are_a_clean_noop() {
         before.iter().zip(after.iter()).position(|(a, b)| a != b),
         None,
         "빈 pairs 는 passthrough 도 건드리지 않는다"
+    );
+}
+
+#[test]
+fn loaded_file_passthrough_some_stream_converges() {
+    // 실파일 경로 — 위 테스트들은 raw_stream=None 합성 문서라 "capture(Some) →
+    // 상대 연산(None 화) → old 대입 → restore(Some) → export 원본 바이트" 의
+    // Some→Some 왕복을 받아치지 못했다(P3-4). from_bytes 로 내보낸 바이트를
+    // 다시 열면 파서가 raw_stream=Some 을 채우므로 공개 API 만으로 실측 가능.
+    let exported = doc_with_shapes(3).export_hwp().expect("파일화");
+    let mut doc = HwpDocument::from_bytes(&exported).expect("재로드");
+    let before = doc.export_hwp().expect("재로드 baseline");
+    assert_eq!(before.len(), exported.len(), "왕복 자기동일 전제");
+    assert_eq!(z_orders(&doc).len(), 3, "도형 3개 재로드");
+
+    // TS SetZOrderCommand undo 순서 그대로 — 이번엔 캡처가 Some 이다.
+    let (pi, ci) = first_shape_at(&doc);
+    let cap = doc.capture_section_raw_native(0).expect("캡처");
+    let resp = doc
+        .change_shape_z_order_native(0, pi, ci, "forward")
+        .expect("forward");
+    let moves = parse_moves(&resp);
+    assert_eq!(moves.len(), 2, "교환 기록 — {resp}");
+
+    doc.apply_shape_z_order_pairs_native(0, &pairs_json(&moves, "before"))
+        .expect("old 복원");
+    doc.restore_section_raw_native(cap).expect("raw 복원");
+
+    let after = doc.export_hwp().expect("복원 후 export");
+    assert_eq!(before.len(), after.len(), "바이트 길이 수렴");
+    let diff = before.iter().zip(after.iter()).position(|(a, b)| a != b);
+    assert!(
+        diff.is_none(),
+        "passthrough Some 복원 후 원본 바이트 완전 수렴 — 첫 불일치 @{diff:?}"
     );
 }
