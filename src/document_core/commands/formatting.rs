@@ -11,7 +11,9 @@ use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
 use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::style_resolver::{resolve_styles_for_document, ResolvedStyleSet};
+use crate::renderer::style_resolver::{
+    resolve_styles, resolve_styles_for_document, ResolvedStyleSet,
+};
 
 fn char_shape_mods_affect_text_flow(mods: &crate::model::style::CharShapeMods) -> bool {
     mods.base_size.is_some()
