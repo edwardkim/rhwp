@@ -78,7 +78,7 @@ samples/hwpx/hwpx-h-01.hwpx	9	9	0
 samples/hwpx/hwpx-h-02.hwpx	9	9	0
 samples/hwpx/hwpx-h-03.hwpx	9	9	0
 samples/hwpx/issue1948_cross_para_fieldend.hwpx	1	1	0
-samples/hwpx/issue2019_floating_form_74312.hwpx	18	19	1
+samples/hwpx/issue2019_floating_form_74312.hwpx	18	18	0
 samples/hwpx/issue_157.hwpx	2	2	0
 samples/hwpx/issue_241.hwpx	1	1	0
 samples/hwpx/ref/ref_empty.hwpx	1	1	0

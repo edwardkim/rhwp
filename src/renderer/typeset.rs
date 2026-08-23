@@ -7141,7 +7141,15 @@ impl TypesetEngine {
                     {
                         st.hangul2024_spill_para = Some(para_idx);
                     }
-                    let trigger = trigger && !omit_pushed_empty_page && !hangul2024_refit;
+                    // [#5919] [#2019 v3] 로 명시 단나누기를 억제한 ColumnDef-only
+                    // overlay 구분자의 lineseg vertpos=0 은 쪽/단 경계 신호가 아니라
+                    // 마커 문단의 미설정값이다. 이 경계를 저장 vpos 리셋으로 다시
+                    // 읽으면 억제했던 단나누기가 되살아나 표 격자와 본문을 서로
+                    // 다른 허위 쪽으로 갈라 놓는다(74312 12쪽).
+                    let trigger = trigger
+                        && !omit_pushed_empty_page
+                        && !hangul2024_refit
+                        && !overlay_columndef_separator_break;
                     if trigger {
                         // [Task #724] wrap_around active 시 강제 종료 — anchor cs=0
                         // (HWP5 변환본 caption-style) 한정. 일반 wrap_around (anchor cs>0)
