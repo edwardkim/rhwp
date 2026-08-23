@@ -138,6 +138,13 @@ fn section_raw_restore_rejects_when_passthrough_alive() {
         second.is_err(),
         "passthrough 가 살아있는 상태의 중복 복원은 거부돼야 한다"
     );
+
+    // 거부가 캡처를 소비하면 CommandHistory 는 같은 undo 를 다시 시도할 수 없다.
+    // setter 로 raw 를 다시 무효화한 뒤 같은 캡처가 복원 가능한지 확인한다.
+    core.set_section_def_native(sec, &new_json)
+        .expect("재무효화 적용");
+    core.restore_section_raw_native(cap2)
+        .expect("거부 뒤 살아있는 캡처 복원");
 }
 
 #[test]

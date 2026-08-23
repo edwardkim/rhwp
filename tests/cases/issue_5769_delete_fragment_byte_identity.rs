@@ -137,6 +137,7 @@ fn issue_5769_section_tail_boundary_delete_restores_bytes() {
 #[test]
 fn issue_5769_restore_without_delete_is_rejected_for_multi_para_fragment() {
     let mut core = DocumentCore::from_bytes(&load(HONGBO)).expect("파싱");
+    let before = core.export_hwp_native().expect("삭제 전 export");
     let frag = core.capture_delete_range_native(0, 1, 3).expect("캡처");
     // 삭제 없이 복원 시도 → 전제 검증(문단 수 불일치)으로 거부되어 무음 중복 삽입을 막는다
     let err = core.restore_delete_fragment_native(frag).unwrap_err();
@@ -144,6 +145,15 @@ fn issue_5769_restore_without_delete_is_rejected_for_multi_para_fragment() {
         err.to_string().contains("전제가 어긋났"),
         "의외의 오류: {err}"
     );
+
+    // 거부는 저장 조각을 소비하지 않는다. 이후 실제 삭제를 적용하면 같은 ID로
+    // 되돌릴 수 있어야 CommandHistory 의 재시도 가능성이 보장된다.
+    let doc = inspect(HONGBO);
+    core.delete_range_native(0, 1, 0, 3, char_len(&doc, 0, 3), None)
+        .expect("범위 삭제");
+    core.restore_delete_fragment_native(frag)
+        .expect("거부 뒤 같은 조각으로 복원");
+    assert_eq!(before, core.export_hwp_native().expect("복원 후 export"));
 }
 
 #[test]

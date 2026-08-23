@@ -135,7 +135,9 @@ impl DocumentCore {
             .iter()
             .position(|(id, _)| *id == frag_id)
             .ok_or_else(|| HwpError::RenderError(format!("삭제 조각 {} 없음", frag_id)))?;
-        let frag = self.fragment_store.remove(pos).1;
+        // 전제 검증이 실패하면 호출자가 원인을 해소한 뒤 같은 undo 를 다시 시도할 수
+        // 있어야 한다. 따라서 항목은 성공한 복원 끝에서만 소비한다.
+        let frag = self.fragment_store[pos].1.clone();
 
         if frag.section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -194,6 +196,10 @@ impl DocumentCore {
         // 여기서 recalculate_section_vpos 를 다시 돌리지 않는다 — 원본 캐시 좌표가
         // 이미 조각으로 복원됐으므로 재계산은 오히려 바이트를 어긋나게 한다.
         self.rebuild_derived_state();
+
+        // 성공한 경우에만 조각을 소비한다. 앞선 전제 오류에서는 저장소 항목을
+        // 보존해 CommandHistory 가 동일 ID로 재시도하거나 명시적으로 discard 할 수 있다.
+        self.fragment_store.remove(pos);
 
         self.event_log.push(DocumentEvent::TextInserted {
             section: frag.section_idx,

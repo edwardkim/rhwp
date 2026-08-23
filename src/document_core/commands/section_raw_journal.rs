@@ -76,7 +76,7 @@ impl DocumentCore {
             .iter()
             .position(|(id, _)| *id == capture_id);
         let capture = match pos {
-            Some(pos) => self.section_raw_store.remove(pos).1,
+            Some(pos) => self.section_raw_store[pos].1.clone(),
             None => {
                 return Err(HwpError::RenderError(format!(
                     "구역 raw 캡처 {} 없음",
@@ -104,6 +104,10 @@ impl DocumentCore {
         }
         section.raw_stream = capture.raw_stream;
         section.raw_provenance = capture.raw_provenance;
+        // raw 복원이 실제로 끝난 경우에만 소비한다. 전제 오류는 호출자가 같은
+        // undo를 재시도하거나 discard 하도록 캡처를 남긴다.
+        self.section_raw_store
+            .remove(pos.expect("존재를 확인한 캡처 위치"));
         Ok("{\"ok\":true}".to_string())
     }
 
