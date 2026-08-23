@@ -1,0 +1,67 @@
+{
+  "exhaustiveDomain": {
+    "evaluatedEntryCodepointPairs": 7062099,
+    "hangul": "U+AC00..U+D7A3 for every entry, including None when no HangulMetric exists",
+    "latin": "every codepoint in every stored LatinRange, with zero encoded as None",
+    "unsupported": "range topology plus boundary tests preserve None outside stored ranges"
+  },
+  "fontMetrics": {
+    "entryCount": 600,
+    "historicalGeneratedRegion": {
+      "entryCount": 595,
+      "firstIndex": 0,
+      "lastIndex": 594,
+      "provenanceCaveat": "generated-region-does-not-imply-source-exact"
+    },
+    "measuredOverlayRegion": {
+      "entryCount": 5,
+      "evidence": "tools/task2430/EVIDENCE.md",
+      "firstIndex": 595,
+      "lastIndex": 599,
+      "names": [
+        "HanyangSinMyeongJo",
+        "HanyangJungGothic",
+        "HanyangKyunMyeongJo",
+        "HanyangKyunGothic",
+        "HumanMyeongJo"
+      ]
+    },
+    "styleCounts": {
+      "bold": 89,
+      "boldItalic": 49,
+      "italic": 79,
+      "regular": 383
+    },
+    "uniqueNameCount": 401
+  },
+  "generatorVersion": "1.0.0",
+  "hashes": {
+    "compositionSha256": "d4cdac86b3c6ee55d8b1aa921d662f1fc1241c2809cb9c8ffe991d56a045e69a",
+    "lookupProjectionSha256": "bb3008f9dc379bd580119a6a658388732e94358db2039dbb02d78c28ec992fdf",
+    "metricDataSha256": "025812eac4bad179c5b87e23b15fdf08a4e4fb3f19a6e453738e03110a140bcf",
+    "widthProjectionSha256": "2cd1389a14401f6488041af3c54ff0ba5e982d944acd0b5bb56147056e3a7d1b"
+  },
+  "inputs": [
+    {
+      "path": "src/renderer/font_metrics_data.rs",
+      "sha256": "7e38ab9a169407c7aecf9563be6ec4427f8f3deda990974e55e7adc4596fb72d"
+    },
+    {
+      "path": "mydocs/tech/investigations/issue-4939/font_rule_baseline.json",
+      "sha256": "a0fac05c3138471eb3e7404fc701f0053caa6c01a923afae60fd4da64064b466"
+    }
+  ],
+  "kind": "font-metric-pre-split-baseline",
+  "lookupContract": {
+    "aliasCount": 67,
+    "inputNameCount": 464,
+    "order": [
+      "name+bold+italic",
+      "name+bold+italic=false",
+      "name-first"
+    ],
+    "styleCombinationsPerInput": 4
+  },
+  "schemaVersion": "1.0",
+  "sourceCommit": "d1ad0eb8784dbc55f0796e2ba8775f7363247b91"
+}
