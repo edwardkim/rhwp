@@ -1740,8 +1740,45 @@ impl HeightMeasurer {
                 // 줄높이 누적합 81090 HU, 선언 141785 HU → 조각이 짧아져 잔여 중첩
                 // 행이 렌더에서 탈락)
                 let ladder_intact = crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs);
+                // [#5884] 압축-단조 사다리(제3형): 기계 저장 HWPX 는 셀 사다리를
+                // 단조로 두되 중첩 표 높이를 흡수하지 않는다(3090867 외곽 셀:
+                // last_seg_end 185px vs 텍스트+중첩 실측 ~1,060px). intact(단조)
+                // 검사만으로는 아래 max-합성 경로로 가서 셀이 구조적으로 과소
+                // 측정되고 쪽 넘김 판정이 뒤집힌다(1쪽 vs 한글 2쪽, 96자·그림
+                // 2개 clip 소실). additive 증거가 저장 끝의 1.8배를 넘으면
+                // additive 로 보낸다 — 물리 사다리 셀은 host lh 가 표를 흡수해
+                // `unabsorbed_nested_tables_height` 가 그 표를 건너뛰므로
+                // additive ≈ last_seg_end 라 걸리지 않고(이중 계상 차단은 그
+                // 흡수 검사 몫), 절대배치 반례(#4533 기장군 계열)는 native
+                // HWP5 라 게이트 밖이다. 3090867 실측: last_end 896.0 vs
+                // additive 1,108.4(=text 595.3+nested 513.1) — 1.24×.
+                let compressed_monotonic_ladder = has_nested_table_in_cell
+                    && !self.is_native_hwp5
+                    && !cell_all_no_ls
+                    && ladder_intact
+                    && {
+                        let last_end_px = cell
+                            .paragraphs
+                            .iter()
+                            .flat_map(|p| p.line_segs.last())
+                            .map(|s| {
+                                hwpunit_to_px(
+                                    s.vertical_pos.saturating_add(s.line_height),
+                                    self.dpi,
+                                )
+                            })
+                            .fold(0.0f64, f64::max);
+                        last_end_px > 0.0
+                            && text_height
+                                + self.unabsorbed_nested_tables_height(
+                                    &cell.paragraphs,
+                                    styles,
+                                    depth,
+                                )
+                                > last_end_px * 1.15
+                    };
                 let content_height = if has_nested_table_in_cell
-                    && (cell_all_no_ls || !ladder_intact)
+                    && (cell_all_no_ls || !ladder_intact || compressed_monotonic_ladder)
                 {
                     // [#2148 실험] NO_LS 셀은 vpos 사다리가 없어 nested_bottom 의
                     // para_top(첫 lineseg vpos)=0 → 위 텍스트 문단이 소거된다
