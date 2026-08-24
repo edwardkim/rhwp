@@ -237,6 +237,7 @@ hwp5rb	issue5875/nested_table_text_caption.hwp	sections[].paragraphs[].controls[
 hwp5rb	issue5875/nested_table_text_caption.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
 hwp5rb	issue5782/2181727_press_guard_test_methods.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	88
 hwp5rb	issue5782/2181727_press_guard_test_methods.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
+hwp5rb	issue5601/2537593_supply_agreement_form.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	7
 hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1484
 hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	52
 hwp5rb	issue5885/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	30
