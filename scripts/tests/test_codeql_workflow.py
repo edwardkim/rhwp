@@ -173,7 +173,7 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self.assertIn("name: Analyze (${{ matrix.language }})", analyze)
         self.assertIn("name: Skip unselected language", analyze)
         self.assertIn(f"if: ${{{{ !{selected} }}}}", analyze)
-        self.assertEqual(analyze.count(f"if: ${{{{ {selected} }}}}"), 2)
+        self.assertEqual(analyze.count(f"if: ${{{{ {selected} }}}}"), 1)
         self.assertIn(
             "if: ${{ matrix.language != 'rust' && " + selected + " }}",
             analyze,
@@ -194,6 +194,38 @@ class CodeQLWorkflowTests(unittest.TestCase):
             line.strip() for line in analyze.splitlines() if line.strip().startswith("if:")
         )
         self.assertNotIn("codeql_languages", job_if)
+
+    def test_rust_pr_checkout_matches_the_pr_analysis_scope(self) -> None:
+        analyze = job_body(self.workflow, "analyze")
+        selected = (
+            "contains(format(',{0},', env.SELECTED_LANGUAGES), "
+            "format(',{0},', matrix.language))"
+        )
+        pr_checkout = analyze.split(
+            "      - name: Checkout Rust PR CodeQL sources\n", 1
+        )[1].split("\n      - name:", 1)[0]
+        self.assertIn(
+            "if: ${{ matrix.language == 'rust' && "
+            + selected
+            + " && github.event_name == 'pull_request' }}",
+            pr_checkout,
+        )
+        self.assertIn("uses: actions/checkout@", pr_checkout)
+        self.assertIn("sparse-checkout: |", pr_checkout)
+        for path in (".", ".cargo", ".github/codeql", "crates", "rhwp-desk", "src"):
+            self.assertIn(f"          {path}\n", pr_checkout)
+
+        full_checkout = analyze.split(
+            "      - name: Checkout Rust full-scan sources\n", 1
+        )[1].split("\n      - name:", 1)[0]
+        self.assertIn(
+            "if: ${{ matrix.language == 'rust' && "
+            + selected
+            + " && github.event_name != 'pull_request' }}",
+            full_checkout,
+        )
+        self.assertIn("uses: actions/checkout@", full_checkout)
+        self.assertNotIn("sparse-checkout:", full_checkout)
 
     def test_fast_pass_summary_marks_language_classification_not_applicable(
         self,

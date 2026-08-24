@@ -767,8 +767,31 @@ jobs:
         run: |
           printf 'Skipping unselected CodeQL language: %s\n' '${{ matrix.language }}'
 
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: ${{ contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
+      - name: Checkout selected non-Rust language
+        if: ${{ matrix.language != 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Rust PR analysis already limits the CodeQL database to production paths in
+      # rust-pr.yml. Match the worktree to that scope so the shallow fetch does not
+      # transfer unrelated generated assets, fixtures, or tests. Cone mode retains
+      # root manifests, Cargo.lock, build.rs, and rust-toolchain.toml.
+      - name: Checkout Rust PR CodeQL sources
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'pull_request' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            .
+            .cargo
+            .github/codeql
+            crates
+            rhwp-desk
+            src
+
+      # devel push, schedule, and manual runs deliberately retain whole-repository
+      # Rust analysis. They do not consume the PR-only rust-pr.yml scope.
+      - name: Checkout Rust full-scan sources
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name != 'pull_request' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # [#3290] 호스티드 16GB VM 은 CodeQL 자동 감지 값이 적정하다. self-hosted 로
       # 되돌릴 경우 ram/threads 캡 필수 — #3289 사고(무캡 JVM 40~55GB×2 로 호스트
