@@ -1407,7 +1407,15 @@ impl LayoutEngine {
                 && !table.common.treat_as_char
                 && table.row_count == 1
                 && table.col_count == 1
-                && (table.common.vertical_offset as i32) == 0;
+                // [#5995] 셀 내부 vpos 사다리는 셀 콘텐츠 기준 좌표라 표 자신의
+                // 세로 오프셋과 무관하다. 저자가 남긴 미세 오프셋(30269 문단
+                // 0.136: -98HU = -0.03mm)이 `== 0` 판정으로 사다리 스냅 전체를
+                // 끄면, 27개 문단이 재흐름돼 중첩 표 위는 압축되고 아래엔 없는
+                // 빈 띠가 생긴다(한글 2020 대비 +11mm). 반 mm 미만은 배치 의도가
+                // 아니라 잔여값으로 보고 스냅을 유지한다. 이 분기는 한컴 계산의
+                // 권위 입력 주장이 아니라 기존 저장-배치 호환 경로(c7dbe8a2c)의
+                // 형상 완화다 — compute 모델이 이 형상을 담기 전까지의 compat.
+                && (table.common.vertical_offset as i32).unsigned_abs() <= 141;
             let vpos_origin = if preserve_linear_single_cell_vpos {
                 cell.paragraphs
                     .first()
@@ -1533,8 +1541,28 @@ impl LayoutEngine {
                         .get(start_line)
                         .or_else(|| para.line_segs.first());
                     if let Some(seg) = target_seg {
+                        // [#5995] 저장 vpos 는 spacing_before 를 이미 포함한 줄
+                        // 상단이다. 이후 layout_composed_paragraph 가 spacing_before
+                        // 를 다시 더하므로, 여기서 빼고 스냅해야 이중 가산이 없다
+                        // (table_layout.rs 의 `anchored_y - spacing_before` 와 같은
+                        // 규약. 30269: 미보정 시 +1.8mm 씩 두 번 밀려 조각 마지막
+                        // 줄이 다음 쪽으로 넘어간다).
+                        // 표 호스트 문단은 layout_composed_paragraph 의 spacing_before
+                        // 재가산 경로를 타지 않으므로 빼면 표가 그만큼 떠오른다 —
+                        // 텍스트 문단에만 적용한다.
+                        let snap_spacing_before =
+                            if start_line == 0 && cp_idx > 0 && !has_table_ctrl {
+                                styles
+                                    .para_styles
+                                    .get(para.para_shape_id as usize)
+                                    .map(|s| s.spacing_before)
+                                    .unwrap_or(0.0)
+                            } else {
+                                0.0
+                            };
                         let target_top =
-                            hwpunit_to_px((seg.vertical_pos - vpos_origin).max(0), self.dpi);
+                            hwpunit_to_px((seg.vertical_pos - vpos_origin).max(0), self.dpi)
+                                - snap_spacing_before;
                         let current_top = (para_y - text_y_start).max(0.0);
                         if target_top > current_top {
                             para_y += target_top - current_top;
@@ -2635,11 +2663,26 @@ impl LayoutEngine {
                                 //      45,290 HU)에 대비해 셀 바닥으로 상한
                                 // ①만으로는 #3654 처럼 도약 문서에서 여전히 밀려나고,
                                 // ②만으로는 상한에서 멈춘 뒤 뒤 문단이 그 아래로 쌓인다.
+                                // [#5995] 저장 vpos 는 다음 문단의 spacing_before 를
+                                // 이미 포함한다. vpos 사다리를 신뢰하는 1×1 선형
+                                // 셀에서는 layout_composed_paragraph 의 재가산 몫을
+                                // 빼고 밀어야 이중 가산이 없다(위 preserve 스냅과
+                                // 같은 규약). 그 외 형상은 기존 밀어내기 보존.
+                                let next_spacing_before = if preserve_linear_single_cell_vpos {
+                                    styles
+                                        .para_styles
+                                        .get(next_para.para_shape_id as usize)
+                                        .map(|s| s.spacing_before)
+                                        .unwrap_or(0.0)
+                                } else {
+                                    0.0
+                                };
                                 let next_vpos_y = text_y_start
                                     + hwpunit_to_px(
                                         (next_seg.vertical_pos - frag_vpos_origin).max(0),
                                         self.dpi,
-                                    );
+                                    )
+                                    - next_spacing_before;
                                 let cell_content_bottom =
                                     cell_content_bottom(cell_y, cell_h, pad_bottom);
                                 para_y = para_y.max(next_vpos_y.min(cell_content_bottom));
