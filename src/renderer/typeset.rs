@@ -1230,6 +1230,47 @@ fn column_def_design_spacing_px(cd: &ColumnDef, dpi: f64) -> f64 {
     }
 }
 
+/// [#5918] 현재 단이 block-table continuation 꼬리 조각(들)과 빈 필러 문단만
+/// 담고 있는지 — 저장 vpos 리셋의 이중 쪽 경계 판정용. 꼬리 조각이 저장 경계와
+/// 같은 물리 쪽 경계를 이미 열어 놨다면 리셋의 advance는 중복이므로 호출부에서
+/// 건너뜀.
+///
+/// 추가로 꼬리 조각이 쪽의 **소수 부분**(30% 이하)만 차지할 때 한정한다.
+/// 드레인이 새로 연 쪽에 조각이 작게 남을 때는 그 쪽이 저장 사다리상 다음
+/// 경계(리셋 문단)의 내용을 흡수할 예약 쪽이지만(sample1-repro pi=608:
+/// 78px / pi=750: 220px), 조각 자체가 쪽을 대부분 채웠다면 그 쪽은 저장
+/// 사다리에서 이미 소진된 독립 경계라 리셋은 별도의 다음 쪽을 가리킨다
+/// (task2097/75544 pi=316: 909px·pi=525: 826px, hwpx_sample2 pi=138:
+/// 1042px — 한글 COM/PDF 정답지가 전부 존중을 요구한다).
+fn page_holds_only_fresh_table_continuation(st: &TypesetState, paragraphs: &[Paragraph]) -> bool {
+    const FRESH_CONTINUATION_PAGE_MAX_FILL_RATIO: f64 = 0.30;
+    if st.current_items.is_empty() {
+        return false;
+    }
+    if st.current_height > st.available_height() * FRESH_CONTINUATION_PAGE_MAX_FILL_RATIO {
+        return false;
+    }
+    let mut has_continuation = false;
+    for item in &st.current_items {
+        match item {
+            PageItem::PartialTable {
+                is_continuation, ..
+            } if *is_continuation => has_continuation = true,
+            PageItem::FullParagraph { para_index }
+            | PageItem::PartialParagraph { para_index, .. } => {
+                let empty_only = paragraphs
+                    .get(*para_index)
+                    .is_some_and(|p| p.text.trim().is_empty() && p.controls.is_empty());
+                if !empty_only {
+                    return false;
+                }
+            }
+            _ => return false,
+        }
+    }
+    has_continuation
+}
+
 fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
@@ -7153,7 +7194,20 @@ impl TypesetEngine {
                             st.close_square_band();
                         }
                         if st.wrap_around_cs < 0 {
-                            st.advance_column_or_new_page();
+                            // [#5918] 저장 리셋(cv==0/near-top)이 가리키는 쪽 경계를
+                            // block-table continuation 꼬리 조각이 이미 열어 놨으면
+                            // 이중으로 쪽을 넘기지 않는다. RowBreak 표의 마지막 조각은
+                            // 저장 경계와 무관하게 "앞 조각이 못 들어간" 시점에 새 쪽
+                            // 상단에 배출되는데, 그 새 쪽이 곧 저장 사다리의 리셋 지점과
+                            // 같은 물리 경계인 경우가 있다(sample1-repro pi=578 꼬리 조각
+                            // 쪽 == pi=608 vpos=0 리셋 쪽). 이때 리셋이 한 번 더
+                            // advance하면 조각만 남은 근빈 쪽이 생기고 뒤따르는 표가
+                            // 남은 공간으로 흐르지 못한다. 현재 쪽이 continuation
+                            // 조각(들)과 빈 필러 문단만 담고 있을 때만 건너뛴다 — 실
+                            // 내용이 함께 놓인 쪽의 저장 경계는 그대로 존중한다.
+                            if !page_holds_only_fresh_table_continuation(&st, paragraphs) {
+                                st.advance_column_or_new_page();
+                            }
                         }
                     }
                 }
