@@ -62,7 +62,7 @@ import { openDocumentViaPicker } from '../file-open-picker';
 import { PdfPrintDialog } from '@/ui/pdf-print-dialog';
 import { userSettings } from '@/core/user-settings';
 import { showToast } from '@/ui/toast';
-import { clearRecentDocs, listRecentDocs, removeRecentDoc } from '@/recent/recent-store';
+import { addRecentDoc, clearRecentDocs, listRecentDocs, removeRecentDoc } from '@/recent/recent-store';
 import { openRecentEntry } from '@/recent/recent-open';
 
 /**
@@ -213,6 +213,7 @@ async function tryFileSystemSave(
 function completeHandleSave(
   services: CommandServices,
   sourceFormat: string,
+  saveFormat: SaveFormat,
   result: SaveDocumentResult,
   reason: 'save' | 'save-as',
   passwordProtected = false,
@@ -220,6 +221,12 @@ function completeHandleSave(
   if (sourceFormat === 'hml') markConvertedHmlSaveHandle(result.handle);
   services.wasm.currentFileHandle = result.handle;
   services.wasm.fileName = result.fileName;
+  void addRecentDoc({
+    fileName: result.fileName,
+    sourceFormat: saveFormat,
+    handle: result.handle,
+  }).catch(() => undefined);
+  services.refreshDocumentStatus();
   services.wasm.requiresPasswordForSave = passwordProtected;
   services.documentState.markClean(reason);
 }
@@ -307,6 +314,7 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
       (saveResult) => completeHandleSave(
         services,
         sourceFormat,
+        format,
         saveResult as SaveDocumentResult,
         'save-as',
         password !== null,
@@ -325,6 +333,12 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
       () => {
         // download 시작이 실패하면 현재 backing copy의 보호 의도를 유지한다 (#5986).
         services.wasm.fileName = downloadName;
+        void addRecentDoc({
+          fileName: downloadName,
+          sourceFormat: format,
+          handle: null,
+        }).catch(() => undefined);
+        services.refreshDocumentStatus();
         services.wasm.requiresPasswordForSave = password !== null;
         services.documentState.markClean('save-as');
       },
@@ -386,6 +400,7 @@ export async function saveCurrentDocument(services: CommandServices): Promise<Sa
       (saveResult) => completeHandleSave(
         services,
         sourceFormat,
+        target.format,
         saveResult as SaveDocumentResult,
         'save',
         password !== null,

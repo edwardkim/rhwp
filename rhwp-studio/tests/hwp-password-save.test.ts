@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const commandSource = readFileSync(new URL('../src/command/commands/file.ts', import.meta.url), 'utf8');
+const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const bridgeSource = readFileSync(new URL('../src/core/wasm-bridge.ts', import.meta.url), 'utf8');
 const dialogSource = readFileSync(new URL('../src/ui/hwp-password-dialog.ts', import.meta.url), 'utf8');
 const saveAsDialogSource = readFileSync(new URL('../src/ui/save-as-dialog.ts', import.meta.url), 'utf8');
@@ -75,6 +76,16 @@ test('보호 상태 변경은 fallback download가 성공한 뒤에만 commit한
   assert.ok(fallbackPersist >= 0, 'fallback download 경로가 있어야 합니다');
   assert.ok(protectionCommit > fallbackPersist,
     'download가 예외 없이 시작되기 전에 기존 보호 상태를 바꾸면 안 됩니다');
+});
+
+test('다른 이름 저장은 새 문서명 상태와 최근 문서를 함께 갱신한다', () => {
+  const protectedSave = between(commandSource, 'async function saveAsFormat', 'function reportSaveError');
+  assert.match(protectedSave, /addRecentDoc\(\{[\s\S]*?fileName: downloadName/, 'fallback 저장본도 최근 문서에 기록해야 합니다');
+  assert.match(protectedSave, /services\.refreshDocumentStatus\(\)/, '저장 뒤 상태바 문서명을 갱신해야 합니다');
+  assert.match(commandSource, /function completeHandleSave[\s\S]*?addRecentDoc\(/, '파일 handle 저장본도 최근 문서에 기록해야 합니다');
+  assert.match(mainSource, /refreshDocumentStatus: \(\) => \{[\s\S]*?wasm\.fileName/, '상태바 갱신은 현재 문서명을 사용해야 합니다');
+  assert.match(mainSource, /RECENT_SUBMENU_COLLAPSED_LIMIT = 8/, '최근 문서는 기본 8개만 보여야 합니다');
+  assert.match(mainSource, /최근 문서 더보기/, '9개 이상이면 더보기 항목을 제공해야 합니다');
 });
 
 test('Studio public WASM 배포물도 암호 저장 binding을 제공한다', () => {
