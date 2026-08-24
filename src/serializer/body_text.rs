@@ -291,17 +291,49 @@ fn serialize_paragraph_with_msb(
         para.char_count.min(1)
     };
 
+    // [#5961] 저장 lineseg 의 `textpos` 를 **HWP5 문단 축으로 올려서** 내보낸다.
+    //
+    // `LineSeg::text_start` 는 파서가 파일 값을 그대로 담으므로 출처마다 축이 다르다.
+    // HWPX 출처 구역 첫 문단은 `hp:secPr`(구역 머리 run 소속)과 템플릿이 흡수한 첫 단
+    // 정의가 자리를 차지하지 않는 짧은 축이다(`Paragraph::hwpx_axis_shift`). 그런데 이
+    // 저장기가 쓰는 HWP5 파일은 그 컨트롤들을 8유닛씩 실으므로, 날값을 그대로 쓰면
+    // 파일 안에서 `char_offsets` 축과 `textpos` 축이 섞인 문단이 나간다.
+    //
+    // 그 상태는 #5961 이전에는 렌더러도 날값을 읽어 우연히 상쇄됐지만, 읽는 쪽이 축을
+    // 올리게 된 뒤로는 변환본만 줄이 보정폭만큼 일찍 끊긴다 — HWPX 원본 렌더와
+    // convert-HWP 렌더가 갈라져 `issue_1880` 자기정합(page 1 `node 123 vs 122`)이
+    // 깨졌다. 파일에 싣는 순간 축을 맞춰야 하는 자리다.
+    //
+    // 경계는 **출처가 아니라 목적지**다. 여기는 HWP5 컨테이너 전용 경로이고 보정폭은
+    // HWPX 파서만 채우므로(HWP5·HWP3·HML 출처는 0), x2h 에서만 발동한다. HWPX 재수출
+    // (x2x)은 이 함수를 거치지 않고 `serializer/hwpx` 가 날값을 유지한다 — 거기서 축을
+    // 옮기면 왕복마다 8씩 흘러내린다(#5943 주석).
+    let hwp5_axis_line_segs: Option<Vec<LineSeg>> =
+        (para.hwpx_axis_shift != 0 && !para.line_segs.is_empty()).then(|| {
+            para.line_segs
+                .iter()
+                .map(|seg| LineSeg {
+                    text_start: para.line_seg_text_start_of(seg.text_start),
+                    ..seg.clone()
+                })
+                .collect()
+        });
+    let source_line_segs = hwp5_axis_line_segs.as_deref().unwrap_or(&para.line_segs);
+
     // [#4677] 본문에 대응하지 않는 lineseg 는 파일에 내보내지 않는다 — 조판 전용 보강 줄과
     // PARA_TEXT 밖을 가리키는 줄 두 갈래다(판정은 `line_segs_within_text` 주석 참조).
     // 한글 2022 는 그런 문단을 만나면 본문 전체를 버리고 빈 1쪽 문서로 연다 — rhwp 재파싱만
     // 통과하는 함정이라 `--verify` 로는 잡히지 않는다 (10k 전수 스윕 x2h 소실군).
+    //
+    // 범위 판정도 축을 올린 값으로 한다 — `actual_char_count` 는 이 파일에 실제로 실린
+    // 글자 수라 언제나 HWP5 축이다.
     let line_segs_in_range = if para.stored_text_partition_is_dirty() {
         // Text/style mutation retained the old rows only as an edit-reflow
         // template. They are not a serializable partition of the new text.
-        &para.line_segs[..0]
+        &source_line_segs[..0]
     } else {
         line_segs_within_text(
-            &para.line_segs,
+            source_line_segs,
             actual_char_count,
             para.layout_only_fill_lines,
         )
