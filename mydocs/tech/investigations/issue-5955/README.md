@@ -62,10 +62,28 @@ trace 객체 자체, `layoutHash`, `normalizedHash`, renderer output과 document
 ```bash
 node scripts/font_rule_registry_v2.mjs check
 node scripts/font_rule_projection_gen.mjs check
+node scripts/font_rule_mutation_rehearsal.mjs
 node --test \
   scripts/tests/font_rule_lifecycle_audit.test.mjs \
+  scripts/tests/font_rule_mutation_rehearsal.test.mjs \
   scripts/tests/font_rule_registry_v2.test.mjs \
   scripts/tests/font_decision_trace_contract.test.mjs
 ```
+
+## future W8 mutation rehearsal
+
+`font_rule_mutation_rehearsal.mjs`는 canonical 제품 registry를 입력이나 출력으로 사용하지 않는 offline
+연습 도구다. synthetic base에서 evidence-only, add, retire, retire-and-replace 네 경로를 각각 독립 실행하고
+다음을 canonical JSON으로 stdout에 기록한다.
+
+- 관련 rule의 pre/post selection tuple과 lifecycle link
+- 대상 projection의 active row delta와 semantic hash
+- 나머지 네 projection의 무변화
+- ephemeral query model을 폐기한 뒤 base digest로 복귀하는 rollback
+
+성공한 query model은 파일로 쓰지 않으며 실제 `font_rule_registry_v2.json`의 실행 전후 raw SHA-256도
+대사한다. stale parent, in-place mutation, cross-plane, evidence cycle, unsafe path, replacement slot 위반,
+허위 delta, 중복 ID와 non-tail retirement는 원본 base를 바꾸지 않은 채 fail-closed한다. 이 rehearsal의
+통과는 #4967의 실제 mapping change set이나 제품 변경 승인이 아니다.
 
 private corpus, font bytes, 사용자 경로와 식별 파일 목록을 audit artifact나 이 디렉터리에 기록하지 않는다.
