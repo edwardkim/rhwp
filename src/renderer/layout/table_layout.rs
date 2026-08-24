@@ -4969,6 +4969,9 @@ impl LayoutEngine {
                 }
             };
             let mut tac_img_y = para_y_before_compose;
+            // [#5712] 같은 문단에서 앞서 배치된 비-TAC TopAndBottom 중첩 표가
+            // para_y 를 전진시켰는지 — co-anchored TAC 표의 적층 판별에 쓴다.
+            let mut prior_float_table_stacked = false;
             let mut rendered_top_and_bottom_non_inline = false;
 
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
@@ -5986,6 +5989,28 @@ impl LayoutEngine {
                                 } else {
                                     table_anchor_y
                                 };
+                                // [#5712] co-anchored 표 쌍의 순차 적층 — 같은 문단의
+                                // 앞선 비-TAC TopAndBottom 표가 커서(para_y)를 전진
+                                // 시켰는데 TAC 분기는 para_y_before_compose 기준이라
+                                // 두 표가 같은 대역에 포개진다(3184241 p1: A 351.9,
+                                // B 369.0 — B 가 A 안에 통째로). 저장 줄들이 서로
+                                // **부분 겹침**일 때만(완전 동일 vpos 는 #3820 p144 의
+                                // 가로 overlay 계약이라 제외) 전진 커서를 물려받는다.
+                                let stored_lines_partially_overlap =
+                                    para.line_segs.windows(2).any(|w| {
+                                        let prev_end =
+                                            w[0].vertical_pos.saturating_add(w[0].line_height);
+                                        w[1].vertical_pos > w[0].vertical_pos
+                                            && w[1].vertical_pos < prev_end
+                                    });
+                                let table_anchor_y = if prior_float_table_stacked
+                                    && stored_lines_partially_overlap
+                                    && para_y > table_anchor_y
+                                {
+                                    para_y
+                                } else {
+                                    table_anchor_y
+                                };
                                 let ctrl_area = LayoutRect {
                                     x: inline_x + tac_om_l,
                                     y: table_anchor_y,
@@ -6198,6 +6223,16 @@ impl LayoutEngine {
                                             .map(|split| split.flow_height)
                                             .unwrap_or(table_h)
                                     });
+                                // [#5712] TopAndBottom 흐름 표가 커서를 전진시켰다 —
+                                // 같은 문단 뒤 TAC 표의 co-anchored 적층 판별 신호.
+                                if square_wrap_anchor_h.is_none()
+                                    && matches!(
+                                        nested_table.common.text_wrap,
+                                        TextWrap::TopAndBottom
+                                    )
+                                {
+                                    prior_float_table_stacked = true;
+                                }
                             }
                         }
                         has_preceding_text = true;
