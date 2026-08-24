@@ -4,6 +4,27 @@
 
 use wasm_bindgen::prelude::*;
 
+/// 기존 함수 시그니처를 유지한 채 그 몸통만 Subsecond jump table로 우회한다.
+/// 호출부는 벤더를 모르고, production에서는 원래 함수 직접 호출로 완전히 접힌다.
+macro_rules! hot_call {
+    ($target:path $(, $arg:expr)* $(,)?) => {{
+        #[cfg(feature = "subsecond-dev")]
+        {
+            if crate::subsecond_dev::patch_epoch() == 0 {
+                $target($($arg),*)
+            } else {
+                let mut hot = subsecond::HotFn::current($target);
+                hot.call(($($arg,)*))
+            }
+        }
+        #[cfg(not(feature = "subsecond-dev"))]
+        {
+            $target($($arg),*)
+        }
+    }};
+}
+pub(crate) use hot_call;
+
 pub mod agent;
 pub mod agent_seal;
 pub mod capabilities_schema;
@@ -69,6 +90,10 @@ mod tests {
 
     #[test]
     fn test_version() {
+        fn add_one(value: u32) -> u32 {
+            value + 1
+        }
         assert_eq!(version(), env!("CARGO_PKG_VERSION"));
+        assert_eq!(crate::hot_call!(add_one, 41), 42);
     }
 }

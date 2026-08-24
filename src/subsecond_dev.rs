@@ -1,6 +1,32 @@
 use serde_json::Value;
+use std::sync::{
+    atomic::{AtomicU32, Ordering},
+    Arc, Once,
+};
 use subsecond::{HotFn, JumpTable};
 use wasm_bindgen::prelude::*;
+
+static PATCH_EPOCH: AtomicU32 = AtomicU32::new(0);
+static REGISTER_PATCH_HANDLER: Once = Once::new();
+
+pub(crate) fn patch_epoch() -> u32 {
+    PATCH_EPOCH.load(Ordering::Relaxed)
+}
+
+fn register_patch_epoch_handler_with(
+    epoch: &'static AtomicU32,
+    register: impl FnOnce(Arc<dyn Fn() + Send + Sync + 'static>),
+) {
+    register(Arc::new(move || {
+        epoch.fetch_add(1, Ordering::Relaxed);
+    }));
+}
+
+fn register_patch_epoch_handler() {
+    REGISTER_PATCH_HANDLER.call_once(|| {
+        register_patch_epoch_handler_with(&PATCH_EPOCH, subsecond::register_handler);
+    });
+}
 
 fn probe_value() -> u32 {
     41
@@ -69,7 +95,7 @@ impl DevtoolsMessageOutcome {
 }
 
 /// 메시지를 판정하고, 패치면 `apply_patch` 에 넘긴다.
-pub fn dispatch_devtools_message(message: &str) -> DevtoolsMessageOutcome {
+fn dispatch_devtools_message(message: &str) -> DevtoolsMessageOutcome {
     use DevtoolsMessageOutcome as Outcome;
 
     let Ok(message) = serde_json::from_str::<Value>(message) else {
@@ -99,10 +125,14 @@ pub fn dispatch_devtools_message(message: &str) -> DevtoolsMessageOutcome {
 
 #[wasm_bindgen(js_name = applySubsecondDevtoolsMessage)]
 pub fn apply_subsecond_devtools_message(message: &str) -> String {
+    // wasm bin의 `main` 실행 여부에 기대지 않는다. 이 함수는 patch를 넘기기 직전에
+    // 반드시 호출되므로, commit callback을 설치할 수 있는 마지막 확정 경계다.
+    register_patch_epoch_handler();
     dispatch_devtools_message(message).code().to_owned()
 }
 
 pub fn link_wasm_exports() {
+    register_patch_epoch_handler();
     let _ = crate::version();
     let _ = subsecond_probe();
 }
@@ -110,6 +140,19 @@ pub fn link_wasm_exports() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    static TEST_REGISTERED_EPOCH: AtomicU32 = AtomicU32::new(0);
+
+    fn registered_commit_callback_advances_its_epoch() {
+        TEST_REGISTERED_EPOCH.store(0, Ordering::Relaxed);
+        let mut registered = false;
+        register_patch_epoch_handler_with(&TEST_REGISTERED_EPOCH, |handler| {
+            registered = true;
+            handler();
+        });
+        assert!(registered);
+        assert_eq!(TEST_REGISTERED_EPOCH.load(Ordering::Relaxed), 1);
+    }
 
     /// 유효한 `JumpTable` 을 담은 `HotReload` 프레임. `lib` 은 존재하지 않는 경로라
     /// 네이티브의 `apply_patch` 는 dlopen 단계에서 오류를 돌려주고 아무것도 detour 하지 않는다.
@@ -119,6 +162,7 @@ mod tests {
 
     #[test]
     fn probe_calls_the_current_function_body() {
+        registered_commit_callback_advances_its_epoch();
         assert_eq!(subsecond_probe(), 41);
     }
 
