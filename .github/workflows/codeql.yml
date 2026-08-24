@@ -778,6 +778,9 @@ jobs:
       - name: Checkout Rust PR CodeQL sources
         if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'pull_request' }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        # Cargo.toml이 명시 등록한 integration target의 source도 workspace
+        # 모델에 필요하다. 빠지면 Rust extractor가 proc-macro를 빌드하지 못해
+        # src 분석 결과가 대량 오류로 떨어진다.
         with:
           sparse-checkout: |
             .
@@ -787,6 +790,7 @@ jobs:
             crates
             rhwp-desk
             src
+            tests
             tools
 
       # devel push, schedule, and manual runs deliberately retain whole-repository
