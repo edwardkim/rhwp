@@ -10057,8 +10057,85 @@ impl LayoutEngine {
             );
         }
 
-        let units =
+        let mut units =
             Self::delay_empty_anchor_topandbottom_flow_units_before_hard_break(units, cell, table);
+
+        // [#5782] 저장 사다리 구간별 스팬 정합 — 중첩 표 호스트 유닛은 표 높이
+        // 분해값이라 호스트 문단 뒤 간격이 없다. 텍스트 문단 유닛은 corrected
+        // line height 가 문단 간격을 담아 다음 유닛이 그 갭을 흡수하지만, 호스트
+        // 문단 뒤 갭(특히 lh 미흡수 표: 표가 줄 아래로 흐르고 다음 문단 vpos 가
+        // 그 공간을 증언)은 아무 유닛도 담지 않아 유닛 합이 저장 스팬보다 짧아진다.
+        // 그러면 쪽나눔 회계(유닛 합)와 페인트(저장 vpos)가 어긋나 조각 셀 clip 이
+        // 마지막 글줄과 표 아래 괘선을 삼킨다(2181727 p7: 회계 867.5 vs 저장
+        // 891.1, 19.8px 절단 · 3171199 p3: 7.6px). 한글은 저장 스팬대로 조각을
+        // 닫는다. 저장 vpos 정렬(use_vpos_unit_positions)은 "같은 문단 텍스트+표"
+        // 셀 한정이라 마커-전용 호스트 문단 셀에선 꺼져 있다 — 이 후처리는 그
+        // 형상에서 리셋(쪽 경계) 구간별로 유닛 합을 저장 스팬에 맞춘다.
+        if native_hwp5_rowbreak_float_ladder && cell_has_local_vpos_origin {
+            // 리셋 경계로 (문단, 줄) 키의 구간을 나눈다. 비합성 사다리만 신뢰.
+            // 키는 (para_idx, line_idx) 사전식 — 문단 중간 리셋(쪽 경계가 문단
+            // 안에 있는 흔한 형상)도 줄 단위로 정확히 갈린다.
+            type SegKey = (usize, usize);
+            let mut all_stored = true;
+            // (start_key, end_key_exclusive, first_vpos, end_vpos, has_table_host)
+            let mut spans: Vec<(SegKey, SegKey, i32, i32, bool)> = Vec::new();
+            let mut cur: Option<(SegKey, i32, i32, bool)> = None;
+            let mut prev_end = i32::MIN;
+            'seg_scan: for (pi, p) in cell.paragraphs.iter().enumerate() {
+                let hosts_table = p.controls.iter().any(|c| matches!(c, Control::Table(_)));
+                for (si, seg) in p.line_segs.iter().enumerate() {
+                    if line_seg_is_synthetic(seg) || seg.vertical_pos < 0 {
+                        all_stored = false;
+                        break 'seg_scan;
+                    }
+                    let reset = prev_end != i32::MIN && seg.vertical_pos < prev_end;
+                    if reset {
+                        if let Some((s, fv, ev, host)) = cur.take() {
+                            spans.push((s, (pi, si), fv, ev, host));
+                        }
+                    }
+                    let end = seg.vertical_pos.saturating_add(seg.line_height);
+                    match &mut cur {
+                        Some((_, _, ev, host)) => {
+                            *ev = (*ev).max(end);
+                            // 컨트롤은 호스트 줄(첫 줄)이 속한 구간에 귀속한다.
+                            *host |= hosts_table && si == 0;
+                        }
+                        None => cur = Some(((pi, si), seg.vertical_pos, end, hosts_table)),
+                    }
+                    prev_end = end;
+                }
+            }
+            if let Some((s, fv, ev, host)) = cur.take() {
+                spans.push((s, (usize::MAX, 0), fv, ev, host));
+            }
+            if all_stored && !spans.is_empty() {
+                // 각 리셋 구간이 각각의 쪽 조각으로 닫히고 조각 회계는 그 구간
+                // 유닛 합이므로, 표-호스트를 품은 모든 구간이 보정 대상이다.
+                for (sk, ek, fv, ev, host) in &spans {
+                    if !*host {
+                        continue; // 텍스트-전용 구간은 corrected lh 로 이미 정합
+                    }
+                    let span_px = hwpunit_to_px(ev - fv, self.dpi);
+                    let mut unit_sum = 0.0f64;
+                    let mut last_unit: Option<usize> = None;
+                    for (ui, u) in units.iter().enumerate() {
+                        let key: SegKey = (u.para_idx, u.vis_start);
+                        if key >= *sk && key < *ek {
+                            unit_sum += u.height;
+                            last_unit = Some(ui);
+                        }
+                    }
+                    let shortfall = span_px - unit_sum;
+                    // 한두 문단 간격 규모만 인정 — 그 이상은 다른 축.
+                    if shortfall > 0.5 && shortfall <= 32.0 {
+                        if let Some(ui) = last_unit {
+                            units[ui].height += shortfall;
+                        }
+                    }
+                }
+            }
+        }
 
         if let Ok(pattern) = std::env::var("RHWP_DIAG_CELL_UNITS") {
             if cell
