@@ -1387,6 +1387,9 @@ impl DocumentCore {
         let border_fill_len_before = self.document.doc_info.border_fills.len();
         let doc_info_dirty_before = self.document.doc_info.raw_stream_dirty;
         let mut bf_changes: Vec<(usize, u16, u16)> = Vec::new();
+        // [#5959] override zone 전이 기록 — sync 가 1×1 cellzone 을 만들거나 지우면
+        // 셀 id 복원만으로는 부족하다(undo 뒤 대각선 유령·소실).
+        let mut zone_changes: Vec<(u16, u16, u16, u16, Option<u16>, Option<u16>)> = Vec::new();
         // 대상 셀의 적용 직전 id — 아래 borrow 블록이 정상 완료되면 채워진다.
         let mut target_bf_before = 0u16;
 
@@ -1528,6 +1531,19 @@ impl DocumentCore {
                     cell.border_fill_id = new_bf_id;
                     (cell.row, cell.col, cell.col_span, cell.row_span)
                 };
+                let origin_override_id = |table: &crate::model::table::Table| -> Option<u16> {
+                    table
+                        .zones
+                        .iter()
+                        .find(|zone| {
+                            zone.start_row == row
+                                && zone.start_col == col
+                                && zone.end_row == row
+                                && zone.end_col == col
+                        })
+                        .map(|zone| zone.border_fill_id)
+                };
+                let override_before = origin_override_id(table);
                 Self::sync_cellzone_origin_cell_diagonal_override(
                     table,
                     row,
@@ -1536,6 +1552,12 @@ impl DocumentCore {
                     new_bf_has_cell_diagonal,
                     &cell_diagonal_bf_ids,
                 );
+                let override_after = origin_override_id(table);
+                if override_before != override_after {
+                    // [#5959] undo 가 이 전이를 되돌려야 한다 — before 가 None 이면
+                    // 신설(제거로 복구), after 가 None 이면 제거(id 로 복구)다.
+                    zone_changes.push((row, col, row, col, override_before, override_after));
+                }
                 (
                     row as usize,
                     col as usize,
@@ -1574,6 +1596,17 @@ impl DocumentCore {
                 .iter()
                 .map(|(cell_idx, before, after)| serde_json::json!({
                     "cellIdx": cell_idx,
+                    "beforeId": before,
+                    "afterId": after,
+                }))
+                .collect::<Vec<_>>(),
+            "zones": zone_changes
+                .iter()
+                .map(|(sr, sc, er, ec, before, after)| serde_json::json!({
+                    "startRow": sr,
+                    "startCol": sc,
+                    "endRow": er,
+                    "endCol": ec,
                     "beforeId": before,
                     "afterId": after,
                 }))
@@ -1911,11 +1944,16 @@ impl DocumentCore {
                 }
             }
             for zone in &payload.zones {
+                // 적용 단계와 같은 min/max 정규화로 존재를 판정한다 — 뒤집힌 좌표가
+                // 들어와도 apply 와 검증이 같은 rect 를 보게 유지한다.
+                let (zsr, zsc, zer, zec) = (
+                    zone.start_row.min(zone.end_row),
+                    zone.start_col.min(zone.end_col),
+                    zone.start_row.max(zone.end_row),
+                    zone.start_col.max(zone.end_col),
+                );
                 let exists = table.zones.iter().any(|z| {
-                    z.start_row == zone.start_row.min(zone.end_row)
-                        && z.end_row == zone.end_row.max(zone.start_row)
-                        && z.start_col == zone.start_col.min(zone.end_col)
-                        && z.end_col == zone.end_col.max(zone.end_col)
+                    z.start_row == zsr && z.end_row == zer && z.start_col == zsc && z.end_col == zec
                 });
                 if let Some(id) = zone.id {
                     if id == 0 || id > max_bf {
