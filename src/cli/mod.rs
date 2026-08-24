@@ -22,25 +22,13 @@ pub(crate) mod queries;
 /// 값은 세션 설정이며 파서가 확정하는 provenance 가 아니다. 저장 버전(`lastSavedWith`)
 /// 으로 자동 선택하지 않는다 — 저장 버전은 "이 문서가 2024 규칙을 필요로 하는가"를
 /// 예측하지 못한다(전수 실측: 두 버전이 다르게 조판하는 254건 중 2024 저장은 0건).
+///
+/// 수용/거부 계약은 통합 시험 `tests/cases/compat_generation_render_commands.rs` 가
+/// CLI 종료코드로 고정한다.
 pub(crate) fn parse_compat_generation(value: &str) -> Option<bool> {
     match value {
         "2022" => Some(false),
         "2024" => Some(true),
         _ => None,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::parse_compat_generation;
-
-    #[test]
-    fn compat_generation_accepts_only_measured_axis() {
-        assert_eq!(parse_compat_generation("2022"), Some(false));
-        assert_eq!(parse_compat_generation("2024"), Some(true));
-        // 2018·2020 은 2022 와 같은 엔진이라 별도 세대를 만들지 않는다.
-        assert_eq!(parse_compat_generation("2020"), None);
-        assert_eq!(parse_compat_generation("2018"), None);
-        assert_eq!(parse_compat_generation(""), None);
     }
 }
