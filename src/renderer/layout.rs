@@ -1567,9 +1567,23 @@ fn textless_host_ladder_line_advance(paragraphs: &[Paragraph], para_index: usize
     if seg.vertical_pos == 0 && next_seg.vertical_pos == 0 {
         return None;
     }
+    // [#5809] reflow/편집 산물(TAG_IMPLEMENTATION_PROPERTY)도 저장 증거가 아니다 —
+    // Square 호스트까지 이 사다리 질의를 넓히면서(호출부) stale 사다리가
+    // 계약을 뒤집던 반증(issue_2069 편집 시나리오)을 태그로 차단한다.
+    let synth = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    if seg.tag & synth != 0 || next_seg.tag & synth != 0 {
+        return None;
+    }
     let delta = next_seg.vertical_pos - seg.vertical_pos;
     if delta < 0 {
         return None; // 쪽/단 경계 리셋 — 사다리로 판별 불가
+    }
+    // [#5809] 예약 증언은 호스트 줄 규모(sb 여유 포함 1.5×)여야 한다 — 편집(Enter)
+    // 으로 문단이 삽입된 stale 사다리는 델타가 여러 줄 규모로 남아(issue_2069
+    // 한셀OLE: 저장 줄 피치의 2배) 예약으로 오판된다. 그 형상은 판별 불가로
+    // 물러나 휴리스틱에 맡긴다.
+    if delta * 2 > expected * 3 {
+        return None;
     }
     if delta * 4 >= expected * 3 {
         return Some(true);
@@ -7522,9 +7536,14 @@ impl LayoutEngine {
                         // 저장 사다리가 그 문서의 진실이다 — 한글이 이 앵커 줄을 예약했는지
                         // 다음 문단 vpos 델타로 먼저 묻고, 판별 불가일 때만 vert_rel_to
                         // 휴리스틱(글앞 도장류 예약·BehindText 비예약)으로 물러난다.
-                        // 단 **overlay(글앞/글뒤) 호스트에만** 묻는다 — Square 등 흐름
-                        // 상호작용 wrap 은 편집 후 stale 사다리가 계약을 뒤집는다
-                        // (issue_2069 OLE enter/backspace 4건 실측 회귀로 반증).
+                        // overlay(글앞/글뒤) 호스트가 원 대상이었고, [#5809] Square 등
+                        // 흐름 상호작용 wrap 호스트도 사다리에 묻는다 — 156518601 p1:
+                        // 빈 Square host 문단의 줄(29.9px)을 안 주면 typeset(사다리
+                        // 스냅으로 예약)과 desync 로 본문 전체가 22.6px 위로 밀린다.
+                        // 종전 반증(issue_2069 OLE enter/backspace: 편집 후 stale
+                        // 사다리가 계약을 뒤집음)은 사다리 질의 함수의 합성 태그
+                        // 가드(TAG_IMPLEMENTATION_PROPERTY 배제)가 차단한다 — 편집이
+                        // 만든 reflow lineseg 는 저장 증거로 쓰지 않는다.
                         let has_overlay_float = para.controls.iter().any(|c| {
                             let cm = match c {
                                 Control::Picture(pic) => &pic.common,
@@ -7537,20 +7556,51 @@ impl LayoutEngine {
                                     TextWrap::InFrontOfText | TextWrap::BehindText
                                 )
                         });
-                        let advance_line = if has_overlay_float {
-                            textless_host_ladder_line_advance(paragraphs, *para_index)
-                                .unwrap_or_else(|| {
-                                    textless_infront_para_host_requires_line_advance(para)
-                                })
-                        } else {
+                        // [#5809] Square 계열 확장 갈래는 다음 문단이 **가시 텍스트**를
+                        // 가질 때만 — 저장 사다리의 예약 증언은 다음 실내용의 저장
+                        // 위치가 근거다. 편집(Enter)으로 삽입된 빈 부호 문단(issue_2069
+                        // 한셀OLE)은 증언력이 없고 sequential 이 정답이다.
+                        let has_square_float_before_text = para.controls.iter().any(|c| {
+                            let cm = match c {
+                                Control::Picture(pic) => &pic.common,
+                                Control::Shape(shape) => shape.common(),
+                                _ => return false,
+                            };
+                            !cm.treat_as_char
+                                && matches!(
+                                    cm.text_wrap,
+                                    TextWrap::Square | TextWrap::Tight | TextWrap::Through
+                                )
+                        }) && paragraphs
+                            .get(*para_index + 1)
+                            .is_some_and(para_has_visible_text);
+                        let has_ladder_float = has_overlay_float || has_square_float_before_text;
+                        let ladder_verdict = has_ladder_float
+                            .then(|| textless_host_ladder_line_advance(paragraphs, *para_index))
+                            .flatten();
+                        let advance_line = ladder_verdict.unwrap_or_else(|| {
                             textless_infront_para_host_requires_line_advance(para)
-                        };
+                        });
                         if advance_line {
-                            let advance = paragraph_line_advance_px(
-                                para,
-                                composed.get(*para_index),
-                                self.dpi,
-                            );
+                            // [#5809] 사다리가 예약을 증언한 케이스는 저장 델타
+                            // (다음 문단 vpos − 호스트 vpos = sb+lh+ls 전량)가 정확한
+                            // 전진량이다 — lh+ls 만 주면 문단 앞 간격(sb)이 유실된다.
+                            let ladder_delta_px = (ladder_verdict == Some(true))
+                                .then(|| {
+                                    let cur = paragraphs.get(*para_index)?;
+                                    let next = paragraphs.get(*para_index + 1)?;
+                                    let seg = match cur.line_segs.as_slice() {
+                                        [seg] => seg,
+                                        _ => return None,
+                                    };
+                                    let delta =
+                                        next.line_segs.first()?.vertical_pos - seg.vertical_pos;
+                                    (delta > 0).then(|| hwpunit_to_px(delta, self.dpi))
+                                })
+                                .flatten();
+                            let advance = ladder_delta_px.unwrap_or_else(|| {
+                                paragraph_line_advance_px(para, composed.get(*para_index), self.dpi)
+                            });
                             return (y_offset + advance, false);
                         }
                         return (y_offset, false);
