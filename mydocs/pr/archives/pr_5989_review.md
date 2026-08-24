@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: correction-pending-ci
+status: accepted-pending-integration-pr-approval
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-24
 ---
@@ -109,3 +109,13 @@ current-base merge head `7ebf6fe50`의 Full Actions는 모두 성공했다.
 self-review 보정은 **완료 / 새 head CI 대기 조건부 merge 권고**다. `bacec40ee`와 trailing head의 trusted
 Actions 또는 Full fallback, 최신 `MERGEABLE/CLEAN`, 작업지시자의 별도 merge 승인을 확인하기 전에는
 merge하지 않는다.
+
+## 통합 체리픽 검토 - 2026-08-24
+
+open PR 중 CI가 통과한 항목만 모은 `review/open-ci-green-20260824` 통합 후보에 #5989 최신 head
+`bd03b65441379806ab8e8102f963396e914e3f53`를 포함했다. `mydocs/orders/20260824.md` 충돌은 #5985 기록과
+#5776 기록을 모두 보존하는 방식으로 해소했다.
+
+통합 후보의 전체 nextest 8292 passed / 42 skipped, Studio test/build, CI impact tests, render-diff workflow
+unittest, 기본 all-targets clippy가 통과했다. #5989는 통합 PR에서 수용 권고로 처리한다. 통합 PR 생성은
+작업지시자 사전 승인 전까지 진행하지 않는다.

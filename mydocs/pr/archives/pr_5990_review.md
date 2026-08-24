@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: trailing-docs-pending-ci
+status: accepted-pending-integration-pr-approval
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-24
 ---
@@ -109,3 +109,13 @@ review-only fast-pass가 같은 candidate를 재사용하는지, 최신 aggregat
 코드 blocker는 발견하지 않았다. self-review는 **완료 / 조건부 merge 권고**다. 최신 trailing head의
 fast-pass required checks, `MERGEABLE/CLEAN`, manifest 기준선 예외 공개 상태와 작업지시자의 별도 merge
 승인을 확인하기 전에는 merge하지 않는다.
+
+## 통합 체리픽 검토 - 2026-08-24
+
+open PR 중 CI가 통과한 항목만 모은 `review/open-ci-green-20260824` 통합 후보에 #5990 최신 head
+`2047ad9f6d8fccf431b9a08b602c81efff616722`를 포함했다. `mydocs/orders/20260824.md` 충돌은 #5985,
+#5776, #5986 기록을 모두 보존하는 방식으로 해소했다.
+
+통합 후보의 전체 nextest 8292 passed / 42 skipped, Studio test/build, CI impact tests, render-diff workflow
+unittest, 기본 all-targets clippy가 통과했다. #5990은 통합 PR에서 수용 권고로 처리한다. 통합 PR 생성은
+작업지시자 사전 승인 전까지 진행하지 않는다.
