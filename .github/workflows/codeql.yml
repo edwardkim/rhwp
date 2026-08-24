@@ -783,9 +783,11 @@ jobs:
             .
             .cargo
             .github/codeql
+            bindings
             crates
             rhwp-desk
             src
+            tools
 
       # devel push, schedule, and manual runs deliberately retain whole-repository
       # Rust analysis. They do not consume the PR-only rust-pr.yml scope.
@@ -822,6 +824,10 @@ jobs:
       - name: Install Rust toolchain
         if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+
+      - name: Validate Rust CodeQL sparse workspace
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
+        run: cargo metadata --locked --offline --no-deps --format-version=1 > /dev/null
 
       # [#5187] Rust는 명시적 none 모드로 분석한다. 동일 SHA 비교에서 현재 기본 경로와
       # 추출 파일·SARIF 지표가 같았고, none 모드가 더 짧아 Rust 자동 빌드 의존을 제거한다.
