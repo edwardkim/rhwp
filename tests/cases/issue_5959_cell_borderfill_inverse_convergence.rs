@@ -92,6 +92,37 @@ fn undo_cells(resp: &serde_json::Value) -> Vec<serde_json::Value> {
         .collect()
 }
 
+fn snapshot_zones(doc: &HwpDocument, grid: &BodyTable) -> Vec<(u16, u16, u16, u16, u16)> {
+    let table = match doc.document().sections[grid.section].paragraphs[grid.paragraph]
+        .controls
+        .get(grid.control)
+    {
+        Some(Control::Table(t)) => t,
+        _ => panic!("표 컨트롤이어야 함"),
+    };
+    let mut rows: Vec<(u16, u16, u16, u16, u16)> = table
+        .zones
+        .iter()
+        .map(|z| {
+            (
+                z.start_row.min(z.end_row),
+                z.start_col.min(z.end_col),
+                z.start_row.max(z.end_row),
+                z.start_col.max(z.end_col),
+                z.border_fill_id,
+            )
+        })
+        .collect();
+    rows.sort_unstable();
+    rows
+}
+
+fn has_origin_override(doc: &HwpDocument, grid: &BodyTable) -> bool {
+    snapshot_zones(doc, grid)
+        .iter()
+        .any(|&(sr, sc, er, ec, _)| sr == er && sc == ec && sr == 0 && sc == 0)
+}
+
 #[test]
 fn cell_border_apply_undo_converges_to_original_bytes() {
     let (_original, mut doc, grid) = load_with_body_table();
@@ -305,4 +336,126 @@ fn foreign_tail_is_not_truncated_by_earlier_apply_undo() {
     doc.restore_section_raw(capture).expect("raw 복원");
     doc.export_hwp()
         .expect("계약 위반 시나리오에서도 export 는 성공해야 함");
+}
+
+/// [#5959] origin 대각선 cellzone override 의 zone 전이도 기록·복원돼야 한다 —
+/// 셀 id 복원만으로는 sync 가 만들거나 지운 1×1 zone 이 유령·소실로 남는다.
+#[test]
+fn cell_apply_sync_zone_override_undo_restores_zone_state() {
+    let (_original, mut doc, grid) = load_with_body_table();
+
+    // 1. 2×2 대각선 cellzone(asOne) — origin 은 (0,0).
+    doc.set_cell_zone_properties(
+        grid.section as u32,
+        grid.paragraph as u32,
+        grid.control as u32,
+        0,
+        0,
+        1,
+        1,
+        &border_bg_json()
+            .replace("\"diagonalLine\":0", "\"diagonalLine\":1")
+            .replace("\"diagonalSlash\":false", "\"diagonalSlash\":true"),
+    )
+    .expect("대각선 zone 적용이 성공해야 함");
+    let zones_baseline = snapshot_zones(&doc, &grid);
+
+    // 2. origin 셀에 개별 대각선 — 1×1 override 가 생긴다(sync push).
+    let resp_push: serde_json::Value = serde_json::from_str(
+        &doc.set_cell_properties(
+            grid.section as u32,
+            grid.paragraph as u32,
+            grid.control as u32,
+            0,
+            &border_bg_json()
+                .replace("\"diagonalLine\":0", "\"diagonalLine\":2")
+                .replace("\"diagonalSlash\":false", "\"diagonalSlash\":true")
+                .replace("#000000\"}", "#00CC44\"}"),
+        )
+        .expect("개별 대각선 적용이 성공해야 함"),
+    )
+    .expect("응답 JSON");
+    let push_zones = resp_push["zones"].as_array().cloned().unwrap_or_default();
+    assert!(
+        push_zones
+            .iter()
+            .any(|z| z["beforeId"].is_null() && z["afterId"].is_u64()),
+        "override 신설 전이가 기록돼야 한다 — got {push_zones:?}"
+    );
+    assert_eq!(
+        snapshot_zones(&doc, &grid).len(),
+        zones_baseline.len() + 1,
+        "1×1 override zone 을 포함해야 한다"
+    );
+    let zones_pre_execute = snapshot_zones(&doc, &grid);
+    let bytes_pre_execute = doc.export_hwp().expect("execute 직전 export");
+
+    // 3. 같은 셀에 대각선 없는 배경·테두리 — execute 가 override 를 지운다(TS undo 표적).
+    let capture = doc
+        .capture_section_raw(grid.section as usize)
+        .expect("캡처");
+    let resp: serde_json::Value = serde_json::from_str(
+        &doc.set_cell_properties(
+            grid.section as u32,
+            grid.paragraph as u32,
+            grid.control as u32,
+            0,
+            border_bg_json(),
+        )
+        .expect("재적용이 성공해야 함"),
+    )
+    .expect("응답 JSON");
+    let len_before = resp["borderFillLenBefore"].as_u64().expect("len") as usize;
+    let dirty_before = resp["docInfoDirtyBefore"].as_bool().expect("dirty");
+    let remove_entry = resp["zones"]
+        .as_array()
+        .and_then(|a| {
+            a.iter()
+                .find(|z| z["beforeId"].is_u64() && z["afterId"].is_null())
+        })
+        .cloned()
+        .expect("override 제거 전이가 기록돼야 한다 — 이것이 이 테스트의 요점이다");
+    assert!(
+        !has_origin_override(&doc, &grid),
+        "execute 뒤 override 는 제거됐어야 한다"
+    );
+
+    // 4. undo — cells 와 zones 를 함께 재생해야 제거된 override 가 돌아온다.
+    doc.apply_cell_border_fill_ids(
+        grid.section as u32,
+        grid.paragraph as u32,
+        grid.control as u32,
+        &serde_json::to_string(&serde_json::json!({
+            "cells": undo_cells(&resp),
+            "zones": [{
+                "startRow": remove_entry["startRow"],
+                "startCol": remove_entry["startCol"],
+                "endRow": remove_entry["endRow"],
+                "endCol": remove_entry["endCol"],
+                "id": remove_entry["beforeId"],
+            }],
+        }))
+        .unwrap(),
+    )
+    .expect("id 직접 대입이 성공해야 함");
+    doc.remove_border_fill_tails(
+        &serde_json::to_string(
+            &serde_json::json!({ "fromLen": len_before, "dirtyWas": dirty_before }),
+        )
+        .unwrap(),
+    )
+    .expect("절단이 성공해야 함");
+    doc.restore_section_raw(capture).expect("raw 복원");
+
+    assert_eq!(
+        snapshot_zones(&doc, &grid),
+        zones_pre_execute,
+        "undo 뒤 zone 상태가 execute 직전(override 존재)과 같아야 한다 — \
+         셀 id 만 되돌리면 여기서 갈라진다"
+    );
+    let bytes_after_undo = doc.export_hwp().expect("undo 후 export");
+    assert_eq!(
+        bytes_after_undo, bytes_pre_execute,
+        "undo 뒤 저장 바이트가 execute 직전과 같아야 한다"
+    );
 }

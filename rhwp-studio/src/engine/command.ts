@@ -2235,6 +2235,17 @@ interface CellBorderFillUndoState {
   zoneRange: { startRow: number; startCol: number; endRow: number; endCol: number } | null;
   /** null 이면 apply 때 zone 이 신설됐다 → undo 는 zone 을 제거한다. */
   zoneBeforeId: number | null;
+  /**
+   * [#5959] 셀 적용이 cellzone origin override(1×1)를 만들거나 지운 전이 — sync 가
+   * zones 를 건드리면 셀 id 복원만으론 부족하다. before 상태로 되돌린다.
+   */
+  zoneRestores: Array<{
+    startRow: number;
+    startCol: number;
+    endRow: number;
+    endCol: number;
+    id: number | null;
+  }>;
   borderFillLenBefore: number;
   docInfoDirtyBefore: boolean;
 }
@@ -2281,6 +2292,8 @@ export class SetCellBorderFillCommand implements EditCommand {
     }
 
     const cellBefores = new Map<number, number>();
+    // 같은 rect 여러 전이 중 undo 에 필요한 것은 최초(before 원본) 하나다.
+    const zoneBefores = new Map<string, { startRow: number; startCol: number; endRow: number; endCol: number; id: number | null }>();
     let lenBefore = -1;
     let dirtyBefore = false;
     let zoneBeforeId: number | null = null;
@@ -2324,13 +2337,27 @@ export class SetCellBorderFillCommand implements EditCommand {
               // undo 는 원본(첫 기록) 하나면 충분하다.
               if (!cellBefores.has(ch.cellIdx)) cellBefores.set(ch.cellIdx, ch.beforeId);
             }
+            for (const z of r.zones ?? []) {
+              if (z.beforeId === z.afterId) continue;
+              changed = true;
+              const key = `${z.startRow},${z.startCol},${z.endRow},${z.endCol}`;
+              if (!zoneBefores.has(key)) {
+                zoneBefores.set(key, {
+                  startRow: z.startRow,
+                  startCol: z.startCol,
+                  endRow: z.endRow,
+                  endCol: z.endCol,
+                  id: z.beforeId,
+                });
+              }
+            }
           }
         });
       }
     } catch (applyError) {
       // 최초 execute 실패 시 지금까지의 기록으로라도 원상 복구를 시도한다(#3350 계열).
       try {
-        this.rollback(wasm, cellBefores, zoneBeforeId, lenBefore, dirtyBefore, mutated);
+        this.rollback(wasm, cellBefores, zoneBefores, zoneBeforeId, lenBefore, dirtyBefore, mutated);
       } catch (rollbackError) {
         console.error(`${this.type} 실패 롤백도 실패:`, rollbackError);
       }
@@ -2349,6 +2376,7 @@ export class SetCellBorderFillCommand implements EditCommand {
       cellBefores: [...cellBefores.entries()].map(([cellIdx, id]) => ({ cellIdx, id })),
       zoneRange: this.target.kind === 'zone' ? { ...this.target.range } : null,
       zoneBeforeId,
+      zoneRestores: [...zoneBefores.values()],
       borderFillLenBefore: lenBefore,
       docInfoDirtyBefore: dirtyBefore,
     };
@@ -2361,9 +2389,12 @@ export class SetCellBorderFillCommand implements EditCommand {
     }
     wasm.applyCellBorderFillIds(this.sec, this.ppi, this.ci, {
       cells: this.state.cellBefores,
-      zones: this.state.zoneRange
-        ? [{ ...this.state.zoneRange, id: this.state.zoneBeforeId }]
-        : [],
+      zones: [
+        ...(this.state.zoneRange
+          ? [{ ...this.state.zoneRange, id: this.state.zoneBeforeId }]
+          : []),
+        ...this.state.zoneRestores,
+      ],
     });
     wasm.removeBorderFillTails(this.state.borderFillLenBefore, this.state.docInfoDirtyBefore);
     wasm.restoreSectionRaw(this.captureId);
@@ -2388,6 +2419,7 @@ export class SetCellBorderFillCommand implements EditCommand {
   private rollback(
     wasm: WasmBridge,
     cellBefores: Map<number, number>,
+    zoneBefores: Map<string, { startRow: number; startCol: number; endRow: number; endCol: number; id: number | null }>,
     zoneBeforeId: number | null,
     lenBefore: number,
     dirtyBefore: boolean,
@@ -2403,9 +2435,12 @@ export class SetCellBorderFillCommand implements EditCommand {
     }
     wasm.applyCellBorderFillIds(this.sec, this.ppi, this.ci, {
       cells: [...cellBefores.entries()].map(([cellIdx, id]) => ({ cellIdx, id })),
-      zones: this.target.kind === 'zone'
-        ? [{ ...this.target.range, id: zoneBeforeId }]
-        : [],
+      zones: [
+        ...(this.target.kind === 'zone'
+          ? [{ ...this.target.range, id: zoneBeforeId }]
+          : []),
+        ...[...zoneBefores.values()],
+      ],
     });
     if (lenBefore >= 0) wasm.removeBorderFillTails(lenBefore, dirtyBefore);
     wasm.restoreSectionRaw(this.captureId);

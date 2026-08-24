@@ -1746,6 +1746,18 @@ export class WasmBridge {
     ok: boolean;
     /** [#5959] borderFillId 전환 기록(target+이웃) — 구버전 wasm 에선 없다. */
     changes?: Array<{ cellIdx: number; beforeId: number; afterId: number }>;
+    /**
+     * [#5959] cellzone origin override(1×1) 전이 기록 — sync 가 zones 를
+     * 만들거나 지울 때 셀 id 기록만으로 undo 가 부족하다. 구버전 wasm 에선 없다.
+     */
+    zones?: Array<{
+      startRow: number;
+      startCol: number;
+      endRow: number;
+      endCol: number;
+      beforeId: number | null;
+      afterId: number | null;
+    }>;
     borderFillLenBefore?: number;
     docInfoDirtyBefore?: boolean;
   } {
