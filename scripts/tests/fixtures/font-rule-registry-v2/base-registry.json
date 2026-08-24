@@ -5,7 +5,7 @@
   "sourceCommit": "1111111111111111111111111111111111111111",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
-    "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    "sha256": "6b3900063db6b96b0a8ba02f5fca1070550d9bb56a36cdc76ba6466d0bc49327"
   },
   "sealedV1Registry": {
     "path": "assets/font-rules/font_rule_registry.json",
@@ -30,7 +30,7 @@
       "parentEvidenceIds": []
     }
   ],
-  "rulesSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "rulesSha256": "ba5027c9558fc9e1c93d61e5a00cbd519dbe296d56e488475443a37e6441c422",
   "rules": [
     {
       "ruleId": "font-rule.fixture.paint.0001",
@@ -57,7 +57,7 @@
         "baselineProjectionSha256": "2222222222222222222222222222222222222222222222222222222222222222"
       },
       "evidenceIds": ["evidence.fixture.sealed-v1"],
-      "selectionTupleSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "selectionTupleSha256": "c6e65400a27ed8d3165e69d0b6759df58ac083fe79b5161ccdc24da0ece5b78b",
       "status": "active",
       "lifecycle": {
         "introducedBy": "migration:issue-5955",

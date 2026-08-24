@@ -8,14 +8,14 @@
       "changeSetId": "issue-5955.fixture.retire-and-replace",
       "issue": 5955,
       "sequence": 1,
-      "parentRegistrySha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "parentRegistrySha256": "fdd064321b6489b85c52ea8b8948ca83a7422f8c1415fcc08a4cb28ab8797a01",
       "decisionPlane": "paint",
       "evidenceRecords": [
         {
           "evidenceId": "evidence.fixture.replacement",
           "kind": "public-fixture",
-          "source": "tests/fixtures/fonts/fixture-public-font.txt",
-          "sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+          "source": "scripts/tests/fixtures/font-rule-registry-v2/public-evidence.txt",
+          "sha256": "cb3716ed32e85b9522f539633735edb3a5038a156815ab22df3e188558058517",
           "licenseOrProvenance": "synthetic public fixture",
           "parentEvidenceIds": []
         }
@@ -25,7 +25,7 @@
           "operationId": "operation.fixture.retire-and-replace",
           "type": "retire-and-replace",
           "retiredRuleId": "font-rule.fixture.paint.0001",
-          "expectedSelectionTupleSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "expectedSelectionTupleSha256": "c6e65400a27ed8d3165e69d0b6759df58ac083fe79b5161ccdc24da0ece5b78b",
           "replacementRule": {
             "ruleId": "font-rule.fixture.paint.0002",
             "relationType": "paint-substitute",

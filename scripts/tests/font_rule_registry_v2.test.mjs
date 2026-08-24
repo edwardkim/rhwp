@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
@@ -6,10 +7,12 @@ import { fileURLToPath } from 'node:url';
 
 import {
   assertSealedV1Artifacts,
+  buildInitialRegistryV2,
   buildMigrationV1ToV2,
   projectActiveRules,
   reduceRegistryV2,
   validateChangeSet,
+  validateMigrationV1ToV2,
   validateRegistryV2,
 } from '../font_rule_registry_v2.mjs';
 
@@ -22,6 +25,16 @@ const FIXTURE_ROOT = path.join(
   'font-rule-registry-v2',
 );
 const V1_REGISTRY_PATH = path.join(ROOT, 'assets', 'font-rules', 'font_rule_registry.json');
+const V2_REGISTRY_PATH = path.join(ROOT, 'assets', 'font-rules', 'font_rule_registry_v2.json');
+const MIGRATION_PATH = path.join(
+  ROOT,
+  'mydocs',
+  'tech',
+  'investigations',
+  'issue-5955',
+  'font_rule_registry_v1_to_v2_migration.json',
+);
+const GENERATOR_PATH = path.join(ROOT, 'scripts', 'font_rule_registry_v2.mjs');
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -114,6 +127,48 @@ test('initial v1 to v2 migration carries all 830 rules without semantic delta', 
   assert.equal(migration.projectionDeltas.every(delta => delta.status === 'unchanged'), true);
 });
 
+test('canonical v2 registry and migration are deterministic query models', () => {
+  const v1Registry = readJson(V1_REGISTRY_PATH);
+  const expectedRegistry = readJson(V2_REGISTRY_PATH);
+  const expectedMigration = readJson(MIGRATION_PATH);
+  const actualRegistry = buildInitialRegistryV2(v1Registry, ROOT, {
+    sourceCommit: expectedRegistry.sourceCommit,
+  });
+  const actualMigration = buildMigrationV1ToV2(v1Registry, {
+    root: ROOT,
+    v2Registry: actualRegistry,
+  });
+
+  assert.deepEqual(actualRegistry, expectedRegistry);
+  assert.deepEqual(actualMigration, expectedMigration);
+  assert.deepEqual(validateRegistryV2(expectedRegistry, ROOT), []);
+  assert.deepEqual(
+    validateMigrationV1ToV2(expectedMigration, v1Registry, expectedRegistry, ROOT),
+    [],
+  );
+});
+
+test('initial migration refuses a caller-mutated v1 authority', () => {
+  const changed = clone(readJson(V1_REGISTRY_PATH));
+  changed.rules[0].targetFaceOrPolicy = 'Caller-mutated selection';
+
+  assert.throws(
+    () => buildInitialRegistryV2(changed, ROOT),
+    /requires the sealed v1 registry bytes/,
+  );
+});
+
+test('v2 generator rejects caller-selected output paths', () => {
+  const result = spawnSync(
+    process.execPath,
+    [GENERATOR_PATH, 'generate', '--registry', '/tmp/font-rule-registry-v2.json'],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /usage:.*<generate\|check>/);
+});
+
 test('in-place semantic mutation is rejected instead of reusing a ruleId', () => {
   const changed = clone(fixture('evidence-only').changeSets[0]);
   changed.operations[0] = {
@@ -147,6 +202,24 @@ test('one change set cannot cross a decision plane', () => {
   assert.match(validateChangeSet(changed, { root: ROOT }).join('\n'), /cross-plane/);
 });
 
+test('a command cannot relabel the decision plane of an existing rule', () => {
+  const base = readJson(path.join(FIXTURE_ROOT, 'base-registry.json'));
+  const changed = clone(fixture('evidence-only').changeSets[0]);
+  changed.decisionPlane = 'supply';
+  changed.expectedDelta.projectionId = 'canvas2d-webfont';
+  changed.expectedDelta.unchangedProjectionIds = [
+    'rust-layout-name',
+    'rust-layout-metric',
+    'canvas2d-paint',
+    'canvaskit-sfnt',
+  ];
+
+  assert.throws(
+    () => reduceRegistryV2(base, [changed], { root: ROOT }),
+    /current rule crosses the declared decision plane/,
+  );
+});
+
 test('evidence cycles and self-parent edges are rejected', () => {
   const changed = clone(fixture('evidence-only').changeSets[0]);
   changed.evidenceRecords[0].parentEvidenceIds = [changed.evidenceRecords[0].evidenceId];
@@ -174,4 +247,32 @@ test('unsafe evidence paths and bounded collections fail closed', () => {
     operationId: `operation.fixture.oversized-${index}`,
   }));
   assert.match(validateChangeSet(oversized, { root: ROOT }).join('\n'), /at most 64 operations/);
+});
+
+test('manual validators reject malformed nested values without throwing', () => {
+  const malformedRegistry = clone(readJson(path.join(FIXTURE_ROOT, 'base-registry.json')));
+  malformedRegistry.rules[0] = null;
+  let registryErrors;
+  assert.doesNotThrow(() => {
+    registryErrors = validateRegistryV2(malformedRegistry, ROOT);
+  });
+  assert.match(registryErrors.join('\n'), /registry\.rules\[0\] must be an object/);
+
+  const malformedChangeSet = clone(fixture('add-rule').changeSets[0]);
+  malformedChangeSet.operations[0] = null;
+  let changeSetErrors;
+  assert.doesNotThrow(() => {
+    changeSetErrors = validateChangeSet(malformedChangeSet, { root: ROOT });
+  });
+  assert.match(changeSetErrors.join('\n'), /unknown operation/);
+});
+
+test('new and replacement rules cannot cite undeclared evidence', () => {
+  const add = clone(fixture('add-rule').changeSets[0]);
+  add.operations[0].rule.evidenceIds = ['evidence.fixture.missing'];
+  assert.match(validateChangeSet(add, { root: ROOT }).join('\n'), /dangling evidence reference/);
+
+  const replace = clone(fixture('retire-and-replace').changeSets[0]);
+  replace.operations[0].replacementRule.evidenceIds = ['evidence.fixture.missing'];
+  assert.match(validateChangeSet(replace, { root: ROOT }).join('\n'), /dangling evidence reference/);
 });

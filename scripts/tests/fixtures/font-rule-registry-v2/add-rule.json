@@ -8,14 +8,14 @@
       "changeSetId": "issue-5955.fixture.add-rule",
       "issue": 5955,
       "sequence": 1,
-      "parentRegistrySha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "parentRegistrySha256": "fdd064321b6489b85c52ea8b8948ca83a7422f8c1415fcc08a4cb28ab8797a01",
       "decisionPlane": "paint",
       "evidenceRecords": [
         {
           "evidenceId": "evidence.fixture.add-rule",
           "kind": "public-fixture",
-          "source": "tests/fixtures/fonts/fixture-public-font.txt",
-          "sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+          "source": "scripts/tests/fixtures/font-rule-registry-v2/public-evidence.txt",
+          "sha256": "cb3716ed32e85b9522f539633735edb3a5038a156815ab22df3e188558058517",
           "licenseOrProvenance": "synthetic public fixture",
           "parentEvidenceIds": []
         }

@@ -28,7 +28,7 @@
       "type": "array",
       "maxItems": 4096,
       "uniqueItems": true,
-      "items": { "$ref": "#/$defs/pathDigest" }
+      "items": { "$ref": "#/$defs/changeSetRef" }
     },
     "summary": {
       "type": "object",
@@ -72,6 +72,16 @@
       "required": ["path", "sha256"],
       "properties": {
         "path": { "$ref": "#/$defs/nonEmptyString" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "changeSetRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["changeSetId", "path", "sha256"],
+      "properties": {
+        "changeSetId": { "$ref": "#/$defs/identifier" },
+        "path": { "$ref": "#/$defs/nullableString" },
         "sha256": { "$ref": "#/$defs/sha256" }
       }
     },
@@ -213,6 +223,9 @@
         "baselineProjectionSha256": { "$ref": "#/$defs/sha256" }
       }
     },
+    "legacyEvidenceOrNull": {
+      "oneOf": [{ "$ref": "#/$defs/legacyEvidence" }, { "type": "null" }]
+    },
     "evidenceRecord": {
       "type": "object",
       "additionalProperties": false,
@@ -316,7 +329,7 @@
           "items": { "type": "string", "pattern": "^font-metric\\.[0-9a-f]{20}$" }
         },
         "supply": { "$ref": "#/$defs/supply" },
-        "evidence": { "$ref": "#/$defs/legacyEvidence" },
+        "evidence": { "$ref": "#/$defs/legacyEvidenceOrNull" },
         "evidenceIds": {
           "type": "array",
           "maxItems": 16,
