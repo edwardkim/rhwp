@@ -304,23 +304,32 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
         originalHandle,
       ),
       (saveResult) => saveResult !== 'cancelled' && saveResult.method !== 'fallback',
+      (saveResult) => completeHandleSave(
+        services,
+        sourceFormat,
+        saveResult as SaveDocumentResult,
+        'save-as',
+        password !== null,
+      ),
       showExportContentLoss,
     );
     if (result === 'cancelled') return;
     if (result.method !== 'fallback') {
-      completeHandleSave(services, sourceFormat, result, 'save-as', password !== null);
       return;
     }
     const downloadName = await promptFallbackName(saveName, format);
     if (!downloadName) return;
-    services.wasm.fileName = downloadName;
-    services.wasm.requiresPasswordForSave = password !== null;
     persistDownloadWithContentLoss(
       payload.contentLoss,
       () => downloadBlob(payload.blob, downloadName),
+      () => {
+        // download 시작이 실패하면 현재 backing copy의 보호 의도를 유지한다 (#5986).
+        services.wasm.fileName = downloadName;
+        services.wasm.requiresPasswordForSave = password !== null;
+        services.documentState.markClean('save-as');
+      },
       showExportContentLoss,
     );
-    services.documentState.markClean('save-as');
   } catch (error) {
     reportSaveError('file:save-as', error);
   } finally {
@@ -374,11 +383,17 @@ export async function saveCurrentDocument(services: CommandServices): Promise<Sa
         services.wasm.currentFileHandle,
       ),
       (saveResult) => saveResult !== 'cancelled' && saveResult.method !== 'fallback',
+      (saveResult) => completeHandleSave(
+        services,
+        sourceFormat,
+        saveResult as SaveDocumentResult,
+        'save',
+        password !== null,
+      ),
       showExportContentLoss,
     );
     if (result === 'cancelled') return 'cancelled';
     if (result.method !== 'fallback') {
-      completeHandleSave(services, sourceFormat, result, 'save', password !== null);
       return 'saved';
     }
     const downloadName = await fallbackNameForCurrentSave(services, target);
@@ -386,10 +401,12 @@ export async function saveCurrentDocument(services: CommandServices): Promise<Sa
     persistDownloadWithContentLoss(
       payload.contentLoss,
       () => downloadBlob(payload.blob, downloadName),
+      () => {
+        services.wasm.requiresPasswordForSave = password !== null;
+        services.documentState.markClean('save');
+      },
       showExportContentLoss,
     );
-    services.wasm.requiresPasswordForSave = password !== null;
-    services.documentState.markClean('save');
     return 'saved';
   } catch (error) {
     reportSaveError('file:save', error);

@@ -61,8 +61,10 @@ fn issue_4514_overlay_tables_do_not_overlap() {
     let total = core.page_count();
 
     // 수정 전 47쪽(겹침 6쪽), 수정 후 48쪽 (한컴 46 — 잔여 +2 는 overlay 표 쪽 분할
-    // 페인트 부재/host 줄 계상의 후속 과제. 한컴 수렴 개선 시 이 값을 좁혀 갱신한다.)
-    assert_eq!(total, 48, "총 페이지 수가 예기치 않게 변했다");
+    // 페인트 부재/host 줄 계상의 후속 과제로 남겨 뒀었다). #5918 이 꼬리 조각의
+    // 이중 쪽 경계를 제거해 정본(한글 2020, 46쪽)과 수렴 — 예고대로 값을 좁혀
+    // 갱신한다.
+    assert_eq!(total, 46, "총 페이지 수가 예기치 않게 변했다");
 
     let mut requirement_table_pages: Vec<u32> = Vec::new();
     let mut ecr004_spans: Vec<(u32, f64)> = Vec::new();

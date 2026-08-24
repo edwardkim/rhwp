@@ -17,9 +17,38 @@ const FIXTURE_PATH = path.join(
   'ci-impact-classifier-prs.json',
 );
 const HISTORICAL_PRS = JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8'));
+const REGRESSION_FIXTURE_PATH = path.join(
+  __dirname,
+  'fixtures',
+  'ci-impact-classifier-output-adapters.json',
+);
+const REGRESSION_FIXTURES = JSON.parse(
+  fs.readFileSync(REGRESSION_FIXTURE_PATH, 'utf8'),
+);
+const REPOSITORY_ROOT = path.join(__dirname, '..', '..');
+const OUTPUT_ADAPTER_ROOT = path.join(REPOSITORY_ROOT, 'src', 'cli', 'outputs');
+
+function rustFilesUnder(directory) {
+  return fs.readdirSync(directory, { withFileTypes: true })
+    .flatMap((entry) => {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) return rustFilesUnder(entryPath);
+      if (!entry.isFile() || !entry.name.endsWith('.rs')) return [];
+      return [path.relative(REPOSITORY_ROOT, entryPath).split(path.sep).join('/')];
+    });
+}
 
 for (const fixture of HISTORICAL_PRS) {
   test(`historical PR #${fixture.pr}: ${fixture.title}`, () => {
+    assert.deepEqual(
+      classifyChanges({ eventName: 'pull_request', files: fixture.files }),
+      fixture.expected,
+    );
+  });
+}
+
+for (const fixture of REGRESSION_FIXTURES) {
+  test(`regression fixture: ${fixture.title}`, () => {
     assert.deepEqual(
       classifyChanges({ eventName: 'pull_request', files: fixture.files }),
       fixture.expected,
@@ -43,7 +72,7 @@ test('review-only changes require no code worker', () => {
       native_skia_required: 'false',
       codeql_languages: 'none',
       classification_status: 'classified',
-      classifier_version: '3',
+      classifier_version: '4',
       reason: 'classified:review-only',
     },
   );
@@ -65,7 +94,7 @@ test('mixed Studio package and Rust changes union modes and CodeQL languages', (
       native_skia_required: 'false',
       codeql_languages: 'javascript-typescript,rust',
       classification_status: 'classified',
-      classifier_version: '3',
+      classifier_version: '4',
       reason: 'classified:rust+studio-package',
     },
   );
@@ -83,6 +112,61 @@ test('Rust renderer changes require Rust, Native Skia, Canvas, and Rust CodeQL',
   assert.equal(result.native_skia_required, 'true');
   assert.equal(result.codeql_languages, 'rust');
   assert.equal(result.classification_status, 'classified');
+});
+
+test('every CLI output adapter belongs to one explicit impact bucket', () => {
+  const buckets = {
+    renderAndNative: [
+      'src/cli/outputs/mod.rs',
+      'src/cli/outputs/pdf.rs',
+    ],
+    nativeOnly: [
+      'src/cli/outputs/raster.rs',
+    ],
+    plainRust: [
+      'src/cli/outputs/doclang.rs',
+      'src/cli/outputs/preview.rs',
+      'src/cli/outputs/tabular.rs',
+      'src/cli/outputs/text.rs',
+      'src/cli/outputs/vector.rs',
+    ],
+  };
+  const expected = Object.values(buckets).flat();
+  assert.equal(
+    new Set(expected).size,
+    expected.length,
+    'CLI output impact buckets must be disjoint',
+  );
+  assert.deepEqual(
+    rustFilesUnder(OUTPUT_ADAPTER_ROOT).sort(),
+    expected.sort(),
+    'new or moved CLI output adapters require an explicit impact bucket',
+  );
+
+  for (const [filename, renderRequired, nativeSkiaRequired, reason] of [
+    ...buckets.renderAndNative.map((filename) => (
+      [filename, 'true', 'true', 'classified:rust-render']
+    )),
+    ...buckets.nativeOnly.map((filename) => (
+      [filename, 'false', 'true', 'classified:native-skia-rust']
+    )),
+    ...buckets.plainRust.map((filename) => (
+      [filename, 'false', 'false', 'classified:rust']
+    )),
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'modified' }],
+    });
+    assert.equal(result.rust_required, 'true', filename);
+    assert.equal(result.frontend_mode, 'none', filename);
+    assert.equal(result.render_required, renderRequired, filename);
+    assert.equal(result.native_skia_required, nativeSkiaRequired, filename);
+    assert.equal(result.codeql_languages, 'rust', filename);
+    assert.equal(result.classification_status, 'classified', filename);
+    assert.equal(result.classifier_version, '4', filename);
+    assert.equal(result.reason, reason, filename);
+  }
 });
 
 test('Native Skia integration test and support changes run Rust and Native Skia without Canvas', () => {
@@ -106,7 +190,7 @@ test('Native Skia integration test and support changes run Rust and Native Skia 
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '3', filename);
+    assert.equal(result.classifier_version, '4', filename);
     assert.equal(result.reason, 'classified:native-skia-rust', filename);
   }
 });
@@ -126,7 +210,7 @@ test('Rust test input changes keep default Rust tests alongside render gates', (
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '3', filename);
+    assert.equal(result.classifier_version, '4', filename);
     assert.equal(result.reason, 'classified:rust-test-input', filename);
   }
 });
@@ -204,7 +288,7 @@ test('new review reference assets require no product or CodeQL worker', () => {
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '3', filename);
+    assert.equal(result.classifier_version, '4', filename);
     assert.equal(result.reason, 'classified:review-only', filename);
   }
 });

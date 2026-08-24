@@ -66,7 +66,7 @@ samples/hwp3-sample5-hwpx.hwpx	64	64	0
 samples/hwp3-sample5.hwp	64	64	0
 samples/hwp_table_test-m.hwp	3	3	0
 samples/hwp_table_test.hwp	3	3	0
-samples/hwpctl_API_v2.4.hwp	105	106	1
+samples/hwpctl_API_v2.4.hwp	105	105	0
 samples/hwpctl_Action_Table__v1.1.hwp	16	16	0
 samples/hwpctl_ParameterSetID_Item_v1.2.hwp	74	74	0
 samples/hwpspec.hwp	178	178	0
@@ -78,7 +78,7 @@ samples/hwpx/hwpx-h-01.hwpx	9	9	0
 samples/hwpx/hwpx-h-02.hwpx	9	9	0
 samples/hwpx/hwpx-h-03.hwpx	9	9	0
 samples/hwpx/issue1948_cross_para_fieldend.hwpx	1	1	0
-samples/hwpx/issue2019_floating_form_74312.hwpx	18	19	1
+samples/hwpx/issue2019_floating_form_74312.hwpx	18	18	0
 samples/hwpx/issue_157.hwpx	2	2	0
 samples/hwpx/issue_241.hwpx	1	1	0
 samples/hwpx/ref/ref_empty.hwpx	1	1	0
@@ -101,7 +101,7 @@ samples/issue1949_giant_cell_nested_tables_perf.hwp	115	115	0
 samples/issue1950_hwp3_tab_charoffset.hwp	1	1	0
 samples/issue2004_cell_image_stack.hwp	8	8	0
 samples/issue2020/passport_application_lawgo.hwp	2	2	0
-samples/issue2063_huge_cellbreak_table.hwp	162	159	-3
+samples/issue2063_huge_cellbreak_table.hwp	162	161	-1
 samples/issue2083_hide_fill_page.hwpx	4	4	0
 samples/issue2217/20200830.hwp	4	4	0
 samples/issue2373/156689818_kftc_press.hwpx	4	4	0
@@ -120,7 +120,7 @@ samples/issue3637/press_release_split_cell_nested_table.hwpx	12	13	1
 samples/issue3637/press_release_topbottom_float.hwpx	2	3	1
 samples/issue3765/zone_switch_ladder_understates_page.hwpx	2	2	0
 samples/issue3837/stored_vpos_rewind_form.hwp	4	4	0
-samples/issue4514/sample1-repro.hwp	46	48	2
+samples/issue4514/sample1-repro.hwp	46	46	0
 samples/issue4889/18098267_nested_fragment_origin.hwp	3	3	0
 samples/issue_265.hwp	16	16	0
 samples/k-water-rfp.hwp	27	27	0

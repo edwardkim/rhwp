@@ -2224,6 +2224,210 @@ export class SetSectionPropsCommand implements EditCommand {
 }
 
 /**
+ * [#5769 후속] SetZOrderCommand 가 소비하는 자기기술 변경 레코드 항목(Rust moves 응답).
+ */
+export interface ZOrderMove {
+  ppi: number;
+  ci: number;
+  before: number;
+  after: number;
+}
+
+/**
+ * [#5769 후속] Shape z 순서 변경의 역연산 커맨드 — 스냅샷 대체.
+ *
+ * 최초 execute 는 기존 상대 연산(changeShapeZOrder)을 그대로 실행하고 Rust 가 돌려준
+ * 자기기술 레코드(moves — 대상+교환 이웃의 before/after)를 저장한다. undo/redo 는 상대
+ * 연산을 다시 머리로 계산하지 않고 저장된 쌍을 절대 대입(applyShapeZOrderPairs)해 되돌린다
+ * — front(max+1) 같은 연산엔 모드 역연산이 없으므로 값 복원이 유일한 참인 역연산이다
+ * (#5769 선결 규약). Shape z 대입에는 부작용이 없어 속성쌍 왕복이 수렴한다.
+ *
+ * passthrough 생명주기는 SetSectionPropsCommand 와 같다 — 첫 뮤테이션 전에 구역 raw 를
+ * capture 하고, undo 의 재무효화 뒤 restore 한다. redo 는 저널 항목이 소비됐으므로 재캡처한다.
+ * 슬롯 효과: changeZOrder 스냅샷 1슬롯 → 0.
+ */
+export class SetZOrderCommand implements EditCommand {
+  readonly type = 'changeZOrder';
+  readonly timestamp = Date.now();
+
+  /** 최초 실행에서 확정된 변경 레코드. null = 아직 실행 전. */
+  private moves: ZOrderMove[] | null = null;
+  private captureId: number | null = null;
+  private noOp = false;
+
+  constructor(
+    private sectionIdx: number,
+    private ppi: number,
+    private ci: number,
+    private operation: 'front' | 'forward' | 'backward' | 'back',
+    private cursorPos: DocumentPosition,
+  ) {}
+
+  private pairsJson(dir: 'before' | 'after'): string {
+    return JSON.stringify(
+      (this.moves ?? []).map((m) => ({ ppi: m.ppi, ci: m.ci, z: m[dir] })),
+    );
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    // 스큐 선제 차단(gpt 3차 리뷰) — 구버전 wasm 은 moves 를 주지 않아 실제 변경의
+    // 역연산 기록을 만들 수 없다. 적용 **전에** 거절해 무음 변이를 원천 차단한다.
+    if (!wasm.hasShapeZOrderInverse()) {
+      throw new Error('changeZOrder 역연산 불가 — wasm 이 moves 응답 이전 버전이다');
+    }
+    const captureId = wasm.captureSectionRaw(this.sectionIdx);
+    this.captureId = captureId;
+    try {
+      if (this.moves) {
+        // redo — 상대 연산은 멱등하지 않으므로(front=항상 max+1) 저장된 after 를 대입한다.
+        const r = wasm.applyShapeZOrderPairs(this.sectionIdx, this.pairsJson('after'));
+        // 거절 = 기록 이후 문서가 out-of-band 로 바졌다 — 성공으로 스택을 옮기지 않는다.
+        if (!r.ok) {
+          throw new Error(`${this.type} redo 거부 — 기록 이후 문서가 바뀌었다`);
+        }
+      } else {
+        // 최초 실행 — 기존 상대 연산으로 적용하고 자기기술 레코드를 받는다.
+        const r = wasm.changeShapeZOrder(this.sectionIdx, this.ppi, this.ci, this.operation);
+        if (r.ok && r.moves === undefined) {
+          // 위 probe 를 통과했다면 도달하지 않는다(같은 릴리스가 moves 와 쌍 메서드를
+          // 함께 제공한다). 도달했다면 빈 moves 흡수가 실제 변이의 기록 상실이 되므로
+          // 소리 없이 넘기지 않고 실패시킨다 — 아래 catch 가 캡처를 폐기하고,
+          // history 의 catch 가 엔트리 없이 전파한다.
+          throw new Error(`${this.type}: wasm ok 응답에 moves 가 없다 — 빌드 짝이 어긋났다`);
+        }
+        const moves = r.ok ? r.moves ?? [] : [];
+        if (!r.ok || moves.length === 0) {
+          // 이미 맨 앞/뒤 등 무변경 — phantom 엔트리와 캡처 잔류를 막는다(#2370 계약).
+          this.noOp = true;
+          wasm.discardSectionRaw(captureId);
+          this.captureId = null;
+          return { ...this.cursorPos };
+        }
+        this.moves = moves;
+      }
+      return { ...this.cursorPos };
+    } catch (e) {
+      wasm.discardSectionRaw(captureId);
+      this.captureId = null;
+      throw e;
+    }
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    if (!this.moves || this.captureId === null) {
+      throw new Error(`${this.type} undo 불가 — 살아있는 기록/캡처가 없다`);
+    }
+    const captureId = this.captureId;
+    wasm.applyShapeZOrderPairs(this.sectionIdx, this.pairsJson('before')); // old 재적용 — raw 재무효화 동반
+    wasm.restoreSectionRaw(captureId); // passthrough 복원 — 저널 항목 소비
+    this.captureId = null;
+    return { ...this.cursorPos };
+  }
+
+  discard(wasm: WasmBridge): void {
+    if (this.captureId !== null) {
+      wasm.discardSectionRaw(this.captureId);
+      this.captureId = null;
+    }
+  }
+
+  snapshotResourceCount(): number { return 0; }
+
+  isNoOp(): boolean { return this.noOp; }
+
+  /** 병합하지 않는다 — 정렬 메뉴 1회·클릭 1회가 되돌리기 단위다(한컴 정합). */
+  mergeWith(): null { return null; }
+}
+
+/**
+ * [#5769 후속] 문서 전체(all) 구역 설정의 역연산 커맨드 — 다구역 raw 저널.
+ *
+ * `setSectionDefAll` 은 네이티브에서 구역 루프+단일 재조판일 뿐이라(#5769 후속2 실측)
+ * Rust 확장 없이 조합으로 역연산화한다. 구역별 before 를 변경 전에 읽어 두고,
+ * execute 는 전 구역 캡처 후 `setSectionDefAll(after)` 한 번(네이티브 효율 유지),
+ * undo 는 구역별 old 재적용 뒤 캡처를 되돌린다. 저널 계약은 구역 단위라("그 구역의
+ * 캡처와 복원 사이 그 구역 편집 금지") 다구역 교차 적용과 정합이다.
+ *
+ * 슬롯 효과: all 범위 스냅샷 1슬롯 → 0. 양식 모드 게이트는 type 이 default 차단
+ * (종전 snapshot 차단과 동일)이므로 동작 변화 없다.
+ */
+export class SetSectionPropsAllCommand implements EditCommand {
+  readonly type = 'setSectionProps';
+  readonly timestamp = Date.now();
+
+  /** execute 가 잡아 둔 구역별 passthrough 캡처. undo 가 소비하고 discard 가 해제한다. */
+  private captureIds: Array<{ idx: number; id: number }> = [];
+  private noOp = false;
+
+  constructor(
+    private sections: Array<{ idx: number; before: SectionDef }>,
+    private after: SectionDef,
+    private cursorPos: DocumentPosition,
+  ) {}
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    if (this.sections.every((s) => this.propsEqual(s.before))) {
+      this.noOp = true;
+      return { ...this.cursorPos };
+    }
+    // redo 도 같은 순서다 — undo 가 저널 항목들을 소비하므로 항상 새로 캡처한다.
+    // 캡처를 전부 마친 뒤 한 번 적용한다 — 적용 도중 실패가 있으면 캡처만 낭비된다.
+    const captureIds: Array<{ idx: number; id: number }> = [];
+    try {
+      for (const s of this.sections) {
+        captureIds.push({ idx: s.idx, id: wasm.captureSectionRaw(s.idx) });
+      }
+      wasm.setSectionDefAll(this.after);
+      this.captureIds = captureIds;
+      return { ...this.cursorPos };
+    } catch (e) {
+      for (const c of captureIds) wasm.discardSectionRaw(c.id);
+      throw e;
+    }
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    if (this.captureIds.length === 0) {
+      throw new Error(`${this.type} undo 불가 — 살아있는 raw 캡처가 없다`);
+    }
+    const captureIds = this.captureIds;
+    // old 재적용(raw 재무효화) → 캡처 복원. 순서는 캡처와 동일하게 유지한다.
+    // [측결 2026-08-23] bulk 네이티브 없이 구역별 setter 루프 — 실문서 구역 수
+    // (통상 ≤5)에서 전체 재조판 반복 비용은 서브밀리초라 별도 API 가 필요 없다.
+    for (const s of this.sections) {
+      wasm.setSectionDef(s.idx, s.before);
+    }
+    for (const c of captureIds) {
+      wasm.restoreSectionRaw(c.id);
+    }
+    this.captureIds = [];
+    return { ...this.cursorPos };
+  }
+
+  discard(wasm: WasmBridge): void {
+    for (const c of this.captureIds) wasm.discardSectionRaw(c.id);
+    this.captureIds = [];
+  }
+
+  snapshotResourceCount(): number { return 0; }
+
+  isNoOp(): boolean { return this.noOp; }
+
+  /** 병합하지 않는다 — 다이얼로그 확인 1회가 되돌리기 단위 1회다(한컴 정합). */
+  mergeWith(): null { return null; }
+
+  /** SectionDef 전 필드 비교 — after 만 보면 된다(execute 가 적용하는 것이 그것뿐). */
+  private propsEqual(before: SectionDef): boolean {
+    const keys: (keyof SectionDef)[] = [
+      'pageNum', 'pageNumType', 'pictureNum', 'tableNum', 'equationNum',
+      'columnSpacing', 'defaultTabSpacing',
+      'hideHeader', 'hideFooter', 'hideMasterPage', 'hideBorder', 'hideFill', 'hideEmptyLine',
+    ];
+    return keys.every((key) => Object.is(before[key], this.after[key]));
+  }
+}
+
+/**
  * [Task #2374] 양식 값 변경 대상 — 본문 또는 표 셀 내 컨트롤 locator + 전/후 값 JSON.
  * before/after 는 setFormValue(InCell) 에 그대로 전달되는 JSON 문자열이다.
  */

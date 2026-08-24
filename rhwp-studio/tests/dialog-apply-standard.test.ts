@@ -86,13 +86,15 @@ test('라우터와 fallback 예외를 실제로 false로 바꾼다', () => {
 test('라우팅된 다이얼로그 여섯은 모두 공용 헬퍼를 통과한다', () => {
   for (const rel of ROUTED_DIALOGS) {
     const s = src(rel);
-    assert.match(s, /import \{[^}]*applyThroughRouter[^}]*\} from '\.\/dialog-apply'/, `${rel}: 헬퍼 import`);
-    assert.match(s, /return applyThroughRouter\(\{/, `${rel}: onConfirm 이 헬퍼 결과를 반환`);
+    // [#5769 Stage 4→후속2] 헬퍼 계열 확장 수용 — snapshot(applyThroughRouter)과
+    // command(applyCommandThroughRouter) 어느 쪽이든 공용 헬퍼 경유를 핀한다.
+    assert.match(s, /import \{[^}]*apply(Command)?ThroughRouter[^}]*\} from '\.\/dialog-apply'/, `${rel}: 헬퍼 import`);
+    assert.match(s, /return apply(Command)?ThroughRouter\(\{/, `${rel}: onConfirm 이 헬퍼 결과를 반환`);
     // 헬퍼 밖에서 직접 라우터를 부르면 표준화가 무너진다.
     assert.doesNotMatch(
       s,
       /ih\.executeOperation\(\{/,
-      `${rel}: executeOperation 직접 호출 금지 — applyThroughRouter 경유`,
+      `${rel}: executeOperation 직접 호출 금지 — 공용 헬퍼 경유`,
     );
     // onConfirm 은 헬퍼의 성공 여부를 그대로 돌려줘야 한다(실패 시 다이얼로그 유지).
     assert.match(s, /protected onConfirm\(\): boolean \{/, `${rel}: onConfirm 반환형 boolean`);

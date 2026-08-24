@@ -177,17 +177,6 @@ use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertRelTo,
 };
 
-fn caption_has_topbottom_picture(caption: &Caption) -> bool {
-    caption.paragraphs.iter().any(|para| {
-        para.controls.iter().any(|ctrl| {
-            matches!(
-                ctrl,
-                Control::Picture(pic) if matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
-            )
-        })
-    })
-}
-
 /// A clipped table cell still has to expose an immediately nested table's
 /// *outer border*. A nested table can begin after the host cell's left padding
 /// while retaining its stored width, which puts that right border just beyond
@@ -1297,13 +1286,18 @@ pub(super) fn extend_completed_nested_table_border_clips(
     );
 }
 
-fn should_render_table_caption(table: &crate::model::table::Table, depth: usize) -> bool {
-    depth == 0
-        || (depth == 1
-            && table
-                .caption
-                .as_ref()
-                .is_some_and(caption_has_topbottom_picture))
+/// 표 캡션은 중첩 깊이와 무관하게 그린다.
+///
+/// [#5875] 종전에는 `depth == 0` 만 그리고, #1585 가 `depth == 1` 을 "캡션 안에 위/아래
+/// 그림이 있을 때"로만 열어 두었다. 그래서 셀 안 중첩 표의 **글자 캡션**은 통째로 버려졌다
+/// (2181727 7·8쪽 `<표 1>·<표 2>·<표 3>·<표 5>·<표 7>` 제목 5개가 렌더·텍스트추출 양쪽에서 소실).
+///
+/// 높이 측정기(`height_measurer::measure_table_impl`)는 처음부터 깊이와 무관하게 캡션
+/// 높이·간격을 표 총 높이에 넣는다. 즉 어긋난 쪽은 렌더 게이트 하나였고, 그 결과 캡션이
+/// 차지했어야 할 띠가 표 아래 빈칸으로 남았다(표3 하단→`라.` 첫 줄 한글 12.2px ↔ rhwp 60.6px).
+/// 측정 쪽 계약에 맞춰 깊이 게이트를 없앤다.
+fn should_render_table_caption(table: &crate::model::table::Table) -> bool {
+    table.caption.is_some()
 }
 
 fn caption_flow_extra(caption: &Option<Caption>, caption_height: f64, caption_spacing: f64) -> f64 {
@@ -2761,7 +2755,7 @@ impl LayoutEngine {
             paper_w,
         );
 
-        let render_caption = should_render_table_caption(table, depth);
+        let render_caption = should_render_table_caption(table);
         let (caption_height, caption_spacing) = if render_caption {
             let ch = self.calculate_caption_height(&table.caption, styles);
             let cs = table
@@ -9462,13 +9456,14 @@ impl LayoutEngine {
                         let h = corrected_h(line, li);
                         let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                         let is_cell_last_line = is_last_para && li + 1 == line_count;
-                        let is_block_rowbreak = matches!(
-                            table.page_break,
-                            crate::model::table::TablePageBreak::RowBreak
-                        ) && !table.common.treat_as_char;
-                        let include_trailing_ls = !is_cell_last_line || para_count > 1;
+                        // [#5923] 셀 마지막 줄 trailing 줄간격은 비-TAC 표에서
+                        // 문단 수와 무관하게 제외 — HeightMeasurer·렌더 행높이 회계
+                        // 일치. 다문단 셀만 포함하던 구규칙은 hwpctl_API_v2.4 75쪽
+                        // 유령 쪽(행마다 +2.7px)을 낳았다. TAC 표의 다문단 셀은
+                        // [Task #874/#1086] 보존 핀(KTX TOC 등)을 위해 기존 포함
+                        // 회계를 유지한다.
                         let include_trailing_ls =
-                            include_trailing_ls && (!is_cell_last_line || !is_block_rowbreak);
+                            !is_cell_last_line || (para_count > 1 && table.common.treat_as_char);
                         let mut lh = if include_trailing_ls { h + ls } else { h };
                         if li == 0 {
                             lh += spacing_before;
@@ -9712,17 +9707,11 @@ impl LayoutEngine {
                             let h = corrected_h(line, li);
                             let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                             let is_cell_last_line = is_last_para && li + 1 == line_count;
-                            // [Task #1022/#1086] trailing ls 규칙 — HeightMeasurer 와
-                            // 정합. CellBreak/TAC 표는 기존 trailing geometry 를 보존하고,
-                            // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
-                            // trailing 을 제외해 행 fit 을 맞춘다.
-                            let is_block_rowbreak = matches!(
-                                table.page_break,
-                                crate::model::table::TablePageBreak::RowBreak
-                            ) && !table.common.treat_as_char;
-                            let include_trailing_ls = !is_cell_last_line || para_count > 1;
-                            let include_trailing_ls =
-                                include_trailing_ls && (!is_cell_last_line || !is_block_rowbreak);
+                            // [#5923] trailing ls — 비-TAC 표는 문단 수 무관 마지막
+                            // 줄 제외 (HeightMeasurer 와 동일 회계). TAC 표의
+                            // 다문단 셀은 보존 핀(KTX TOC 등) 유지.
+                            let include_trailing_ls = !is_cell_last_line
+                                || (para_count > 1 && table.common.treat_as_char);
                             let mut lh = if include_trailing_ls { h + ls } else { h };
                             if li == 0 {
                                 lh += spacing_before;
@@ -9801,9 +9790,11 @@ impl LayoutEngine {
                     let h = corrected_h(line, li);
                     let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                     let is_cell_last_line = is_last_para && li + 1 == line_count;
-                    let include_trailing_ls = !is_cell_last_line || para_count > 1;
+                    // [#5923] trailing ls — 비-TAC 표는 문단 수 무관 마지막 줄
+                    // 제외 (HeightMeasurer 와 동일 회계). TAC 표의 다문단 셀은
+                    // 보존 핀(KTX TOC 등) 유지.
                     let include_trailing_ls =
-                        include_trailing_ls && (!is_cell_last_line || !is_block_rowbreak);
+                        !is_cell_last_line || (para_count > 1 && table.common.treat_as_char);
                     let mut lh = if include_trailing_ls { h + ls } else { h };
                     if collapse_empty_rowbreak_spacer {
                         lh = 0.0;

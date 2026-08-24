@@ -310,16 +310,18 @@ fn scatter_series_expose_editable_x_values_shared_across_series() {
     assert_eq!(scatter_files, 10, "분산형 5종 × 2포맷");
 }
 
-/// 카테고리 라벨은 B1 에서 편집 대상이 아니다 — 구조 변경이라 B2 다.
+/// [#5652] 카테고리 라벨은 **패처 층**에서는 캐시 텍스트 치환으로 적용된다 — B1 의
+/// `LabelNotEditable` 은 사라졌다. 허용 여부는 코어의 의도 플래그(`structure`)가 정한다
+/// (S3 — `structure_flag_off_keeps_every_b1_refusal` 가 `categoryMismatch` 로 거부를 고정).
 #[test]
-fn category_labels_are_not_editable() {
+fn category_labels_patch_at_the_byte_layer() {
     let path = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
     let bytes = std::fs::read(&path).expect("샘플 읽기");
     let (_legacy, ooxml) = chart_streams(&bytes).expect("차트 스트림");
     let scan = scan_chart_values(&ooxml).expect("스캔");
     assert_eq!(scan.series[0].axis, SeriesAxis::Category);
 
-    let err = apply_value_edits(
+    let out = apply_value_edits(
         &ooxml,
         &scan,
         &[ValueEdit {
@@ -329,10 +331,15 @@ fn category_labels_are_not_editable() {
             text: "새 라벨".to_string(),
         }],
     )
-    .expect_err("카테고리 라벨 편집은 거부되어야 한다");
-    assert!(
-        matches!(err, PatchError::LabelNotEditable { series: 0 }),
-        "{err:?}"
+    .expect("패처 층은 라벨 치환을 적용한다");
+    let text = String::from_utf8(out).expect("UTF-8");
+    assert!(text.contains("<c:v>새 라벨</c:v>"), "라벨이 바뀌지 않았다");
+    assert!(text.contains("Sheet1!$A$2:$A$5"), "c:f 가 사라졌다");
+    let rescan = scan_chart_values(text.as_bytes()).expect("재스캔");
+    assert_eq!(rescan.series[0].labels[0].text, "새 라벨");
+    assert_eq!(
+        rescan.series[1].labels[0].text, "항목 1",
+        "다른 계열 라벨은 그대로다"
     );
 }
 
@@ -2345,10 +2352,15 @@ fn b2_write_variant(out_dir: &std::path::Path, v: &B2Variant, sheet: &mut String
 /// ```
 ///
 /// **한컴이 실제로 판정한 산출은 `samples/issue5447/` 에 커밋돼 있다.** 그 38건의 변환
-/// PDF 는 `pdf/issue5447/`, 원장은 `samples/issue5447/MANIFEST.json` 이다. 여기서 다시
-/// 만든 것과 커밋본이 바이트로 같은지는 `sha256sum` 으로 직접 대조한다 — 어긋나더라도
+/// PDF 는 `pdf/issue5447/`, 원장은 `samples/issue5447/MANIFEST.json` 이다. 어긋나더라도
 /// **커밋본이 정본**이다. 판정은 한컴이 연 그 바이트에 대한 관측이기 때문이다.
 /// 커밋본과 원장의 정합은 `b2_judgment_assets_match_the_manifest` 가 상시로 지킨다.
+///
+/// **여기서 다시 만든 것과 커밋본을 `sha256sum` 으로 대조하지 않는다 (#5967).** devel 의 CFB
+/// 라이터가 `b9eb55107` 에서 MS-CFB 쪽으로 바뀌어(디렉터리 red/black 채색, FAT·MiniFAT 미사용
+/// 슬롯 FREESECT 선채움) 재생성본은 컨테이너 살림 바이트가 반드시 어긋난다 — 차트 스트림은
+/// 동일하다. 재생성 대조 축은 중첩 CFB 의 **스트림 동일성**이고, 그 계약은
+/// `tests/cases/issue_5967_cfb_repack_reproducibility.rs` 가 상시로 지킨다.
 #[test]
 #[ignore = "output/ 에 파일을 쓴다 — 한컴 판정 직전에만 실행"]
 fn generate_b2_structure_judgment_bundle() {
@@ -2590,5 +2602,1384 @@ fn b2_judgment_assets_match_the_manifest() {
             counted += 1;
         }
         assert_eq!(counted, 38, "{dir}: 판정 자산이 38건이 아니다");
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Stage 9 — B2 엔진 본구현 (#5652)
+// ---------------------------------------------------------------------------
+//
+// #5447 이 손으로 만든 변종을 한컴이 통과시켰고, 이제 같은 바이트를 **엔진이** 만든다.
+// S1 은 스캐너가 구조 좌표(점·계열 요소 구간, ptCount, 삽입 앵커, 계열명·idx·order 구간,
+// plot 종류)를 같은 스캔에서 기록하는 것이고, 합성 계약은
+// `tests/cases/ooxml_chart_structure_contract.rs` 가 고정한다. 여기서는 코퍼스 56건
+// 전건에 대해 그 좌표가 실제 바이트와 정합하는지 — 특히 **선언 ptCount 가 실제 점 수와
+// 같다**는 한컴 불변식(#5447 §3-2) — 를 잰다.
+
+/// [#5652 S1] 코퍼스 전건 — 구조 좌표가 입력 바이트로 되읽힌다.
+///
+/// `&xml[span]` 재슬라이스는 스캐너 자기충족이라(#4100 §9-2 오라클 공모 교훈) 모양
+/// 단언을 함께 둔다: 점 요소는 `<c:pt` 로 시작해 `</c:pt>` 로 끝나고, 계열 요소는
+/// `<c:ser>`…`</c:ser>`, ptCount 는 십진수 텍스트이며 그 값이 점 수와 같다.
+#[test]
+fn structure_spans_slice_back_across_the_corpus() {
+    use rhwp::ooxml_chart::data::PlotKind;
+
+    let mut points = 0usize;
+    let mut series_count = 0usize;
+    for (path, xml) in corpus_charts() {
+        let name = path.display();
+        let text = std::str::from_utf8(&xml).expect("UTF-8");
+        let data = scan_chart_values(&xml).unwrap_or_else(|e| panic!("{name}: {e:?}"));
+        for (si, series) in data.series.iter().enumerate() {
+            series_count += 1;
+            let ser = &text[series.element_span.clone()];
+            assert!(
+                ser.starts_with("<c:ser>") && ser.ends_with("</c:ser>"),
+                "{name} ser{si}: {ser:.40}"
+            );
+            assert_eq!(series.prefix, "c:", "{name} ser{si}");
+            assert_ne!(
+                series.plot,
+                PlotKind::Other,
+                "{name} ser{si}: plot 종류를 못 읽었다"
+            );
+            assert_eq!(
+                &text[series
+                    .idx_span
+                    .clone()
+                    .unwrap_or_else(|| panic!("{name} ser{si}: idx 구간"))],
+                si.to_string(),
+                "{name} ser{si}: c:idx 가 위치와 다르다"
+            );
+            assert_eq!(
+                &text[series
+                    .order_span
+                    .clone()
+                    .unwrap_or_else(|| panic!("{name} ser{si}: order 구간"))],
+                si.to_string(),
+                "{name} ser{si}: c:order 가 위치와 다르다"
+            );
+            match (&series.name, &series.name_span) {
+                (Some(n), Some(span)) => {
+                    assert_eq!(&text[span.clone()], n, "{name} ser{si}: 이름 구간")
+                }
+                (None, None) => {}
+                other => panic!("{name} ser{si}: 이름과 구간이 어긋난다 {other:?}"),
+            }
+
+            for (block, pts, shape) in [
+                ("labels", &series.labels, &series.labels_shape),
+                ("values", &series.values, &series.values_shape),
+            ] {
+                if pts.is_empty() && shape.is_none() {
+                    continue; // c:cat 이 없는 계열(실사용 문서에 있다 — samples/issue2006)
+                }
+                let shape = shape
+                    .as_ref()
+                    .unwrap_or_else(|| panic!("{name} ser{si} {block}: 블록 좌표 없음"));
+                let pt_count = shape
+                    .pt_count
+                    .as_ref()
+                    .unwrap_or_else(|| panic!("{name} ser{si} {block}: ptCount 없음"));
+                assert_eq!(
+                    pt_count.value as usize,
+                    pts.len(),
+                    "{name} ser{si} {block}: 선언 ptCount ≠ 실제 점 수 (한컴 불변식 위반)"
+                );
+                assert_eq!(&text[pt_count.span.clone()], pt_count.value.to_string());
+                let at = shape
+                    .insert_at
+                    .unwrap_or_else(|| panic!("{name} ser{si} {block}: 삽입 앵커 없음"));
+                let last_end = pts
+                    .last()
+                    .and_then(|p| p.element_span.as_ref())
+                    .map(|s| s.end);
+                assert_eq!(
+                    Some(at),
+                    last_end,
+                    "{name} ser{si} {block}: 앵커 ≠ 마지막 점 요소 끝"
+                );
+                assert!(
+                    text[at..].starts_with("</c:"),
+                    "{name} ser{si} {block}: 앵커 뒤가 캐시 닫는 태그가 아니다: {:.30}",
+                    &text[at..]
+                );
+                for (pi, p) in pts.iter().enumerate() {
+                    points += 1;
+                    let element = p
+                        .element_span
+                        .clone()
+                        .unwrap_or_else(|| panic!("{name} ser{si} {block}[{pi}]: 요소 구간"));
+                    let raw = &text[element.clone()];
+                    assert!(
+                        raw.starts_with("<c:pt ") && raw.ends_with("</c:pt>"),
+                        "{name}: {raw}"
+                    );
+                    if let Some(span) = &p.span {
+                        assert!(element.start < span.start && span.end < element.end);
+                        assert_eq!(&text[span.clone()], p.text);
+                    }
+                }
+            }
+        }
+    }
+    assert!(
+        series_count >= 56 && points >= 56 * 4,
+        "코퍼스가 비었다: {series_count} 계열 / {points} 점"
+    );
+}
+
+/// [#5652 S2] 엔진 패처의 산출이 #5447 스파이크의 **문자열 수술** 산출과 바이트 동일하다.
+///
+/// 스파이크 수술(`b2_*`)은 스캐너와 무관한 문자열 탐색 경로라 독립 오라클이 된다(#4100 §9-2
+/// 오라클 공모 교훈). 위치 기반 꼬리 증감 모델에서 "중간 행 삭제"는 뒤 행 값을 앞으로 당겨
+/// 쓰고 꼬리를 지우는 것인데, 코퍼스 `c:pt` 가 `idx` 와 `c:v` 만 가진 균일 요소라 스파이크의
+/// "요소 제거 + idx 재번호"와 같은 바이트가 나온다 — 계획서 §3-1 의 주장을 여기서 잰다.
+#[test]
+fn engine_patch_matches_the_spike_surgery_byte_for_byte() {
+    use rhwp::ooxml_chart::patch::{apply_chart_edits, ChartEdit};
+
+    fn engine(xml: &str, edits: &[ChartEdit]) -> String {
+        let data = scan_chart_values(xml.as_bytes()).expect("스캔");
+        String::from_utf8(apply_chart_edits(xml.as_bytes(), &data, edits).expect("엔진 패치"))
+            .expect("UTF-8")
+    }
+    fn strs(items: &[&str]) -> Vec<String> {
+        items.iter().map(|s| s.to_string()).collect()
+    }
+
+    let src = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    let (_legacy, ooxml) = chart_streams(&std::fs::read(&src).expect("샘플")).expect("차트 스트림");
+    let xml = String::from_utf8(ooxml).expect("UTF-8");
+    let data = scan_chart_values(xml.as_bytes()).expect("스캔");
+    assert_eq!(data.series.len(), 3);
+    assert_eq!(data.series[0].values.len(), 4);
+
+    // 행추가 — 전 계열 cat/val 꼬리에 1점.
+    let mut row_add = Vec::new();
+    for (s, v) in ["45", "44", "43"].iter().enumerate() {
+        row_add.push(ChartEdit::AppendPoints {
+            series: s,
+            target: EditTarget::Label,
+            texts: strs(&["추가항목"]),
+        });
+        row_add.push(ChartEdit::AppendPoints {
+            series: s,
+            target: EditTarget::Value,
+            texts: strs(&[v]),
+        });
+    }
+    assert_eq!(engine(&xml, &row_add), b2_bar_like_row_add(&xml), "행추가");
+
+    // 행삭제(「항목 2」) — 뒤 행을 앞으로 당겨 쓰고 꼬리 1점 삭제 == 요소 제거 + idx 재번호.
+    let mut row_del = Vec::new();
+    for (s, series) in data.series.iter().enumerate() {
+        for p in 1..3 {
+            row_del.push(ChartEdit::Value(ValueEdit {
+                series: s,
+                point: p,
+                target: EditTarget::Label,
+                text: series.labels[p + 1].text.clone(),
+            }));
+            row_del.push(ChartEdit::Value(ValueEdit {
+                series: s,
+                point: p,
+                target: EditTarget::Value,
+                text: series.values[p + 1].text.clone(),
+            }));
+        }
+        row_del.push(ChartEdit::TruncatePoints {
+            series: s,
+            target: EditTarget::Label,
+            keep: 3,
+        });
+        row_del.push(ChartEdit::TruncatePoints {
+            series: s,
+            target: EditTarget::Value,
+            keep: 3,
+        });
+    }
+    assert_eq!(
+        engine(&xml, &row_del),
+        b2_remove_point(&b2_remove_point(&xml, "c:cat", 1), "c:val", 1),
+        "행삭제"
+    );
+
+    // 계열추가 — 마지막 계열 복제 + 채번 + 이름·값 교체 (c:f 는 복제분 그대로).
+    assert_eq!(
+        engine(
+            &xml,
+            &[ChartEdit::AppendSeries {
+                name: Some("추가계열".to_string()),
+                labels: None,
+                values: strs(&["6", "6", "6", "6"]),
+            }]
+        ),
+        b2_clone_last_series(&xml, "추가계열", &["6", "6", "6", "6"]),
+        "계열추가"
+    );
+
+    // 계열삭제(마지막) — 꼬리 c:ser 제거.
+    assert_eq!(
+        engine(&xml, &[ChartEdit::TruncateSeries { keep: 2 }]),
+        b2_remove_series(&xml, 2),
+        "계열삭제"
+    );
+
+    // 계열명변경 — c:tx 캐시 텍스트만.
+    assert_eq!(
+        engine(
+            &xml,
+            &[ChartEdit::SeriesName {
+                series: 0,
+                text: "이름바뀐계열".to_string()
+            }]
+        ),
+        b2_rename_series(&xml, 0, "이름바뀐계열"),
+        "계열명변경"
+    );
+
+    // 라벨변경 — 전 계열 c:cat 동기 교체.
+    let relabel: Vec<ChartEdit> = (0..3)
+        .map(|s| {
+            ChartEdit::Value(ValueEdit {
+                series: s,
+                point: 0,
+                target: EditTarget::Label,
+                text: "바뀐항목".to_string(),
+            })
+        })
+        .collect();
+    assert_eq!(
+        engine(&xml, &relabel),
+        b2_relabel_category(&xml, 0, "바뀐항목"),
+        "라벨변경"
+    );
+
+    // 분산형 점추가 — xVal/yVal 동기.
+    let scatter_src = manifest("samples/chart/분산형/직선및표식이있는분산형.hwpx");
+    let (_legacy, ooxml) =
+        chart_streams(&std::fs::read(&scatter_src).expect("샘플")).expect("차트 스트림");
+    let sxml = String::from_utf8(ooxml).expect("UTF-8");
+    let mut point_add = Vec::new();
+    for (s, y) in ["27", "10"].iter().enumerate() {
+        point_add.push(ChartEdit::AppendPoints {
+            series: s,
+            target: EditTarget::Label,
+            texts: strs(&["9"]),
+        });
+        point_add.push(ChartEdit::AppendPoints {
+            series: s,
+            target: EditTarget::Value,
+            texts: strs(&[y]),
+        });
+    }
+    let spike = b2_add_point(
+        &b2_add_point(&sxml, "c:xVal", &["9", "9"]),
+        "c:yVal",
+        &["27", "10"],
+    );
+    assert_eq!(engine(&sxml, &point_add), spike, "분산형 점추가");
+}
+
+// ---------------------------------------------------------------------------
+// Stage 9 (S3) — 코어: structure 의도 분기 · 위치 기반 plan · 종류별 가드 · self-check
+// ---------------------------------------------------------------------------
+
+/// ①(있으면)·② 의 OOXML XML 을 문자열로.
+fn b2_representations(core: &DocumentCore) -> (Option<String>, String) {
+    let chart = collect_charts(core.document())[0].clone();
+    let zip = chart.zip_part.map(|i| {
+        String::from_utf8(core.document().bin_data_content[i].data.load()).expect("UTF-8")
+    });
+    let nested = core.document().bin_data_content[chart.nested_copy.expect("②")]
+        .data
+        .load();
+    let ooxml = String::from_utf8(stream_of(&nested, OOXML_STREAM).expect("②")).expect("UTF-8");
+    (zip, ooxml)
+}
+
+/// ③④ 바이트.
+fn b2_legacy_and_emf(core: &DocumentCore) -> (Vec<u8>, Vec<u8>) {
+    let chart = collect_charts(core.document())[0].clone();
+    let nested = core.document().bin_data_content[chart.nested_copy.expect("②")]
+        .data
+        .load();
+    (
+        stream_of(&nested, LEGACY_STREAM).expect("③"),
+        stream_of(&nested, EMF_STREAM).expect("④"),
+    )
+}
+
+fn b2_reasons(out: &serde_json::Value) -> Vec<String> {
+    out["invalid"]
+        .as_array()
+        .map(|a| {
+            a.iter()
+                .map(|v| v["reason"].as_str().unwrap_or("").to_string())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn b2_ops(out: &serde_json::Value) -> Vec<String> {
+    out["changed"]
+        .as_array()
+        .map(|a| {
+            a.iter()
+                .filter_map(|v| v["op"].as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// 편집 입력을 "행렬 + structure" 로 만든다 — 현재 값에서 출발해 클로저로 바꾼다.
+fn b2_structure_edits(
+    core: &DocumentCore,
+    mutate: impl FnOnce(&mut serde_json::Value),
+) -> serde_json::Value {
+    let mut e = edits_from(core, 0);
+    e["structure"] = serde_json::json!(true);
+    mutate(&mut e);
+    e
+}
+
+fn b2_push_str(arr: &mut serde_json::Value, s: &str) {
+    arr.as_array_mut().expect("배열").push(serde_json::json!(s));
+}
+
+/// `structure` 없는 입력은 B1 거부 4종을 그대로 내고, 메시지가 의도 플래그를 안내한다.
+#[test]
+fn structure_flag_off_keeps_every_b1_refusal() {
+    let path = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    let mut core = core_of(&path);
+    let mut e = edits_from(&core, 0);
+    b2_push_str(&mut e["labels"], "추가항목");
+    for s in e["series"].as_array_mut().unwrap() {
+        b2_push_str(&mut s["values"], "1");
+    }
+    let before = slot_bytes(&core);
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], false, "{out}");
+    let reasons = b2_reasons(&out);
+    assert!(
+        reasons.contains(&"valueCountMismatch".to_string()),
+        "{reasons:?}"
+    );
+    let message = out["invalid"][0]["message"].as_str().unwrap_or_default();
+    assert!(
+        message.contains("structure"),
+        "의도 플래그 안내가 없다: {message}"
+    );
+    assert_eq!(slot_bytes(&core), before);
+}
+
+/// 행 추가 — ①② 동시 기록, 재독에서 행 5·ptCount 5·idx 0..4, ③④·c:f·hncChartStyle 바이트 불변.
+#[test]
+fn structure_row_append_writes_both_representations_and_rereads() {
+    let base = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    for path in [base.with_extension("hwpx"), base.with_extension("hwp")] {
+        let is_hwpx = path.extension().is_some_and(|e| e == "hwpx");
+        let mut core = core_of(&path);
+        let (legacy_before, emf_before) = b2_legacy_and_emf(&core);
+        let (zip_before, nested_before) = b2_representations(&core);
+        let e = b2_structure_edits(&core, |e| {
+            b2_push_str(&mut e["labels"], "추가항목");
+            for (s, v) in e["series"]
+                .as_array_mut()
+                .unwrap()
+                .iter_mut()
+                .zip(["45", "44", "43"])
+            {
+                b2_push_str(&mut s["values"], v);
+            }
+        });
+        let out = set_chart(&mut core, &e);
+        assert_eq!(out["ok"], true, "{}: {out}", path.display());
+        let wrote = out["wrote"].as_array().expect("wrote");
+        if is_hwpx {
+            assert_eq!(wrote.len(), 2, "{out}");
+        } else {
+            assert_eq!(wrote, &[serde_json::json!("nestedCopy")], "{out}");
+        }
+        assert!(b2_ops(&out).iter().any(|op| op == "appendPoints"), "{out}");
+
+        // 저장 → 재개방 → 구조 확인.
+        let bytes = if is_hwpx {
+            core.export_hwpx_native().expect("저장")
+        } else {
+            core.export_hwp_native().expect("저장")
+        };
+        let reread = DocumentCore::from_bytes(&bytes).expect("재개방");
+        let env = b2_envelope(&reread);
+        assert_eq!(env["ok"], true, "{env}");
+        b2_check_row_add(&env, "행추가");
+        let (zip_after, nested_after) = b2_representations(&reread);
+        for (before, after) in [
+            (zip_before.as_deref(), zip_after.as_deref()),
+            (Some(nested_before.as_str()), Some(nested_after.as_str())),
+        ] {
+            let (Some(before), Some(after)) = (before, after) else {
+                continue;
+            };
+            let data = scan_chart_values(after.as_bytes()).expect("산출 재스캔");
+            for s in &data.series {
+                assert_eq!(s.values.len(), 5);
+                assert_eq!(s.labels.len(), 5);
+                assert_eq!(
+                    s.values_shape
+                        .as_ref()
+                        .unwrap()
+                        .pt_count
+                        .as_ref()
+                        .unwrap()
+                        .value,
+                    5
+                );
+                assert_eq!(
+                    s.labels_shape
+                        .as_ref()
+                        .unwrap()
+                        .pt_count
+                        .as_ref()
+                        .unwrap()
+                        .value,
+                    5
+                );
+                assert!(s
+                    .values
+                    .iter()
+                    .enumerate()
+                    .all(|(i, p)| p.idx as usize == i));
+            }
+            assert_eq!(
+                before.matches("Sheet1!$A$2:$A$5").count(),
+                after.matches("Sheet1!$A$2:$A$5").count(),
+                "c:f 가 바뀌었다"
+            );
+            assert_eq!(
+                before.matches("ho:hncChartStyle").count(),
+                after.matches("ho:hncChartStyle").count()
+            );
+        }
+        if is_hwpx {
+            assert_eq!(zip_after, Some(nested_after), "①② 가 다르다");
+        }
+        let (legacy_after, emf_after) = b2_legacy_and_emf(&reread);
+        assert_eq!(legacy_after, legacy_before, "③ 이 변했다");
+        assert_eq!(emf_after, emf_before, "④ 가 변했다");
+    }
+}
+
+/// 중간 행 삭제(「항목 2」) — 엔진 산출 ① 이 스파이크 수술 산출과 바이트 동일.
+#[test]
+fn structure_middle_row_delete_equals_spike_surgery() {
+    let path = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    let mut core = core_of(&path);
+    let (zip_before, _) = b2_representations(&core);
+    let xml = zip_before.expect("①");
+    let e = b2_structure_edits(&core, |e| {
+        e["labels"].as_array_mut().unwrap().remove(1);
+        for s in e["series"].as_array_mut().unwrap() {
+            s["values"].as_array_mut().unwrap().remove(1);
+        }
+    });
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], true, "{out}");
+    assert!(
+        b2_ops(&out).iter().any(|op| op == "truncatePoints"),
+        "{out}"
+    );
+    let (zip_after, nested_after) = b2_representations(&core);
+    let expected = b2_remove_point(&b2_remove_point(&xml, "c:cat", 1), "c:val", 1);
+    assert_eq!(
+        zip_after.as_deref(),
+        Some(expected.as_str()),
+        "① ≠ 스파이크 수술"
+    );
+    assert_eq!(nested_after, expected, "② ≠ 스파이크 수술");
+    let env = b2_envelope(&core);
+    assert_eq!(b2_labels(&env), ["항목 1", "항목 3", "항목 4"]);
+    assert_eq!(b2_values(&env, 0), ["4.3", "3.5", "4.5"]);
+}
+
+/// 계열 추가·삭제·이름 변경·라벨 변경 — 각각 스파이크 수술과 바이트 동일, changed[] 에 op.
+#[test]
+fn structure_series_append_and_truncate_rename_relabel() {
+    let path = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    let xml = b2_representations(&core_of(&path)).0.expect("①");
+
+    // 계열 추가
+    let mut core = core_of(&path);
+    let e = b2_structure_edits(&core, |e| {
+        e["series"].as_array_mut().unwrap().push(serde_json::json!({
+            "name": "추가계열", "values": ["6", "6", "6", "6"],
+        }));
+    });
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], true, "{out}");
+    assert!(b2_ops(&out).iter().any(|op| op == "appendSeries"), "{out}");
+    assert_eq!(
+        b2_representations(&core).0.as_deref(),
+        Some(b2_clone_last_series(&xml, "추가계열", &["6", "6", "6", "6"]).as_str()),
+        "계열추가"
+    );
+    let env = b2_envelope(&core);
+    assert_eq!(
+        b2_series_names(&env),
+        ["계열 1", "계열 2", "계열 3", "추가계열"]
+    );
+    assert_eq!(b2_values(&env, 3), ["6", "6", "6", "6"]);
+
+    // 계열 삭제(마지막)
+    let mut core = core_of(&path);
+    let e = b2_structure_edits(&core, |e| {
+        e["series"].as_array_mut().unwrap().pop();
+    });
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], true, "{out}");
+    assert!(
+        b2_ops(&out).iter().any(|op| op == "truncateSeries"),
+        "{out}"
+    );
+    assert_eq!(
+        b2_representations(&core).0.as_deref(),
+        Some(b2_remove_series(&xml, 2).as_str()),
+        "계열삭제"
+    );
+    assert_eq!(b2_series_names(&b2_envelope(&core)), ["계열 1", "계열 2"]);
+
+    // 계열명 변경
+    let mut core = core_of(&path);
+    let e = b2_structure_edits(&core, |e| {
+        e["series"][0]["name"] = serde_json::json!("이름바뀐계열");
+    });
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], true, "{out}");
+    assert!(b2_ops(&out).iter().any(|op| op == "renameSeries"), "{out}");
+    assert_eq!(
+        b2_representations(&core).0.as_deref(),
+        Some(b2_rename_series(&xml, 0, "이름바뀐계열").as_str()),
+        "계열명변경"
+    );
+
+    // 라벨 변경 — 전 계열 동기
+    let mut core = core_of(&path);
+    let e = b2_structure_edits(&core, |e| {
+        e["labels"][0] = serde_json::json!("바뀐항목");
+    });
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], true, "{out}");
+    assert!(b2_ops(&out).iter().any(|op| op == "relabel"), "{out}");
+    assert_eq!(
+        b2_representations(&core).0.as_deref(),
+        Some(b2_relabel_category(&xml, 0, "바뀐항목").as_str()),
+        "라벨변경"
+    );
+    assert_eq!(b2_labels(&b2_envelope(&core))[0], "바뀐항목");
+}
+
+/// dry-run 은 op 를 보고하고 한 바이트도 쓰지 않는다.
+#[test]
+fn structure_dry_run_reports_ops_and_writes_nothing() {
+    let path = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    let mut core = core_of(&path);
+    let before = slot_bytes(&core);
+    let e = b2_structure_edits(&core, |e| {
+        e["dryRun"] = serde_json::json!(true);
+        b2_push_str(&mut e["labels"], "추가항목");
+        for s in e["series"].as_array_mut().unwrap() {
+            b2_push_str(&mut s["values"], "1");
+        }
+        e["series"].as_array_mut().unwrap().pop();
+    });
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], true, "{out}");
+    assert_eq!(out["dryRun"], true);
+    assert!(out["wrote"].as_array().unwrap().is_empty());
+    let ops = b2_ops(&out);
+    assert!(
+        ops.iter().any(|op| op == "appendPoints") && ops.iter().any(|op| op == "truncateSeries"),
+        "{ops:?}"
+    );
+    assert_eq!(slot_bytes(&core), before, "dry-run 인데 바이트가 바뀌었다");
+}
+
+/// 행렬 규칙 — 계열 간 행 수 불일치·라벨 누락·라벨 개수 불일치는 거부(한 바이트도 안 씀).
+#[test]
+fn structure_matrix_rules_are_enforced() {
+    let path = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    let cases: Vec<(&str, Box<dyn Fn(&mut serde_json::Value)>)> = vec![
+        (
+            "rowCountMismatch",
+            Box::new(|e| {
+                b2_push_str(&mut e["labels"], "추가항목");
+                b2_push_str(&mut e["series"][0]["values"], "1");
+            }),
+        ),
+        (
+            "labelsRequired",
+            Box::new(|e| {
+                e["labels"] = serde_json::Value::Null;
+                for s in e["series"].as_array_mut().unwrap() {
+                    b2_push_str(&mut s["values"], "1");
+                }
+            }),
+        ),
+        (
+            "labelCountMismatch",
+            Box::new(|e| {
+                for s in e["series"].as_array_mut().unwrap() {
+                    b2_push_str(&mut s["values"], "1");
+                }
+            }),
+        ),
+        (
+            "notANumber",
+            Box::new(|e| {
+                b2_push_str(&mut e["labels"], "추가항목");
+                for s in e["series"].as_array_mut().unwrap() {
+                    b2_push_str(&mut s["values"], "칠십");
+                }
+            }),
+        ),
+        (
+            "unsafeText",
+            Box::new(|e| {
+                e["labels"][0] = serde_json::json!("R&D");
+            }),
+        ),
+        (
+            "seriesNameRequired",
+            Box::new(|e| {
+                e["series"]
+                    .as_array_mut()
+                    .unwrap()
+                    .push(serde_json::json!({"values": ["1", "1", "1", "1"]}));
+            }),
+        ),
+    ];
+    for (reason, mutate) in cases {
+        let mut core = core_of(&path);
+        let before = slot_bytes(&core);
+        let e = b2_structure_edits(&core, |e| mutate(e));
+        let out = set_chart(&mut core, &e);
+        assert_eq!(out["ok"], false, "{reason}: {out}");
+        let reasons = b2_reasons(&out);
+        assert!(
+            reasons.contains(&reason.to_string()),
+            "{reason} 가 없다: {reasons:?}"
+        );
+        assert!(out["wrote"].as_array().unwrap().is_empty());
+        assert_eq!(
+            slot_bytes(&core),
+            before,
+            "{reason}: 거부했는데 바이트가 바뀌었다"
+        );
+    }
+}
+
+/// 구조 좌표가 없는 블록(`ptCount` 없는 리터럴)의 개수 변경은 `pointsNotInsertable` 로 거부.
+#[test]
+fn structure_edit_refuses_when_block_not_resizable() {
+    let path = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    let mut core = core_of(&path);
+    // BLANK_VALUE_CHART 는 strLit/numLit 에 ptCount 가 없다 — 꼬리 삽입 앵커는 있어도 재계산할 ptCount 가 없다.
+    replace_chart_representations(
+        &mut core,
+        BLANK_VALUE_CHART.as_bytes(),
+        BLANK_VALUE_CHART.as_bytes(),
+    );
+    let before = slot_bytes(&core);
+    let e = b2_structure_edits(&core, |e| {
+        b2_push_str(&mut e["labels"], "C");
+        for s in e["series"].as_array_mut().unwrap() {
+            b2_push_str(&mut s["values"], "1");
+        }
+    });
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], false, "{out}");
+    assert!(
+        b2_reasons(&out).contains(&"pointsNotInsertable".to_string()),
+        "{out}"
+    );
+    assert_eq!(slot_bytes(&core), before);
+}
+
+// ---- S3-b 종류별 fail-closed 가드 ------------------------------------------
+//
+// 근거는 #5447 판정 원장(samples/issue5447/MANIFEST.json): `원형대원형-계열추가` = 미반영
+// (한컴이 2번째 계열을 조용히 무시), `시가고가저가종가-계열삭제` = 반영_의미깨짐(c:upDownBars 가
+// 남아 고가·저가를 몸통 삼아 틀리게 그림). 한컴이 막지 않으므로 코어가 막는다.
+
+fn b2_refused_on(path: &std::path::Path, reason: &str, mutate: impl Fn(&mut serde_json::Value)) {
+    let mut core = core_of(path);
+    let before = slot_bytes(&core);
+    let e = b2_structure_edits(&core, |e| mutate(e));
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], false, "{}: {out}", path.display());
+    let reasons = b2_reasons(&out);
+    assert!(
+        reasons.contains(&reason.to_string()),
+        "{}: {reason} 가 없다 — {reasons:?}",
+        path.display()
+    );
+    assert!(out["wrote"].as_array().unwrap().is_empty());
+    assert_eq!(
+        slot_bytes(&core),
+        before,
+        "{}: 거부했는데 바이트가 바뀌었다",
+        path.display()
+    );
+}
+
+/// 원형·3D원형·ofPie 는 계열 수 1 고정 — 계열 추가 거부(양 포맷).
+#[test]
+fn pie_series_count_is_fixed() {
+    for stem in ["원형/원형대원형", "원형/2차원원형", "원형/3차원원형"] {
+        let base = manifest(&format!("samples/chart/{stem}.hwpx"));
+        for path in [base.with_extension("hwpx"), base.with_extension("hwp")] {
+            b2_refused_on(&path, "pieSeriesCountFixed", |e| {
+                let n = e["series"][0]["values"].as_array().unwrap().len();
+                e["series"].as_array_mut().unwrap().push(serde_json::json!({
+                    "name": "추가계열", "values": vec!["1"; n],
+                }));
+            });
+        }
+    }
+}
+
+/// 주식형은 계열 수가 종류에 묶인다(HLC=3 / OHLC=4) — 개수 변경 거부. 변경은 B3 소관.
+#[test]
+fn stock_series_count_is_fixed() {
+    let ohlc = manifest("samples/chart/기타/시가고가저가종가.hwpx");
+    for path in [ohlc.with_extension("hwpx"), ohlc.with_extension("hwp")] {
+        b2_refused_on(&path, "stockSeriesCountFixed", |e| {
+            e["series"].as_array_mut().unwrap().remove(0);
+        });
+    }
+    let hlc = manifest("samples/chart/기타/고가저가종가.hwpx");
+    b2_refused_on(&hlc, "stockSeriesCountFixed", |e| {
+        let n = e["series"][0]["values"].as_array().unwrap().len();
+        e["series"].as_array_mut().unwrap().push(serde_json::json!({
+            "name": "시가", "values": vec!["1"; n],
+        }));
+    });
+}
+
+/// 마지막 1점·1계열은 지울 수 없다 — 특이케이스(1계열 1점, c:numLit)가 그 경계.
+#[test]
+fn last_point_and_last_series_cannot_be_deleted() {
+    let path = manifest("samples/chart/특이케이스/가로막대형_하나만있을떄_단일시리즈제목.hwpx");
+    b2_refused_on(&path, "lastPointDeleteRefused", |e| {
+        e["labels"] = serde_json::json!([]);
+        e["series"][0]["values"] = serde_json::json!([]);
+    });
+    b2_refused_on(&path, "lastSeriesDeleteRefused", |e| {
+        e["series"] = serde_json::json!([]);
+    });
+}
+
+/// 분산형은 행 수가 바뀌면 X(labels)가 같은 개수로 함께 와야 한다 — 한쪽만 바뀌면 거부.
+#[test]
+fn scatter_rows_require_synchronized_x() {
+    let path = manifest("samples/chart/분산형/직선및표식이있는분산형.hwpx");
+    b2_refused_on(&path, "scatterXYMismatch", |e| {
+        e["labels"] = serde_json::Value::Null;
+        for s in e["series"].as_array_mut().unwrap() {
+            b2_push_str(&mut s["values"], "1");
+        }
+    });
+    b2_refused_on(&path, "scatterXYMismatch", |e| {
+        for s in e["series"].as_array_mut().unwrap() {
+            b2_push_str(&mut s["values"], "1");
+        }
+    });
+    // 동기로 오면 통과 — 스파이크 분산형 점추가와 바이트 동일.
+    let mut core = core_of(&path);
+    let xml = b2_representations(&core).0.expect("①");
+    let e = b2_structure_edits(&core, |e| {
+        b2_push_str(&mut e["labels"], "9");
+        for (s, y) in e["series"]
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .zip(["27", "10"])
+        {
+            b2_push_str(&mut s["values"], y);
+        }
+    });
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], true, "{out}");
+    let spike = b2_add_point(
+        &b2_add_point(&xml, "c:xVal", &["9", "9"]),
+        "c:yVal",
+        &["27", "10"],
+    );
+    assert_eq!(b2_representations(&core).0.as_deref(), Some(spike.as_str()));
+}
+
+/// 다층 카테고리(`multiLvlStrRef`)는 구조 편집을 거부한다 — 코퍼스 0건, 합성 주입.
+#[test]
+fn multi_level_labels_refuse_structure_edits() {
+    const MULTI: &str = concat!(
+        r#"<c:chartSpace><c:chart><c:plotArea><c:barChart><c:ser><c:idx val="0"/><c:order val="0"/>"#,
+        r#"<c:cat><c:multiLvlStrRef><c:multiLvlStrCache><c:ptCount val="2"/>"#,
+        r#"<c:lvl><c:pt idx="0"><c:v>상반기</c:v></c:pt><c:pt idx="1"><c:v>하반기</c:v></c:pt></c:lvl>"#,
+        r#"</c:multiLvlStrCache></c:multiLvlStrRef></c:cat>"#,
+        r#"<c:val><c:numRef><c:numCache><c:ptCount val="2"/>"#,
+        r#"<c:pt idx="0"><c:v>1</c:v></c:pt><c:pt idx="1"><c:v>2</c:v></c:pt>"#,
+        r#"</c:numCache></c:numRef></c:val>"#,
+        r#"</c:ser></c:barChart></c:plotArea></c:chart></c:chartSpace>"#,
+    );
+    let path = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    let mut core = core_of(&path);
+    replace_chart_representations(&mut core, MULTI.as_bytes(), MULTI.as_bytes());
+    let before = slot_bytes(&core);
+    let e = serde_json::json!({
+        "structure": true,
+        "series": [{"values": ["1", "2", "3"]}],
+    });
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], false, "{out}");
+    assert!(
+        b2_reasons(&out).contains(&"multiLevelLabelsUnsupported".to_string()),
+        "{out}"
+    );
+    assert_eq!(slot_bytes(&core), before);
+    // 값만 바꾸는 편집은 다층이어도 된다(B1 과 같다).
+    let out = set_chart(
+        &mut core,
+        &serde_json::json!({"structure": true, "series": [{"values": ["7", "2"]}]}),
+    );
+    assert_eq!(out["ok"], true, "{out}");
+}
+
+/// 가드는 dry-run 에서도 발화한다.
+#[test]
+fn guards_fire_in_dry_run_too() {
+    let path = manifest("samples/chart/원형/원형대원형.hwpx");
+    b2_refused_on(&path, "pieSeriesCountFixed", |e| {
+        e["dryRun"] = serde_json::json!(true);
+        let n = e["series"][0]["values"].as_array().unwrap().len();
+        e["series"].as_array_mut().unwrap().push(serde_json::json!({
+            "name": "추가계열", "values": vec!["1"; n],
+        }));
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Stage 9 (S5) — 엔진 산출 회귀 + 한컴 판정 번들 (#5652)
+// ---------------------------------------------------------------------------
+//
+// #5447 은 문자열 수술로 만든 변종을 한컴이 판정했다. 본구현은 **엔진이 만든 바이트**를
+// 판정해야 한다(이슈 §검증). 변종 카탈로그(`b2_variants`)의 `what`·`expect_shape` 를 그대로
+// 쓰되, 수술 클로저 대신 `set_chart_data_by_index_native(…, structure:true)` 로 만든다.
+// 경계 2종(원형 계열추가·주식형 계열삭제)은 가드가 막으므로 번들에서 빠지고 거부 테스트가
+// 대신한다(`pie_series_count_is_fixed`·`stock_series_count_is_fixed`).
+
+/// 변종 (기준 문서, 라벨) → 엔진 편집 입력. 가드가 막는 경계 변종은 `None`.
+fn b2_engine_edits(core: &DocumentCore, stem: &str, label: &str) -> Option<serde_json::Value> {
+    let mut e = edits_from(core, 0);
+    e["structure"] = serde_json::json!(true);
+    match (stem, label) {
+        (_, "행추가") => {
+            b2_push_str(&mut e["labels"], "추가항목");
+            for (s, v) in e["series"]
+                .as_array_mut()
+                .unwrap()
+                .iter_mut()
+                .zip(["45", "44", "43"])
+            {
+                b2_push_str(&mut s["values"], v);
+            }
+        }
+        (_, "행삭제") => {
+            e["labels"].as_array_mut().unwrap().remove(1);
+            for s in e["series"].as_array_mut().unwrap() {
+                s["values"].as_array_mut().unwrap().remove(1);
+            }
+        }
+        ("묶은세로막대형", "계열추가") => {
+            e["series"].as_array_mut().unwrap().push(serde_json::json!({
+                "name": "추가계열", "values": ["6", "6", "6", "6"],
+            }));
+        }
+        ("묶은세로막대형", "계열삭제") | ("누적세로막대형", "계열삭제") => {
+            // 「계열 2」 삭제 — 위치 기반이라 뒤 계열이 앞으로 당겨지고 꼬리가 지워진다.
+            e["series"].as_array_mut().unwrap().remove(1);
+        }
+        (_, "계열명변경") => {
+            e["series"][0]["name"] = serde_json::json!("이름바뀐계열");
+        }
+        (_, "라벨변경") => {
+            e["labels"][0] = serde_json::json!("바뀐항목");
+        }
+        ("직선및표식이있는분산형", "점추가") => {
+            b2_push_str(&mut e["labels"], "9");
+            for (s, y) in e["series"]
+                .as_array_mut()
+                .unwrap()
+                .iter_mut()
+                .zip(["27", "10"])
+            {
+                b2_push_str(&mut s["values"], y);
+            }
+        }
+        ("가로막대형_하나만있을떄_단일시리즈제목", "점추가") => {
+            b2_push_str(&mut e["labels"], "추가항목");
+            b2_push_str(&mut e["series"][0]["values"], "43");
+        }
+        // 경계 — 가드가 막는다.
+        ("원형대원형", "계열추가") | ("시가고가저가종가", "계열삭제") => {
+            return None
+        }
+        other => panic!("엔진 편집 입력이 정의되지 않은 변종: {other:?}"),
+    }
+    Some(e)
+}
+
+/// 변종 1건을 **엔진으로** 양 포맷으로 만들어 자기검증 후 기록한다. 반환은 쓴 파일 수.
+///
+/// 자기검증은 #5447 `b2_write_variant` 의 4단 그대로 — 재개방 + 봉투 구조 확인(`v.check`),
+/// ①==②(HWPX), ③④ 바이트 불변. `out_dir` 이 `None` 이면 파일을 쓰지 않는다(상시 회귀).
+fn b2_engine_write_variant(
+    out_dir: Option<&std::path::Path>,
+    v: &B2Variant,
+    sheet: &mut String,
+) -> usize {
+    let mut written = 0usize;
+    for ext in ["hwpx", "hwp"] {
+        let src = manifest(&format!("samples/chart/{}/{}.{ext}", v.folder, v.stem));
+        let name = format!("{}-{}.{ext}", v.stem, v.label);
+        let mut core = core_of(&src);
+        let Some(edits) = b2_engine_edits(&core, v.stem, v.label) else {
+            return 0;
+        };
+        let (legacy_before, emf_before) = b2_legacy_and_emf(&core);
+
+        let out = set_chart(&mut core, &edits);
+        assert_eq!(out["ok"], true, "{name}: 엔진이 거부했다 — {out}");
+        assert!(
+            !out["wrote"].as_array().unwrap().is_empty(),
+            "{name}: 쓴 표현이 없다 — {out}"
+        );
+
+        let bytes = if ext == "hwpx" {
+            core.export_hwpx_native().expect("HWPX 저장")
+        } else {
+            core.export_hwp_native().expect("HWP5 저장")
+        };
+
+        // 자기검증 1 — 재개방 + 스캔 게이트 + 구조 확인.
+        let reread = DocumentCore::from_bytes(&bytes)
+            .unwrap_or_else(|e| panic!("{name}: rhwp 가 다시 열지 못한다 — {e:?}"));
+        let env = b2_envelope(&reread);
+        assert_eq!(env["ok"], true, "{name}: {env}");
+        (v.check)(&env, &name);
+
+        // 자기검증 2 — ①==②, ③④ 불변.
+        let (zip_after, nested_after) = b2_representations(&reread);
+        if let Some(zip) = zip_after {
+            assert_eq!(zip, nested_after, "{name}: ① ≠ ②");
+        }
+        let (legacy_after, emf_after) = b2_legacy_and_emf(&reread);
+        assert_eq!(legacy_after, legacy_before, "{name}: ③ 이 변했다");
+        assert_eq!(emf_after, emf_before, "{name}: ④ 가 변했다");
+
+        if let Some(dir) = out_dir {
+            std::fs::write(dir.join(&name), &bytes).expect("산출 쓰기");
+            written += 1;
+            sheet.push_str(&format!(
+                "| `{name}` | {} | {} | {} | {} |\n",
+                v.folder, v.what, v.expect_shape, v.stale
+            ));
+        }
+    }
+    written
+}
+
+/// [#5652 S5] 엔진 구조 편집 후 재렌더에 반영된다 — 행추가·행삭제·계열추가.
+#[test]
+fn b2_engine_row_and_series_edits_render_after_reopen() {
+    let src = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+
+    // 행추가 — 새 카테고리 라벨이 실제로 그려진다.
+    let mut core = core_of(&src);
+    let e = b2_engine_edits(&core, "묶은세로막대형", "행추가").unwrap();
+    assert_eq!(set_chart(&mut core, &e)["ok"], true);
+    let reread =
+        DocumentCore::from_bytes(&core.export_hwpx_native().expect("저장")).expect("재개방");
+    let svg = reread.render_page_svg_layer_native(0).expect("렌더");
+    assert!(svg.contains("추가항목"), "행추가: 새 라벨이 렌더에 없다");
+
+    // 행삭제 — 지운 라벨이 사라진다.
+    let mut core = core_of(&src);
+    let e = b2_engine_edits(&core, "묶은세로막대형", "행삭제").unwrap();
+    assert_eq!(set_chart(&mut core, &e)["ok"], true);
+    let reread =
+        DocumentCore::from_bytes(&core.export_hwpx_native().expect("저장")).expect("재개방");
+    let svg = reread.render_page_svg_layer_native(0).expect("렌더");
+    assert!(
+        !svg.contains("항목 2"),
+        "행삭제: 지운 라벨이 여전히 그려진다"
+    );
+    assert!(svg.contains("항목 3"), "행삭제: 남은 라벨이 렌더에 없다");
+
+    // 계열추가 — 범례에 새 계열명이 등장한다.
+    let mut core = core_of(&src);
+    let e = b2_engine_edits(&core, "묶은세로막대형", "계열추가").unwrap();
+    assert_eq!(set_chart(&mut core, &e)["ok"], true);
+    let reread =
+        DocumentCore::from_bytes(&core.export_hwpx_native().expect("저장")).expect("재개방");
+    let svg = reread.render_page_svg_layer_native(0).expect("렌더");
+    assert!(
+        svg.contains("추가계열"),
+        "계열추가: 새 계열명이 렌더에 없다"
+    );
+}
+
+/// [#5652 S5] 변종 12종 × 2포맷의 엔진 산출이 재독·①②·③④ 자기검증을 전건 통과한다 (상시).
+#[test]
+fn b2_engine_output_passes_the_scanner_for_every_variant() {
+    let mut sheet = String::new();
+    let mut produced = 0usize;
+    for v in b2_variants() {
+        if b2_engine_edits(
+            &core_of(&manifest(&format!(
+                "samples/chart/{}/{}.hwpx",
+                v.folder, v.stem
+            ))),
+            v.stem,
+            v.label,
+        )
+        .is_none()
+        {
+            continue; // 경계 2종 — 가드 테스트가 대신한다.
+        }
+        b2_engine_write_variant(None, &v, &mut sheet);
+        produced += 1;
+    }
+    assert_eq!(produced, 12, "경계 2종을 뺀 변종 수");
+}
+
+/// Stage 9 — B2 **엔진 산출** 한컴 판정 꾸러미(#5652 S5)를 만든다.
+///
+/// `output/` 에 파일을 쓰는 부작용이 있어 기본 실행에서 뺀다. 판정 직전에만 돌린다:
+///
+/// ```text
+/// cargo test --profile release-test --test issue_4100_chart_data_edit \
+///     generate_b2_engine_judgment_bundle -- --ignored --nocapture
+/// ```
+///
+/// #5447 번들(`generate_b2_structure_judgment_bundle`)과 같은 변종·같은 판정 방법(144DPI 래스터
+/// 해시 + 편집기 행·열 수)이되, 바이트는 엔진(`set_chart_data_by_index_native`)이 만든다.
+/// 기존 38건 원장(`samples/issue5447/`)은 손대지 않는다 — 판정 결과는 `samples/issue5652/` 에
+/// 별도 원장으로 쌓는다.
+#[test]
+#[ignore = "output/ 에 파일을 쓴다 — 한컴 판정 직전에만 실행"]
+fn generate_b2_engine_judgment_bundle() {
+    let out_dir = manifest("output/issue_5652_b2_engine_judgment");
+    std::fs::create_dir_all(&out_dir).expect("출력 디렉터리");
+
+    let mut sheet = String::new();
+    sheet.push_str("# #5652 B2 엔진 — 한컴 판정표 (엔진 산출 구조 변종)\n\n");
+    sheet.push_str(
+        "#5447 스파이크와 같은 변종을 이번에는 **엔진**(`set_chart_data_by_index_native`,\n\
+         `structure:true`)이 만들었습니다. 행·열·라벨이 바뀌므로 파일마다 「기대 모양」 칸과\n\
+         대조해 주세요. `c:f`·③레거시 Contents·④프리뷰는 설계대로 **갱신하지 않습니다**(#5447 확정).\n\n\
+         경계 2종(원형 계열추가·주식형 계열삭제)은 엔진 가드가 거부하므로 이 번들에 없습니다 —\n\
+         거부는 `pie_series_count_is_fixed`·`stock_series_count_is_fixed` 가 상시로 고정합니다.\n\n",
+    );
+    sheet.push_str("## 보는 법\n\n");
+    sheet.push_str(
+        "1. `*-대조군.hwpx` 로 원본 모습을 눈에 익힙니다.\n\
+         2. 변종 파일마다 **네 가지**를 봐 주세요:\n   \
+         (a) 열 때 오류·복구 대화상자가 뜨는가\n   \
+         (b) 차트가 **기대 모양대로** 그려지는가\n   \
+         (c) 차트를 더블클릭하면 편집기가 열리는가\n   \
+         (d) **편집기(데이터 편집)의 행·열 수가 기대 모양과 일치하는가**\n\n\
+         계열삭제 변종은 위치 기반(뒤 계열이 앞으로 당겨지고 꼬리가 지워짐)이라 잔여 계열의\n\
+         색이 원래 2번째 계열 색일 수 있습니다 — 이름·값이 맞으면 정상입니다.\n\n",
+    );
+    sheet.push_str("## 산출물\n\n");
+    sheet.push_str("| 파일 | 종류 | 무엇을 바꿨나 | 기대 모양 | 낡게 남긴 것 |\n");
+    sheet.push_str("|---|---|---|---|---|\n");
+
+    let variants: Vec<B2Variant> = b2_variants()
+        .into_iter()
+        .filter(|v| {
+            b2_engine_edits(
+                &core_of(&manifest(&format!(
+                    "samples/chart/{}/{}.hwpx",
+                    v.folder, v.stem
+                ))),
+                v.stem,
+                v.label,
+            )
+            .is_some()
+        })
+        .collect();
+    assert_eq!(variants.len(), 12, "경계 2종을 뺀 변종 수");
+    let mut written = 0usize;
+
+    let mut controls: Vec<(&str, &str)> = Vec::new();
+    for v in &variants {
+        if !controls.contains(&(v.folder, v.stem)) {
+            controls.push((v.folder, v.stem));
+        }
+    }
+    for (folder, stem) in &controls {
+        std::fs::copy(
+            manifest(&format!("samples/chart/{folder}/{stem}.hwpx")),
+            out_dir.join(format!("{stem}-대조군.hwpx")),
+        )
+        .expect("대조군 복사");
+        written += 1;
+        sheet.push_str(&format!(
+            "| `{stem}-대조군.hwpx` | {folder} | (무편집 원본) | 원본 그대로 | — |\n"
+        ));
+    }
+
+    for v in &variants {
+        written += b2_engine_write_variant(Some(&out_dir), v, &mut sheet);
+    }
+
+    // 변환 축 — 행추가를 HWPX 에서 엔진으로 만들고 HWP5 로 변환한다(①이 ②로 접힌다, #4099).
+    {
+        let src = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+        let mut core = core_of(&src);
+        let e = b2_engine_edits(&core, "묶은세로막대형", "행추가").unwrap();
+        assert_eq!(set_chart(&mut core, &e)["ok"], true);
+        let bytes = core
+            .export_hwp_with_adapter_snapshot()
+            .expect("HWP5 변환 저장");
+        let reread = DocumentCore::from_bytes(&bytes).expect("변환본 재파스");
+        let env = b2_envelope(&reread);
+        assert_eq!(env["ok"], true, "변환본: {env}");
+        b2_check_row_add(&env, "변환본");
+        let name = "묶은세로막대형-행추가-HWPX에서변환.hwp";
+        std::fs::write(out_dir.join(name), &bytes).expect("변환본 쓰기");
+        written += 1;
+        sheet.push_str(&format!(
+            "| `{name}` | 세로막대형 | 행추가 후 HWPX→HWP5 변환 (구조가 ② 로 접힘) | 그룹 4→5 | c:f·③·④ |\n"
+        ));
+    }
+
+    sheet.push_str(&format!("\n총 {written} 파일.\n\n"));
+    sheet.push_str(
+        "## PDF 회신\n\n\
+         각 파일을 한컴에서 열어 **같은 폴더에 PDF 로 저장**해 주시면, 대조군과 변종의 렌더를\n\
+         144DPI 래스터 해시로 갈라 반영 여부를 데이터로 판정하겠습니다(#5447 절차 —\n\
+         `tools/hancom_chart_judgment_verify.py`). (d) 편집기 행·열 수는 **파일별로 한 줄씩**\n\
+         남겨 주세요.\n\n상세 설계는 #5652, 전제는 #5447.\n",
+    );
+
+    std::fs::write(out_dir.join("PANJEONG.md"), sheet).expect("판정표 쓰기");
+    println!("\n  판정 번들: {}", out_dir.display());
+    println!("  파일 {written}개 + 판정표 PANJEONG.md");
+    assert_eq!(written, 32, "대조군 7 + 변종 12 × 2포맷 + 변환본 1");
+}
+
+/// [#5652 S5] **문서 바이트 수준** 동치 — 엔진 경로(`set_chart_data_by_index_native`, structure)와
+/// 스파이크 경로(문자열 수술 + 표현 주입)가 같은 현재 라이터로 저장하면, 계열삭제 2종을 뺀
+/// 12변종 × 2포맷 전건이 **바이트 동일**하다. 계열삭제는 위치 기반(뒤 계열을 앞으로 당겨 쓰고 꼬리
+/// 삭제)이라 바이트는 다르되 논리 데이터(이름·라벨·값)는 같다.
+///
+/// 이것이 S5 한컴 재판정의 근거다 — 10종은 #5447 이 판정한 것과 같은 차트 XML 을 엔진이 만들고,
+/// 계열삭제 2종만 새 바이트다.
+#[test]
+fn engine_documents_match_spike_documents_except_positional_series_delete() {
+    let mut same = 0usize;
+    let mut logical_only = 0usize;
+    for v in b2_variants() {
+        for ext in ["hwpx", "hwp"] {
+            let src = manifest(&format!("samples/chart/{}/{}.{ext}", v.folder, v.stem));
+            let name = format!("{}-{}.{ext}", v.stem, v.label);
+            let is_hwpx = ext == "hwpx";
+
+            // 엔진 경로.
+            let mut engine = core_of(&src);
+            let Some(edits) = b2_engine_edits(&engine, v.stem, v.label) else {
+                continue; // 경계 2종
+            };
+            assert_eq!(set_chart(&mut engine, &edits)["ok"], true, "{name}");
+            let engine_bytes = if is_hwpx {
+                engine.export_hwpx_native().expect("저장")
+            } else {
+                engine.export_hwp_native().expect("저장")
+            };
+
+            // 스파이크 경로 — 같은 원본에 문자열 수술을 주입.
+            let (_legacy, ooxml) =
+                chart_streams(&std::fs::read(&src).expect("샘플")).expect("차트 스트림");
+            let xml = String::from_utf8(ooxml).expect("UTF-8");
+            let surgery = (v.surgery)(&xml);
+            let mut spike = core_of(&src);
+            let spike_bytes = if is_hwpx {
+                replace_chart_representations(&mut spike, surgery.as_bytes(), surgery.as_bytes());
+                spike.export_hwpx_native().expect("저장")
+            } else {
+                replace_chart_nested_only(&mut spike, surgery.as_bytes());
+                spike.export_hwp_native().expect("저장")
+            };
+
+            if v.label == "계열삭제" {
+                assert_ne!(
+                    engine_bytes, spike_bytes,
+                    "{name}: 위치 기반 계열삭제는 바이트가 달라야 정상"
+                );
+                let e = b2_envelope(&DocumentCore::from_bytes(&engine_bytes).expect("재개방"));
+                let s = b2_envelope(&DocumentCore::from_bytes(&spike_bytes).expect("재개방"));
+                assert_eq!(b2_series_names(&e), b2_series_names(&s), "{name}");
+                assert_eq!(b2_labels(&e), b2_labels(&s), "{name}");
+                for i in 0..b2_series_names(&e).len() {
+                    assert_eq!(b2_values(&e, i), b2_values(&s, i), "{name} 계열 {i}");
+                }
+                logical_only += 1;
+            } else {
+                assert_eq!(
+                    engine_bytes, spike_bytes,
+                    "{name}: 엔진 산출 ≠ 스파이크 산출"
+                );
+                same += 1;
+            }
+        }
+    }
+    assert_eq!(
+        (same, logical_only),
+        (20, 4),
+        "변종 10종 × 2 바이트 동일 + 계열삭제 2종 × 2 논리 동일"
+    );
+}
+
+/// [#5652 S5] 엔진 판정 원장(`samples/issue5652/MANIFEST.json`)이 가리키는 자산이 지금도 그 바이트인가.
+///
+/// `b2_judgment_assets_match_the_manifest`(#5447) 와 같은 트립와이어 — 원장 32행의 원본·한컴 PDF
+/// SHA-256 을 다시 재고, 두 디렉터리를 거꾸로 훑어 등재되지 않은 자산을 잡는다(해시 집합으로 —
+/// NFC/NFD 파일명 사고 대비). 래스터 재계산은 `tools/hancom_chart_judgment_verify.py --manifest
+/// samples/issue5652/MANIFEST.json` 이 로컬에서 맡는다.
+#[test]
+fn b2_engine_judgment_assets_match_the_manifest() {
+    fn sha256_of(path: &std::path::Path) -> String {
+        use sha2::Digest as _;
+        let bytes = std::fs::read(path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        let mut hasher = sha2::Sha256::new();
+        hasher.update(&bytes);
+        hasher
+            .finalize()
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect()
+    }
+
+    let ledger_path = manifest("samples/issue5652/MANIFEST.json");
+    let ledger: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&ledger_path).expect("판정 원장 읽기"))
+            .expect("판정 원장 JSON");
+    assert_eq!(ledger["schema"], "rhwp/hancom-judgment-manifest@1");
+    let entries = ledger["entries"].as_array().expect("entries");
+    assert_eq!(entries.len(), 32, "대조군 7 + 변종 12 × 2포맷 + 변환본 1");
+
+    let mut registered: std::collections::BTreeSet<String> = Default::default();
+    let mut verdict_of_unit: std::collections::BTreeMap<String, String> = Default::default();
+
+    for entry in entries {
+        let name = entry["name"].as_str().expect("name");
+        for (path_key, hash_key) in [
+            ("original_path", "original_sha256"),
+            ("hancom_pdf_path", "hancom_pdf_sha256"),
+        ] {
+            let rel = entry[path_key]
+                .as_str()
+                .unwrap_or_else(|| panic!("{name}: {path_key} 가 없다"));
+            let recorded = entry[hash_key]
+                .as_str()
+                .unwrap_or_else(|| panic!("{name}: {hash_key} 가 없다"));
+            assert_eq!(
+                recorded.len(),
+                64,
+                "{name}: {hash_key} 가 SHA-256 이 아니다"
+            );
+            let path = manifest(rel);
+            assert!(path.is_file(), "{name}: 원장이 가리키는 {rel} 이 없다");
+            assert_eq!(
+                sha256_of(&path),
+                recorded,
+                "{name}: {rel} 의 바이트가 원장과 다르다"
+            );
+            registered.insert(recorded.to_string());
+        }
+        if entry["role"] != "control" {
+            let unit = if entry["role"] == "conversion" {
+                name.rsplit_once('.')
+                    .map_or(name, |(stem, _)| stem)
+                    .to_string()
+            } else {
+                format!(
+                    "{}-{}",
+                    entry["base_document"].as_str().expect("base_document"),
+                    entry["variant"].as_str().expect("variant")
+                )
+            };
+            let verdict = entry["verdict"].as_str().expect("verdict").to_string();
+            if let Some(seen) = verdict_of_unit.insert(unit.clone(), verdict.clone()) {
+                assert_eq!(seen, verdict, "{unit}: 포맷 간 판정이 갈린다");
+            }
+        }
+    }
+
+    // 원장 머리의 집계 == 본문 재집계. 보고서가 인용하는 숫자가 이것이다 — 13 단위 전건 반영.
+    let counts = &ledger["counts"];
+    assert_eq!(
+        verdict_of_unit.len() as u64,
+        counts["judgment_units"].as_u64().expect("judgment_units")
+    );
+    assert_eq!(verdict_of_unit.len(), 13, "12 변종 + 변환본 1");
+    assert!(
+        verdict_of_unit.values().all(|v| v == "반영"),
+        "전건 반영이어야 한다: {verdict_of_unit:?}"
+    );
+    assert_eq!(counts["tally"]["반영"].as_u64(), Some(13));
+
+    // 교차 참조 — #5447 판정 PDF 와 픽셀 동일 25/25 (원장에 기록된 값의 자기정합).
+    let cross = ledger["cross_reference_issue5447"]["entries"]
+        .as_array()
+        .expect("cross_reference");
+    assert_eq!(cross.len(), 25, "변종 24 + 변환본 1");
+    assert!(
+        cross.iter().all(|c| c["issue5447_raster_equal"] == true),
+        "#5447 판정 PDF 와 렌더가 다른 항목이 있다"
+    );
+
+    for (dir, ignored) in [
+        (
+            "samples/issue5652",
+            ["MANIFEST.json", "README.md", "PANJEONG.md"].as_slice(),
+        ),
+        ("pdf/issue5652", ["README.md"].as_slice()),
+    ] {
+        let mut counted = 0usize;
+        for item in std::fs::read_dir(manifest(dir)).expect("판정 자산 디렉터리") {
+            let path = item.expect("디렉터리 항목").path();
+            if !path.is_file() {
+                continue;
+            }
+            let file_name = path
+                .file_name()
+                .and_then(|s| s.to_str())
+                .unwrap_or_default()
+                .to_string();
+            if ignored.contains(&file_name.as_str()) {
+                continue;
+            }
+            assert!(
+                registered.contains(&sha256_of(&path)),
+                "{dir}/{file_name}: 원장에 등재되지 않은 자산이다"
+            );
+            counted += 1;
+        }
+        assert_eq!(counted, 32, "{dir}: 판정 자산이 32건이 아니다");
     }
 }

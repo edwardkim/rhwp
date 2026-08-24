@@ -257,7 +257,7 @@ export class WasmBridge {
   private initialized = false;
   private _fileName = 'document.hwp';
   private _currentFileHandle: FileSystemFileHandleLike | null = null;
-  /** 마지막 저장본이 출력 암호로 보호됐는지 여부만 보관한다. 암호 문자열은 보관하지 않는다. */
+  /** 현재 backing copy의 보호 의도만 보관한다. 암호 문자열은 보관하지 않는다. */
   private _requiresPasswordForSave = false;
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
@@ -338,6 +338,7 @@ export class WasmBridge {
   private loadDocumentAtomically(
     data: Uint8Array,
     fileName: string | undefined,
+    requiresPasswordForSave: boolean,
     createDocument: () => HwpDocument,
   ): DocumentInfo {
     const nextFileName = fileName ?? 'document.hwp';
@@ -357,7 +358,9 @@ export class WasmBridge {
       this.doc = nextDoc;
       this._fileName = nextFileName;
       this._currentFileHandle = null;
-      this._requiresPasswordForSave = false;
+      // 암호 문자열은 보관하지 않는다. 다음 저장에서 암호 재입력이 필요한지 여부만
+      // 문서 교체 성공과 같은 commit 구간에서 갱신한다 (#5986).
+      this._requiresPasswordForSave = requiresPasswordForSave;
       this._documentDigest = nextDocumentDigest;
       this._documentGeneration += 1;
       if (previousDoc) {
@@ -388,11 +391,16 @@ export class WasmBridge {
   }
 
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
-    return this.loadDocumentAtomically(data, fileName, () => new HwpDocument(data));
+    return this.loadDocumentAtomically(data, fileName, false, () => new HwpDocument(data));
   }
 
   loadDocumentWithPassword(data: Uint8Array, password: string, fileName?: string): DocumentInfo {
-    return this.loadDocumentAtomically(data, fileName, () => HwpDocument.openWithPassword(data, password));
+    return this.loadDocumentAtomically(
+      data,
+      fileName,
+      true,
+      () => HwpDocument.openWithPassword(data, password),
+    );
   }
 
   /** [Task #741 후속] 외부 file path 그림 영역 영역 dev 서버 영역 영역 fetch + inject. */
@@ -2228,9 +2236,30 @@ export class WasmBridge {
     return JSON.parse(this.doc.deleteEquationControl(sec, para, ci));
   }
 
-  changeShapeZOrder(sec: number, para: number, ci: number, operation: string): { ok: boolean; zOrder?: number } {
+  changeShapeZOrder(
+    sec: number,
+    para: number,
+    ci: number,
+    operation: string,
+  ): { ok: boolean; zOrder?: number; moves?: { ppi: number; ci: number; before: number; after: number }[] } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.changeShapeZOrder(sec, para, ci, operation));
+  }
+
+  /** [#5769 후속] z 순서 절대 대입 — SetZOrderCommand 의 undo/redo 가 쓴다. */
+  applyShapeZOrderPairs(sec: number, pairsJson: string): { ok: boolean; applied?: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).applyShapeZOrderPairs(sec, pairsJson));
+  }
+
+  /**
+   * [#5769 후속1] changeShapeZOrder 가 moves 응답과 절대 대입 쌍을 지원하는가.
+   * 구버전 wasm 과 짝이 어긋난 조합을 뮤테이션 **전에** 가린다 — 적용 뒤에
+   * 알아채면 실제 변이의 undo 기록을 잃는다(gpt 3차 리뷰).
+   */
+  hasShapeZOrderInverse(): boolean {
+    const doc = this.doc as unknown as Record<string, unknown> | null;
+    return typeof doc?.applyShapeZOrderPairs === 'function';
   }
 
   groupShapes(sec: number, targets: { paraIdx: number; controlIdx: number }[]): { ok: boolean; paraIdx: number; controlIdx: number } {
