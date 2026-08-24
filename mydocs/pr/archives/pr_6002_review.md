@@ -1,0 +1,34 @@
+---
+kind: pr-review
+status: accepted-pending-integration-pr-approval
+canonical: mydocs/manual/pr_review_workflow.md
+last_verified: 2026-08-24
+---
+
+# PR #6002 review - 압축-단조 사다리 셀 중첩 표 높이 계상 (#5884)
+
+## 접수 메타데이터
+
+| 항목 | 값 |
+| --- | --- |
+| PR | [#6002](https://github.com/edwardkim/rhwp/pull/6002) |
+| 작성자 | [@planet6897](https://github.com/planet6897) |
+| 원 head | `1e31a70f91be115465b682096bf53c64982ed3f1` |
+| 통합 commit | `0b99b2a8a` |
+| GitHub 상태 | non-draft, CI·CodeQL 성공 |
+| 판정 | **수용 권고** |
+
+## 변경 검토
+
+압축-단조 사다리 셀에서 중첩 표 높이를 측정에 반영해 3090867 fixture의 쪽수 2 정합과 누락 내용 복원을
+고정한다. 변경은 height measurer와 table layout 계산, sample·계약 테스트에 한정된다.
+
+## 로컬 검증
+
+- `issue_5884_nested_row_first_line_height`: 3 passed
+- 통합 후보 전체 검증에서 `cargo fmt`, suite manifest, unit-tier, clippy, 전체 nextest가 통과했다.
+- 전체 nextest: `8304 tests run: 8304 passed (3 slow), 42 skipped`
+
+## 권고
+
+focused test와 전체 회귀가 모두 통과했다. 이번 통합 PR에서 수용 가능하다.
