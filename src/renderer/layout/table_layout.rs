@@ -10240,6 +10240,24 @@ impl LayoutEngine {
                             last_unit = Some(ui);
                         }
                     }
+                    // 구간 **끝**이 호스트일 때만 보정한다. 이 후처리의 근거는
+                    // "호스트 문단 뒤 갭을 흡수할 유닛이 없다"인데, 호스트 뒤에 같은
+                    // 구간의 텍스트 유닛이 더 있으면 그 갭은 이미 그 유닛의 corrected
+                    // line height 가 담는다 — 그때 차액을 또 얹으면 구간이 실제보다
+                    // 길어져 조각이 쪽 하단을 넘는다. issue3637
+                    // `regulatory_impact_nested_table_escape.hwpx` 의 문단 7~27 구간이
+                    // 그 형상이다(span 941.1 · 유닛 합 922.3 · 차액 18.7, 구간 끝은
+                    // 호스트가 아니라 문단 27 본문). 그 18.7 을 얹으면 p26 조각이
+                    // 8.2px 넘쳐 p27 소유 줄("사업체노동력조사")이 p26 clip 안으로
+                    // 끌려 들어오고 `LAYOUT_OVERFLOW_CELL` 14줄이 새로 생겼다.
+                    let ends_on_host = last_unit.is_some_and(|ui| {
+                        cell.paragraphs.get(units[ui].para_idx).is_some_and(|p| {
+                            p.controls.iter().any(|c| matches!(c, Control::Table(_)))
+                        })
+                    });
+                    if !ends_on_host {
+                        continue;
+                    }
                     let shortfall = span_px - unit_sum;
                     // 한두 문단 간격 규모만 인정 — 그 이상은 다른 축.
                     if shortfall > 0.5 && shortfall <= 32.0 {
