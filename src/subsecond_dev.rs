@@ -8,6 +8,7 @@ use wasm_bindgen::prelude::*;
 
 static PATCH_EPOCH: AtomicU32 = AtomicU32::new(0);
 static REGISTER_PATCH_HANDLER: Once = Once::new();
+const PATCH_COMMIT_EVENT: &str = "rhwp-subsecond-commit";
 
 pub(crate) fn patch_epoch() -> u32 {
     PATCH_EPOCH.load(Ordering::Relaxed)
@@ -22,9 +23,24 @@ fn register_patch_epoch_handler_with(
     }));
 }
 
+#[wasm_bindgen(js_name = getSubsecondPatchEpoch)]
+pub fn get_subsecond_patch_epoch() -> u32 {
+    patch_epoch()
+}
+
 fn register_patch_epoch_handler() {
     REGISTER_PATCH_HANDLER.call_once(|| {
-        register_patch_epoch_handler_with(&PATCH_EPOCH, subsecond::register_handler);
+        register_patch_epoch_handler_with(&PATCH_EPOCH, |handler| {
+            subsecond::register_handler(Arc::new(move || {
+                handler();
+                #[cfg(target_arch = "wasm32")]
+                if let (Some(window), Ok(event)) =
+                    (web_sys::window(), web_sys::Event::new(PATCH_COMMIT_EVENT))
+                {
+                    let _ = window.dispatch_event(&event);
+                }
+            }));
+        });
     });
 }
 
@@ -135,6 +151,7 @@ pub fn link_wasm_exports() {
     register_patch_epoch_handler();
     let _ = crate::version();
     let _ = subsecond_probe();
+    let _ = get_subsecond_patch_epoch();
 }
 
 #[cfg(test)]
