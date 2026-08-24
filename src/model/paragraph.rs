@@ -1867,10 +1867,23 @@ impl Paragraph {
     /// 인덱스를 들고 있지 않은 호출부(이미 `&LineSeg` 를 쥔 자리)를 위한 형태로,
     /// [`Paragraph::line_seg_text_start`] 와 같은 규칙을 쓴다.
     pub fn line_seg_text_start_of(&self, raw_text_start: u32) -> u32 {
-        if raw_text_start == 0 {
-            0
+        if raw_text_start == 0 || self.hwpx_axis_shift == 0 {
+            return raw_text_start;
+        }
+        let lifted = raw_text_start + self.hwpx_axis_shift;
+        // 올린 값이 **문단 끝을 넘으면** 그 줄은 올릴 값이 아니었다. `char_count` 는
+        // 출처와 무관하게 언제나 HWP5 축이고 줄은 문단 안에서 시작하므로, 넘는다는
+        // 것은 그 `text_start` 가 이미 HWP5 축이었다는 직접 증거다 — 보정폭은 파서가
+        // 만들어 넣은 슬롯 수에서 오지만, 그 슬롯을 세어 `textpos` 를 적는 생산자도
+        // 있다(`issue5595_rotated_picture_topbottom.hwpx` 문단 0: 컨트롤 3개에
+        // `cc=25`, 둘째 줄 `ts=24` — 이미 24 를 세고 있어 40 으로 올리면 문단 끝을
+        // 15 넘는다). 끝 마커를 가리키는 `text_start == char_count` 는 정상이므로
+        // 판정은 `>` 다(`line_segs_within_text` 와 같은 경계). 축 증거가 없는 합성 IR
+        // (`char_count == 0`)에는 이 판정을 걸지 않는다 — #5563 비교 축과 같은 규약.
+        if self.char_count > 0 && lifted > self.char_count {
+            raw_text_start
         } else {
-            raw_text_start + self.hwpx_axis_shift
+            lifted
         }
     }
 

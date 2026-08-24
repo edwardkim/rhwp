@@ -1187,15 +1187,28 @@ fn diff_paragraph_linesegs_with_axis(
     // 설명되는 만큼만** 봐준다. 위양성을 없애되 임의의 어긋남은 그대로 잡는다.
     let axis_rebase_cap = axis_rebase_cap(pa);
     for (idx, (sa, sb)) in la.iter().zip(lb.iter()).enumerate() {
+        // [#5961] 비교 전에 **양쪽을 각자의 문단 축 보정폭으로 HWP5 축에 올린다**.
+        //
+        // 위 #5943 허용치는 HWP5 출처 → HWPX 산출 한 방향만 본다. 반대 방향
+        // (HWPX 출처 → HWP5 산출)에서는 산출 쪽이 **더 큰** 축을 갖는다 — HWP5 파일은
+        // 구역 정의와 첫 단 정의에 8유닛씩을 싣기 때문이다. 그대로 빼면 음수라
+        // `checked_sub` 가 `u32::MAX` 로 흘러 허용치가 닿지 않고, 정당한 축 차이가
+        // 저장 손실로 잡힌다(x2h 코퍼스 5건).
+        //
+        // 보정폭은 추측이 아니라 파서가 자기가 만들어 넣은 슬롯 수로 채운 사실이다
+        // (`Paragraph::hwpx_axis_shift`). HWPX 출처 문단만 0 이 아니므로 같은 축끼리의
+        // 비교에는 아무 영향이 없다.
+        let ta = pa.line_seg_text_start_of(sa.text_start);
+        let tb = pb.line_seg_text_start_of(sb.text_start);
         // 줄 하나가 내려간 폭이 8의 배수이고 상한 안이면 재기준화로 설명된다.
-        let shift = sa.text_start.checked_sub(sb.text_start).unwrap_or(u32::MAX);
+        let shift = ta.checked_sub(tb).unwrap_or(u32::MAX);
         let text_start_a = if shift > 0 && shift % 8 == 0 && shift <= axis_rebase_cap {
-            sb.text_start
+            tb
         } else {
-            sa.text_start
+            ta
         };
         let fields: [(&'static str, i64, i64); 9] = [
-            ("textpos", text_start_a as i64, sb.text_start as i64),
+            ("textpos", text_start_a as i64, tb as i64),
             ("vertpos", sa.vertical_pos as i64, sb.vertical_pos as i64),
             ("vertsize", sa.line_height as i64, sb.line_height as i64),
             ("textheight", sa.text_height as i64, sb.text_height as i64),

@@ -153,6 +153,62 @@ fn the_projection_adds_exactly_the_recorded_shift() {
     assert_eq!(para.line_seg_text_start(1), 32);
 }
 
+/// 올린 값이 문단 끝을 넘으면 올리지 않는다 — 이미 HWP5 축인 줄의 증거다.
+///
+/// `issue5595_rotated_picture_topbottom.hwpx` 문단 0 의 실측 형상: 컨트롤 3개에
+/// `char_count=25`, 줄은 `[0, 24]`. 둘째 줄은 이미 컨트롤 3개(24유닛)를 세고 있어
+/// 보정폭 16 을 얹으면 40 — 문단 끝을 15 넘는다. 그대로 올리면 저장기가 그 줄을
+/// 축 밖으로 보고 떨궈 `convert --verify` 가 줄 수 손실(2→1)로 잡는다.
+#[test]
+fn the_projection_stops_at_the_paragraph_end() {
+    use rhwp::model::paragraph::{LineSeg, Paragraph};
+
+    let para = Paragraph {
+        hwpx_axis_shift: 16,
+        char_count: 25,
+        line_segs: vec![
+            LineSeg {
+                text_start: 0,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: 24,
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+    assert_eq!(para.line_seg_text_start(0), 0);
+    assert_eq!(
+        para.line_seg_text_start(1),
+        24,
+        "문단 끝(25)을 넘는 투영은 그 줄이 이미 HWP5 축이라는 뜻이다"
+    );
+}
+
+/// 끝 마커를 가리키는 `text_start == char_count` 는 정상이므로 그대로 올린다.
+#[test]
+fn the_projection_allows_landing_exactly_on_the_end_marker() {
+    use rhwp::model::paragraph::{LineSeg, Paragraph};
+
+    let para = Paragraph {
+        hwpx_axis_shift: 16,
+        char_count: 25,
+        line_segs: vec![
+            LineSeg {
+                text_start: 0,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: 9,
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+    assert_eq!(para.line_seg_text_start(1), 25);
+}
+
 // 줄을 다시 계산하면 보정폭이 0 으로 지워진다는 계약(`replace_line_segs`)은 그 메서드가
 // crate 내부라 여기서 직접 부를 수 없다. 계약은 해당 메서드의 주석이 지키고, 어겼을 때의
 // 증상(두 번 더해진 축)은 위 투영 시험들이 잡는다.
