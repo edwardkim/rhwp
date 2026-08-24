@@ -3882,7 +3882,14 @@ fn saved_table_bounds_fit_at_flow_tail(
     // body 933.6 인데 흐름 790.4(드리프트 +42.2px) 기준 적합검사가 밀어 40쪽 vs
     // 한글 39쪽 — 이하 절 전체가 한 쪽씩 밀렸다). 흐름이 frame 깊숙이(허용 초과)
     // 지나간 쪽 상단 stale anchor 는 여전히 일반 fit 경로에 맡긴다.
-    let current_flow_inside_source_frame = top <= current_height
+    //
+    // [#5941 3240179] `top == 0` 은 frame 위치 증거가 아니라 "쪽 시작" vpos
+    // 센티널이다 — 그 값에 드리프트 허용을 적용하면 흐름이 42~48px 내려간
+    // 상태에서도 쪽-말미 크기 표(913~918px)가 현재 쪽에 강제로 앉아 문서가
+    // 3쪽 압축된다(16→13, 한글 18). 실제 frame(top>0, 원 케이스 748.2)만
+    // 이 갈래의 대상이다. top==0 + 흐름 0 은 기존 anchored 갈래가 그대로 담당.
+    let current_flow_inside_source_frame = top > 0.0
+        && top <= current_height
         && current_height <= top + SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX
         && current_height <= bounds.1;
     table_height.is_finite()
