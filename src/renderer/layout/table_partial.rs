@@ -2708,7 +2708,12 @@ impl LayoutEngine {
             paragraphs,
             para_index,
             control_index,
-        );
+        ) || matches!(outer_table.page_break, crate::model::table::TablePageBreak::CellBreak)
+            && crate::renderer::float_placement::native_empty_host_cellbreak_fragment_repeats_outer_margin(
+                self.profile.get().hwp5_stored_pagination_layout(),
+                para,
+                outer_table,
+            );
         let pre_emitted_host_height = self
             .pre_emitted_host_heights
             .borrow()

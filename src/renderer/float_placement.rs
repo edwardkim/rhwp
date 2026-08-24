@@ -175,6 +175,32 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
     Some(advance)
 }
 
+/// [#5922] native HWP5 CellBreak 자리차지 표의 연속 조각 바깥 여백 재개방 계약.
+///
+/// 한글은 다쪽으로 이어지는 CellBreak 조각을 쪽마다 표 바깥 여백(상·하)을 다시
+/// 열어 그린다(화성시 별표2 실측: 본문 상단 42.52pt + 0.5mm 여백 = 괘선 44pt).
+/// RowBreak 의 #2439 계약과 달리 저장 ladder 증거를 요구할 수 없다 — 거대 표의
+/// 저장 vpos ladder 는 표 높이를 접기 때문이다. 대신 구조를 좁힌다: native HWP5,
+/// 비-TAC TopAndBottom(vert=문단), 쪽나눔=CellBreak, 빈 host 문단(표 전용).
+/// 바깥 여백이 0 이면 더해질 값이 없어 no-op다.
+pub(crate) fn native_empty_host_cellbreak_fragment_repeats_outer_margin(
+    native_hwp5_layout: bool,
+    para: &Paragraph,
+    table: &Table,
+) -> bool {
+    let has_non_whitespace_text = |paragraph: &Paragraph| {
+        paragraph
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+    };
+    native_hwp5_layout
+        && !table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && matches!(table.page_break, TablePageBreak::CellBreak)
+        && !has_non_whitespace_text(para)
+}
+
 /// [#3931] native HWP5 다행 RowBreak 표가 cell 내부 저장 page reset을 갖고,
 /// 후속 source 문단도 host anchor 위로 되감기는 빈-host 형상인지 판별한다.
 ///

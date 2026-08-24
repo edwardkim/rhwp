@@ -10093,12 +10093,29 @@ impl LayoutEngine {
         let pt_mt = measured_tables
             .iter()
             .find(|mt| mt.para_index == para_index && mt.control_index == control_index);
-        let repeat_fragment_outer_margin = repeats_native_empty_host_rowbreak_fragment_margin(
-            self.profile.get().hwp5_stored_pagination_layout(),
-            paragraphs,
-            para_index,
-            control_index,
-        );
+        let repeat_fragment_outer_margin = paragraphs
+            .get(para_index)
+            .map(|para| {
+                if repeats_native_empty_host_rowbreak_fragment_margin(
+                    self.profile.get().hwp5_stored_pagination_layout(),
+                    paragraphs,
+                    para_index,
+                    control_index,
+                ) {
+                    return true;
+                }
+                match para.controls.get(control_index) {
+                    Some(Control::Table(table)) => {
+                        crate::renderer::float_placement::native_empty_host_cellbreak_fragment_repeats_outer_margin(
+                            self.profile.get().hwp5_stored_pagination_layout(),
+                            para,
+                            table,
+                        )
+                    }
+                    _ => false,
+                }
+            })
+            .unwrap_or(false);
         // 비-TAC 자리차지 표에서 vert offset이 있으면 문단 시작 y 전달.
         // layout_partial_table 내부에서 vert_offset을 적용하므로 이중 적용 방지.
         // [Task #712] HwpUnit=u32 이라 `vertical_offset > 0` 가드는 음수 비트표현
