@@ -42,6 +42,10 @@ const MAX_EMBEDDED_FONT_BYTES: usize = 32 * 1024 * 1024;
 const MAX_EMBEDDED_FONT_BYTES_PER_PAGE: usize = 64 * 1024 * 1024;
 const FOCUSED_PAGE_REPAINT_PAD: f64 = 3.0;
 
+fn diagnostic_px_to_hwpunit(px: f64, dpi: f64) -> i32 {
+    (px * 7_200.0 / dpi).round() as i32
+}
+
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct FocusedPageTreePatch {
     pub(crate) page_index: u32,
@@ -3302,7 +3306,33 @@ impl DocumentCore {
         let tree = self.build_page_tree(page_num)?;
 
         // 렌더 트리에서 TextRun 노드를 재귀적으로 수집
-        fn collect_text_runs(node: &RenderNode, runs: &mut Vec<String>) {
+        fn collect_text_runs(
+            node: &RenderNode,
+            runs: &mut Vec<String>,
+            group_path: &mut Vec<usize>,
+            inherited_textbox_frame: Option<(f64, f64)>,
+            inherited_line_frame: Option<(f64, f64)>,
+            inherited_flow_context: Option<&'static str>,
+            dpi: f64,
+        ) {
+            let textbox_frame = if matches!(node.node_type, RenderNodeType::TextBox) {
+                Some((node.bbox.x, node.bbox.width))
+            } else {
+                inherited_textbox_frame
+            };
+            let line_frame = if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+                Some((node.bbox.x, node.bbox.width))
+            } else {
+                inherited_line_frame
+            };
+            let flow_context = match node.node_type {
+                RenderNodeType::Body { .. } => Some("body"),
+                RenderNodeType::Header => Some("header"),
+                RenderNodeType::Footer => Some("footer"),
+                RenderNodeType::MasterPage => Some("masterPage"),
+                RenderNodeType::FootnoteArea => Some("footnote"),
+                _ => inherited_flow_context,
+            };
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
                 let positions = text_run.replay_positions_for(&text_run.text);
                 let char_x: Vec<String> = positions.iter().map(|v| format!("{:.1}", v)).collect();
@@ -3341,6 +3371,47 @@ impl DocumentCore {
                     String::new()
                 };
 
+                // Group child identity is a render-tree ancestry coordinate, not an editing
+                // cellPath coordinate.  Keep the two axes separate so diagnostic callers can
+                // resolve a child TextBox without changing cursor/table APIs.
+                let group_coords = if group_path.is_empty() {
+                    String::new()
+                } else {
+                    format!(
+                        ",\"groupPath\":[{}]",
+                        group_path
+                            .iter()
+                            .map(usize::to_string)
+                            .collect::<Vec<_>>()
+                            .join(",")
+                    )
+                };
+                let textbox_coords = textbox_frame
+                    .map(|(x, width)| {
+                        format!(
+                            ",\"textContainerX\":{},\"textContainerWidth\":{},\"textContainerXHwp\":{},\"textContainerWidthHwp\":{}",
+                            x,
+                            width,
+                            diagnostic_px_to_hwpunit(x, dpi),
+                            diagnostic_px_to_hwpunit(width, dpi),
+                        )
+                    })
+                    .unwrap_or_default();
+                let line_coords = line_frame
+                    .map(|(x, width)| {
+                        format!(
+                            ",\"lineContainerX\":{},\"lineContainerWidth\":{},\"lineContainerXHwp\":{},\"lineContainerWidthHwp\":{}",
+                            x,
+                            width,
+                            diagnostic_px_to_hwpunit(x, dpi),
+                            diagnostic_px_to_hwpunit(width, dpi),
+                        )
+                    })
+                    .unwrap_or_default();
+                let flow_coords = flow_context
+                    .map(|context| format!(",\"flowContext\":\"{context}\""))
+                    .unwrap_or_default();
+
                 let escaped_font = super::super::helpers::json_escape(&text_run.style.font_family);
                 let font_info = format!(
                     ",\"fontFamily\":\"{}\",\"fontSize\":{:.1},\"bold\":{},\"italic\":{},\"ratio\":{:.2},\"letterSpacing\":{:.1}",
@@ -3374,7 +3445,7 @@ impl DocumentCore {
                 };
 
                 runs.push(format!(
-                    "{{\"text\":\"{}\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"charX\":[{}]{}{}{}{}{}}}",
+                    "{{\"text\":\"{}\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"charX\":[{}]{}{}{}{}{}{}{}{}{}}}",
                     escaped_text,
                     node.bbox.x,
                     node.bbox.y,
@@ -3386,15 +3457,42 @@ impl DocumentCore {
                     shape_ids,
                     doc_coords,
                     cell_coords,
+                    group_coords,
+                    textbox_coords,
+                    line_coords,
+                    flow_coords,
                 ));
             }
-            for child in &node.children {
-                collect_text_runs(child, runs);
+            let owns_group_children = matches!(node.node_type, RenderNodeType::Group(_));
+            for (child_index, child) in node.children.iter().enumerate() {
+                if owns_group_children {
+                    group_path.push(child_index);
+                }
+                collect_text_runs(
+                    child,
+                    runs,
+                    group_path,
+                    textbox_frame,
+                    line_frame,
+                    flow_context,
+                    dpi,
+                );
+                if owns_group_children {
+                    group_path.pop();
+                }
             }
         }
 
         let mut runs = Vec::new();
-        collect_text_runs(&tree.root, &mut runs);
+        collect_text_runs(
+            &tree.root,
+            &mut runs,
+            &mut Vec::new(),
+            None,
+            None,
+            Some("body"),
+            self.dpi,
+        );
 
         Ok(format!("{{\"runs\":[{}]}}", runs.join(",")))
     }
@@ -7774,6 +7872,12 @@ mod tests {
     use super::*;
     use crate::model::bin_data::BinDataContent;
     use crate::renderer::render_tree::RenderNodeType;
+
+    #[test]
+    fn diagnostic_hwp_coordinates_round_trip_inexact_pixel_divisions() {
+        let px = crate::renderer::hwpunit_to_px(1_201, 96.0);
+        assert_eq!(diagnostic_px_to_hwpunit(px, 96.0), 1_201);
+    }
 
     #[test]
     fn issue3137_focused_partial_repaint_rejects_unsafe_justify_and_extra_spacing() {

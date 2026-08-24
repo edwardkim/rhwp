@@ -2920,6 +2920,42 @@ fn test_cell_text_layout_contains_cell_info() {
     assert!(json.contains("\"controlIdx\":"));
     assert!(json.contains("\"cellIdx\":"));
     assert!(json.contains("\"cellParaIdx\":"));
+    let value: serde_json::Value = serde_json::from_str(&json).expect("text layout JSON");
+    let run = value["runs"]
+        .as_array()
+        .and_then(|runs| runs.first())
+        .expect("first cell text run");
+    assert_eq!(run["flowContext"], "body");
+    assert!(run["lineContainerX"].is_number());
+    assert!(run["lineContainerWidth"].is_number());
+
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/group-box.hwp");
+    let bytes = std::fs::read(path).expect("read group-box fixture");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse group-box fixture");
+    let json = doc
+        .get_page_text_layout_native(0)
+        .expect("group-box text layout");
+    let value: serde_json::Value = serde_json::from_str(&json).expect("text layout JSON");
+    let runs = value["runs"].as_array().expect("text runs");
+    let grouped = runs
+        .iter()
+        .find(|run| {
+            run["groupPath"]
+                .as_array()
+                .is_some_and(|path| !path.is_empty())
+        })
+        .expect("grouped TextBox run");
+    assert_eq!(grouped["groupPath"][0], 0);
+    assert_eq!(grouped["textContainerXHwp"], 16_510);
+    assert_eq!(grouped["textContainerWidthHwp"], 1_703);
+    assert_eq!(grouped["flowContext"], "body");
+
+    let outside = runs
+        .iter()
+        .find(|run| run.get("groupPath").is_none())
+        .expect("sibling outside the group");
+    assert!(outside.get("textContainerWidthHwp").is_none());
+    assert_eq!(outside["flowContext"], "body");
 }
 
 #[test]
