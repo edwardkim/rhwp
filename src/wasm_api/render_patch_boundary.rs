@@ -175,6 +175,13 @@ hot_render_boundaries! {
         document: &HwpDocument,
         page_num: u32,
     ) -> Result<String, JsValue> = super::get_page_flow_image_ops_impl;
+    // 페이지 크기·단 영역은 pagination 결과를 읽어 PageDef와 합성한다. 내부 pagination
+    // hot-call이 바뀐 세대와 같은 revision/export inventory에 있어야 한다.
+    exports ["getPageInfo"]
+    fn get_page_info(
+        document: &HwpDocument,
+        page_num: u32,
+    ) -> Result<String, JsValue> = super::get_page_info_impl;
 }
 
 /// 일부러 경계 밖에 둔 export 와 그 이유. 위 목록과 한 쌍이라 붙여 둔다.
@@ -192,15 +199,6 @@ const DELIBERATELY_COLD_EXPORTS: &[(&str, &str)] = &[
         "getSourceImageBytes",
         "결과를 studio 가 키별 object URL 로 메모이즈한다(FlowImageUrlCache). 키가 \
          바뀌기 전에는 다시 들어오지 않으므로 경계를 두어도 관측되지 않는다.",
-    ),
-    (
-        "getPageInfo",
-        "아래에 페인트도 평면 분류도 없다 — 이미 계산된 페이지네이션(`find_page`)을 읽고 \
-         PageDef 여백을 px 로 환산할 뿐이다. 게다가 그중 낡을 수 있는 값(page 크기·단 \
-         영역)은 `invalidateSubsecondRenderCaches` 가 비우지 않는 pagination 에서 오므로 \
-         경계를 두면 '새 여백 산술 + 옛 페이지네이션' 이라는 반만 새 기록이 된다. \
-         한 페이지를 그릴 때마다, 또 `refreshPages()` 마다 문서 전 페이지분이 도는 \
-         이 목록에서 가장 잦은 질의이기도 하다.",
     ),
     (
         "getCanvasKitReplayPlanWithProfile",
@@ -239,6 +237,10 @@ mod tests {
         (
             "getPageFlowImageOps",
             "page-renderer.ts getFlowImagePaintOps — 본문 그림 DOM 배치",
+        ),
+        (
+            "getPageInfo",
+            "page-renderer.ts renderPage — 페이지 크기와 단 영역",
         ),
     ];
 

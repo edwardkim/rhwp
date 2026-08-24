@@ -764,6 +764,23 @@ impl HeightMeasurer {
         styles: &ResolvedStyleSet,
         column_width_px: Option<f64>,
     ) -> MeasuredSection {
+        crate::hot_call!(
+            Self::measure_section_hot_impl,
+            self,
+            paragraphs,
+            composed,
+            styles,
+            column_width_px,
+        )
+    }
+
+    fn measure_section_hot_impl(
+        &self,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+        column_width_px: Option<f64>,
+    ) -> MeasuredSection {
         let mut measured_paras = Vec::with_capacity(paragraphs.len());
         let mut measured_tables = Vec::new();
 
@@ -1443,6 +1460,27 @@ impl HeightMeasurer {
         // 저장 폭으로 측정한다(76076 표325 r6: 487.6px). 부모 셀 폭으로의 근소
         // 확장은 PDF 줄바꿈·조각 높이를 바꾸므로 RenderNormalizationOverlay가
         // 1.0을 반환한다.
+        width_scale: f64,
+    ) -> MeasuredTable {
+        crate::hot_call!(
+            Self::measure_table_hot_impl,
+            self,
+            table,
+            para_index,
+            control_index,
+            styles,
+            depth,
+            width_scale,
+        )
+    }
+
+    fn measure_table_hot_impl(
+        &self,
+        table: &Table,
+        para_index: usize,
+        control_index: usize,
+        styles: &ResolvedStyleSet,
+        depth: usize,
         width_scale: f64,
     ) -> MeasuredTable {
         let width_scale =
@@ -3084,6 +3122,25 @@ impl HeightMeasurer {
         prev_measured: &MeasuredSection,
         column_width_px: Option<f64>,
     ) -> MeasuredSection {
+        crate::hot_call!(
+            Self::measure_section_incremental_hot_impl,
+            self,
+            paragraphs,
+            composed,
+            styles,
+            prev_measured,
+            column_width_px,
+        )
+    }
+
+    fn measure_section_incremental_hot_impl(
+        &self,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+        prev_measured: &MeasuredSection,
+        column_width_px: Option<f64>,
+    ) -> MeasuredSection {
         let mut measured_paras = Vec::with_capacity(paragraphs.len());
         let mut measured_tables = Vec::new();
 
@@ -3124,6 +3181,27 @@ impl HeightMeasurer {
     /// dirty_paras가 Some(bits)이면 dirty 문단만 재측정하고,
     /// None이면 전체 재측정한다 (measure_section_incremental 폴백).
     pub fn measure_section_selective(
+        &self,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+        prev_measured: &MeasuredSection,
+        dirty_paras: Option<&[bool]>,
+        column_width_px: Option<f64>,
+    ) -> MeasuredSection {
+        crate::hot_call!(
+            Self::measure_section_selective_hot_impl,
+            self,
+            paragraphs,
+            composed,
+            styles,
+            prev_measured,
+            dirty_paras,
+            column_width_px,
+        )
+    }
+
+    fn measure_section_selective_hot_impl(
         &self,
         paragraphs: &[Paragraph],
         composed: &[ComposedParagraph],

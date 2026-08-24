@@ -292,6 +292,12 @@ fn get_page_flow_image_ops_impl(document: &HwpDocument, page_num: u32) -> Result
         .map_err(|error| error.into())
 }
 
+fn get_page_info_impl(document: &HwpDocument, page_num: u32) -> Result<String, JsValue> {
+    document
+        .core
+        .get_page_info_native(page_num)
+        .map_err(Into::into)
+}
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ExternalImageReference {
@@ -968,7 +974,11 @@ impl HwpDocument {
     #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
     #[wasm_bindgen(js_name = getRenderCodeRevision)]
     pub fn get_render_code_revision(&self) -> String {
-        render_patch_boundary::patch_revision()
+        format!(
+            "{}:{:08x}",
+            render_patch_boundary::patch_revision(),
+            crate::subsecond_dev::patch_epoch(),
+        )
     }
 
     /// 바이트는 그대로인데 화면용으로 파생해 둔 것이 더는 원본과 대응하지 않을 때 다시 만든다.
@@ -988,7 +998,7 @@ impl HwpDocument {
     #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
     #[wasm_bindgen(js_name = rebuildDerivedState)]
     pub fn rebuild_derived_state(&mut self) {
-        self.core.rebuild_derived_state();
+        crate::hot_call!(DocumentCore::rebuild_derived_state, &mut self.core);
     }
 
     /// CanvasKit direct replay 정책 진단을 JSON 문자열로 반환한다.
@@ -1082,7 +1092,7 @@ impl HwpDocument {
     /// 페이지 정보를 JSON 문자열로 반환한다.
     #[wasm_bindgen(js_name = getPageInfo)]
     pub fn get_page_info(&self, page_num: u32) -> Result<String, JsValue> {
-        self.get_page_info_native(page_num).map_err(|e| e.into())
+        render_patch_boundary::get_page_info(self, page_num)
     }
 
     /// 구역의 용지 설정(PageDef)을 HWPUNIT 원본값으로 반환한다.
@@ -1169,15 +1179,23 @@ impl HwpDocument {
     /// 각 TextRun의 위치, 텍스트, 글자별 X 좌표 경계값을 포함한다.
     #[wasm_bindgen(js_name = getPageTextLayout)]
     pub fn get_page_text_layout(&self, page_num: u32) -> Result<String, JsValue> {
-        self.get_page_text_layout_native(page_num)
-            .map_err(|e| e.into())
+        crate::hot_call!(
+            DocumentCore::get_page_text_layout_native,
+            &self.core,
+            page_num,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 컨트롤(표, 이미지 등) 레이아웃 정보를 반환한다.
     #[wasm_bindgen(js_name = getPageControlLayout)]
     pub fn get_page_control_layout(&self, page_num: u32) -> Result<String, JsValue> {
-        self.get_page_control_layout_native(page_num)
-            .map_err(|e| e.into())
+        crate::hot_call!(
+            DocumentCore::get_page_control_layout_native,
+            &self.core,
+            page_num,
+        )
+        .map_err(|e| e.into())
     }
 
     /// DPI를 설정한다.
@@ -2703,7 +2721,9 @@ impl HwpDocument {
         para_idx: u32,
         char_offset: u32,
     ) -> Result<String, JsValue> {
-        self.get_cursor_rect_native(
+        crate::hot_call!(
+            DocumentCore::get_cursor_rect_native,
+            &self.core,
             section_idx as usize,
             para_idx as usize,
             char_offset as usize,
@@ -2738,7 +2758,9 @@ impl HwpDocument {
                 cell_para_idx as usize,
             ))
         };
-        self.get_cursor_rect_on_line_native(
+        crate::hot_call!(
+            DocumentCore::get_cursor_rect_on_line_native,
+            &self.core,
             section_idx as usize,
             para_idx as usize,
             line_index as usize,
@@ -2753,7 +2775,8 @@ impl HwpDocument {
     /// 반환: JSON `{"sectionIndex":N,"paragraphIndex":N,"charOffset":N}`
     #[wasm_bindgen(js_name = hitTest)]
     pub fn hit_test(&self, page_num: u32, x: f64, y: f64) -> Result<String, JsValue> {
-        self.hit_test_native(page_num, x, y).map_err(|e| e.into())
+        crate::hot_call!(DocumentCore::hit_test_native, &self.core, page_num, x, y)
+            .map_err(|e| e.into())
     }
 
     /// 머리말/꼬리말 내 커서 위치의 픽셀 좌표를 반환한다.
@@ -2770,7 +2793,9 @@ impl HwpDocument {
         char_offset: u32,
         preferred_page: i32,
     ) -> Result<String, JsValue> {
-        self.get_cursor_rect_in_header_footer_native(
+        crate::hot_call!(
+            DocumentCore::get_cursor_rect_in_header_footer_native,
+            &self.core,
             section_idx as usize,
             is_header,
             apply_to,
@@ -2786,8 +2811,14 @@ impl HwpDocument {
     /// 반환: JSON `{"hit":true/false,"isHeader":bool,"sectionIndex":N,"applyTo":N}`
     #[wasm_bindgen(js_name = hitTestHeaderFooter)]
     pub fn hit_test_header_footer(&self, page_num: u32, x: f64, y: f64) -> Result<String, JsValue> {
-        self.hit_test_header_footer_native(page_num, x, y)
-            .map_err(|e| e.into())
+        crate::hot_call!(
+            DocumentCore::hit_test_header_footer_native,
+            &self.core,
+            page_num,
+            x,
+            y,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 이 쪽에서 머리말/꼬리말을 편집할 때 대상이 되는 (구역, applyTo) 를 반환한다.
@@ -2800,8 +2831,13 @@ impl HwpDocument {
         page_num: u32,
         is_header: bool,
     ) -> Result<String, JsValue> {
-        self.get_header_footer_edit_target_native(page_num, is_header)
-            .map_err(|e| e.into())
+        crate::hot_call!(
+            DocumentCore::get_header_footer_edit_target_native,
+            &self.core,
+            page_num,
+            is_header,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 머리말/꼬리말 내부 텍스트 히트테스트.
@@ -2816,8 +2852,15 @@ impl HwpDocument {
         x: f64,
         y: f64,
     ) -> Result<String, JsValue> {
-        self.hit_test_in_header_footer_native(page_num, is_header, x, y)
-            .map_err(|e| e.into())
+        crate::hot_call!(
+            DocumentCore::hit_test_in_header_footer_native,
+            &self.core,
+            page_num,
+            is_header,
+            x,
+            y,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 머리말/꼬리말 문단의 문단 속성을 조회한다.
@@ -2957,7 +3000,9 @@ impl HwpDocument {
         cell_para_idx: u32,
         char_offset: u32,
     ) -> Result<String, JsValue> {
-        self.get_cursor_rect_in_cell_native(
+        crate::hot_call!(
+            DocumentCore::get_cursor_rect_in_cell_native,
+            &self.core,
             section_idx as usize,
             parent_para_idx as usize,
             control_idx as usize,
@@ -2980,7 +3025,9 @@ impl HwpDocument {
         para_idx: u32,
         char_offset: u32,
     ) -> Result<String, JsValue> {
-        self.get_line_info_native(
+        crate::hot_call!(
+            DocumentCore::get_line_info_native,
+            &self.core,
             section_idx as usize,
             para_idx as usize,
             char_offset as usize,
@@ -3001,7 +3048,9 @@ impl HwpDocument {
         cell_para_idx: u32,
         char_offset: u32,
     ) -> Result<String, JsValue> {
-        self.get_line_info_in_cell_native(
+        crate::hot_call!(
+            DocumentCore::get_line_info_in_cell_native,
+            &self.core,
             section_idx as usize,
             parent_para_idx as usize,
             control_idx as usize,
@@ -3289,7 +3338,9 @@ impl HwpDocument {
         control_idx: u32,
         page_hint: Option<u32>,
     ) -> Result<String, JsValue> {
-        self.get_table_cell_bboxes_from_page(
+        crate::hot_call!(
+            DocumentCore::get_table_cell_bboxes_from_page,
+            &self.core,
             section_idx as usize,
             parent_para_idx as usize,
             control_idx as usize,
@@ -3308,7 +3359,9 @@ impl HwpDocument {
         parent_para_idx: u32,
         control_idx: u32,
     ) -> Result<String, JsValue> {
-        self.get_table_bbox_native(
+        crate::hot_call!(
+            DocumentCore::get_table_bbox_native,
+            &self.core,
             section_idx as usize,
             parent_para_idx as usize,
             control_idx as usize,
@@ -3327,7 +3380,9 @@ impl HwpDocument {
         control_idx: u32,
         page_idx: u32,
     ) -> Result<String, JsValue> {
-        self.get_table_bbox_at_page_native(
+        crate::hot_call!(
+            DocumentCore::get_table_bbox_at_page_native,
+            &self.core,
             section_idx as usize,
             parent_para_idx as usize,
             control_idx as usize,
@@ -3347,7 +3402,9 @@ impl HwpDocument {
         parent_para_idx: u32,
         control_idx: u32,
     ) -> Result<String, JsValue> {
-        self.get_shape_bbox_native(
+        crate::hot_call!(
+            DocumentCore::get_shape_bbox_native,
+            &self.core,
             section_idx as usize,
             parent_para_idx as usize,
             control_idx as usize,
@@ -4650,15 +4707,27 @@ impl HwpDocument {
     /// 각주 영역 히트테스트
     #[wasm_bindgen(js_name = hitTestFootnote)]
     pub fn hit_test_footnote(&self, page_num: u32, x: f64, y: f64) -> Result<String, JsValue> {
-        self.hit_test_footnote_native(page_num, x, y)
-            .map_err(|e| e.into())
+        crate::hot_call!(
+            DocumentCore::hit_test_footnote_native,
+            &self.core,
+            page_num,
+            x,
+            y,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 각주 내부 텍스트 히트테스트
     #[wasm_bindgen(js_name = hitTestInFootnote)]
     pub fn hit_test_in_footnote(&self, page_num: u32, x: f64, y: f64) -> Result<String, JsValue> {
-        self.hit_test_in_footnote_native(page_num, x, y)
-            .map_err(|e| e.into())
+        crate::hot_call!(
+            DocumentCore::hit_test_in_footnote_native,
+            &self.core,
+            page_num,
+            x,
+            y,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 페이지의 각주 참조 정보
@@ -4681,7 +4750,9 @@ impl HwpDocument {
         fn_para_idx: u32,
         char_offset: u32,
     ) -> Result<String, JsValue> {
-        self.get_cursor_rect_in_footnote_native(
+        crate::hot_call!(
+            DocumentCore::get_cursor_rect_in_footnote_native,
+            &self.core,
             page_num,
             footnote_index as usize,
             fn_para_idx as usize,
@@ -4716,7 +4787,9 @@ impl HwpDocument {
         note_para_idx: u32,
         char_offset: u32,
     ) -> Result<String, JsValue> {
-        self.get_cursor_rect_in_note_native(
+        crate::hot_call!(
+            DocumentCore::get_cursor_rect_in_note_native,
+            &self.core,
             section_idx as usize,
             para_idx as usize,
             control_idx as usize,
@@ -4772,8 +4845,14 @@ impl HwpDocument {
         x: f64,
         y: f64,
     ) -> Result<String, JsValue> {
-        self.hit_test_body_footnote_marker_native(page_num, x, y)
-            .map_err(|e| e.into())
+        crate::hot_call!(
+            DocumentCore::hit_test_body_footnote_marker_native,
+            &self.core,
+            page_num,
+            x,
+            y,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 수직 커서 이동 (ArrowUp/Down) — 단일 호출로 줄/문단/표/구역 경계를 모두 처리한다.
@@ -4806,7 +4885,9 @@ impl HwpDocument {
                 cell_para_idx as usize,
             ))
         };
-        self.move_vertical_native(
+        crate::hot_call!(
+            DocumentCore::move_vertical_native,
+            &self.core,
             section_idx as usize,
             para_idx as usize,
             char_offset as usize,
@@ -4837,7 +4918,9 @@ impl HwpDocument {
                 json_u32(options_json, "cellParaIdx").unwrap_or(0) as usize,
             ))
         };
-        self.move_vertical_native(
+        crate::hot_call!(
+            DocumentCore::move_vertical_native,
+            &self.core,
             json_u32(options_json, "sectionIdx").unwrap_or(0) as usize,
             json_u32(options_json, "paraIdx").unwrap_or(0) as usize,
             json_u32(options_json, "charOffset").unwrap_or(0) as usize,
@@ -5058,9 +5141,14 @@ impl HwpDocument {
     /// 반환: `{found, sec, para, ci, formType, name, value, caption, text, bbox}`
     #[wasm_bindgen(js_name = getFormObjectAt)]
     pub fn get_form_object_at(&self, page_num: u32, x: f64, y: f64) -> Result<String, JsValue> {
-        self.core
-            .get_form_object_at_native(page_num, x, y)
-            .map_err(|e| e.into())
+        crate::hot_call!(
+            DocumentCore::get_form_object_at_native,
+            &self.core,
+            page_num,
+            x,
+            y,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 양식 개체 값을 조회한다.
@@ -5249,17 +5337,24 @@ impl HwpDocument {
     /// 글로벌 쪽 번호에 해당하는 첫 문단 위치 반환
     #[wasm_bindgen(js_name = getPositionOfPage)]
     pub fn get_position_of_page(&self, global_page: u32) -> Result<String, JsValue> {
-        self.core
-            .get_position_of_page_native(global_page as usize)
-            .map_err(|e| e.into())
+        crate::hot_call!(
+            DocumentCore::get_position_of_page_native,
+            &self.core,
+            global_page as usize,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 위치에 해당하는 글로벌 쪽 번호 반환
     #[wasm_bindgen(js_name = getPageOfPosition)]
     pub fn get_page_of_position(&self, section_idx: u32, para_idx: u32) -> Result<String, JsValue> {
-        self.core
-            .get_page_of_position_native(section_idx as usize, para_idx as usize)
-            .map_err(|e| e.into())
+        crate::hot_call!(
+            DocumentCore::get_page_of_position_native,
+            &self.core,
+            section_idx as usize,
+            para_idx as usize,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 커서 위치의 필드 범위 정보를 조회한다 (본문 문단).
@@ -6135,7 +6230,9 @@ impl HwpDocument {
         path_json: &str,
         char_offset: u32,
     ) -> Result<String, JsValue> {
-        self.get_cursor_rect_by_path_native(
+        crate::hot_call!(
+            DocumentCore::get_cursor_rect_by_path_native,
+            &self.core,
             section_idx as usize,
             parent_para_idx as usize,
             path_json,
@@ -6156,7 +6253,9 @@ impl HwpDocument {
         char_offset: u32,
         hint_page: u32,
     ) -> Result<String, JsValue> {
-        self.get_cursor_rect_by_path_with_hint(
+        crate::hot_call!(
+            DocumentCore::get_cursor_rect_by_path_with_hint,
+            &self.core,
             section_idx as usize,
             parent_para_idx as usize,
             path_json,
@@ -6208,7 +6307,9 @@ impl HwpDocument {
         parent_para_idx: u32,
         path_json: &str,
     ) -> Result<String, JsValue> {
-        self.get_table_cell_bboxes_by_path_native(
+        crate::hot_call!(
+            DocumentCore::get_table_cell_bboxes_by_path_native,
+            &self.core,
             section_idx as usize,
             parent_para_idx as usize,
             path_json,
@@ -6229,7 +6330,9 @@ impl HwpDocument {
         delta: i32,
         preferred_x: f64,
     ) -> Result<String, JsValue> {
-        self.move_vertical_by_path_native(
+        crate::hot_call!(
+            DocumentCore::move_vertical_by_path_native,
+            &self.core,
             section_idx as usize,
             parent_para_idx as usize,
             path_json,
@@ -6254,7 +6357,9 @@ impl HwpDocument {
         end_para_idx: u32,
         end_char_offset: u32,
     ) -> Result<String, JsValue> {
-        self.get_selection_rects_native(
+        crate::hot_call!(
+            DocumentCore::get_selection_rects_native,
+            &self.core,
             section_idx as usize,
             start_para_idx as usize,
             start_char_offset as usize,
@@ -6281,7 +6386,9 @@ impl HwpDocument {
         end_cell_para_idx: u32,
         end_char_offset: u32,
     ) -> Result<String, JsValue> {
-        self.get_selection_rects_native(
+        crate::hot_call!(
+            DocumentCore::get_selection_rects_native,
+            &self.core,
             section_idx as usize,
             start_cell_para_idx as usize,
             start_char_offset as usize,
@@ -6305,7 +6412,9 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = getSelectionRectsInCellEx)]
     pub fn get_selection_rects_in_cell_ex(&self, options_json: &str) -> Result<String, JsValue> {
         use crate::document_core::helpers::json_u32;
-        self.get_selection_rects_native(
+        crate::hot_call!(
+            DocumentCore::get_selection_rects_native,
+            &self.core,
             json_u32(options_json, "sectionIdx").unwrap_or(0) as usize,
             json_u32(options_json, "startCellParaIdx").unwrap_or(0) as usize,
             json_u32(options_json, "startCharOffset").unwrap_or(0) as usize,
@@ -6336,7 +6445,9 @@ impl HwpDocument {
         end_cell_para_idx: u32,
         end_char_offset: u32,
     ) -> Result<String, JsValue> {
-        self.get_selection_rects_in_cell_by_path_native(
+        crate::hot_call!(
+            DocumentCore::get_selection_rects_in_cell_by_path_native,
+            &self.core,
             section_idx as usize,
             parent_para_idx as usize,
             path_json,
@@ -6361,7 +6472,9 @@ impl HwpDocument {
     ) -> Result<String, JsValue> {
         use crate::document_core::helpers::{json_str, json_u32};
         let path_json = json_str(options_json, "path").unwrap_or_default();
-        self.get_selection_rects_in_cell_by_path_native(
+        crate::hot_call!(
+            DocumentCore::get_selection_rects_in_cell_by_path_native,
+            &self.core,
             json_u32(options_json, "sectionIdx").unwrap_or(0) as usize,
             json_u32(options_json, "parentParaIdx").unwrap_or(0) as usize,
             &path_json,
@@ -6385,7 +6498,9 @@ impl HwpDocument {
         end_fn_para_idx: u32,
         end_char_offset: u32,
     ) -> Result<String, JsValue> {
-        self.get_selection_rects_in_footnote_native(
+        crate::hot_call!(
+            DocumentCore::get_selection_rects_in_footnote_native,
+            &self.core,
             page_num,
             footnote_index as usize,
             start_fn_para_idx as usize,

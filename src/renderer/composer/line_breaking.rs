@@ -308,6 +308,29 @@ fn tokenize_paragraph_with_regenerated_space_metric(
     space_metric: SpaceMetric,
     inline_controls: &[FlowInlineControl],
 ) -> Vec<BreakToken> {
+    crate::hot_call!(
+        tokenize_paragraph_with_regenerated_space_metric_hot_impl,
+        text_chars,
+        char_offsets,
+        char_shapes,
+        styles,
+        english_break_unit,
+        korean_break_unit,
+        space_metric,
+        inline_controls,
+    )
+}
+
+fn tokenize_paragraph_with_regenerated_space_metric_hot_impl(
+    text_chars: &[char],
+    char_offsets: &[u32],
+    char_shapes: &[CharShapeRef],
+    styles: &ResolvedStyleSet,
+    english_break_unit: u8,
+    korean_break_unit: u8,
+    space_metric: SpaceMetric,
+    inline_controls: &[FlowInlineControl],
+) -> Vec<BreakToken> {
     let text_len = text_chars.len();
     if text_len == 0 {
         return Vec::new();
@@ -1101,6 +1124,26 @@ impl FillCursor {
     }
 }
 
+/// Stable Subsecond boundary input for the greedy line filler.
+///
+/// Subsecond's WASM `HotFn` adapter supports function arities through `Fn9`.
+/// The filler has more independent inputs than that, so keep the immutable
+/// measurement/configuration lane in one value while leaving the mutable
+/// continuation cursor explicit at the call boundary. Adding a new tuning
+/// input intentionally changes this boundary and requires rebuilding the base
+/// WASM; edits to the filling algorithm itself do not.
+#[derive(Clone, Copy)]
+struct LineFillInput<'a> {
+    tokens: &'a [BreakToken],
+    text_chars: &'a [char],
+    available_width_px: f64,
+    indent_px: f64,
+    default_tab_width: f64,
+    korean_break_unit: u8,
+    condense_min_space: u8,
+    letter_spacing_px: &'a [f64],
+}
+
 /// Fill all scalar intervals through the resumable greedy continuation.
 fn fill_lines(
     tokens: &[BreakToken],
@@ -1115,21 +1158,36 @@ fn fill_lines(
     initial_is_first_line: bool,
     mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
 ) -> Vec<LineBreakResult> {
+    crate::hot_call!(
+        fill_lines_hot_impl,
+        LineFillInput {
+            tokens,
+            text_chars,
+            available_width_px,
+            indent_px,
+            default_tab_width,
+            korean_break_unit,
+            condense_min_space,
+            letter_spacing_px,
+        },
+        initial_start_idx,
+        initial_is_first_line,
+        kerning,
+    )
+}
+
+fn fill_lines_hot_impl(
+    input: LineFillInput<'_>,
+    initial_start_idx: usize,
+    initial_is_first_line: bool,
+    mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
+) -> Vec<LineBreakResult> {
     let mut cursor = FillCursor::new(initial_start_idx, initial_is_first_line);
     let mut results = Vec::new();
 
-    while let Some(interval) = fill_one_interval(
-        tokens,
-        text_chars,
-        available_width_px,
-        indent_px,
-        default_tab_width,
-        korean_break_unit,
-        condense_min_space,
-        letter_spacing_px,
-        &mut cursor,
-        kerning.as_deref_mut(),
-    ) {
+    while let Some(interval) =
+        fill_one_interval_with_input(input, &mut cursor, kerning.as_deref_mut())
+    {
         results.push(interval.line);
     }
 
@@ -1149,6 +1207,46 @@ fn fill_one_interval(
     cursor: &mut FillCursor,
     mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
 ) -> Option<FilledInterval> {
+    fill_one_interval_with_input(
+        LineFillInput {
+            tokens,
+            text_chars,
+            available_width_px,
+            indent_px,
+            default_tab_width,
+            korean_break_unit,
+            condense_min_space,
+            letter_spacing_px,
+        },
+        cursor,
+        kerning,
+    )
+}
+
+fn fill_one_interval_with_input(
+    input: LineFillInput<'_>,
+    cursor: &mut FillCursor,
+    kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
+) -> Option<FilledInterval> {
+    crate::hot_call!(fill_one_interval_hot_impl, input, cursor, kerning)
+}
+
+fn fill_one_interval_hot_impl(
+    input: LineFillInput<'_>,
+    cursor: &mut FillCursor,
+    mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
+) -> Option<FilledInterval> {
+    let LineFillInput {
+        tokens,
+        text_chars,
+        available_width_px,
+        indent_px,
+        default_tab_width,
+        korean_break_unit,
+        condense_min_space,
+        letter_spacing_px,
+    } = input;
+
     if cursor.finished {
         return None;
     }
@@ -2277,6 +2375,15 @@ pub(crate) fn layout_paragraph_in_frame(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<Vec<LineSeg>> {
+    crate::hot_call!(layout_paragraph_in_frame_hot_impl, para, frame, styles, dpi)
+}
+
+fn layout_paragraph_in_frame_hot_impl(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<Vec<LineSeg>> {
     layout_paragraph_in_frame_impl(para, frame, styles, dpi, true)
 }
 
@@ -2578,6 +2685,15 @@ pub(crate) fn stored_row_metrics(
     dpi: f64,
     row: &[LineSeg],
 ) -> Option<FrameRowMetrics> {
+    crate::hot_call!(stored_row_metrics_hot_impl, para, styles, dpi, row)
+}
+
+fn stored_row_metrics_hot_impl(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    row: &[LineSeg],
+) -> Option<FrameRowMetrics> {
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
     let line_spacing_type = para_style
         .map(|style| style.line_spacing_type)
@@ -2632,6 +2748,27 @@ pub(crate) fn stored_row_metrics(
 /// the cache only on exact equality. Staleness is an additional invalidator: a
 /// geometrically matching record that describes obsolete text is still rebuilt.
 pub(crate) fn resolve_stored_line_segs_in_frame(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    legacy_hwp3_stored_geometry: bool,
+    miss_policy: StoredRowMissPolicy,
+    stale: bool,
+) -> Option<StoredRowResolution> {
+    crate::hot_call!(
+        resolve_stored_line_segs_in_frame_hot_impl,
+        para,
+        frame,
+        styles,
+        dpi,
+        legacy_hwp3_stored_geometry,
+        miss_policy,
+        stale,
+    )
+}
+
+fn resolve_stored_line_segs_in_frame_hot_impl(
     para: &Paragraph,
     frame: &mut LayoutFrame,
     styles: &ResolvedStyleSet,
@@ -2793,6 +2930,21 @@ pub(crate) fn stored_rows_reproduce_frame_expectation(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> bool {
+    crate::hot_call!(
+        stored_rows_reproduce_frame_expectation_hot_impl,
+        para,
+        frame,
+        styles,
+        dpi,
+    )
+}
+
+fn stored_rows_reproduce_frame_expectation_hot_impl(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> bool {
     frame.try_admit_stored_rows(&para.line_segs, |row| {
         stored_row_metrics(para, styles, dpi, row)
     })
@@ -2865,6 +3017,23 @@ fn picture_band_paragraph_reference(
 /// two coordinate systems back into one object, which is the confusion it
 /// exists to prevent.
 pub(crate) fn layout_picture_band(
+    paragraphs: &[Paragraph],
+    host_index: usize,
+    column_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<PictureBandLayout> {
+    crate::hot_call!(
+        layout_picture_band_hot_impl,
+        paragraphs,
+        host_index,
+        column_width_px,
+        styles,
+        dpi
+    )
+}
+
+fn layout_picture_band_hot_impl(
     paragraphs: &[Paragraph],
     host_index: usize,
     column_width_px: f64,
@@ -3037,6 +3206,25 @@ pub(crate) fn reflow_line_segs_after_cell_text_edit(
 }
 
 fn reflow_line_segs_impl(
+    para: &mut Paragraph,
+    paragraph_box: ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    preserve_prefix_for_edit: Option<usize>,
+    split_stale_cell_reflow: bool,
+) -> bool {
+    crate::hot_call!(
+        reflow_line_segs_hot_impl,
+        para,
+        paragraph_box,
+        styles,
+        dpi,
+        preserve_prefix_for_edit,
+        split_stale_cell_reflow,
+    )
+}
+
+fn reflow_line_segs_hot_impl(
     para: &mut Paragraph,
     paragraph_box: ParagraphBox,
     styles: &ResolvedStyleSet,
@@ -3536,6 +3724,27 @@ pub(crate) fn recalculate_section_vpos(
     dpi: f64,
     is_hwp3_variant: bool,
 ) {
+    crate::hot_call!(
+        recalculate_section_vpos_hot_impl,
+        paragraphs,
+        start_para,
+        ignore_reset_range,
+        start_stored_end,
+        styles,
+        dpi,
+        is_hwp3_variant,
+    )
+}
+
+fn recalculate_section_vpos_hot_impl(
+    paragraphs: &mut [Paragraph],
+    start_para: usize,
+    ignore_reset_range: Option<std::ops::Range<usize>>,
+    start_stored_end: Option<i32>,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    is_hwp3_variant: bool,
+) {
     if paragraphs.is_empty() || start_para >= paragraphs.len() {
         return;
     }
@@ -3673,6 +3882,10 @@ pub(crate) fn recalculate_section_vpos(
 /// `start_stored_end` 로 전달하기 위한 헬퍼 — reflow 가 end 를 덮은 뒤에는 저장
 /// 좌표를 복원할 수 없다.
 pub(crate) fn paragraph_flow_end(para: &Paragraph) -> Option<i32> {
+    crate::hot_call!(paragraph_flow_end_hot_impl, para)
+}
+
+fn paragraph_flow_end_hot_impl(para: &Paragraph) -> Option<i32> {
     para.line_segs.last().map(|ls| {
         let height = if ls.line_height > ls.text_height && ls.text_height > 0 {
             ls.text_height

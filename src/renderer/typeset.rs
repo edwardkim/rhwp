@@ -5913,6 +5913,41 @@ impl TypesetEngine {
         control_index: usize,
         fragment_budget: usize,
     ) -> Option<ResumableTablePaginationJob> {
+        crate::hot_call!(
+            Self::begin_resumable_table_pagination_hot_impl,
+            self,
+            (paragraphs, composed, styles),
+            (page_def, column_def, section_index, measured_tables),
+            (
+                hide_empty_line,
+                profile,
+                skip_spacing_before_prededuct,
+                footnote_shape,
+            ),
+            (paragraph_index, control_index, fragment_budget),
+        )
+    }
+
+    fn begin_resumable_table_pagination_hot_impl<'a>(
+        &self,
+        content: (
+            &'a [Paragraph],
+            &'a [ComposedParagraph],
+            &'a ResolvedStyleSet,
+        ),
+        page: (&'a PageDef, &'a ColumnDef, usize, &'a [MeasuredTable]),
+        options: (
+            bool,
+            crate::model::provenance::LayoutCompatibilityProfile,
+            bool,
+            Option<&'a FootnoteShape>,
+        ),
+        target: (usize, usize, usize),
+    ) -> Option<ResumableTablePaginationJob> {
+        let (paragraphs, composed, styles) = content;
+        let (page_def, column_def, section_index, measured_tables) = page;
+        let (hide_empty_line, profile, skip_spacing_before_prededuct, footnote_shape) = options;
+        let (paragraph_index, control_index, fragment_budget) = target;
         if paragraphs.len() != 1 || paragraph_index != 0 || column_def.column_count.max(1) != 1 {
             return None;
         }
@@ -6034,6 +6069,27 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         fragment_budget: usize,
     ) -> ResumablePaginationStep {
+        crate::hot_call!(
+            Self::step_resumable_table_pagination_hot_impl,
+            self,
+            job,
+            paragraph,
+            table,
+            measured_table,
+            styles,
+            fragment_budget,
+        )
+    }
+
+    fn step_resumable_table_pagination_hot_impl(
+        &self,
+        job: &mut ResumableTablePaginationJob,
+        paragraph: &Paragraph,
+        table: &crate::model::table::Table,
+        measured_table: &MeasuredTable,
+        styles: &ResolvedStyleSet,
+        fragment_budget: usize,
+    ) -> ResumablePaginationStep {
         self.profile.set(job.context.flow_state.profile);
         job.context.fragment_budget = fragment_budget.max(1);
         let before = job.context.cursor.fragments_emitted;
@@ -6054,6 +6110,21 @@ impl TypesetEngine {
     }
 
     pub(crate) fn finish_resumable_table_pagination(
+        &self,
+        job: ResumableTablePaginationJob,
+        paragraphs: &[Paragraph],
+        section_index: usize,
+    ) -> Option<PaginationResult> {
+        crate::hot_call!(
+            Self::finish_resumable_table_pagination_hot_impl,
+            self,
+            job,
+            paragraphs,
+            section_index,
+        )
+    }
+
+    fn finish_resumable_table_pagination_hot_impl(
         &self,
         job: ResumableTablePaginationJob,
         paragraphs: &[Paragraph],
@@ -6871,6 +6942,48 @@ impl TypesetEngine {
         force_break_before: &std::collections::HashSet<usize>,
         endnote_deferral: EndnoteDeferral<'_>,
     ) -> PaginationResult {
+        crate::hot_call!(
+            Self::typeset_section_with_variant_hot_impl,
+            self,
+            (paragraphs, composed, styles),
+            (page_def, column_def, section_index, measured_tables),
+            (
+                hide_empty_line,
+                profile,
+                skip_spacing_before_prededuct,
+                hwp3_origin_page_tolerance,
+            ),
+            (footnote_shape, endnote_shape, endnote_deferral),
+            force_break_before,
+        )
+    }
+
+    fn typeset_section_with_variant_hot_impl<'a>(
+        &self,
+        content: (
+            &'a [Paragraph],
+            &'a [ComposedParagraph],
+            &'a ResolvedStyleSet,
+        ),
+        page: (&'a PageDef, &'a ColumnDef, usize, &'a [MeasuredTable]),
+        compatibility: (
+            bool,
+            crate::model::provenance::LayoutCompatibilityProfile,
+            bool,
+            bool,
+        ),
+        notes: (
+            Option<&'a FootnoteShape>,
+            Option<&'a FootnoteShape>,
+            EndnoteDeferral<'a>,
+        ),
+        force_break_before: &'a std::collections::HashSet<usize>,
+    ) -> PaginationResult {
+        let (paragraphs, composed, styles) = content;
+        let (page_def, column_def, section_index, measured_tables) = page;
+        let (hide_empty_line, profile, skip_spacing_before_prededuct, hwp3_origin_page_tolerance) =
+            compatibility;
+        let (footnote_shape, endnote_shape, endnote_deferral) = notes;
         // [#2424 프로파일] paginate_pass 와 같은 env var 로 하위 단계 게이트.
         #[cfg(not(target_arch = "wasm32"))]
         let issue2424_ts_enabled =

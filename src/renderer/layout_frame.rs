@@ -87,6 +87,10 @@ impl ParagraphBox {
     /// A column-relative box: `[margin_left, column_width - margin_right]`, the
     /// same range the render sites hand `LayoutFrame`.
     pub(crate) fn column(horizontal: Range<i32>) -> Self {
+        crate::hot_call!(Self::column_hot_impl, horizontal)
+    }
+
+    fn column_hot_impl(horizontal: Range<i32>) -> Self {
         Self {
             horizontal,
             origin_is_derivable: true,
@@ -111,18 +115,51 @@ impl ParagraphBox {
         margin_right_px: f64,
         dpi: f64,
     ) -> Self {
-        // The column solver quantizes the full inline extent before paragraph
-        // margins are applied. This is the unconditional ÷4×4 lane recovered
-        // in the column solver, distinct from the paragraph's optional character
-        // grid. Snapping the post-margin edges would incorrectly turn
-        // 850..37418 into 852..37416 (#1440).
-        let column_width_hwp = snap_base_right(
+        crate::hot_call!(
+            Self::body_hot_impl,
+            column_width_px,
+            margin_left_px,
+            margin_right_px,
+            dpi
+        )
+    }
+
+    fn body_hot_impl(
+        column_width_px: f64,
+        margin_left_px: f64,
+        margin_right_px: f64,
+        dpi: f64,
+    ) -> Self {
+        Self::body_hwp(
             crate::renderer::px_to_hwpunit(column_width_px, dpi),
-            COLUMN_WIDTH_QUANTUM_HWP,
-        );
-        let margin_left_hwp = crate::renderer::px_to_hwpunit(margin_left_px, dpi);
-        let margin_right_hwp = crate::renderer::px_to_hwpunit(margin_right_px, dpi);
-        Self::column(margin_left_hwp..column_width_hwp.saturating_sub(margin_right_hwp))
+            crate::renderer::px_to_hwpunit(margin_left_px, dpi),
+            crate::renderer::px_to_hwpunit(margin_right_px, dpi),
+        )
+    }
+
+    pub(crate) fn body_hwp(
+        column_width_hwp: i32,
+        margin_left_hwp: i32,
+        margin_right_hwp: i32,
+    ) -> Self {
+        crate::hot_call!(
+            Self::body_hwp_hot_impl,
+            column_width_hwp,
+            margin_left_hwp,
+            margin_right_hwp,
+        )
+    }
+
+    fn body_hwp_hot_impl(
+        column_width_hwp: i32,
+        margin_left_hwp: i32,
+        margin_right_hwp: i32,
+    ) -> Self {
+        // The column solver quantizes the full inline extent before paragraph
+        // margins are applied. Snapping post-margin edges would incorrectly
+        // turn 850..37418 into 852..37416 (#1440).
+        let width = snap_base_right(column_width_hwp, COLUMN_WIDTH_QUANTUM_HWP);
+        Self::column(margin_left_hwp..width.saturating_sub(margin_right_hwp))
     }
 
     /// [`ParagraphBox::body`] for a paragraph whose resolved style is known.
@@ -135,12 +172,49 @@ impl ParagraphBox {
         style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
         dpi: f64,
     ) -> Self {
+        crate::hot_call!(Self::body_for_style_hot_impl, column_width_px, style, dpi)
+    }
+
+    fn body_for_style_hot_impl(
+        column_width_px: f64,
+        style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+        dpi: f64,
+    ) -> Self {
+        Self::body_hwp_for_style(
+            crate::renderer::px_to_hwpunit(column_width_px, dpi),
+            style,
+            dpi,
+        )
+    }
+
+    pub(crate) fn body_hwp_for_style(
+        column_width_hwp: i32,
+        style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+        dpi: f64,
+    ) -> Self {
+        crate::hot_call!(
+            Self::body_hwp_for_style_hot_impl,
+            column_width_hwp,
+            style,
+            dpi,
+        )
+    }
+
+    fn body_hwp_for_style_hot_impl(
+        column_width_hwp: i32,
+        style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+        dpi: f64,
+    ) -> Self {
         use crate::model::style::HeadType;
-        let margin_left = style.map(|s| s.margin_left).unwrap_or(0.0);
-        let margin_right = style.map(|s| s.margin_right).unwrap_or(0.0);
-        let head_type = style.map(|s| s.head_type).unwrap_or(HeadType::None);
-        Self::body(column_width_px, margin_left, margin_right, dpi)
-            .with_derivable_origin(matches!(head_type, HeadType::None | HeadType::Outline))
+        let margin_left = style.map(|value| value.margin_left).unwrap_or(0.0);
+        let margin_right = style.map(|value| value.margin_right).unwrap_or(0.0);
+        let head_type = style.map(|value| value.head_type).unwrap_or(HeadType::None);
+        Self::body_hwp(
+            column_width_hwp,
+            crate::renderer::px_to_hwpunit(margin_left, dpi),
+            crate::renderer::px_to_hwpunit(margin_right, dpi),
+        )
+        .with_derivable_origin(matches!(head_type, HeadType::None | HeadType::Outline))
     }
 
     /// Declare whether this box's **origin** may be published, or only its width.
@@ -177,6 +251,14 @@ impl ParagraphBox {
     /// geometry pitch, which is the exposure Task 3 measured. Fixing the
     /// empty-list marker placement is the prerequisite for removing this.
     pub(crate) fn with_derivable_origin(self, origin_is_derivable: bool) -> Self {
+        crate::hot_call!(
+            Self::with_derivable_origin_hot_impl,
+            self,
+            origin_is_derivable
+        )
+    }
+
+    fn with_derivable_origin_hot_impl(self, origin_is_derivable: bool) -> Self {
         Self {
             origin_is_derivable: self.origin_is_derivable && origin_is_derivable,
             ..self
@@ -186,6 +268,10 @@ impl ParagraphBox {
     /// A box in a nested flow's own coordinates. Pass the real inset when the
     /// caller has one; `0..width` when the flow's left edge *is* the origin.
     pub(crate) fn content(horizontal: Range<i32>) -> Self {
+        crate::hot_call!(Self::content_hot_impl, horizontal)
+    }
+
+    fn content_hot_impl(horizontal: Range<i32>) -> Self {
         Self {
             horizontal,
             origin_is_derivable: true,
@@ -198,12 +284,20 @@ impl ParagraphBox {
     /// (`composer::recompose_cell_lines_in_frame`) is public, and a caller that
     /// cannot name its own coordinate system cannot use that entry at all.
     pub fn content_width_px(width_px: f64, dpi: f64) -> Self {
+        crate::hot_call!(Self::content_width_px_hot_impl, width_px, dpi)
+    }
+
+    fn content_width_px_hot_impl(width_px: f64, dpi: f64) -> Self {
         Self::content(0..crate::renderer::px_to_hwpunit(width_px, dpi))
     }
 
     /// The box after the geometry pitch — the single source for both the
     /// published record and the carved frame.
     pub(crate) fn effective(&self) -> Range<i32> {
+        crate::hot_call!(Self::effective_hot_impl, self)
+    }
+
+    fn effective_hot_impl(&self) -> Range<i32> {
         if self.origin_is_derivable {
             self.horizontal.clone()
         } else {
@@ -253,6 +347,10 @@ impl ParagraphBox {
     /// deriving another horizontal range: two expressions for one quantity are
     /// what previously let the band and body disagree.
     pub(crate) fn frame_with(&self, top: i32, exclusions: Vec<FrameExclusion>) -> LayoutFrame {
+        crate::hot_call!(Self::frame_with_hot_impl, self, top, exclusions)
+    }
+
+    fn frame_with_hot_impl(&self, top: i32, exclusions: Vec<FrameExclusion>) -> LayoutFrame {
         LayoutFrame::new(self.effective(), top, exclusions)
     }
 
@@ -321,6 +419,14 @@ pub(crate) struct PhysicalRow {
 /// - Column-solver quantization belongs in `ParagraphBox::body`, before
 ///   paragraph margins. This predicate must not absorb it a second time.
 fn stored_row_matches_frame_expectation(expected: &Range<i32>, stored: &LineSeg) -> bool {
+    crate::hot_call!(
+        stored_row_matches_frame_expectation_hot_impl,
+        expected,
+        stored
+    )
+}
+
+fn stored_row_matches_frame_expectation_hot_impl(expected: &Range<i32>, stored: &LineSeg) -> bool {
     expected.start == stored.column_start
         && stored
             .column_start
@@ -368,6 +474,10 @@ pub(crate) struct LayoutFrame {
 impl LayoutFrame {
     /// Start a paragraph-local physical frame at a known horizontal extent.
     pub(crate) fn new(horizontal: Range<i32>, top: i32, exclusions: Vec<FrameExclusion>) -> Self {
+        crate::hot_call!(Self::new_hot_impl, horizontal, top, exclusions)
+    }
+
+    fn new_hot_impl(horizontal: Range<i32>, top: i32, exclusions: Vec<FrameExclusion>) -> Self {
         Self {
             horizontal,
             top,
@@ -381,11 +491,20 @@ impl LayoutFrame {
 
     /// Discard an uncommitted row trial and restore its exact frame state.
     pub(crate) fn restore_checkpoint(&mut self, checkpoint: Self) {
+        crate::hot_call!(Self::restore_checkpoint_hot_impl, self, checkpoint)
+    }
+
+    fn restore_checkpoint_hot_impl(&mut self, checkpoint: Self) {
         *self = checkpoint;
     }
 
     /// Carve the current physical row into ordered horizontal intervals.
     pub(crate) fn carve(&mut self, band_height: i32) -> &[Range<i32>] {
+        crate::hot_call!(Self::carve_hot_impl, self, band_height);
+        &self.current_intervals
+    }
+
+    fn carve_hot_impl(&mut self, band_height: i32) {
         let old_max = self.next_geometry_event.map(|_| {
             self.current_intervals
                 .iter()
@@ -494,7 +613,7 @@ impl LayoutFrame {
             self.top = candidate_top;
             self.current_intervals = intervals;
             self.next_geometry_event = next_geometry_event;
-            return &self.current_intervals;
+            return;
         }
     }
 
@@ -574,6 +693,19 @@ impl LayoutFrame {
         &mut self,
         line_segs: &[LineSeg],
         metrics_for: impl Fn(&[LineSeg]) -> Option<FrameRowMetrics>,
+    ) -> bool {
+        crate::hot_call!(
+            Self::try_admit_stored_rows_hot_impl,
+            self,
+            line_segs,
+            &metrics_for,
+        )
+    }
+
+    fn try_admit_stored_rows_hot_impl(
+        &mut self,
+        line_segs: &[LineSeg],
+        metrics_for: &dyn Fn(&[LineSeg]) -> Option<FrameRowMetrics>,
     ) -> bool {
         let checkpoint = self.clone();
         let admitted = self.admit_stored_rows(line_segs, metrics_for).is_some();
@@ -676,6 +808,10 @@ impl LayoutFrame {
     /// inverted interval published a negative width — the same corrupt record
     /// `ParagraphBox::is_usable` refuses upstream.
     pub(crate) fn carved_row_is_usable(&self) -> bool {
+        crate::hot_call!(Self::carved_row_is_usable_hot_impl, self)
+    }
+
+    fn carved_row_is_usable_hot_impl(&self) -> bool {
         !self.current_intervals.is_empty()
             && self
                 .current_intervals
@@ -689,6 +825,14 @@ impl LayoutFrame {
     /// by `carve`. The frame gives all of them one vertical position, retains
     /// them as one physical row, then advances exactly once.
     pub(crate) fn commit_carved_row(
+        &mut self,
+        metrics: FrameRowMetrics,
+        segments: Vec<RowSegment>,
+    ) -> Option<usize> {
+        crate::hot_call!(Self::commit_carved_row_hot_impl, self, metrics, segments)
+    }
+
+    fn commit_carved_row_hot_impl(
         &mut self,
         mut metrics: FrameRowMetrics,
         segments: Vec<RowSegment>,
@@ -736,6 +880,10 @@ impl LayoutFrame {
 
     /// Flatten retained physical rows at the document boundary.
     pub(crate) fn project_line_segs(&self) -> Vec<LineSeg> {
+        crate::hot_call!(Self::project_line_segs_hot_impl, self)
+    }
+
+    fn project_line_segs_hot_impl(&self) -> Vec<LineSeg> {
         let mut projected = Vec::new();
 
         for row in &self.rows {
@@ -770,6 +918,10 @@ impl LayoutFrame {
 
     /// Flatten only rows appended after a paragraph-local checkpoint.
     pub(crate) fn project_line_segs_since(&self, first_row: usize) -> Vec<LineSeg> {
+        crate::hot_call!(Self::project_line_segs_since_hot_impl, self, first_row)
+    }
+
+    fn project_line_segs_since_hot_impl(&self, first_row: usize) -> Vec<LineSeg> {
         let first_segment = self.rows[..first_row.min(self.rows.len())]
             .iter()
             .map(|row| row.segments.len())

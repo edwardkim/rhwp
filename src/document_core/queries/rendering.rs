@@ -4114,6 +4114,17 @@ impl DocumentCore {
         &mut self,
         fragment_budget: usize,
     ) -> DeferredPaginationStepResult {
+        crate::hot_call!(
+            Self::begin_deferred_pagination_hot_impl,
+            self,
+            fragment_budget,
+        )
+    }
+
+    fn begin_deferred_pagination_hot_impl(
+        &mut self,
+        fragment_budget: usize,
+    ) -> DeferredPaginationStepResult {
         self.pending_pagination_job = None;
         let Some(descriptor) = self.deferred_pagination_descriptor.clone() else {
             return DeferredPaginationStepResult {
@@ -4244,6 +4255,17 @@ impl DocumentCore {
     /// [#2424] shadow job에서 fragment budget만큼 전진한다.
     /// 완료 전에는 기존 공개 pagination과 render tree cache를 유지한다.
     pub fn step_deferred_pagination(
+        &mut self,
+        fragment_budget: usize,
+    ) -> DeferredPaginationStepResult {
+        crate::hot_call!(
+            Self::step_deferred_pagination_hot_impl,
+            self,
+            fragment_budget,
+        )
+    }
+
+    fn step_deferred_pagination_hot_impl(
         &mut self,
         fragment_budget: usize,
     ) -> DeferredPaginationStepResult {
@@ -4470,6 +4492,10 @@ impl DocumentCore {
     }
 
     fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
+        crate::hot_call!(Self::paginate_pass_hot_impl, self, force_breaks)
+    }
+
+    fn paginate_pass_hot_impl(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
         // [#4968 R4C-3] 이번 pass의 모든 fresh-layout 경로가 동일한 exact-source
         // generation을 읽는다. 등록 source가 없으면 None으로 K0 fast path를 고정한다.
         self.styles.kerning_measurement_context =
@@ -5333,6 +5359,10 @@ impl DocumentCore {
     /// [#2004] 부동 전면 이미지 스택 섹션의 정규화본(그림 tac=true 재분류 + 재구성)을 재계산.
     /// 원본 `document`/`composed` 는 무손상(save 무결). paginate 시작 시 호출.
     pub(crate) fn compute_render_normalized(&mut self) {
+        crate::hot_call!(Self::compute_render_normalized_hot_impl, self)
+    }
+
+    fn compute_render_normalized_hot_impl(&mut self) {
         let sec_count = self.document.sections.len();
         self.render_normalization
             .section_revisions
@@ -6394,6 +6424,27 @@ impl DocumentCore {
         old_text_len: usize,
         new_text_len: usize,
     ) -> Option<FocusedPageTreePatch> {
+        crate::hot_call!(
+            Self::try_patch_cached_focused_cell_tail_line_hot_impl,
+            self,
+            (
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            ),
+            (line_index, line_start, old_text_len, new_text_len),
+        )
+    }
+
+    fn try_patch_cached_focused_cell_tail_line_hot_impl(
+        &self,
+        location: (usize, usize, usize, usize, usize),
+        edit: (usize, usize, usize, usize),
+    ) -> Option<FocusedPageTreePatch> {
+        let (section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx) = location;
+        let (line_index, line_start, old_text_len, new_text_len) = edit;
         // partial Canvas replay는 일반 화면 text만 대상으로 한다. 편집 표식/디버그
         // overlay는 bbox 밖에 별도 glyph를 그릴 수 있으므로 기존 full repaint를 유지한다.
         if self.show_paragraph_marks || self.show_control_codes || self.debug_overlay {
@@ -6645,6 +6696,20 @@ impl DocumentCore {
 
     /// 캐시된 페이지 렌더 트리를 반환한다 (캐시 미스 시 빌드 후 캐시).
     pub(crate) fn build_page_tree_cached(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
+        self.ensure_page_tree_cached(page_num)?;
+        self.page_tree_cache
+            .borrow()
+            .get(page_num as usize)
+            .and_then(Option::as_ref)
+            .cloned()
+            .ok_or_else(|| HwpError::RenderError("페이지 tree cache 채우기 실패".into()))
+    }
+
+    fn ensure_page_tree_cached(&self, page_num: u32) -> Result<(), HwpError> {
+        crate::hot_call!(Self::ensure_page_tree_cached_hot_impl, self, page_num)
+    }
+
+    fn ensure_page_tree_cached_hot_impl(&self, page_num: u32) -> Result<(), HwpError> {
         let idx = page_num as usize;
 
         // 캐시 크기 확보 + 히트 확인
@@ -6654,23 +6719,23 @@ impl DocumentCore {
                 cache.resize_with(idx + 1, || None);
             }
             if let Some(ref tree) = cache[idx] {
-                return Ok(tree.clone());
+                let _ = tree;
+                return Ok(());
             }
         }
 
         // 캐시 미스 → 빌드
         let tree = self.build_page_tree(page_num)?;
-        let cloned = tree.clone();
 
         {
             let mut cache = self.page_tree_cache.borrow_mut();
             if cache.len() <= idx {
                 cache.resize_with(idx + 1, || None);
             }
-            cache[idx] = Some(cloned);
+            cache[idx] = Some(tree);
         }
 
-        Ok(tree)
+        Ok(())
     }
 
     /// 캐시된 페이지 렌더 트리를 참조로 사용한다.
@@ -6683,20 +6748,7 @@ impl DocumentCore {
         build: impl FnOnce(&PageRenderTree) -> Result<T, HwpError>,
     ) -> Result<T, HwpError> {
         let idx = page_num as usize;
-        let cached = self
-            .page_tree_cache
-            .borrow()
-            .get(idx)
-            .is_some_and(Option::is_some);
-
-        if !cached {
-            let tree = self.build_page_tree(page_num)?;
-            let mut cache = self.page_tree_cache.borrow_mut();
-            if cache.len() <= idx {
-                cache.resize_with(idx + 1, || None);
-            }
-            cache[idx] = Some(tree);
-        }
+        self.ensure_page_tree_cached(page_num)?;
 
         let cache = self.page_tree_cache.borrow();
         let tree = cache[idx]
@@ -6707,6 +6759,10 @@ impl DocumentCore {
 
     /// 페이지 렌더 트리를 빌드한다.
     pub(crate) fn build_page_tree(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
+        crate::hot_call!(Self::build_page_tree_hot_impl, self, page_num)
+    }
+
+    fn build_page_tree_hot_impl(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
         use crate::model::style::HeadType;
         use crate::renderer::layout::resolve_numbering_id;
         use crate::renderer::pagination::PageItem;
