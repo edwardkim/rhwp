@@ -57,7 +57,11 @@ test('WasmBridge는 다음 문서를 모두 준비한 뒤에만 기존 문서를
 
   const plainLoad = between(bridgeSource, 'loadDocument(data: Uint8Array', 'loadDocumentWithPassword');
   assert.match(plainLoad, /loadDocumentAtomically\([\s\S]*false/, '평문 load는 보호 의도를 해제한다');
-  const passwordLoad = between(bridgeSource, 'loadDocumentWithPassword', '/** [Task #741 후속]');
+  const passwordLoad = between(
+    bridgeSource,
+    'loadDocumentWithPassword',
+    'private async populateExternalImagesFromDevServer',
+  );
   assert.match(passwordLoad, /HwpDocument\.openWithPassword\(data, password\)/, '암호 전용 WASM API를 노출한다');
   assert.match(passwordLoad, /loadDocumentAtomically\([\s\S]*true/, '암호 load는 보호 의도를 유지한다');
 });
