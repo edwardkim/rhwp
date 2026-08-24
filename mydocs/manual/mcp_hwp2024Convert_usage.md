@@ -14,6 +14,7 @@ Windows에서 HOffice120과 HOffice130 profile을 선택해 실행하지만 clie
 한컴오피스 2022 이하 저장본은 `engine: 2020`, 한컴오피스 2024 저장본은 `engine: 2024`를 사용한다.
 `2020`은 이 service에 등록된 Windows HOffice120 호환 profile의 공개 식별자이며 폐기된 Linux 한컴
 2020 beta service를 호출한다는 뜻이 아니다. 확장자만으로 engine을 선택하지 않는다.
+별도 “HWP 2020 MCP” server나 client artifact는 제공하지 않으며, 이 client의 `engine: 2020`만 사용한다.
 `rhwp info --json <파일>`의 `lastSavedWith.product`가 `hancom-office-2024`이면 `2024`,
 `hancom-office-2022`이면 `2020`을 사용하고, 필드가 `null`이면 저장 환경을 별도로 확인한다.
 
