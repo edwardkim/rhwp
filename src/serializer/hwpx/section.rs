@@ -2083,6 +2083,17 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         Control::Field(f) => {
             // fieldBegin은 <hp:ctrl>...</hp:ctrl>로 감싸야 함 (Table/Picture와 달리)
             out.push_str("<hp:ctrl>");
+            // [#5866] HWP5 출처 메모(command `MEMO/…`)는 한글 실측 형상(파라미터
+            // 6종 + 빈 subList)으로 방출한다 — CROSSREF 로 굳히면 필드 범위
+            // 숨김이 풀려 메모 대상 텍스트가 본문에 붙는다.
+            if let Some(memo_children) = super::field::memo_field_children_xml(f) {
+                out.push_str(&super::field::field_begin_open_tag(f));
+                out.push('>');
+                out.push_str(&memo_children);
+                out.push_str("</hp:fieldBegin>");
+                out.push_str("</hp:ctrl>");
+                return;
+            }
             let generated_params = generated_field_parameters(f);
             let has_params = f.raw_parameters_xml.is_some() || generated_params.is_some();
             let has_memo = f.field_type == crate::model::control::FieldType::Memo

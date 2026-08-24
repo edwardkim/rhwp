@@ -282,6 +282,12 @@ pub const OWPML_FIELD_TYPE_BY_COMMAND: &[(&str, &str)] = &[
     // [#5171] 같은 계열의 단순 변경. hwp 원본에서 ctrl_id 는 `%unk`, command 는
     // `$RevisionSimpleChange?<본문>;` 이고 한글은 컨트롤을 `%%*c` 로 센다(03787: 3개).
     ("$RevisionSimpleChange", "PROOFREADING_MARKS_SIMPLECHANGE"),
+    // [#5866] 메모(숨은 주석). hwp 는 종류를 command 로 들고 있다 —
+    // `MEMO/<memoShapeIDRef>/<번호>/<id?>/<id?>/<작성자>/\;;`. CROSSREF 로 굳히면
+    // 한글이 필드 범위를 숨기지 않아 메모 대상 텍스트가 본문 문장에 붙는다
+    // (07868·08040·02302). 한글 2024 SaveAs 실측: type="MEMO" + 파라미터
+    // 7종(전부 command 에서 유도 가능) + 빈 subList.
+    ("MEMO/", "MEMO"),
 ];
 
 /// [#5140] 한컴 사용자 정의 기호의 **두 포맷 간 사상**.

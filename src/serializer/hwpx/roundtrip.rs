@@ -613,7 +613,18 @@ fn is_hwp_to_hwpx_incomparable(d: &IrDifference) -> bool {
         IrDifference::FieldContent { detail, .. } => {
             const PREFIX: &str = r#"parameters: expected=None actual=Some("<hp:parameters cnt=\"1\" name=\"\"><hp:stringParam name=\"Command\">"#;
             const SUFFIX: &str = r#"</hp:stringParam></hp:parameters>")"#;
-            detail.starts_with(PREFIX) && detail.ends_with(SUFFIX)
+            if detail.starts_with(PREFIX) && detail.ends_with(SUFFIX) {
+                return true;
+            }
+            // [#5866] 메모 승격의 의도된 정규화 두 건 — HWP5 원본은 command 만 갖고,
+            // 산출 HWPX 재파싱은 memo_field_children_xml 이 만든 파라미터 6종
+            // (Command 원문 포함)과 빈 subList 문단 1개를 갖는다. cnt·Command
+            // prefix 까지 고정해 다른 parameters 변화를 숨기지 않는다.
+            const MEMO_PREFIX: &str = r#"parameters: expected=None actual=Some("<hp:parameters cnt=\"6\" name=\"\"><hp:integerParam name=\"Prop\">0</hp:integerParam><hp:stringParam name=\"Command\">MEMO/"#;
+            if detail.starts_with(MEMO_PREFIX) {
+                return true;
+            }
+            detail == "memo paragraphs: expected=0 actual=1"
         }
         _ => false,
     }
