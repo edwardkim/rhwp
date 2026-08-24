@@ -7,6 +7,7 @@ import test, { after } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { canonicalJson, sha256Text } from '../font_rule_ledger.mjs';
+import { selectionTupleSha256 } from '../font_rule_registry_v2.mjs';
 import {
   GENERATED_SENTINEL,
   OUTPUT_CONFIGS,
@@ -17,9 +18,17 @@ import {
 } from '../font_rule_projection_gen.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const REGISTRY_PATH = path.join(ROOT, 'assets', 'font-rules', 'font_rule_registry.json');
+const V1_REGISTRY_PATH = path.join(ROOT, 'assets', 'font-rules', 'font_rule_registry.json');
+const REGISTRY_PATH = path.join(ROOT, 'assets', 'font-rules', 'font_rule_registry_v2.json');
 const GENERATOR_PATH = path.join(ROOT, 'scripts', 'font_rule_projection_gen.mjs');
 const temporaryDirectories = [];
+const SEALED_PROJECTION_SHA256 = Object.freeze({
+  'canvas2d-paint': 'c959e68087f6928edcafc74a1d3f9cd3885dd7540faf22b7663a49b6ad8835e4',
+  'canvas2d-webfont': '730cab042d68ffb019d5867102ee8b2b8e5be41c48170ca5fc75422005e3fbee',
+  'canvaskit-sfnt': 'd9019fc756d4fd9334252704309bb2020c251d6a7d04dc0f5a6b2efb0f017668',
+  'rust-layout-metric': 'c4659fc40246c5d4ad903578a61807c646681638cb4c8f9b7c802fb3f0c37cc2',
+  'rust-layout-name': '595cdcc1c8d81441c9e4585acb393e734f52e6da3e822babf0f722df2c791cee',
+});
 
 function readRegistry() {
   return JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf8'));
@@ -32,6 +41,17 @@ function temporaryRoot(prefix) {
 }
 
 function refreshRegistryHash(registry) {
+  for (const rule of registry.rules) rule.selectionTupleSha256 = selectionTupleSha256(rule);
+  const active = registry.rules.filter(rule => rule.status === 'active');
+  registry.summary = {
+    ruleCount: registry.rules.length,
+    activeRuleCount: active.length,
+    retiredRuleCount: registry.rules.length - active.length,
+    countsByProjection: Object.fromEntries(OUTPUT_CONFIGS.map(config => [
+      config.projectionId,
+      active.filter(rule => rule.projections[0].id === config.projectionId).length,
+    ]).sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))),
+  };
   registry.rulesSha256 = sha256Text(canonicalJson(registry.rules));
   return registry;
 }
@@ -61,7 +81,8 @@ test('five backend projections are deterministic and close all 830 registry rule
     registry,
   ), []);
   assert.equal(first.manifest.summary.outputCount, 5);
-  assert.equal(first.manifest.summary.ruleCount, 830);
+  assert.equal(first.manifest.summary.activeRuleCount, 830);
+  assert.equal(first.manifest.summary.retiredRuleCount, 0);
   assert.deepEqual(first.manifest.summary.countsByProjection, {
     'canvas2d-paint': 281,
     'canvas2d-webfont': 153,
@@ -69,6 +90,18 @@ test('five backend projections are deterministic and close all 830 registry rule
     'rust-layout-metric': 67,
     'rust-layout-name': 171,
   });
+  assert.deepEqual(
+    Object.fromEntries(first.outputs.map(output => [
+      output.projectionId,
+      output.projectionSha256,
+    ]).sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))),
+    SEALED_PROJECTION_SHA256,
+  );
+});
+
+test('sealed v1 cannot be used as the current projection authority', () => {
+  const v1 = JSON.parse(fs.readFileSync(V1_REGISTRY_PATH, 'utf8'));
+  assert.throws(() => buildProjectionBundle(v1), /v2 registry envelope is invalid/);
 });
 
 test('output allowlist, language and ruleId order match the canonical registry', () => {
@@ -91,7 +124,10 @@ test('output allowlist, language and ruleId order match the canonical registry',
     assert.deepEqual(
       output.rows.map(row => row.ruleId),
       registry.rules
-        .filter(rule => rule.projections[0].id === output.projectionId)
+        .filter(rule => (
+          rule.status === 'active' && rule.projections[0].id === output.projectionId
+        ))
+        .sort((left, right) => left.projectionSequence - right.projectionSequence)
         .map(rule => rule.ruleId),
     );
     assert.equal(output.content.startsWith(`${GENERATED_SENTINEL}\n`), true);
@@ -105,13 +141,13 @@ test('all projections retain one source boundary and Rust emits allocation-free 
 
   for (const output of bundle.outputs) {
     const inputRules = registry.rules.filter(rule => (
-      rule.projections[0].id === output.projectionId
-    ));
+      rule.status === 'active' && rule.projections[0].id === output.projectionId
+    )).sort((left, right) => left.projectionSequence - right.projectionSequence);
     assert.deepEqual(
       output.rows.map(row => row.sourceBoundaryId),
-      inputRules.map(rule => rule.evidence.sourceBoundaryIds[0]),
+      inputRules.map(rule => rule.sourceBoundaryId),
     );
-    assert.equal(inputRules.every(rule => rule.evidence.sourceBoundaryIds.length === 1), true);
+    assert.equal(inputRules.every(rule => typeof rule.sourceBoundaryId === 'string'), true);
   }
 
   for (const output of rustOutputs) {
@@ -135,7 +171,7 @@ test('a single rule mutation changes only its backend source output', () => {
   assert.deepEqual(changedOutputs, ['canvas2d-paint']);
 });
 
-test('projection order perturbation changes only the affected projection digest', () => {
+test('projection sequence perturbation changes only the affected projection digest', () => {
   const original = readRegistry();
   const changed = structuredClone(original);
   const indexes = changed.rules
@@ -143,9 +179,9 @@ test('projection order perturbation changes only the affected projection digest'
     .filter(([projectionId]) => projectionId === 'canvas2d-paint')
     .slice(0, 2)
     .map(([, index]) => index);
-  [changed.rules[indexes[0]], changed.rules[indexes[1]]] = [
-    changed.rules[indexes[1]],
-    changed.rules[indexes[0]],
+  [changed.rules[indexes[0]].projectionSequence, changed.rules[indexes[1]].projectionSequence] = [
+    changed.rules[indexes[1]].projectionSequence,
+    changed.rules[indexes[0]].projectionSequence,
   ];
   refreshRegistryHash(changed);
 
@@ -158,6 +194,25 @@ test('projection order perturbation changes only the affected projection digest'
     .map(output => output.projectionId);
 
   assert.deepEqual(changedProjections, ['canvas2d-paint']);
+});
+
+test('retired rules remain in the registry but never reach runtime projections', () => {
+  const changed = structuredClone(readRegistry());
+  const retired = changed.rules
+    .filter(rule => rule.projections[0].id === 'canvas2d-paint')
+    .sort((left, right) => left.projectionSequence - right.projectionSequence)
+    .at(-1);
+  retired.status = 'retired';
+  retired.lifecycle.retiredBy = 'issue-5955.fixture.retire-tail';
+  retired.lifecycle.retirementReason = 'Synthetic active-only projection contract';
+  refreshRegistryHash(changed);
+
+  const bundle = buildProjectionBundle(changed);
+  const paint = bundle.outputs.find(output => output.projectionId === 'canvas2d-paint');
+  assert.equal(paint.ruleCount, 280);
+  assert.equal(paint.rows.some(row => row.ruleId === retired.ruleId), false);
+  assert.equal(bundle.manifest.summary.activeRuleCount, 829);
+  assert.equal(bundle.manifest.summary.retiredRuleCount, 1);
 });
 
 test('check detects missing, manually edited and unexpected generated outputs', () => {

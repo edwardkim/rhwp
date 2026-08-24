@@ -2,7 +2,7 @@
 kind: investigation
 status: active
 canonical: mydocs/plans/task_m100_4966.md
-last_verified: 2026-08-23
+last_verified: 2026-08-24
 ---
 
 # Issue #4966 canonical font registry와 backend projection
@@ -96,6 +96,10 @@ node --test scripts/tests/font_rule_projection_gen.test.mjs
 다섯 generated source는 전용 디렉터리의 whole-file ownership을 가지며 아직 runtime이 import하지 않는다.
 전체 registry digest는 manifest에만 있고 source에는 backend별 input/projection digest를 넣어 한 규칙의
 변경이 무관한 backend source를 갱신하지 않도록 했다.
+
+`font_rule_projection_manifest_v1.json`은 #5955 Stage W7.5-3에서 current manifest가 schema 2.0과 v2
+registry provenance로 전환되기 직전의 schema 1.0 manifest를 byte 그대로 보존한 역사 snapshot이다.
+현재 projection authority로 읽지 않으며 v1 cutover 감사와 봉인 SHA-256 검증에만 사용한다.
 
 ## Stage W7-4·5 runtime 전환
 

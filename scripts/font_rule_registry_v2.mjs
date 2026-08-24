@@ -95,7 +95,7 @@ export const SEALED_V1_ARTIFACTS = Object.freeze({
     'f549ca3a8807be712cc197daf14d96abb1e5f075ac55f1d9142db67c1a56681a',
   'assets/font-rules/font_rule_registry.schema.json':
     '068327e9f49843c54d0f4da16d6f0081bca86b38fe85e362c8416462f15d3ab4',
-  'assets/font-rules/font_rule_projection_manifest.json':
+  'mydocs/tech/investigations/issue-4966/font_rule_projection_manifest_v1.json':
     '77089c7dfbb3c6759161d839f5cb8b753c3271e07bb556d6eba87ef45cfaa20d',
   'mydocs/tech/investigations/issue-4966/font_rule_registry_migration.json':
     '11b93350a0702c75af07ffde7bae4aff2dab332c43ad9bb57d1e3cf1a1747e83',
