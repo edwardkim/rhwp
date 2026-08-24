@@ -27,6 +27,7 @@ pub(super) fn print() {
     println!("      --show-control-codes    조판부호 보이기 (문단부호 + 개체 마커 등)");
     println!("      --debug-overlay         디버그 오버레이 (문단/표 경계 + 인덱스 라벨)");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
+    println!("      --compat 2022|2024      목표 한글 조판 세대 (기본: 2022 — 2018·2020 포함)");
     println!("      --show-grid[=Nmm]       격자 오버레이 (기본: 1mm, 예: --show-grid=3mm)");
     println!("      --grid-origin=X,Y|auto  격자 종이 기준 위치 (예: --grid-origin=15mm,20mm)");
     println!("      --font-style            @font-face local() 참조 삽입 (폰트 데이터 미포함)");
@@ -43,6 +44,7 @@ pub(super) fn print() {
     println!("      --show-para-marks       문단부호(↵/↓) 표시 상태의 트리 생성");
     println!("      --show-control-codes    조판부호 보이기 상태의 트리 생성");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
+    println!("      --compat 2022|2024      목표 한글 조판 세대 (기본: 2022 — 2018·2020 포함)");
     println!();
     println!("  export-structure <파일> [--mode auto|outline|clause] [-o out.json] [--json]");
     println!("      문서 개요/조문(편·장·절·관·조·항·호·목) 계층을 중첩 JSON 트리로 추출");
@@ -67,6 +69,7 @@ pub(super) fn print() {
     );
     println!("      --dpi <값>              DPI 메타데이터 (PNG pHYs chunk). 실제 픽셀 수 무관.");
     println!("                              --scale 미지정 시 scale = dpi/96 자동 계산");
+    println!("      --compat 2022|2024      목표 한글 조판 세대 (기본: 2022 — 2018·2020 포함)");
     println!("      --vlm-target <프리셋>   VLM 입력 프리셋 (하이픈/밑줄 모두 허용):");
     println!("                              claude:     1568 px / 1.15 MP (Claude Vision)");
     println!("                              gpt4v-low:  512 px (GPT-4V low detail)");
@@ -219,6 +222,7 @@ pub(super) fn print() {
         "      --profile <프로필>      layer 출력 프로필: screen|print|high-quality|fast-preview"
     );
     println!("      --raster-dpi <DPI>      direct backend fallback raster DPI (기본값: 144)");
+    println!("      --compat 2022|2024      목표 한글 조판 세대 (기본: 2022 — 2018·2020 포함)");
     println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
     println!("      --fallback-serif <명>   PDF serif generic fallback family");
     println!("      --fallback-sans <명>    PDF sans-serif generic fallback family");
@@ -368,7 +372,9 @@ pub(super) fn print() {
     println!("  dump-endnote-lines <파일.hwp> <section> <para> <control> [note-para]");
     println!("      특정 미주 원본 문단의 line_seg, TextRun, TAC 수식 위치를 함께 덤프");
     println!();
-    println!("  dump-pages <파일.hwp> [-p <번호>] [--respect-vpos-reset] [--json]");
+    println!(
+        "  dump-pages <파일.hwp> [-p <번호>] [--respect-vpos-reset] [--compat 2022|2024] [--json]"
+    );
     println!("      페이지네이션 결과 덤프 (페이지별 문단/표 배치 목록)");
     println!();
     println!("  dump-records <파일.hwp>");

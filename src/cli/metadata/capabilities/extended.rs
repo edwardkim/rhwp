@@ -6,7 +6,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd_json(
             "export-svg",
             "문서를 페이지별 SVG로 렌더하고 --json 매니페스트 출력",
-            &["-o", "-p", "--json"],
+            &["-o", "-p", "--json", "--compat"],
             &[
                 "schemaVersion",
                 "source",
@@ -35,7 +35,15 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd_json(
             "export-pdf",
             "문서를 PDF로 렌더 (svg|direct backend, --json 매니페스트)",
-            &["-o", "-p", "--backend", "--profile", "--font-path", "--json"],
+            &[
+                "-o",
+                "-p",
+                "--backend",
+                "--profile",
+                "--font-path",
+                "--json",
+                "--compat",
+            ],
             &[
                 "schemaVersion",
                 "source",
@@ -640,7 +648,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd_json(
             "dump-pages",
             "페이지네이션 항목 덤프 (--json: 조판 진단 기계 계약)",
-            &["-p", "--respect-vpos-reset", "--json"],
+            &["-p", "--respect-vpos-reset", "--json", "--compat"],
             &[
                 "schemaVersion",
                 "source",

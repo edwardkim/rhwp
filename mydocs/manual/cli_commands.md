@@ -126,6 +126,7 @@ HWP/HWPX → SVG.
   WASM 은 `setAnnotateMetricFont(true)` 후 `renderPageSvg`.
 - `--debug-overlay` — 디버그 오버레이(문단/표 경계 + 인덱스 라벨)
 - `--respect-vpos-reset` — LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리
+- `--compat 2022|2024` — 목표 한글 조판 세대(기본 `2022`). 아래 [조판 세대](#조판-세대-compat)
 - `--show-grid[=Nmm]` — 격자 오버레이(기본 1mm, 예 `--show-grid=3mm`)
 - `--grid-origin=X,Y|auto` — 격자 종이 기준 위치(예 `--grid-origin=15mm,20mm`)
 - `--font-style` — `@font-face local()` 참조 삽입(폰트 데이터 미포함)
@@ -149,6 +150,7 @@ HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_pn
 - `--profile <프로필>` — 출력 프로필. **기본 `high-quality`(인쇄 등가)** —
   그림 미지정 placeholder 는 억제된다. 편집기식 표시가 필요하면
   `--profile screen` 을 명시한다 (#2297, #2225 계약).
+- `--compat 2022|2024` — 목표 한글 조판 세대. [조판 세대](#조판-세대-compat)
 
 ### `export-png-gpu <파일.hwp|파일.hwpx> [옵션]` / `gpu-info` *(gpu feature 필요)*
 `export-png-gpu`는 기존 SVG 산출을 `vello`/`wgpu`로 래스터화하여 PNG로 내보내는 대량
@@ -167,6 +169,7 @@ HWP/HWPX → PDF (svg2pdf + pdf-writer).
   실패 경로의 stdout 은 비운다(export-svg 규약).
 - `-o <파일>`, `--output <파일>` — 출력 PDF 파일(기본 `output/<입력명>.pdf`)
 - `-p <번호>`, `--page <번호>` — 0-based 단일 페이지 선택. 생략하면 전체 문서를 다중 페이지 PDF로 내보낸다.
+- `--compat 2022|2024` — 목표 한글 조판 세대. [조판 세대](#조판-세대-compat)
 - `--font-path <경로>` — PDF 변환 fontdb에 추가할 폰트 탐색 경로(여러 번 지정 가능)
   - 환경변수 `RHWP_FONT_PATH` 로도 지정할 수 있다(#2864). 복수 경로는 OS 관례
     구분자로 나눈다(유닉스 `:`, Windows `;`). 백엔드에서 대량 변환할 때 호출마다
@@ -464,7 +467,8 @@ rhwp csv-to-chart 보고서.hwpx --csv /tmp/차트1.csv --chart 1 -o 수정본.h
 
 ### `export-render-tree <파일> [옵션]`
 페이지별 render tree bbox JSON(레이아웃 시각 분석용). 출력 `render_tree_{NNN}.json`.
-- `-o`, `-p`, `--show-para-marks`, `--show-control-codes`, `--respect-vpos-reset`
+- `-o`, `-p`, `--show-para-marks`, `--show-control-codes`, `--respect-vpos-reset`,
+  `--compat 2022|2024`
 - JSON: `{type, bbox:{x,y,w,h}, children:[...]}` (Page → PageBg/Line/TextRun/Image/Table/Shape …)
 
 ### `export-structure <파일> [--mode auto|outline|clause] [-o out.json] [--json]`
@@ -529,8 +533,30 @@ HWP5 / HWPX 문서를 **DocLang v0.6** 의미 XML 로 내보낸다 (다운스트
 ### `dump <파일> [--section <N>] [--para <N>]` (별칭 `-s`/`-p`)
 문서 조판부호 구조 덤프. ParaShape/LINE_SEG/표·도형 속성. 상세: [dump_command.md](dump_command.md)
 
-### `dump-pages <파일> [-p <N>] [--respect-vpos-reset]`
+### `dump-pages <파일> [-p <N>] [--respect-vpos-reset] [--compat 2022|2024] [--json]`
 페이지네이션 결과(페이지별 문단/표 배치 목록 + 높이).
+- **파일 인자가 먼저다.** 옵션을 파일 앞에 두면 `알 수 없는 옵션` 으로 종료한다(EXIT 2).
+- `--json` — 조판 진단 기계 계약. `{schemaVersion, source, pageCount, pageFilter,
+  respectVposReset, pages}`.
+- `--compat 2022|2024` — 아래 [조판 세대](#조판-세대-compat).
+
+### 조판 세대 `--compat`
+한글 편집기 세대마다 조판 규칙이 다르다. `--compat` 는 **어느 세대를 목표로 조판할지**를
+고르는 세션 설정이며, `export-svg` · `export-pdf` · `export-png` · `export-render-tree` ·
+`dump-pages` 가 받는다. 기본값은 `2022` 이고 이것이 현행 동작이다.
+
+축이 4세대가 아니라 **이분인 것은 실측 결과**다. 10k 전수 3자 대조에서 2020↔2022 차이는
+5건인데 2020↔2024 는 258건이다 — 2018·2020·2022 는 사실상 같은 엔진이고 2024 만 갈린다
+(`mydocs/report/hangul_version_oracle_r1_20260807.md` 8절). 그래서 `2018`·`2020` 은
+받지 않는다.
+
+**문서가 저장된 버전으로 자동 선택하지 않는다.** 저장 버전(`info --json` 의
+`lastSavedWith`)은 "이 문서가 2024 규칙을 필요로 하는가"를 예측하지 못한다 — 두 버전이
+다르게 조판하는 254건 중 2024 로 저장된 문서는 0건이고, 갈림률은 저장 버전이 올라갈수록
+오히려 낮아진다(전수 실측 2026-08-24). 목표 세대는 **사용자가 고르는 값**이다.
+
+한글 오라클과 대조할 때는 오라클을 띄운 한글 버전과 `--compat` 를 맞춰라. 어긋난 채로
+재면 버전 차이를 결함으로 오판한다.
 
 ### `dump-extents <파일.hwp> [-p <쪽번호>] [--min-h <px>] [--outside] [--gaps]`
 렌더 노드의 세로 범위와 빈 구간을 사람용으로 덤프하는 레이아웃 조사 도구다.
