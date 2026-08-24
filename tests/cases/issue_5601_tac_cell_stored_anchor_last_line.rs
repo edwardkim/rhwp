@@ -61,6 +61,15 @@ fn issue_5601_last_line_stays_inside_cell_clip() {
         (eul_top - 825.3).abs() <= 2.0,
         "`“을”` 줄 상단은 저장 사다리 정답(825.3±2)이어야 함 (수정 전 845.4); got {eul_top:.1}"
     );
+
+    // 제목(셀 첫 문단, sb=2000HU 선차감 스냅)도 저장 정답(114.3, 한글 113.9)에
+    // 있어야 한다 — Center 셀 column-top 의 spacing_before 재가산 유실이 있으면
+    // 87.6 으로 26px 위에 그려진다.
+    let (title_top, _) = find_line(&page.root, "물품공급 또는 기술지원협약서").expect("제목 줄");
+    assert!(
+        (title_top - 114.3).abs() <= 2.0,
+        "제목 줄 상단은 저장 사다리 정답(114.3±2)이어야 함 (유실 시 87.6); got {title_top:.1}"
+    );
     assert!(
         eul_bottom <= clip_bottom + 0.5,
         "`“을”` 줄({eul_bottom:.1})은 셀 clip({clip_bottom:.1}) 안에 있어야 함 — \

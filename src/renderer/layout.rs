@@ -2320,6 +2320,12 @@ pub struct LayoutEngine {
     /// 이 문단은 셀-상단(is_column_top)이고 셀-상대 인덱스>0 이지만, 한컴은 앞 간격
     /// (spacing_before)을 유지하므로 column-top 트림을 우회해 전량 적용한다.
     keep_continuation_column_top_spacing_before: std::cell::Cell<bool>,
+    /// [#5601] 셀 저장-앵커 스냅이 `para_y = anchored − spacing_before` 로 준비한
+    /// 문단에서만 set. 스냅 계약은 composed 가 spacing_before 를 재가산하는 것인데,
+    /// Center/Bottom 셀의 column-top 문단은 suppress 플래그가 그 재가산까지 막아
+    /// 앞 간격이 통째로 유실된다(00451 제목 −26px). 이 토글이 켜진 문단은
+    /// column-top 트림을 우회해 전량 재가산하고, 읽는 즉시 clear 된다.
+    reapply_snap_anchored_spacing_before: std::cell::Cell<bool>,
     /// HWPX `Preview/PrvImage.png` 원본. HMapsi OLE처럼 일반 preview stream이 없는
     /// legacy 객체의 제한적 첫 페이지 fallback에 사용한다.
     hwpx_page_preview: std::cell::RefCell<Option<PagePreviewImage>>,
@@ -2427,6 +2433,7 @@ impl LayoutEngine {
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             )),
             keep_continuation_column_top_spacing_before: std::cell::Cell::new(false),
+            reapply_snap_anchored_spacing_before: std::cell::Cell::new(false),
             hwpx_page_preview: std::cell::RefCell::new(None),
             cell_units_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             table_nested_text_flag_cache: std::cell::RefCell::new(std::collections::HashMap::new()),

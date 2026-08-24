@@ -4704,6 +4704,8 @@ impl LayoutEngine {
             .zip(cell.paragraphs.iter())
             .enumerate()
         {
+            // [#5601] 이 문단이 저장-앵커 스냅으로 spacing_before 를 선차감했는지.
+            let mut snap_anchored_with_spacing_before = false;
             let (start_line, end_line) = fragment_line_ranges
                 .as_ref()
                 .and_then(|ranges| ranges.get(cp_idx).copied())
@@ -4793,6 +4795,12 @@ impl LayoutEngine {
             let use_saved_cell_para_vpos = use_top_vpos_anchor
                 || trust_stored_cell_flow
                 || has_initial_tac_shape_host(&cell.paragraphs);
+            if std::env::var("RHWP_DIAG_5601B").is_ok() && trust_stored_cell_flow {
+                eprintln!(
+                    "DIAG5601B cp={cp_idx} use={use_saved_cell_para_vpos} anchor={has_stored_para_anchor} restart={local_vpos_restart_seen} para_y_in={para_y:.1} first_vpos={:?}",
+                    para.line_segs.first().map(|s| s.vertical_pos)
+                );
+            }
             if use_saved_cell_para_vpos
                 && (!has_nested_table || trust_stored_cell_flow)
                 && has_stored_para_anchor
@@ -4816,6 +4824,10 @@ impl LayoutEngine {
                         // layout_composed_paragraph()가 spacing_before를 더하므로
                         // 호출 전에 그 값을 빼서 최종 line top이 vpos와 일치하게 한다.
                         para_y = anchored_y - spacing_before;
+                        // [#5601] Center/Bottom 셀의 column-top 문단은 composed 의
+                        // suppress 경로가 재가산까지 막아 앞 간격이 유실된다 —
+                        // 이 문단의 composed 호출 직전에 전량 재가산 토글을 켠다.
+                        snap_anchored_with_spacing_before = spacing_before > 0.0;
                     }
                 }
             }
@@ -4893,6 +4905,11 @@ impl LayoutEngine {
                     None
                 };
                 let composed_for_layout = numbered_comp.as_ref().unwrap_or(composed);
+                // [#5601] 스냅 선차감 문단은 composed 가 column-top 트림과 무관하게
+                // spacing_before 를 전량 재가산해야 vpos 와 맞는다(읽는 즉시 clear).
+                if snap_anchored_with_spacing_before {
+                    self.reapply_snap_anchored_spacing_before.set(true);
+                }
                 para_y = self.layout_composed_paragraph(
                     tree,
                     cell_node,

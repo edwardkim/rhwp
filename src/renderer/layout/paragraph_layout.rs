@@ -2997,8 +2997,11 @@ impl LayoutEngine {
         // column-top 이 아닌 것처럼 spacing_before 를 전량 적용한다.
         let keep_continuation_spacing_before =
             self.keep_continuation_column_top_spacing_before.get();
+        // [#5601] 셀 저장-앵커 스냅 문단 — 호출자가 para_y 에서 spacing_before 를
+        // 미리 뺐으므로 column-top 트림과 무관하게 전량 재가산해야 vpos 와 맞는다.
+        let reapply_snap_spacing_before = self.reapply_snap_anchored_spacing_before.replace(false);
         if start_line == 0 && spacing_before > 0.0 {
-            if !is_column_top || keep_continuation_spacing_before {
+            if !is_column_top || keep_continuation_spacing_before || reapply_snap_spacing_before {
                 y += spacing_before;
             } else if para_index == 0 && !suppress_column_top_vpos_fallback {
                 let vpos0_px = para
