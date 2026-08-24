@@ -237,6 +237,8 @@ hwp5rb	issue5875/nested_table_text_caption.hwp	sections[].paragraphs[].controls[
 hwp5rb	issue5875/nested_table_text_caption.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
 hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1484
 hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	52
+hwp5rb	issue5885/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	30
+hwp5rb	issue5885/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	6
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
