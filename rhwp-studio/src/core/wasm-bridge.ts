@@ -338,6 +338,7 @@ export class WasmBridge {
   private loadDocumentAtomically(
     data: Uint8Array,
     fileName: string | undefined,
+    requiresPasswordForSave: boolean,
     createDocument: () => HwpDocument,
   ): DocumentInfo {
     const nextFileName = fileName ?? 'document.hwp';
@@ -357,7 +358,9 @@ export class WasmBridge {
       this.doc = nextDoc;
       this._fileName = nextFileName;
       this._currentFileHandle = null;
-      this._requiresPasswordForSave = false;
+      // 암호 문자열은 보관하지 않는다. 다음 저장에서 암호 재입력이 필요한지 여부만
+      // 문서 교체 성공과 같은 commit 구간에서 갱신한다 (#5986).
+      this._requiresPasswordForSave = requiresPasswordForSave;
       this._documentDigest = nextDocumentDigest;
       this._documentGeneration += 1;
       if (previousDoc) {
@@ -388,11 +391,16 @@ export class WasmBridge {
   }
 
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
-    return this.loadDocumentAtomically(data, fileName, () => new HwpDocument(data));
+    return this.loadDocumentAtomically(data, fileName, false, () => new HwpDocument(data));
   }
 
   loadDocumentWithPassword(data: Uint8Array, password: string, fileName?: string): DocumentInfo {
-    return this.loadDocumentAtomically(data, fileName, () => HwpDocument.openWithPassword(data, password));
+    return this.loadDocumentAtomically(
+      data,
+      fileName,
+      true,
+      () => HwpDocument.openWithPassword(data, password),
+    );
   }
 
   /** [Task #741 후속] 외부 file path 그림 영역 영역 dev 서버 영역 영역 fetch + inject. */

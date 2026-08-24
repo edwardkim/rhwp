@@ -313,13 +313,14 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
     }
     const downloadName = await promptFallbackName(saveName, format);
     if (!downloadName) return;
-    services.wasm.fileName = downloadName;
-    services.wasm.requiresPasswordForSave = password !== null;
     persistDownloadWithContentLoss(
       payload.contentLoss,
       () => downloadBlob(payload.blob, downloadName),
       showExportContentLoss,
     );
+    // download 시작이 실패하면 현재 backing copy의 보호 의도를 유지한다 (#5986).
+    services.wasm.fileName = downloadName;
+    services.wasm.requiresPasswordForSave = password !== null;
     services.documentState.markClean('save-as');
   } catch (error) {
     reportSaveError('file:save-as', error);
