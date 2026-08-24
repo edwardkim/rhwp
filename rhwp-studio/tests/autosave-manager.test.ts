@@ -261,3 +261,72 @@ test('AutosaveManager는 대기 중인 저장이 없으면 설정 변경만으�
 
   assert.equal(saved.length, 0);
 });
+
+test('AutosaveManager는 보호 문서에서 평문 draft를 저장하지 않는다', async () => {
+  const { store, saved } = createStore();
+  const statuses: string[] = [];
+  const manager = new AutosaveManager({
+    exportBytes: () => new Uint8Array([1, 2, 3, 4]),
+    isRecoveryBlocked: () => true,
+    debounceMs: 0,
+    minSaveIntervalMs: 0,
+    now: () => 1_000,
+    idFactory: () => 'draft-protected',
+    store,
+    onStatus: (status) => statuses.push(status.state),
+  });
+
+  await manager.beginDocument({ fileName: 'secret.hwp', sourceFormat: 'hwp' });
+  await manager.flushNow('recovery-interval');
+
+  assert.deepEqual(saved, []);
+  assert.ok(statuses.includes('blocked'));
+});
+
+test('AutosaveManager는 보호 상태로 바뀌면 남아 있던 draft를 폐기한다', async () => {
+  const { store, saved, deleted } = createStore();
+  let blocked = false;
+  const manager = new AutosaveManager({
+    exportBytes: () => new Uint8Array([1, 2, 3, 4]),
+    isRecoveryBlocked: () => blocked,
+    debounceMs: 0,
+    minSaveIntervalMs: 0,
+    now: () => 1_000,
+    idFactory: () => 'draft-becomes-protected',
+    store,
+  });
+
+  await manager.beginDocument({ fileName: 'doc.hwp', sourceFormat: 'hwp' });
+  await manager.flushNow('recovery-interval');
+  assert.equal(saved.length, 1);
+
+  // 암호가 설정되어 보호 문서가 된 뒤에는 기존 평문 draft가 남지 않아야 한다.
+  blocked = true;
+  await manager.flushNow('recovery-interval');
+
+  assert.equal(saved.length, 1);
+  assert.ok(deleted.includes('draft-becomes-protected'));
+});
+
+test('AutosaveManager는 보호 해제 후 다시 draft를 저장한다', async () => {
+  const { store, saved } = createStore();
+  let blocked = true;
+  const manager = new AutosaveManager({
+    exportBytes: () => new Uint8Array([9, 9]),
+    isRecoveryBlocked: () => blocked,
+    debounceMs: 0,
+    minSaveIntervalMs: 0,
+    now: () => 2_000,
+    idFactory: () => 'draft-unprotected',
+    store,
+  });
+
+  await manager.beginDocument({ fileName: 'doc.hwp', sourceFormat: 'hwp' });
+  await manager.flushNow('recovery-interval');
+  assert.deepEqual(saved, []);
+
+  blocked = false;
+  await manager.flushNow('recovery-interval');
+  assert.equal(saved.length, 1);
+  assert.equal(saved[0]?.id, 'draft-unprotected');
+});

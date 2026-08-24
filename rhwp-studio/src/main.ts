@@ -90,6 +90,8 @@ const documentState = new DocumentDirtyState(eventBus);
 documentState.installBeforeUnload(window);
 const autosaveManager = new AutosaveManager({
   exportBytes: () => wasm.exportHwp(),
+  // exportHwp()는 평문 HWP 바이트를 만든다. 보호 문서에서는 복구본을 남기지 않는다 (#5992).
+  isRecoveryBlocked: () => wasm.requiresPasswordForSave,
   schedule: autosaveScheduleFromUserSettings(),
   onStatus: handleAutosaveStatus,
 });
@@ -390,9 +392,15 @@ function handleAutosaveStatus(status: AutosaveStatus): void {
 
   const restoreTarget = autosavePreviousMessage;
   autosavePreviousMessage = null;
-  const nextMessage = status.state === 'saved'
-    ? `복구용 자동 저장 완료 (${formatBytes(status.byteLength)})`
-    : '복구용 자동 저장 실패';
+  let nextMessage: string;
+  if (status.state === 'saved') {
+    nextMessage = `복구용 자동 저장 완료 (${formatBytes(status.byteLength)})`;
+  } else if (status.state === 'blocked') {
+    // 실패가 아니라 의도된 차단이므로 구분해서 알린다 (#5992).
+    nextMessage = '보호 문서는 복구용 자동 저장을 하지 않습니다';
+  } else {
+    nextMessage = '복구용 자동 저장 실패';
+  }
   message.textContent = nextMessage;
   if (restoreTarget !== null) {
     autosaveStatusRestoreTimer = setTimeout(() => {
