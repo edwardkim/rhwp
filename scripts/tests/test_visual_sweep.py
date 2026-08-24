@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from PIL import Image, ImageDraw
 
@@ -17,6 +20,86 @@ if SPEC is None or SPEC.loader is None:
 SWEEP = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = SWEEP
 SPEC.loader.exec_module(SWEEP)
+
+
+class LabelFontTests(unittest.TestCase):
+    def setUp(self) -> None:
+        SWEEP.label_font.cache_clear()
+
+    def tearDown(self) -> None:
+        SWEEP.label_font.cache_clear()
+
+    def test_fontconfig_label_font_path_uses_existing_match(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            font_path = Path(temp_dir) / "NotoSansCJK-Regular.ttc"
+            font_path.write_bytes(b"fake font")
+
+            def fake_run(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+                return subprocess.CompletedProcess(cmd, 0, stdout=f"{font_path}\n", stderr="")
+
+            with (
+                patch.object(SWEEP.shutil, "which", return_value="/usr/bin/fc-match"),
+                patch.object(SWEEP.subprocess, "run", side_effect=fake_run),
+            ):
+                self.assertEqual(SWEEP.fontconfig_label_font_path(), font_path)
+
+    def test_configured_label_font_paths_puts_env_before_fontconfig(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            env_font = Path(temp_dir) / "review-label.ttf"
+            fc_font = Path(temp_dir) / "NotoSansCJK-Regular.ttc"
+            with (
+                patch.dict(os.environ, {SWEEP.LABEL_FONT_ENV: str(env_font)}),
+                patch.object(SWEEP, "fontconfig_label_font_path", return_value=fc_font),
+                patch.object(SWEEP, "known_label_font_paths", return_value=[]),
+            ):
+                self.assertEqual(SWEEP.configured_label_font_paths(), [env_font, fc_font])
+
+    def test_env_label_font_paths_accepts_platform_path_separator(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            first = Path(temp_dir) / "first.ttf"
+            second = Path(temp_dir) / "second.ttf"
+            value = os.pathsep.join([str(first), str(second)])
+            with patch.dict(os.environ, {SWEEP.LABEL_FONT_ENV: value}):
+                self.assertEqual(SWEEP.env_label_font_paths(), [first, second])
+
+    def test_known_label_font_paths_prioritizes_current_platform(self) -> None:
+        paths_by_platform = {
+            "Linux": ("linux-font.ttf",),
+            "Darwin": ("mac-font.ttf",),
+            "Windows": ("windows-font.ttf",),
+        }
+        with (
+            patch.object(SWEEP.platform, "system", return_value="Windows"),
+            patch.object(SWEEP, "LABEL_FONT_PATHS_BY_PLATFORM", paths_by_platform),
+        ):
+            self.assertEqual(
+                SWEEP.known_label_font_paths(),
+                [Path("windows-font.ttf"), Path("linux-font.ttf"), Path("mac-font.ttf")],
+            )
+
+    def test_configured_label_font_paths_dedupes_repeated_candidates(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            font_path = Path(temp_dir) / "same.ttf"
+            with (
+                patch.dict(os.environ, {SWEEP.LABEL_FONT_ENV: str(font_path)}),
+                patch.object(SWEEP, "fontconfig_label_font_path", return_value=font_path),
+                patch.object(SWEEP, "known_label_font_paths", return_value=[font_path]),
+            ):
+                self.assertEqual(SWEEP.configured_label_font_paths(), [font_path])
+
+    def test_label_font_loads_truetype_before_default_font(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            font_path = Path(temp_dir) / "NanumGothic.ttf"
+            font_path.write_bytes(b"fake font")
+            sentinel = object()
+            with (
+                patch.object(SWEEP, "configured_label_font_paths", return_value=[font_path]),
+                patch.object(SWEEP.ImageFont, "truetype", return_value=sentinel) as truetype,
+                patch.object(SWEEP.ImageFont, "load_default") as load_default,
+            ):
+                self.assertIs(SWEEP.label_font(), sentinel)
+                truetype.assert_called_once_with(str(font_path), 18)
+                load_default.assert_not_called()
 
 
 class SelectedRasterTests(unittest.TestCase):
