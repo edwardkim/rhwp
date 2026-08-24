@@ -47,11 +47,19 @@ test('암호 입력은 단일 시도에만 쓰고, 취소와 오입력은 영속
 test('WasmBridge는 다음 문서를 모두 준비한 뒤에만 기존 문서를 교체한다', () => {
   const atomic = between(bridgeSource, 'private loadDocumentAtomically', 'loadDocument(data: Uint8Array');
   assert.doesNotMatch(atomic, /this\.releaseDocument\(\)/, '실패 전에 현재 문서를 해제하지 않는다');
+  assert.match(atomic, /requiresPasswordForSave: boolean/, '다음 문서의 보호 의도를 명시적으로 받는다');
   assert.match(atomic, /nextDoc = createDocument\(\);/, '일반/암호 문서 생성 경로를 한 계약으로 묶는다');
   assert.match(atomic, /nextDoc\.convertToEditable\(\);/, '교체 전에 편집 가능 상태를 준비한다');
   assert.match(atomic, /const previousDoc = this\.doc;\s*this\.doc = nextDoc;/, '준비 성공 뒤에만 현재 문서를 교체한다');
+  assert.match(atomic, /this\._requiresPasswordForSave = requiresPasswordForSave;/,
+    '문서 교체가 성공한 뒤 같은 commit 구간에서 보호 의도를 갱신한다');
   assert.match(atomic, /if \(previousDoc\)[\s\S]*previousDoc\.free\(\)/, '교체 완료 뒤에만 이전 문서를 해제한다');
-  assert.match(bridgeSource, /loadDocumentWithPassword[\s\S]*HwpDocument\.openWithPassword\(data, password\)/, '암호 전용 WASM API를 노출한다');
+
+  const plainLoad = between(bridgeSource, 'loadDocument(data: Uint8Array', 'loadDocumentWithPassword');
+  assert.match(plainLoad, /loadDocumentAtomically\([\s\S]*false/, '평문 load는 보호 의도를 해제한다');
+  const passwordLoad = between(bridgeSource, 'loadDocumentWithPassword', '/** [Task #741 후속]');
+  assert.match(passwordLoad, /HwpDocument\.openWithPassword\(data, password\)/, '암호 전용 WASM API를 노출한다');
+  assert.match(passwordLoad, /loadDocumentAtomically\([\s\S]*true/, '암호 load는 보호 의도를 유지한다');
 });
 
 test('암호 대화상자는 마스킹·접근성·취소 시 DOM 값 제거를 제공한다', () => {

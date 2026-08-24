@@ -24,7 +24,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `canvaskit-font-coverage.test.mjs` | 상시 | active | CanvasKit 번들 폰트와 exact TTC GlyphRun 등록/픽셀 replay 검증 | — | npm+CI |  |
 | `cell-enter-pagination-issue4031.test.mjs` | 상시 | active | Issue #4031 — pending 중 셀 Enter의 pre-navigation full flush 0회·split 1회·barrier 대조군 계약 | issue1949_giant_cell_nested_tables_perf.hwp/.hwpx | npm e2e:issue-4031-cell-enter |  |
 | `command-palette.test.mjs` | 상시 | active | /커맨드 팔레트 | — | 수동 |  |
-| `content-loss-save-issue4430.test.mjs` | 상시 | active | Issue #4430 — serializer 내용 손실 보고의 명시 저장·fallback·암호 저장 및 실패·취소 무알림 계약 | test-image.hwpx | npm e2e:issue-4430-content-loss | fresh WASM 필수 · synthetic 보고서 주입 없음 |
+| `content-loss-save-issue4430.test.mjs` | 상시 | active | Issue #4430/#5986 — serializer 내용 손실 보고의 명시 저장·fallback·암호 저장, 저장 실패의 보호 상태 보존 및 취소 무알림 계약 | test-image.hwpx | npm e2e:issue-4430-content-loss | fresh WASM 필수 · synthetic 보고서 주입 없음 |
 | `copy-paste.test.mjs` | 상시 | active | 텍스트 블럭 복사/붙여넣기 버그 (Task 227) | — | 수동 |  |
 | `debug-pagination.mjs` | 진단 | active | E2E 디버그: 50줄 입력 후 페이지네이션 확인 | — | 수동 | 수동 디버그 |
 | `debug-table-pos.mjs` | 진단 | active | E2E 디버그: 표 삽입 후 텍스트 위치 확인 | — | 수동 | 수동 디버그 |
@@ -50,7 +50,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `hml-equation-embed.test.mjs` | 상시 | active | PR #2219 HML equation canvas edit/undo/export/reload | — | 수동 |  |
 | `hml-open.check.mjs` | 상시 | active | Standalone HML browser regression. | — | 수동 | legacy-name |
 | `hwpctl-basic.test.mjs` | 상시 | active | hwpctl 호환 레이어 기본 동작 | — | 수동 |  |
-| `hwp-password-open.test.mjs` | 상시 | active | #3474/#3481 HWP3·HWP5 암호 문서: 대화상자·오답·취소·Enter·저장소 비보존, HWP3 A4 144dpi Canvas 경계 | HWP3-password-123456.hwp, hwp3-sample16-hwp5-2024-password-123456.hwp | npm e2e:hwp-password-open | 실제 암호 fixture; 비밀번호와 로컬 E2E 보고서는 비커밋 |
+| `hwp-password-open.test.mjs` | 상시 | active | #3474/#3481/#5986 HWP3·HWP5·HWPX 암호 문서: 대화상자·오답·취소·Enter·저장소 비보존·저장 보호 상태 수명주기, HWP3 A4 144dpi Canvas 경계 | HWP3-password-123456.hwp, hwp3-sample16-hwp5-2024-password-123456.hwp, HWP5-password-123456.hwpx, HWP5-nopassword-123456.hwpx | npm e2e:hwp-password-open | 실제 암호 fixture; 비밀번호와 로컬 E2E 보고서는 비커밋 |
 | `hwpctrl-plugin.test.mjs` | 상시 | active | hwpctrl 플러그인 — studio 문서 공유·배치 편집·좌표 변환·unload 생존 | — | npm e2e:hwpctrl-plugin |  |
 | `hwpx-direct-save.test.mjs` | 상시 | active | HWPX 직접 저장 (file:save) E2E — #1532 | — | 수동 |  |
 | `issue-1280-textbox-text-input.test.mjs` | 상시 | active | E2E 회귀: #1280 — rhwp-studio가 삽입한 글상자가 text_box 없는 Rectangle로 생성되어  | — | 수동 |  |

@@ -65,6 +65,18 @@ test('Studio는 암호 문자열을 보관하지 않고 보호 저장 여부만 
   assert.match(bridgeSource, /exportHwpxWithPasswordAndReport\(password: string\)/, '명시 HWPX 암호 저장은 reported facade를 제공해야 합니다');
 });
 
+test('보호 상태 변경은 fallback download가 성공한 뒤에만 commit한다', () => {
+  const protectedSave = between(commandSource, 'async function saveAsFormat', 'function reportSaveError');
+  const fallbackPersist = protectedSave.indexOf('persistDownloadWithContentLoss(');
+  const protectionCommit = protectedSave.indexOf(
+    'services.wasm.requiresPasswordForSave = password !== null;',
+    fallbackPersist,
+  );
+  assert.ok(fallbackPersist >= 0, 'fallback download 경로가 있어야 합니다');
+  assert.ok(protectionCommit > fallbackPersist,
+    'download가 예외 없이 시작되기 전에 기존 보호 상태를 바꾸면 안 됩니다');
+});
+
 test('Studio public WASM 배포물도 암호 저장 binding을 제공한다', () => {
   assert.match(publicWasmSource, /exportHwpWithPassword\(password\)/, 'public JS HWP binding이 있어야 합니다');
   assert.match(publicWasmSource, /exportHwpxWithPassword\(password\)/, 'public JS HWPX binding이 있어야 합니다');
