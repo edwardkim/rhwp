@@ -8,7 +8,7 @@
       "changeSetId": "issue-5955.fixture.add-rule",
       "issue": 5955,
       "sequence": 1,
-      "parentRegistrySha256": "fdd064321b6489b85c52ea8b8948ca83a7422f8c1415fcc08a4cb28ab8797a01",
+      "parentRegistrySha256": "7faf193f59ac8e5caf8ab789266f39a0daf3e76a2ba13d72ea0ed266108cd831",
       "decisionPlane": "paint",
       "evidenceRecords": [
         {
@@ -28,6 +28,7 @@
             "ruleId": "font-rule.fixture.paint.0002",
             "relationType": "paint-substitute",
             "decisionPlane": "paint",
+            "sourceBoundaryId": "boundary.fixture.public",
             "sourceFace": "Fixture Serif",
             "targetFaceOrPolicy": "Fixture Serif Fallback",
             "conditions": {},

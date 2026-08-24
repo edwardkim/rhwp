@@ -281,6 +281,7 @@
         "ruleId",
         "relationType",
         "decisionPlane",
+        "sourceBoundaryId",
         "sourceFace",
         "targetFaceOrPolicy",
         "conditions",
@@ -311,6 +312,7 @@
           ]
         },
         "decisionPlane": { "enum": ["layout-name", "layout-metric", "paint", "supply", "detection"] },
+        "sourceBoundaryId": { "$ref": "#/$defs/identifier" },
         "sourceFace": { "$ref": "#/$defs/nullableString" },
         "targetFaceOrPolicy": { "$ref": "#/$defs/nonEmptyString" },
         "conditions": { "$ref": "#/$defs/conditions" },

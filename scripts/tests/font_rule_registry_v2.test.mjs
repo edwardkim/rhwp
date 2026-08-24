@@ -110,7 +110,9 @@ for (const name of [
 }
 
 test('initial v1 to v2 migration carries all 830 rules without semantic delta', () => {
-  const migration = buildMigrationV1ToV2(readJson(V1_REGISTRY_PATH), { root: ROOT });
+  const v1Registry = readJson(V1_REGISTRY_PATH);
+  const v2Registry = buildInitialRegistryV2(v1Registry, ROOT);
+  const migration = buildMigrationV1ToV2(v1Registry, { root: ROOT, v2Registry });
 
   assert.equal(migration.summary.v1RuleCount, 830);
   assert.equal(migration.summary.v2ActiveRuleCount, 830);
@@ -125,6 +127,10 @@ test('initial v1 to v2 migration carries all 830 rules without semantic delta', 
     true,
   );
   assert.equal(migration.projectionDeltas.every(delta => delta.status === 'unchanged'), true);
+  assert.equal(v2Registry.rules.every((rule, index) => (
+    rule.sourceBoundaryId === v1Registry.rules[index].evidence.sourceBoundaryIds[0]
+      && v1Registry.rules[index].evidence.sourceBoundaryIds.length === 1
+  )), true);
 });
 
 test('canonical v2 registry and migration are deterministic query models', () => {
@@ -275,4 +281,17 @@ test('new and replacement rules cannot cite undeclared evidence', () => {
   const replace = clone(fixture('retire-and-replace').changeSets[0]);
   replace.operations[0].replacementRule.evidenceIds = ['evidence.fixture.missing'];
   assert.match(validateChangeSet(replace, { root: ROOT }).join('\n'), /dangling evidence reference/);
+});
+
+test('source boundary is required and protected by the immutable selection tuple', () => {
+  const add = clone(fixture('add-rule').changeSets[0]);
+  delete add.operations[0].rule.sourceBoundaryId;
+  assert.match(validateChangeSet(add, { root: ROOT }).join('\n'), /sourceBoundaryId is required/);
+
+  const changedRegistry = clone(readJson(path.join(FIXTURE_ROOT, 'base-registry.json')));
+  changedRegistry.rules[0].sourceBoundaryId = 'boundary.fixture.changed';
+  assert.match(
+    validateRegistryV2(changedRegistry, ROOT).join('\n'),
+    /selectionTupleSha256|differs from sealed legacy evidence/,
+  );
 });

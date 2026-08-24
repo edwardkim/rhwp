@@ -459,6 +459,7 @@ function validateRulePayload(rule, location, errors) {
     'ruleId',
     'relationType',
     'decisionPlane',
+    'sourceBoundaryId',
     'sourceFace',
     'targetFaceOrPolicy',
     'conditions',
@@ -474,6 +475,12 @@ function validateRulePayload(rule, location, errors) {
   validateString(rule?.ruleId, `${location}.ruleId`, errors, { identifier: true });
   if (!RELATION_TYPES.includes(rule?.relationType)) errors.push(`${location}.relationType is invalid`);
   if (!DECISION_PLANES.includes(rule?.decisionPlane)) errors.push(`${location}.decisionPlane is invalid`);
+  validateString(
+    rule?.sourceBoundaryId,
+    `${location}.sourceBoundaryId`,
+    errors,
+    { identifier: true },
+  );
   validateString(rule?.sourceFace, `${location}.sourceFace`, errors, { nullable: true });
   validateString(rule?.targetFaceOrPolicy, `${location}.targetFaceOrPolicy`, errors);
   validateConditions(rule?.conditions, `${location}.conditions`, errors);
@@ -496,6 +503,7 @@ function selectionTupleFromPayload(rule) {
   return {
     relationType: rule.relationType,
     decisionPlane: rule.decisionPlane,
+    sourceBoundaryId: rule.sourceBoundaryId ?? rule.evidence?.sourceBoundaryIds?.[0],
     sourceFace: rule.sourceFace,
     targetFaceOrPolicy: rule.targetFaceOrPolicy,
     conditions: rule.conditions,
@@ -577,6 +585,7 @@ function validateRule(rule, index, errors) {
     'ruleId',
     'relationType',
     'decisionPlane',
+    'sourceBoundaryId',
     'sourceFace',
     'targetFaceOrPolicy',
     'conditions',
@@ -597,6 +606,12 @@ function validateRule(rule, index, errors) {
   validateString(rule?.ruleId, `${location}.ruleId`, errors, { identifier: true });
   if (!RELATION_TYPES.includes(rule?.relationType)) errors.push(`${location}.relationType is invalid`);
   if (!DECISION_PLANES.includes(rule?.decisionPlane)) errors.push(`${location}.decisionPlane is invalid`);
+  validateString(
+    rule?.sourceBoundaryId,
+    `${location}.sourceBoundaryId`,
+    errors,
+    { identifier: true },
+  );
   validateString(rule?.sourceFace, `${location}.sourceFace`, errors, { nullable: true });
   validateString(rule?.targetFaceOrPolicy, `${location}.targetFaceOrPolicy`, errors);
   validateConditions(rule?.conditions, `${location}.conditions`, errors);
@@ -616,6 +631,11 @@ function validateRule(rule, index, errors) {
   validateUniqueStrings(rule?.metricEntryIds, `${location}.metricEntryIds`, errors, 600);
   validateSupply(rule?.supply, `${location}.supply`, errors);
   validateLegacyEvidence(rule?.evidence, `${location}.evidence`, errors);
+  if (rule.evidence !== null
+      && (rule.evidence?.sourceBoundaryIds?.length !== 1
+        || rule.evidence.sourceBoundaryIds[0] !== rule.sourceBoundaryId)) {
+    errors.push(`${location}.sourceBoundaryId differs from sealed legacy evidence`);
+  }
   validateUniqueStrings(rule?.evidenceIds, `${location}.evidenceIds`, errors, 16);
   if (!SHA256_PATTERN.test(rule?.selectionTupleSha256 ?? '')
       || rule.selectionTupleSha256 !== selectionTupleSha256(rule)) {
@@ -1004,8 +1024,12 @@ export function validateChangeSet(changeSet, options = {}) {
 }
 
 function v2RuleFromV1(rule, projectionSequence) {
+  if (rule.evidence?.sourceBoundaryIds?.length !== 1) {
+    throw new Error(`${rule.ruleId}: initial v2 migration requires exactly one source boundary`);
+  }
   return {
     ...clone(rule),
+    sourceBoundaryId: rule.evidence.sourceBoundaryIds[0],
     projectionSequence,
     evidenceIds: [SEALED_EVIDENCE_ID],
     selectionTupleSha256: selectionTupleSha256(rule),
@@ -1074,6 +1098,7 @@ function newRuleFromPayload(payload, changeSetId, predecessorRuleIds = []) {
     ruleId: payload.ruleId,
     relationType: payload.relationType,
     decisionPlane: payload.decisionPlane,
+    sourceBoundaryId: payload.sourceBoundaryId,
     sourceFace: payload.sourceFace,
     targetFaceOrPolicy: payload.targetFaceOrPolicy,
     conditions: clone(payload.conditions),
@@ -1381,6 +1406,7 @@ export function validateMigrationV1ToV2(migration, v1Registry, v2Registry, root 
         errors.push(`migration mapping ${index} changes the selection tuple`);
       }
       if (canonicalJson(v2Rule?.evidence) !== canonicalJson(v1Rule?.evidence)
+          || v2Rule?.sourceBoundaryId !== v1Rule?.evidence?.sourceBoundaryIds?.[0]
           || v2Rule?.status !== 'active'
           || canonicalJson(v2Rule?.evidenceIds) !== canonicalJson([SEALED_EVIDENCE_ID])
           || v2Rule?.lifecycle?.introducedBy !== MIGRATION_EVENT_ID

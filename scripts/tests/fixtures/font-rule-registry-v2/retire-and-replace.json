@@ -8,7 +8,7 @@
       "changeSetId": "issue-5955.fixture.retire-and-replace",
       "issue": 5955,
       "sequence": 1,
-      "parentRegistrySha256": "fdd064321b6489b85c52ea8b8948ca83a7422f8c1415fcc08a4cb28ab8797a01",
+      "parentRegistrySha256": "7faf193f59ac8e5caf8ab789266f39a0daf3e76a2ba13d72ea0ed266108cd831",
       "decisionPlane": "paint",
       "evidenceRecords": [
         {
@@ -25,11 +25,12 @@
           "operationId": "operation.fixture.retire-and-replace",
           "type": "retire-and-replace",
           "retiredRuleId": "font-rule.fixture.paint.0001",
-          "expectedSelectionTupleSha256": "c6e65400a27ed8d3165e69d0b6759df58ac083fe79b5161ccdc24da0ece5b78b",
+          "expectedSelectionTupleSha256": "146f401106f52187aaa1cd9cc452eaa76d722fd1620288ffad6b4249b7332f42",
           "replacementRule": {
             "ruleId": "font-rule.fixture.paint.0002",
             "relationType": "paint-substitute",
             "decisionPlane": "paint",
+            "sourceBoundaryId": "boundary.fixture.public",
             "sourceFace": "Fixture Sans",
             "targetFaceOrPolicy": "Corrected Fixture Sans Fallback",
             "conditions": {},

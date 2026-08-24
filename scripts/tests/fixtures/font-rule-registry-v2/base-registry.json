@@ -5,7 +5,7 @@
   "sourceCommit": "1111111111111111111111111111111111111111",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
-    "sha256": "6b3900063db6b96b0a8ba02f5fca1070550d9bb56a36cdc76ba6466d0bc49327"
+    "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
   },
   "sealedV1Registry": {
     "path": "assets/font-rules/font_rule_registry.json",
@@ -30,12 +30,13 @@
       "parentEvidenceIds": []
     }
   ],
-  "rulesSha256": "ba5027c9558fc9e1c93d61e5a00cbd519dbe296d56e488475443a37e6441c422",
+  "rulesSha256": "bce584f605a4dbdd919080127dd6ca372ca45526d6e8b58aee516e2ca5f6008c",
   "rules": [
     {
       "ruleId": "font-rule.fixture.paint.0001",
       "relationType": "paint-substitute",
       "decisionPlane": "paint",
+      "sourceBoundaryId": "boundary.fixture.public",
       "sourceFace": "Fixture Sans",
       "targetFaceOrPolicy": "Fixture Sans Fallback",
       "conditions": {},
@@ -57,7 +58,7 @@
         "baselineProjectionSha256": "2222222222222222222222222222222222222222222222222222222222222222"
       },
       "evidenceIds": ["evidence.fixture.sealed-v1"],
-      "selectionTupleSha256": "c6e65400a27ed8d3165e69d0b6759df58ac083fe79b5161ccdc24da0ece5b78b",
+      "selectionTupleSha256": "146f401106f52187aaa1cd9cc452eaa76d722fd1620288ffad6b4249b7332f42",
       "status": "active",
       "lifecycle": {
         "introducedBy": "migration:issue-5955",

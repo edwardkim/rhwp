@@ -55,13 +55,14 @@ plain retirement는 immutable projection sequence의 중간 구멍을 만들 수
 
 | 항목 | 결과 |
 | --- | --- |
-| source commit | `9b922440e05477d802834422fad189e22888f751` |
+| source commit | `a1f9872e28aea6755b656161ed1802f73308da58` |
 | 전체/active/retired | 830 / 830 / 0 |
 | applied change set | 0 |
 | sealed-v1 evidence record | 1 |
 | ruleId mismatch | 0 |
+| source boundary mismatch | 0 |
 | projection sequence gap·duplicate | 0 |
-| rules SHA-256 | `e2d8471f060cfebed8f7d16a188af581d34b423a1fed4341eb919379d955ecfe` |
+| rules SHA-256 | `bd9469aa16156a16ea262f608015cb0b78e925700ae7df69c38602ba6670c029` |
 
 projection population은 v1과 같은 `171/67/281/153/158`이다.
 
@@ -69,11 +70,11 @@ projection population은 v1과 같은 `171/67/281/153/158`이다.
 
 | projection | rule | before/after semantic SHA-256 | 결과 |
 | --- | ---: | --- | --- |
-| `rust-layout-name` | 171 | `c9f6c63d748890e77a7babc02c3aa2d071f45920f0b8ebc8908452eb28b7c8ae` | unchanged |
-| `rust-layout-metric` | 67 | `c3a2893b0310a6c6d817a043d8818ad81e5284b2048f7ef4cf3c4a62dfdb6c5f` | unchanged |
-| `canvas2d-paint` | 281 | `9f40e620f5fbb618396b83db48951b4cf26a64c696c27b507fa073c8140b2300` | unchanged |
-| `canvas2d-webfont` | 153 | `ae6c338fe9d8b9255f41e2ba92a15b3b58b663c4b712cbefac4c98a8e2e771dd` | unchanged |
-| `canvaskit-sfnt` | 158 | `38d51e36856f674a8a6bb84b64ec6d4e95c9bfec338e2be8b89afb9aa9bd24d7` | unchanged |
+| `rust-layout-name` | 171 | `37f999676888cc8e19cc1f8f6c8976dba5f59f1959199323db4be4208b670a47` | unchanged |
+| `rust-layout-metric` | 67 | `bdcd6902c11eacce7088bfaccfe29d76b9df0f895952c2eb8788aa439c6b7aed` | unchanged |
+| `canvas2d-paint` | 281 | `5b795e8bcdcb9b223997f0b317f836cf60075501fd4fc3ee40b69a4e3305ac01` | unchanged |
+| `canvas2d-webfont` | 153 | `d124099214c82d08f139cffffba79722db9fb6b3fbd30dc165df378caef5000c` | unchanged |
+| `canvaskit-sfnt` | 158 | `ea1a07ed27d53ad326bd9cfdfb8ad9f5a4ca50db6b8d611b6673086272cbc4bf` | unchanged |
 
 830개 mapping 모두 v1/v2 ruleId가 같고 before/after selection tuple SHA-256이 같다. lifecycle metadata가
 추가되므로 전체 rule object SHA-256은 달라지지만 이를 semantic delta로 해석하지 않는다.
@@ -82,11 +83,11 @@ projection population은 v1과 같은 `171/67/281/153/158`이다.
 
 | artifact | SHA-256 |
 | --- | --- |
-| change-set schema | `5bafd31f45c0481486b1d420e1fcbe8df487281052ba32349b6b61b935b7847b` |
-| v2 registry schema | `6b3900063db6b96b0a8ba02f5fca1070550d9bb56a36cdc76ba6466d0bc49327` |
-| v2 registry | `e957986acc36121f15e929675c0e4265d89c3e3f54529a6bb2eabfd03c858e52` |
+| change-set schema | `52049c2fe0c68b538b7e377d7b73108040842bb2702770f65ed54f973c9fe48c` |
+| v2 registry schema | `e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3` |
+| v2 registry | `fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16` |
 | migration schema | `f955a0918d1d09de28807a77b8d245c48f1d634721bd8cd35de458a697f07af9` |
-| migration | `6f15e7348ac0e1c75dac9db8c116c78e333ad07b9e76b4670f672c2be39c3062` |
+| migration | `54b17603e3ae52eac7b37f32b1f36b778ad01343501fdcf05bb3ae145f82fb5a` |
 
 Stage W7.5-1의 fixture path·digest를 실제 repository file과 canonical base registry SHA-256에 맞게
 현행화했다. 이 evidence는 synthetic text이며 font binary나 private corpus 정보가 아니다.
@@ -95,7 +96,7 @@ Stage W7.5-1의 fixture path·digest를 실제 repository file과 canonical base
 
 | 검증 | 결과 |
 | --- | --- |
-| v2 focused lifecycle·migration contract | 21/21 통과 |
+| v2 focused lifecycle·migration contract | 22/22 통과 |
 | v2 generator `check` | 통과 |
 | JSON Schema Draft 2020-12 meta-schema 검사 | 통과 |
 | positive fixture의 registry/change-set schema validation | 통과 |
@@ -103,6 +104,7 @@ Stage W7.5-1의 fixture path·digest를 실제 repository file과 canonical base
 | canonical migration schema validation | 통과 |
 | v1 봉인 artifact SHA-256 4건 | 동일 |
 | mapping ruleId·tuple mismatch | 0 |
+| v1 evidence/v2 semantic source boundary mismatch | 0 |
 | active projection sequence gap·duplicate | 0 |
 
 mutation contract에는 caller-mutated v1, in-place mutation, stale parent, cross-plane, decision-plane relabel,
@@ -126,3 +128,15 @@ projection population과 semantic hash는 이 migration 기준선과 같아야 �
 source file hash가 바뀌는 경우 semantic 0-delta와 분리해 기록한다.
 
 W7.5-3 승인에는 lifecycle trace resolver, W8 실제 mapping correction, remote push가 포함되지 않는다.
+
+## 10. Stage W7.5-2C 정정
+
+W7.5-3 착수 검사에서 신규 rule payload가 projection lookup의 `sourceBoundaryId`를 표현하지 못하는 계약
+누락을 발견했다. 메인테이너가 계획 변경을 승인한 뒤 v2 rule·change-set payload와 selection tuple에 단일
+`sourceBoundaryId`를 추가했다.
+
+초기 830개는 v1 `evidence.sourceBoundaryIds[0]`에서 전건 이행했고 boundary mismatch는 0이다. legacy
+evidence 배열은 감사 근거로 그대로 남는다. 신규 rule은 legacy evidence가 `null`이어도 독립적인 semantic
+boundary를 가지며, evidence-only operation은 같은 ID의 boundary를 바꿀 수 없다. 이 정정으로 파생
+selection tuple·registry·migration hash는 다시 계산했지만 before/after tuple과 실제 projection row의 의미는
+변하지 않았다.
