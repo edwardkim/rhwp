@@ -66,9 +66,13 @@ service에서 engine `2020`을, `hancom-office-2024`이면 같은 service의 eng
   timeout_seconds를 900–1800초로 늘린다.
 - VS Code MCP 호출이 timeout되어도 서버 job이 성공했을 수 있다. CLI로 재호출해 로컬 PDF 수신까지 확인한다.
 
-통합 Windows MCP는 동기 `status: success` 또는 비동기 `succeeded → success`, 요청한
-`engine_profile`, client/server byte 수와 SHA-256 일치를 확인한다. 공통으로 `pdf/` 아래 실제 PDF
-존재와 `file` 또는 `pdfinfo` 확인이 필요하다.
+통합 Windows MCP는 동기 `status: success` 또는 비동기 `succeeded → success`, 요청한 `--engine`과
+비동기 `start`·`status` 응답의 `engine` 일치, client/server byte 수와 SHA-256 일치를 확인한다.
+2022 이하 저장본에는 `--engine 2020`, 2024 저장본에는 `--engine 2024`를 명시한다. `server.engine`은
+concrete backend 식별자일 수 있으므로 저장 버전별 engine 선택의 판정 기준으로 사용하지 않는다.
+`engine_profile`과 `hancom_version`은 서버가 제공할 때만 추가 증적으로 기록하며, 부재만으로 실패로
+판단하지 않는다.
+공통으로 `pdf/` 아래 실제 PDF 존재와 `file` 또는 `pdfinfo` 확인이 필요하다.
 review 문서에는 MCP 선택 전 `info --json`의 `format`·`lastSavedWith` 값, 사용한 서비스 버전, 원본
 경로·가능하면 SHA-256·출처 URL, PDF 경로·SHA-256, MCP job id, 서비스별 status·validation metadata·페이지 수,
 사용한 visual sweep asset과 지표를 적는다.
