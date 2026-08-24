@@ -20546,6 +20546,18 @@ impl TypesetEngine {
                 && row_start_cut.is_empty()
                 && !table.text_reflowed_after_edit
                 && stored_source_frame.is_some();
+            // [#5584 ②] 조각 **중간 행**(r > cursor_row)에서도 capacity cut 이 저장
+            // 프레임 끝 직전에 멈추면 다음 fragment 가 짧은 tail(한 유닛)만 소유해
+            // 쪽 하나가 늘어난다 — 3232693 p1: r=7 budget 153.9 에 141.3 소비 후
+            // 다음 유닛(21.3)이 12.7px 부족으로 밀리고, p2 가 그 한 유닛만 담은 채
+            // 저장 리셋에서 끊겨 5쪽(한글 4쪽). opening 경로와 같은 저장 계약이되,
+            // 중간 행은 근소 초과(한 유닛 규모)일 때만 프레임 끝까지 당긴다 —
+            // 상한은 아래 확장 지점에서 검사한다.
+            let mid_source_frame = !is_continuation
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !table.text_reflowed_after_edit
+                && stored_source_frame.is_some();
             let single_visible_source_frame = st.profile.hwpx_stored_layout()
                 && stored_source_frame.is_some()
                 && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
@@ -20764,7 +20776,15 @@ impl TypesetEngine {
                 && !ordinary_cut_ends_at_plain_text_saved_reset)
                 || terminal_source_frame
                 || continued_source_frame
-                || opening_source_frame;
+                || opening_source_frame
+                || mid_source_frame;
+            // [#5584 ②] 중간 행 갈래만의 확장 상한 — 근소 부족(한 유닛 규모)일 때만.
+            let mid_frame_only = mid_source_frame
+                && !opening_source_frame
+                && !terminal_source_frame
+                && !continued_source_frame
+                && !(terminal_response_before_empty_spacer
+                    && !ordinary_cut_ends_at_plain_text_saved_reset);
             let mut uses_source_frame_tail = false;
             if (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
                 && !table.common.treat_as_char
@@ -20794,7 +20814,36 @@ impl TypesetEngine {
                     })
                 };
                 if let Some(source_tail_cut) = source_tail_cut {
-                    if source_tail_cut.consumed_height > res.consumed_height + 0.5 {
+                    // [#5584 ②] 중간 행 갈래는 near-miss(행 대부분을 담고 마지막
+                    // 한 유닛 규모만 부족)에 한정한다 — ① 확장 ≤24px(한 유닛 규모)
+                    // ② 확장 전 소비가 확장의 3배 이상(행을 거의 다 담은 상태).
+                    // ② 가 없으면 budget 이 0 에 가까운 행(그 행이 통째로 다음 쪽감)
+                    // 의 첫 유닛까지 강제로 당겨 382쪽 편람 계약(#4763, issue_3931/
+                    // 3930/5801 핀)이 381 로 무너진다.
+                    let extension = source_tail_cut.consumed_height - res.consumed_height;
+                    // 확장 안 하면 다음 조각이 "한 유닛 + 프레임 리셋 + 소량 꼬리"
+                    // sliver 가 되는 형상만 — 프레임 경계 뒤 같은 행의 잔여가 소량
+                    // (0.5, 64px] 이어야 그 sliver 형상이다. 잔여가 크면(382쪽 편람
+                    // r=5 실측: near-miss 시그니처는 동형이나 잔여 949.9px = 다음
+                    // 조각의 본체) 확장이 오히려 쪽 경계를 옮긴다(#4763 핀 —
+                    // issue_3931/3930/5801 이 381 로 무너짐). 3232693 은 잔여 38.4px.
+                    let frame_tail_rest = if mid_frame_only {
+                        layout_engine.row_cut_content_height(
+                            table,
+                            r,
+                            &source_tail_cut.end_cut,
+                            &[],
+                            styles,
+                        )
+                    } else {
+                        0.0
+                    };
+                    let mid_extension_ok = !mid_frame_only
+                        || (extension <= 24.0
+                            && res.consumed_height >= 3.0 * extension
+                            && frame_tail_rest > 0.5
+                            && frame_tail_rest <= 64.0);
+                    if extension > 0.5 && mid_extension_ok {
                         // Downstream fit/retry decisions must reason in the
                         // same frame-sized budget as the cut.  The precise
                         // physical overfill is measured from the painted
