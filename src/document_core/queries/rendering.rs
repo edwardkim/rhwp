@@ -7873,14 +7873,391 @@ mod tests {
     use crate::model::bin_data::BinDataContent;
     use crate::renderer::render_tree::RenderNodeType;
 
-    #[test]
-    fn diagnostic_hwp_coordinates_round_trip_inexact_pixel_divisions() {
-        let px = crate::renderer::hwpunit_to_px(1_201, 96.0);
-        assert_eq!(diagnostic_px_to_hwpunit(px, 96.0), 1_201);
+    #[cfg(feature = "subsecond-dev")]
+    use super::super::line_break_provenance::{
+        classify_stored_cache, descend_group_path_segment, first_partition_mismatch,
+        line_seg_trace, stored_rows_are_well_formed,
+    };
+    #[cfg(feature = "subsecond-dev")]
+    use crate::model::{paragraph::LineSeg, shape::ShapeObject};
+
+    #[cfg(feature = "subsecond-dev")]
+    fn line_break_provenance_regressions() {
+        fn stored_frame_report(core: &DocumentCore) -> serde_json::Value {
+            let report = core
+                .line_break_provenance_native(
+                    0,
+                    0,
+                    &[],
+                    r#"{"geometry":false,"measurement":false,"geometryMode":"stored-lineseg"}"#,
+                )
+                .expect("stored-frame provenance report");
+            serde_json::from_str(&report).expect("provenance JSON")
+        }
+
+        let segments = [
+            LineSeg {
+                tag: LineSeg::TAG_FIRST_SEGMENT,
+                ..Default::default()
+            },
+            LineSeg {
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            },
+        ];
+        assert!(!stored_rows_are_well_formed(&segments));
+
+        let stored = [
+            LineSeg {
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            },
+            LineSeg {
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                text_start: 5,
+                ..Default::default()
+            },
+        ];
+        let fresh = [
+            LineSeg {
+                tag: LineSeg::TAG_FIRST_SEGMENT,
+                ..Default::default()
+            },
+            LineSeg {
+                tag: LineSeg::TAG_LAST_SEGMENT,
+                text_start: 5,
+                ..Default::default()
+            },
+        ];
+        assert!(stored_rows_are_well_formed(&stored));
+        assert!(stored_rows_are_well_formed(&fresh));
+        assert_eq!(first_partition_mismatch(&stored, &fresh), Some(0));
+
+        let fixture =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/calc-cell.hwp");
+        let bytes = std::fs::read(&fixture).expect("read calc-cell fixture");
+        let mut core = DocumentCore::from_bytes(&bytes).expect("parse calc-cell fixture");
+        core.document.sections[0].paragraphs[0].line_segs = vec![
+            LineSeg {
+                tag: LineSeg::TAG_FIRST_SEGMENT,
+                segment_width: 1_200,
+                ..Default::default()
+            },
+            LineSeg {
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                segment_width: 1_200,
+                ..Default::default()
+            },
+        ];
+        let value = stored_frame_report(&core);
+        assert_eq!(value["storedRowsWellFormed"], false);
+        assert_eq!(value["comparison"]["comparable"], false);
+        assert_eq!(value["comparison"]["matches"], serde_json::Value::Null);
+        assert_eq!(value["productionAdmission"], serde_json::Value::Null);
+        core.document.sections[0].paragraphs[0].line_segs = vec![
+            LineSeg {
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                text_start: 8,
+                segment_width: 1_200,
+                ..Default::default()
+            },
+            LineSeg {
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                text_start: 4,
+                segment_width: 1_200,
+                ..Default::default()
+            },
+        ];
+        let descending = stored_frame_report(&core);
+        assert_eq!(descending["storedRowsWellFormed"], false);
+        assert_eq!(descending["comparison"]["comparable"], false);
+        assert_eq!(descending["comparison"]["matches"], serde_json::Value::Null);
+
+        let mut core = DocumentCore::from_bytes(&bytes).expect("parse calc-cell fixture");
+        let paragraph = &mut core.document.sections[0].paragraphs[0];
+        paragraph.text = "\tX".into();
+        paragraph.char_offsets = vec![0, 8];
+        paragraph.char_count = 10;
+        paragraph.line_segs = vec![LineSeg {
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            text_start: 8,
+            segment_width: 1_200,
+            ..Default::default()
+        }];
+        let value = stored_frame_report(&core);
+        assert_eq!(value["textUtf16Length"], 9);
+        assert_eq!(value["stored"][0]["textStartUtf16"], 8);
+        assert_eq!(value["geometrySource"], "stored-lineseg-scalar-frame");
+        assert_eq!(value["productionAdmission"], serde_json::Value::Null);
+
+        let mut core = DocumentCore::from_bytes(&bytes).expect("parse calc-cell fixture");
+        core.document.sections[0].paragraphs[0].line_segs = vec![
+            LineSeg {
+                tag: LineSeg::TAG_FIRST_SEGMENT,
+                segment_width: 100,
+                ..Default::default()
+            },
+            LineSeg {
+                tag: LineSeg::TAG_LAST_SEGMENT,
+                column_start: 200,
+                segment_width: 100,
+                ..Default::default()
+            },
+        ];
+        let value = stored_frame_report(&core);
+        assert_eq!(value["storedRowsWellFormed"], true);
+        assert_eq!(value["freshGeometryComplete"], false);
+        assert_eq!(value["comparison"]["comparable"], false);
+        assert_eq!(value["comparison"]["matches"], serde_json::Value::Null);
+
+        const HOST: usize = 325;
+        let picture_fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/3-09월_교육_통합_2022.hwp");
+        let picture_bytes = std::fs::read(picture_fixture).expect("read p325 fixture");
+        let mut core = DocumentCore::from_bytes(&picture_bytes).expect("parse p325 fixture");
+        let column = core.document.sections[0].paragraphs[0]
+            .controls
+            .iter_mut()
+            .find_map(|control| match control {
+                Control::ColumnDef(column) => Some(column),
+                _ => None,
+            })
+            .expect("column definition");
+        column.same_width = false;
+        column.proportional_widths = true;
+        column.widths = vec![22_000, 10_000];
+        column.gaps = vec![500];
+        core.para_column_map[0].clear();
+        let inspect = |core: &DocumentCore| {
+            let report = core
+                .line_break_provenance_native(
+                    0,
+                    HOST,
+                    &[],
+                    r#"{"geometry":false,"measurement":false}"#,
+                )
+                .expect("picture-band provenance");
+            serde_json::from_str::<serde_json::Value>(&report).expect("provenance JSON")
+        };
+        for value in [inspect(&core), {
+            core.para_column_map[0].resize(HOST + 1, 0);
+            core.para_column_map[0][HOST] = u16::MAX;
+            inspect(&core)
+        }] {
+            assert_eq!(value["columnIndex"], serde_json::Value::Null);
+            assert_eq!(value["geometrySource"], "picture-band-column-fallback");
+            assert_eq!(value["freshGeometryComplete"], false);
+            assert_eq!(value["comparison"]["comparable"], false);
+        }
+
+        use crate::renderer::pagination::{ColumnContent, PageItem};
+        let mut core = DocumentCore::from_bytes(&bytes).expect("parse calc-cell fixture");
+        let column_def = ColumnDef {
+            column_count: 2,
+            same_width: false,
+            proportional_widths: true,
+            widths: vec![10_000, 22_000],
+            gaps: vec![500],
+            ..Default::default()
+        };
+        let page_def = &core.document.sections[0].section_def.page_def;
+        let layout = PageLayoutInfo::from_page_def(page_def, &column_def, core.dpi);
+        let first_x = layout.column_areas[0].x + 1.0;
+        let column = |column_index, item| ColumnContent {
+            column_index,
+            start_height: 0.0,
+            endnote_flow: false,
+            items: vec![item],
+            zone_layout: None,
+            zone_y_offset: 0.0,
+            wrap_around_paras: Vec::new(),
+            used_height: 0.0,
+            wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
+        };
+        let page = &mut core.pagination[0].pages[0];
+        page.layout = layout;
+        page.column_contents = vec![
+            column(0, PageItem::FullParagraph { para_index: 0 }),
+            column(
+                1,
+                PageItem::PartialParagraph {
+                    para_index: 0,
+                    start_line: 0,
+                    end_line: 1,
+                },
+            ),
+        ];
+        let options = serde_json::json!({
+            "geometry": false,
+            "measurement": false,
+            "pageIndex": 0,
+            "textX": first_x,
+        });
+        let report = core
+            .line_break_provenance_native(0, 0, &[], &options.to_string())
+            .expect("split body provenance");
+        let value: serde_json::Value = serde_json::from_str(&report).expect("provenance JSON");
+        assert_eq!(
+            value["geometrySource"],
+            "visible-page-unequal-column-fragments"
+        );
+        assert_eq!(value["freshGeometryComplete"], false);
+        assert_eq!(value["comparison"]["comparable"], false);
+
+        let paragraph = Paragraph {
+            line_segs: vec![LineSeg {
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        paragraph.invalidate_layout_inputs();
+        assert_eq!(
+            classify_stored_cache(&paragraph),
+            ("stale-text-partition", true, false, 1)
+        );
+
+        let paragraph = Paragraph {
+            line_segs: vec![
+                LineSeg {
+                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                    ..Default::default()
+                },
+                LineSeg {
+                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE | LineSeg::TAG_IMPLEMENTATION_PROPERTY,
+                    ..Default::default()
+                },
+            ],
+            layout_only_fill_lines: 1,
+            ..Default::default()
+        };
+        let (kind, authentic, eligible, source_prefix_len) = classify_stored_cache(&paragraph);
+        assert_eq!(kind, "mixed-source-and-synthetic");
+        assert!(!authentic);
+        assert!(!eligible);
+        let (records, _, _) = line_seg_trace(&paragraph.line_segs, source_prefix_len, 2, 2);
+        assert!(records[0].source_cache_authentic);
+        assert!(!records[1].source_cache_authentic);
+
+        let mut core = DocumentCore::from_bytes(&bytes).expect("parse calc-cell fixture");
+        let para_shape_id = core
+            .resolve_control_para(0, 0, &[(2, 0, 0)])
+            .expect("cell paragraph")
+            .para_shape_id as usize;
+        core.styles.para_styles[para_shape_id].margin_left = 10.0;
+        let report = core
+            .line_break_provenance_native(
+                0,
+                0,
+                &[(2, 0, 0)],
+                r#"{"geometry":false,"measurement":false,"visibleFrameWidthHwp":1201}"#,
+            )
+            .expect("cell provenance");
+        let value: serde_json::Value = serde_json::from_str(&report).expect("provenance JSON");
+        assert_eq!(value["geometrySource"], "visible-line-content-frame-hwp");
+        assert_eq!(value["paragraphBox"]["declared"]["width"], 1_201);
+        assert_eq!(value["productionAdmission"], serde_json::Value::Null);
+
+        let group_fixture =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/group-box.hwp");
+        let group_bytes = std::fs::read(group_fixture).expect("read group-box fixture");
+        let core = DocumentCore::from_bytes(&group_bytes).expect("parse group-box fixture");
+        let layout: serde_json::Value = serde_json::from_str(
+            &core
+                .get_page_text_layout_native(0)
+                .expect("group-box text layout"),
+        )
+        .expect("text layout JSON");
+        let run = layout["runs"]
+            .as_array()
+            .and_then(|runs| {
+                runs.iter().find(|run| {
+                    run["groupPath"]
+                        .as_array()
+                        .is_some_and(|path| !path.is_empty())
+                })
+            })
+            .expect("grouped TextBox run");
+        let cell_path = run["cellPath"]
+            .as_array()
+            .expect("grouped TextBox cellPath")
+            .iter()
+            .map(|entry| {
+                (
+                    entry["controlIndex"].as_u64().unwrap() as usize,
+                    entry["cellIndex"].as_u64().unwrap() as usize,
+                    entry["cellParaIndex"].as_u64().unwrap() as usize,
+                )
+            })
+            .collect::<Vec<_>>();
+        let width = run["lineContainerWidthHwp"]
+            .as_i64()
+            .expect("canonical grouped line width") as i32;
+        let options = serde_json::json!({
+            "geometry": false,
+            "measurement": false,
+            "groupPath": run["groupPath"],
+            "visibleFrameWidthHwp": width,
+        });
+        let report = core
+            .line_break_provenance_native(
+                run["secIdx"].as_u64().unwrap() as usize,
+                run["parentParaIdx"].as_u64().unwrap() as usize,
+                &cell_path,
+                &options.to_string(),
+            )
+            .expect("grouped line provenance");
+        let value: serde_json::Value = serde_json::from_str(&report).expect("provenance JSON");
+        assert_eq!(
+            value["geometrySource"],
+            "visible-group-line-content-frame-hwp"
+        );
+        assert_eq!(value["paragraphBox"]["declared"]["width"], i64::from(width));
+
+        let outer = ShapeObject::Group(crate::model::shape::GroupShape {
+            children: vec![ShapeObject::Rectangle(Default::default())],
+            ..Default::default()
+        });
+        let inner = ShapeObject::Group(crate::model::shape::GroupShape {
+            children: vec![ShapeObject::Rectangle(Default::default())],
+            ..Default::default()
+        });
+        let mut depth = 0;
+        assert!(matches!(
+            descend_group_path_segment(&outer, &[0, 0], &mut depth).unwrap(),
+            ShapeObject::Rectangle(_)
+        ));
+        assert_eq!(depth, 1);
+        assert!(matches!(
+            descend_group_path_segment(&inner, &[0, 0], &mut depth).unwrap(),
+            ShapeObject::Rectangle(_)
+        ));
+        assert_eq!(depth, 2);
+
+        let mut segments = vec![LineSeg {
+            tag: LineSeg::TAG_FIRST_SEGMENT,
+            ..Default::default()
+        }];
+        segments.extend((0..8).map(|_| LineSeg::default()));
+        segments.push(LineSeg {
+            tag: LineSeg::TAG_LAST_SEGMENT,
+            ..Default::default()
+        });
+        assert!(stored_rows_are_well_formed(&segments));
+        let (records, row_count, segment_count) = line_seg_trace(&segments, segments.len(), 1, 2);
+        assert_eq!(row_count, 1);
+        assert_eq!(segment_count, 10);
+        assert_eq!(records.len(), 2);
     }
 
     #[test]
     fn issue3137_focused_partial_repaint_rejects_unsafe_justify_and_extra_spacing() {
+        #[cfg(feature = "subsecond-dev")]
+        line_break_provenance_regressions();
+        let px = crate::renderer::hwpunit_to_px(1_201, 96.0);
+        assert_eq!(diagnostic_px_to_hwpunit(px, 96.0), 1_201);
         assert!(focused_partial_repaint_alignment_is_safe(
             Alignment::Left,
             false,

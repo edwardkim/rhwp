@@ -13,6 +13,8 @@ mod font_decision;
 mod font_metric_coverage;
 mod form_query;
 pub mod hwpctrl_sets;
+#[cfg(feature = "subsecond-dev")]
+mod line_break_provenance;
 pub mod rendering;
 // [#3283] `grep` 이 같은 매칭 규칙(find_matches)을 쓰도록 크레이트 내부 공개.
 /// [프롬프트 주입 방패] 문서 본문을 nonce 격벽으로 감싸 LLM 에 안전하게 넘긴다 — 읽기 전용.

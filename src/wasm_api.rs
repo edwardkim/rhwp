@@ -298,6 +298,25 @@ fn get_page_info_impl(document: &HwpDocument, page_num: u32) -> Result<String, J
         .get_page_info_native(page_num)
         .map_err(Into::into)
 }
+
+#[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
+fn get_line_break_provenance_impl(
+    document: &HwpDocument,
+    section_idx: u32,
+    parent_para_idx: u32,
+    cell_path_json: &str,
+    options_json: &str,
+) -> Result<String, JsValue> {
+    let cell_path = parse_cell_path_arg(cell_path_json)?;
+    document
+        .line_break_provenance_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &cell_path,
+            options_json,
+        )
+        .map_err(Into::into)
+}
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ExternalImageReference {
@@ -1069,6 +1088,25 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = getPageFlowImageOps)]
     pub fn get_page_flow_image_ops(&self, page_num: u32) -> Result<String, JsValue> {
         render_patch_boundary::get_page_flow_image_ops(self, page_num)
+    }
+
+    /// Subsecond fidelity harness용 저장-vs-fresh 줄나눔 provenance.
+    #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
+    #[wasm_bindgen(js_name = getLineBreakProvenance)]
+    pub fn get_line_break_provenance(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        cell_path_json: &str,
+        options_json: &str,
+    ) -> Result<String, JsValue> {
+        render_patch_boundary::get_line_break_provenance(
+            self,
+            section_idx,
+            parent_para_idx,
+            cell_path_json,
+            options_json,
+        )
     }
 
     /// 그림 신원 키로 바이트를 Uint8Array 로 반환한다 (Task #3315).

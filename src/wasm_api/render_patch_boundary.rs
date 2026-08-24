@@ -182,6 +182,18 @@ hot_render_boundaries! {
         document: &HwpDocument,
         page_num: u32,
     ) -> Result<String, JsValue> = super::get_page_info_impl;
+
+    // Fidelity harness의 fresh 줄나눔은 현재 패치의 측정·Frame carve 코드를 직접 실행해야 한다.
+    // export만 base에 두면 화면은 새 코드인데 provenance는 옛 코드가 되어 비교 자체가 거짓이다.
+    #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
+    exports ["getLineBreakProvenance"]
+    fn get_line_break_provenance(
+        document: &HwpDocument,
+        section_idx: u32,
+        parent_para_idx: u32,
+        cell_path_json: &str,
+        options_json: &str,
+    ) -> Result<String, JsValue> = super::get_line_break_provenance_impl;
 }
 
 /// 일부러 경계 밖에 둔 export 와 그 이유. 위 목록과 한 쌍이라 붙여 둔다.
