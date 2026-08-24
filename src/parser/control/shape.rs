@@ -356,6 +356,19 @@ pub(crate) fn parse_common_obj_attr(ctrl_data: &[u8]) -> CommonObjAttr {
     common.locked = attr & (1 << 30) != 0;
     common.hwp5_gen_shape_attr_bit26 = attr & (1 << 26) != 0;
     common.hwp5_gen_shape_attr_bit28 = attr & (1 << 28) != 0;
+    // [#5864] 개체 번호 범주(캡션 번호·상호참조 계열) — attr bits 26-28 의 3비트
+    // 열거다. 07276 실측: 표 155/155(0=NONE 23·2=TABLE 126·1=PICTURE 6), 수식
+    // 8/8(=3), gso 분포도 한글 2024 SaveAs HWPX 의 numberingType 과 정합
+    // (PICTURE 28·TABLE 1 정확 일치). 종전엔 안 읽어 h2x 산출이 전량 NONE 이
+    // 됐고, 한글이 상호참조 순번을 전부 1 로 재계산했다(07276 상호참조 153중
+    // 101 오염). bit26/28 개별 보존 플래그(hwp5_gen_shape_attr_bit26/28)는
+    // attr verbatim 왕복용으로 그대로 둔다.
+    common.numbering_type = match (attr >> 26) & 0x7 {
+        1 => crate::model::shape::ObjectNumberingType::Picture,
+        2 => crate::model::shape::ObjectNumberingType::Table,
+        3 => crate::model::shape::ObjectNumberingType::Equation,
+        _ => crate::model::shape::ObjectNumberingType::None,
+    };
     common.vert_rel_to = match (attr >> 3) & 0x03 {
         1 => VertRelTo::Page,
         2 => VertRelTo::Para,
