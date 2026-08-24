@@ -1,5 +1,9 @@
 //! Physical-row geometry for paragraph layout.
 
+#[cfg(feature = "subsecond-dev")]
+use std::cell::{Cell, RefCell};
+#[cfg(feature = "subsecond-dev")]
+use std::collections::HashMap;
 use std::ops::Range;
 
 use crate::model::paragraph::LineSeg;
@@ -28,6 +32,183 @@ const MINIMUM_USABLE_INTERVAL_HWP: i32 = 1_440;
 /// `bw%4==2` documents and broke the `bw%4==0` ones.
 ///
 const COLUMN_WIDTH_QUANTUM_HWP: i32 = 4;
+
+#[cfg(feature = "subsecond-dev")]
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct FrameIntervalTrace {
+    pub(crate) start: i32,
+    pub(crate) end: i32,
+    pub(crate) width: i32,
+}
+
+#[cfg(feature = "subsecond-dev")]
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct FrameCarveTrace {
+    pub(crate) paragraph_index: Option<usize>,
+    pub(crate) physical_row_index: usize,
+    pub(crate) requested_top: i32,
+    pub(crate) resolved_top: i32,
+    pub(crate) band_height: i32,
+    pub(crate) intervals: Vec<FrameIntervalTrace>,
+    pub(crate) next_geometry_event: Option<i32>,
+    pub(crate) usable: bool,
+}
+
+#[cfg(feature = "subsecond-dev")]
+#[derive(Debug, Clone, Default)]
+pub(crate) struct FrameCarveCapture {
+    pub(crate) total_records: usize,
+    pub(crate) truncated: bool,
+    pub(crate) records: Vec<FrameCarveTrace>,
+    max_records: usize,
+    paragraph_filter: Option<usize>,
+    row_bases_by_paragraph: HashMap<Option<usize>, usize>,
+}
+
+#[cfg(feature = "subsecond-dev")]
+impl FrameCarveCapture {
+    fn with_limit(max_records: usize, paragraph_filter: Option<usize>) -> Self {
+        Self {
+            max_records,
+            paragraph_filter,
+            ..Self::default()
+        }
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+thread_local! {
+    static FRAME_CARVE_TRACE: RefCell<Option<FrameCarveCapture>> = const { RefCell::new(None) };
+    static FRAME_TRACE_PARAGRAPH_INDEX: Cell<Option<usize>> = const { Cell::new(None) };
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn replace_frame_trace_paragraph_index(paragraph_index: Option<usize>) -> Option<usize> {
+    FRAME_TRACE_PARAGRAPH_INDEX.with(|slot| slot.replace(paragraph_index))
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn capture_frame_carves<T>(
+    enabled: bool,
+    max_records: usize,
+    paragraph_filter: Option<usize>,
+    operation: impl FnOnce() -> T,
+) -> (T, FrameCarveCapture) {
+    if !enabled {
+        return (operation(), FrameCarveCapture::default());
+    }
+    let guard = FrameCaptureGuard::new(max_records, paragraph_filter);
+    let result = operation();
+    (result, guard.finish())
+}
+
+#[cfg(feature = "subsecond-dev")]
+struct FrameCaptureGuard {
+    previous: Option<FrameCarveCapture>,
+    active: bool,
+}
+
+#[cfg(feature = "subsecond-dev")]
+impl FrameCaptureGuard {
+    fn new(max_records: usize, paragraph_filter: Option<usize>) -> Self {
+        Self {
+            previous: FRAME_CARVE_TRACE.with(|slot| {
+                slot.replace(Some(FrameCarveCapture::with_limit(
+                    max_records,
+                    paragraph_filter,
+                )))
+            }),
+            active: true,
+        }
+    }
+
+    fn finish(mut self) -> FrameCarveCapture {
+        let captured = FRAME_CARVE_TRACE
+            .with(|slot| slot.replace(self.previous.take()))
+            .unwrap_or_default();
+        self.active = false;
+        captured
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+impl Drop for FrameCaptureGuard {
+    fn drop(&mut self) {
+        if self.active {
+            FRAME_CARVE_TRACE.with(|slot| {
+                slot.replace(self.previous.take());
+            });
+        }
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn record_frame_carve(mut trace: FrameCarveTrace) {
+    FRAME_CARVE_TRACE.with(|slot| {
+        if let Some(capture) = slot.borrow_mut().as_mut() {
+            if capture
+                .paragraph_filter
+                .is_some_and(|filter| trace.paragraph_index != Some(filter))
+            {
+                return;
+            }
+            let row_base = *capture
+                .row_bases_by_paragraph
+                .entry(trace.paragraph_index)
+                .or_insert(trace.physical_row_index);
+            trace.physical_row_index = trace.physical_row_index.saturating_sub(row_base);
+            capture.total_records += 1;
+            if capture.records.len() < capture.max_records {
+                capture.records.push(trace);
+            } else {
+                capture.truncated = true;
+            }
+        }
+    });
+}
+
+#[cfg(feature = "subsecond-dev")]
+#[derive(Clone)]
+pub(crate) struct FrameTraceCheckpoint {
+    total_records: usize,
+    records_len: usize,
+    truncated: bool,
+    row_bases_by_paragraph: HashMap<Option<usize>, usize>,
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn frame_trace_checkpoint() -> FrameTraceCheckpoint {
+    FRAME_CARVE_TRACE.with(|slot| {
+        slot.borrow()
+            .as_ref()
+            .map(|capture| FrameTraceCheckpoint {
+                total_records: capture.total_records,
+                records_len: capture.records.len(),
+                truncated: capture.truncated,
+                row_bases_by_paragraph: capture.row_bases_by_paragraph.clone(),
+            })
+            .unwrap_or(FrameTraceCheckpoint {
+                total_records: 0,
+                records_len: 0,
+                truncated: false,
+                row_bases_by_paragraph: HashMap::new(),
+            })
+    })
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn restore_frame_trace(checkpoint: FrameTraceCheckpoint) {
+    FRAME_CARVE_TRACE.with(|slot| {
+        if let Some(capture) = slot.borrow_mut().as_mut() {
+            capture.total_records = checkpoint.total_records;
+            capture.records.truncate(checkpoint.records_len);
+            capture.truncated = checkpoint.truncated;
+            capture.row_bases_by_paragraph = checkpoint.row_bases_by_paragraph;
+        }
+    });
+}
 
 /// Snap a base edge down to `pitch`.
 ///
@@ -305,6 +486,16 @@ impl ParagraphBox {
         }
     }
 
+    #[cfg(feature = "subsecond-dev")]
+    pub(crate) fn declared_horizontal(&self) -> Range<i32> {
+        self.horizontal.clone()
+    }
+
+    #[cfg(feature = "subsecond-dev")]
+    pub(crate) fn origin_is_derivable(&self) -> bool {
+        self.origin_is_derivable
+    }
+
     pub(crate) fn width_hwp(&self) -> i32 {
         let effective = self.effective();
         effective.end.saturating_sub(effective.start)
@@ -505,6 +696,8 @@ impl LayoutFrame {
     }
 
     fn carve_hot_impl(&mut self, band_height: i32) {
+        #[cfg(feature = "subsecond-dev")]
+        let requested_top = self.top;
         let old_max = self.next_geometry_event.map(|_| {
             self.current_intervals
                 .iter()
@@ -613,6 +806,25 @@ impl LayoutFrame {
             self.top = candidate_top;
             self.current_intervals = intervals;
             self.next_geometry_event = next_geometry_event;
+            #[cfg(feature = "subsecond-dev")]
+            record_frame_carve(FrameCarveTrace {
+                paragraph_index: FRAME_TRACE_PARAGRAPH_INDEX.with(Cell::get),
+                physical_row_index: self.rows.len(),
+                requested_top,
+                resolved_top: self.top,
+                band_height,
+                intervals: self
+                    .current_intervals
+                    .iter()
+                    .map(|interval| FrameIntervalTrace {
+                        start: interval.start,
+                        end: interval.end,
+                        width: interval.end.saturating_sub(interval.start),
+                    })
+                    .collect(),
+                next_geometry_event: self.next_geometry_event,
+                usable: self.carved_row_is_usable(),
+            });
             return;
         }
     }
@@ -937,6 +1149,49 @@ impl LayoutFrame {
 mod tests {
     use super::*;
 
+    #[cfg(feature = "subsecond-dev")]
+    fn trace(row: usize) -> FrameCarveTrace {
+        FrameCarveTrace {
+            paragraph_index: None,
+            physical_row_index: row,
+            requested_top: 0,
+            resolved_top: 0,
+            band_height: 1,
+            intervals: Vec::new(),
+            next_geometry_event: None,
+            usable: true,
+        }
+    }
+
+    #[cfg(feature = "subsecond-dev")]
+    fn nested_frame_capture_restores_after_unwind() {
+        let (_, captured) = capture_frame_carves(true, usize::MAX, None, || {
+            record_frame_carve(trace(1));
+            let _ = std::panic::catch_unwind(|| {
+                capture_frame_carves(true, usize::MAX, None, || -> () { panic!("inner capture") });
+            });
+            record_frame_carve(trace(2));
+        });
+        assert_eq!(
+            captured
+                .records
+                .iter()
+                .map(|trace| trace.physical_row_index)
+                .collect::<Vec<_>>(),
+            vec![1, 2]
+        );
+    }
+
+    #[cfg(feature = "subsecond-dev")]
+    fn frame_capture_limits_storage_while_counting_all_records() {
+        let (_, captured) = capture_frame_carves(true, 1, None, || {
+            record_frame_carve(trace(1));
+            record_frame_carve(trace(2));
+        });
+        assert_eq!((captured.total_records, captured.records.len()), (2, 1));
+        assert!(captured.truncated);
+    }
+
     fn metrics(line_height: i32, line_spacing: i32) -> FrameRowMetrics {
         FrameRowMetrics {
             vertical_pos: -1,
@@ -1223,6 +1478,11 @@ mod tests {
 
     #[test]
     fn taller_candidate_recarves_before_the_row_is_committed() {
+        #[cfg(feature = "subsecond-dev")]
+        {
+            nested_frame_capture_restores_after_unwind();
+            frame_capture_limits_storage_while_counting_all_records();
+        }
         every_body_route_builds_one_box_for_one_paragraph();
         the_column_solver_quantizes_before_paragraph_margins();
         the_snap_is_total_over_its_own_domain();

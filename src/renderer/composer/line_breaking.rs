@@ -11,9 +11,17 @@ use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
     is_cjk_char, resolved_to_text_style,
 };
+#[cfg(feature = "subsecond-dev")]
+use crate::renderer::layout_frame::{
+    frame_trace_checkpoint, restore_frame_trace, FrameTraceCheckpoint,
+};
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
 use crate::renderer::px_to_hwpunit;
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
+#[cfg(feature = "subsecond-dev")]
+use std::cell::{Cell, RefCell};
+#[cfg(feature = "subsecond-dev")]
+use std::collections::HashMap;
 use std::ops::Range;
 
 struct PreparedParagraphKerning {
@@ -21,6 +29,642 @@ struct PreparedParagraphKerning {
     scalar_styles: Vec<crate::renderer::kerning::KerningParagraphScalarStyle>,
     hard_boundaries: Vec<bool>,
     measurement: std::sync::Arc<crate::renderer::kerning::KerningParagraphMeasurement>,
+}
+
+#[cfg(feature = "subsecond-dev")]
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct LineBreakTokenTrace {
+    pub(crate) paragraph_index: Option<usize>,
+    pub(crate) token_index: usize,
+    pub(crate) kind: &'static str,
+    pub(crate) char_start_scalar: usize,
+    pub(crate) char_end_scalar: usize,
+    pub(crate) start_utf16: u32,
+    pub(crate) end_utf16: u32,
+    pub(crate) advance_hwp: Option<i32>,
+    pub(crate) max_font_size: f64,
+}
+
+#[cfg(feature = "subsecond-dev")]
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct LineBreakFitTrace {
+    pub(crate) paragraph_index: Option<usize>,
+    pub(crate) physical_row_index: usize,
+    pub(crate) token_index: usize,
+    pub(crate) decision: &'static str,
+    pub(crate) char_start_scalar: usize,
+    pub(crate) char_end_scalar: usize,
+    pub(crate) line_start_scalar: usize,
+    pub(crate) start_utf16: u32,
+    pub(crate) end_utf16: u32,
+    pub(crate) line_start_utf16: u32,
+    pub(crate) first_line: bool,
+    pub(crate) current_width_hwp: i32,
+    pub(crate) token_advance_hwp: i32,
+    pub(crate) letter_spacing_trim_hwp: i32,
+    pub(crate) space_savings_hwp: i32,
+    pub(crate) natural_candidate_hwp: i32,
+    pub(crate) condensed_candidate_hwp: i32,
+    pub(crate) effective_width_hwp: i32,
+    pub(crate) condense_before: bool,
+    pub(crate) condense_after: bool,
+    pub(crate) terminal_hang: bool,
+    pub(crate) fits: bool,
+}
+
+#[cfg(feature = "subsecond-dev")]
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct LineBreakMeasurementTrace {
+    pub(crate) token_count: usize,
+    pub(crate) tokens_truncated: bool,
+    pub(crate) tokens: Vec<LineBreakTokenTrace>,
+    pub(crate) fit_decision_count: usize,
+    pub(crate) fit_decisions_truncated: bool,
+    pub(crate) fit_decisions: Vec<LineBreakFitTrace>,
+    #[serde(skip)]
+    char_offsets: Vec<u32>,
+    #[serde(skip)]
+    text_utf16_length: u32,
+    #[serde(skip)]
+    max_tokens: usize,
+    #[serde(skip)]
+    max_fit_decisions: usize,
+    #[serde(skip)]
+    paragraph_filter: Option<usize>,
+    #[serde(skip)]
+    token_counts_by_paragraph: HashMap<Option<usize>, usize>,
+    #[serde(skip)]
+    fit_counts_by_paragraph: HashMap<Option<usize>, usize>,
+    #[serde(skip)]
+    row_bases_by_paragraph: HashMap<Option<usize>, usize>,
+}
+
+#[cfg(feature = "subsecond-dev")]
+impl Default for LineBreakMeasurementTrace {
+    fn default() -> Self {
+        Self::with_limits(usize::MAX, usize::MAX, None)
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+impl LineBreakMeasurementTrace {
+    fn with_limits(
+        max_tokens: usize,
+        max_fit_decisions: usize,
+        paragraph_filter: Option<usize>,
+    ) -> Self {
+        Self {
+            token_count: 0,
+            tokens_truncated: false,
+            tokens: Vec::new(),
+            fit_decision_count: 0,
+            fit_decisions_truncated: false,
+            fit_decisions: Vec::new(),
+            char_offsets: Vec::new(),
+            text_utf16_length: 0,
+            max_tokens,
+            max_fit_decisions,
+            paragraph_filter,
+            token_counts_by_paragraph: HashMap::new(),
+            fit_counts_by_paragraph: HashMap::new(),
+            row_bases_by_paragraph: HashMap::new(),
+        }
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+thread_local! {
+    static LINE_BREAK_MEASUREMENT_TRACE: RefCell<Option<LineBreakMeasurementTrace>> = const { RefCell::new(None) };
+    static LINE_BREAK_TRACE_PARAGRAPH_INDEX: Cell<Option<usize>> = const { Cell::new(None) };
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) struct TraceParagraphScope {
+    previous_line: Option<usize>,
+    previous_frame: Option<usize>,
+}
+
+#[cfg(feature = "subsecond-dev")]
+impl Drop for TraceParagraphScope {
+    fn drop(&mut self) {
+        LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(|slot| slot.set(self.previous_line));
+        crate::renderer::layout_frame::replace_frame_trace_paragraph_index(self.previous_frame);
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn trace_paragraph_scope(paragraph_index: Option<usize>) -> TraceParagraphScope {
+    TraceParagraphScope {
+        previous_line: LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(|slot| slot.replace(paragraph_index)),
+        previous_frame: crate::renderer::layout_frame::replace_frame_trace_paragraph_index(
+            paragraph_index,
+        ),
+    }
+}
+
+#[cfg(all(test, feature = "subsecond-dev"))]
+mod trace_scope_tests {
+    use super::*;
+
+    fn decision(token_index: usize) -> LineBreakFitTrace {
+        LineBreakFitTrace {
+            paragraph_index: None,
+            physical_row_index: 0,
+            token_index,
+            decision: "test",
+            char_start_scalar: 0,
+            char_end_scalar: 0,
+            line_start_scalar: 0,
+            start_utf16: 0,
+            end_utf16: 0,
+            line_start_utf16: 0,
+            first_line: true,
+            current_width_hwp: 0,
+            token_advance_hwp: 0,
+            letter_spacing_trim_hwp: 0,
+            space_savings_hwp: 0,
+            natural_candidate_hwp: 0,
+            condensed_candidate_hwp: 0,
+            effective_width_hwp: 0,
+            condense_before: false,
+            condense_after: false,
+            terminal_hang: false,
+            fits: true,
+        }
+    }
+
+    #[test]
+    fn nested_trace_scope_restores_the_previous_paragraph() {
+        let outer = trace_paragraph_scope(Some(7));
+        assert_eq!(LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get), Some(7));
+        {
+            let _inner = trace_paragraph_scope(None);
+            assert_eq!(LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get), None);
+        }
+        assert_eq!(LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get), Some(7));
+        drop(outer);
+        assert_eq!(LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get), None);
+    }
+
+    #[test]
+    fn nested_measurement_capture_restores_after_unwind() {
+        let (_, captured) =
+            capture_line_break_measurement(true, usize::MAX, usize::MAX, None, || {
+                record_fit_decision(decision(1));
+                let _ = std::panic::catch_unwind(|| {
+                    capture_line_break_measurement(true, usize::MAX, usize::MAX, None, || -> () {
+                        panic!("inner capture")
+                    });
+                });
+                record_fit_decision(decision(2));
+            });
+        assert_eq!(
+            captured
+                .fit_decisions
+                .iter()
+                .map(|decision| decision.token_index)
+                .collect::<Vec<_>>(),
+            vec![1, 2]
+        );
+    }
+
+    #[test]
+    fn fit_trace_marks_a_fit_that_only_condensation_makes_possible() {
+        assert!(fit_used_condense(true, 1_020, 995, 1_000));
+        assert!(!fit_used_condense(true, 999, 995, 1_000));
+        assert!(!fit_used_condense(false, 1_020, 995, 1_000));
+    }
+
+    #[test]
+    fn empty_stored_offsets_fall_back_to_visible_utf16_prefixes() {
+        let chars = "😀\n".chars().collect::<Vec<_>>();
+        let tokens = vec![
+            BreakToken::Text {
+                start_idx: 0,
+                end_idx: 1,
+                width: 1.0,
+                max_font_size: 10.0,
+                char_widths: Vec::new(),
+            },
+            BreakToken::LineBreak { idx: 1 },
+        ];
+        let (_, captured) =
+            capture_line_break_measurement(true, usize::MAX, usize::MAX, None, || {
+                record_tokens(&tokens, &chars, &[]);
+            });
+        assert_eq!(
+            captured
+                .tokens
+                .iter()
+                .map(|token| (token.start_utf16, token.end_utf16))
+                .collect::<Vec<_>>(),
+            vec![(0, 2), (2, 3)]
+        );
+    }
+
+    #[test]
+    fn later_tokenization_replaces_the_superseded_measurement_lane() {
+        let chars = ['a'];
+        let token = |width| BreakToken::Text {
+            start_idx: 0,
+            end_idx: 1,
+            width,
+            max_font_size: 10.0,
+            char_widths: Vec::new(),
+        };
+        let (_, captured) =
+            capture_line_break_measurement(true, usize::MAX, usize::MAX, None, || {
+                record_tokens(&[token(1.0)], &chars, &[0]);
+                record_fit_decision(decision(1));
+                record_tokens(&[token(2.0)], &chars, &[0]);
+                record_fit_decision(decision(2));
+            });
+        assert_eq!(captured.tokens.len(), 1);
+        assert_eq!(captured.tokens[0].advance_hwp, Some(to_hwp(2.0)));
+        assert_eq!(captured.fit_decisions[0].token_index, 2);
+    }
+
+    #[test]
+    fn measurement_capture_limits_storage_while_counting_all_records() {
+        let chars = ['a', 'b'];
+        let tokens = [
+            BreakToken::Text {
+                start_idx: 0,
+                end_idx: 1,
+                width: 1.0,
+                max_font_size: 10.0,
+                char_widths: Vec::new(),
+            },
+            BreakToken::Text {
+                start_idx: 1,
+                end_idx: 2,
+                width: 1.0,
+                max_font_size: 10.0,
+                char_widths: Vec::new(),
+            },
+        ];
+        let (_, captured) = capture_line_break_measurement(true, 1, 1, None, || {
+            record_tokens(&tokens, &chars, &[0, 1]);
+            record_fit_decision(decision(1));
+            record_fit_decision(decision(2));
+        });
+        assert_eq!((captured.token_count, captured.tokens.len()), (2, 1));
+        assert!(captured.tokens_truncated);
+        assert_eq!(
+            (captured.fit_decision_count, captured.fit_decisions.len()),
+            (2, 1)
+        );
+        assert!(captured.fit_decisions_truncated);
+    }
+
+    #[test]
+    fn measurement_checkpoint_removes_rejected_capped_decisions_from_totals() {
+        let (_, captured) = capture_line_break_measurement(true, 0, 1, None, || {
+            record_fit_decision(decision(1));
+            let checkpoint = measurement_trace_checkpoint();
+            record_fit_decision(decision(2));
+            restore_measurement_trace(checkpoint);
+            record_fit_decision(decision(3));
+        });
+        assert_eq!(captured.fit_decision_count, 2);
+        assert_eq!(captured.fit_decisions.len(), 1);
+        assert_eq!(captured.fit_decisions[0].token_index, 1);
+        assert!(captured.fit_decisions_truncated);
+        assert_eq!(captured.fit_counts_by_paragraph.get(&None), Some(&2));
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn capture_line_break_measurement<T>(
+    enabled: bool,
+    max_tokens: usize,
+    max_fit_decisions: usize,
+    paragraph_filter: Option<usize>,
+    operation: impl FnOnce() -> T,
+) -> (T, LineBreakMeasurementTrace) {
+    if !enabled {
+        return (operation(), LineBreakMeasurementTrace::default());
+    }
+    let guard = MeasurementCaptureGuard::new(max_tokens, max_fit_decisions, paragraph_filter);
+    let result = operation();
+    (result, guard.finish())
+}
+
+#[cfg(feature = "subsecond-dev")]
+struct MeasurementCaptureGuard {
+    previous: Option<LineBreakMeasurementTrace>,
+    active: bool,
+}
+
+#[cfg(feature = "subsecond-dev")]
+impl MeasurementCaptureGuard {
+    fn new(max_tokens: usize, max_fit_decisions: usize, paragraph_filter: Option<usize>) -> Self {
+        Self {
+            previous: LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
+                slot.replace(Some(LineBreakMeasurementTrace::with_limits(
+                    max_tokens,
+                    max_fit_decisions,
+                    paragraph_filter,
+                )))
+            }),
+            active: true,
+        }
+    }
+
+    fn finish(mut self) -> LineBreakMeasurementTrace {
+        let captured = LINE_BREAK_MEASUREMENT_TRACE
+            .with(|slot| slot.replace(self.previous.take()))
+            .unwrap_or_default();
+        self.active = false;
+        captured
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+impl Drop for MeasurementCaptureGuard {
+    fn drop(&mut self) {
+        if self.active {
+            LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
+                slot.replace(self.previous.take());
+            });
+        }
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn trace_utf16_offsets(text_chars: &[char], char_offsets: &[u32]) -> (Vec<u32>, u32) {
+    if char_offsets.len() == text_chars.len() {
+        let end = char_offsets
+            .last()
+            .zip(text_chars.last())
+            .map(|(offset, ch)| *offset + ch.len_utf16() as u32)
+            .unwrap_or(0);
+        return (char_offsets.to_vec(), end);
+    }
+    let mut next = 0u32;
+    let offsets = text_chars
+        .iter()
+        .map(|ch| {
+            let start = next;
+            next = next.saturating_add(ch.len_utf16() as u32);
+            start
+        })
+        .collect();
+    (offsets, next)
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn record_tokens(tokens: &[BreakToken], text_chars: &[char], char_offsets: &[u32]) {
+    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
+        let mut slot = slot.borrow_mut();
+        let Some(trace) = slot.as_mut() else {
+            return;
+        };
+        let paragraph_index = LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get);
+        if trace
+            .paragraph_filter
+            .is_some_and(|filter| paragraph_index != Some(filter))
+        {
+            return;
+        }
+        trace
+            .tokens
+            .retain(|token| token.paragraph_index != paragraph_index);
+        trace
+            .fit_decisions
+            .retain(|decision| decision.paragraph_index != paragraph_index);
+        let previous_token_count = trace
+            .token_counts_by_paragraph
+            .insert(paragraph_index, tokens.len())
+            .unwrap_or(0);
+        trace.token_count = trace
+            .token_count
+            .saturating_sub(previous_token_count)
+            .saturating_add(tokens.len());
+        let previous_fit_count = trace
+            .fit_counts_by_paragraph
+            .remove(&paragraph_index)
+            .unwrap_or(0);
+        trace.row_bases_by_paragraph.remove(&paragraph_index);
+        trace.fit_decision_count = trace.fit_decision_count.saturating_sub(previous_fit_count);
+        trace.fit_decisions_truncated = trace.fit_decision_count > trace.fit_decisions.len();
+        let (trace_offsets, text_utf16_length) = trace_utf16_offsets(text_chars, char_offsets);
+        trace.char_offsets = trace_offsets.clone();
+        trace.text_utf16_length = text_utf16_length;
+        let utf16 = |char_index: usize| {
+            trace_offsets
+                .get(char_index)
+                .copied()
+                .unwrap_or(text_utf16_length)
+        };
+        let remaining = trace.max_tokens.saturating_sub(trace.tokens.len());
+        trace
+            .tokens
+            .extend(tokens.iter().enumerate().take(remaining).map(
+                |(token_index, token)| match token {
+                    BreakToken::Text {
+                        start_idx,
+                        end_idx,
+                        width,
+                        max_font_size,
+                        ..
+                    } => LineBreakTokenTrace {
+                        paragraph_index: LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get),
+                        token_index,
+                        kind: "text",
+                        char_start_scalar: *start_idx,
+                        char_end_scalar: *end_idx,
+                        start_utf16: utf16(*start_idx),
+                        end_utf16: utf16(*end_idx),
+                        advance_hwp: Some(to_hwp(*width)),
+                        max_font_size: *max_font_size,
+                    },
+                    BreakToken::Space {
+                        idx,
+                        width,
+                        max_font_size,
+                    } => LineBreakTokenTrace {
+                        paragraph_index: LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get),
+                        token_index,
+                        kind: "space",
+                        char_start_scalar: *idx,
+                        char_end_scalar: *idx + 1,
+                        start_utf16: utf16(*idx),
+                        end_utf16: utf16(*idx + 1),
+                        advance_hwp: Some(to_hwp(*width)),
+                        max_font_size: *max_font_size,
+                    },
+                    BreakToken::Tab { idx, max_font_size } => LineBreakTokenTrace {
+                        paragraph_index: LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get),
+                        token_index,
+                        kind: "tab",
+                        char_start_scalar: *idx,
+                        char_end_scalar: *idx + 1,
+                        start_utf16: utf16(*idx),
+                        end_utf16: utf16(*idx + 1),
+                        advance_hwp: None,
+                        max_font_size: *max_font_size,
+                    },
+                    BreakToken::LineBreak { idx } => LineBreakTokenTrace {
+                        paragraph_index: LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get),
+                        token_index,
+                        kind: "line-break",
+                        char_start_scalar: *idx,
+                        char_end_scalar: *idx + 1,
+                        start_utf16: utf16(*idx),
+                        end_utf16: utf16(*idx + 1),
+                        advance_hwp: Some(0),
+                        max_font_size: 0.0,
+                    },
+                },
+            ));
+        trace.tokens_truncated = trace.token_count > trace.tokens.len();
+    });
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn record_fit_decision(mut decision: LineBreakFitTrace) {
+    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
+        if let Some(trace) = slot.borrow_mut().as_mut() {
+            let paragraph_index = LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get);
+            if trace
+                .paragraph_filter
+                .is_some_and(|filter| paragraph_index != Some(filter))
+            {
+                return;
+            }
+            let utf16 = |char_index: usize| {
+                trace
+                    .char_offsets
+                    .get(char_index)
+                    .copied()
+                    .unwrap_or(trace.text_utf16_length)
+            };
+            decision.start_utf16 = utf16(decision.char_start_scalar);
+            decision.end_utf16 = utf16(decision.char_end_scalar);
+            decision.line_start_utf16 = utf16(decision.line_start_scalar);
+            decision.paragraph_index = paragraph_index;
+            let row_base = *trace
+                .row_bases_by_paragraph
+                .entry(paragraph_index)
+                .or_insert(decision.physical_row_index);
+            decision.physical_row_index = decision.physical_row_index.saturating_sub(row_base);
+            *trace
+                .fit_counts_by_paragraph
+                .entry(paragraph_index)
+                .or_insert(0) += 1;
+            trace.fit_decision_count += 1;
+            if trace.fit_decisions.len() < trace.max_fit_decisions {
+                trace.fit_decisions.push(decision);
+            }
+            trace.fit_decisions_truncated = trace.fit_decision_count > trace.fit_decisions.len();
+        }
+    });
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn fit_used_condense(
+    fits: bool,
+    natural_candidate_hwp: i32,
+    condensed_candidate_hwp: i32,
+    effective_width_hwp: i32,
+) -> bool {
+    fits && natural_candidate_hwp > effective_width_hwp.saturating_add(LINE_BREAK_TOLERANCE)
+        && condensed_candidate_hwp <= effective_width_hwp.saturating_add(LINE_BREAK_TOLERANCE)
+}
+
+#[cfg(feature = "subsecond-dev")]
+#[derive(Clone)]
+struct MeasurementTraceCheckpoint {
+    fit_decisions_len: usize,
+    fit_decision_count: usize,
+    fit_decisions_truncated: bool,
+    fit_counts_by_paragraph: HashMap<Option<usize>, usize>,
+    row_bases_by_paragraph: HashMap<Option<usize>, usize>,
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn measurement_trace_checkpoint() -> MeasurementTraceCheckpoint {
+    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
+        slot.borrow()
+            .as_ref()
+            .map(|trace| MeasurementTraceCheckpoint {
+                fit_decisions_len: trace.fit_decisions.len(),
+                fit_decision_count: trace.fit_decision_count,
+                fit_decisions_truncated: trace.fit_decisions_truncated,
+                fit_counts_by_paragraph: trace.fit_counts_by_paragraph.clone(),
+                row_bases_by_paragraph: trace.row_bases_by_paragraph.clone(),
+            })
+            .unwrap_or(MeasurementTraceCheckpoint {
+                fit_decisions_len: 0,
+                fit_decision_count: 0,
+                fit_decisions_truncated: false,
+                fit_counts_by_paragraph: HashMap::new(),
+                row_bases_by_paragraph: HashMap::new(),
+            })
+    })
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn restore_measurement_trace(checkpoint: MeasurementTraceCheckpoint) {
+    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
+        if let Some(trace) = slot.borrow_mut().as_mut() {
+            trace.fit_decisions.truncate(checkpoint.fit_decisions_len);
+            trace.fit_decision_count = checkpoint.fit_decision_count;
+            trace.fit_decisions_truncated = checkpoint.fit_decisions_truncated;
+            trace.fit_counts_by_paragraph = checkpoint.fit_counts_by_paragraph;
+            trace.row_bases_by_paragraph = checkpoint.row_bases_by_paragraph;
+        }
+    });
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn measurement_trace_snapshot() -> Option<LineBreakMeasurementTrace> {
+    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| slot.borrow().clone())
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn restore_measurement_trace_snapshot(snapshot: Option<LineBreakMeasurementTrace>) {
+    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
+        slot.replace(snapshot);
+    });
+}
+
+#[cfg(feature = "subsecond-dev")]
+struct LineBreakTraceTransaction {
+    measurement_snapshot: Option<LineBreakMeasurementTrace>,
+    frame_checkpoint: Option<FrameTraceCheckpoint>,
+    committed: bool,
+}
+
+#[cfg(feature = "subsecond-dev")]
+impl LineBreakTraceTransaction {
+    fn new() -> Self {
+        Self {
+            measurement_snapshot: measurement_trace_snapshot(),
+            frame_checkpoint: Some(frame_trace_checkpoint()),
+            committed: false,
+        }
+    }
+
+    fn commit(&mut self) {
+        self.committed = true;
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+impl Drop for LineBreakTraceTransaction {
+    fn drop(&mut self) {
+        if !self.committed {
+            restore_measurement_trace_snapshot(self.measurement_snapshot.take());
+            if let Some(checkpoint) = self.frame_checkpoint.take() {
+                restore_frame_trace(checkpoint);
+            }
+        }
+    }
 }
 
 /// A complete, source-independent projection of one supported Picture wrap
@@ -750,6 +1394,8 @@ fn tokenize_paragraph_with_regenerated_space_metric_hot_impl(
         }
     }
 
+    #[cfg(feature = "subsecond-dev")]
+    record_tokens(&tokens, text_chars, char_offsets);
     tokens
 }
 
@@ -1186,7 +1832,7 @@ fn fill_lines_hot_impl(
     let mut results = Vec::new();
 
     while let Some(interval) =
-        fill_one_interval_with_input(input, &mut cursor, kerning.as_deref_mut())
+        fill_one_interval_with_input(input, &mut cursor, kerning.as_deref_mut(), results.len())
     {
         results.push(interval.line);
     }
@@ -1206,6 +1852,7 @@ fn fill_one_interval(
     letter_spacing_px: &[f64],
     cursor: &mut FillCursor,
     mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
+    physical_row_index: usize,
 ) -> Option<FilledInterval> {
     fill_one_interval_with_input(
         LineFillInput {
@@ -1220,6 +1867,7 @@ fn fill_one_interval(
         },
         cursor,
         kerning,
+        physical_row_index,
     )
 }
 
@@ -1227,14 +1875,22 @@ fn fill_one_interval_with_input(
     input: LineFillInput<'_>,
     cursor: &mut FillCursor,
     kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
+    physical_row_index: usize,
 ) -> Option<FilledInterval> {
-    crate::hot_call!(fill_one_interval_hot_impl, input, cursor, kerning)
+    crate::hot_call!(
+        fill_one_interval_hot_impl,
+        input,
+        cursor,
+        kerning,
+        physical_row_index,
+    )
 }
 
 fn fill_one_interval_hot_impl(
     input: LineFillInput<'_>,
     cursor: &mut FillCursor,
     mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
+    physical_row_index: usize,
 ) -> Option<FilledInterval> {
     let LineFillInput {
         tokens,
@@ -1461,7 +2117,39 @@ fn fill_one_interval_hot_impl(
                         } else {
                             candidate_base
                         };
-                        if candidate_width > current_width && ci > cursor.line_start_idx {
+                        let token_advance = candidate_width.saturating_sub(cursor.lw);
+                        let overflows = candidate_width > current_width;
+                        let accepted = !overflows || ci == cursor.line_start_idx;
+                        #[cfg(feature = "subsecond-dev")]
+                        record_fit_decision(LineBreakFitTrace {
+                            paragraph_index: None,
+                            physical_row_index,
+                            token_index: ti,
+                            decision: if accepted {
+                                "char-fallback-fit"
+                            } else {
+                                "char-fallback-break"
+                            },
+                            char_start_scalar: ci,
+                            char_end_scalar: ci + 1,
+                            line_start_scalar: cursor.line_start_idx,
+                            start_utf16: 0,
+                            end_utf16: 0,
+                            line_start_utf16: 0,
+                            first_line: cursor.is_first_line,
+                            current_width_hwp: cursor.lw,
+                            token_advance_hwp: token_advance,
+                            letter_spacing_trim_hwp: 0,
+                            space_savings_hwp: 0,
+                            natural_candidate_hwp: candidate_width,
+                            condensed_candidate_hwp: candidate_width,
+                            effective_width_hwp: current_width,
+                            condense_before: false,
+                            condense_after: false,
+                            terminal_hang: false,
+                            fits: accepted,
+                        });
+                        if overflows && ci > cursor.line_start_idx {
                             let result = LineBreakResult {
                                 start_idx: cursor.line_start_idx,
                                 end_idx: ci,
@@ -1508,6 +2196,41 @@ fn fill_one_interval_hot_impl(
                     effective_width,
                     *max_font_size,
                 );
+                #[cfg(feature = "subsecond-dev")]
+                {
+                    let natural_candidate_hwp = cursor.lw.saturating_add(w_hwp_fit);
+                    let condensed_candidate_hwp =
+                        condensed_line_width_hwp(natural_candidate_hwp, cursor.line_space_savings);
+                    record_fit_decision(LineBreakFitTrace {
+                        paragraph_index: None,
+                        physical_row_index,
+                        token_index: ti,
+                        decision: "token-fit",
+                        char_start_scalar: *start_idx,
+                        char_end_scalar: *end_idx,
+                        line_start_scalar: cursor.line_start_idx,
+                        start_utf16: 0,
+                        end_utf16: 0,
+                        line_start_utf16: 0,
+                        first_line: cursor.is_first_line,
+                        current_width_hwp: cursor.lw,
+                        token_advance_hwp: w_hwp,
+                        letter_spacing_trim_hwp: w_hwp.saturating_sub(w_hwp_fit),
+                        space_savings_hwp: cursor.line_space_savings,
+                        natural_candidate_hwp,
+                        condensed_candidate_hwp,
+                        effective_width_hwp: effective_width,
+                        condense_before: false,
+                        condense_after: fit_used_condense(
+                            token_fits,
+                            natural_candidate_hwp,
+                            condensed_candidate_hwp,
+                            effective_width,
+                        ),
+                        terminal_hang: false,
+                        fits: token_fits,
+                    });
+                }
 
                 // 단일 문자 CJK/한글 토큰의 줄바꿈 가능 지점 처리
                 // 이 글자를 포함한 후 break point 갱신 (end_idx 사용)
@@ -2512,6 +3235,10 @@ fn layout_paragraph_in_frame_impl(
         .unwrap_or(LineSeg::TAG_IMPLEMENTATION_PROPERTY);
     let first_row = frame.row_count();
     let frame_checkpoint = frame.clone();
+    #[cfg(feature = "subsecond-dev")]
+    let layout_frame_trace_checkpoint = frame_trace_checkpoint();
+    #[cfg(feature = "subsecond-dev")]
+    let layout_measurement_trace_checkpoint = measurement_trace_checkpoint();
     let mut cursor = FillCursor::new(0, true);
 
     let result = (|| {
@@ -2530,6 +3257,10 @@ fn layout_paragraph_in_frame_impl(
             let mut attempted_trials = Vec::with_capacity(MAX_ROW_HEIGHT_TRIALS);
 
             loop {
+                #[cfg(feature = "subsecond-dev")]
+                let trial_frame_trace_checkpoint = frame_trace_checkpoint();
+                #[cfg(feature = "subsecond-dev")]
+                let trial_measurement_trace_checkpoint = measurement_trace_checkpoint();
                 frame.restore_checkpoint(row_frame_checkpoint.clone());
                 cursor = cursor_checkpoint.clone();
                 let intervals = frame.carve(candidate_height).to_vec();
@@ -2569,6 +3300,7 @@ fn layout_paragraph_in_frame_impl(
                         &letter_spacing_px,
                         &mut cursor,
                         kerning_break_session.as_mut(),
+                        frame.row_count(),
                     )?;
                     let line = &filled.line;
                     maximum_font_size = maximum_font_size.max(line.max_font_size);
@@ -2625,6 +3357,11 @@ fn layout_paragraph_in_frame_impl(
                     }
                 }
                 if metrics.line_height != candidate_height {
+                    #[cfg(feature = "subsecond-dev")]
+                    {
+                        restore_frame_trace(trial_frame_trace_checkpoint);
+                        restore_measurement_trace(trial_measurement_trace_checkpoint);
+                    }
                     candidate_height = metrics.line_height;
                     continue;
                 }
@@ -2656,6 +3393,11 @@ fn layout_paragraph_in_frame_impl(
         .is_some();
     if result.is_none() {
         frame.restore_checkpoint(frame_checkpoint);
+        #[cfg(feature = "subsecond-dev")]
+        {
+            restore_frame_trace(layout_frame_trace_checkpoint);
+            restore_measurement_trace(layout_measurement_trace_checkpoint);
+        }
     }
     drop(kerning_break_session);
     drop(kerning_transaction);
@@ -3040,6 +3782,8 @@ fn layout_picture_band_hot_impl(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<PictureBandLayout> {
+    #[cfg(feature = "subsecond-dev")]
+    let mut trace_transaction = LineBreakTraceTransaction::new();
     let host = paragraphs.get(host_index)?;
     let column_horizontal = 0..px_to_hwpunit(column_width_px, dpi);
     let margins_for = |paragraph: &Paragraph| {
@@ -3094,14 +3838,18 @@ fn layout_picture_band_hot_impl(
         .control_utf16_positions()
         .get(picture_control_index)
         .copied()?;
-    let mut anchor_input = host.clone();
-    anchor_input.line_segs.clear();
-    let mut anchor_frame = host_box.frame(0);
-    let anchor_rows = layout_paragraph_in_frame(&anchor_input, &mut anchor_frame, styles, dpi)?;
-    let anchor_top = anchor_rows
-        .iter()
-        .rfind(|row| row.text_start <= picture_raw_start)
-        .map(|row| row.vertical_pos)?;
+    let anchor_top = {
+        #[cfg(feature = "subsecond-dev")]
+        let _trace_scope = trace_paragraph_scope(None);
+        let mut anchor_input = host.clone();
+        anchor_input.line_segs.clear();
+        let mut anchor_frame = host_box.frame(0);
+        let anchor_rows = layout_paragraph_in_frame(&anchor_input, &mut anchor_frame, styles, dpi)?;
+        anchor_rows
+            .iter()
+            .rfind(|row| row.text_start <= picture_raw_start)
+            .map(|row| row.vertical_pos)?
+    };
 
     let exclusion = crate::renderer::float_placement::resolve_picture_exclusion(
         picture,
@@ -3140,14 +3888,22 @@ fn layout_picture_band_hot_impl(
         // the cache prevents row-local flags from leaking and keeps vpos ladder
         // repair from treating the fresh zero-origin row as a saved reset.
         input.line_segs.clear();
+        #[cfg(feature = "subsecond-dev")]
+        let _trace_scope = trace_paragraph_scope(Some(paragraph_index));
         let paragraph_lines = layout_paragraph_in_frame(&input, &mut frame, styles, dpi)?;
         line_segs.push(paragraph_lines);
     }
 
-    (!line_segs.is_empty() && frame.top >= exclusion_end).then_some(PictureBandLayout {
-        paragraph_range: host_index..host_index + line_segs.len(),
-        line_segs,
-    })
+    let result =
+        (!line_segs.is_empty() && frame.top >= exclusion_end).then_some(PictureBandLayout {
+            paragraph_range: host_index..host_index + line_segs.len(),
+            line_segs,
+        });
+    #[cfg(feature = "subsecond-dev")]
+    if result.is_some() {
+        trace_transaction.commit();
+    }
+    result
 }
 
 /// 문단의 line_segs를 텍스트 내용과 **문단 상자**에 맞게 재계산한다.
@@ -3987,6 +4743,7 @@ mod fill_cursor_tests {
             &[],
             &mut cursor,
             None,
+            results.len(),
         ) {
             results.push(result.line);
         }
@@ -5053,6 +5810,32 @@ mod frame_reflow_tests {
             section.paragraphs[332].line_segs[0].segment_width,
             "p332 is the first full-width paragraph after the exclusion"
         );
+        #[cfg(feature = "subsecond-dev")]
+        {
+            let ((traced_band, measurement), carves) =
+                crate::renderer::layout_frame::capture_frame_carves(true, 128, Some(328), || {
+                    capture_line_break_measurement(true, 256, 512, Some(328), || {
+                        layout_picture_band(&section.paragraphs, 325, column_width, &styles, DPI)
+                    })
+                });
+            assert!(traced_band.is_some());
+            assert_eq!(
+                measurement
+                    .fit_decisions
+                    .first()
+                    .expect("p328 fit trace")
+                    .physical_row_index,
+                0
+            );
+            assert_eq!(
+                carves
+                    .records
+                    .first()
+                    .expect("p328 carve trace")
+                    .physical_row_index,
+                0
+            );
+        }
     }
 
     #[test]
@@ -5087,6 +5870,25 @@ mod frame_reflow_tests {
                 .is_none(),
             "a subset ending before the exclusion clears cannot be published"
         );
+        #[cfg(feature = "subsecond-dev")]
+        {
+            let ((rejected, measurement), carves) =
+                crate::renderer::layout_frame::capture_frame_carves(true, usize::MAX, None, || {
+                    capture_line_break_measurement(true, usize::MAX, usize::MAX, None, || {
+                        layout_picture_band(
+                            &section.paragraphs[325..329],
+                            0,
+                            column_width,
+                            &styles,
+                            DPI,
+                        )
+                    })
+                });
+            assert!(rejected.is_none());
+            assert!(measurement.tokens.is_empty());
+            assert!(measurement.fit_decisions.is_empty());
+            assert!(carves.records.is_empty());
+        }
     }
 
     #[test]

@@ -3253,6 +3253,13 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
 mod line_breaking;
 pub mod lineseg_compare;
 
+#[cfg(feature = "subsecond-dev")]
+pub(crate) use line_breaking::trace_paragraph_scope;
+#[cfg(feature = "subsecond-dev")]
+pub(crate) use line_breaking::{
+    capture_line_break_measurement, stored_rows_reproduce_frame_expectation,
+    LineBreakMeasurementTrace,
+};
 pub(crate) use line_breaking::{
     is_line_end_forbidden, is_line_start_forbidden, layout_picture_band, paragraph_flow_end,
     recalculate_section_vpos, reflow_line_segs, reflow_line_segs_after_cell_split,
