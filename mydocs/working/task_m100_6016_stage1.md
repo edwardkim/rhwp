@@ -29,11 +29,14 @@ NanumGothic.ttf: "NanumGothic" "Regular"
 
 ## 보정 방향
 
-`label_font()`를 다음 순서로 변경한다.
+`label_font()`를 Linux/macOS/Windows 공통으로 다음 순서로 변경한다.
 
-1. `RHWP_VISUAL_SWEEP_LABEL_FONT` 환경변수로 명시한 폰트가 있으면 우선 사용한다.
-2. `fc-match`로 `Noto Sans CJK KR`, `NanumGothic`, `UnDotum`, Windows/macOS CJK 계열 후보를 찾는다.
-3. Linux/macOS/Windows의 알려진 CJK 폰트 경로를 직접 확인한다.
+1. `RHWP_VISUAL_SWEEP_LABEL_FONT` 환경변수로 명시한 폰트가 있으면 우선 사용한다. 값은 실행 OS의
+   `os.pathsep`으로 여러 후보를 나열할 수 있다.
+2. `fc-match`가 있는 환경에서는 `Noto Sans CJK KR`, `NanumGothic`, `UnDotum`, Windows/macOS CJK 계열
+   family 후보를 찾는다.
+3. `platform.system()` 기준 현재 OS의 알려진 CJK 폰트 경로를 먼저 확인하고, 그 뒤 다른 OS 후보도
+   fallback으로 확인한다.
 4. 위 후보가 모두 실패할 때만 기존처럼 `ImageFont.load_default()`를 사용한다.
 
 ## 회귀 테스트
@@ -42,7 +45,9 @@ NanumGothic.ttf: "NanumGothic" "Regular"
 검증한다.
 
 - `fc-match`가 반환한 기존 파일 경로를 `fontconfig_label_font_path()`가 선택한다.
-- 환경변수 지정 폰트가 fontconfig 결과보다 앞선다.
+- 환경변수 지정 폰트가 fontconfig 결과보다 앞서며, OS별 path separator로 여러 후보를 받을 수 있다.
+- 현재 OS의 알려진 font path 후보가 다른 OS 후보보다 먼저 평가된다.
+- 환경변수·fontconfig·고정 경로가 같은 파일을 가리키면 중복 후보를 제거한다.
 - `label_font()`는 후보 TrueType 폰트를 먼저 로드하고, 성공하면 Pillow 기본 폰트로 fallback하지 않는다.
 
 ## 영향 범위

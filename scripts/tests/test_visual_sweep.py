@@ -50,9 +50,42 @@ class LabelFontTests(unittest.TestCase):
             with (
                 patch.dict(os.environ, {SWEEP.LABEL_FONT_ENV: str(env_font)}),
                 patch.object(SWEEP, "fontconfig_label_font_path", return_value=fc_font),
-                patch.object(SWEEP, "LABEL_FONT_PATHS", ()),
+                patch.object(SWEEP, "known_label_font_paths", return_value=[]),
             ):
                 self.assertEqual(SWEEP.configured_label_font_paths(), [env_font, fc_font])
+
+    def test_env_label_font_paths_accepts_platform_path_separator(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            first = Path(temp_dir) / "first.ttf"
+            second = Path(temp_dir) / "second.ttf"
+            value = os.pathsep.join([str(first), str(second)])
+            with patch.dict(os.environ, {SWEEP.LABEL_FONT_ENV: value}):
+                self.assertEqual(SWEEP.env_label_font_paths(), [first, second])
+
+    def test_known_label_font_paths_prioritizes_current_platform(self) -> None:
+        paths_by_platform = {
+            "Linux": ("linux-font.ttf",),
+            "Darwin": ("mac-font.ttf",),
+            "Windows": ("windows-font.ttf",),
+        }
+        with (
+            patch.object(SWEEP.platform, "system", return_value="Windows"),
+            patch.object(SWEEP, "LABEL_FONT_PATHS_BY_PLATFORM", paths_by_platform),
+        ):
+            self.assertEqual(
+                SWEEP.known_label_font_paths(),
+                [Path("windows-font.ttf"), Path("linux-font.ttf"), Path("mac-font.ttf")],
+            )
+
+    def test_configured_label_font_paths_dedupes_repeated_candidates(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            font_path = Path(temp_dir) / "same.ttf"
+            with (
+                patch.dict(os.environ, {SWEEP.LABEL_FONT_ENV: str(font_path)}),
+                patch.object(SWEEP, "fontconfig_label_font_path", return_value=font_path),
+                patch.object(SWEEP, "known_label_font_paths", return_value=[font_path]),
+            ):
+                self.assertEqual(SWEEP.configured_label_font_paths(), [font_path])
 
     def test_label_font_loads_truetype_before_default_font(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

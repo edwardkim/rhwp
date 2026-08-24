@@ -9,6 +9,7 @@ import html as html_lib
 import importlib.util
 import json
 import os
+import platform
 import re
 import shutil
 import subprocess
@@ -29,16 +30,27 @@ LABEL_FONTCONFIG_FAMILIES = (
     "Malgun Gothic:lang=ko",
     "Apple SD Gothic Neo:lang=ko",
 )
-LABEL_FONT_PATHS = (
-    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-    "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
-    "/usr/share/fonts/truetype/nanum/NanumGothicCoding.ttf",
-    "/usr/share/fonts/truetype/unfonts-core/UnDotum.ttf",
-    "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
-    "/System/Library/Fonts/Supplemental/Arial.ttf",
-    "/System/Library/Fonts/AppleSDGothicNeo.ttc",
-    "C:/Windows/Fonts/malgun.ttf",
-)
+LABEL_FONT_PATHS_BY_PLATFORM = {
+    "Linux": (
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+        "/usr/share/fonts/truetype/nanum/NanumGothicCoding.ttf",
+        "/usr/share/fonts/truetype/unfonts-core/UnDotum.ttf",
+    ),
+    "Darwin": (
+        "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+        "/System/Library/Fonts/Supplemental/AppleGothic.ttf",
+        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/Library/Fonts/Arial Unicode.ttf",
+    ),
+    "Windows": (
+        "C:/Windows/Fonts/malgun.ttf",
+        "C:/Windows/Fonts/malgunbd.ttf",
+        "C:/Windows/Fonts/gulim.ttc",
+        "C:/Windows/Fonts/batang.ttc",
+    ),
+}
 
 FRAME_OVERFLOW_PIXEL_LIMIT = 20
 FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT = 12
@@ -4308,14 +4320,46 @@ def fontconfig_label_font_path() -> Path | None:
     return None
 
 
+def env_label_font_paths() -> list[Path]:
+    env_value = os.environ.get(LABEL_FONT_ENV)
+    if not env_value:
+        return []
+    return [
+        Path(os.path.expandvars(os.path.expanduser(item)))
+        for item in env_value.split(os.pathsep)
+        if item.strip()
+    ]
+
+
+def known_label_font_paths() -> list[Path]:
+    current = platform.system()
+    platform_order = [current, *(name for name in LABEL_FONT_PATHS_BY_PLATFORM if name != current)]
+    return [
+        Path(font_path)
+        for platform_name in platform_order
+        for font_path in LABEL_FONT_PATHS_BY_PLATFORM.get(platform_name, ())
+    ]
+
+
+def dedupe_paths(paths: list[Path]) -> list[Path]:
+    deduped: list[Path] = []
+    seen: set[str] = set()
+    for path in paths:
+        key = str(path)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(path)
+    return deduped
+
+
 def configured_label_font_paths() -> list[Path]:
-    env_path = os.environ.get(LABEL_FONT_ENV)
-    paths = [Path(env_path)] if env_path else []
+    paths = env_label_font_paths()
     fc_path = fontconfig_label_font_path()
     if fc_path:
         paths.append(fc_path)
-    paths.extend(Path(font_path) for font_path in LABEL_FONT_PATHS)
-    return paths
+    paths.extend(known_label_font_paths())
+    return dedupe_paths(paths)
 
 
 @lru_cache(maxsize=1)
