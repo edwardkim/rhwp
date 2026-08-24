@@ -1,0 +1,51 @@
+{
+  "fixtureVersion": "1.0",
+  "name": "evidence-only",
+  "changeSets": [
+    {
+      "schemaVersion": "2.0",
+      "kind": "font-rule-change-set",
+      "changeSetId": "issue-5955.fixture.evidence-only",
+      "issue": 5955,
+      "sequence": 1,
+      "parentRegistrySha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "decisionPlane": "paint",
+      "evidenceRecords": [
+        {
+          "evidenceId": "evidence.fixture.public-source",
+          "kind": "public-source",
+          "source": "https://example.invalid/public-font-source",
+          "sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+          "licenseOrProvenance": "synthetic public fixture",
+          "parentEvidenceIds": ["evidence.fixture.sealed-v1"]
+        }
+      ],
+      "operations": [
+        {
+          "operationId": "operation.fixture.evidence-only",
+          "type": "augment-evidence",
+          "ruleId": "font-rule.fixture.paint.0001",
+          "expectedSelectionTupleSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "evidenceIds": ["evidence.fixture.public-source"]
+        }
+      ],
+      "expectedDelta": {
+        "projectionId": "canvas2d-paint",
+        "activeRuleDelta": 0,
+        "unchangedProjectionIds": [
+          "rust-layout-name",
+          "rust-layout-metric",
+          "canvas2d-webfont",
+          "canvaskit-sfnt"
+        ]
+      }
+    }
+  ],
+  "expected": {
+    "activeRuleIds": ["font-rule.fixture.paint.0001"],
+    "retiredRuleIds": [],
+    "selectionTupleDelta": 0,
+    "projectionDelta": 0,
+    "lastEvidenceChangeBy": "issue-5955.fixture.evidence-only"
+  }
+}

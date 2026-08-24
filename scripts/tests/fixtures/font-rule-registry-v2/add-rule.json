@@ -1,0 +1,63 @@
+{
+  "fixtureVersion": "1.0",
+  "name": "add-rule",
+  "changeSets": [
+    {
+      "schemaVersion": "2.0",
+      "kind": "font-rule-change-set",
+      "changeSetId": "issue-5955.fixture.add-rule",
+      "issue": 5955,
+      "sequence": 1,
+      "parentRegistrySha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "decisionPlane": "paint",
+      "evidenceRecords": [
+        {
+          "evidenceId": "evidence.fixture.add-rule",
+          "kind": "public-fixture",
+          "source": "tests/fixtures/fonts/fixture-public-font.txt",
+          "sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+          "licenseOrProvenance": "synthetic public fixture",
+          "parentEvidenceIds": []
+        }
+      ],
+      "operations": [
+        {
+          "operationId": "operation.fixture.add-rule",
+          "type": "add-rule",
+          "rule": {
+            "ruleId": "font-rule.fixture.paint.0002",
+            "relationType": "paint-substitute",
+            "decisionPlane": "paint",
+            "sourceFace": "Fixture Serif",
+            "targetFaceOrPolicy": "Fixture Serif Fallback",
+            "conditions": {},
+            "order": 0,
+            "projection": {
+              "id": "canvas2d-paint",
+              "mode": "direct"
+            },
+            "projectionSequence": 1,
+            "metricEntryIds": [],
+            "supply": null,
+            "evidenceIds": ["evidence.fixture.add-rule"]
+          }
+        }
+      ],
+      "expectedDelta": {
+        "projectionId": "canvas2d-paint",
+        "activeRuleDelta": 1,
+        "unchangedProjectionIds": [
+          "rust-layout-name",
+          "rust-layout-metric",
+          "canvas2d-webfont",
+          "canvaskit-sfnt"
+        ]
+      }
+    }
+  ],
+  "expected": {
+    "activeRuleIds": ["font-rule.fixture.paint.0001", "font-rule.fixture.paint.0002"],
+    "retiredRuleIds": [],
+    "projectionDelta": 1
+  }
+}

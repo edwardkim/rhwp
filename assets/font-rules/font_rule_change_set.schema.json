@@ -1,0 +1,332 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/blob/devel/assets/font-rules/font_rule_change_set.schema.json",
+  "title": "rhwp append-only font rule change set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "changeSetId",
+    "issue",
+    "sequence",
+    "parentRegistrySha256",
+    "decisionPlane",
+    "evidenceRecords",
+    "operations",
+    "expectedDelta"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "2.0" },
+    "kind": { "const": "font-rule-change-set" },
+    "changeSetId": { "$ref": "#/$defs/identifier" },
+    "issue": { "type": "integer", "minimum": 1 },
+    "sequence": { "type": "integer", "minimum": 1, "maximum": 4096 },
+    "parentRegistrySha256": { "$ref": "#/$defs/sha256" },
+    "decisionPlane": { "$ref": "#/$defs/decisionPlane" },
+    "evidenceRecords": {
+      "type": "array",
+      "maxItems": 128,
+      "items": { "$ref": "#/$defs/evidenceRecord" }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": { "$ref": "#/$defs/operation" }
+    },
+    "expectedDelta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["projectionId", "activeRuleDelta", "unchangedProjectionIds"],
+      "properties": {
+        "projectionId": { "$ref": "#/$defs/projectionId" },
+        "activeRuleDelta": { "type": "integer", "minimum": -64, "maximum": 64 },
+        "unchangedProjectionIds": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/projectionId" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^[a-z0-9]+(?:[._:-][a-z0-9]+)*$"
+    },
+    "nonEmptyString": { "type": "string", "minLength": 1, "maxLength": 2048 },
+    "nullableString": {
+      "oneOf": [{ "$ref": "#/$defs/nonEmptyString" }, { "type": "null" }]
+    },
+    "decisionPlane": { "enum": ["layout-name", "layout-metric", "paint", "supply", "detection"] },
+    "projectionId": {
+      "enum": [
+        "rust-layout-name",
+        "rust-layout-metric",
+        "canvas2d-paint",
+        "canvas2d-webfont",
+        "canvaskit-sfnt"
+      ]
+    },
+    "conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "languageSlot": { "$ref": "#/$defs/nullableString" },
+        "altType": { "$ref": "#/$defs/nullableString" },
+        "availability": { "$ref": "#/$defs/nullableString" },
+        "profile": { "$ref": "#/$defs/nullableString" }
+      }
+    },
+    "cssSupply": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "fontFamily", "sourceUrl", "format", "unicodeRange", "external"],
+      "properties": {
+        "kind": { "const": "canvas2d-webfont" },
+        "fontFamily": { "$ref": "#/$defs/nonEmptyString" },
+        "sourceUrl": { "$ref": "#/$defs/nonEmptyString" },
+        "format": { "enum": ["woff2", "woff", "truetype", "opentype"] },
+        "unicodeRange": { "$ref": "#/$defs/nullableString" },
+        "external": { "type": "boolean" }
+      }
+    },
+    "fontPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sources", "unavailableFonts"],
+      "properties": {
+        "sources": {
+          "type": "array",
+          "maxItems": 153,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["url", "aliases"],
+            "properties": {
+              "url": { "$ref": "#/$defs/nonEmptyString" },
+              "aliases": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 153,
+                "uniqueItems": true,
+                "items": { "$ref": "#/$defs/nonEmptyString" }
+              }
+            }
+          }
+        },
+        "unavailableFonts": {
+          "type": "array",
+          "maxItems": 153,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "canvasKitSupply": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "fontFamily",
+        "declaredCapability",
+        "runtimePlanStatus",
+        "capabilityAgreement",
+        "online",
+        "offline"
+      ],
+      "properties": {
+        "kind": { "const": "canvaskit-plan" },
+        "fontFamily": { "$ref": "#/$defs/nonEmptyString" },
+        "declaredCapability": { "enum": ["sfnt-source", "unavailable"] },
+        "runtimePlanStatus": { "enum": ["planned", "unavailable"] },
+        "capabilityAgreement": { "type": "boolean" },
+        "online": { "$ref": "#/$defs/fontPlan" },
+        "offline": { "$ref": "#/$defs/fontPlan" }
+      }
+    },
+    "supply": {
+      "oneOf": [
+        { "$ref": "#/$defs/cssSupply" },
+        { "$ref": "#/$defs/canvasKitSupply" },
+        { "type": "null" }
+      ]
+    },
+    "evidenceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidenceId", "kind", "source", "sha256", "parentEvidenceIds"],
+      "properties": {
+        "evidenceId": { "$ref": "#/$defs/identifier" },
+        "kind": { "enum": ["sealed-v1", "public-fixture", "public-source", "aggregate-measurement"] },
+        "source": { "$ref": "#/$defs/nonEmptyString" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "licenseOrProvenance": { "$ref": "#/$defs/nullableString" },
+        "parentEvidenceIds": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        }
+      }
+    },
+    "rulePayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleId",
+        "relationType",
+        "decisionPlane",
+        "sourceFace",
+        "targetFaceOrPolicy",
+        "conditions",
+        "order",
+        "projection",
+        "projectionSequence",
+        "metricEntryIds",
+        "supply",
+        "evidenceIds"
+      ],
+      "properties": {
+        "ruleId": { "$ref": "#/$defs/identifier" },
+        "relationType": {
+          "enum": [
+            "document-substitution",
+            "official-successor",
+            "metric-surrogate",
+            "paint-substitute",
+            "style-fallback",
+            "generic-fallback",
+            "supply-source",
+            "capability-detection",
+            "unknown"
+          ]
+        },
+        "decisionPlane": { "$ref": "#/$defs/decisionPlane" },
+        "sourceFace": { "$ref": "#/$defs/nullableString" },
+        "targetFaceOrPolicy": { "$ref": "#/$defs/nonEmptyString" },
+        "conditions": { "$ref": "#/$defs/conditions" },
+        "order": { "type": ["integer", "null"], "minimum": 0 },
+        "projection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "mode"],
+          "properties": {
+            "id": { "$ref": "#/$defs/projectionId" },
+            "mode": { "enum": ["direct", "legacy-preservation"] }
+          }
+        },
+        "projectionSequence": { "type": "integer", "minimum": 0, "maximum": 4095 },
+        "metricEntryIds": {
+          "type": "array",
+          "maxItems": 600,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^font-metric\\.[0-9a-f]{20}$" }
+        },
+        "supply": { "$ref": "#/$defs/supply" },
+        "evidenceIds": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        }
+      }
+    },
+    "augmentEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operationId", "type", "ruleId", "expectedSelectionTupleSha256", "evidenceIds"],
+      "properties": {
+        "operationId": { "$ref": "#/$defs/identifier" },
+        "type": { "const": "augment-evidence" },
+        "ruleId": { "$ref": "#/$defs/identifier" },
+        "expectedSelectionTupleSha256": { "$ref": "#/$defs/sha256" },
+        "evidenceIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        }
+      }
+    },
+    "addRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operationId", "type", "rule"],
+      "properties": {
+        "operationId": { "$ref": "#/$defs/identifier" },
+        "type": { "const": "add-rule" },
+        "rule": { "$ref": "#/$defs/rulePayload" }
+      }
+    },
+    "retireRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operationId",
+        "type",
+        "ruleId",
+        "expectedSelectionTupleSha256",
+        "retirementReason",
+        "evidenceIds"
+      ],
+      "properties": {
+        "operationId": { "$ref": "#/$defs/identifier" },
+        "type": { "const": "retire-rule" },
+        "ruleId": { "$ref": "#/$defs/identifier" },
+        "expectedSelectionTupleSha256": { "$ref": "#/$defs/sha256" },
+        "retirementReason": { "$ref": "#/$defs/nonEmptyString" },
+        "evidenceIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        }
+      }
+    },
+    "retireAndReplace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operationId",
+        "type",
+        "retiredRuleId",
+        "expectedSelectionTupleSha256",
+        "replacementRule",
+        "retirementReason",
+        "evidenceIds"
+      ],
+      "properties": {
+        "operationId": { "$ref": "#/$defs/identifier" },
+        "type": { "const": "retire-and-replace" },
+        "retiredRuleId": { "$ref": "#/$defs/identifier" },
+        "expectedSelectionTupleSha256": { "$ref": "#/$defs/sha256" },
+        "replacementRule": { "$ref": "#/$defs/rulePayload" },
+        "retirementReason": { "$ref": "#/$defs/nonEmptyString" },
+        "evidenceIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        }
+      }
+    },
+    "operation": {
+      "oneOf": [
+        { "$ref": "#/$defs/augmentEvidence" },
+        { "$ref": "#/$defs/addRule" },
+        { "$ref": "#/$defs/retireRule" },
+        { "$ref": "#/$defs/retireAndReplace" }
+      ]
+    }
+  }
+}

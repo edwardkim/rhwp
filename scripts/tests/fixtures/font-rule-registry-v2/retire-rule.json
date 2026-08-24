@@ -1,0 +1,50 @@
+{
+  "fixtureVersion": "1.0",
+  "name": "retire-rule",
+  "changeSets": [
+    {
+      "schemaVersion": "2.0",
+      "kind": "font-rule-change-set",
+      "changeSetId": "issue-5955.fixture.retire-rule",
+      "issue": 5955,
+      "sequence": 1,
+      "parentRegistrySha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "decisionPlane": "paint",
+      "evidenceRecords": [
+        {
+          "evidenceId": "evidence.fixture.retirement",
+          "kind": "public-fixture",
+          "source": "tests/fixtures/fonts/fixture-public-font.txt",
+          "sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+          "licenseOrProvenance": "synthetic public fixture",
+          "parentEvidenceIds": []
+        }
+      ],
+      "operations": [
+        {
+          "operationId": "operation.fixture.retire-rule",
+          "type": "retire-rule",
+          "ruleId": "font-rule.fixture.paint.0001",
+          "expectedSelectionTupleSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "retirementReason": "Synthetic retirement contract",
+          "evidenceIds": ["evidence.fixture.retirement"]
+        }
+      ],
+      "expectedDelta": {
+        "projectionId": "canvas2d-paint",
+        "activeRuleDelta": -1,
+        "unchangedProjectionIds": [
+          "rust-layout-name",
+          "rust-layout-metric",
+          "canvas2d-webfont",
+          "canvaskit-sfnt"
+        ]
+      }
+    }
+  ],
+  "expected": {
+    "activeRuleIds": [],
+    "retiredRuleIds": ["font-rule.fixture.paint.0001"],
+    "projectionDelta": -1
+  }
+}
