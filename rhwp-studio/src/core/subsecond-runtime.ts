@@ -80,7 +80,8 @@ export interface SubsecondWasmExports {
  */
 export type SubsecondSignal =
   | { kind: 'outcome'; code: string }
-  | { kind: 'global-failure'; eventType: string; reason: string; dispatchedPatches: number };
+  | { kind: 'global-failure'; eventType: string; reason: string; dispatchedPatches: number }
+  | { kind: 'commit-timeout'; patchIdentity: string; timeoutMs: number };
 
 /** 개발자에게 남길 한 줄. */
 export type SubsecondDiagnostic = {
@@ -99,9 +100,15 @@ export type DevelopmentRenderRuntimeOptions = {
   commitObserverScheduler?: CommitObserverScheduler;
   commitEvents?: CommitEventTarget;
 };
+type FullReloadClient = {
+  acknowledgedToken(): string | null;
+  acknowledge(token: string | null): void;
+  reload(): void;
+};
 type CommitEventTarget = {
   addEventListener(type: string, listener: (event: Event) => void): void;
   removeEventListener(type: string, listener: (event: Event) => void): void;
+  dispatchEvent(event: Event): boolean;
 };
 
 export type CommitObserverScheduler = {
@@ -150,11 +157,13 @@ export type SubsecondDeliveryPhase =
   | 'patch-replay-missed'
   | 'patch-ignored'
   | 'dispatch-outcome'
+  | 'patch-commit-timeout'
   | 'patch-commit-observed'
   | 'derived-state-rebuild-start'
   | 'derived-state-rebuild-complete'
   | 'derived-state-rebuild-failed'
   | 'render-refresh-failed'
+  | 'full-reload-required'
   | 'global-failure';
 
 export type SubsecondDeliveryEvent = {
@@ -209,6 +218,7 @@ export type SubsecondReconnectReplay = {
 const DELIVERY_LEDGER_KEY = '__rhwpSubsecondDelivery';
 const RUNTIME_SLOT_KEY = '__rhwpSubsecondRuntime';
 const SUBSECOND_COMMIT_EVENT = 'rhwp-subsecond-commit';
+const SUBSECOND_PATCH_READY_EVENT = 'rhwp-subsecond-patch-ready';
 const DEVELOPMENT_RUNTIME_IMPLEMENTATION = 2;
 const DEVELOPMENT_RUNTIME_OWNER = {};
 
@@ -314,6 +324,7 @@ const MAX_DELIVERY_EVENTS = 128;
 const MAX_PATCH_DELIVERIES = 32;
 const REPLAY_OBSERVATION_MS = 1_000;
 const COMMIT_OBSERVATION_MS = 250;
+const PATCH_COMMIT_DEADLINE_MS = 10_000;
 
 function recordDeliveryEvent(
   ledger: SubsecondDeliveryLedger,
@@ -497,7 +508,7 @@ function reconcileObservedRevision(
 function startCommitObserver(
   capabilities: RenderCodeReload,
   ledger: SubsecondDeliveryLedger,
-  onRevisionObserved: () => void,
+  onRevisionObserved: (patch: SubsecondPatchDelivery | null) => void,
   scheduler?: CommitObserverScheduler,
 ): () => void {
   const clock = scheduler ?? (typeof window === 'undefined'
@@ -519,12 +530,14 @@ function startCommitObserver(
       const epoch = capabilities.getPatchEpoch?.() ?? null;
       const revision = capabilities.getRenderCodeRevision();
       const hadPendingCommit = pendingPatches(ledger).length > 0;
+      let committedPatch: SubsecondPatchDelivery | null = null;
+      let notified = false;
       if (epoch !== null && baselineEpoch === null) {
         baselineEpoch = epoch;
         const previousEpoch = ledger.lastPatchEpoch;
         if (previousEpoch !== epoch) ledger.lastPatchEpoch = epoch;
         if (previousEpoch !== null && epoch > previousEpoch) {
-          observeCommittedPatch(
+          committedPatch = observeCommittedPatch(
             ledger,
             revision,
             epoch,
@@ -532,14 +545,14 @@ function startCommitObserver(
             epoch - previousEpoch,
           );
         } else if (previousEpoch === null && epoch > 0 && pendingPatches(ledger).length > 0) {
-          observeCommittedPatch(ledger, revision, epoch, observedAt, 0);
+          committedPatch = observeCommittedPatch(ledger, revision, epoch, observedAt, 0);
         }
       } else if (epoch !== null && epoch !== baselineEpoch) {
         const previousEpoch = baselineEpoch;
         baselineEpoch = epoch;
         if (ledger.lastPatchEpoch !== epoch) {
           ledger.lastPatchEpoch = epoch;
-          observeCommittedPatch(
+          committedPatch = observeCommittedPatch(
             ledger,
             revision,
             epoch,
@@ -551,16 +564,18 @@ function startCommitObserver(
       if (revision !== null && revision !== baselineRevision) {
         const hadBaseline = baselineRevision !== null;
         baselineRevision = revision;
-        reconcileObservedRevision(ledger, revision, clock.now());
+        committedPatch ??= reconcileObservedRevision(ledger, revision, clock.now());
         const observedEpoch = epoch ?? patchEpochFromRevision(revision);
         const firstRevisionMayContainPendingPatch = !hadBaseline
           && hadPendingCommit
           && observedEpoch !== null
           && observedEpoch > 0;
         if (hadBaseline || firstRevisionMayContainPendingPatch) {
-          onRevisionObserved();
+          onRevisionObserved(committedPatch);
+          notified = true;
         }
       }
+      if (committedPatch && !notified) onRevisionObserved(committedPatch);
     } catch (error) {
       ledger.lastFailure = `commit-observer: ${error instanceof Error ? error.message : String(error)}`;
     } finally {
@@ -593,6 +608,17 @@ function patchIdentity(message: string): string | null {
   }
 }
 
+function fullReloadToken(message: string): string | null {
+  try {
+    const token = (JSON.parse(message) as { RhwpFullReload?: unknown }).RhwpFullReload;
+    return typeof token === 'string' && token.length > 0 && token.length <= 256
+      ? token
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function patchSequence(identity: string): number | null {
   const match = identity.match(/patch-(\d+)\.wasm$/);
   if (!match) return null;
@@ -615,6 +641,8 @@ type SubsecondDevtoolsOptions = {
   errorEvents?: FailureEventTarget;
   now?: () => number;
   patchAccumulation?: SubsecondPatchAccumulation;
+  fullReload?: FullReloadClient;
+  patchReadyEvents?: CommitEventTarget;
 };
 
 export type SubsecondPatchAccumulationOptions = {
@@ -635,6 +663,137 @@ export const PATCH_DISPATCHED_OUTCOME = 'patch-dispatched';
 const STABLE_CONNECTION_MS = 4_000;
 const PATCH_WARNING_INTERVAL = 32;
 const BYTES_PER_MB = 1024 * 1024;
+const FULL_RELOAD_TOKEN_KEY = 'rhwp-subsecond-full-reload-token';
+
+type QueuedPatchMessage = {
+  message: string;
+  receivedAt: number;
+  connectionSerial: number;
+  replayed: boolean;
+};
+
+type PatchCommitGateOptions = {
+  scheduleTimeout(callback: () => void, delay: number): number;
+  cancelTimeout(id: number): void;
+  now(): number;
+  onTimeout(patch: SubsecondPatchDelivery): void;
+};
+
+/** 한 번에 한 patch만 commit까지 통과시키는 connector-local gate. */
+class PatchCommitGate {
+  private awaiting: string | null = null;
+  private permit = false;
+  private isBlocked = false;
+  private readonly queue: QueuedPatchMessage[] = [];
+  private currentReceipt: QueuedPatchMessage | null = null;
+  private deadlineTimer: number | null = null;
+  private readonly options: PatchCommitGateOptions;
+
+  constructor(options: PatchCommitGateOptions) {
+    this.options = options;
+  }
+
+  get receipt(): QueuedPatchMessage | null {
+    return this.currentReceipt;
+  }
+
+  get awaitingIdentity(): string | null {
+    return this.awaiting;
+  }
+
+  get blocked(): boolean {
+    return this.isBlocked;
+  }
+
+  canDispatch(ledger: SubsecondDeliveryLedger): boolean {
+    return this.permit
+      || (
+        pendingPatches(ledger).length === 0
+        && ledger.unresolvedCommitCandidates === 0
+        && !ledger.commitCorrelationBlocked
+      );
+  }
+
+  shouldQueue(ledger: SubsecondDeliveryLedger): boolean {
+    return this.awaiting !== null || !this.canDispatch(ledger);
+  }
+
+  enqueue(message: QueuedPatchMessage): void {
+    this.queue.push(message);
+  }
+
+  drain(handler: ((event: MessageEvent) => void) | null): void {
+    if (this.awaiting !== null || this.isBlocked || !handler) return;
+    const next = this.queue.shift();
+    if (!next) return;
+    this.currentReceipt = next;
+    try {
+      handler({ data: next.message } as MessageEvent);
+    } finally {
+      this.currentReceipt = null;
+    }
+  }
+
+  adopt(patch: SubsecondPatchDelivery): void {
+    this.cancelDeadline();
+    this.awaiting = patch.identity;
+    this.permit = false;
+    const startedAt = patch.dispatch.at ?? patch.receiptAt;
+    const remainingMs = Math.max(
+      0,
+      PATCH_COMMIT_DEADLINE_MS - Math.max(0, this.options.now() - startedAt),
+    );
+    this.deadlineTimer = this.options.scheduleTimeout(() => {
+      this.deadlineTimer = null;
+      if (this.awaiting !== patch.identity) return;
+      this.block();
+      this.options.onTimeout(patch);
+    }, remainingMs);
+  }
+
+  commit(identity: string): boolean {
+    if (identity !== this.awaiting) return false;
+    this.cancelDeadline();
+    this.awaiting = null;
+    this.permit = true;
+    this.isBlocked = false;
+    return true;
+  }
+
+  block(): void {
+    this.isBlocked = true;
+    this.queue.length = 0;
+  }
+
+  reset(): void {
+    this.cancelDeadline();
+    this.awaiting = null;
+    this.permit = false;
+    this.isBlocked = false;
+    this.queue.length = 0;
+    this.currentReceipt = null;
+  }
+
+  open(): void {
+    if (this.awaiting === null) this.isBlocked = false;
+  }
+
+  close(): void {
+    this.reset();
+    this.isBlocked = true;
+  }
+
+  private cancelDeadline(): void {
+    if (this.deadlineTimer === null) return;
+    const timer = this.deadlineTimer;
+    this.deadlineTimer = null;
+    try {
+      this.options.cancelTimeout(timer);
+    } catch {
+      // A diagnostic timer must never block commit handling or the next patch.
+    }
+  }
+}
 
 /**
  * 세션에 쌓인 핫패치 수를 세고, 셀 때마다가 아니라 임계값마다 경고한다.
@@ -764,6 +923,15 @@ export function isPatchDispatchedOutcome(outcome: string): boolean {
 
 /** 신호 하나를 개발자가 읽을 한 줄로 만든다. */
 export function describeSubsecondSignal(signal: SubsecondSignal): SubsecondDiagnostic {
+  if (signal.kind === 'commit-timeout') {
+    return {
+      level: 'warn',
+      message:
+        `${signal.patchIdentity} commit 이 ${signal.timeoutMs}ms 안에 관찰되지 않았다. `
+        + '후속 패치는 잘못된 WASM 기준에 적용하지 않도록 멈췄다. 늦은 commit 이 오면 자동으로 '
+        + '재개하며, 오지 않으면 dx full rebuild 또는 페이지 새로고침이 필요하다.',
+    };
+  }
   if (signal.kind === 'global-failure') {
     return {
       level: 'warn',
@@ -1003,6 +1171,7 @@ export function startDevelopmentRenderRuntime(
       patchAccumulation: new SubsecondPatchAccumulation({
         measureHeapBytes: options.measureHeapBytes,
       }),
+      patchReadyEvents: options.commitEvents,
     },
   );
   const watcher = new RenderCodeReloadWatcher(
@@ -1058,13 +1227,28 @@ export function startDevelopmentRenderRuntime(
     },
   );
   const commitEvents = options.commitEvents ?? (typeof window === 'undefined' ? null : window);
+  const reconcileCommit = (observedPatch: SubsecondPatchDelivery | null = null): void => {
+    try {
+      watcher.checkNow(true);
+    } catch {
+      // Transition reporting already records rebuild/refresh failure. A committed patch must
+      // still release the next queued patch, which may contain the fix.
+    }
+    const patch = observedPatch ?? [...ledger.patches].reverse().find(candidate =>
+      candidate.renderRevision === ledger.lastRenderRevision
+      && candidate.commitAssociation === 'exact');
+    if (!patch || !commitEvents) return;
+    commitEvents.dispatchEvent(new CustomEvent(SUBSECOND_PATCH_READY_EVENT, {
+      detail: { patchIdentity: patch.identity },
+    }));
+  };
   let commitNotificationQueued = false;
   const onCommit = (): void => {
     if (commitNotificationQueued) return;
     commitNotificationQueued = true;
     queueMicrotask(() => {
       commitNotificationQueued = false;
-      watcher.checkNow(true);
+      reconcileCommit();
     });
   };
   let stopCommitObserver = (): void => {};
@@ -1104,7 +1288,7 @@ export function startDevelopmentRenderRuntime(
     stopCommitObserver = startCommitObserver(
       capabilities,
       ledger,
-      () => watcher.checkNow(true),
+      reconcileCommit,
       options.commitObserverScheduler,
     );
     if (commitEvents) {
@@ -1143,8 +1327,9 @@ export function connectSubsecondDevtools(
 
   const location = options.location ?? window.location;
   const createWebSocket = options.createWebSocket ?? (url => new WebSocket(url));
-  const scheduleTimeout = options.setTimeout ?? ((callback, delay) => window.setTimeout(callback, delay));
-  const cancelTimeout = options.clearTimeout ?? (id => window.clearTimeout(id));
+  const scheduleTimeout = options.setTimeout
+    ?? ((callback, delay) => globalThis.setTimeout(callback, delay) as unknown as number);
+  const cancelTimeout = options.clearTimeout ?? (id => globalThis.clearTimeout(id));
   // Node 기반 단위 테스트에서는 Vite가 주입하는 import.meta.env가 없으므로 기본 진단을 비활성화한다.
   const report = options.reportSignal ?? (typeof window === 'undefined' ? () => {} : reportToDevConsole);
   // Node 기반 단위 테스트는 소켓·타이머만 대체해도 되도록 전역 오류 대상은 브라우저에서만 기본 연결한다.
@@ -1152,6 +1337,16 @@ export function connectSubsecondDevtools(
   // 연결이 버틴 시간만 재므로 단조 시계를 쓴다. Date.now() 는 시스템 시각 변경에 흔들린다.
   const now = options.now ?? (() => performance.now());
   const patchAccumulation = options.patchAccumulation ?? new SubsecondPatchAccumulation();
+  const patchReadyEvents = options.patchReadyEvents
+    ?? (typeof window === 'undefined' ? null : window);
+  const fullReload = options.fullReload ?? (typeof window === 'undefined' ? null : {
+    acknowledgedToken: () => window.sessionStorage.getItem(FULL_RELOAD_TOKEN_KEY),
+    acknowledge: (token: string | null) => {
+      if (token === null) window.sessionStorage.removeItem(FULL_RELOAD_TOKEN_KEY);
+      else window.sessionStorage.setItem(FULL_RELOAD_TOKEN_KEY, token);
+    },
+    reload: () => window.location.reload(),
+  });
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const url = `${protocol}//${location.host}/_dioxus?build_id=0`;
 
@@ -1162,7 +1357,32 @@ export function connectSubsecondDevtools(
   let reconnectDelay = RECONNECT_MIN_MS;
   let errorListenerAttached = false;
   let rejectionListenerAttached = false;
+  let patchReadyListenerAttached = false;
+  let activeMessageHandler: ((event: MessageEvent) => void) | null = null;
   const ledger = deliveryLedger();
+  const patchGate = new PatchCommitGate({
+    scheduleTimeout,
+    cancelTimeout,
+    now,
+    onTimeout: patch => {
+      if (!active) return;
+      const at = now();
+      const detail = `commit-not-observed-within-${PATCH_COMMIT_DEADLINE_MS}ms`;
+      ledger.lastFailure = `${patch.identity}: ${detail}`;
+      recordDeliveryEvent(ledger, {
+        at,
+        phase: 'patch-commit-timeout',
+        connectionSerial: patch.connectionSerial,
+        patchIdentity: patch.identity,
+        detail,
+      });
+      report({
+        kind: 'commit-timeout',
+        patchIdentity: patch.identity,
+        timeoutMs: PATCH_COMMIT_DEADLINE_MS,
+      });
+    },
+  });
   const closeReconnectReplay = (connectionSerial: number, at: number): void => {
     if (
       ledger.reconnectReplay.connectionSerial !== connectionSerial
@@ -1180,6 +1400,60 @@ export function connectSubsecondDevtools(
       patchIdentity: ledger.reconnectReplay.expectedPatchIdentity,
       detail: 'connection-closed',
     });
+  };
+  const recognizeReconnectReplay = (
+    identity: string,
+    connectionSerial: number,
+    receivedAt: number,
+  ): boolean => {
+    const replayStatus = ledger.reconnectReplay.status;
+    const replayed = identity === ledger.reconnectReplay.expectedPatchIdentity
+      && (replayStatus === 'pending' || replayStatus === 'not-observed-by-deadline')
+      && ledger.reconnectReplay.connectionSerial === connectionSerial;
+    if (!replayed) return false;
+    if (replayObservationTimer !== null) {
+      cancelTimeout(replayObservationTimer);
+      replayObservationTimer = null;
+    }
+    ledger.reconnectReplay.status = 'replayed';
+    ledger.reconnectReplay.observedAt = receivedAt;
+    recordDeliveryEvent(ledger, {
+      at: receivedAt,
+      phase: 'patch-replayed',
+      connectionSerial,
+      patchIdentity: identity,
+      detail: replayStatus === 'not-observed-by-deadline' ? 'late-replay' : undefined,
+    });
+    return true;
+  };
+  const drainPatchQueue = (): void => {
+    patchGate.drain(activeMessageHandler);
+  };
+  const onPatchReady = (event: Event): void => {
+    const patchIdentity = (event as CustomEvent<{ patchIdentity?: unknown }>).detail?.patchIdentity;
+    if (typeof patchIdentity === 'string' && patchGate.commit(patchIdentity)) {
+      drainPatchQueue();
+    } else if (patchGate.awaitingIdentity === null && patchGate.canDispatch(ledger)) {
+      drainPatchQueue();
+    }
+  };
+  const retireSocket = (target: WebSocketConnection | null): unknown[] => {
+    const errors: unknown[] = [];
+    if (target && socket === target) socket = null;
+    if (!target) return errors;
+    for (const retire of [
+      () => { target.onmessage = null; },
+      () => { target.onopen = null; },
+      () => { target.onclose = null; },
+      () => target.close(),
+    ]) {
+      try {
+        retire();
+      } catch (error) {
+        errors.push(error);
+      }
+    }
+    return errors;
   };
 
   // wasm 의 apply_patch 실패는 반환값이 아니라 panic → trap 으로만 나간다. trap 은 microtask
@@ -1206,6 +1480,38 @@ export function connectSubsecondDevtools(
     });
   };
   let openedAt: number | null = null;
+  const retireConnection = (
+    target: WebSocketConnection | null,
+    connectionSerial: number,
+    detail: string,
+  ): unknown[] => {
+    const errors: unknown[] = [];
+    openedAt = null;
+    if (replayObservationTimer !== null) {
+      const timer = replayObservationTimer;
+      replayObservationTimer = null;
+      try {
+        cancelTimeout(timer);
+      } catch (error) {
+        errors.push(error);
+      }
+    }
+    try {
+      closeReconnectReplay(connectionSerial, now());
+    } catch (error) {
+      errors.push(error);
+    }
+    errors.push(...retireSocket(target));
+    ledger.connected = false;
+    recordDeliveryEvent(ledger, {
+      at: now(),
+      phase: 'socket-close',
+      connectionSerial,
+      patchIdentity: ledger.lastDispatchedPatchIdentity,
+      detail,
+    });
+    return errors;
+  };
 
   const connect = (): void => {
     if (!active) return;
@@ -1218,19 +1524,174 @@ export function connectSubsecondDevtools(
       patchIdentity: ledger.lastDispatchedPatchIdentity,
     });
     socket = createWebSocket(url);
-    socket.onmessage = event => {
-      if (!active || ledger.connectionSerial !== connectionSerial) return;
+    const onMessage = (event: MessageEvent): void => {
+      const queued = patchGate.receipt;
+      if (!active || (!queued && ledger.connectionSerial !== connectionSerial)) return;
       if (typeof event.data !== 'string') return;
-      const receivedAt = now();
-      ledger.receivedMessages += 1;
       const identity = patchIdentity(event.data);
-      recordDeliveryEvent(ledger, {
-        at: receivedAt,
-        phase: 'message-received',
-        connectionSerial,
-        patchIdentity: identity,
-      });
+      const receivedAt = queued?.receivedAt ?? now();
+      const messageConnectionSerial = queued?.connectionSerial ?? connectionSerial;
       const nextSequence = identity === null ? null : patchSequence(identity);
+      const expectedReplaySequence = ledger.reconnectReplay.expectedPatchIdentity === null
+        ? null
+        : patchSequence(ledger.reconnectReplay.expectedPatchIdentity);
+      if (!queued) {
+        ledger.receivedMessages += 1;
+        recordDeliveryEvent(ledger, {
+          at: receivedAt,
+          phase: 'message-received',
+          connectionSerial: messageConnectionSerial,
+          patchIdentity: identity,
+        });
+      }
+      const replayed = queued?.replayed
+        ?? (identity !== null
+          && recognizeReconnectReplay(identity, messageConnectionSerial, receivedAt));
+      if (
+        identity !== null
+        && !replayed
+        && !(
+          nextSequence !== null
+          && expectedReplaySequence !== null
+          && nextSequence < expectedReplaySequence
+        )
+        && ledger.reconnectReplay.connectionSerial === messageConnectionSerial
+        && (
+          ledger.reconnectReplay.status === 'pending'
+          || ledger.reconnectReplay.status === 'not-observed-by-deadline'
+        )
+      ) {
+        if (replayObservationTimer !== null) {
+          cancelTimeout(replayObservationTimer);
+          replayObservationTimer = null;
+        }
+        ledger.reconnectReplay.status = 'superseded';
+        ledger.reconnectReplay.observedAt = receivedAt;
+        recordDeliveryEvent(ledger, {
+          at: receivedAt,
+          phase: 'patch-replay-missed',
+          connectionSerial: messageConnectionSerial,
+          patchIdentity: ledger.reconnectReplay.expectedPatchIdentity,
+          detail: `superseded-by:${identity}`,
+        });
+      }
+      if (identity !== null && patchGate.blocked) {
+        ledger.ignoredPatchMessages += 1;
+        recordDeliveryEvent(ledger, {
+          at: receivedAt,
+          phase: 'patch-ignored',
+          connectionSerial: messageConnectionSerial,
+          patchIdentity: identity,
+          detail: 'prior-patch-did-not-commit',
+        });
+        return;
+      }
+      if (
+        identity !== null
+        && !queued
+        && patchGate.shouldQueue(ledger)
+      ) {
+        patchGate.enqueue({
+          message: event.data,
+          receivedAt,
+          connectionSerial: messageConnectionSerial,
+          replayed,
+        });
+        return;
+      }
+      const reloadToken = fullReloadToken(event.data);
+      if (reloadToken !== null) {
+        patchGate.reset();
+        if (replayObservationTimer !== null) {
+          cancelTimeout(replayObservationTimer);
+          replayObservationTimer = null;
+        }
+        if (
+          ledger.reconnectReplay.connectionSerial === messageConnectionSerial
+          && (
+            ledger.reconnectReplay.status === 'pending'
+            || ledger.reconnectReplay.status === 'not-observed-by-deadline'
+          )
+        ) {
+          ledger.reconnectReplay.status = 'superseded';
+          ledger.reconnectReplay.observedAt = receivedAt;
+        }
+        let detail = `token=${reloadToken}:acknowledged`;
+        try {
+          if (!fullReload) throw new Error('full reload client unavailable');
+          const previousToken = fullReload.acknowledgedToken();
+          if (previousToken !== reloadToken) {
+            detail = `token=${reloadToken}:reload`;
+            fullReload.acknowledge(reloadToken);
+            active = false;
+            const reloadSocket = socket;
+            if (reloadSocket) reloadSocket.onmessage = null;
+            try {
+              fullReload.reload();
+            } catch (reloadError) {
+              const recoveryErrors: unknown[] = [reloadError];
+              let rollbackSucceeded = true;
+              try {
+                fullReload.acknowledge(previousToken);
+              } catch (error) {
+                rollbackSucceeded = false;
+                recoveryErrors.push(error);
+              }
+              recoveryErrors.push(...retireConnection(
+                reloadSocket,
+                messageConnectionSerial,
+                'full-reload-recovery',
+              ));
+              if (rollbackSucceeded) {
+                active = true;
+                try {
+                  connect();
+                } catch (error) {
+                  recoveryErrors.push(error);
+                  try {
+                    disconnect();
+                  } catch (disconnectError) {
+                    recoveryErrors.push(disconnectError);
+                  }
+                }
+              } else {
+                try {
+                  disconnect();
+                } catch (error) {
+                  recoveryErrors.push(error);
+                }
+              }
+              const recoveryError = new AggregateError(
+                recoveryErrors,
+                'full reload failed; connector restarted',
+              );
+              ledger.lastFailure = `full-reload: ${recoveryError.message}`;
+              detail = `token=${reloadToken}:failed:${recoveryError.message}`;
+            }
+          }
+        } catch (error) {
+          const failures = [error];
+          try {
+            disconnect();
+          } catch (disconnectError) {
+            failures.push(disconnectError);
+          }
+          const failure = failures.length === 1
+            ? error
+            : new AggregateError(failures, 'full reload fence and connector retirement failed');
+          const reason = failure instanceof Error ? `${failure.name}: ${failure.message}` : String(failure);
+          ledger.lastFailure = `full-reload: ${reason}`;
+          detail = `token=${reloadToken}:failed:${reason}`;
+        }
+        recordDeliveryEvent(ledger, {
+          at: receivedAt,
+          phase: 'full-reload-required',
+          connectionSerial: messageConnectionSerial,
+          patchIdentity: null,
+          detail,
+        });
+        return;
+      }
       const previousSequence = ledger.lastReceivedPatchIdentity === null
         ? null
         : patchSequence(ledger.lastReceivedPatchIdentity);
@@ -1239,26 +1700,6 @@ export function connectSubsecondDevtools(
         : [...ledger.patches].reverse().find(candidate => candidate.identity === identity) ?? null;
       const retryableIdentity = previousDelivery?.dispatch.status === 'failed'
         || previousDelivery?.commit.status === 'failed';
-      const replayStatus = ledger.reconnectReplay.status;
-      const replayed = identity !== null
-        && identity === ledger.reconnectReplay.expectedPatchIdentity
-        && (replayStatus === 'pending' || replayStatus === 'not-observed-by-deadline')
-        && ledger.reconnectReplay.connectionSerial === connectionSerial;
-      if (replayed) {
-        if (replayObservationTimer !== null) {
-          cancelTimeout(replayObservationTimer);
-          replayObservationTimer = null;
-        }
-        ledger.reconnectReplay.status = 'replayed';
-        ledger.reconnectReplay.observedAt = receivedAt;
-        recordDeliveryEvent(ledger, {
-          at: receivedAt,
-          phase: 'patch-replayed',
-          connectionSerial,
-          patchIdentity: identity,
-          detail: replayStatus === 'not-observed-by-deadline' ? 'late-replay' : undefined,
-        });
-      }
       if (identity !== null && (
         (identity === ledger.lastReceivedPatchIdentity && !retryableIdentity)
         || (nextSequence !== null && previousSequence !== null && nextSequence < previousSequence)
@@ -1267,44 +1708,24 @@ export function connectSubsecondDevtools(
         recordDeliveryEvent(ledger, {
           at: receivedAt,
           phase: 'patch-ignored',
-          connectionSerial,
+          connectionSerial: messageConnectionSerial,
           patchIdentity: identity,
           detail: replayed ? 'replayed-current-patch' : 'duplicate-or-out-of-order',
         });
+        queueMicrotask(drainPatchQueue);
         return;
-      }
-      if (identity !== null && replayObservationTimer !== null) {
-        cancelTimeout(replayObservationTimer);
-        replayObservationTimer = null;
-      }
-      if (
-        identity !== null
-        && ledger.reconnectReplay.connectionSerial === connectionSerial
-        && (
-          ledger.reconnectReplay.status === 'pending'
-          || ledger.reconnectReplay.status === 'not-observed-by-deadline'
-        )
-      ) {
-        ledger.reconnectReplay.status = 'superseded';
-        ledger.reconnectReplay.observedAt = receivedAt;
-        recordDeliveryEvent(ledger, {
-          at: receivedAt,
-          phase: 'patch-replay-missed',
-          connectionSerial,
-          patchIdentity: ledger.reconnectReplay.expectedPatchIdentity,
-          detail: `superseded-by:${identity}`,
-        });
       }
       if (identity !== null) ledger.lastReceivedPatchIdentity = identity;
       const patch = identity === null
         ? null
-        : rememberPatchDelivery(ledger, identity, connectionSerial, receivedAt);
+        : rememberPatchDelivery(ledger, identity, messageConnectionSerial, receivedAt);
       let outcome: string;
       try {
         outcome = applyMessage(event.data);
       } catch (error) {
         const reason = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
         if (patch) {
+          patchGate.block();
           patch.failure = reason;
           patch.dispatch = { status: 'failed', at: now(), evidence: reason };
           patch.fetch = { status: 'not-started', at: null, evidence: 'dispatch-threw' };
@@ -1316,7 +1737,7 @@ export function connectSubsecondDevtools(
         recordDeliveryEvent(ledger, {
           at: now(),
           phase: 'dispatch-outcome',
-          connectionSerial,
+          connectionSerial: messageConnectionSerial,
           patchIdentity: identity,
           outcome: 'threw',
           detail: reason,
@@ -1332,6 +1753,7 @@ export function connectSubsecondDevtools(
           evidence: outcome,
         };
         if (!isPatchDispatchedOutcome(outcome)) {
+          patchGate.block();
           patch.fetch = { status: 'not-started', at: null, evidence: 'dispatch-not-accepted' };
           patch.instantiate = { status: 'not-started', at: null, evidence: 'dispatch-not-accepted' };
           patch.commit = { status: 'not-started', at: null, evidence: outcome };
@@ -1341,19 +1763,23 @@ export function connectSubsecondDevtools(
       recordDeliveryEvent(ledger, {
         at: now(),
         phase: 'dispatch-outcome',
-        connectionSerial,
+        connectionSerial: messageConnectionSerial,
         patchIdentity: identity,
         outcome,
       });
       if (isPatchDispatchedOutcome(outcome)) {
+        if (patch) patchGate.adopt(patch);
         ledger.dispatchedPatches += 1;
         ledger.lastDispatchedPatchIdentity = identity;
         patchAccumulation.recordApplied(ledger.dispatchedPatches);
       }
       report({ kind: 'outcome', code: outcome });
     };
+    activeMessageHandler = onMessage;
+    socket.onmessage = onMessage;
     socket.onopen = () => {
       if (!active || ledger.connectionSerial !== connectionSerial) return;
+      patchGate.open();
       openedAt = now();
       ledger.connected = true;
       const expectedPatchIdentity = ledger.lastReceivedPatchIdentity;
@@ -1394,19 +1820,10 @@ export function connectSubsecondDevtools(
       // openedAt 은 언제나 "지금 열려 있는 소켓"만 가리킨다 — 재연결하지 않는 경로에서도 지운다.
       const lasted = openedAt === null ? 0 : now() - openedAt;
       openedAt = null;
-      ledger.connected = false;
-      if (replayObservationTimer !== null) {
-        cancelTimeout(replayObservationTimer);
-        replayObservationTimer = null;
+      const retirementErrors = retireConnection(socket, connectionSerial, `code=${event.code}`);
+      if (retirementErrors.length > 0) {
+        ledger.lastFailure = `socket-close cleanup: ${retirementErrors.length} error(s)`;
       }
-      closeReconnectReplay(connectionSerial, now());
-      recordDeliveryEvent(ledger, {
-        at: now(),
-        phase: 'socket-close',
-        connectionSerial,
-        patchIdentity: ledger.lastDispatchedPatchIdentity,
-        detail: `code=${event.code}`,
-      });
       if (!active) return;
       // 살아 있었던 연결이 끊긴 것이면 백오프를 되돌린다. 되돌리지 않으면 dx serve 를 껐다 켠
       // 뒤에도 끊김마다 최대 4초를 기다려, 남은 세션 내내 첫 패치가 그만큼 늦는다.
@@ -1440,26 +1857,20 @@ export function connectSubsecondDevtools(
     if (rejectionListenerAttached) {
       attempt(() => errorEvents?.removeEventListener('unhandledrejection', onGlobalFailure));
     }
+    if (patchReadyListenerAttached) {
+      attempt(() => patchReadyEvents?.removeEventListener(SUBSECOND_PATCH_READY_EVENT, onPatchReady));
+    }
+    attempt(() => patchGate.close());
+    activeMessageHandler = null;
     if (reconnectTimer !== null) {
       const timer = reconnectTimer;
       reconnectTimer = null;
       attempt(() => cancelTimeout(timer));
     }
-    if (replayObservationTimer !== null) {
-      const timer = replayObservationTimer;
-      replayObservationTimer = null;
-      attempt(() => cancelTimeout(timer));
-    }
-    attempt(() => closeReconnectReplay(ledger.connectionSerial, now()));
-    const closingSocket = socket;
-    socket = null;
-    if (closingSocket) {
-      attempt(() => { closingSocket.onmessage = null; });
-      attempt(() => { closingSocket.onopen = null; });
-      attempt(() => { closingSocket.onclose = null; });
-      attempt(() => closingSocket.close());
-    }
-    ledger.connected = false;
+    attempt(() => {
+      const errors = retireConnection(socket, ledger.connectionSerial, 'disconnect');
+      if (errors.length > 0) throw new AggregateError(errors, 'connection retirement failed');
+    });
     if (firstError !== null) throw firstError;
   };
 
@@ -1470,6 +1881,12 @@ export function connectSubsecondDevtools(
       rejectionListenerAttached = true;
       errorEvents.addEventListener('unhandledrejection', onGlobalFailure);
     }
+    if (patchReadyEvents) {
+      patchReadyListenerAttached = true;
+      patchReadyEvents.addEventListener(SUBSECOND_PATCH_READY_EVENT, onPatchReady);
+    }
+    const inheritedPending = pendingPatches(ledger);
+    if (inheritedPending.length === 1) patchGate.adopt(inheritedPending[0]);
     connect();
   } catch (error) {
     ledger.lastFailure = `websocket-connect: ${error instanceof Error ? error.message : String(error)}`;

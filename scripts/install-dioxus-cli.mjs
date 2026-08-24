@@ -16,6 +16,7 @@ const PATCH_DIFF_ARGS = [
 ];
 const DIOXUS_CLI_PATCHES = [
   'dioxus-cli-hotpatch-tip-dependents.patch',
+  'dioxus-cli-replay-latest-patch.patch',
 ];
 const CLAIM_WAIT = new Int32Array(new SharedArrayBuffer(4));
 function run(command, args, options = {}) {

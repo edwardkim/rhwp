@@ -1,0 +1,123 @@
+diff --git a/packages/cli/src/serve/server.rs b/packages/cli/src/serve/server.rs
+index c3bf9403..81e478c9 100644
+--- a/packages/cli/src/serve/server.rs
++++ b/packages/cli/src/serve/server.rs
+@@ -47,0 +48,89 @@ use super::AppServer;
++struct ReconnectReplayState {
++    messages: [Vec<String>; 2],
++    boot_nonce: String,
++    full_reload_generation: u64,
++}
++
++impl Default for ReconnectReplayState {
++    fn default() -> Self {
++        Self {
++            messages: Default::default(),
++            boot_nonce: uuid::Uuid::new_v4().to_string(),
++            full_reload_generation: 0,
++        }
++    }
++}
++
++impl ReconnectReplayState {
++    fn remember_patch(&mut self, build: BuildId, message: String) {
++        if let Some(slot) = self.messages.get_mut(build.0) {
++            slot.push(message);
++        }
++    }
++
++    fn replay_messages(&self, build: BuildId) -> Vec<Message> {
++        self.messages
++            .get(build.0)
++            .into_iter()
++            .flatten()
++            .map(|message| Message::Text(message.clone().into()))
++            .collect()
++    }
++
++    fn require_full_reload(&mut self) -> String {
++        self.full_reload_generation += 1;
++        let message = serde_json::json!({
++            "RhwpFullReload": format!(
++                "{}:{}",
++                self.boot_nonce,
++                self.full_reload_generation,
++            ),
++        })
++        .to_string();
++        self.messages = [vec![message.clone()], vec![message.clone()]];
++        message
++    }
++}
++
++#[cfg(test)]
++mod patch_tests {
++    use super::*;
++
++    #[test]
++    fn reconnect_replays_patch_history_until_full_reload_replaces_it() {
++        let mut cache = ReconnectReplayState {
++            boot_nonce: "first-server".into(),
++            ..Default::default()
++        };
++        cache.remember_patch(BuildId::PRIMARY, "first".into());
++        cache.remember_patch(BuildId::PRIMARY, "latest".into());
++
++        assert_eq!(
++            cache
++                .replay_messages(BuildId::PRIMARY)
++                .into_iter()
++                .map(|message| match message {
++                    Message::Text(text) => text.to_string(),
++                    other => panic!("unexpected replay message: {other:?}"),
++                })
++                .collect::<Vec<_>>(),
++            ["first", "latest"]
++        );
++        let reload = cache.require_full_reload();
++        for build in [BuildId::PRIMARY, BuildId::SECONDARY] {
++            assert!(
++                matches!(cache.replay_messages(build).as_slice(), [Message::Text(text)] if text == &reload)
++            );
++        }
++        cache.remember_patch(BuildId::PRIMARY, "after-reload".into());
++        assert_eq!(cache.replay_messages(BuildId::PRIMARY).len(), 2);
++        assert_ne!(cache.require_full_reload(), reload);
++
++        let mut restarted = ReconnectReplayState {
++            boot_nonce: "second-server".into(),
++            ..Default::default()
++        };
++        assert_ne!(restarted.require_full_reload(), reload);
++    }
++}
++
+@@ -58,0 +148 @@ pub(crate) struct WebServer {
++    reconnect_replay: ReconnectReplayState,
+@@ -124,0 +215 @@ impl WebServer {
++            reconnect_replay: Default::default(),
+@@ -146 +237 @@ impl WebServer {
+-                if let Some(new_socket) = new_hot_reload_socket {
++                if let Some(mut new_socket) = new_hot_reload_socket {
+@@ -151,0 +243,3 @@ impl WebServer {
++                    for message in self.reconnect_replay.replay_messages(id) {
++                        _ = new_socket.socket.send(message).await;
++                    }
+@@ -315,0 +410,2 @@ impl WebServer {
++        self.reconnect_replay
++            .remember_patch(build, serde_json::to_string(&msg).unwrap());
+@@ -340,0 +437,2 @@ impl WebServer {
++        let directive = self.reconnect_replay.require_full_reload();
++        self.send_text_to_all(directive).await;
+@@ -352,0 +451,5 @@ impl WebServer {
++        self.send_text_to_all(serde_json::to_string(&msg).unwrap())
++            .await;
++    }
++
++    async fn send_text_to_all(&mut self, msg: String) {
+@@ -354,4 +457 @@ impl WebServer {
+-            _ = socket
+-                .socket
+-                .send(Message::Text(serde_json::to_string(&msg).unwrap().into()))
+-                .await;
++            _ = socket.socket.send(Message::Text(msg.clone().into())).await;

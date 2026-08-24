@@ -521,6 +521,7 @@ test('development runtime cleanup releases later owners after one disposer throw
         removeEventListener: () => {
           throw new Error('listener removal failed');
         },
+        dispatchEvent: () => true,
       },
     },
   );
@@ -546,7 +547,10 @@ test('an incompatible same-realm ledger is replaced instead of migrated', async 
     })),
     events: [{ sequence: 100 }],
   };
-  const { connectSubsecondDevtools, getSubsecondDeliverySnapshot } = await loadRuntime();
+  const {
+    connectSubsecondDevtools,
+    getSubsecondDeliverySnapshot,
+  } = await loadRuntime();
   assert.equal(getSubsecondDeliverySnapshot(), null, 'a read must not replace incompatible state');
   assert.equal((realm.__rhwpSubsecondDelivery as { schemaVersion: number }).schemaVersion, 2);
   const sockets: FakeWebSocket[] = [];
@@ -605,7 +609,10 @@ test('incompatible HMR keeps the last patch identity for replay dedupe', async (
     lastCommittedPatchIdentity: identity,
     patches: [],
   };
-  const { connectSubsecondDevtools, getSubsecondDeliverySnapshot } = await loadRuntime();
+  const {
+    connectSubsecondDevtools,
+    getSubsecondDeliverySnapshot,
+  } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
   let applied = 0;
   const stop = connectSubsecondDevtools(
@@ -687,6 +694,7 @@ test('rAF commit observation correlates rebuild before the fallback timer and re
   delete realm.__rhwpSubsecondRuntime;
   const { connectSubsecondDevtools, getSubsecondDeliverySnapshot, startDevelopmentRenderRuntime } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
+  const patchCommitEvents = new FakeErrorEvents();
   const deliveryStop = connectSubsecondDevtools(
     { applySubsecondDevtoolsMessage: () => 'patch-dispatched' },
     {
@@ -694,6 +702,7 @@ test('rAF commit observation correlates rebuild before the fallback timer and re
       createWebSocket: url => new FakeWebSocket(url, sockets),
       reportSignal: () => {},
       errorEvents: new FakeErrorEvents(),
+      patchReadyEvents: patchCommitEvents,
     },
   );
   const patch = JSON.stringify({
@@ -745,6 +754,9 @@ test('rAF commit observation correlates rebuild before the fallback timer and re
   epoch = 1;
   revision = 'b:b:b:b:b:00000001';
   frames.flush();
+  patchCommitEvents.emit('rhwp-subsecond-patch-ready', {
+    detail: { patchIdentity: '/wasm/librhwp-subsecond-patch-70.wasm' },
+  });
   let ledger = getSubsecondDeliverySnapshot()!;
   assert.equal(ledger.patches.at(-1)?.commitAssociation, 'exact');
   assert.equal(ledger.patches.at(-1)?.derivedStateRebuildSequence, 1);
@@ -768,6 +780,9 @@ test('rAF commit observation correlates rebuild before the fallback timer and re
   assert.ok(ledger.events.some(event =>
     event.phase === 'render-refresh-failed'
     && event.renderRevision === revision));
+  patchCommitEvents.emit('rhwp-subsecond-patch-ready', {
+    detail: { patchIdentity: '/wasm/librhwp-subsecond-patch-71.wasm' },
+  });
 
   sockets[0]?.onmessage?.({ data: JSON.stringify({
     HotReload: { jump_table: { lib: '/wasm/librhwp-subsecond-patch-72.wasm' } },
@@ -784,6 +799,9 @@ test('rAF commit observation correlates rebuild before the fallback timer and re
   assert.ok(ledger.events.some(event =>
     event.phase === 'derived-state-rebuild-failed'
     && event.renderRevision === revision));
+  patchCommitEvents.emit('rhwp-subsecond-patch-ready', {
+    detail: { patchIdentity: '/wasm/librhwp-subsecond-patch-72.wasm' },
+  });
 
   sockets[0]?.onmessage?.({ data: JSON.stringify({
     HotReload: { jump_table: { lib: '/wasm/librhwp-subsecond-patch-73.wasm' } },
@@ -810,6 +828,7 @@ test('commit notification rebuilds a hidden-tab commit before timer and rAF fall
   delete realm.__rhwpSubsecondRuntime;
   const { connectSubsecondDevtools, getSubsecondDeliverySnapshot, startDevelopmentRenderRuntime } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
+  const commitEvents = new FakeErrorEvents();
   const deliveryStop = connectSubsecondDevtools(
     { applySubsecondDevtoolsMessage: () => 'patch-dispatched' },
     {
@@ -817,6 +836,7 @@ test('commit notification rebuilds a hidden-tab commit before timer and rAF fall
       createWebSocket: url => new FakeWebSocket(url, sockets),
       reportSignal: () => {},
       errorEvents: new FakeErrorEvents(),
+      patchReadyEvents: commitEvents,
     },
   );
   sockets[0]?.onmessage?.({ data: JSON.stringify({
@@ -828,7 +848,6 @@ test('commit notification rebuilds a hidden-tab commit before timer and rAF fall
   const repaints: string[] = [];
   const frames = new FakeAnimationFrames();
   const timers: Array<() => void> = [];
-  const commitEvents = new FakeErrorEvents();
   const runtimeStop = startDevelopmentRenderRuntime(
     { subsecondProbe: () => 41, getSubsecondPatchEpoch: () => epoch },
     () => ({
@@ -877,6 +896,142 @@ test('commit notification rebuilds a hidden-tab commit before timer and rAF fall
   assert.equal(commitEvents.count('rhwp-subsecond-commit'), 1);
   runtimeStop?.();
   assert.equal(commitEvents.count('rhwp-subsecond-commit'), 0);
+  deliveryStop?.();
+});
+
+test('epoch observer releases ordered patches without an open document', async () => {
+  const realm = globalThis as typeof globalThis & {
+    __rhwpSubsecondDelivery?: unknown;
+    __rhwpSubsecondRuntime?: unknown;
+  };
+  delete realm.__rhwpSubsecondDelivery;
+  delete realm.__rhwpSubsecondRuntime;
+  const { connectSubsecondDevtools, getSubsecondDeliverySnapshot, startDevelopmentRenderRuntime } = await loadRuntime();
+  const sockets: FakeWebSocket[] = [];
+  const commitEvents = new FakeErrorEvents();
+  const applied: string[] = [];
+  const deliveryStop = connectSubsecondDevtools(
+    {
+      applySubsecondDevtoolsMessage: message => {
+        applied.push(message);
+        return 'patch-dispatched';
+      },
+    },
+    {
+      location: { protocol: 'http:', host: 'localhost:7701' },
+      createWebSocket: url => new FakeWebSocket(url, sockets),
+      reportSignal: () => {},
+      errorEvents: new FakeErrorEvents(),
+      patchReadyEvents: commitEvents,
+    },
+  );
+  const patch = (sequence: number) => JSON.stringify({
+    HotReload: { jump_table: { lib: `/wasm/librhwp-subsecond-patch-${sequence}.wasm` } },
+  });
+  sockets[0]?.onmessage?.({ data: patch(1) } as MessageEvent);
+  sockets[0]?.onmessage?.({ data: patch(2) } as MessageEvent);
+  assert.deepEqual(applied, [patch(1)]);
+
+  let epoch = 0;
+  const timers: Array<() => void> = [];
+  const runtimeStop = startDevelopmentRenderRuntime(
+    { subsecondProbe: () => 41, getSubsecondPatchEpoch: () => epoch },
+    () => null,
+    () => {},
+    {
+      scheduler: {
+        requestAnimationFrame: () => 1,
+        cancelAnimationFrame: () => {},
+      },
+      commitObserverScheduler: {
+        setTimeout: callback => {
+          timers.push(callback);
+          return timers.length;
+        },
+        clearTimeout: () => {},
+        now: () => 30,
+      },
+      commitEvents,
+    },
+  );
+  epoch = 1;
+  timers.shift()?.();
+  assert.deepEqual(applied, [patch(1), patch(2)]);
+  epoch = 2;
+  timers.shift()?.();
+  assert.deepEqual(
+    getSubsecondDeliverySnapshot()!.patches.map(delivery => delivery.commitAssociation),
+    ['exact', 'exact'],
+  );
+  runtimeStop?.();
+  deliveryStop?.();
+});
+
+test('failed rebuild releases the queued patch that may fix it', async () => {
+  const realm = globalThis as typeof globalThis & {
+    __rhwpSubsecondDelivery?: unknown;
+    __rhwpSubsecondRuntime?: unknown;
+  };
+  delete realm.__rhwpSubsecondDelivery;
+  delete realm.__rhwpSubsecondRuntime;
+  const { connectSubsecondDevtools, getSubsecondDeliverySnapshot, startDevelopmentRenderRuntime } = await loadRuntime();
+  const sockets: FakeWebSocket[] = [];
+  const commitEvents = new FakeErrorEvents();
+  const applied: string[] = [];
+  const deliveryStop = connectSubsecondDevtools(
+    {
+      applySubsecondDevtoolsMessage: message => {
+        applied.push(message);
+        return 'patch-dispatched';
+      },
+    },
+    {
+      location: { protocol: 'http:', host: 'localhost:7701' },
+      createWebSocket: url => new FakeWebSocket(url, sockets),
+      reportSignal: () => {},
+      errorEvents: new FakeErrorEvents(),
+      patchReadyEvents: commitEvents,
+    },
+  );
+  const patch = (sequence: number) => JSON.stringify({
+    HotReload: { jump_table: { lib: `/wasm/librhwp-subsecond-patch-${sequence}.wasm` } },
+  });
+  sockets[0]?.onmessage?.({ data: patch(1) } as MessageEvent);
+  sockets[0]?.onmessage?.({ data: patch(2) } as MessageEvent);
+
+  let epoch = 0;
+  let revision = 'base:00000000';
+  const runtimeStop = startDevelopmentRenderRuntime(
+    { subsecondProbe: () => 41, getSubsecondPatchEpoch: () => epoch },
+    () => ({
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => {
+        throw new Error('patched rebuild failed');
+      },
+    }),
+    () => {},
+    {
+      scheduler: {
+        requestAnimationFrame: () => 1,
+        cancelAnimationFrame: () => {},
+      },
+      commitObserverScheduler: {
+        setTimeout: () => 1,
+        clearTimeout: () => {},
+        now: () => 30,
+      },
+      commitEvents,
+    },
+  );
+  epoch = 1;
+  revision = 'patch:00000001';
+  commitEvents.emit('rhwp-subsecond-commit', {});
+  await Promise.resolve();
+  assert.deepEqual(applied, [patch(1), patch(2)]);
+  const ledger = getSubsecondDeliverySnapshot()!;
+  assert.equal(ledger.patches[0]?.commitAssociation, 'exact');
+  assert.equal(ledger.patches[0]?.failure, 'Error: patched rebuild failed');
+  runtimeStop?.();
   deliveryStop?.();
 });
 
@@ -943,27 +1098,58 @@ test('first document revision rebuilds once when it may already contain a pendin
 
 test('staggered overlapping commits remain ambiguous when a newer patch arrives', async () => {
   const realm = globalThis as typeof globalThis & {
-    __rhwpSubsecondDelivery?: unknown;
+    __rhwpSubsecondDelivery?: Record<string, unknown>;
     __rhwpSubsecondRuntime?: unknown;
   };
-  delete realm.__rhwpSubsecondDelivery;
   delete realm.__rhwpSubsecondRuntime;
-  const { connectSubsecondDevtools, getSubsecondDeliverySnapshot, startDevelopmentRenderRuntime } = await loadRuntime();
-  const sockets: FakeWebSocket[] = [];
-  const deliveryStop = connectSubsecondDevtools(
-    { applySubsecondDevtoolsMessage: () => 'patch-dispatched' },
-    {
-      location: { protocol: 'http:', host: 'localhost:7701' },
-      createWebSocket: url => new FakeWebSocket(url, sockets),
-      reportSignal: () => {},
-      errorEvents: new FakeErrorEvents(),
+  const { getSubsecondDeliverySnapshot, startDevelopmentRenderRuntime } = await loadRuntime();
+  const pending = (sequence: number) => {
+    const phase = { status: 'pending', at: null, evidence: null };
+    return {
+      identity: `/wasm/librhwp-subsecond-patch-${sequence}.wasm`,
+      patchId: sequence,
+      connectionSerial: 1,
+      receiptAt: sequence,
+      outcome: 'patch-dispatched',
+      dispatch: { status: 'complete', at: sequence, evidence: 'patch-dispatched' },
+      fetch: { ...phase },
+      instantiate: { ...phase },
+      commit: { ...phase },
+      commitAssociation: 'pending',
+      renderRevision: null,
+      patchEpoch: null,
+      derivedStateRebuildSequence: null,
+      failure: null,
+    };
+  };
+  realm.__rhwpSubsecondDelivery = {
+    schemaVersion: 3,
+    connectionSerial: 1,
+    connected: true,
+    receivedMessages: 2,
+    dispatchedPatches: 2,
+    ignoredPatchMessages: 0,
+    lastReceivedPatchIdentity: '/wasm/librhwp-subsecond-patch-81.wasm',
+    lastDispatchedPatchIdentity: '/wasm/librhwp-subsecond-patch-81.wasm',
+    lastCommittedPatchIdentity: null,
+    lastOutcome: 'patch-dispatched',
+    lastRenderRevision: null,
+    lastPatchEpoch: 0,
+    rebuiltRevisions: 0,
+    unattributedCommits: 0,
+    unresolvedCommitCandidates: 0,
+    commitCorrelationBlocked: false,
+    lastFailure: null,
+    reconnectReplay: {
+      connectionSerial: 0,
+      expectedPatchIdentity: null,
+      status: 'not-applicable',
+      observedAt: null,
     },
-  );
-  for (const sequence of [80, 81]) {
-    sockets[0]?.onmessage?.({ data: JSON.stringify({
-      HotReload: { jump_table: { lib: `/wasm/librhwp-subsecond-patch-${sequence}.wasm` } },
-    }) } as MessageEvent);
-  }
+    patches: [pending(80), pending(81)],
+    eventSequence: 0,
+    events: [],
+  };
   let epoch = 0;
   const timers: Array<() => void> = [];
   const runtimeStop = startDevelopmentRenderRuntime(
@@ -996,9 +1182,7 @@ test('staggered overlapping commits remain ambiguous when a newer patch arrives'
   assert.equal(ledger.unattributedCommits, 1);
   assert.equal(ledger.unresolvedCommitCandidates, 1);
 
-  sockets[0]?.onmessage?.({ data: JSON.stringify({
-    HotReload: { jump_table: { lib: '/wasm/librhwp-subsecond-patch-82.wasm' } },
-  }) } as MessageEvent);
+  (realm.__rhwpSubsecondDelivery.patches as unknown[]).push(pending(82));
   epoch = 2;
   timers.shift()?.();
   ledger = getSubsecondDeliverySnapshot()!;
@@ -1010,9 +1194,7 @@ test('staggered overlapping commits remain ambiguous when a newer patch arrives'
   epoch = 3;
   timers.shift()?.();
   assert.equal(getSubsecondDeliverySnapshot()!.unresolvedCommitCandidates, 0);
-  sockets[0]?.onmessage?.({ data: JSON.stringify({
-    HotReload: { jump_table: { lib: '/wasm/librhwp-subsecond-patch-83.wasm' } },
-  }) } as MessageEvent);
+  (realm.__rhwpSubsecondDelivery.patches as unknown[]).push(pending(83));
   epoch = 4;
   timers.shift()?.();
   ledger = getSubsecondDeliverySnapshot()!;
@@ -1022,68 +1204,6 @@ test('staggered overlapping commits remain ambiguous when a newer patch arrives'
     '/wasm/librhwp-subsecond-patch-83.wasm',
   );
   runtimeStop?.();
-  deliveryStop?.();
-});
-
-test('an evicted pending patch prevents false exact commit attribution', async () => {
-  const realm = globalThis as typeof globalThis & {
-    __rhwpSubsecondDelivery?: unknown;
-    __rhwpSubsecondRuntime?: unknown;
-  };
-  delete realm.__rhwpSubsecondDelivery;
-  delete realm.__rhwpSubsecondRuntime;
-  const { connectSubsecondDevtools, getSubsecondDeliverySnapshot, startDevelopmentRenderRuntime } = await loadRuntime();
-  const sockets: FakeWebSocket[] = [];
-  const deliveryStop = connectSubsecondDevtools(
-    {
-      applySubsecondDevtoolsMessage(message) {
-        const sequence = Number(message.match(/patch-(\d+)\.wasm/)?.[1]);
-        return sequence === 1 || sequence === 33 ? 'patch-dispatched' : 'not-hot-reload';
-      },
-    },
-    {
-      location: { protocol: 'http:', host: 'localhost:7701' },
-      createWebSocket: url => new FakeWebSocket(url, sockets),
-      reportSignal: () => {},
-      errorEvents: new FakeErrorEvents(),
-    },
-  );
-  for (let sequence = 1; sequence <= 33; sequence++) {
-    sockets[0]?.onmessage?.({ data: JSON.stringify({
-      HotReload: { jump_table: { lib: `/wasm/librhwp-subsecond-patch-${sequence}.wasm` } },
-    }) } as MessageEvent);
-  }
-  assert.equal(getSubsecondDeliverySnapshot()!.unresolvedCommitCandidates, 1);
-
-  let epoch = 0;
-  const timers: Array<() => void> = [];
-  const runtimeStop = startDevelopmentRenderRuntime(
-    { subsecondProbe: () => 41, getSubsecondPatchEpoch: () => epoch },
-    () => null,
-    () => {},
-    {
-      scheduler: {
-        requestAnimationFrame: () => 1,
-        cancelAnimationFrame: () => {},
-      },
-      commitObserverScheduler: {
-        setTimeout: callback => {
-          timers.push(callback);
-          return timers.length;
-        },
-        clearTimeout: () => {},
-        now: () => 30,
-      },
-    },
-  );
-  epoch = 1;
-  timers.shift()?.();
-  const ledger = getSubsecondDeliverySnapshot()!;
-  assert.equal(ledger.patches.at(-1)?.commitAssociation, 'ambiguous');
-  assert.equal(ledger.lastCommittedPatchIdentity, null);
-  assert.equal(ledger.unresolvedCommitCandidates, 1);
-  runtimeStop?.();
-  deliveryStop?.();
 });
 
 test('devtools websocket forwards patch messages and reconnects without reloading', async () => {
@@ -1182,10 +1302,171 @@ test('devtools connector rolls back the first listener when the second attachmen
   assert.equal(sockets.length, 0, 'socket acquisition must not start after listener failure');
 });
 
+test('full reload tokens reload once and distinguish restarted servers', async () => {
+  delete (globalThis as typeof globalThis & { __rhwpSubsecondDelivery?: unknown })
+    .__rhwpSubsecondDelivery;
+  const { connectSubsecondDevtools, getSubsecondDeliverySnapshot } = await loadRuntime();
+  let acknowledged: string | null = null;
+  let reloads = 0;
+  let reloadFailures = 0;
+  let acknowledgementFailures = 0;
+  let connectionFailures = 0;
+  let rollbackTokenFailure: string | null = null;
+  let applied = 0;
+  let clock = 0;
+  const open = (): {
+    sockets: FakeWebSocket[];
+    errorEvents: FakeErrorEvents;
+    timers: Array<{ callback: () => void; delay: number }>;
+    stop: (() => void) | null;
+  } => {
+    const sockets: FakeWebSocket[] = [];
+    const errorEvents = new FakeErrorEvents();
+    const timers: Array<{ callback: () => void; delay: number }> = [];
+    const stop = connectSubsecondDevtools(
+      {
+        applySubsecondDevtoolsMessage: () => {
+          applied += 1;
+          return 'not-hot-reload';
+        },
+      },
+      {
+        location: { protocol: 'http:', host: 'localhost:7701' },
+        createWebSocket: url => {
+          if (connectionFailures > 0) {
+            connectionFailures -= 1;
+            throw new Error('replacement connection failed');
+          }
+          return new FakeWebSocket(url, sockets);
+        },
+        setTimeout: (callback, delay) => {
+          timers.push({ callback, delay });
+          return timers.length;
+        },
+        clearTimeout: () => {},
+        now: () => clock,
+        reportSignal: () => {},
+        errorEvents,
+        fullReload: {
+          acknowledgedToken: () => acknowledged,
+          acknowledge: token => {
+            if (acknowledgementFailures > 0) {
+              acknowledgementFailures -= 1;
+              throw new Error('acknowledgement failed');
+            }
+            if (token === rollbackTokenFailure) {
+              rollbackTokenFailure = null;
+              throw new Error('acknowledgement rollback failed');
+            }
+            acknowledged = token;
+          },
+          reload: () => {
+            reloads += 1;
+            if (reloadFailures > 0) {
+              reloadFailures -= 1;
+              throw new Error('reload failed');
+            }
+          },
+        },
+      },
+    );
+    return { sockets, errorEvents, timers, stop };
+  };
+  const directive = (token: string) => JSON.stringify({ RhwpFullReload: token });
+  const patch = JSON.stringify({
+    HotReload: { jump_table: { lib: '/wasm/librhwp-subsecond-patch-1.wasm' } },
+  });
+  const first = open();
+  first.sockets[0]!.onmessage?.({ data: directive('server-a:1') } as MessageEvent);
+  first.sockets[0]!.onmessage?.({ data: patch } as MessageEvent);
+  assert.equal(applied, 0, 'old connector retires before new-base patches arrive');
+  first.stop?.();
+
+  const second = open();
+  second.sockets[0]!.onmessage?.({ data: directive('server-a:1') } as MessageEvent);
+  second.sockets[0]!.onmessage?.({ data: patch } as MessageEvent);
+  assert.equal(applied, 1, 'replacement connector applies history after acknowledging the token');
+  second.sockets[0]!.onmessage?.({ data: directive('server-b:1') } as MessageEvent);
+  second.stop?.();
+
+  const third = open();
+  third.sockets[0]!.onmessage?.({ data: directive('server-b:1') } as MessageEvent);
+  third.stop?.();
+  const ledger = getSubsecondDeliverySnapshot()!;
+  assert.equal(acknowledged, 'server-b:1');
+  assert.equal(reloads, 2, 'one reload per server token; persistent replay is acknowledged');
+  assert.ok(ledger.events.filter(event => event.phase === 'full-reload-required').length >= 4);
+
+  reloadFailures = 1;
+  const fourth = open();
+  fourth.sockets[0]!.onmessage?.({ data: directive('server-c:1') } as MessageEvent);
+  assert.equal(acknowledged, 'server-b:1', 'failed reload must not acknowledge its token');
+  fourth.sockets[0]!.onmessage?.({ data: patch } as MessageEvent);
+  assert.equal(applied, 1, 'failed reload retires the old socket before queued patches');
+  assert.equal(fourth.sockets.length, 2, 'failure reconnects to replay the directive first');
+  fourth.sockets[1]!.onmessage?.({ data: directive('server-c:1') } as MessageEvent);
+  assert.equal(acknowledged, 'server-c:1');
+  assert.equal(reloads, 4, 'persistent directive retries after a failed reload');
+  fourth.stop?.();
+
+  acknowledgementFailures = 1;
+  const fifth = open();
+  fifth.sockets[0]!.onopen?.({} as Event);
+  fifth.sockets[0]!.onmessage?.({ data: directive('server-d:1') } as MessageEvent);
+  fifth.sockets[0]!.onmessage?.({ data: patch } as MessageEvent);
+  assert.equal(applied, 1, 'acknowledgement failure retires before new-base history');
+  assert.equal(fifth.sockets[0]!.closed, true);
+  assert.equal(getSubsecondDeliverySnapshot()!.connected, false);
+  assert.equal(fifth.errorEvents.count('error'), 0);
+  assert.equal(fifth.errorEvents.count('unhandledrejection'), 0);
+  fifth.stop?.();
+
+  reloadFailures = 1;
+  const sixth = open();
+  sixth.sockets[0]!.onopen?.({} as Event);
+  connectionFailures = 1;
+  sixth.sockets[0]!.onmessage?.({ data: directive('server-e:1') } as MessageEvent);
+  sixth.sockets[0]!.onmessage?.({ data: patch } as MessageEvent);
+  assert.equal(sixth.sockets.length, 1, 'failed replacement connect is terminal');
+  assert.equal(sixth.sockets[0]!.closed, true);
+  assert.equal(getSubsecondDeliverySnapshot()!.connected, false);
+  sixth.stop?.();
+
+  reloadFailures = 1;
+  rollbackTokenFailure = acknowledged;
+  const seventh = open();
+  seventh.sockets[0]!.onopen?.({} as Event);
+  seventh.sockets[0]!.onmessage?.({ data: directive('server-f:1') } as MessageEvent);
+  seventh.sockets[0]!.onmessage?.({ data: patch } as MessageEvent);
+  assert.equal(seventh.sockets.length, 1, 'failed acknowledgement rollback must not reconnect');
+  assert.equal(seventh.sockets[0]!.closed, true);
+  assert.equal(getSubsecondDeliverySnapshot()!.connected, false);
+  assert.equal(applied, 1, 'no reload failure path exposes new-base patches to old WASM');
+  seventh.stop?.();
+
+  const eighth = open();
+  clock = 0;
+  eighth.sockets[0]!.onclose?.({ code: 1006 } as CloseEvent);
+  eighth.timers.find(timer => timer.delay === 250)?.callback();
+  eighth.sockets[1]!.onopen?.({} as Event);
+  reloadFailures = 1;
+  clock = 5_000;
+  eighth.sockets[1]!.onmessage?.({ data: directive('server-g:1') } as MessageEvent);
+  assert.equal(eighth.sockets.length, 3);
+  eighth.sockets[2]!.onclose?.({ code: 1006 } as CloseEvent);
+  assert.equal(
+    eighth.timers.at(-1)?.delay,
+    500,
+    'pre-open replacement close must not inherit the retired socket open timestamp',
+  );
+  eighth.stop?.();
+});
+
 test('devtools websocket applies one monotonic copy of each patch', async () => {
   const { connectSubsecondDevtools } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
   const applied: string[] = [];
+  const commitEvents = new FakeErrorEvents();
   const disconnect = connectSubsecondDevtools(
     {
       applySubsecondDevtoolsMessage(message: string) {
@@ -1198,6 +1479,7 @@ test('devtools websocket applies one monotonic copy of each patch', async () => 
       createWebSocket: url => new FakeWebSocket(url, sockets),
       reportSignal: () => {},
       errorEvents: new FakeErrorEvents(),
+      patchReadyEvents: commitEvents,
     },
   );
 
@@ -1205,12 +1487,74 @@ test('devtools websocket applies one monotonic copy of each patch', async () => 
     HotReload: { jump_table: { lib: `/wasm/librhwp-subsecond-patch-${sequence}.wasm` } },
   });
   sockets[0]?.onmessage?.({ data: patch(200) } as MessageEvent);
+  commitEvents.emit('rhwp-subsecond-patch-ready', {
+    detail: { patchIdentity: '/wasm/librhwp-subsecond-patch-200.wasm' },
+  });
   sockets[0]?.onmessage?.({ data: patch(200) } as MessageEvent);
   sockets[0]?.onmessage?.({ data: patch(199) } as MessageEvent);
   sockets[0]?.onmessage?.({ data: patch(201) } as MessageEvent);
+  sockets[0]?.onmessage?.({ data: patch(202) } as MessageEvent);
 
   assert.deepEqual(applied, [patch(200), patch(201)]);
+  commitEvents.emit('rhwp-subsecond-patch-ready', {
+    detail: { patchIdentity: '/wasm/librhwp-subsecond-patch-201.wasm' },
+  });
+  assert.deepEqual(applied, [patch(200), patch(201), patch(202)]);
   disconnect?.();
+});
+
+test('queued patch keeps its original receipt provenance across reconnect', async () => {
+  delete (globalThis as typeof globalThis & { __rhwpSubsecondDelivery?: unknown })
+    .__rhwpSubsecondDelivery;
+  const { connectSubsecondDevtools, getSubsecondDeliverySnapshot } = await loadRuntime();
+  const sockets: FakeWebSocket[] = [];
+  const reconnects: Array<{ callback: () => void; delay: number }> = [];
+  const patchReadyEvents = new FakeErrorEvents();
+  const applied: string[] = [];
+  const stop = connectSubsecondDevtools(
+    {
+      applySubsecondDevtoolsMessage: message => {
+        applied.push(message);
+        return 'patch-dispatched';
+      },
+    },
+    {
+      location: { protocol: 'http:', host: 'localhost:7701' },
+      createWebSocket: url => new FakeWebSocket(url, sockets),
+      setTimeout: (callback, delay) => {
+        reconnects.push({ callback, delay });
+        return reconnects.length;
+      },
+      clearTimeout: () => {},
+      reportSignal: () => {},
+      errorEvents: new FakeErrorEvents(),
+      patchReadyEvents,
+    },
+  );
+  const patch = (sequence: number) => JSON.stringify({
+    HotReload: { jump_table: { lib: `/wasm/librhwp-subsecond-patch-${sequence}.wasm` } },
+  });
+  sockets[0]?.onopen?.({} as Event);
+  sockets[0]?.onmessage?.({ data: patch(1) } as MessageEvent);
+  sockets[0]?.onmessage?.({ data: patch(2) } as MessageEvent);
+  sockets[0]?.onclose?.({ code: 1006 } as CloseEvent);
+  reconnects.find(timer => timer.delay === 250)?.callback();
+  sockets[1]?.onopen?.({} as Event);
+  patchReadyEvents.emit('rhwp-subsecond-patch-ready', {
+    detail: { patchIdentity: '/wasm/librhwp-subsecond-patch-1.wasm' },
+  });
+  const ledger = getSubsecondDeliverySnapshot()!;
+  assert.deepEqual(applied, [patch(1), patch(2)]);
+  assert.equal(ledger.receivedMessages, 2);
+  assert.equal(ledger.patches.at(-1)?.connectionSerial, 1);
+  assert.equal(
+    ledger.events.filter(event =>
+      event.phase === 'message-received'
+      && event.patchIdentity === '/wasm/librhwp-subsecond-patch-2.wasm'
+      && event.connectionSerial === 1).length,
+    1,
+  );
+  stop?.();
 });
 
 test('delivery ledger records patch phases and distinguishes reconnect replay', async () => {
@@ -1219,6 +1563,7 @@ test('delivery ledger records patch phases and distinguishes reconnect replay', 
   const { connectSubsecondDevtools, getSubsecondDeliverySnapshot } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
   const timers: Array<{ callback: () => void; delay: number }> = [];
+  const commitEvents = new FakeErrorEvents();
   let clock = 10;
   const disconnect = connectSubsecondDevtools(
     { applySubsecondDevtoolsMessage: () => 'patch-dispatched' },
@@ -1232,14 +1577,19 @@ test('delivery ledger records patch phases and distinguishes reconnect replay', 
       clearTimeout: () => {},
       reportSignal: () => {},
       errorEvents: new FakeErrorEvents(),
+      patchReadyEvents: commitEvents,
       now: () => clock,
     },
   );
-  const patch = JSON.stringify({
-    HotReload: { jump_table: { lib: '/wasm/librhwp-subsecond-patch-42.wasm' } },
+  const patch = (sequence: number) => JSON.stringify({
+    HotReload: { jump_table: { lib: `/wasm/librhwp-subsecond-patch-${sequence}.wasm` } },
   });
   sockets[0]?.onopen?.({} as Event);
-  sockets[0]?.onmessage?.({ data: patch } as MessageEvent);
+  sockets[0]?.onmessage?.({ data: patch(41) } as MessageEvent);
+  commitEvents.emit('rhwp-subsecond-patch-ready', {
+    detail: { patchIdentity: '/wasm/librhwp-subsecond-patch-41.wasm' },
+  });
+  sockets[0]?.onmessage?.({ data: patch(42) } as MessageEvent);
   let ledger = getSubsecondDeliverySnapshot()!;
   assert.equal(ledger.schemaVersion, 3);
   assert.equal(ledger.patches.at(-1)?.patchId, 42);
@@ -1247,17 +1597,33 @@ test('delivery ledger records patch phases and distinguishes reconnect replay', 
   assert.equal(ledger.patches.at(-1)?.fetch.status, 'pending');
   assert.ok(ledger.events.some(event => event.phase === 'message-received'));
   assert.ok(ledger.events.some(event => event.phase === 'dispatch-outcome'));
-
   clock = 20;
   sockets[0]?.onclose?.({ code: 1006 } as CloseEvent);
   timers.find(timer => timer.delay === 250)?.callback();
   sockets[1]?.onopen?.({} as Event);
   clock = 30;
-  sockets[1]?.onmessage?.({ data: patch } as MessageEvent);
+  sockets[1]?.onmessage?.({ data: patch(41) } as MessageEvent);
+  assert.equal(
+    getSubsecondDeliverySnapshot()!.reconnectReplay.status,
+    'pending',
+    'older ordered history does not supersede the expected tip replay',
+  );
+  sockets[1]?.onmessage?.({ data: patch(42) } as MessageEvent);
   ledger = getSubsecondDeliverySnapshot()!;
   assert.equal(ledger.reconnectReplay.status, 'replayed');
   assert.ok(ledger.events.some(event => event.phase === 'patch-replayed'));
-  assert.equal(ledger.dispatchedPatches, 1, 'replayed patch is observed but not dispatched twice');
+  timers.find(timer => timer.delay === 1_000)?.callback();
+  assert.equal(
+    getSubsecondDeliverySnapshot()!.reconnectReplay.status,
+    'replayed',
+    'a physically received replay cannot become missed while queued',
+  );
+  commitEvents.emit('rhwp-subsecond-patch-ready', {
+    detail: { patchIdentity: '/wasm/librhwp-subsecond-patch-42.wasm' },
+  });
+  await Promise.resolve();
+  ledger = getSubsecondDeliverySnapshot()!;
+  assert.equal(ledger.dispatchedPatches, 2, 'ordered history is observed but not dispatched twice');
   disconnect?.();
 });
 
@@ -1268,6 +1634,7 @@ test('reconnect replay state terminates on newer patch and accepts late replay e
     const { connectSubsecondDevtools, getSubsecondDeliverySnapshot } = await loadRuntime();
     const sockets: FakeWebSocket[] = [];
     const timers: Array<{ callback: () => void; delay: number }> = [];
+    const commitEvents = new FakeErrorEvents();
     const disconnect = connectSubsecondDevtools(
       { applySubsecondDevtoolsMessage: () => 'patch-dispatched' },
       {
@@ -1280,6 +1647,7 @@ test('reconnect replay state terminates on newer patch and accepts late replay e
         clearTimeout: () => {},
         reportSignal: () => {},
         errorEvents: new FakeErrorEvents(),
+        patchReadyEvents: commitEvents,
       },
     );
     const patch = (sequence: number) => JSON.stringify({
@@ -1287,6 +1655,9 @@ test('reconnect replay state terminates on newer patch and accepts late replay e
     });
     sockets[0]?.onopen?.({} as Event);
     sockets[0]?.onmessage?.({ data: patch(90) } as MessageEvent);
+    commitEvents.emit('rhwp-subsecond-patch-ready', {
+      detail: { patchIdentity: '/wasm/librhwp-subsecond-patch-90.wasm' },
+    });
     sockets[0]?.onclose?.({ code: 1006 } as CloseEvent);
     timers.find(timer => timer.delay === 250)?.callback();
     sockets[1]?.onopen?.({} as Event);
@@ -1308,19 +1679,95 @@ test('reconnect replay state terminates on newer patch and accepts late replay e
   assert.equal(await run(true), 'replayed');
 });
 
+test('an unobserved async patch commit bounds the queue until a late exact commit', async () => {
+  delete (globalThis as typeof globalThis & { __rhwpSubsecondDelivery?: unknown })
+    .__rhwpSubsecondDelivery;
+  const {
+    connectSubsecondDevtools,
+    describeSubsecondSignal,
+    getSubsecondDeliverySnapshot,
+  } = await loadRuntime();
+  const sockets: FakeWebSocket[] = [];
+  const timers: Array<{ callback: () => void; delay: number }> = [];
+  const commitEvents = new FakeErrorEvents();
+  const errorEvents = new FakeErrorEvents();
+  const applied: string[] = [];
+  const signals: CapturedSignal[] = [];
+  const open = () => connectSubsecondDevtools(
+    {
+      applySubsecondDevtoolsMessage: message => {
+        applied.push(message);
+        return 'patch-dispatched';
+      },
+    },
+    {
+      location: { protocol: 'http:', host: 'localhost:7701' },
+      createWebSocket: url => new FakeWebSocket(url, sockets),
+      setTimeout: (callback, delay) => {
+        timers.push({ callback, delay });
+        return timers.length;
+      },
+      clearTimeout: () => {},
+      reportSignal: signal => signals.push(signal as CapturedSignal),
+      errorEvents,
+      patchReadyEvents: commitEvents,
+      now: () => 0,
+    },
+  );
+  const stop = open();
+  const patch = (sequence: number) => JSON.stringify({
+    HotReload: { jump_table: { lib: `/wasm/librhwp-subsecond-patch-${sequence}.wasm` } },
+  });
+  sockets[0]?.onmessage?.({ data: patch(1) } as MessageEvent);
+  errorEvents.emit('unhandledrejection', { reason: 'patch instantiate failed' });
+  sockets[0]?.onmessage?.({ data: patch(2) } as MessageEvent);
+  stop?.();
+
+  const replacementStop = open();
+  sockets[1]?.onopen?.({} as Event);
+  sockets[1]?.onmessage?.({ data: patch(1) } as MessageEvent);
+  sockets[1]?.onmessage?.({ data: patch(2) } as MessageEvent);
+  timers.filter(timer => timer.delay === 10_000).at(-1)?.callback();
+  sockets[1]?.onmessage?.({ data: patch(3) } as MessageEvent);
+
+  let ledger = getSubsecondDeliverySnapshot()!;
+  assert.deepEqual(applied, [patch(1)]);
+  assert.equal(ledger.ignoredPatchMessages, 1);
+  assert.equal(ledger.events.at(-1)?.phase, 'patch-ignored');
+  assert.ok(ledger.events.some(event => event.phase === 'patch-commit-timeout'));
+  assert.deepEqual(signals.at(-1), {
+    kind: 'commit-timeout',
+    patchIdentity: '/wasm/librhwp-subsecond-patch-1.wasm',
+    timeoutMs: 10_000,
+  });
+  assert.match(
+    describeSubsecondSignal(signals.at(-1) as never).message,
+    /patch-1\.wasm[\s\S]*full rebuild/,
+  );
+
+  commitEvents.emit('rhwp-subsecond-patch-ready', {
+    detail: { patchIdentity: '/wasm/librhwp-subsecond-patch-1.wasm' },
+  });
+  sockets[1]?.onmessage?.({ data: patch(2) } as MessageEvent);
+  ledger = getSubsecondDeliverySnapshot()!;
+  assert.deepEqual(applied, [patch(1), patch(2)]);
+  assert.equal(ledger.dispatchedPatches, 2, 'a late exact commit safely reopens dispatch');
+  replacementStop?.();
+});
+
 test('disconnect settles a pending reconnect replay as closed', async () => {
   delete (globalThis as typeof globalThis & { __rhwpSubsecondDelivery?: unknown })
     .__rhwpSubsecondDelivery;
   const { connectSubsecondDevtools, getSubsecondDeliverySnapshot } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
-  const timers: Array<() => void> = [];
+  const timers: Array<{ callback: () => void; delay: number }> = [];
   const disconnect = connectSubsecondDevtools(
     { applySubsecondDevtoolsMessage: () => 'patch-dispatched' },
     {
       location: { protocol: 'http:', host: 'localhost:7701' },
       createWebSocket: url => new FakeWebSocket(url, sockets),
-      setTimeout: callback => {
-        timers.push(callback);
+      setTimeout: (callback, delay) => {
+        timers.push({ callback, delay });
         return timers.length;
       },
       clearTimeout: () => {},
@@ -1335,7 +1782,7 @@ test('disconnect settles a pending reconnect replay as closed', async () => {
   sockets[0]?.onopen?.({} as Event);
   sockets[0]?.onmessage?.({ data: patch } as MessageEvent);
   sockets[0]?.onclose?.({ code: 1006 } as CloseEvent);
-  timers.shift()?.();
+  timers.find(timer => timer.delay === 250)?.callback();
   sockets[1]?.onopen?.({} as Event);
   assert.equal(getSubsecondDeliverySnapshot()!.reconnectReplay.status, 'pending');
   disconnect?.();
@@ -1390,6 +1837,11 @@ class FakeErrorEvents {
 
   removeEventListener = (type: string, listener: (event: Event) => void): void => {
     this.listeners.get(type)?.delete(listener);
+  };
+
+  dispatchEvent = (event: Event): boolean => {
+    [...(this.listeners.get(event.type) ?? [])].forEach(listener => listener(event));
+    return true;
   };
 
   emit(type: string, event: Record<string, unknown>): void {
@@ -1956,13 +2408,19 @@ test('the pristine checkout verifier hashes symlink targets as Git blobs', async
   assert.match(dioxusCliSourceDigest(checkout), /^[0-9a-f]{64}$/);
 });
 
-test('the pinned Dioxus tip workaround is applied and verified as an exact diff', () => {
+test('the pinned Dioxus workarounds are applied and verified as exact diffs', () => {
   const tipPatch = readFileSync(
     new URL('../../scripts/patches/dioxus-cli-hotpatch-tip-dependents.patch', import.meta.url),
     'utf8',
   );
+  const replayPatch = readFileSync(
+    new URL('../../scripts/patches/dioxus-cli-replay-latest-patch.patch', import.meta.url),
+    'utf8',
+  );
   assert.match(tipPatch, /workspace_crate_dep_names/);
   assert.doesNotMatch(tipPatch, /serve\/server\.rs/);
+  assert.match(replayPatch, /serve\/server\.rs/);
+  assert.doesNotMatch(replayPatch, /build\/builder\.rs/);
   const installer = readFileSync(
     new URL('../../scripts/install-dioxus-cli.mjs', import.meta.url),
     'utf8',
