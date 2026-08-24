@@ -8472,10 +8472,18 @@ impl LayoutEngine {
             .unwrap_or(-1);
         let cell_has_local_vpos_origin = cell_first_vpos == 0
             || (is_block_rowbreak_table && (0..=500).contains(&cell_first_vpos));
+        // [#5995] 셀 내부 vpos 사다리는 셀 콘텐츠 기준 좌표라 표 자신의 세로
+        // 오프셋과 무관하다. 저자가 남긴 미세 오프셋(30269 문단 0.136: -98HU =
+        // -0.03mm)이 `== 0` 판정으로 vpos 유닛 체계 전체를 끄면, 리셋(조각 경계)
+        // 하드 브레이크가 사라지고 유닛이 재흐름 높이로 계산돼 조각 배분과 총
+        // 높이가 저장 사다리(=한글 2020)에서 이탈한다. 반 mm 미만은 배치 의도가
+        // 아니라 잔여값으로 보고 유지한다. render 쪽 게이트(table_partial.rs)와
+        // 같은 완화다. 이 분기는 한컴 계산의 권위 입력 주장이 아니라 기존
+        // 저장-배치 호환 경로(c7dbe8a2c)의 형상 완화다.
         let preserve_linear_single_cell_vpos = is_block_rowbreak_table
             && table.row_count == 1
             && table.col_count == 1
-            && (table.common.vertical_offset as i32) == 0
+            && (table.common.vertical_offset as i32).unsigned_abs() <= 141
             && cell_first_vpos >= 0;
         let use_vpos_unit_positions = is_block_rowbreak_table
             && ((table.row_count > 1 && has_visible_text_with_nested_table)
