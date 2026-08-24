@@ -67,14 +67,13 @@ archive에 한컴 실행 파일이나 변환 DLL은 포함하지 않는다. 한�
 ## 환경 파일과 client 준비
 
 client archive는 rhwp 저장소의 `tools/` 아래에 두고, endpoint와 token은 Git 밖의 local client
-directory의 `.env.local`에만 둔다. Linux에서는 운영 경로를
-`/home/tsjang/hwp-convert-2024/.env.local`로 사용한다. 다른 POSIX host에서는 같은 구조의
-`$HOME/hwp-convert-2024/.env.local`을 사용하며, 저장소 안에 `.env.local`을 만들지 않는다.
+directory의 `$HOME/hwp-convert-2024/.env.local`에만 둔다. macOS와 Linux를 포함한 POSIX host는
+같은 기본 경로를 사용하며, 저장소 안에 `.env.local`을 만들지 않는다.
 
 | client OS | rhwp archive | 비공개 환경 파일 |
 | --- | --- | --- |
 | macOS | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `$HOME/hwp-convert-2024/.env.local` |
-| Linux | `/home/tsjang/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `/home/tsjang/hwp-convert-2024/.env.local` |
+| Linux | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `$HOME/hwp-convert-2024/.env.local` |
 | Windows | `C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `C:\Users\<사용자>\hwp-convert-2024\.env.local` |
 
 ```env
@@ -85,10 +84,11 @@ HWP2024_MCP_AUTH_TOKEN=<관리자가_제공한_32_byte_이상_token>
 POSIX host에서 새 환경 파일을 만들 때는 먼저 권한을 제한한다.
 
 ```bash
-mkdir -p "$HOME/hwp-convert-2024"
+export HWP2024_MCP_ENV_DIR="$HOME/hwp-convert-2024"
+mkdir -p "$HWP2024_MCP_ENV_DIR"
 umask 077
-${EDITOR:-vi} "$HOME/hwp-convert-2024/.env.local"
-chmod 600 "$HOME/hwp-convert-2024/.env.local"
+${EDITOR:-vi} "$HWP2024_MCP_ENV_DIR/.env.local"
+chmod 600 "$HWP2024_MCP_ENV_DIR/.env.local"
 ```
 
 Windows에서는 `.env.local`을 현재 사용자만 읽을 수 있는 `hwp-convert-2024` directory에 두고,
@@ -442,8 +442,13 @@ server process 전체에서 하나씩 직렬 실행한다. 비동기 요청은 �
 변환 결과에서 다음을 확인한다.
 
 - `status: success`
-- `server.engine`과 `server.engine_profile`: 요청한 `2020` 또는 `2024`
-- `server.hancom_version`: 선택한 Windows 한컴 runtime의 실제 버전
+- `engine`: `start`와 `status` 응답에서 요청한 engine과 일치해야 한다. 2022 이하 저장본은
+  `2020`, 2024 저장본은 `2024`를 명시한다.
+- `server.engine`: 서버가 반환할 수 있는 concrete backend 식별자다. 요청한 engine과의 일치 여부를
+  판정하는 값으로 사용하지 않는다. 현재 배포의 2024 backend는
+  `hancom-2024-direct-host`를 반환한다.
+- `server.engine_profile`, `server.hancom_version`: 서버가 제공하면 선택한 runtime의 추가 증적으로
+  기록한다. 이 필드는 현재 배포 응답에 없을 수 있으므로 부재만으로 변환을 실패로 판단하지 않는다.
 - `server.backend: hwp-managed-direct-dll-host`
 - `server.worker_bits: 32`
 - client가 보고한 `size`, `sha256`과 local file이 일치
@@ -480,6 +485,14 @@ Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<사용자>\rhwp\pdf\examp
 - 실제 archive CLI의 비동기 `start`가 engine `2020`, 엔진별 기본 파일명, 비공개 암호 파일을 remote argument로 전달
 - 결과 JSON에는 `status`, `job_id`, `engine`만 있고 암호 값은 없음
 
+2026-08-24 실제 배포 MCP server에는 최신 artifact로 engine `2024`의 작은 HWPX를 동기 `convert`와
+비동기 `start → status → download`로 각각 변환했다. 두 경로 모두 `success`, client/server SHA-256 일치와
+PDF 서명을 확인했고, 비동기 `start`와 `status`의 `engine`은 요청값 `2024`와 일치했다. 또한 Hancom Office
+2020 저장본 `kps-ai.hwp`는 `--engine 2020`을 명시한 비동기 흐름에서 `queued → succeeded → success`,
+`start`·`status`의 `engine: "2020"`, PDF 서명 및 SHA-256 일치를 확인했다. `server.engine`은
+`hancom-2024-direct-host` backend 식별자를 반환했고 `server.engine_profile`과 `server.hancom_version`은
+반환하지 않았다.
+
 2026-08-22의 이전 `0.8.0` artifact는 당시 실제 배포 MCP server에 연결해 다음을 확인했다.
 
 - tarball에서 `hwp2024-mcp-convert --help` 실행 성공
@@ -488,7 +501,7 @@ Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<사용자>\rhwp\pdf\examp
 - 동기 HWP→HWPX: `success`, output 67,709 bytes
 - 비동기 HWP→PDF: `queued → succeeded → success`, output 106,341 bytes
 - 두 경로 모두 client/server output byte 수와 SHA-256 일치
-- engine `hancom-2024-direct-host`, backend `hwp-managed-direct-dll-host`, worker 32-bit
+- server engine `hancom-2024-direct-host`, backend `hwp-managed-direct-dll-host`, worker 32-bit
 
 실제 server 주소와 token은 검증 기록에 포함하지 않았다.
 
