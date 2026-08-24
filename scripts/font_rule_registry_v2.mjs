@@ -1445,8 +1445,149 @@ export function validateMigrationV1ToV2(migration, v1Registry, v2Registry, root 
   return errors;
 }
 
-export function resolveRuleLifecycle() {
-  throw new Error('W7.5 lifecycle resolver is reserved for Stage W7.5-4');
+function lifecycleResolution(rule) {
+  if (rule.status === 'active') {
+    return rule.lifecycle.introducedBy === MIGRATION_EVENT_ID
+      ? {
+        resolution: 'carried-forward-active',
+        reason: { code: 'carriedForward', eventId: MIGRATION_EVENT_ID },
+      }
+      : {
+        resolution: 'introduced-active',
+        reason: { code: 'introducedByChangeSet', eventId: rule.lifecycle.introducedBy },
+      };
+  }
+  return rule.lifecycle.successorRuleIds.length === 0
+    ? {
+      resolution: 'retired',
+      reason: { code: 'retiredWithoutSuccessor', eventId: rule.lifecycle.retiredBy },
+    }
+    : {
+      resolution: 'replaced',
+      reason: { code: 'retiredWithSuccessor', eventId: rule.lifecycle.retiredBy },
+    };
+}
+
+function resolvedLifecycle(ruleId, rule, historicalRule) {
+  if (!rule && historicalRule) {
+    return {
+      ruleId,
+      resolution: 'historical-reference-only',
+      status: null,
+      decisionPlane: historicalRule.decisionPlane,
+      projectionId: null,
+      sourceBoundaryId: null,
+      introducedBy: null,
+      lastEvidenceChangeBy: null,
+      retiredBy: null,
+      retirementReason: null,
+      successorRuleIds: [],
+      predecessorRuleIds: [],
+      reason: { code: 'historicalReferenceOnly', eventId: 'issue-4939' },
+    };
+  }
+  if (!rule) {
+    return {
+      ruleId,
+      resolution: 'dangling',
+      status: null,
+      decisionPlane: null,
+      projectionId: null,
+      sourceBoundaryId: null,
+      introducedBy: null,
+      lastEvidenceChangeBy: null,
+      retiredBy: null,
+      retirementReason: null,
+      successorRuleIds: [],
+      predecessorRuleIds: [],
+      reason: { code: 'ruleIdNotFound', eventId: null },
+    };
+  }
+  const classification = lifecycleResolution(rule);
+  return {
+    ruleId,
+    resolution: classification.resolution,
+    status: rule.status,
+    decisionPlane: rule.decisionPlane,
+    projectionId: rule.projections[0].id,
+    sourceBoundaryId: rule.sourceBoundaryId,
+    introducedBy: rule.lifecycle.introducedBy,
+    lastEvidenceChangeBy: rule.lifecycle.lastEvidenceChangeBy,
+    retiredBy: rule.lifecycle.retiredBy,
+    retirementReason: rule.lifecycle.retirementReason,
+    successorRuleIds: [...rule.lifecycle.successorRuleIds],
+    predecessorRuleIds: [...rule.lifecycle.predecessorRuleIds],
+    reason: classification.reason,
+  };
+}
+
+function loadHistoricalRuleLedger(registry, root) {
+  const v1File = repositoryFile(registry.sealedV1Registry.path, root);
+  if (!v1File) throw new Error('sealed v1 registry path is unavailable');
+  const v1Registry = readJson(v1File);
+  const ledgerReference = v1Registry.inputs?.find(input => (
+    input?.path === 'mydocs/tech/investigations/issue-4939/font_rule_ledger.json'
+  ));
+  const ledgerFile = repositoryFile(ledgerReference?.path, root);
+  if (!ledgerFile || !SHA256_PATTERN.test(ledgerReference?.sha256 ?? '')
+      || sha256File(ledgerFile) !== ledgerReference.sha256) {
+    throw new Error('sealed v1 historical rule ledger digest is invalid');
+  }
+  const ledger = readJson(ledgerFile);
+  if (ledger?.kind !== 'font-rule-investigation-ledger'
+      || ledger.schemaVersion !== '1.0'
+      || !Array.isArray(ledger.rules)
+      || ledger.rules.length > 4096
+      || new Set(ledger.rules.map(rule => rule?.ruleId)).size !== ledger.rules.length
+      || ledger.rules.some(rule => (
+        !isObject(rule)
+          || typeof rule.ruleId !== 'string'
+          || rule.ruleId.length > 2048
+          || !IDENTIFIER_PATTERN.test(rule.ruleId)
+          || typeof rule.decisionPlane !== 'string'
+          || !IDENTIFIER_PATTERN.test(rule.decisionPlane)
+      ))) {
+    throw new Error('sealed v1 historical rule ledger structure is invalid');
+  }
+  return {
+    path: ledgerReference.path,
+    sha256: ledgerReference.sha256,
+    rules: ledger.rules,
+  };
+}
+
+export function createRuleLifecycleResolver(registry, { root = ROOT } = {}) {
+  const errors = validateRegistryV2(registry, root);
+  if (errors.length > 0) {
+    throw new Error(`font rule lifecycle registry is invalid:\n${errors.join('\n')}`);
+  }
+  const rulesById = new Map(registry.rules.map(rule => [rule.ruleId, rule]));
+  const historicalLedger = loadHistoricalRuleLedger(registry, root);
+  const historicalRulesById = new Map(
+    historicalLedger.rules.map(rule => [rule.ruleId, rule]),
+  );
+  return Object.freeze({
+    historicalLedger: Object.freeze({
+      path: historicalLedger.path,
+      sha256: historicalLedger.sha256,
+      ruleCount: historicalLedger.rules.length,
+    }),
+    resolve(ruleId) {
+      if (typeof ruleId !== 'string' || ruleId.length > 2048
+          || !IDENTIFIER_PATTERN.test(ruleId)) {
+        throw new Error('ruleId must be a stable lowercase identifier of at most 2,048 characters');
+      }
+      return resolvedLifecycle(
+        ruleId,
+        rulesById.get(ruleId),
+        historicalRulesById.get(ruleId),
+      );
+    },
+  });
+}
+
+export function resolveRuleLifecycle(registry, ruleId, options = {}) {
+  return createRuleLifecycleResolver(registry, options).resolve(ruleId);
 }
 
 function compareJson(expected, actual, label) {

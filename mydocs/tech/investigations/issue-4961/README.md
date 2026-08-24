@@ -121,7 +121,8 @@ PR self-review의 native snapshot 보정과 standalone fail-closed 회귀 근거
 ## 3.5 W7 canonical registry 연결
 
 Issue #4966 W7은 Rust layout-name·layout-metric과 Studio Canvas2D·webfont·CanvasKit의 유한 규칙을
-`assets/font-rules/font_rule_registry.json`에서 생성한 backend projection으로 전환했다. W2 trace는
+canonical registry에서 생성한 backend projection으로 전환했다. #5955 W7.5 이후 current authority는
+`assets/font-rules/font_rule_registry_v2.json`의 active rule이고 schema 1.0 registry는 역사 입력이다. W2 trace는
 선택이 끝난 뒤 projection이 반환한 `ruleId`만 운반한다. 이 ID가 W1 candidate identity로 계산한 값과
 다르면 조용히 바꾸지 않고 실패한다.
 
@@ -133,6 +134,17 @@ Issue #4966 W7은 Rust layout-name·layout-metric과 Studio Canvas2D·webfont·C
 
 Studio 보강도 Canvas2D paint, webfont supply와 CanvasKit SFNT의 서로 다른 generated rule 집합을 유지한다.
 Canvas2D에서 CSS family를 사용할 수 있다는 사실을 CanvasKit의 SFNT byte 확보로 승격하지 않는다.
+
+## 3.6 W7.5 lifecycle offline audit
+
+#5955 Stage W7.5-4는 W2 trace 원문을 바꾸지 않고 별도 offline audit에서 `ruleId`를 v2 lifecycle에 join한다.
+Rust `provenance[].ruleId`와 Studio `paint.*.ruleIds[]`를 모두 읽으며 carried-forward, 새 active, retired,
+replaced와 dangling을 구조화한다. W7 projection 밖에 의도적으로 남은 W1 규칙은 봉인 ledger digest를
+검증한 뒤 `historical-reference-only`로, W2가 이미 `ledgerSourceDrift`를 선언한 현재 identity는
+`trace-declared-source-drift`로 분리한다. 근거 없는 미등록 ID만 dangling이다.
+
+audit는 선택·rendering·trace hash에 관여하지 않는 query model이다. 명령과 출력 schema는
+[`issue-5955`](../issue-5955/README.md)에 기록한다.
 
 ## 4. identity와 ledger 연결
 
