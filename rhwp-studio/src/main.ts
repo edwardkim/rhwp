@@ -3,6 +3,8 @@ import type { DocumentInfo, PageInfo } from '@/core/types';
 import { EventBus } from '@/core/event-bus';
 import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
+import type { PageReferenceLayer } from '@/view/page-reference-layer';
+import type { PdfTwinLookupResult } from '@/dev/pdf-twin-client';
 import { InputHandler } from '@/engine/input-handler';
 import { Toolbar } from '@/ui/toolbar';
 import { initIconToolbarScroller } from '@/ui/icon-toolbar-scroller';
@@ -173,6 +175,145 @@ let extensionViewerSettings: ExtensionViewerSettings = {
 };
 /** DEV 동적 런타임의 realm 단위 해제선. 현재 Studio에는 뷰 교체 경로가 없어 호출하지 않는다. */
 let stopDevelopmentRenderRuntime: (() => void) | null = null;
+type ActivePdfReference = PageReferenceLayer & {
+  readonly pdfName: string;
+  destroy(): Promise<void>;
+  startBaselineScan(): void;
+  onRenderCodePatched(
+    renderRevision: string,
+    patchIdentity: string | null,
+    previousRenderGeneration: number,
+  ): void;
+};
+let activePdfReference: ActivePdfReference | null = null;
+let pdfReferenceGeneration = 0;
+
+function exactCommittedPatchIdentity(renderRevision: string | null): string | null {
+  if (renderRevision === null) return null;
+  const ledger = (window as Window & {
+    __rhwpSubsecondDelivery?: {
+      patches?: Array<{
+        identity?: string;
+        renderRevision?: string | null;
+        commitAssociation?: string;
+      }>;
+    };
+  }).__rhwpSubsecondDelivery;
+  const patch = [...(ledger?.patches ?? [])].reverse().find(candidate =>
+    candidate.renderRevision === renderRevision
+    && candidate.commitAssociation === 'exact');
+  return typeof patch?.identity === 'string' ? patch.identity : null;
+}
+
+function supportsPdfReferenceHarness(fileName: string): boolean {
+  if (!import.meta.env.DEV || !/\.(hwp|hwpx)$/i.test(fileName)) return false;
+  const exports = wasm.getWasmModuleExports();
+  return typeof Reflect.get(exports, 'subsecondProbe') === 'function';
+}
+
+function beginPdfTwinLookup(
+  fileName: string,
+  data: Uint8Array,
+): Promise<PdfTwinLookupResult> | null {
+  if (!supportsPdfReferenceHarness(fileName)) return null;
+  if (import.meta.env.DEV) {
+    return import('@/dev/pdf-twin-client')
+      .then(module => module.lookupPdfTwin(fileName, data))
+      .catch((error) => {
+        console.warn('[pdf-reference] twin lookup failed:', error);
+        return { status: 'error' } as const;
+      });
+  }
+  return null;
+}
+
+function beginPdfReferenceDocument(): number {
+  const generation = ++pdfReferenceGeneration;
+  canvasView?.setPageReferenceLayer(null);
+  const previous = activePdfReference;
+  activePdfReference = null;
+  if (previous) void previous.destroy();
+  return generation;
+}
+
+async function activatePdfReference(
+  lookup: Promise<PdfTwinLookupResult> | null,
+  generation: number,
+): Promise<void> {
+  try {
+    if (!import.meta.env.DEV) return;
+    if (!lookup) return;
+    const result = await lookup;
+    if (generation !== pdfReferenceGeneration || !canvasView) return;
+    if (result.status !== 'found') {
+      const label = result.status === 'ambiguous'
+        ? 'PDF twin 모호함'
+        : result.status === 'busy'
+          ? 'PDF twin 사용 중 — 잠시 후 다시 열기'
+          : result.status === 'error'
+            ? 'PDF twin 오류'
+            : 'PDF twin 없음';
+      sbMessage().textContent += ` · ${label}`;
+      console.info(`[pdf-reference] ${result.status}`);
+      return;
+    }
+
+    const { PdfReferenceOverlay } = await import('@/dev/pdf-reference-overlay');
+    const overlay = await PdfReferenceOverlay.open(
+      result.pdfPageUrl,
+      result.pdfPageWidth,
+      result.pdfPageCount,
+      result.pdfName,
+      {
+        documentDigest: wasm.documentDigest,
+        documentGeneration: wasm.documentGeneration,
+        referenceGeneration: generation,
+        errorLogCapability: result.errorLogCapability,
+        getDocumentDigest: () => wasm.documentDigest,
+        getDocumentGeneration: () => wasm.documentGeneration,
+        getHwpPageCount: () => wasm.pageCount,
+        capturePage: (pageIndex, sampleWidth, signal) => {
+          if (!canvasView) throw new Error('CanvasView is unavailable');
+          return canvasView.capturePageForDiagnostics(pageIndex, sampleWidth, signal);
+        },
+        gotoPage: pageIndex => canvasView?.gotoPage(pageIndex) ?? false,
+        getRenderRevision: () => {
+          const doc = wasm.borrowDocumentHandle() as { getRenderCodeRevision?: () => string } | null;
+          return typeof doc?.getRenderCodeRevision === 'function'
+            ? doc.getRenderCodeRevision()
+            : null;
+        },
+        getCommittedPatchIdentity: () => {
+          const doc = wasm.borrowDocumentHandle() as { getRenderCodeRevision?: () => string } | null;
+          const revision = typeof doc?.getRenderCodeRevision === 'function'
+            ? doc.getRenderCodeRevision()
+            : null;
+          return exactCommittedPatchIdentity(revision);
+        },
+        getRenderGeneration: () => canvasView?.getDiagnosticRenderGeneration() ?? 0,
+      },
+    );
+    if (generation !== pdfReferenceGeneration || !canvasView) {
+      await overlay.destroy();
+      return;
+    }
+    activePdfReference = overlay;
+    canvasView.setPageReferenceLayer(overlay);
+    overlay.startBaselineScan();
+    sbMessage().textContent += ' · diff 빨강=PDF 청록=HWP 주황=색상';
+    if (result.pdfPageCount !== null && result.pdfPageCount !== wasm.pageCount) {
+      console.warn(
+        `[pdf-reference] page count mismatch: hwp=${wasm.pageCount} pdf=${result.pdfPageCount}`,
+      );
+    }
+    sbMessage().textContent += ` · PDF 기준 겹침: ${result.pdfName}`;
+    console.info(
+      `[pdf-reference] opened ${result.relativeDirectory}/${result.pdfName}`,
+    );
+  } catch (error) {
+    console.warn('[pdf-reference] PDF open failed:', error);
+  }
+}
 
 /**
  * 개발 전용 렌더 교체를 앱 조립점에서만 시작한다 (#4636, #4641).
@@ -185,10 +326,20 @@ async function startDevelopmentRenderRuntime(): Promise<void> {
   if (!import.meta.env.DEV || stopDevelopmentRenderRuntime || !canvasView) return;
   try {
     const runtime = await import('@/core/subsecond-runtime');
+    const refreshPatchedRender = () => canvasView?.refreshPages({ throwOnPageInfoError: true });
     stopDevelopmentRenderRuntime = runtime.startDevelopmentRenderRuntime(
       wasm.getWasmModuleExports(),
       () => wasm.borrowDocumentHandle(),
-      () => canvasView?.refreshPages(),
+      revision => {
+        const previousRenderGeneration = canvasView?.getDiagnosticRenderGeneration() ?? 0;
+        refreshPatchedRender();
+        const patchIdentity = exactCommittedPatchIdentity(revision);
+        activePdfReference?.onRenderCodePatched(
+          revision,
+          patchIdentity,
+          previousRenderGeneration,
+        );
+      },
       { measureHeapBytes: () => wasm.getWasmLinearMemoryBytes() },
     );
   } catch (error) {
@@ -438,6 +589,7 @@ function formatBytes(bytes: number): string {
 }
 
 function waitForNextPaint(): Promise<void> {
+  if (document.visibilityState !== 'visible') return Promise.resolve();
   return new Promise((resolve) => {
     let done = false;
     const finish = () => {
@@ -581,6 +733,11 @@ async function initialize(): Promise<void> {
       eventBus,
       rendererSession,
     );
+    if (import.meta.env.DEV) {
+      initRhwpDev(wasm, {
+        getVisiblePageIndices: () => canvasView?.getVisiblePageIndices() ?? [],
+      });
+    }
     await startDevelopmentRenderRuntime();
 
     // [#3313] 외부 연결 그림(HWP3 pic_type=0)의 비동기 주입이 첫 렌더 이후에 끝나면
@@ -1511,6 +1668,8 @@ async function loadBytes(
   startTime = performance.now(),
   options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean } = {},
 ): Promise<void> {
+  const pdfTwinLookup = beginPdfTwinLookup(fileName, data);
+  let pdfReferenceDocumentGeneration: number | null = null;
   // 바이트로 여는 모든 경로(파일 열기 · ?url= · 자동저장 복구 · 호스트 API)의 공통 깔때기다.
   // 파싱·쪽 계산 동안 빈 화면만 보이므로 여기서 대기 커서를 든다.
   await withBusyCursor(document.documentElement, async () => {
@@ -1522,6 +1681,7 @@ async function loadBytes(
     }
     await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
     const docInfo = await loadDocumentForOpen(data, fileName);
+    pdfReferenceDocumentGeneration = beginPdfReferenceDocument();
     prepareCanvasRendererDocument();
     // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
     // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
@@ -1553,6 +1713,9 @@ async function loadBytes(
       suppressDialogs: options.suppressDialogs,
     });
   });
+  if (pdfReferenceDocumentGeneration !== null) {
+    void activatePdfReference(pdfTwinLookup, pdfReferenceDocumentGeneration);
+  }
 }
 
 const RECENT_SUBMENU_COLLAPSED_LIMIT = 8;
@@ -1697,6 +1860,7 @@ async function createNewDocument(): Promise<void> {
     await withBusyCursor(document.documentElement, async () => {
       msg.textContent = '새 문서 생성 중...';
       const docInfo = wasm.createNewDocument();
+      beginPdfReferenceDocument();
       prepareCanvasRendererDocument();
       plugins.notifyDocumentSwap();
       await autosaveManager.beginDocument(

@@ -47,9 +47,11 @@ interface LayerPlaneSummary {
 }
 
 export interface PageRenderContext {
-  reason?: 'text-edit' | 'unknown';
+  reason?: 'text-edit' | 'zoom' | 'unknown';
   allowStaticOverlayReuse?: boolean;
   focusedPagePatch?: DeferredFocusedPagePatch;
+  /** Fidelity harness: DOM flow split과 편집기 margin guide 없이 renderer-owned canvas만 만든다. */
+  diagnosticComposite?: boolean;
 }
 
 export interface PageRenderResult {
@@ -64,6 +66,7 @@ interface ReRenderPolicy {
   retrySignature: string;
   reuseStaticFlow: boolean;
   reuseStaticOverlay: boolean;
+  diagnosticComposite: boolean;
 }
 
 interface LayerSummaryCacheEntry {
@@ -75,6 +78,8 @@ interface ReRenderJob {
   fallbackTimer: ReturnType<typeof setTimeout>;
   earlyRawSvgTimers: ReturnType<typeof setTimeout>[];
   completed: boolean;
+  settled: Promise<'rendered' | 'cancelled'>;
+  settle(outcome: 'rendered' | 'cancelled'): void;
 }
 
 const IMAGE_RE_RENDER_FALLBACK_DELAY_MS = 1500;
@@ -199,9 +204,15 @@ export class PageRenderer {
     dpr: number,
     context: PageRenderContext = {},
   ): PageRenderResult {
+    const diagnosticComposite = context.diagnosticComposite === true;
     if (this.backend === 'canvaskit') {
       this.layerSummaryCache.delete(pageIdx);
-      const renderedCanvas = this.renderPageCanvasKit(pageIdx, canvas, renderScale);
+      const renderedCanvas = this.renderPageCanvasKit(
+        pageIdx,
+        canvas,
+        renderScale,
+        !diagnosticComposite,
+      );
       return { needsTextEditStaticLayerVerification: false, renderedCanvas };
     }
 
@@ -227,11 +238,12 @@ export class PageRenderer {
       // [#5780] 그라데이션/이미지 쪽 배경은 DIV 로 못 싣는다 — Background plane 을
       // 포함하는 flow-static canvas 갈래로 폴백한다.
       !layers.pageBackgroundComplex;
+    const effectiveUsesDomFlowImages = usesDomFlowImages && !diagnosticComposite;
 
     // 다층 layer 모드.
     // 1) 본문 Canvas 는 'flow' 필터로 BehindText/InFrontOfText plane 제외
     // 2) behind/front plane 은 같은 부모 컨테이너에 별도 canvas layer 로 합성
-    this.drawMarginGuides(pageIdx, canvas, renderScale);
+    if (!diagnosticComposite) this.drawMarginGuides(pageIdx, canvas, renderScale);
     let overlays: LayerPlaneSummary;
     try {
       overlays = this.applyOverlays(
@@ -242,7 +254,7 @@ export class PageRenderer {
         context,
         layers,
         reuseStaticFlow,
-        usesDomFlowImages ? flowImages : [],
+        effectiveUsesDomFlowImages ? flowImages : [],
       );
     } catch (error) {
       if (!reuseStaticFlow) throw error;
@@ -250,22 +262,23 @@ export class PageRenderer {
       canvas.parentElement && this.removeOverlayLayer(canvas.parentElement, pageIdx, 'flow-static');
       reuseStaticFlow = false;
       this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow', this.renderProfile);
-      this.drawMarginGuides(pageIdx, canvas, renderScale);
+      if (!diagnosticComposite) this.drawMarginGuides(pageIdx, canvas, renderScale);
       overlays = this.applyOverlays(pageIdx, canvas, renderScale, dpr, context, layers, false, []);
     }
-    this.rememberLayerPlaneSummary(pageIdx, canvas, renderScale, layers);
+    this.rememberLayerPlaneSummary(pageIdx, layers);
     // rawSvg(차트/OLE)도 web_canvas draw_image 비동기 디코드 경로를 타므로
     // image 와 함께 재렌더 트리거 카운트에 합산한다(#1456).
     this.scheduleReRender(
       pageIdx,
       canvas,
       renderScale,
-      usesDomFlowImages ? overlays.rawSvgCount : overlays.imageCount + overlays.rawSvgCount,
+      effectiveUsesDomFlowImages ? overlays.rawSvgCount : overlays.imageCount + overlays.rawSvgCount,
       overlays.rawSvgCount,
       {
         retrySignature: overlays.signature,
         reuseStaticFlow,
         reuseStaticOverlay: context.reason === 'text-edit' && context.allowStaticOverlayReuse === true,
+        diagnosticComposite,
       },
     );
     return {
@@ -331,6 +344,7 @@ export class PageRenderer {
     pageIdx: number,
     canvas: HTMLCanvasElement,
     renderScale: number,
+    drawMarginGuides: boolean,
   ): HTMLCanvasElement {
     this.canvaskitDiagnosticsByPage.delete(pageIdx);
     if (!this.canvaskitRenderer) {
@@ -355,7 +369,12 @@ export class PageRenderer {
       canvas.height = Math.max(1, Math.ceil(pageInfo.height * renderScale));
       const tree = this.wasm.getPageLayerTreeObject(pageIdx, this.renderProfile);
       renderStarted = true;
-      const renderedCanvas = this.canvaskitRenderer.renderPage(tree, canvas, renderScale, pageInfo);
+      const renderedCanvas = this.canvaskitRenderer.renderPage(
+        tree,
+        canvas,
+        renderScale,
+        drawMarginGuides ? pageInfo : undefined,
+      );
       this.canvaskitDiagnosticsByPage.set(pageIdx, this.canvaskitRenderer.diagnostics());
       this.cancelReRender(pageIdx);
       this.imageRetryCounts.delete(pageIdx);
@@ -731,8 +750,8 @@ export class PageRenderer {
     ].join('|');
   }
 
-  removeAllPageLayers(parent: HTMLElement): void {
-    this.layerSummaryCache.clear();
+  removeAllPageLayers(parent: HTMLElement, clearLayerSummary = true): void {
+    if (clearLayerSummary) this.layerSummaryCache.clear();
     parent.querySelectorAll(
       '[data-rhwp-overlay-page],' +
       '[data-rhwp-overlay^="background-"],' +
@@ -752,6 +771,7 @@ export class PageRenderer {
       retrySignature: 'flow-only',
       reuseStaticFlow: false,
       reuseStaticOverlay: false,
+      diagnosticComposite: false,
     });
   }
 
@@ -862,7 +882,7 @@ export class PageRenderer {
         this.renderProfile,
       );
       this.drawMarginGuides(pageIdx, canvas, renderScale, patch);
-      this.rememberLayerPlaneSummary(pageIdx, canvas, renderScale, layers);
+      this.rememberLayerPlaneSummary(pageIdx, layers);
       this.cancelReRender(pageIdx);
       this.imageRetryCounts.delete(pageIdx);
       return true;
@@ -878,8 +898,11 @@ export class PageRenderer {
     renderScale: number,
     context: PageRenderContext,
   ): LayerPlaneSummary {
-    const cacheKey = this.buildLayerSummaryCacheKey(pageIdx, canvas, renderScale);
-    if (context.reason === 'text-edit' && context.allowStaticOverlayReuse === true) {
+    const cacheKey = this.buildLayerSummaryCacheKey(pageIdx);
+    if (
+      context.reason === 'zoom'
+      || (context.reason === 'text-edit' && context.allowStaticOverlayReuse === true)
+    ) {
       const cached = this.layerSummaryCache.get(pageIdx);
       if (cached?.key === cacheKey) return { ...cached.summary };
     }
@@ -896,26 +919,19 @@ export class PageRenderer {
 
   private rememberLayerPlaneSummary(
     pageIdx: number,
-    canvas: HTMLCanvasElement,
-    renderScale: number,
     summary: LayerPlaneSummary,
   ): void {
     this.layerSummaryCache.set(pageIdx, {
-      key: this.buildLayerSummaryCacheKey(pageIdx, canvas, renderScale),
+      key: this.buildLayerSummaryCacheKey(pageIdx),
       summary: { ...summary },
     });
   }
 
-  private buildLayerSummaryCacheKey(
-    pageIdx: number,
-    canvas: HTMLCanvasElement,
-    renderScale: number,
-  ): string {
+  private buildLayerSummaryCacheKey(pageIdx: number): string {
     return [
       `page=${pageIdx}`,
-      `scale=${renderScale}`,
-      `width=${canvas.width}`,
-      `height=${canvas.height}`,
+      `document=${this.wasm.documentDigest ?? 'unknown'}`,
+      `generation=${this.wasm.documentGeneration}`,
       `profile=${this.renderProfile}`,
       `backend=${this.backend}`,
     ].join('|');
@@ -1033,10 +1049,16 @@ export class PageRenderer {
     const prefetchRequestToken = ++this.nextPrefetchRequestToken;
     this.prefetchRequestTokens.set(pageIdx, prefetchRequestToken);
 
+    let settle!: (outcome: 'rendered' | 'cancelled') => void;
+    const settled = new Promise<'rendered' | 'cancelled'>(resolve => {
+      settle = resolve;
+    });
     const job: ReRenderJob = {
       fallbackTimer: 0 as unknown as ReturnType<typeof setTimeout>,
       earlyRawSvgTimers: [],
       completed: false,
+      settled,
+      settle,
     };
     const finish = () => {
       if (job.completed || this.reRenderJobs.get(pageIdx) !== job) return;
@@ -1044,8 +1066,12 @@ export class PageRenderer {
       clearTimeout(job.fallbackTimer);
       for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
       this.reRenderJobs.delete(pageIdx);
-      if (canvas.parentElement) {
-        this.reRenderPageCanvases(pageIdx, canvas, renderScale, policy);
+      try {
+        if (canvas.parentElement) {
+          this.reRenderPageCanvases(pageIdx, canvas, renderScale, policy);
+        }
+      } finally {
+        job.settle('rendered');
       }
     };
     job.fallbackTimer = setTimeout(finish, IMAGE_RE_RENDER_FALLBACK_DELAY_MS);
@@ -1162,7 +1188,9 @@ export class PageRenderer {
         'flow',
         this.renderProfile,
       );
-      this.drawMarginGuides(pageIdx, flowCanvas, renderScale);
+      if (!policy.diagnosticComposite) {
+        this.drawMarginGuides(pageIdx, flowCanvas, renderScale);
+      }
     }
 
     if (policy.reuseStaticOverlay) return;
@@ -1300,6 +1328,7 @@ export class PageRenderer {
       clearTimeout(job.fallbackTimer);
       for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
       this.reRenderJobs.delete(pageIdx);
+      job.settle('cancelled');
     }
   }
 
@@ -1309,9 +1338,28 @@ export class PageRenderer {
       job.completed = true;
       clearTimeout(job.fallbackTimer);
       for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
+      job.settle('cancelled');
     }
     this.reRenderJobs.clear();
     this.prefetchRequestTokens.clear();
+  }
+
+  async waitForReRender(
+    pageIdx: number,
+    signal?: AbortSignal,
+  ): Promise<'not-needed' | 'rendered' | 'cancelled' | 'aborted'> {
+    const job = this.reRenderJobs.get(pageIdx);
+    if (!job) return 'not-needed';
+    if (!signal) return job.settled;
+    if (signal.aborted) return 'aborted';
+    return new Promise(resolve => {
+      const abort = (): void => resolve('aborted');
+      signal.addEventListener('abort', abort, { once: true });
+      void job.settled.then(outcome => {
+        signal.removeEventListener('abort', abort);
+        resolve(outcome);
+      });
+    });
   }
 
   /**

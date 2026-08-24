@@ -439,14 +439,17 @@ test('PageRenderer reuses static overlay canvases only when the overlay key matc
   assert.match(source, /backend=\$\{this\.backend\}/);
 });
 
-test('PageRenderer reuses layer summaries on the text-edit fast path', () => {
+test('PageRenderer reuses scale-independent layer summaries on zoom and text edits', () => {
   const source = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
   assert.match(source, /layerSummaryCache = new Map<number,\s*LayerSummaryCacheEntry>\(\)/);
-  assert.match(source, /buildLayerSummaryCacheKey\(pageIdx,\s*canvas,\s*renderScale\)/);
+  assert.match(source, /buildLayerSummaryCacheKey\(pageIdx\)/);
+  assert.match(source, /context\.reason === 'zoom'/);
   assert.match(source, /context\.reason === 'text-edit' && context\.allowStaticOverlayReuse === true/);
   assert.match(source, /cached\?\.key === cacheKey/);
   assert.match(source, /return \{ \.\.\.cached\.summary \}/);
-  assert.match(source, /rememberLayerPlaneSummary\(pageIdx,\s*canvas,\s*renderScale,\s*layers\)/);
+  assert.match(source, /rememberLayerPlaneSummary\(pageIdx,\s*layers\)/);
+  assert.match(source, /document=\$\{this\.wasm\.documentDigest \?\? 'unknown'\}/);
+  assert.match(source, /generation=\$\{this\.wasm\.documentGeneration\}/);
   assert.match(source, /this\.layerSummaryCache\.clear\(\)/);
 });
 
@@ -467,7 +470,8 @@ test('PageRenderer splits flow static images before the first Canvas2D flow rend
   assert.match(source, /'flow-static',\s*layers,\s*allowReuse,\s*\)/);
   assert.doesNotMatch(source, /'flow-static',\s*layers,\s*allowReuse,\s*false/);
   assert.match(source, /createOrReuseFlowImageLayer\(/);
-  assert.match(source, /usesDomFlowImages \? overlays\.rawSvgCount/);
+  assert.match(source, /effectiveUsesDomFlowImages \? overlays\.rawSvgCount/);
+  assert.match(source, /const effectiveUsesDomFlowImages = usesDomFlowImages && !diagnosticComposite/);
   // [#3315] DOM <img> 는 생산자가 정한 src 를 그대로 쓴다 — 전체 트리 경로의 data URL 이든
   // 좁은 질의 경로의 신원 키별 object URL 이든 조립부는 분기하지 않는다.
   assert.match(source, /element\.src = image\.src/);

@@ -79,6 +79,30 @@
     0 1px 4px var(--overlay-bg);
 }
 
+#scroll-content .pdf-reference-overlay {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 1;
+  background: transparent;
+  overflow: hidden;
+  contain: paint;
+  will-change: transform;
+}
+
+#scroll-content .pdf-reference-image {
+  display: none;
+}
+
+#scroll-content .pdf-reference-diff {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  pointer-events: none;
+  user-select: none;
+}
+
 /* Drag & Drop */
 #scroll-container.drag-over {
   background: var(--ui-selected);

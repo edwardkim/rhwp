@@ -459,7 +459,7 @@ test('zoom in and out controls share the command smooth zoom path', () => {
   assert.match(viewCommandSource, /id: 'view:zoom-out'[\s\S]*?smoothZoomBy\(-0\.1\)/);
 });
 
-test('CanvasView scales existing pages during zoom and rerenders only after settling', () => {
+test('CanvasView scales existing pages during zoom and defers the sharp rerender after settling', () => {
   const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
 
   assert.match(
@@ -468,7 +468,20 @@ test('CanvasView scales existing pages during zoom and rerenders only after sett
   );
   assert.match(
     source,
-    /if \(this\.viewportManager\.isZoomAnimating\(\)\) \{[\s\S]*?this\.cancelPendingPrefetch\(\);[\s\S]*?this\.updateRenderedPageZoomPreview\(\);[\s\S]*?return;/,
+    /if \(this\.viewportManager\.isZoomAnimating\(\)\) \{[\s\S]*?setDiagnosticsPaused\(true\);[\s\S]*?this\.cancelPendingPrefetch\(\);[\s\S]*?this\.updateRenderedPageZoomPreview\(\);[\s\S]*?return;/,
+  );
+  assert.match(source, /this\.updateRenderedPageZoomPreview\(\);[\s\S]*?this\.scheduleSettledZoomRender\(\)/);
+  assert.match(source, /requestIdleCallback\(run, \{ timeout: SETTLED_ZOOM_RENDER_TIMEOUT_MS \}\)/);
+  assert.match(source, /this\.cancelSettledZoomRender\(\)/);
+  assert.match(
+    source,
+    /cancelSettledZoomRender\(resumeDiagnostics = true\)[\s\S]*?if \(resumeDiagnostics\) \{[\s\S]*?setDiagnosticsPaused\(this\.viewportManager\.isZoomAnimating\(\)\)/,
+  );
+  assert.match(source, /this\.releaseAllRenderedPages\(true\)/);
+  assert.match(source, /this\.updateVisiblePages\(\{ reason: 'zoom' \}\)/);
+  assert.match(
+    source,
+    /this\.updateVisiblePages\(\{ reason: 'zoom' \}\);[\s\S]*?setDiagnosticsPaused\(false\)/,
   );
   assert.match(source, /dataset\.rhwpRenderedZoom = String\(zoom\)/);
 });

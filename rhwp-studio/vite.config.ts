@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve, extname, join } from 'path';
 import { readFileSync, readFile } from 'fs';
 import { VitePWA } from 'vite-plugin-pwa';
+import { hwpdocsPdfTwinPlugin } from './vite/hwpdocs-pdf-twin-plugin.ts';
 
 const configDir = import.meta.dirname;
 const pkg = JSON.parse(readFileSync(resolve(configDir, 'package.json'), 'utf-8'));
@@ -70,6 +71,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    ...(useSubsecondWasm ? [hwpdocsPdfTwinPlugin()] : []),
     {
       name: 'ignore-subsecond-patch-artifacts',
       handleHotUpdate(context) {

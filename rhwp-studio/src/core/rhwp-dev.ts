@@ -12,6 +12,39 @@ interface TextRunInfo {
   controlIdx?: number;
   cellIdx?: number;
   cellParaIdx?: number;
+  cellPath?: Array<{ controlIndex: number; cellIndex: number; cellParaIndex: number }>;
+  groupPath?: number[];
+  textContainerWidthHwp?: number;
+  lineContainerWidthHwp?: number;
+  flowContext?: 'body' | 'header' | 'footer' | 'masterPage' | 'footnote';
+}
+
+type DevCellPathEntry =
+  | { controlIndex: number; cellIndex: number; cellParaIndex: number }
+  | { controlIdx: number; cellIdx: number; cellParaIdx: number };
+
+export interface LineBreakProvenanceTarget {
+  sectionIdx: number;
+  parentParaIdx: number;
+  cellPath?: DevCellPathEntry[];
+  groupPath?: number[];
+  pageIndex?: number;
+  textX?: number;
+  lineContainerWidthHwp?: number;
+}
+
+export interface LineBreakProvenanceOptions {
+  geometry?: boolean;
+  measurement?: boolean;
+  geometryMode?: 'current-frame' | 'stored-lineseg';
+  maxRows?: number;
+  maxCarves?: number;
+  maxTokens?: number;
+  maxFitDecisions?: number;
+}
+
+export interface RhwpDevOptions {
+  getVisiblePageIndices?: () => number[];
 }
 
 function containerKey(run: TextRunInfo): string {
@@ -22,7 +55,64 @@ function containerKey(run: TextRunInfo): string {
 }
 
 
-export function initRhwpDev(wasm: WasmBridge): void {
+export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): void {
+  let warnedMissingLineBreakInspector = false;
+  const lineBreakInspectorAvailable = (): boolean => {
+    return typeof (wasm as any).doc?.getLineBreakProvenance === 'function';
+  };
+  const inspectLineBreak = (
+    target: LineBreakProvenanceTarget,
+    options: LineBreakProvenanceOptions = {},
+  ): unknown | null => {
+    const doc = (wasm as any).doc as {
+      getLineBreakProvenance?: (
+        sectionIdx: number,
+        parentParaIdx: number,
+        cellPathJson: string,
+        optionsJson: string,
+      ) => string;
+    } | null;
+    if (typeof doc?.getLineBreakProvenance !== 'function') {
+      if (!warnedMissingLineBreakInspector) {
+        warnedMissingLineBreakInspector = true;
+        console.warn('[rhwpDev] getLineBreakProvenance 부재 — Subsecond WASM base를 다시 빌드해야 합니다.');
+      }
+      return null;
+    }
+    const cellPath = (target.cellPath ?? []).map(entry => ({
+      controlIndex: 'controlIndex' in entry ? entry.controlIndex : entry.controlIdx,
+      cellIndex: 'cellIndex' in entry ? entry.cellIndex : entry.cellIdx,
+      cellParaIndex: 'cellParaIndex' in entry ? entry.cellParaIndex : entry.cellParaIdx,
+    }));
+    try {
+      return JSON.parse(doc.getLineBreakProvenance(
+        target.sectionIdx,
+        target.parentParaIdx,
+        JSON.stringify(cellPath),
+        JSON.stringify({
+          geometry: options.geometry ?? true,
+          measurement: options.measurement ?? true,
+          pageIndex: target.pageIndex,
+          textX: target.textX,
+          groupPath: target.groupPath ?? [],
+          visibleFrameWidthHwp: target.lineContainerWidthHwp,
+          geometryMode: options.geometryMode ?? 'current-frame',
+          maxRows: options.maxRows ?? 128,
+          maxCarves: options.maxCarves ?? 128,
+          maxTokens: options.maxTokens ?? 256,
+          maxFitDecisions: options.maxFitDecisions ?? 512,
+        }),
+      ));
+    } catch (error) {
+      return {
+        schemaVersion: 1,
+        status: 'error',
+        target: { ...target, cellPath },
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  };
+
   const dev = {
     showAllIds(pageNum?: number): void {
       const totalPages = wasm.pageCount;
@@ -148,6 +238,162 @@ export function initRhwpDev(wasm: WasmBridge): void {
       return true;
     },
 
+    lineBreak(
+      target: LineBreakProvenanceTarget | SearchHit,
+      options: LineBreakProvenanceOptions = {},
+    ): unknown | null {
+      if ('sectionIdx' in target) return inspectLineBreak(target, options);
+      const cellPath = target.cellContext
+        ? [{
+            controlIndex: target.cellContext.ctrlIdx,
+            cellIndex: target.cellContext.cellIdx,
+            cellParaIndex: target.cellContext.cellPara,
+          }]
+        : [];
+      return inspectLineBreak({
+        sectionIdx: target.sec,
+        parentParaIdx: target.cellContext?.parentPara ?? target.para,
+        cellPath,
+      }, options);
+    },
+
+    lineBreakVisible(
+      pageNum?: number,
+      options: LineBreakProvenanceOptions & { start?: number; limit?: number } = {},
+    ): {
+      pages: number[];
+      total: number;
+      offset: number;
+      limit: number;
+      truncated: boolean;
+      available: boolean;
+      error: string | null;
+      errors: unknown[];
+      nextOffset: number | null;
+      items: unknown[];
+    } {
+      const targets = new Map<string, LineBreakProvenanceTarget>();
+      const pages = pageNum === undefined
+        ? devOptions.getVisiblePageIndices?.() ?? []
+        : [pageNum];
+      for (const page of pages) {
+        let data: { runs?: TextRunInfo[] };
+        try {
+          data = JSON.parse((wasm as any).doc.getPageTextLayout(page));
+        } catch (error) {
+          console.warn(`[rhwpDev] page ${page} text layout 조회 실패`, error);
+          continue;
+        }
+        for (const run of data.runs ?? []) {
+          // The Rust provenance resolver currently owns body and nested body containers.
+          // Header/footer/master/footnote runs use separate list coordinate systems, so treating
+          // their local indices as body cellPath entries creates false resolver errors.
+          if (run.flowContext != null && run.flowContext !== 'body') continue;
+          const cellPath = run.cellPath
+            ?? (run.parentParaIdx == null
+              ? []
+              : [{
+                  controlIndex: run.controlIdx ?? 0,
+                  cellIndex: run.cellIdx ?? 0,
+                  cellParaIndex: run.cellParaIdx ?? 0,
+                }]);
+          const target = {
+            sectionIdx: run.secIdx,
+            parentParaIdx: run.parentParaIdx ?? run.paraIdx,
+            cellPath,
+            groupPath: run.groupPath ?? [],
+            pageIndex: page,
+            textX: run.x,
+            lineContainerWidthHwp: run.lineContainerWidthHwp,
+          };
+          const key = JSON.stringify({
+            sectionIdx: target.sectionIdx,
+            parentParaIdx: target.parentParaIdx,
+            cellPath: target.cellPath,
+            groupPath: target.groupPath,
+            pageIndex: target.pageIndex,
+          });
+          const existing = targets.get(key);
+          if (!existing) {
+            targets.set(key, target);
+          } else if (
+            existing.lineContainerWidthHwp != null
+            && target.lineContainerWidthHwp != null
+            && existing.lineContainerWidthHwp !== target.lineContainerWidthHwp
+          ) {
+            // One scalar frame cannot honestly represent a paragraph whose visible line bands
+            // have different widths (for example, unreplayed Square/Tight wrap geometry).
+            existing.lineContainerWidthHwp = undefined;
+          }
+        }
+      }
+      const offset = Math.max(0, Math.floor(options.start ?? 0));
+      const limit = Math.min(100, Math.max(1, Math.floor(options.limit ?? 20)));
+      const available = lineBreakInspectorAvailable();
+      const targetList = Array.from(targets.values());
+      const reports: unknown[] = [];
+      const errors: unknown[] = [];
+      let cursor = offset;
+      while (available && cursor < targetList.length && reports.length < limit) {
+        const report = inspectLineBreak(targetList[cursor], {
+          geometry: options.geometry ?? false,
+          measurement: options.measurement ?? false,
+          geometryMode: options.geometryMode,
+          maxRows: options.maxRows,
+          maxCarves: options.maxCarves,
+          maxTokens: options.maxTokens,
+          maxFitDecisions: options.maxFitDecisions,
+        });
+        cursor += 1;
+        if (report && typeof report === 'object' && (report as { status?: string }).status === 'error') {
+          if (errors.length < 20) errors.push(report);
+        } else if (report !== null) {
+          reports.push(report);
+        }
+      }
+      console.log(`[rhwpDev] page(s) ${pages.join(',')} line-break provenance: ${reports.length} paragraph(s)`);
+      return {
+        pages,
+        total: targets.size,
+        offset,
+        limit,
+        truncated: available && cursor < targets.size,
+        available,
+        error: available ? null : 'SUBSECOND_BASE_RESTART_REQUIRED',
+        errors,
+        nextOffset: available && cursor < targets.size ? cursor : null,
+        items: reports,
+      };
+    },
+
+    subsecondLedger(options: {
+      events?: number;
+      patches?: number;
+      afterSequence?: number;
+    } = {}): unknown {
+      const ledger = (window as any).__rhwpSubsecondDelivery;
+      if (!ledger) return null;
+      const eventLimit = Math.min(128, Math.max(0, Math.floor(options.events ?? 20)));
+      const patchLimit = Math.min(32, Math.max(0, Math.floor(options.patches ?? 8)));
+      const afterSequence = Math.max(0, Math.floor(options.afterSequence ?? 0));
+      const availableEvents = ledger.events.filter(
+        (event: { sequence: number }) => event.sequence > afterSequence,
+      );
+      const events = eventLimit === 0 ? [] : availableEvents.slice(-eventLimit);
+      return structuredClone({
+        ...ledger,
+        eventCursor: ledger.events.at(-1)?.sequence ?? afterSequence,
+        truncatedBefore: events.length > 0
+          && events[0].sequence > afterSequence + 1,
+        events,
+        patches: patchLimit === 0 ? [] : ledger.patches.slice(-patchLimit),
+      });
+    },
+
+    fidelity(): unknown {
+      return (window as any).__rhwpFidelityHarness ?? null;
+    },
+
     help(): void {
       const title = '%c[rhwpDev]%c rhwp-studio 개발자 콘솔 도구\n';
       const titleStyle = 'color:#2563eb;font-weight:bold;font-size:1.1em';
@@ -177,6 +423,21 @@ DEV 모드 (vite dev server) 영역 영역 자동 로드되는 디버깅 헬퍼.
 
   rhwpDev.findNearest(targetId, pageNum?)
     가장 가까운 paraIdx 검색. 반환: {paraIdx, distance, text, container}
+
+  rhwpDev.lineBreak(target, options?)
+    본문/셀 문단의 저장 LINE_SEG와 uncached fresh reflow provenance 비교
+    - target: {sectionIdx,parentParaIdx,cellPath?} 또는 SearchHit
+    - options.geometry / options.measurement: 각 trace lane 독립 on/off
+
+  rhwpDev.lineBreakVisible(pageNum?, options?)
+    해당 페이지(생략 시 현재 보이는 쪽)의 본문·중첩 셀 문단을 중복 제거해 전부 비교
+    기본 20개 paged boundary 요약; 상세 carve/token trace는 options lane을 켜거나 lineBreak() 사용
+
+  rhwpDev.subsecondLedger({events?, patches?, afterSequence?})
+    bounded/delta Subsecond ledger snapshot (기본 events 20, patches 8)
+
+  rhwpDev.fidelity()
+    현재 PDF whole-document fidelity harness API
 
   rhwpDev.help()
     이 도움말 표시

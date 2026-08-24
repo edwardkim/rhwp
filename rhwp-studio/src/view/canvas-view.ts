@@ -1,15 +1,21 @@
 import { WasmBridge } from '@/core/wasm-bridge';
 import { EventBus } from '@/core/event-bus';
-import type { PageInfo } from '@/core/types';
+import type { LayerRenderProfile, PageInfo } from '@/core/types';
 import { VirtualScroll } from './virtual-scroll';
 import { CanvasPool } from './canvas-pool';
 import { PageRenderer, type PageRenderContext, type PageRenderResult } from './page-renderer';
 import { ViewportManager } from './viewport-manager';
 import { CoordinateSystem } from './coordinate-system';
 import { scrollByPageStep, type PageScrollDirection } from './page-scroll';
-import type { CanvasKitRenderDiagnostics } from './canvaskit-renderer';
+import type { CanvasKitLayerRenderer, CanvasKitRenderDiagnostics } from './canvaskit-renderer';
 import type { FontDecisionTraceRecordV1 } from '@/core/font-decision-trace';
 import { clampRenderScale, type RenderBackend } from './render-backend';
+import {
+  nextDiagnosticRenderGeneration,
+  waitForFontsOrAbort,
+  type DiagnosticPageCapture,
+  type PageReferenceLayer,
+} from './page-reference-layer';
 import {
   RendererSession,
   type RendererSessionDiagnostics,
@@ -38,12 +44,25 @@ import {
   resolveActivePage,
   type ActivePageSnapshot,
 } from './active-page.ts';
+import { boundedPageRasterSize } from '@/dev/page-raster-budget';
 
 /** 문서 교체 중 보여줄 빈 쪽 기본 크기(A4, zoom 1 기준 CSS px). 이전 문서 쪽 크기를 모를 때만 쓴다. */
 const BLANK_PAGE_FALLBACK_SIZE = { width: 794, height: 1123 };
 
 const TEXT_EDIT_STATIC_LAYER_VERIFY_DELAY_MS = 800;
 const AUTO_RENDERER_RESELECTION_DELAY_MS = 300;
+const SETTLED_ZOOM_RENDER_TIMEOUT_MS = 250;
+
+function canvasKitReadinessError(diagnostics: CanvasKitRenderDiagnostics): Error {
+  const details = [
+    `blockers=${diagnostics.readinessBlockers.join(',') || 'unknown'}`,
+    diagnostics.lastRenderError ? `error=${diagnostics.lastRenderError}` : null,
+    diagnostics.lastUnexpectedUnsupportedOps.length > 0
+      ? `unexpectedOps=${diagnostics.lastUnexpectedUnsupportedOps.join(',')}`
+      : null,
+  ].filter((detail): detail is string => detail !== null).join('; ');
+  return new Error(`CanvasKit runtime readiness gate failed (${details})`);
+}
 
 type DeferredPrefetchTask =
   | { kind: 'idle'; id: number }
@@ -58,8 +77,12 @@ export class CanvasView {
   private virtualScroll: VirtualScroll;
   private canvasPool: CanvasPool;
   private pageRenderer: PageRenderer;
+  private diagnosticRenderBackend: RenderBackend = 'canvas2d';
+  private diagnosticRenderProfile: LayerRenderProfile = 'screen';
+  private diagnosticCanvasKitRenderer: CanvasKitLayerRenderer | null = null;
   private viewportManager: ViewportManager;
   private coordinateSystem: CoordinateSystem;
+  private pageReferenceLayer: PageReferenceLayer | null = null;
 
   private scrollContent: HTMLElement;
   private pageArrangement: PageArrangement;
@@ -74,6 +97,7 @@ export class CanvasView {
   private textEditStaticLayerVerifyTimers = new Map<number, ReturnType<typeof setTimeout>>();
   private pendingPrefetchPages = new Set<number>();
   private deferredPrefetchTask: DeferredPrefetchTask | null = null;
+  private settledZoomRenderTask: DeferredPrefetchTask | null = null;
   private rendererSelectionEpoch = 0;
   private rendererFallbackScheduled = false;
   private activeRendererDecisionKey: string | null = null;
@@ -82,6 +106,7 @@ export class CanvasView {
   private layoutViewportSize = { width: 0, height: 0 };
   private blankPagePlaceholder: HTMLElement | null = null;
   private lastPageSize: { width: number; height: number } | null = null;
+  private diagnosticRenderGeneration = 0;
   private disposed = false;
 
   constructor(
@@ -160,6 +185,7 @@ export class CanvasView {
   /** 문서 로드 후 호출 — 페이지 정보 수집 및 가상 스크롤 초기화 */
   async loadDocument(): Promise<void> {
     if (this.disposed) return;
+    this.diagnosticRenderGeneration += 1;
     if (!this.documentLoadPrepared) this.prepareDocumentLoad();
     const epoch = this.rendererSelectionEpoch;
     this.documentLoadPrepared = false;
@@ -232,6 +258,7 @@ export class CanvasView {
   prepareDocumentLoad(): void {
     if (this.disposed) return;
     this.rendererSelectionEpoch += 1;
+    this.diagnosticRenderGeneration += 1;
     this.documentLoadPrepared = true;
     this.cancelAutoRendererReselection();
     this.rendererFallbackScheduled = false;
@@ -401,6 +428,14 @@ export class CanvasView {
           || selection.diagnostics.fallbackReason === 'canvaskitRuntimeFailed'
         ),
     );
+    this.diagnosticRenderGeneration = nextDiagnosticRenderGeneration(
+      this.diagnosticRenderGeneration,
+      decisionChanged,
+      changed,
+    );
+    this.diagnosticRenderBackend = selection.backend;
+    this.diagnosticRenderProfile = selection.diagnostics.renderProfile;
+    this.diagnosticCanvasKitRenderer = selection.canvaskitRenderer;
     if (decisionChanged && !changed) this.pageRenderer.invalidateDocumentRevision();
     this.activeRendererDecisionKey = selection.diagnostics.decisionKey;
     this.eventBus.emit('renderer-selection-changed', selection.diagnostics);
@@ -411,6 +446,153 @@ export class CanvasView {
   rerenderPageForDiagnostics(pageIdx: number): boolean {
     const canvas = this.canvasPool.getCanvas(pageIdx);
     return canvas ? this.renderCanvas(pageIdx, canvas) : false;
+  }
+
+  /** DEV PDF harness가 현재 renderer 경로를 화면 밖에서 동일 크기 RGBA로 합성한다. */
+  async capturePageForDiagnostics(
+    pageIdx: number,
+    sampleWidth: number,
+    signal?: AbortSignal,
+  ): Promise<DiagnosticPageCapture> {
+    if (!import.meta.env.DEV) throw new Error('diagnostic page capture is development-only');
+    if (signal?.aborted) throw new DOMException('capture aborted', 'AbortError');
+    const pageInfo = this.pages[pageIdx] ?? this.wasm.getPageInfo(pageIdx);
+    const { width, height } = boundedPageRasterSize(
+      pageInfo,
+      Math.round(sampleWidth),
+      'diagnostic page',
+    );
+    const renderScale = width / pageInfo.width;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const diagnosticPageRenderer = new PageRenderer(
+        this.wasm,
+        this.diagnosticRenderBackend,
+        this.diagnosticRenderProfile,
+        this.diagnosticCanvasKitRenderer,
+      );
+      diagnosticPageRenderer.beginDocument();
+      const host = document.createElement('div');
+      host.dataset.rhwpDiagnosticCapturePage = String(pageIdx);
+      host.style.position = 'fixed';
+      host.style.left = '-100000px';
+      host.style.top = '0';
+      host.style.width = `${pageInfo.width}px`;
+      host.style.height = `${pageInfo.height}px`;
+      host.style.pointerEvents = 'none';
+      host.style.contain = 'strict';
+      const canvas = document.createElement('canvas');
+      canvas.style.top = '0px';
+      canvas.style.left = '0px';
+      canvas.style.width = `${pageInfo.width}px`;
+      canvas.style.height = `${pageInfo.height}px`;
+      host.appendChild(canvas);
+      document.body.appendChild(host);
+
+      try {
+        let first: PageRenderResult;
+        try {
+          first = diagnosticPageRenderer.renderPage(
+            pageIdx,
+            canvas,
+            renderScale,
+            1,
+            renderScale,
+            { diagnosticComposite: true },
+          );
+        } catch (error) {
+          const fallback = this.diagnosticRenderBackend === 'canvaskit'
+            && this.activeRendererDecisionKey
+            && this.rendererSession.isAutoRequest()
+            ? this.rendererSession.fallbackFromResourceFailure(
+                error,
+                this.activeRendererDecisionKey,
+              )
+            : null;
+          if (fallback) {
+            this.commitCanvasKitFallback(fallback);
+            continue;
+          }
+          throw error;
+        }
+        const renderedCanvas = first.renderedCanvas ?? canvas;
+        await waitForFontsOrAbort(document.fonts.ready, signal);
+        if (signal?.aborted) throw new DOMException('capture aborted', 'AbortError');
+        const settlement = await diagnosticPageRenderer.waitForReRender(pageIdx, signal);
+        if (settlement === 'aborted' || signal?.aborted) {
+          throw new DOMException('capture aborted', 'AbortError');
+        }
+        const canvaskitDiagnostics = diagnosticPageRenderer.getBackend() === 'canvaskit'
+          ? diagnosticPageRenderer.getCanvasKitRenderDiagnostics(pageIdx)
+          : null;
+        if (
+          canvaskitDiagnostics
+          && !canvaskitDiagnostics.passesRuntimeReadinessGate
+          && this.activeRendererDecisionKey
+          && this.rendererSession.isAutoRequest()
+        ) {
+          const fallback = this.rendererSession.fallbackFromRuntimeFailure(
+            canvasKitReadinessError(canvaskitDiagnostics),
+            this.activeRendererDecisionKey,
+          );
+          if (fallback) {
+            this.commitCanvasKitFallback(fallback);
+            continue;
+          }
+        }
+
+        const composite = document.createElement('canvas');
+        composite.width = width;
+        composite.height = height;
+        const context = composite.getContext('2d', { willReadFrequently: true });
+        if (!context) throw new Error('diagnostic composite canvas is unavailable');
+        context.fillStyle = '#fff';
+        context.fillRect(0, 0, width, height);
+        const canvases = [
+          renderedCanvas,
+          ...Array.from(host.querySelectorAll<HTMLCanvasElement>(
+            `canvas[data-rhwp-overlay-page="${pageIdx}"]`,
+          )).filter(layer => layer !== renderedCanvas),
+        ].sort((left, right) => {
+          const leftZ = Number.parseInt(getComputedStyle(left).zIndex, 10) || 0;
+          const rightZ = Number.parseInt(getComputedStyle(right).zIndex, 10) || 0;
+          if (leftZ !== rightZ) return leftZ - rightZ;
+          return Array.prototype.indexOf.call(host.children, left)
+            - Array.prototype.indexOf.call(host.children, right);
+        });
+        for (const layer of canvases) context.drawImage(layer, 0, 0, width, height);
+
+        return {
+          width,
+          height,
+          pixels: context.getImageData(0, 0, width, height).data,
+        };
+      } finally {
+        diagnosticPageRenderer.cancelReRender(pageIdx);
+        diagnosticPageRenderer.removePageLayers(host, pageIdx);
+        diagnosticPageRenderer.dispose();
+        host.remove();
+      }
+    }
+    throw new Error('diagnostic renderer did not pass runtime readiness');
+  }
+
+  /** DEV 정답지 레이어를 현재 가상 페이지 수명주기에 연결한다. */
+  setPageReferenceLayer(layer: PageReferenceLayer | null): void {
+    if (this.pageReferenceLayer === layer) return;
+    this.pageReferenceLayer?.clearMountedPages();
+    this.pageReferenceLayer = layer;
+    if (!layer) return;
+    layer.setDiagnosticsPaused(this.viewportManager.isZoomAnimating());
+
+    const zoom = this.viewportManager.getZoom();
+    for (const pageIndex of this.canvasPool.activePages) {
+      const sourceCanvas = this.canvasPool.getCanvas(pageIndex);
+      const pageInfo = this.pages[pageIndex];
+      if (!sourceCanvas || !pageInfo) continue;
+      const cssWidth = Number.parseFloat(sourceCanvas.style.width);
+      const dpr = cssWidth > 0 ? sourceCanvas.width / cssWidth : window.devicePixelRatio || 1;
+      layer.syncPage({ pageIndex, pageInfo, sourceCanvas, zoom, dpr });
+    }
   }
 
   /** 레이아웃을 재계산한다 (줌/리사이즈 공통) */
@@ -469,13 +651,15 @@ export class CanvasView {
       const canvas = this.canvasPool.getCanvas(pageIdx);
       if (canvas) this.positionPageElement(canvas, pageIdx);
       this.scrollContent.querySelectorAll<HTMLElement>(
-        `[data-rhwp-overlay-page="${pageIdx}"], [data-rhwp-grid-page="${pageIdx}"]`,
+        `[data-rhwp-overlay-page="${pageIdx}"], ` +
+        `[data-rhwp-grid-page="${pageIdx}"], ` +
+        `[data-rhwp-reference-page="${pageIdx}"]`,
       ).forEach((element) => this.positionPageElement(element, pageIdx));
     }
   }
 
   /** 스크롤/리사이즈 시 보이는 페이지를 갱신한다 */
-  private updateVisiblePages(): void {
+  private updateVisiblePages(renderContext: PageRenderContext = {}): void {
     const scrollY = this.viewportManager.getScrollY();
     const scrollX = this.viewportManager.getScrollX();
     const { width: vpWidth, height: vpHeight } = this.viewportManager.getViewportSize();
@@ -493,6 +677,7 @@ export class CanvasView {
       vpWidth,
     );
     const visibleSet = new Set(visiblePages);
+    this.pageReferenceLayer?.retainPages(prefetchPages);
 
     // 벗어난 페이지 해제
     const prefetchSet = new Set(prefetchPages);
@@ -504,6 +689,7 @@ export class CanvasView {
         this.pageRenderer.removePageLayers(this.scrollContent, pageIdx);
         this.pageRenderer.releasePageDiagnostics(pageIdx);
         this.removeGridOverlay(pageIdx);
+        this.pageReferenceLayer?.removePage(pageIdx);
         this.canvasPool.release(pageIdx);
       }
     }
@@ -512,7 +698,7 @@ export class CanvasView {
     for (const pageIdx of visiblePages) {
       this.pendingPrefetchPages.delete(pageIdx);
       if (!this.canvasPool.has(pageIdx)) {
-        this.renderPage(pageIdx);
+        this.renderPage(pageIdx, renderContext);
       }
     }
     this.schedulePrefetchPages(prefetchPages.filter((pageIdx) => !visibleSet.has(pageIdx)));
@@ -617,12 +803,13 @@ export class CanvasView {
   }
 
   /** 단일 페이지를 렌더링한다 */
-  private renderPage(pageIdx: number): void {
+  private renderPage(pageIdx: number, renderContext: PageRenderContext = {}): void {
     const canvas = this.canvasPool.acquire(pageIdx);
     if (!canvas.parentElement) {
       this.scrollContent.appendChild(canvas);
     }
-    if (!this.renderCanvas(pageIdx, canvas)) {
+    if (!this.renderCanvas(pageIdx, canvas, renderContext)) {
+      this.pageReferenceLayer?.removePage(pageIdx);
       this.canvasPool.release(pageIdx);
     }
   }
@@ -668,19 +855,10 @@ export class CanvasView {
         && rendererDecisionKey
         && this.rendererSession.isAutoRequest()
       ) {
-        const details = [
-          `blockers=${canvaskitDiagnostics.readinessBlockers.join(',') || 'unknown'}`,
-          canvaskitDiagnostics.lastRenderError
-            ? `error=${canvaskitDiagnostics.lastRenderError}`
-            : null,
-          canvaskitDiagnostics.lastUnexpectedUnsupportedOps.length > 0
-            ? `unexpectedOps=${canvaskitDiagnostics.lastUnexpectedUnsupportedOps.join(',')}`
-            : null,
-        ].filter((detail): detail is string => detail !== null).join('; ');
         this.pageRenderer.removePageLayers(this.scrollContent, pageIdx);
         this.removeGridOverlay(pageIdx);
         this.scheduleCanvasKitFallback(
-          new Error(`CanvasKit runtime readiness gate failed (${details})`),
+          canvasKitReadinessError(canvaskitDiagnostics),
           rendererDecisionKey,
           'runtime',
         );
@@ -701,6 +879,13 @@ export class CanvasView {
     renderedCanvas.style.height = `${renderedCanvas.height / dpr}px`;
     renderedCanvas.style.transformOrigin = '';
     renderedCanvas.dataset.rhwpRenderedZoom = String(zoom);
+    this.pageReferenceLayer?.syncPage({
+      pageIndex: pageIdx,
+      pageInfo,
+      sourceCanvas: renderedCanvas,
+      zoom,
+      dpr,
+    });
     this.renderGridOverlay(pageIdx, renderedCanvas);
     if (renderResult.needsTextEditStaticLayerVerification) {
       this.scheduleTextEditStaticLayerVerification(pageIdx);
@@ -724,13 +909,17 @@ export class CanvasView {
     queueMicrotask(() => {
       this.rendererFallbackScheduled = false;
       if (this.disposed || !this.rendererSession.isCurrent(selection)) return;
-      this.applyRendererSelection(selection);
-      this.cancelPendingTextEditRefresh();
-      this.cancelTextEditStaticLayerVerification();
-      this.releaseAllRenderedPages();
-      this.pageRenderer.cancelAll();
-      this.updateVisiblePages();
+      this.commitCanvasKitFallback(selection);
     });
+  }
+
+  private commitCanvasKitFallback(selection: RendererSessionSelection): void {
+    this.applyRendererSelection(selection);
+    this.cancelPendingTextEditRefresh();
+    this.cancelTextEditStaticLayerVerification();
+    this.releaseAllRenderedPages();
+    this.pageRenderer.cancelAll();
+    this.updateVisiblePages();
   }
 
   /** 뷰포트 리사이즈 처리 */
@@ -849,6 +1038,8 @@ export class CanvasView {
     this.eventBus.emit('zoom-level-display', zoom);
 
     if (this.viewportManager.isZoomAnimating()) {
+      this.cancelSettledZoomRender(false);
+      this.pageReferenceLayer?.setDiagnosticsPaused(true);
       this.cancelPendingTextEditRefresh();
       this.cancelTextEditStaticLayerVerification();
       this.cancelPendingPrefetch();
@@ -856,12 +1047,61 @@ export class CanvasView {
       return;
     }
 
-    // 모든 Canvas 재렌더링
-    this.cancelPendingTextEditRefresh();
-    this.cancelTextEditStaticLayerVerification();
-    this.releaseAllRenderedPages();
-    this.pageRenderer.cancelAll();
-    this.updateVisiblePages();
+    // 마지막 애니메이션 프레임의 preview를 먼저 게시하고, 고해상도 Canvas 재생성은
+    // idle 경계로 넘긴다. 첫 이미지 포함 페이지의 cold paint가 수 초 걸려도 줌 입력
+    // 자체와 같은 프레임을 막지 않는다.
+    this.updateRenderedPageZoomPreview();
+    this.scheduleSettledZoomRender();
+  }
+
+  private scheduleSettledZoomRender(): void {
+    this.cancelSettledZoomRender(false);
+    this.pageReferenceLayer?.setDiagnosticsPaused(true);
+    const expectedZoom = this.viewportManager.getZoom();
+    const run = (): void => {
+      this.settledZoomRenderTask = null;
+      if (
+        this.disposed
+        || this.viewportManager.isZoomAnimating()
+        || this.viewportManager.getZoom() !== expectedZoom
+      ) return;
+      this.cancelPendingTextEditRefresh();
+      this.cancelTextEditStaticLayerVerification();
+      try {
+        this.releaseAllRenderedPages(true);
+        this.pageRenderer.cancelAll();
+        this.updateVisiblePages({ reason: 'zoom' });
+      } finally {
+        this.pageReferenceLayer?.setDiagnosticsPaused(false);
+      }
+    };
+    const idleWindow = window as IdleCallbackWindow;
+    if (typeof idleWindow.requestIdleCallback === 'function') {
+      this.settledZoomRenderTask = {
+        kind: 'idle',
+        id: idleWindow.requestIdleCallback(run, { timeout: SETTLED_ZOOM_RENDER_TIMEOUT_MS }),
+      };
+    } else {
+      this.settledZoomRenderTask = {
+        kind: 'timeout',
+        id: window.setTimeout(run, 16),
+      };
+    }
+  }
+
+  private cancelSettledZoomRender(resumeDiagnostics = true): void {
+    const task = this.settledZoomRenderTask;
+    this.settledZoomRenderTask = null;
+    if (task) {
+      if (task.kind === 'idle') {
+        (window as IdleCallbackWindow).cancelIdleCallback?.(task.id);
+      } else {
+        window.clearTimeout(task.id);
+      }
+    }
+    if (resumeDiagnostics) {
+      this.pageReferenceLayer?.setDiagnosticsPaused(this.viewportManager.isZoomAnimating());
+    }
   }
 
   private updateRenderedPageZoomPreview(): void {
@@ -875,7 +1115,9 @@ export class CanvasView {
         : 1;
       this.applyZoomPreviewBox(canvas, pageIdx, scale);
       this.scrollContent.querySelectorAll<HTMLElement>(
-        `[data-rhwp-overlay-page="${pageIdx}"], [data-rhwp-grid-page="${pageIdx}"]`,
+        `[data-rhwp-overlay-page="${pageIdx}"], ` +
+        `[data-rhwp-grid-page="${pageIdx}"], ` +
+        `[data-rhwp-reference-page="${pageIdx}"]`,
       ).forEach((element) => this.applyZoomPreviewBox(element, pageIdx, scale));
     }
   }
@@ -895,19 +1137,23 @@ export class CanvasView {
   }
 
   /** 편집 후 보이는 페이지를 재렌더링한다 */
-  refreshPages(): void {
+  refreshPages(options: { throwOnPageInfoError?: boolean } = {}): void {
     if (this.pages.length === 0) return;
+    this.cancelSettledZoomRender();
+    this.diagnosticRenderGeneration += 1;
 
     // 페이지 정보 재수집 (페이지 수/크기가 변경될 수 있음)
     const pageCount = this.wasm.pageCount;
-    this.pages = [];
+    const pages: PageInfo[] = [];
     for (let i = 0; i < pageCount; i++) {
       try {
-        this.pages.push(this.wasm.getPageInfo(i));
+        pages.push(this.wasm.getPageInfo(i));
       } catch (e) {
+        if (options.throwOnPageInfoError) throw e;
         console.error(`[CanvasView] 페이지 ${i} 정보 조회 실패:`, e);
       }
     }
+    this.pages = pages;
 
     this.recalcLayout();
 
@@ -1013,6 +1259,7 @@ export class CanvasView {
 
   private refreshInvalidatedPageNow(pageIndex: number, renderContext: PageRenderContext): void {
     if (this.pages.length === 0) return;
+    this.diagnosticRenderGeneration += 1;
 
     const pageCount = this.wasm.pageCount;
     if (pageCount !== this.pages.length || pageIndex >= pageCount) {
@@ -1027,6 +1274,7 @@ export class CanvasView {
     }
 
     if (!this.renderCanvas(pageIndex, canvas, renderContext)) {
+      this.pageReferenceLayer?.removePage(pageIndex);
       this.canvasPool.release(pageIndex);
       this.updateVisiblePages();
     }
@@ -1072,10 +1320,12 @@ export class CanvasView {
   private reset(): void {
     const hadActivePage = this.activePageSnapshot !== null;
     const hadFocusedPage = this.editingPageIndex !== null;
+    this.cancelSettledZoomRender();
     this.cancelPendingTextEditRefresh();
     this.cancelTextEditStaticLayerVerification();
     this.cancelPendingPrefetch();
     this.pageRenderer.cancelAll();
+    this.pageReferenceLayer?.clearMountedPages();
     this.releaseAllRenderedPages();
     this.currentVisiblePages = [];
     this.editingPageIndex = null;
@@ -1087,9 +1337,9 @@ export class CanvasView {
     this.blankPagePlaceholder = null;
   }
 
-  private releaseAllRenderedPages(): void {
-    this.pageRenderer.resetImageRetryState();
-    this.pageRenderer.removeAllPageLayers(this.scrollContent);
+  private releaseAllRenderedPages(preserveRendererCaches = false): void {
+    if (!preserveRendererCaches) this.pageRenderer.resetImageRetryState();
+    this.pageRenderer.removeAllPageLayers(this.scrollContent, !preserveRendererCaches);
     this.removeAllGridOverlays();
     this.canvasPool.releaseAll();
   }
@@ -1266,6 +1516,18 @@ export class CanvasView {
 
   getViewportManager(): ViewportManager {
     return this.viewportManager;
+  }
+
+  getVisiblePageIndices(): number[] {
+    const viewport = this.viewportManager.getViewportSize();
+    return this.virtualScroll.getVisiblePages(
+      this.viewportManager.getScrollY(),
+      viewport.height,
+    );
+  }
+
+  getDiagnosticRenderGeneration(): number {
+    return this.diagnosticRenderGeneration;
   }
 
   /** 전역 쪽 번호를 뷰포트 상단으로 이동한다. */
