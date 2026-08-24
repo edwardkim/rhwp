@@ -38,13 +38,15 @@ trigger·path filter·비용 라우팅을 O2로 분류하고, §3.1의 조건을
 - remote push·PR 생성·merge는 실행하지 않아 별도 원격 승인 게이트를 침범하지 않았다.
 - 기존 #5776 문서는 원인·consumer 매핑·검증 결과를 담았지만, O2 등급, live baseline, expected
   run/no-run, 적용 승인·상태, 관찰 완료 조건, rollback이 부족했다.
-- 일일 작업 문서의 #5776 상태를 Actions 관찰 전인데도 `완료`로 적은 것은 잘못이었다.
+- 일일 작업 문서의 #5776 상태를 Actions 관찰 전인데도 `완료`로 적은 것은 잘못이었다. 또한
+  collaborator self-PR의 오늘할일 항목은 PR 번호가 확정된 뒤 trailing review commit에서 반영해야 한다.
 
 ## 적용한 교정
 
 1. 기존 #5776 문서를 단일 O2 운영 변경 기록으로 보강했다.
 2. 수행·구현·Stage·최종 문서를 추가 생성하지 않았다.
-3. 일일 작업 상태를 `진행중`으로 되돌리고 remote 적용·관찰을 완료 조건으로 명시했다.
+3. PR 번호 전 오늘할일 변경은 초기 candidate에서 제거하고, 번호 확정 뒤 `진행중` 항목으로 다시
+   반영하도록 정정했다.
 4. remote push·PR 생성·merge 승인은 계속 별도 게이트로 남겼다.
 
 앞으로 GitHub 운영 작업은 먼저 `AGENTS.md`의 라우팅에 따라 O0~O4 등급을 확정하고, 해당 정본의
