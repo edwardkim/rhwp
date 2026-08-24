@@ -21,6 +21,25 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 
+LABEL_FONT_ENV = "RHWP_VISUAL_SWEEP_LABEL_FONT"
+LABEL_FONTCONFIG_FAMILIES = (
+    "Noto Sans CJK KR:lang=ko",
+    "NanumGothic:lang=ko",
+    "UnDotum:lang=ko",
+    "Malgun Gothic:lang=ko",
+    "Apple SD Gothic Neo:lang=ko",
+)
+LABEL_FONT_PATHS = (
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+    "/usr/share/fonts/truetype/nanum/NanumGothicCoding.ttf",
+    "/usr/share/fonts/truetype/unfonts-core/UnDotum.ttf",
+    "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+    "/System/Library/Fonts/Supplemental/Arial.ttf",
+    "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+    "C:/Windows/Fonts/malgun.ttf",
+)
+
 FRAME_OVERFLOW_PIXEL_LIMIT = 20
 FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT = 12
 FRAME_OVERFLOW_TOLERATED_BLEED_PX = 12
@@ -4270,13 +4289,43 @@ def analyze_pages(
     return {"summary": summary, "flagged_pages": flagged_pages}
 
 
+def fontconfig_label_font_path() -> Path | None:
+    fc_match = shutil.which("fc-match")
+    if not fc_match:
+        return None
+    for family in LABEL_FONTCONFIG_FAMILIES:
+        proc = subprocess.run(
+            [fc_match, "-f", "%{file}\n", family],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if proc.returncode != 0:
+            continue
+        font_path = Path(proc.stdout.splitlines()[0].strip()) if proc.stdout.strip() else None
+        if font_path and font_path.exists():
+            return font_path
+    return None
+
+
+def configured_label_font_paths() -> list[Path]:
+    env_path = os.environ.get(LABEL_FONT_ENV)
+    paths = [Path(env_path)] if env_path else []
+    fc_path = fontconfig_label_font_path()
+    if fc_path:
+        paths.append(fc_path)
+    paths.extend(Path(font_path) for font_path in LABEL_FONT_PATHS)
+    return paths
+
+
+@lru_cache(maxsize=1)
 def label_font() -> ImageFont.ImageFont:
-    for font_path in (
-        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",
-    ):
-        if Path(font_path).exists():
-            return ImageFont.truetype(font_path, 18)
+    for font_path in configured_label_font_paths():
+        if font_path.exists():
+            try:
+                return ImageFont.truetype(str(font_path), 18)
+            except OSError:
+                continue
     return ImageFont.load_default()
 
 

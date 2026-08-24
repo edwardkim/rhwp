@@ -25,6 +25,16 @@ visual sweep을 실제 검토 근거로 쓰면 review 문서에 다음을 모두
 - pixel match, visual_accuracy_proxy_percent
 - 사람이 확인한 결과와 PR 주장과의 관계
 
+대표 review PNG는 파일 경로와 수치만 확인하지 않는다. PR comment나 archive 증적으로 쓰기 전에 실제
+이미지를 열어 다음을 확인한다.
+
+- HWP/PDF 본문 렌더와 visual_sweep이 덧그린 도구 라벨을 구분해 본다.
+- 도구 라벨의 한글 glyph, metric 수치, overlay legend가 tofu·`??`·잘림 없이 판독 가능한지 본다.
+- 낮은 `visual_accuracy_proxy_percent`를 “전체 fidelity 통과”처럼 쓰지 않고, PR 주장과 직접 연결되는
+  blocker 해소 근거인지 별도 residual인지 분리해 적는다.
+- 증적 생성 도구의 폰트·라벨 문제처럼 제품 렌더와 무관한 결함은 별도 issue로 등록하고, 해당 PR
+  comment에는 그 한계를 함께 쓴다.
+
 Codex 또는 Claude가 이미지를 확인했더라도 작업지시자 승인 전에는 시각 판정을 최종 통과라고 단정하지 않는다.
 원본 HWP/HWPX, 기준 PDF, visual sweep 결과의 출처·역할·SHA-256을 구분해 보존한다.
 
