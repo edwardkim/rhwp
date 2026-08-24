@@ -6871,11 +6871,9 @@ impl LayoutEngine {
             // 지오메트리를 신뢰한다: 정렬 기준 콘텐츠 높이를 저장 extent 로
             // 바꾸고, 문단 배치도 저장 vpos 스냅을 강제한다 (한컴 실측:
             // 가사 top = 셀 top + pad + 센터 오프셋(저장 extent 기준) + vpos).
-            let (stored_flow_extent, stored_flow_line_sum) = if (!has_nested_table
-                || hwpx_noninline_tac_nested_stored_flow)
-                && !cell.paragraphs.is_empty()
-                && cell.paragraphs.iter().all(|p| !p.line_segs.is_empty())
-            {
+            let all_paras_have_segs = !cell.paragraphs.is_empty()
+                && cell.paragraphs.iter().all(|p| !p.line_segs.is_empty());
+            let (raw_stored_flow_extent, raw_stored_flow_line_sum) = if all_paras_have_segs {
                 cell.paragraphs
                     .iter()
                     .flat_map(|p| p.line_segs.iter())
@@ -6887,6 +6885,26 @@ impl LayoutEngine {
                         )
                     })
                     .fold((0.0f64, 0.0f64), |(ext, sum), (e, h)| (ext.max(e), sum + h))
+            } else {
+                (0.0, 0.0)
+            };
+            // [#5601] 중첩 표를 품은 셀도, **재조판 스택은 셀 안높이를 넘치는데
+            // 저장 사다리는 담기는** 잘림 구조에서는 저장 흐름 후보로 연다. 00451
+            // (협약서 1×1 tac 상자 안에 안내 표): 재조판이 줄간격을 +23px 부풀려
+            // 마지막 줄 "“을” : (인)" 이 셀 clip 밖(845.4 > 843.2)으로 나가 소실
+            // — 한글 2024 PDF·저장 사다리 실측은 그 줄을 셀 안(825.3)에 담는다.
+            // Task #362 의 반증(kps-ai p56: vpos 를 쓰면 +19.5px 클립)은 잘림
+            // 방향이 반대(재조판은 담기고 vpos 가 넘침)라 이 판별자에 안 걸린다.
+            let nested_stored_overflow_rescue = has_nested_table
+                && table.common.treat_as_char
+                && self.profile.get().hwp5_stored_pagination_layout()
+                && raw_stored_flow_extent > 0.0
+                && raw_stored_flow_extent <= inner_height + 0.5;
+            let (stored_flow_extent, stored_flow_line_sum) = if !has_nested_table
+                || hwpx_noninline_tac_nested_stored_flow
+                || nested_stored_overflow_rescue
+            {
+                (raw_stored_flow_extent, raw_stored_flow_line_sum)
             } else {
                 (0.0, 0.0)
             };
@@ -6926,10 +6944,23 @@ impl LayoutEngine {
             // extent와 자체 측정값이 같아도 문단별 vpos가 하위 표의 실제 위치를
             // 담고 있다. 이 경우에는 total height는 변하지 않지만 순차 배치만
             // 저장 anchor로 복원해야 한다 (#3820 p144).
+            // [#5601] native HWP5 tac 표의 중첩-표 셀에서, 저장 앵커 흐름이 셀
+            // 안높이에 담기고 비-flow 개체도 그 안이면(모든 문단 앵커 유효),
+            // extent==total 이어도 저장 앵커 배치를 신뢰한다 — 재조판 배치는
+            // 줄간격을 부풀려(00451: +23px) 마지막 줄이 셀 clip 밖으로 나가는데
+            // 측정 total 은 정합(753.7)이라 압축 조건으로는 못 잡는다. Task #362
+            // 의 반증(kps-ai p56: 누적 vpos 가 셀을 넘쳐 클립)은 extent 가
+            // inner 를 넘어 이 판별자(ext ≤ inner)에 안 걸린다.
+            let native_tac_nested_stored_anchor_fits = has_nested_table
+                && table.common.treat_as_char
+                && self.profile.get().hwp5_stored_pagination_layout()
+                && stored_flow_extent > 0.0
+                && stored_flow_extent <= inner_height + 0.5;
             let trust_stored_cell_flow = stored_flow_shape_is_trusted
                 && (stored_flow_extent + 0.5 < total_content_height
                     || (hwpx_noninline_tac_nested_stored_flow
-                        && (stored_flow_extent - total_content_height).abs() <= 0.5));
+                        && (stored_flow_extent - total_content_height).abs() <= 0.5)
+                    || native_tac_nested_stored_anchor_fits);
             let total_content_height = if trust_stored_cell_flow {
                 stored_flow_extent
             } else {
