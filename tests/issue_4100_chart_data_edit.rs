@@ -2345,10 +2345,15 @@ fn b2_write_variant(out_dir: &std::path::Path, v: &B2Variant, sheet: &mut String
 /// ```
 ///
 /// **한컴이 실제로 판정한 산출은 `samples/issue5447/` 에 커밋돼 있다.** 그 38건의 변환
-/// PDF 는 `pdf/issue5447/`, 원장은 `samples/issue5447/MANIFEST.json` 이다. 여기서 다시
-/// 만든 것과 커밋본이 바이트로 같은지는 `sha256sum` 으로 직접 대조한다 — 어긋나더라도
+/// PDF 는 `pdf/issue5447/`, 원장은 `samples/issue5447/MANIFEST.json` 이다. 어긋나더라도
 /// **커밋본이 정본**이다. 판정은 한컴이 연 그 바이트에 대한 관측이기 때문이다.
 /// 커밋본과 원장의 정합은 `b2_judgment_assets_match_the_manifest` 가 상시로 지킨다.
+///
+/// **여기서 다시 만든 것과 커밋본을 `sha256sum` 으로 대조하지 않는다 (#5967).** devel 의 CFB
+/// 라이터가 `b9eb55107` 에서 MS-CFB 쪽으로 바뀌어(디렉터리 red/black 채색, FAT·MiniFAT 미사용
+/// 슬롯 FREESECT 선채움) 재생성본은 컨테이너 살림 바이트가 반드시 어긋난다 — 차트 스트림은
+/// 동일하다. 재생성 대조 축은 중첩 CFB 의 **스트림 동일성**이고, 그 계약은
+/// `tests/cases/issue_5967_cfb_repack_reproducibility.rs` 가 상시로 지킨다.
 #[test]
 #[ignore = "output/ 에 파일을 쓴다 — 한컴 판정 직전에만 실행"]
 fn generate_b2_structure_judgment_bundle() {
