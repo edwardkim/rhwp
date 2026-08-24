@@ -175,6 +175,40 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
     Some(advance)
 }
 
+/// [#5870] 빈 host 자리차지 float 의 저장 사다리가 **물리 공식과 정확히 일치**하는지 —
+/// `next.vpos - host.vpos == v_off + outer_top + 선언높이 + outer_bottom` (±2HU) — 를
+/// 검증하고, 일치하면 흐름에 더 계상해야 할 여분(`v_off + outer_top + outer_bottom`, HU)을
+/// 돌려준다. 한글은 이 형상의 흐름을 그 합만큼 전진시키는데(10645 [별지 제11호서식]
+/// 40쪽: 저장 델타 8413 = 1840+140+6293+140 정확 일치), rhwp 의 일반 빈-앵커 계약은
+/// 표 높이만 전진시켜 다음 float 가 위로 올라와 겹쳤다(19.7px). 광역 "빈 host 에
+/// v_off+outer 가산"은 #2097 이 반증했으므로(82802 pi75 는 outer 를 한 번만 담아 저장 —
+/// 이 등식에 걸리지 않는다) 문단 단위 저장 증거를 게이트로 쓴다.
+///
+/// 추가 조임 두 겹 — ① RowBreak 표 제외: 빈-host RowBreak 는 별도 저장 계약군
+/// (#2439·#3931·#3820 rowbreak tail 등)이 흐름·조각을 이미 다뤄 이중 계상이 된다
+/// (r 게이트 실측: 3931×3·3930·3820·5699·5801·3565 회귀). ② 호출부는 **다음 문단도
+/// 빈 float 표 앵커**일 때만 발동한다 — 이 결함의 실증상이 float 뒤 float 겹침이고,
+/// 후속이 텍스트면 저장 vpos 재고정으로 어차피 무결하다. 나머지 구조 조건(빈 host·
+/// 단일 표·비합성 lineseg·프로파일)도 호출부가 확인한다.
+pub(crate) fn empty_host_physical_ladder_extras_hu(
+    table: &Table,
+    host_vpos: i32,
+    next_vpos: i32,
+) -> Option<i64> {
+    if matches!(table.page_break, TablePageBreak::RowBreak) {
+        return None;
+    }
+    let extras = i64::from(signed_hwpunit(table.common.vertical_offset).max(0))
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    if extras <= 0 {
+        return None;
+    }
+    let stored_delta = i64::from(next_vpos) - i64::from(host_vpos);
+    let physical_delta = extras + i64::from(table.common.height.min(i32::MAX as u32));
+    ((stored_delta - physical_delta).abs() <= 2).then_some(extras)
+}
+
 /// [#3931] native HWP5 다행 RowBreak 표가 cell 내부 저장 page reset을 갖고,
 /// 후속 source 문단도 host anchor 위로 되감기는 빈-host 형상인지 판별한다.
 ///

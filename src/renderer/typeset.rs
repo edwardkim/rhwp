@@ -1112,6 +1112,9 @@ struct TypesetState {
     /// [#4533 HWP3] 현재 문단 다음 문단의 첫 저장 lineseg vpos — 자리차지
     /// 밴드 비예약(사다리 증거) 판별용. 문단 루프 머리에서 세팅.
     next_para_first_stored_vpos: Option<i32>,
+    /// [#5870] 다음 문단이 빈 host 자리차지 표 앵커인가 — 빈-host float 의
+    /// 물리-사다리 여분 가산 발동 조건. 문단 루프 머리에서 세팅.
+    next_para_is_empty_float_table_anchor: bool,
     /// [#1955] 글뒤로 표 후행 빈 문단의 보류 흡수 목록. 표 fragment 는 지연 flush
     /// 되므로 흡수 시점에는 anchor 첫 fragment 단을 찾을 수 없다 — 페이지 확정 후
     /// (최종 flush 뒤) 첫 fragment 단에 일괄 부착한다.
@@ -4202,6 +4205,7 @@ impl TypesetState {
             wrap_around_any_seg: false,
             behind_float_table_para: None,
             next_para_first_stored_vpos: None,
+            next_para_is_empty_float_table_anchor: false,
             behind_pending_absorbs: Vec::new(),
             overlay_shape_shortcut_para: None,
             pending_overlay_continuations: Vec::new(),
@@ -6716,6 +6720,9 @@ impl TypesetEngine {
                 .get(para_idx + 1)
                 .and_then(|p| p.line_segs.first())
                 .map(|seg| seg.vertical_pos);
+            st.next_para_is_empty_float_table_anchor = paragraphs
+                .get(para_idx + 1)
+                .is_some_and(|p| para_is_empty_topbottom_table_anchor(p));
             if std::env::var("RHWP_FLOW_DBG").is_ok() {
                 eprintln!(
                     "FLOW_DBG pi={} page={} cur_h={:.1}",
@@ -19461,6 +19468,40 @@ impl TypesetEngine {
                 && table_total_height > 1.0
                 && stored_host_line_px.is_some_and(|lh| lh < table_total_height * 0.25)
                 && next_gap_px.is_some_and(|g| g < table_total_height * 0.25);
+            // [#5870] 빈 host 자리차지 float(vert=문단)의 흐름 전진에 v_off 와
+            // 위·아래 바깥여백을 계상한다 — 단, 이 문단의 저장 사다리가 그 물리
+            // 공식과 정확히 일치할 때만(`empty_host_physical_ladder_extras_hu`,
+            // #2097 반증 회피 근거도 그쪽 주석에). 합성 lineseg(HWP3 계열)는
+            // rhwp 가 물리식으로 만들어 자기참조가 되므로 실저장 줄만 증거로
+            // 인정하고, 다중 표 host 는 델타가 표 합이라 단일 표 등식에 걸리지
+            // 않는다(표 1개 조건으로 명시). layout 의 lane flow-bottom 가산과
+            // 대칭이어야 조판·렌더가 어긋나지 않는다.
+            let empty_host_physical_extras_hu = ((st.profile.hwp5_stored_pagination_layout()
+                || st.profile.hwpx_stored_layout())
+                && st.next_para_is_empty_float_table_anchor
+                && is_para_topbottom_float(&table.common)
+                && !para_has_non_whitespace_text(para)
+                && para
+                    .controls
+                    .iter()
+                    .filter(|control| matches!(control, Control::Table(_)))
+                    .count()
+                    == 1)
+                .then(|| {
+                    st.next_para_first_stored_vpos
+                        .zip(
+                            para.line_segs
+                                .iter()
+                                .find(|seg| !is_synthetic_line_seg(seg))
+                                .map(|seg| seg.vertical_pos),
+                        )
+                        .and_then(|(next_vpos, host_vpos)| {
+                            crate::renderer::float_placement::empty_host_physical_ladder_extras_hu(
+                                table, host_vpos, next_vpos,
+                            )
+                        })
+                })
+                .flatten();
             if hwp3_topbottom_no_reserve {
                 st.current_height += pre_height + stored_host_line_px.unwrap_or(0.0);
             } else if hangul_flowed_beside_table {
@@ -19468,6 +19509,9 @@ impl TypesetEngine {
                 st.current_height = band_top + stored_host_line_px.unwrap_or(0.0);
                 st.square_band_bottom = st.square_band_bottom.max(band_top + table_total_height);
                 st.square_band_top = Some(band_top);
+            } else if let Some(extras_hu) = empty_host_physical_extras_hu {
+                st.current_height +=
+                    pre_height + table_total_height + hwpunit_to_px(extras_hu as i32, self.dpi);
             } else {
                 st.current_height += pre_height + table_total_height;
             }
