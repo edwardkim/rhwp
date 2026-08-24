@@ -999,10 +999,12 @@ impl HeightMeasurer {
                 // 안내문이 차지하는 LINE_SEG 수:
                 // 제어문자(필드 시작/끝 약 8 code units) + 안내문 길이까지의 text_start
                 let guide_end = guide_char_count + 10; // 제어문자 + 안내문 + 여유
+                                                       // [#5961] `guide_end` 는 HWP5 축 UTF-16 개수이므로 저장 `text_start` 를 올린다.
                 let skip = para
                     .line_segs
                     .iter()
-                    .position(|seg| (seg.text_start as usize) >= guide_end)
+                    .enumerate()
+                    .position(|(idx, _)| (para.line_seg_text_start(idx) as usize) >= guide_end)
                     .unwrap_or(0);
                 para.line_segs
                     .iter()

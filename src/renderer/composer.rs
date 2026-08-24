@@ -722,10 +722,13 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     for line_idx in 0..line_seg_count {
         let line_seg = &para.line_segs[line_idx];
 
-        // UTF-16 위치 기반으로 이 줄의 텍스트 범위 계산
-        let utf16_start = line_seg.text_start;
+        // UTF-16 위치 기반으로 이 줄의 텍스트 범위 계산.
+        // [#5961] 아래에서 `char_offsets`·`char_count` 로 투영하므로 HWP5 축으로 올려
+        // 받는다. HWPX 출처 구역 첫 문단은 저장 `textpos` 가 그만큼 짧아서, 날값을 쓰면
+        // 줄이 보정폭만큼 일찍 끊긴다(한글 대조 실측: 글자 54 를 46 으로 읽는다).
+        let utf16_start = para.line_seg_text_start(line_idx);
         let utf16_end = if line_idx + 1 < line_seg_count {
-            para.line_segs[line_idx + 1].text_start
+            para.line_seg_text_start(line_idx + 1)
         } else {
             // 마지막 줄: char_count 또는 텍스트 끝까지
             if para.char_count > 0 {
@@ -924,7 +927,8 @@ fn is_sample16_2022_bcp_orphan_tail_lineseg(para: &Paragraph) -> bool {
 
     let first = &para.line_segs[0];
     let last = &para.line_segs[1];
-    if last.text_start < para.char_count.saturating_sub(2) {
+    // [#5961] `char_count` 는 HWP5 축이므로 `text_start` 도 올려서 견준다.
+    if para.line_seg_text_start(1) < para.char_count.saturating_sub(2) {
         return false;
     }
     last.vertical_pos == first.vertical_pos + first.line_height + first.line_spacing

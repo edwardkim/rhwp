@@ -81,10 +81,13 @@ fn preserves_stored_first_visible_break_after_bottom_caption_table(para: &Paragr
     let Some(&first_visible_offset) = para.char_offsets.first() else {
         return false;
     };
+    // [#5961] `first_visible_offset` 은 `char_offsets` 값이라 HWP5 축이다. 저장
+    // `text_start` 는 출처에 따라 더 짧은 축일 수 있으므로 올려서 견준다.
     if first_visible_offset != 8
         || para.text.is_empty()
         || para.line_segs.first().map(|ls| ls.text_start) != Some(0)
-        || para.line_segs.get(1).map(|ls| ls.text_start) != Some(first_visible_offset)
+        || para.line_segs.len() < 2
+        || para.line_seg_text_start(1) != first_visible_offset
     {
         return false;
     }
@@ -133,11 +136,13 @@ pub(super) fn inline_table_stored_line_break_char_indices(para: &Paragraph) -> V
     let preserves_first_visible_break =
         preserves_stored_first_visible_break_after_bottom_caption_table(para);
     let mut indices = Vec::new();
-    for (line_index, line_seg) in para.line_segs.iter().enumerate().skip(1) {
+    for (line_index, _line_seg) in para.line_segs.iter().enumerate().skip(1) {
+        // [#5961] `char_offsets` 는 HWP5 축이므로 저장 `text_start` 를 같은 자로 올린다.
+        let seg_start = para.line_seg_text_start(line_index);
         let char_idx = para
             .char_offsets
             .iter()
-            .position(|&offset| offset >= line_seg.text_start)
+            .position(|&offset| offset >= seg_start)
             .unwrap_or(text_len);
         let is_owned_first_visible_break =
             line_index == 1 && char_idx == 0 && preserves_first_visible_break;

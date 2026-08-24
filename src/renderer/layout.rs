@@ -884,7 +884,9 @@ fn whitespace_tac_carrier_stored_paint_y(
     let comp = composed?;
     let (pos, _, _) = comp.tac_controls.first()?;
     // 공백 전용 문단이라 char/UTF-16 인덱스가 동일하다.
-    if *pos >= s1.text_start as usize {
+    // [#5961] 단 그 동일성은 두 값이 같은 축일 때만 성립한다 — `pos` 는 HWP5 축이므로
+    // 저장 `text_start` 를 올려서 견준다.
+    if *pos >= para.line_seg_text_start(1) as usize {
         return None;
     }
     let stored_y = col_area_y + hwpunit_to_px(s0.vertical_pos, dpi);
@@ -2081,18 +2083,21 @@ pub(crate) fn control_line_seg_index(para: &Paragraph, control_index: usize) -> 
     let p = *positions.get(control_index)?;
     if para.text.is_empty() && para.char_offsets.is_empty() {
         let stream_pos = p.saturating_mul(8);
+        // [#5961] `stream_pos` 는 컨트롤당 8유닛인 HWP5 축이므로 `text_start` 도 올린다.
         return para
             .line_segs
             .iter()
             .enumerate()
             .rev()
-            .find(|(_, seg)| seg.text_start as usize <= stream_pos)
+            .find(|(idx, _)| para.line_seg_text_start(*idx) as usize <= stream_pos)
             .map(|(idx, _)| idx)
             .or(Some(0));
     }
     let mut idx = 0usize;
-    for (k, seg) in para.line_segs.iter().enumerate().skip(1) {
-        let start_txt = para.char_offsets.partition_point(|&o| o < seg.text_start);
+    for (k, _seg) in para.line_segs.iter().enumerate().skip(1) {
+        // [#5961] `char_offsets` 는 HWP5 축이므로 같은 자로 투영한다.
+        let seg_start = para.line_seg_text_start(k);
+        let start_txt = para.char_offsets.partition_point(|&o| o < seg_start);
         if p >= start_txt {
             idx = k;
         } else {

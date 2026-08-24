@@ -32,6 +32,26 @@ pub struct Paragraph {
     pub char_shapes: Vec<CharShapeRef>,
     /// 줄 레이아웃 정보
     pub line_segs: Vec<LineSeg>,
+    /// [#5961] `line_segs[*].text_start` 를 HWP5 문단 축으로 올리는 데 필요한 보정폭.
+    ///
+    /// `LineSeg::text_start` 는 파서가 **파일 값을 그대로** 담으므로 출처마다 축이 다르다.
+    /// HWP5·HWP3·HML 은 확장 제어 하나가 8 UTF-16 유닛을 차지하는 HWP5 축이고, HWPX 는
+    /// `hp:secPr`(구역 머리 run 소속)이 자리를 차지하지 않는 더 짧은 축이다. 반면 같은
+    /// 문단의 `char_count`·`char_offsets`·`char_shapes` 는 **출처와 무관하게 언제나
+    /// HWP5 축**이다. 그래서 HWPX 출처의 구역 첫 문단은 IR 안에서 두 축이 섞인다.
+    ///
+    /// 그 상태로 `text_start` 를 `char_offsets` 에 투영하면 줄이 보정폭만큼 **일찍**
+    /// 끊긴다. 한글 2024 에 직접 물어 확인한 실측(코퍼스 36497307 문단 0): 한글은 둘째
+    /// 줄을 글자 54 에서 끊는데(본문 시작 pos 24, 줄 시작 pos 78), 보정 없이 투영하면
+    /// 46 이 나온다 — 정확히 8유닛 어긋난다. HWPX 500건 표본 중 49건(9.9%)이 해당한다.
+    ///
+    /// **파일에 실리는 값이 아니라 IR 안에서만 의미가 있다**(`layout_only_fill_lines` 와
+    /// 같은 계약). 직렬화기는 이 값을 무시하고 `text_start` 를 원본 그대로 쓴다 — 축을
+    /// 파일 쪽에서 옮기면 x2x 재수출이 왕복마다 8씩 흘러내려 3회 만에 0 으로 무너지고
+    /// (실측), h2x 의 #5943 재기준화와도 충돌한다. 읽을 때만 올려 본다.
+    ///
+    /// 소비는 [`Paragraph::line_seg_text_start`] 로만 한다.
+    pub hwpx_axis_shift: u32,
     /// [#4677] `line_segs` **끝쪽** 몇 줄이 조판 전용 보강 줄인가.
     ///
     /// HWPX RowBreak 표 셀은 문단별 `<hp:linesegarray>` 를 생략하면서도 셀 높이는 남긴다.
@@ -694,6 +714,9 @@ impl Paragraph {
     /// Replace stored rows and their validity state at one owner boundary.
     pub(crate) fn replace_line_segs(&mut self, line_segs: Vec<LineSeg>) {
         self.line_segs = line_segs;
+        // [#5961] 새로 계산한 줄은 `char_offsets` 와 같은 HWP5 축에서 나온다. 파일에서
+        // 읽은 줄에만 붙던 보정폭을 그대로 두면 다음 투영에서 이중으로 더해진다.
+        self.hwpx_axis_shift = 0;
         self.single_line_overflow_memo.publish_current_partition();
     }
 
@@ -1399,6 +1422,8 @@ impl Paragraph {
             layout_only_fill_lines: 0,
             // 편집으로 갈라진 문단의 원본 vertpos 스냅샷은 무효다 (#5847).
             source_line_seg_vertical_pos: None,
+            // 새로 계산된 줄은 `char_offsets` 와 같은 HWP5 축에서 나오므로 보정이 없다 (#5961).
+            hwpx_axis_shift: 0,
             range_tags: new_range_tags,
             field_ranges: new_field_ranges, // 새 문단으로 이관된 필드 범위
             orphan_field_ends: Vec::new(),
@@ -1817,6 +1842,36 @@ impl Paragraph {
             }
         }
         positions
+    }
+
+    /// [#5961] `line_segs[idx].text_start` 를 **HWP5 문단 축**으로 올려 반환한다.
+    ///
+    /// `char_count`·`char_offsets`·`char_shapes` 와 같은 자를 쓰게 해 주는 유일한
+    /// 진입점이다. `text_start` 를 그 셋과 비교하거나 그 셋으로 투영하는 곳은 반드시
+    /// 이 메서드를 거쳐야 한다 — 날값을 쓰면 HWPX 출처 구역 첫 문단에서 축이 섞인다
+    /// ([`Paragraph::hwpx_axis_shift`] 참고).
+    ///
+    /// 반대로 **같은 문단의 두 `text_start` 를 서로 비교**하는 곳은 이 메서드를 쓰면 안
+    /// 된다. 균일 보정이라 차이가 상쇄되므로 날값 비교가 이미 옳고, 굳이 거치면 의미만
+    /// 흐려진다.
+    ///
+    /// 문단 시작(0)은 두 축에서 같은 자리이므로 올리지 않는다. 보정폭이 0 인 문단
+    /// (HWP5·HWP3·HML 출처, 그리고 구역 첫 문단이 아닌 HWPX 문단)은 날값과 같다.
+    pub fn line_seg_text_start(&self, idx: usize) -> u32 {
+        let raw = self.line_segs.get(idx).map_or(0, |seg| seg.text_start);
+        self.line_seg_text_start_of(raw)
+    }
+
+    /// [#5961] 이 문단에 속한 `text_start` 값 하나를 HWP5 축으로 올린다.
+    ///
+    /// 인덱스를 들고 있지 않은 호출부(이미 `&LineSeg` 를 쥔 자리)를 위한 형태로,
+    /// [`Paragraph::line_seg_text_start`] 와 같은 규칙을 쓴다.
+    pub fn line_seg_text_start_of(&self, raw_text_start: u32) -> u32 {
+        if raw_text_start == 0 {
+            0
+        } else {
+            raw_text_start + self.hwpx_axis_shift
+        }
     }
 
     /// `char_offsets` 중 UTF-16 위치 `utf16_pos` 이상인 첫 번째 codepoint 의
