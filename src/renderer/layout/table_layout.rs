@@ -10169,8 +10169,9 @@ impl LayoutEngine {
             // 안에 있는 흔한 형상)도 줄 단위로 정확히 갈린다.
             type SegKey = (usize, usize);
             let mut all_stored = true;
-            // (start_key, end_key_exclusive, first_vpos, end_vpos, has_table_host)
-            let mut spans: Vec<(SegKey, SegKey, i32, i32, bool)> = Vec::new();
+            // (start_key, end_key_exclusive, first_vpos, end_vpos, has_table_host,
+            //  리셋으로 닫힌 구간인가)
+            let mut spans: Vec<(SegKey, SegKey, i32, i32, bool, bool)> = Vec::new();
             let mut cur: Option<(SegKey, i32, i32, bool)> = None;
             let mut prev_end = i32::MIN;
             'seg_scan: for (pi, p) in cell.paragraphs.iter().enumerate() {
@@ -10183,7 +10184,8 @@ impl LayoutEngine {
                     let reset = prev_end != i32::MIN && seg.vertical_pos < prev_end;
                     if reset {
                         if let Some((s, fv, ev, host)) = cur.take() {
-                            spans.push((s, (pi, si), fv, ev, host));
+                            // 다음 줄이 위로 되감겼다 = 이 구간은 여기서 닫혔다.
+                            spans.push((s, (pi, si), fv, ev, host, true));
                         }
                     }
                     let end = seg.vertical_pos.saturating_add(seg.line_height);
@@ -10199,12 +10201,31 @@ impl LayoutEngine {
                 }
             }
             if let Some((s, fv, ev, host)) = cur.take() {
-                spans.push((s, (usize::MAX, 0), fv, ev, host));
+                // 마지막 구간은 셀 안에서 닫혔다는 증거가 없다 — 열린 채로 표시한다.
+                spans.push((s, (usize::MAX, 0), fv, ev, host, false));
             }
             if all_stored && !spans.is_empty() {
-                // 각 리셋 구간이 각각의 쪽 조각으로 닫히고 조각 회계는 그 구간
-                // 유닛 합이므로, 표-호스트를 품은 모든 구간이 보정 대상이다.
-                for (sk, ek, fv, ev, host) in &spans {
+                // 대상은 **리셋으로 닫힌** 구간 중 표-호스트를 품은 것뿐이다.
+                //
+                // 닫힌 구간은 저장 사다리가 "여기서 조각이 끝났다"를 스스로 증언한다
+                // (다음 줄이 위로 되감겼다). 그 구간의 유닛 합은 한 쪽 조각의 회계
+                // 전부이므로 저장 스팬에 맞춰도 조각이 자기 경계를 넘지 않는다.
+                //
+                // 반면 **마지막 열린 구간**은 셀 안에 끝 증거가 없다. 그 높이는 남은
+                // 흐름이 어디서 잘리는지에 달렸고, 저장 스팬은 이 셀이 쪽 하단까지
+                // 쓸 수 있었을 때의 값이다. 거기에 맞춰 마지막 유닛을 키우면 조각이
+                // 쪽 하단을 넘어 자라, 다음 쪽 소유 줄이 이 쪽 clip 안으로 끌려
+                // 들어온다 — issue3637 `regulatory_impact_nested_table_escape.hwpx`
+                // 에서 p26 이 p27 첫 줄("사업체노동력조사")을 가시 상태로 물고,
+                // 같은 문서에 `LAYOUT_OVERFLOW_CELL` 14줄이 새로 생겼다.
+                //
+                // 셀 **끝**의 종점 정합은 이 후처리의 몫이 아니다. 리셋이 없는
+                // 단조 사다리(단일 구간)에서 마지막 문단이 표 호스트인 경우는 위
+                // #5885 후처리가 셀 종점 기준으로 이미 닫는다. 둘은 겹치지 않는다.
+                for (sk, ek, fv, ev, host, closed) in &spans {
+                    if !*closed {
+                        continue; // 열린 마지막 구간 — 쪽 하단을 넘길 위험
+                    }
                     if !*host {
                         continue; // 텍스트-전용 구간은 corrected lh 로 이미 정합
                     }
@@ -10217,6 +10238,24 @@ impl LayoutEngine {
                             unit_sum += u.height;
                             last_unit = Some(ui);
                         }
+                    }
+                    // 구간 **끝**이 호스트일 때만 보정한다. 이 후처리의 근거는
+                    // "호스트 문단 뒤 갭을 흡수할 유닛이 없다"인데, 호스트 뒤에 같은
+                    // 구간의 텍스트 유닛이 더 있으면 그 갭은 이미 그 유닛의 corrected
+                    // line height 가 담는다 — 그때 차액을 또 얹으면 구간이 실제보다
+                    // 길어져 조각이 쪽 하단을 넘는다. issue3637
+                    // `regulatory_impact_nested_table_escape.hwpx` 의 문단 7~27 구간이
+                    // 그 형상이다(span 941.1 · 유닛 합 922.3 · 차액 18.7, 구간 끝은
+                    // 호스트가 아니라 문단 27 본문). 그 18.7 을 얹으면 p26 조각이
+                    // 8.2px 넘쳐 p27 소유 줄("사업체노동력조사")이 p26 clip 안으로
+                    // 끌려 들어오고 `LAYOUT_OVERFLOW_CELL` 14줄이 새로 생겼다.
+                    let ends_on_host = last_unit.is_some_and(|ui| {
+                        cell.paragraphs.get(units[ui].para_idx).is_some_and(|p| {
+                            p.controls.iter().any(|c| matches!(c, Control::Table(_)))
+                        })
+                    });
+                    if !ends_on_host {
+                        continue;
                     }
                     let shortfall = span_px - unit_sum;
                     // 한두 문단 간격 규모만 인정 — 그 이상은 다른 축.
