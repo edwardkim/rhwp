@@ -887,21 +887,24 @@ fn is_reparsed_single_column_cell_split_row(
 /// while a continuation repeats only the table's outer top.  Every fragment reserves the outer
 /// bottom.  `repeat_outer_margin` is the narrow native-HWP evidence gate; applying this to every
 /// RowBreak table is disproven by the #2097 COM page pins. `vertical_offset` remains a
-/// first-fragment-only concern at the call site.
+/// first-fragment-only concern at the call site. `repeat_cellbreak_outer_margin` is the [#5922]
+/// native-HWP CellBreak contract: the same reopen for proven empty-host TopAndBottom CellBreak
+/// fragments (거대 표의 저장 ladder 는 표 높이를 접어 #2439 증거를 요구할 수 없다).
 fn partial_rowbreak_fragment_spacing_px(
     table: &crate::model::table::Table,
     first_fragment_host_before: f64,
     is_continuation: bool,
     repeat_outer_margin: bool,
+    repeat_cellbreak_outer_margin: bool,
     dpi: f64,
 ) -> (f64, f64) {
-    let repeats_outer_margin = repeat_outer_margin
-        && !table.common.treat_as_char
+    let repeats_outer_margin = !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
-        && matches!(
-            table.page_break,
-            crate::model::table::TablePageBreak::RowBreak
-        );
+        && match table.page_break {
+            crate::model::table::TablePageBreak::RowBreak => repeat_outer_margin,
+            crate::model::table::TablePageBreak::CellBreak => repeat_cellbreak_outer_margin,
+            crate::model::table::TablePageBreak::None => false,
+        };
     let before = if is_continuation {
         if repeats_outer_margin {
             hwpunit_to_px(table.outer_margin_top as i32, dpi)
@@ -22784,6 +22787,11 @@ impl TypesetEngine {
                 ft.host_spacing.before,
                 false,
                 ft.strict_following_plain_text_fit,
+                crate::renderer::float_placement::native_empty_host_cellbreak_fragment_repeats_outer_margin(
+                    self.profile.get().hwp5_stored_pagination_layout(),
+                    para,
+                    table,
+                ),
                 self.dpi,
             );
             let vert_off = {
@@ -23533,6 +23541,11 @@ impl TypesetEngine {
                     host_spacing_before,
                     is_continuation,
                     strict_following_plain_text_fit,
+                    crate::renderer::float_placement::native_empty_host_cellbreak_fragment_repeats_outer_margin(
+                        self.profile.get().hwp5_stored_pagination_layout(),
+                        para,
+                        table,
+                    ),
                     self.dpi,
                 );
             let vert_offset_overhead = if is_continuation {
@@ -26161,6 +26174,7 @@ mod tests {
             first_host_before,
             false,
             true,
+            false,
             DEFAULT_DPI,
         );
         let continuation = partial_rowbreak_fragment_spacing_px(
@@ -26168,6 +26182,7 @@ mod tests {
             first_host_before,
             true,
             true,
+            false,
             DEFAULT_DPI,
         );
 
@@ -26183,6 +26198,7 @@ mod tests {
             &table,
             first_host_before,
             true,
+            false,
             false,
             DEFAULT_DPI,
         );

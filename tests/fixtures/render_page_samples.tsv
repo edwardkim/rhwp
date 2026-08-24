@@ -101,7 +101,7 @@ samples/issue1949_giant_cell_nested_tables_perf.hwp	115	115	0
 samples/issue1950_hwp3_tab_charoffset.hwp	1	1	0
 samples/issue2004_cell_image_stack.hwp	8	8	0
 samples/issue2020/passport_application_lawgo.hwp	2	2	0
-samples/issue2063_huge_cellbreak_table.hwp	162	159	-3
+samples/issue2063_huge_cellbreak_table.hwp	162	161	-1
 samples/issue2083_hide_fill_page.hwpx	4	4	0
 samples/issue2217/20200830.hwp	4	4	0
 samples/issue2373/156689818_kftc_press.hwpx	4	4	0
