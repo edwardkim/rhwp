@@ -257,7 +257,7 @@ export class WasmBridge {
   private initialized = false;
   private _fileName = 'document.hwp';
   private _currentFileHandle: FileSystemFileHandleLike | null = null;
-  /** 마지막 저장본이 출력 암호로 보호됐는지 여부만 보관한다. 암호 문자열은 보관하지 않는다. */
+  /** 현재 backing copy의 보호 의도만 보관한다. 암호 문자열은 보관하지 않는다. */
   private _requiresPasswordForSave = false;
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
