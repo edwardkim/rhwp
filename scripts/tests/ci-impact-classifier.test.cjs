@@ -25,6 +25,18 @@ const REGRESSION_FIXTURE_PATH = path.join(
 const REGRESSION_FIXTURES = JSON.parse(
   fs.readFileSync(REGRESSION_FIXTURE_PATH, 'utf8'),
 );
+const REPOSITORY_ROOT = path.join(__dirname, '..', '..');
+const OUTPUT_ADAPTER_ROOT = path.join(REPOSITORY_ROOT, 'src', 'cli', 'outputs');
+
+function rustFilesUnder(directory) {
+  return fs.readdirSync(directory, { withFileTypes: true })
+    .flatMap((entry) => {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) return rustFilesUnder(entryPath);
+      if (!entry.isFile() || !entry.name.endsWith('.rs')) return [];
+      return [path.relative(REPOSITORY_ROOT, entryPath).split(path.sep).join('/')];
+    });
+}
 
 for (const fixture of HISTORICAL_PRS) {
   test(`historical PR #${fixture.pr}: ${fixture.title}`, () => {
@@ -102,12 +114,45 @@ test('Rust renderer changes require Rust, Native Skia, Canvas, and Rust CodeQL',
   assert.equal(result.classification_status, 'classified');
 });
 
-test('CLI output adapters follow their actual render and Native Skia consumers', () => {
+test('every CLI output adapter belongs to one explicit impact bucket', () => {
+  const buckets = {
+    renderAndNative: [
+      'src/cli/outputs/mod.rs',
+      'src/cli/outputs/pdf.rs',
+    ],
+    nativeOnly: [
+      'src/cli/outputs/raster.rs',
+    ],
+    plainRust: [
+      'src/cli/outputs/doclang.rs',
+      'src/cli/outputs/preview.rs',
+      'src/cli/outputs/tabular.rs',
+      'src/cli/outputs/text.rs',
+      'src/cli/outputs/vector.rs',
+    ],
+  };
+  const expected = Object.values(buckets).flat();
+  assert.equal(
+    new Set(expected).size,
+    expected.length,
+    'CLI output impact buckets must be disjoint',
+  );
+  assert.deepEqual(
+    rustFilesUnder(OUTPUT_ADAPTER_ROOT).sort(),
+    expected.sort(),
+    'new or moved CLI output adapters require an explicit impact bucket',
+  );
+
   for (const [filename, renderRequired, nativeSkiaRequired, reason] of [
-    ['src/cli/outputs/mod.rs', 'true', 'true', 'classified:rust-render'],
-    ['src/cli/outputs/pdf.rs', 'true', 'true', 'classified:rust-render'],
-    ['src/cli/outputs/raster.rs', 'false', 'true', 'classified:native-skia-rust'],
-    ['src/cli/outputs/vector.rs', 'false', 'false', 'classified:rust'],
+    ...buckets.renderAndNative.map((filename) => (
+      [filename, 'true', 'true', 'classified:rust-render']
+    )),
+    ...buckets.nativeOnly.map((filename) => (
+      [filename, 'false', 'true', 'classified:native-skia-rust']
+    )),
+    ...buckets.plainRust.map((filename) => (
+      [filename, 'false', 'false', 'classified:rust']
+    )),
   ]) {
     const result = classifyChanges({
       eventName: 'pull_request',

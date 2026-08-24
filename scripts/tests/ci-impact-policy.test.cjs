@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -35,6 +36,7 @@ const CI_WORKFLOW = fs.readFileSync(
   path.join(__dirname, '../../.github/workflows/ci.yml'),
   'utf8',
 );
+const REPOSITORY_ROOT = path.join(__dirname, '..', '..');
 
 const HEAD_SHA = 'a'.repeat(40);
 const BASE_SHA = 'b'.repeat(40);
@@ -427,6 +429,27 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/pdf.rs' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/raster.rs' }]), false);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/vector.rs' }]), false);
+});
+
+test('every classified render-impacting tracked path starts Render Diff', () => {
+  const trackedFiles = execFileSync('git', ['ls-files', '-z'], {
+    cwd: REPOSITORY_ROOT,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  }).split('\0').filter(Boolean);
+  const missing = trackedFiles.filter((filename) => {
+    const files = [{ filename, status: 'modified' }];
+    const classification = classificationFor(files);
+    return classification.classification_status === 'classified'
+      && classification.render_required === 'true'
+      && !workflowRunExpected('Render Diff', files);
+  });
+
+  assert.deepEqual(
+    missing,
+    [],
+    'classified render paths must be covered by the Render Diff trigger',
+  );
 });
 
 test('every impact-conditioned CI job is covered by the audit allowlist', () => {
