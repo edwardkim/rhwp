@@ -1202,7 +1202,7 @@ fn diff_paragraph_linesegs_with_axis(
         let tb = pb.line_seg_text_start_of(sb.text_start);
         // 줄 하나가 내려간 폭이 8의 배수이고 상한 안이면 재기준화로 설명된다.
         let shift = ta.checked_sub(tb).unwrap_or(u32::MAX);
-        let text_start_a = if shift > 0 && shift % 8 == 0 && shift <= axis_rebase_cap {
+        let text_start_a = if shift > 0 && shift.is_multiple_of(8) && shift <= axis_rebase_cap {
             tb
         } else {
             ta
