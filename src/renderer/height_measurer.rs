@@ -1702,17 +1702,15 @@ impl HeightMeasurer {
                                                         && is_cell_last_line),
                                             )
                                         };
-                                        // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
-                                        // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
-                                        // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
-                                        // trailing 을 제외(k-water-rfp pi=180).
-                                        let is_block_rowbreak =
-                                            matches!(table.page_break, TablePageBreak::RowBreak)
-                                                && !table.common.treat_as_char;
-                                        let include_trailing_ls =
-                                            !is_cell_last_line || cell_para_count > 1;
-                                        let include_trailing_ls = include_trailing_ls
-                                            && (!is_cell_last_line || !is_block_rowbreak);
+                                        // [#5923] 셀 마지막 줄 trailing 줄간격은 비-TAC
+                                        // 표에서 문단 수와 무관하게 제외한다 — 렌더 행높이
+                                        // 회계와 정본이 같다. 다문단 셀만 포함하던 구규칙은
+                                        // hwpctl_API_v2.4 75쪽 유령 쪽(행마다 +2.7px 과대
+                                        // 측정)을 낳았다. TAC(글자처럼) 표의 다문단 셀은
+                                        // [Task #874/#1086] 보존 핀(KTX TOC 등)을 위해
+                                        // 기존 포함 회계를 유지한다.
+                                        let include_trailing_ls = !is_cell_last_line
+                                            || (cell_para_count > 1 && table.common.treat_as_char);
                                         if include_trailing_ls {
                                             h + hwpunit_to_px(line.line_spacing, self.dpi)
                                         } else {
@@ -1742,8 +1740,45 @@ impl HeightMeasurer {
                 // 줄높이 누적합 81090 HU, 선언 141785 HU → 조각이 짧아져 잔여 중첩
                 // 행이 렌더에서 탈락)
                 let ladder_intact = crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs);
+                // [#5884] 압축-단조 사다리(제3형): 기계 저장 HWPX 는 셀 사다리를
+                // 단조로 두되 중첩 표 높이를 흡수하지 않는다(3090867 외곽 셀:
+                // last_seg_end 185px vs 텍스트+중첩 실측 ~1,060px). intact(단조)
+                // 검사만으로는 아래 max-합성 경로로 가서 셀이 구조적으로 과소
+                // 측정되고 쪽 넘김 판정이 뒤집힌다(1쪽 vs 한글 2쪽, 96자·그림
+                // 2개 clip 소실). additive 증거가 저장 끝의 1.8배를 넘으면
+                // additive 로 보낸다 — 물리 사다리 셀은 host lh 가 표를 흡수해
+                // `unabsorbed_nested_tables_height` 가 그 표를 건너뛰므로
+                // additive ≈ last_seg_end 라 걸리지 않고(이중 계상 차단은 그
+                // 흡수 검사 몫), 절대배치 반례(#4533 기장군 계열)는 native
+                // HWP5 라 게이트 밖이다. 3090867 실측: last_end 896.0 vs
+                // additive 1,108.4(=text 595.3+nested 513.1) — 1.24×.
+                let compressed_monotonic_ladder = has_nested_table_in_cell
+                    && !self.is_native_hwp5
+                    && !cell_all_no_ls
+                    && ladder_intact
+                    && {
+                        let last_end_px = cell
+                            .paragraphs
+                            .iter()
+                            .flat_map(|p| p.line_segs.last())
+                            .map(|s| {
+                                hwpunit_to_px(
+                                    s.vertical_pos.saturating_add(s.line_height),
+                                    self.dpi,
+                                )
+                            })
+                            .fold(0.0f64, f64::max);
+                        last_end_px > 0.0
+                            && text_height
+                                + self.unabsorbed_nested_tables_height(
+                                    &cell.paragraphs,
+                                    styles,
+                                    depth,
+                                )
+                                > last_end_px * 1.15
+                    };
                 let content_height = if has_nested_table_in_cell
-                    && (cell_all_no_ls || !ladder_intact)
+                    && (cell_all_no_ls || !ladder_intact || compressed_monotonic_ladder)
                 {
                     // [#2148 실험] NO_LS 셀은 vpos 사다리가 없어 nested_bottom 의
                     // para_top(첫 lineseg vpos)=0 → 위 텍스트 문단이 소거된다
@@ -2376,17 +2411,15 @@ impl HeightMeasurer {
                                                         && is_cell_last_line),
                                             )
                                         };
-                                        // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
-                                        // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
-                                        // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
-                                        // trailing 을 제외(k-water-rfp pi=180).
-                                        let is_block_rowbreak =
-                                            matches!(table.page_break, TablePageBreak::RowBreak)
-                                                && !table.common.treat_as_char;
-                                        let include_trailing_ls =
-                                            !is_cell_last_line || cell_para_count > 1;
-                                        let include_trailing_ls = include_trailing_ls
-                                            && (!is_cell_last_line || !is_block_rowbreak);
+                                        // [#5923] 셀 마지막 줄 trailing 줄간격은 비-TAC
+                                        // 표에서 문단 수와 무관하게 제외한다 — 렌더 행높이
+                                        // 회계와 정본이 같다. 다문단 셀만 포함하던 구규칙은
+                                        // hwpctl_API_v2.4 75쪽 유령 쪽(행마다 +2.7px 과대
+                                        // 측정)을 낳았다. TAC(글자처럼) 표의 다문단 셀은
+                                        // [Task #874/#1086] 보존 핀(KTX TOC 등)을 위해
+                                        // 기존 포함 회계를 유지한다.
+                                        let include_trailing_ls = !is_cell_last_line
+                                            || (cell_para_count > 1 && table.common.treat_as_char);
                                         if include_trailing_ls {
                                             h + hwpunit_to_px(line.line_spacing, self.dpi)
                                         } else {

@@ -466,7 +466,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
         ),
         tool_with_optional_args(
             "hwp_csv_to_chart",
-            "CSV 파일의 내용으로 기존 차트 N 의 숫자 값을 덮어써 새 문서를 만든다. 계열 수·값 개수·계열명·카테고리 라벨은 바꾸지 않으며(전부 구조 변경이다), CSV 가 차트와 다르면 한 칸도 쓰지 않고 invalid 로 보고한다(exit 2). 값 하나가 OOXML 두 표현(zip 파트·중첩 CFB)에 중복 저장돼 있어 **둘 다에 쓴다** — 한쪽만 쓰면 HWP 변환에서 편집이 조용히 사라진다. 어디에 썼는지는 wrote 로 돌려준다. CSV 는 hwp_chart_to_csv 산출물을 고쳐 쓰는 것이 안전하다.",
+            "CSV 파일의 내용으로 기존 차트 N 의 숫자 값을 덮어써 새 문서를 만든다. 기본(structure 없음)은 계열 수·값 개수·계열명·카테고리 라벨을 바꾸지 않으며, CSV 가 차트와 다르면 한 칸도 쓰지 않고 invalid 로 보고한다(exit 2). structure=true 면 CSV 가 목표 상태다 — 행(카테고리)·열(계열) 추가·삭제(꼬리 기준: 늘면 끝에 붙고 줄면 끝부터 지운다), 계열명·라벨 변경까지 쓴다. 원형·원형대원형은 계열 수 1 고정, 주식형은 계열 수 고정(HLC 3/OHLC 4), 마지막 1점·1계열 삭제는 거부한다(pieSeriesCountFixed/stockSeriesCountFixed/lastPointDeleteRefused/lastSeriesDeleteRefused). 값 하나가 OOXML 두 표현(zip 파트·중첩 CFB)에 중복 저장돼 있어 **둘 다에 쓴다** — 한쪽만 쓰면 HWP 변환에서 편집이 조용히 사라진다. 어디에 썼는지는 wrote 로, 구조 변경은 changed[].op 로 돌려준다. CSV 는 hwp_chart_to_csv 산출물을 고쳐 쓰는 것이 안전하다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
@@ -474,6 +474,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                     "csv": { "type": "string", "description": "읽을 CSV 파일 경로 (UTF-8, 선두 BOM 허용)" },
                     "chart": { "type": "integer", "minimum": 1, "description": "덮어쓸 차트 번호(문서 순서, 1부터)" },
                     "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_chart.hwp (HWPX 입력이면 _chart.hwpx)" },
+                    "structure": { "type": "boolean", "description": "true 면 CSV 를 목표 상태로 본다 — 행·열 추가·삭제(꼬리 기준)·계열명·라벨 변경을 허용. 기본 false 는 값만 바꾸고 치수·이름·라벨 불일치는 거부" },
                     "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 바뀔 칸만 보고" },
                     "verify": { "type": "boolean", "description": "저장 직후 재파싱 IR 자기검증 — 차이가 있으면 exit 3" }
                 },
@@ -483,6 +484,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
             serde_json::json!(["csv-to-chart", "{path}", "--csv", "{csv}", "--chart", "{chart}", "--json"]),
             serde_json::json!([
                 { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "structure", "args": ["--structure"] },
                 { "when": "dryRun", "args": ["--dry-run"] },
                 { "when": "verify", "args": ["--verify"] }
             ]),

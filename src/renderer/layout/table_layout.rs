@@ -177,17 +177,6 @@ use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertRelTo,
 };
 
-fn caption_has_topbottom_picture(caption: &Caption) -> bool {
-    caption.paragraphs.iter().any(|para| {
-        para.controls.iter().any(|ctrl| {
-            matches!(
-                ctrl,
-                Control::Picture(pic) if matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
-            )
-        })
-    })
-}
-
 /// A clipped table cell still has to expose an immediately nested table's
 /// *outer border*. A nested table can begin after the host cell's left padding
 /// while retaining its stored width, which puts that right border just beyond
@@ -1297,13 +1286,18 @@ pub(super) fn extend_completed_nested_table_border_clips(
     );
 }
 
-fn should_render_table_caption(table: &crate::model::table::Table, depth: usize) -> bool {
-    depth == 0
-        || (depth == 1
-            && table
-                .caption
-                .as_ref()
-                .is_some_and(caption_has_topbottom_picture))
+/// 표 캡션은 중첩 깊이와 무관하게 그린다.
+///
+/// [#5875] 종전에는 `depth == 0` 만 그리고, #1585 가 `depth == 1` 을 "캡션 안에 위/아래
+/// 그림이 있을 때"로만 열어 두었다. 그래서 셀 안 중첩 표의 **글자 캡션**은 통째로 버려졌다
+/// (2181727 7·8쪽 `<표 1>·<표 2>·<표 3>·<표 5>·<표 7>` 제목 5개가 렌더·텍스트추출 양쪽에서 소실).
+///
+/// 높이 측정기(`height_measurer::measure_table_impl`)는 처음부터 깊이와 무관하게 캡션
+/// 높이·간격을 표 총 높이에 넣는다. 즉 어긋난 쪽은 렌더 게이트 하나였고, 그 결과 캡션이
+/// 차지했어야 할 띠가 표 아래 빈칸으로 남았다(표3 하단→`라.` 첫 줄 한글 12.2px ↔ rhwp 60.6px).
+/// 측정 쪽 계약에 맞춰 깊이 게이트를 없앤다.
+fn should_render_table_caption(table: &crate::model::table::Table) -> bool {
+    table.caption.is_some()
 }
 
 fn caption_flow_extra(caption: &Option<Caption>, caption_height: f64, caption_spacing: f64) -> f64 {
@@ -1587,8 +1581,8 @@ enum RecursiveBlockPreludeRole {
 
 /// [Task #993] 한 셀의 콘텐츠 유닛 — 합성 줄 1개 또는 중첩 표 atom 1개.
 pub(super) struct CellUnit {
-    /// 유닛 높이 (px).
-    height: f64,
+    /// 유닛 높이 (px). [#5880] table_partial 의 조각 원점 보정이 소비분 합산에 읽는다.
+    pub(super) height: f64,
     /// 이 유닛 앞에 vpos 리셋(셀 내부 페이지 분할)이 있는가.
     hard_break_before: bool,
     /// 같은 문단의 줄 사이에서 페이지 하단까지 진행한 저장 vpos가
@@ -2761,7 +2755,7 @@ impl LayoutEngine {
             paper_w,
         );
 
-        let render_caption = should_render_table_caption(table, depth);
+        let render_caption = should_render_table_caption(table);
         let (caption_height, caption_spacing) = if render_caption {
             let ch = self.calculate_caption_height(&table.caption, styles);
             let cs = table
@@ -8498,9 +8492,82 @@ impl LayoutEngine {
         // 이를 일반 em line으로 누적하면 row cut의 physical footprint가 Hancom보다 커져
         // 다음 개체 owner가 한 page 늦어진다 (59043 p11/p12). 단일 빈 줄은 저자가
         // 의도한 여백일 수 있으므로, 양쪽이 non-inline flow 문단인 2개 이상 run만 대상이다.
-        // HWPX/CellBreak/TAC에는 stored-layout 의미가 달라 이 predicate를 적용하지 않는다.
+        // [#5880] 직접 HWPX 도 같은 anchor 사다리를 남긴다 — 1×1 RowBreak 본문 칸의
+        // 빈 줄 보존(preserve_forward_stored_empty_spacer 확장)이 legacy collapse 를
+        // 대체하면서, 개체 사이 anchor run 까지 살아나면 issue3637 표본이 31→32쪽이
+        // 된다(실측). run≥2 + 양쪽 non-inline flow 라는 기존 판별은 그대로 쓴다.
         let native_hwp5_rowbreak_float_ladder =
-            self.profile.get().hwp5_stored_pagination_layout() && is_block_rowbreak_table;
+            (self.profile.get().hwp5_stored_pagination_layout()
+                || self.profile.get().hwpx_stored_layout())
+                && is_block_rowbreak_table;
+        // [#5880] 이 셀의 저장 사다리에 쪽 스케일 프레임 리셋(직전 문단 끝이 본문
+        // 높이의 70% 이상 내려간 뒤 vpos 되감김)이 있는가 — 한글이 이 칸을 여러
+        // 쪽으로 조각내며 저장했다는 증거. 본문 높이를 모르면 판정하지 않는다(작은
+        // 상자의 로컬 리셋을 쪽 프레임으로 오인하면 issue3637 계열이 +1쪽 된다).
+        let cell_has_page_scale_frame_reset = {
+            // 기준은 `current_body_area` 가 아니라 **표 선언 높이**다 — 전자는 셀
+            // 유닛 캐시가 본문 영역 설정 전에 계산되면 0 이라 판정이 호출 순서에
+            // 따라 흔들린다(2737927 8쪽↔7쪽 플레이크 실측). 쪽 스케일 틀(선언
+            // ≥ 800px)만 대상이고, 그보다 작은 데이터 박스는 로컬 리셋을 쪽
+            // 프레임으로 오인하지 않도록 처음부터 제외한다(issue3637 +1쪽).
+            let declared_px =
+                hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, self.dpi);
+            let frame_floor = if declared_px >= 800.0 {
+                declared_px * 0.7
+            } else {
+                f64::INFINITY
+            };
+            cell.paragraphs.windows(2).any(|pair| {
+                match (
+                    pair[0]
+                        .line_segs
+                        .iter()
+                        .rev()
+                        .find(|seg| !line_seg_is_synthetic(seg)),
+                    pair[1]
+                        .line_segs
+                        .iter()
+                        .find(|seg| !line_seg_is_synthetic(seg)),
+                ) {
+                    (Some(prev), Some(cur)) => {
+                        let prev_end = prev.vertical_pos.saturating_add(prev.line_height);
+                        cur.vertical_pos >= 0
+                            && cur.vertical_pos < prev_end
+                            && hwpunit_to_px(prev_end, self.dpi) >= frame_floor
+                    }
+                    _ => false,
+                }
+            })
+        };
+        // [#5880] 칸 전체 저장 사다리가 자명하게 선형-정확한가 — 이웃 문단마다
+        // (프레임 리셋 제외) `cur.vpos - prev_last.vpos == prev_last.lh + prev_last.ls`
+        // (±2HU). 2737927 처럼 균일 사다리(+2800HU)를 저장한 칸만 통과하고, 어긋난
+        // 델타가 있는 칸(issue3637 계열 — 상쇄 위에 선 쪽수)은 걸러진다.
+        let cell_ladder_uniform_exact = cell.paragraphs.windows(2).all(|pair| {
+            match (
+                pair[0]
+                    .line_segs
+                    .iter()
+                    .rev()
+                    .find(|seg| !line_seg_is_synthetic(seg)),
+                pair[1]
+                    .line_segs
+                    .iter()
+                    .find(|seg| !line_seg_is_synthetic(seg)),
+            ) {
+                (Some(prev), Some(cur)) => {
+                    let prev_end = i64::from(prev.vertical_pos) + i64::from(prev.line_height);
+                    if i64::from(cur.vertical_pos) < prev_end {
+                        // 프레임 리셋 — 선형성 판정에서 제외.
+                        return true;
+                    }
+                    let delta = i64::from(cur.vertical_pos) - i64::from(prev.vertical_pos);
+                    let slot = i64::from(prev.line_height) + i64::from(prev.line_spacing.max(0));
+                    (delta - slot).abs() <= 2
+                }
+                _ => true,
+            }
+        });
         let plain_empty_paragraph: Vec<bool> = cell
             .paragraphs
             .iter()
@@ -8680,7 +8747,24 @@ impl LayoutEngine {
             let is_empty_spacer_para = p.text.trim().is_empty() && p.controls.is_empty();
             let preserve_forward_stored_empty_spacer = {
                 let profile = self.profile.get();
-                (profile.hwp5_stored_pagination_layout() || profile.hwp5_origin_hwpx())
+                // [#5880] 직접 HWPX 는 여러 쪽에 걸쳐 조각나는 1×1 RowBreak 본문
+                // 칸(쪽 스케일 프레임 리셋 실재 + 사다리 전체 선형-정확)으로 한정해
+                // 보존한다 — 2737927 의 빈 Enter(lh=1400, 사다리 +2800 정확)를
+                // 0높이로 접으면 컷 회계가 조각당 빈 줄 합(~100px)만큼 과적재해
+                // 조각 말미 줄·표가 clip 소실된다(-125자, 쪽수 7 vs 한글 8).
+                // 말미 빈 문단 run 은 제외(뒤에 가시 내용이 남은 빈 줄만) —
+                // 한글에 없는 빈 쪽이 생긴다.
+                (profile.hwp5_stored_pagination_layout()
+                    || profile.hwp5_origin_hwpx()
+                    || (profile.hwpx_stored_layout()
+                        && is_block_rowbreak
+                        && table.row_count == 1
+                        && table.col_count == 1
+                        && cell_has_page_scale_frame_reset
+                        && cell_ladder_uniform_exact
+                        && cell.paragraphs[pi + 1..]
+                            .iter()
+                            .any(|q| !q.text.trim().is_empty() || !q.controls.is_empty())))
                     && is_empty_spacer_para
                     && matches!(p.line_segs.as_slice(), [seg] if !line_seg_is_synthetic(seg))
                     && match (p.line_segs.first(), cell.paragraphs.get(pi + 1)) {
@@ -8691,7 +8775,19 @@ impl LayoutEngine {
                                         && next.line_height > 0
                                         && i64::from(seg.line_height) * 4
                                             >= i64::from(next.line_height) * 3;
+                                    // [#5880] 직접 HWPX 는 이 빈 줄의 저장 슬롯이
+                                    // 정확히 lh+ls 인 경우만(±2HU) 인정한다 —
+                                    // 사다리가 접힌 빈 줄을 걸러 한 쪽에 들어가는
+                                    // 문서의 쪽수를 지킨다.
+                                    let forward =
+                                        i64::from(next.vertical_pos) - i64::from(seg.vertical_pos);
+                                    let slot = i64::from(seg.line_height)
+                                        + i64::from(seg.line_spacing.max(0));
+                                    let hwpx_exact_slot = !profile.hwpx_stored_layout()
+                                        || profile.hwp5_origin_hwpx()
+                                        || (forward - slot).abs() <= 2;
                                     full_line_box
+                                        && hwpx_exact_slot
                                         && next.vertical_pos
                                             >= seg.vertical_pos.saturating_add(seg.line_height)
                                 }
@@ -9259,6 +9355,61 @@ impl LayoutEngine {
                         }
                         if ri + 1 == nrow {
                             uh += om_bot + spacing_after;
+                            // [#5880] 직접 HWPX 의 저장 사다리는 중첩 표 host 문단
+                            // 뒤 흐름을 `lh + ls` 만큼 전진시킨다(2737927 p71:
+                            // 델타 10414 = lh 9994 + ls 420 정확). 유닛 합이 행합
+                            // (≈lh)에서 멈추면 표 하나당 ls 만큼 컷 회계가 짧아져,
+                            // 조각 말미에서 페인터(사다리 스냅)와 어긋난 표가
+                            // 압착·절단된다. 다음 문단 저장 델타가 이 등식과 ±2HU
+                            // 로 일치하는 host, 또는 되감김(프레임 종단) 직전
+                            // host 만 계상한다 — 등식 없는 사다리에 광역 적용하면
+                            // issue3637 표본의 p26/p27 조각 경계가 한 줄 밀린다
+                            // (로컬 게이트 실측).
+                            // 셀 단위 전제(위 빈 줄 보존과 동일): 쪽 스케일 프레임
+                            // 리셋 실재 + 사다리 전체 선형-정확. 이 증거가 없는
+                            // 셀(issue3637 계열)에 문단 등식만으로 계상하면 조각
+                            // 경계가 한 줄 밀린다(로컬 게이트 실측).
+                            if self.profile.get().hwpx_stored_layout()
+                                && cell_has_page_scale_frame_reset
+                                && cell_ladder_uniform_exact
+                            {
+                                if let Some(seg) =
+                                    p.line_segs.iter().find(|seg| !line_seg_is_synthetic(seg))
+                                {
+                                    let evidence = cell
+                                        .paragraphs
+                                        .get(pi + 1)
+                                        .and_then(|next| {
+                                            next.line_segs
+                                                .iter()
+                                                .find(|seg| !line_seg_is_synthetic(seg))
+                                        })
+                                        .map(|next_seg| {
+                                            i64::from(next_seg.vertical_pos)
+                                                - i64::from(seg.vertical_pos)
+                                        });
+                                    let slot = i64::from(seg.line_height)
+                                        + i64::from(seg.line_spacing.max(0));
+                                    // 등식 성립이면 계상. 되감김(프레임 종단)·증거
+                                    // 부재는 1×1 RowBreak 본문 래퍼에서만 계상 —
+                                    // 다열 표까지 열면 issue3637 표본의 p26/p27
+                                    // 조각 경계가 한 줄 밀린다(로컬 게이트 실측).
+                                    let wrapper_shape = !table.common.treat_as_char
+                                        && matches!(
+                                            table.page_break,
+                                            crate::model::table::TablePageBreak::RowBreak
+                                        )
+                                        && table.row_count == 1
+                                        && table.col_count == 1;
+                                    let charge = match evidence {
+                                        Some(delta) if delta >= 0 => (delta - slot).abs() <= 2,
+                                        _ => wrapper_shape,
+                                    };
+                                    if charge {
+                                        uh += hwpunit_to_px(seg.line_spacing.max(0), self.dpi);
+                                    }
+                                }
+                            }
                         }
                         units.push(CellUnit {
                             height: uh,
@@ -9462,13 +9613,14 @@ impl LayoutEngine {
                         let h = corrected_h(line, li);
                         let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                         let is_cell_last_line = is_last_para && li + 1 == line_count;
-                        let is_block_rowbreak = matches!(
-                            table.page_break,
-                            crate::model::table::TablePageBreak::RowBreak
-                        ) && !table.common.treat_as_char;
-                        let include_trailing_ls = !is_cell_last_line || para_count > 1;
+                        // [#5923] 셀 마지막 줄 trailing 줄간격은 비-TAC 표에서
+                        // 문단 수와 무관하게 제외 — HeightMeasurer·렌더 행높이 회계
+                        // 일치. 다문단 셀만 포함하던 구규칙은 hwpctl_API_v2.4 75쪽
+                        // 유령 쪽(행마다 +2.7px)을 낳았다. TAC 표의 다문단 셀은
+                        // [Task #874/#1086] 보존 핀(KTX TOC 등)을 위해 기존 포함
+                        // 회계를 유지한다.
                         let include_trailing_ls =
-                            include_trailing_ls && (!is_cell_last_line || !is_block_rowbreak);
+                            !is_cell_last_line || (para_count > 1 && table.common.treat_as_char);
                         let mut lh = if include_trailing_ls { h + ls } else { h };
                         if li == 0 {
                             lh += spacing_before;
@@ -9712,17 +9864,11 @@ impl LayoutEngine {
                             let h = corrected_h(line, li);
                             let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                             let is_cell_last_line = is_last_para && li + 1 == line_count;
-                            // [Task #1022/#1086] trailing ls 규칙 — HeightMeasurer 와
-                            // 정합. CellBreak/TAC 표는 기존 trailing geometry 를 보존하고,
-                            // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
-                            // trailing 을 제외해 행 fit 을 맞춘다.
-                            let is_block_rowbreak = matches!(
-                                table.page_break,
-                                crate::model::table::TablePageBreak::RowBreak
-                            ) && !table.common.treat_as_char;
-                            let include_trailing_ls = !is_cell_last_line || para_count > 1;
-                            let include_trailing_ls =
-                                include_trailing_ls && (!is_cell_last_line || !is_block_rowbreak);
+                            // [#5923] trailing ls — 비-TAC 표는 문단 수 무관 마지막
+                            // 줄 제외 (HeightMeasurer 와 동일 회계). TAC 표의
+                            // 다문단 셀은 보존 핀(KTX TOC 등) 유지.
+                            let include_trailing_ls = !is_cell_last_line
+                                || (para_count > 1 && table.common.treat_as_char);
                             let mut lh = if include_trailing_ls { h + ls } else { h };
                             if li == 0 {
                                 lh += spacing_before;
@@ -9801,9 +9947,11 @@ impl LayoutEngine {
                     let h = corrected_h(line, li);
                     let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                     let is_cell_last_line = is_last_para && li + 1 == line_count;
-                    let include_trailing_ls = !is_cell_last_line || para_count > 1;
+                    // [#5923] trailing ls — 비-TAC 표는 문단 수 무관 마지막 줄
+                    // 제외 (HeightMeasurer 와 동일 회계). TAC 표의 다문단 셀은
+                    // 보존 핀(KTX TOC 등) 유지.
                     let include_trailing_ls =
-                        include_trailing_ls && (!is_cell_last_line || !is_block_rowbreak);
+                        !is_cell_last_line || (para_count > 1 && table.common.treat_as_char);
                     let mut lh = if include_trailing_ls { h + ls } else { h };
                     if collapse_empty_rowbreak_spacer {
                         lh = 0.0;
@@ -11110,6 +11258,27 @@ impl LayoutEngine {
                             && self.row_has_stored_vpos_frame_rewind(table, row)
                             && self.row_has_single_visible_source_cell(table, row, styles)
                             && !hwpx_local_reset_stream));
+                // [#5880] 직접 HWPX 1×1 RowBreak 칸의 문단 경계 vpos 리셋은
+                // 한글이 저장한 쪽 프레임이다(2737927: p18 끝 70231HU ≈ 본문
+                // 높이에서 p19 vpos=0 되감김). relaxed 규칙이 이것을 "공간이
+                // 남은 로컬 재시작"으로 흡수하면 컷이 한글 경계를 몇 줄 지나쳐,
+                // 후속 조각 전부가 사다리 스냅과 어긋나며 말미 줄·표가 clip
+                // 소실된다. 판별자는 리셋까지 쌓인 높이 — 진짜 쪽 프레임은
+                // 예산의 큰 몫(≥70%)을 채우고, 기계 문서의 촘촘한 로컬 리셋
+                // (#1658 낭비쪽 회귀의 근거)은 h 가 작아 걸리지 않는다.
+                let hwpx_page_scale_cross_para_reset = self.profile.get().hwpx_stored_layout()
+                    && !table.common.treat_as_char
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+                    && table.row_count == 1
+                    && table.col_count == 1
+                    && row_cells.len() == 1
+                    && !u.empty_spacer
+                    && h >= avail_height * 0.7;
+                let strict_saved_frame_break =
+                    strict_saved_frame_break || hwpx_page_scale_cross_para_reset;
                 if j > start
                     && u.hard_break_before
                     && (strict_saved_frame_break

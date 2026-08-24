@@ -59,7 +59,28 @@ cargo test --profile release-test --test issue_4100_chart_data_edit \
     generate_b2_structure_judgment_bundle -- --ignored --nocapture
 ```
 
-생성기는 gitignored `output/issue_5447_b2_judgment/` 에 쓴다. 이 폴더의 사본과 바이트가
-같은지는 `sha256sum` 으로 직접 대조한다. **어긋나더라도 이 폴더가 정본이다** — 한컴이 실제로
-연 파일은 여기 있는 바이트이고, 판정은 그 바이트에 대한 관측이기 때문이다.
-재생성 결정성 실측은 [`mydocs/working/task_m100_5447_stage2.md`](../../mydocs/working/task_m100_5447_stage2.md) 에 있다.
+생성기는 gitignored `output/issue_5447_b2_judgment/` 에 쓴다. **어긋나더라도 이 폴더가
+정본이다** — 한컴이 실제로 연 파일은 여기 있는 바이트이고, 판정은 그 바이트에 대한 관측이기
+때문이다. 재생성 결정성 실측은
+[`mydocs/working/task_m100_5447_stage2.md`](../../mydocs/working/task_m100_5447_stage2.md) 에 있다.
+
+### 바이트로 대조하지 말 것 — 스트림으로 대조한다 (#5967)
+
+**재생성본은 이 폴더와 바이트가 반드시 어긋난다.** devel `b9eb55107`("검토: CI 완료 외부 PR
+7건 통합 수용 (#5912)", 외부 PR cherry-pick `97dbf4cef`·`6a0c04159`)이 `mini_cfb` 를 MS-CFB
+쪽으로 고쳤기 때문이다 — 디렉터리 red/black 을 실제로 칠하고(`color_deepest_nodes`),
+FAT·MiniFAT 미사용 슬롯을 `0x00` 대신 FREESECT 로 선채운다. 차이는 중첩 CFB 의 컨테이너 살림
+두 자리에만 있고 **차트 스트림은 동일하다**. 예: `묶은세로막대형-행추가.hwpx` 는 양쪽 274,436
+바이트에 422바이트 차이 — 색 플래그 2 + FAT 꼬리 미사용 슬롯 105개 × 4바이트.
+
+되돌리지 않는다. 종전 "전 엔트리 black" 은 leaf 깊이가 갈릴 때 black-height 가 어긋나고
+미사용 슬롯 `0x00` 은 strict 파서에서 sector 0 참조로 읽힌다.
+[`tests/cases/mini_cfb_strict_contract.rs`](../../tests/cases/mini_cfb_strict_contract.rs) 가
+그 반대 방향을 이미 상시로 고정한다. 유효성 문제도 없다 — 현재 라이터 포장 상태의 산출을
+한글 2022 가 전건 정상 개봉·렌더했다(#5652 판정, 개봉 실패 0).
+
+그래서 재생성 대조 축은 **중첩 CFB 의 스트림 동일성**이다. 그 계약은
+[`tests/cases/issue_5967_cfb_repack_reproducibility.rs`](../../tests/cases/issue_5967_cfb_repack_reproducibility.rs)
+가 CI 에서 상시로 지킨다 — 스트림 이름·바이트·루트 CLSID 가 재조립을 넘어 보존되는지(38건),
+그리고 바이트 차이가 색 플래그와 할당표 미사용 슬롯 **밖으로 새지 않는지**(29건). 손으로
+`sha256sum` 을 대조하지 말고 이 테스트를 돌린다.

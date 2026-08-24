@@ -81,31 +81,49 @@ pub(super) fn edit_set_chart_data(args: &[String]) -> i32 {
         Ok(d) => d,
         Err(e) => return e.report(),
     };
-    if !dry_run {
-        match doc.set_chart_data_by_index_native(chart_no - 1, &data) {
-            Ok(raw) => {
-                let parsed: serde_json::Value =
-                    serde_json::from_str(&raw).unwrap_or(serde_json::Value::Null);
-                if parsed["ok"] != true {
-                    if json_mode {
-                        let envelope = serde_json::json!({
-                            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                            "source": file_path,
-                            "count": chart_no,
-                            "dryRun": false,
-                            "invalid": parsed["invalid"],
-                        });
-                        println!("{}", provenance::marked(envelope, "edit"));
-                    } else {
-                        eprintln!("오류: 차트 데이터 변경 실패 - {raw}");
-                    }
-                    return EXIT_USAGE;
+    // [#5652] dry-run 도 코어를 거친다 — `dryRun: true` 를 주입해 검증(종류별 가드 포함)과
+    // diff 를 받되 한 바이트도 쓰지 않는다. 예전엔 dry-run 이 코어를 건너뛰어 가드가 침묵했다.
+    let data = if dry_run {
+        match serde_json::from_str::<serde_json::Value>(&data) {
+            Ok(mut v) => {
+                v["dryRun"] = serde_json::json!(true);
+                v.to_string()
+            }
+            Err(_) => data, // 코어가 editsParse 로 거부한다.
+        }
+    } else {
+        data
+    };
+    let mut extra = serde_json::json!({ "count": chart_no });
+    match doc.set_chart_data_by_index_native(chart_no - 1, &data) {
+        Ok(raw) => {
+            let parsed: serde_json::Value =
+                serde_json::from_str(&raw).unwrap_or(serde_json::Value::Null);
+            if parsed["ok"] != true {
+                if json_mode {
+                    let envelope = serde_json::json!({
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                        "source": file_path,
+                        "count": chart_no,
+                        "dryRun": dry_run,
+                        "invalid": parsed["invalid"],
+                    });
+                    println!("{}", provenance::marked(envelope, "edit"));
+                } else {
+                    eprintln!("오류: 차트 데이터 변경 실패 - {raw}");
+                }
+                return EXIT_USAGE;
+            }
+            // 코어 diff 를 봉투에 싣는다 — 구조 편집은 changed[].op 로 드러난다.
+            for key in ["changedCount", "changed", "wrote"] {
+                if !parsed[key].is_null() {
+                    extra[key] = parsed[key].clone();
                 }
             }
-            Err(e) => {
-                eprintln!("오류: 차트 데이터 변경 실패 - {e}");
-                return EXIT_RUNTIME;
-            }
+        }
+        Err(e) => {
+            eprintln!("오류: 차트 데이터 변경 실패 - {e}");
+            return EXIT_RUNTIME;
         }
     }
     finish_edit_write(
@@ -117,7 +135,7 @@ pub(super) fn edit_set_chart_data(args: &[String]) -> i32 {
         dry_run,
         json_mode,
         verify_mode,
-        serde_json::json!({ "count": chart_no }),
+        extra,
         &[(0, 0)],
         &format!("차트 데이터 예정: {file_path} 차트 {chart_no}"),
         &format!("차트 데이터 기록 완료: {file_path}"),

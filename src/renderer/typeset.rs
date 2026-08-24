@@ -887,21 +887,24 @@ fn is_reparsed_single_column_cell_split_row(
 /// while a continuation repeats only the table's outer top.  Every fragment reserves the outer
 /// bottom.  `repeat_outer_margin` is the narrow native-HWP evidence gate; applying this to every
 /// RowBreak table is disproven by the #2097 COM page pins. `vertical_offset` remains a
-/// first-fragment-only concern at the call site.
+/// first-fragment-only concern at the call site. `repeat_cellbreak_outer_margin` is the [#5922]
+/// native-HWP CellBreak contract: the same reopen for proven empty-host TopAndBottom CellBreak
+/// fragments (거대 표의 저장 ladder 는 표 높이를 접어 #2439 증거를 요구할 수 없다).
 fn partial_rowbreak_fragment_spacing_px(
     table: &crate::model::table::Table,
     first_fragment_host_before: f64,
     is_continuation: bool,
     repeat_outer_margin: bool,
+    repeat_cellbreak_outer_margin: bool,
     dpi: f64,
 ) -> (f64, f64) {
-    let repeats_outer_margin = repeat_outer_margin
-        && !table.common.treat_as_char
+    let repeats_outer_margin = !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
-        && matches!(
-            table.page_break,
-            crate::model::table::TablePageBreak::RowBreak
-        );
+        && match table.page_break {
+            crate::model::table::TablePageBreak::RowBreak => repeat_outer_margin,
+            crate::model::table::TablePageBreak::CellBreak => repeat_cellbreak_outer_margin,
+            crate::model::table::TablePageBreak::None => false,
+        };
     let before = if is_continuation {
         if repeats_outer_margin {
             hwpunit_to_px(table.outer_margin_top as i32, dpi)
@@ -1112,6 +1115,9 @@ struct TypesetState {
     /// [#4533 HWP3] 현재 문단 다음 문단의 첫 저장 lineseg vpos — 자리차지
     /// 밴드 비예약(사다리 증거) 판별용. 문단 루프 머리에서 세팅.
     next_para_first_stored_vpos: Option<i32>,
+    /// [#5870] 다음 문단이 빈 host 자리차지 표 앵커인가 — 빈-host float 의
+    /// 물리-사다리 여분 가산 발동 조건. 문단 루프 머리에서 세팅.
+    next_para_is_empty_float_table_anchor: bool,
     /// [#1955] 글뒤로 표 후행 빈 문단의 보류 흡수 목록. 표 fragment 는 지연 flush
     /// 되므로 흡수 시점에는 anchor 첫 fragment 단을 찾을 수 없다 — 페이지 확정 후
     /// (최종 flush 뒤) 첫 fragment 단에 일괄 부착한다.
@@ -1228,6 +1234,47 @@ fn column_def_design_spacing_px(cd: &ColumnDef, dpi: f64) -> f64 {
     } else {
         0.0
     }
+}
+
+/// [#5918] 현재 단이 block-table continuation 꼬리 조각(들)과 빈 필러 문단만
+/// 담고 있는지 — 저장 vpos 리셋의 이중 쪽 경계 판정용. 꼬리 조각이 저장 경계와
+/// 같은 물리 쪽 경계를 이미 열어 놨다면 리셋의 advance는 중복이므로 호출부에서
+/// 건너뜀.
+///
+/// 추가로 꼬리 조각이 쪽의 **소수 부분**(30% 이하)만 차지할 때 한정한다.
+/// 드레인이 새로 연 쪽에 조각이 작게 남을 때는 그 쪽이 저장 사다리상 다음
+/// 경계(리셋 문단)의 내용을 흡수할 예약 쪽이지만(sample1-repro pi=608:
+/// 78px / pi=750: 220px), 조각 자체가 쪽을 대부분 채웠다면 그 쪽은 저장
+/// 사다리에서 이미 소진된 독립 경계라 리셋은 별도의 다음 쪽을 가리킨다
+/// (task2097/75544 pi=316: 909px·pi=525: 826px, hwpx_sample2 pi=138:
+/// 1042px — 한글 COM/PDF 정답지가 전부 존중을 요구한다).
+fn page_holds_only_fresh_table_continuation(st: &TypesetState, paragraphs: &[Paragraph]) -> bool {
+    const FRESH_CONTINUATION_PAGE_MAX_FILL_RATIO: f64 = 0.30;
+    if st.current_items.is_empty() {
+        return false;
+    }
+    if st.current_height > st.available_height() * FRESH_CONTINUATION_PAGE_MAX_FILL_RATIO {
+        return false;
+    }
+    let mut has_continuation = false;
+    for item in &st.current_items {
+        match item {
+            PageItem::PartialTable {
+                is_continuation, ..
+            } if *is_continuation => has_continuation = true,
+            PageItem::FullParagraph { para_index }
+            | PageItem::PartialParagraph { para_index, .. } => {
+                let empty_only = paragraphs
+                    .get(*para_index)
+                    .is_some_and(|p| p.text.trim().is_empty() && p.controls.is_empty());
+                if !empty_only {
+                    return false;
+                }
+            }
+            _ => return false,
+        }
+    }
+    has_continuation
 }
 
 fn para_has_visible_text(para: &Paragraph) -> bool {
@@ -4202,6 +4249,7 @@ impl TypesetState {
             wrap_around_any_seg: false,
             behind_float_table_para: None,
             next_para_first_stored_vpos: None,
+            next_para_is_empty_float_table_anchor: false,
             behind_pending_absorbs: Vec::new(),
             overlay_shape_shortcut_para: None,
             pending_overlay_continuations: Vec::new(),
@@ -6716,6 +6764,9 @@ impl TypesetEngine {
                 .get(para_idx + 1)
                 .and_then(|p| p.line_segs.first())
                 .map(|seg| seg.vertical_pos);
+            st.next_para_is_empty_float_table_anchor = paragraphs
+                .get(para_idx + 1)
+                .is_some_and(|p| para_is_empty_topbottom_table_anchor(p));
             if std::env::var("RHWP_FLOW_DBG").is_ok() {
                 eprintln!(
                     "FLOW_DBG pi={} page={} cur_h={:.1}",
@@ -7141,7 +7192,15 @@ impl TypesetEngine {
                     {
                         st.hangul2024_spill_para = Some(para_idx);
                     }
-                    let trigger = trigger && !omit_pushed_empty_page && !hangul2024_refit;
+                    // [#5919] [#2019 v3] 로 명시 단나누기를 억제한 ColumnDef-only
+                    // overlay 구분자의 lineseg vertpos=0 은 쪽/단 경계 신호가 아니라
+                    // 마커 문단의 미설정값이다. 이 경계를 저장 vpos 리셋으로 다시
+                    // 읽으면 억제했던 단나누기가 되살아나 표 격자와 본문을 서로
+                    // 다른 허위 쪽으로 갈라 놓는다(74312 12쪽).
+                    let trigger = trigger
+                        && !omit_pushed_empty_page
+                        && !hangul2024_refit
+                        && !overlay_columndef_separator_break;
                     if trigger {
                         // [Task #724] wrap_around active 시 강제 종료 — anchor cs=0
                         // (HWP5 변환본 caption-style) 한정. 일반 wrap_around (anchor cs>0)
@@ -7153,7 +7212,20 @@ impl TypesetEngine {
                             st.close_square_band();
                         }
                         if st.wrap_around_cs < 0 {
-                            st.advance_column_or_new_page();
+                            // [#5918] 저장 리셋(cv==0/near-top)이 가리키는 쪽 경계를
+                            // block-table continuation 꼬리 조각이 이미 열어 놨으면
+                            // 이중으로 쪽을 넘기지 않는다. RowBreak 표의 마지막 조각은
+                            // 저장 경계와 무관하게 "앞 조각이 못 들어간" 시점에 새 쪽
+                            // 상단에 배출되는데, 그 새 쪽이 곧 저장 사다리의 리셋 지점과
+                            // 같은 물리 경계인 경우가 있다(sample1-repro pi=578 꼬리 조각
+                            // 쪽 == pi=608 vpos=0 리셋 쪽). 이때 리셋이 한 번 더
+                            // advance하면 조각만 남은 근빈 쪽이 생기고 뒤따르는 표가
+                            // 남은 공간으로 흐르지 못한다. 현재 쪽이 continuation
+                            // 조각(들)과 빈 필러 문단만 담고 있을 때만 건너뛴다 — 실
+                            // 내용이 함께 놓인 쪽의 저장 경계는 그대로 존중한다.
+                            if !page_holds_only_fresh_table_continuation(&st, paragraphs) {
+                                st.advance_column_or_new_page();
+                            }
                         }
                     }
                 }
@@ -19461,6 +19533,40 @@ impl TypesetEngine {
                 && table_total_height > 1.0
                 && stored_host_line_px.is_some_and(|lh| lh < table_total_height * 0.25)
                 && next_gap_px.is_some_and(|g| g < table_total_height * 0.25);
+            // [#5870] 빈 host 자리차지 float(vert=문단)의 흐름 전진에 v_off 와
+            // 위·아래 바깥여백을 계상한다 — 단, 이 문단의 저장 사다리가 그 물리
+            // 공식과 정확히 일치할 때만(`empty_host_physical_ladder_extras_hu`,
+            // #2097 반증 회피 근거도 그쪽 주석에). 합성 lineseg(HWP3 계열)는
+            // rhwp 가 물리식으로 만들어 자기참조가 되므로 실저장 줄만 증거로
+            // 인정하고, 다중 표 host 는 델타가 표 합이라 단일 표 등식에 걸리지
+            // 않는다(표 1개 조건으로 명시). layout 의 lane flow-bottom 가산과
+            // 대칭이어야 조판·렌더가 어긋나지 않는다.
+            let empty_host_physical_extras_hu = ((st.profile.hwp5_stored_pagination_layout()
+                || st.profile.hwpx_stored_layout())
+                && st.next_para_is_empty_float_table_anchor
+                && is_para_topbottom_float(&table.common)
+                && !para_has_non_whitespace_text(para)
+                && para
+                    .controls
+                    .iter()
+                    .filter(|control| matches!(control, Control::Table(_)))
+                    .count()
+                    == 1)
+                .then(|| {
+                    st.next_para_first_stored_vpos
+                        .zip(
+                            para.line_segs
+                                .iter()
+                                .find(|seg| !is_synthetic_line_seg(seg))
+                                .map(|seg| seg.vertical_pos),
+                        )
+                        .and_then(|(next_vpos, host_vpos)| {
+                            crate::renderer::float_placement::empty_host_physical_ladder_extras_hu(
+                                table, host_vpos, next_vpos,
+                            )
+                        })
+                })
+                .flatten();
             if hwp3_topbottom_no_reserve {
                 st.current_height += pre_height + stored_host_line_px.unwrap_or(0.0);
             } else if hangul_flowed_beside_table {
@@ -19468,6 +19574,9 @@ impl TypesetEngine {
                 st.current_height = band_top + stored_host_line_px.unwrap_or(0.0);
                 st.square_band_bottom = st.square_band_bottom.max(band_top + table_total_height);
                 st.square_band_top = Some(band_top);
+            } else if let Some(extras_hu) = empty_host_physical_extras_hu {
+                st.current_height +=
+                    pre_height + table_total_height + hwpunit_to_px(extras_hu as i32, self.dpi);
             } else {
                 st.current_height += pre_height + table_total_height;
             }
@@ -22776,6 +22885,11 @@ impl TypesetEngine {
                 ft.host_spacing.before,
                 false,
                 ft.strict_following_plain_text_fit,
+                crate::renderer::float_placement::native_empty_host_cellbreak_fragment_repeats_outer_margin(
+                    self.profile.get().hwp5_stored_pagination_layout(),
+                    para,
+                    table,
+                ),
                 self.dpi,
             );
             let vert_off = {
@@ -23525,6 +23639,11 @@ impl TypesetEngine {
                     host_spacing_before,
                     is_continuation,
                     strict_following_plain_text_fit,
+                    crate::renderer::float_placement::native_empty_host_cellbreak_fragment_repeats_outer_margin(
+                        self.profile.get().hwp5_stored_pagination_layout(),
+                        para,
+                        table,
+                    ),
                     self.dpi,
                 );
             let vert_offset_overhead = if is_continuation {
@@ -26153,6 +26272,7 @@ mod tests {
             first_host_before,
             false,
             true,
+            false,
             DEFAULT_DPI,
         );
         let continuation = partial_rowbreak_fragment_spacing_px(
@@ -26160,6 +26280,7 @@ mod tests {
             first_host_before,
             true,
             true,
+            false,
             DEFAULT_DPI,
         );
 
@@ -26175,6 +26296,7 @@ mod tests {
             &table,
             first_host_before,
             true,
+            false,
             false,
             DEFAULT_DPI,
         );

@@ -6,7 +6,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd_json(
             "export-svg",
             "문서를 페이지별 SVG로 렌더하고 --json 매니페스트 출력",
-            &["-o", "-p", "--json"],
+            &["-o", "-p", "--json", "--compat"],
             &[
                 "schemaVersion",
                 "source",
@@ -35,7 +35,15 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd_json(
             "export-pdf",
             "문서를 PDF로 렌더 (svg|direct backend, --json 매니페스트)",
-            &["-o", "-p", "--backend", "--profile", "--font-path", "--json"],
+            &[
+                "-o",
+                "-p",
+                "--backend",
+                "--profile",
+                "--font-path",
+                "--json",
+                "--compat",
+            ],
             &[
                 "schemaVersion",
                 "source",
@@ -184,9 +192,11 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         ),
         cmd_json(
             "csv-to-chart",
-            "CSV 로 기존 차트 N 의 값 덮어쓰기 — 계열·값 개수 불변, 불일치는 invalid+exit 2. \
+            "CSV 로 기존 차트 N 의 값 덮어쓰기 — 기본은 계열·값 개수 불변, 불일치는 invalid+exit 2. \
+             --structure 면 CSV 가 목표 상태: 행·열 증감(꼬리 기준)·계열명·라벨 변경도 쓴다 \
+             (원형 계열 수 1 고정·주식형 계열 수 고정·마지막 1점/1계열 삭제는 거부). \
              편집은 OOXML 두 표현(zip 파트·중첩 CFB)에 함께 쓴다",
-            &["--csv", "--chart", "-o", "--dry-run", "--verify", "--json"],
+            &["--csv", "--chart", "-o", "--structure", "--dry-run", "--verify", "--json"],
             &[
                 "schemaVersion",
                 "source",
@@ -640,7 +650,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd_json(
             "dump-pages",
             "페이지네이션 항목 덤프 (--json: 조판 진단 기계 계약)",
-            &["-p", "--respect-vpos-reset", "--json"],
+            &["-p", "--respect-vpos-reset", "--json", "--compat"],
             &[
                 "schemaVersion",
                 "source",

@@ -114,11 +114,12 @@ test('영속화 성공 뒤에만 내용 손실 경고를 보인다', async () =>
     lossReport,
     async () => { events.push('persisted'); return { method: 'save-picker' }; },
     (saved) => saved.method === 'save-picker',
+    () => { events.push('committed'); },
     () => { events.push('notified'); },
   );
 
   assert.deepEqual(result, { method: 'save-picker' });
-  assert.deepEqual(events, ['persisted', 'notified']);
+  assert.deepEqual(events, ['persisted', 'committed', 'notified']);
 });
 
 test('영속화 실패나 fallback 선택에는 stale/new 경고가 없다', async () => {
@@ -128,6 +129,7 @@ test('영속화 실패나 fallback 선택에는 stale/new 경고가 없다', asy
       lossReport,
       async () => { rejectedEvents.push('persist'); throw new Error('write failed'); },
       () => true,
+      () => { rejectedEvents.push('commit'); },
       () => { rejectedEvents.push('notify'); },
     ),
     /write failed/,
@@ -139,6 +141,7 @@ test('영속화 실패나 fallback 선택에는 stale/new 경고가 없다', asy
     lossReport,
     async () => { fallbackEvents.push('fallback'); return { method: 'fallback' }; },
     (saved) => saved.method !== 'fallback',
+    () => { fallbackEvents.push('commit'); },
     () => { fallbackEvents.push('notify'); },
   );
   assert.deepEqual(fallbackEvents, ['fallback']);
@@ -149,15 +152,17 @@ test('download 상호작용이 시작된 뒤 영속 경고를 보이며 실패�
   persistDownloadWithContentLoss(
     lossReport,
     () => { events.push('download'); },
+    () => { events.push('commit'); },
     () => { events.push('notify'); },
   );
-  assert.deepEqual(events, ['download', 'notify']);
+  assert.deepEqual(events, ['download', 'commit', 'notify']);
 
   const failedEvents: string[] = [];
   assert.throws(
     () => persistDownloadWithContentLoss(
       lossReport,
       () => { failedEvents.push('download'); throw new Error('blocked'); },
+      () => { failedEvents.push('commit'); },
       () => { failedEvents.push('notify'); },
     ),
     /blocked/,
@@ -177,17 +182,55 @@ test('Studio fallback 뒤 download 성공은 같은 보고서를 정확히 한 �
     lossReport,
     async () => { events.push('file-system:fallback'); return { method: 'fallback' as const }; },
     (saved) => saved.method !== 'fallback',
+    () => { events.push('file-system:commit'); },
     notify,
   );
   assert.equal(result.method, 'fallback');
   persistDownloadWithContentLoss(
     lossReport,
     () => { events.push('download:click'); },
+    () => { events.push('download:commit'); },
     notify,
   );
 
-  assert.deepEqual(events, ['file-system:fallback', 'download:click', 'notify']);
+  assert.deepEqual(events, ['file-system:fallback', 'download:click', 'download:commit', 'notify']);
   assert.equal(notifications, 1);
+});
+
+test('내용 손실 알림 실패는 성공한 저장과 상태 commit을 되돌리지 않는다', async () => {
+  const events: string[] = [];
+  const warnings: string[] = [];
+  const previousWarn = console.warn;
+  console.warn = (...args: unknown[]) => { warnings.push(args.join(' ')); };
+  try {
+    const result = await persistWithContentLoss(
+      lossReport,
+      async () => { events.push('persist'); return 'saved'; },
+      () => true,
+      () => { events.push('commit'); },
+      () => { events.push('notify'); throw new Error('toast failed'); },
+    );
+    assert.equal(result, 'saved');
+
+    persistDownloadWithContentLoss(
+      lossReport,
+      () => { events.push('download'); },
+      () => { events.push('download-commit'); },
+      () => { events.push('download-notify'); throw new Error('toast failed'); },
+    );
+  } finally {
+    console.warn = previousWarn;
+  }
+
+  assert.deepEqual(events, [
+    'persist',
+    'commit',
+    'notify',
+    'download',
+    'download-commit',
+    'download-notify',
+  ]);
+  assert.equal(warnings.length, 2);
 });
 
 test('Studio 명시 저장은 reported artifact를 primary 저장 뒤 fallback download까지 전달한다', () => {

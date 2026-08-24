@@ -13,7 +13,11 @@
     "test": "tests/issue_4100_chart_data_edit.rs::generate_b2_structure_judgment_bundle",
     "command": "cargo test --profile release-test --test issue_4100_chart_data_edit generate_b2_structure_judgment_bundle -- --ignored --nocapture",
     "devel_base": "b96a1f5e57f5b28762da19b4e3d5962291f0485a",
-    "note": "생성기는 gitignored output/issue_5447_b2_judgment/ 에 쓴다. 이 원장이 가리키는 samples/issue5447/ 사본이 한컴이 실제로 판정한 권위 자산이다."
+    "note": "생성기는 gitignored output/issue_5447_b2_judgment/ 에 쓴다. 이 원장이 가리키는 samples/issue5447/ 사본이 한컴이 실제로 판정한 권위 자산이다.",
+    "byte_reproducible": false,
+    "byte_reproducibility_lost_at": "b9eb551070f7e6b8ecf4272efebe1d2094fbeb9e",
+    "stream_reproducible": true,
+    "reproducibility_note": "#5967 — devel 의 CFB 라이터가 디렉터리 red/black 을 실제로 칠하고 FAT·MiniFAT 미사용 슬롯을 FREESECT 로 선채우도록 MS-CFB 쪽으로 바뀌었다(b9eb55107, 외부 PR cherry-pick 97dbf4cef·6a0c04159). 그래서 이 자산은 현재 바이너리로 바이트 동일하게 재생성되지 않는다 — 되돌리지 않는다. 재생성 대조 축은 중첩 CFB 의 스트림 동일성이고, 계약은 tests/cases/issue_5967_cfb_repack_reproducibility.rs 가 CI 에서 상시로 지킨다."
   },
   "raster": {
     "tool": "PyMuPDF",

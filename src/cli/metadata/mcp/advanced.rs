@@ -55,13 +55,13 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
         ),
         tool_with_optional_args(
             "hwp_set_chart_data",
-            "문서 순번 차트의 숫자 데이터를 JSON 으로 바꾼다. 코어 set_chart_data_by_index_native 배선. chart 는 문서 순서 1부터.",
+            "문서 순번 차트의 숫자 데이터를 JSON 으로 바꾼다. 코어 set_chart_data_by_index_native 배선. chart 는 문서 순서 1부터. data.structure=true 면 행렬이 목표 상태다 — 행·열 추가·삭제(꼬리 기준), 계열명·라벨 변경까지 쓴다(원형 계열 1 고정·주식형 계열 수 고정·마지막 1점/1계열 삭제 거부). 없으면 값만 바꾸고 치수·이름·라벨 불일치는 invalid 로 거부. dryRun 도 코어 검증을 거쳐 거부 사유와 changed[].op 를 돌려준다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
                     "path": { "type": "string" },
                     "chart": { "type": "integer", "minimum": 1, "description": "차트 번호(문서 순서, 1부터)" },
-                    "data": { "type": "string", "description": "편집 JSON (labels?, series[{name?, values[]}])" },
+                    "data": { "type": "string", "description": "편집 JSON (labels?, series[{name?, values[]}], structure?: boolean, dryRun?: boolean). structure=true 면 행렬이 목표 상태(행·열 증감·계열명·라벨 변경 허용)" },
                     "output": { "type": "string" },
                     "dryRun": { "type": "boolean" }
                 },
@@ -73,7 +73,10 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 { "when": "output", "args": ["-o", "{output}"] },
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
-            &["schemaVersion", "source", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+            &[
+                "schemaVersion", "source", "count", "dryRun", "changedCount", "changed", "wrote", "invalid",
+                "changedPages", "output", "outputFormat", "verify",
+            ],
         ),
         tool_with_optional_args(
             "hwp_insert_number",

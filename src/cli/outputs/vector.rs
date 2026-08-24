@@ -20,6 +20,7 @@ struct SvgExportArgs<'a> {
     grid_mm: Option<f64>,
     grid_origin: GridOriginOption,
     respect_vpos_reset: bool,
+    hangul2024_compat: bool,
     font_embed_mode: rhwp::renderer::svg::FontEmbedMode,
     font_paths: Vec<std::path::PathBuf>,
     render_profile: Option<rhwp::paint::RenderProfile>,
@@ -39,6 +40,7 @@ fn parse_export_svg_args<'a>(args: &'a [String]) -> Result<SvgExportArgs<'a>, i3
     let mut grid_mm: Option<f64> = None;
     let mut grid_origin = GridOriginOption::Fixed((0.0_f64, 0.0_f64));
     let mut respect_vpos_reset = false;
+    let mut hangul2024_compat = false;
     let mut font_embed_mode = rhwp::renderer::svg::FontEmbedMode::None;
     let mut font_paths: Vec<std::path::PathBuf> = Vec::new();
     let mut render_profile: Option<rhwp::paint::RenderProfile> = None;
@@ -105,6 +107,23 @@ fn parse_export_svg_args<'a>(args: &'a [String]) -> Result<SvgExportArgs<'a>, i3
             "--respect-vpos-reset" => {
                 respect_vpos_reset = true;
                 i += 1;
+            }
+            "--compat" => {
+                if i + 1 >= args.len() {
+                    eprintln!("오류: --compat 뒤에 2022 또는 2024 가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+                match crate::cli::parse_compat_generation(args[i + 1].as_str()) {
+                    Some(enabled) => hangul2024_compat = enabled,
+                    None => {
+                        eprintln!(
+                            "오류: --compat 값이 올바르지 않습니다(2022|2024): {}",
+                            args[i + 1]
+                        );
+                        return Err(EXIT_USAGE);
+                    }
+                }
+                i += 2;
             }
             arg if arg == "--show-grid" || arg.starts_with("--show-grid=") => {
                 grid_mm = if let Some(value) = arg.strip_prefix("--show-grid=") {
@@ -220,6 +239,7 @@ fn parse_export_svg_args<'a>(args: &'a [String]) -> Result<SvgExportArgs<'a>, i3
         grid_mm,
         grid_origin,
         respect_vpos_reset,
+        hangul2024_compat,
         font_embed_mode,
         font_paths,
         render_profile,
@@ -234,6 +254,7 @@ fn configure_svg_document(
     annotate_metric_font: bool,
     debug_overlay: bool,
     respect_vpos_reset: bool,
+    hangul2024_compat: bool,
 ) {
     if show_para_marks {
         doc.set_show_paragraph_marks(true);
@@ -250,6 +271,9 @@ fn configure_svg_document(
     if respect_vpos_reset {
         doc.set_respect_vpos_reset(true);
     }
+    if hangul2024_compat {
+        doc.set_hangul2024_compat(true);
+    }
 }
 
 pub(crate) fn export_svg(args: &[String]) -> i32 {
@@ -264,6 +288,7 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
         grid_mm,
         grid_origin,
         respect_vpos_reset,
+        hangul2024_compat,
         font_embed_mode,
         font_paths,
         render_profile,
@@ -305,6 +330,7 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
         annotate_metric_font,
         debug_overlay,
         respect_vpos_reset,
+        hangul2024_compat,
     );
 
     let page_count = doc.page_count();
@@ -449,6 +475,7 @@ pub(crate) fn export_render_tree(args: &[String]) -> i32 {
     let mut show_para_marks = false;
     let mut show_control_codes = false;
     let mut respect_vpos_reset = false;
+    let mut hangul2024_compat = false;
 
     let mut i = 0;
     while i < args.len() {
@@ -488,6 +515,23 @@ pub(crate) fn export_render_tree(args: &[String]) -> i32 {
             "--respect-vpos-reset" => {
                 respect_vpos_reset = true;
                 i += 1;
+            }
+            "--compat" => {
+                if i + 1 >= args.len() {
+                    eprintln!("오류: --compat 뒤에 2022 또는 2024 가 필요합니다.");
+                    return EXIT_USAGE;
+                }
+                match crate::cli::parse_compat_generation(args[i + 1].as_str()) {
+                    Some(enabled) => hangul2024_compat = enabled,
+                    None => {
+                        eprintln!(
+                            "오류: --compat 값이 올바르지 않습니다(2022|2024): {}",
+                            args[i + 1]
+                        );
+                        return EXIT_USAGE;
+                    }
+                }
+                i += 2;
             }
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
@@ -537,6 +581,9 @@ pub(crate) fn export_render_tree(args: &[String]) -> i32 {
     }
     if respect_vpos_reset {
         doc.set_respect_vpos_reset(true);
+    }
+    if hangul2024_compat {
+        doc.set_hangul2024_compat(true);
     }
 
     let page_count = doc.page_count();

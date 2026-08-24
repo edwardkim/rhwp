@@ -2405,28 +2405,37 @@ impl LayoutEngine {
                 }
 
                 if !rendered {
-                    // 폴백: placeholder. [#5582] 차트 `Contents` 파싱이 실패했고 다른
-                    // 미리보기 폴백도 전부 실패한 경우에만 그 사유 라벨(종전 색)을 쓴다.
-                    let (bg, fg, label) = match chart_error_label {
-                        Some(label) => (0xFFFFF4E5, 0xFFB45F06, label),
-                        None => (
-                            0xFFF0F0F0,
-                            0xFF707070,
-                            format!("OLE 개체 (BinData #{})", ole.bin_data_id),
-                        ),
-                    };
-                    push_ole_placeholder_render_node(
-                        tree,
-                        parent,
-                        BoundingBox::new(render_x, render_y, render_w, render_h),
-                        bg,
-                        fg,
-                        label,
-                        section_index,
-                        para_index,
-                        control_index,
-                        &ole_container_path,
-                    );
+                    // [#5582] 차트 `Contents` 파싱이 실패했고 다른 미리보기 폴백도
+                    // 전부 실패한 경우엔 그 사유 라벨(종전 색)을 쓴다.
+                    //
+                    // [#5882] 사유 라벨 없는 회색 자리표시("OLE 개체 (BinData #N)")는
+                    // 문서에 없던 이물이다 — 그릴 내용이 원본에 없는 OLE(빈 CFB 등)에 대해
+                    // 한글은 빈 자리로 둔다. 진단이 필요할 때만 RHWP_DIAG_OLE_PLACEHOLDER
+                    // 로 렌더 트리에 넣는다.
+                    let draw_placeholder = chart_error_label.is_some()
+                        || std::env::var_os("RHWP_DIAG_OLE_PLACEHOLDER").is_some();
+                    if draw_placeholder {
+                        let (bg, fg, label) = match chart_error_label {
+                            Some(label) => (0xFFFFF4E5, 0xFFB45F06, label),
+                            None => (
+                                0xFFF0F0F0,
+                                0xFF707070,
+                                format!("OLE 개체 (BinData #{})", ole.bin_data_id),
+                            ),
+                        };
+                        push_ole_placeholder_render_node(
+                            tree,
+                            parent,
+                            BoundingBox::new(render_x, render_y, render_w, render_h),
+                            bg,
+                            fg,
+                            label,
+                            section_index,
+                            para_index,
+                            control_index,
+                            &ole_container_path,
+                        );
+                    }
                 }
             }
         }

@@ -24,7 +24,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
 | 표면 규모 | CLI 명령 **98개**(그중 `--json` 계약 **65개**, batch 축 **9개**) · MCP 도구 **181개**(무상태 163 + 세션 전용 18) |
-| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **325개** · §2 전수 사전 **333개**(자기서술 밖 실측·참조 필드 포함) |
+| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **325개** · §2 전수 사전 **334개**(자기서술 밖 실측·참조 필드 포함) |
 | 표본 | `samples/` tracked 파일 **895개** 중 실측한 것만 §7 에 적었다 |
 
 **재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.
@@ -302,10 +302,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 333개 필드
+### 2-2. 전수 사전 — 334개 필드
 
 `capabilities` 의 `recordFields` 고유 **325개**와 그 밖의 실측·참조 필드를 합친
-333개다. `등장 명령` 은 자기서술
+334개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -454,10 +454,17 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `chartCount` | number | 문서의 차트 개수(글상자·표 셀 안 포함) | `chart-to-csv` |
 | `charts` | array | 차트 목록. `charts` 명령은 `{index,section,paragraph,control}`(`--chart N`=`index+1`). `chart-to-csv` 는 `{chart,rowCount,colCount,csv,output?}` — `csv` 는 **문서 파생** | `charts`·`chart-to-csv` |
 | `chart` | number | 대상 차트 번호. **문서 순서 1부터**(표의 `table` 은 0부터 — 다른 규약이다) | `chart-to-csv`·`csv-to-chart` |
-| `wrote` | array | **어느 표현에 실제로 썼나** — `["zipPart","nestedCopy"]`(HWPX) / `["nestedCopy"]`(HWP5) / `[]`(거부·dry-run·무변경). 값이 OOXML 두 곳에 중복 저장돼 있어 한쪽만 쓰면 HWP 변환에서 편집이 사라진다 | `csv-to-chart` |
+| `wrote` | array | **어느 표현에 실제로 썼나** — `["zipPart","nestedCopy"]`(HWPX) / `["nestedCopy"]`(HWP5) / `[]`(거부·dry-run·무변경). 값이 OOXML 두 곳에 중복 저장돼 있어 한쪽만 쓰면 HWP 변환에서 편집이 사라진다 | `csv-to-chart`·`edit set-chart-data` |
+| `changed[].op` | string | [#5652] 구조 편집 항목 — `appendPoints`/`truncatePoints`(`series`,`block`,`before`,`after` = 점 개수) · `renameSeries`(`series`,`from`,`to`) · `relabel`(`series`,`point`,`from`,`to`) · `appendSeries`(`series`,`name`) · `truncateSeries`(`before`,`after` = 계열 수). `from`/`to` 는 문서 파생(변경 전 이름·라벨), `before`/`after` 는 엔진 개수다. `--structure`/`structure:true` 에서만 나온다 | `csv-to-chart`·`edit set-chart-data` |
 
 `rowCount`/`colCount`/`changed`/`changedCount`/`invalid` 는 표 소절과 같은 뜻이되 좌표가
-다르다 — 차트의 `changed[]` 는 `{series,point|x,from,to}` 다.
+다르다 — 차트의 `changed[]` 는 `{series,point|x,from,to}` 또는 구조 항목 `{op,…}` 다.
+구조 편집 거부 사유(`invalid[].reason`, #5652): `pieSeriesCountFixed`·`stockSeriesCountFixed`·
+`lastPointDeleteRefused`·`lastSeriesDeleteRefused`·`scatterXYMismatch`·`multiLevelLabelsUnsupported`·
+`rowCountMismatch`·`labelsRequired`·`labelCountMismatch`·`unsafeText`·`seriesNameRequired`·
+`seriesNameNotPatchable`·`pointsNotInsertable`·`seriesNotClonable`·`selfCheckFailed`. 플래그 없이
+치수·이름·라벨이 다르면 B1 사유(`seriesCountMismatch`·`valueCountMismatch`·`seriesNameMismatch`·
+`categoryMismatch`)가 그대로 나온다 — 메시지가 `structure` 옵트인을 안내한다.
 
 #### 누름틀
 

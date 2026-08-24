@@ -7,9 +7,9 @@ use super::composer::{
     compose_paragraph, effective_text_for_metrics, first_text_line, ComposedParagraph,
 };
 use super::float_placement::{
-    horizontal_range, is_para_topbottom_float, native_empty_host_physical_outer_box_paint_inset,
-    native_empty_host_rowbreak_line_advance_hu, signed_hwpunit, FloatLaneSet,
-    FloatPlacementContext,
+    empty_host_physical_ladder_extras_hu, horizontal_range, is_para_topbottom_float,
+    native_empty_host_physical_outer_box_paint_inset, native_empty_host_rowbreak_line_advance_hu,
+    signed_hwpunit, FloatLaneSet, FloatPlacementContext,
 };
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
@@ -9701,10 +9701,50 @@ impl LayoutEngine {
                     // 후속 본문을 배치하면 caption과 겹친다(정책연구 p182, pi=1904).
                     // 이 구조만 lane의 물리 하단을 flow floor로 삼는다. 일반 empty
                     // float의 offset-only 예약 계약은 그대로 유지한다.
+                    //
+                    // [#5870] 저장 사다리가 물리 공식(v_off + outer_top + 표높이 +
+                    // outer_bottom)과 정확히 일치하는 문단은 한글이 그 합만큼 흐름을
+                    // 전진시킨 증거이므로 여분을 마저 계상한다 — 아니면 다음 빈-host
+                    // float 가 그만큼 위로 올라와 겹친다(10645 40쪽 결재란 19.7px 침범).
+                    // typeset 의 place_table_with_text 흐름 가산과 대칭. 광역 규칙이
+                    // 아닌 문단 단위 증거 게이트인 근거는 helper 주석(#2097 반증)에.
+                    let physical_ladder_extras_px =
+                        ((self.profile.get().hwp5_stored_pagination_layout()
+                            || self.profile.get().hwpx_stored_layout())
+                            && paragraphs
+                                .get(para_index + 1)
+                                .is_some_and(|next| para_is_empty_topbottom_table_anchor(next))
+                            && para
+                                .controls
+                                .iter()
+                                .filter(|control| matches!(control, Control::Table(_)))
+                                .count()
+                                == 1)
+                            .then(|| {
+                                let host_vpos = para
+                                    .line_segs
+                                    .iter()
+                                    .find(|seg| seg.tag & 0x8000_0000 == 0)
+                                    .map(|seg| seg.vertical_pos)?;
+                                let next_vpos = paragraphs
+                                    .get(para_index + 1)?
+                                    .line_segs
+                                    .iter()
+                                    .find(|seg| seg.tag & 0x8000_0000 == 0)
+                                    .map(|seg| seg.vertical_pos)?;
+                                match para.controls.get(control_index)? {
+                                    Control::Table(table) => empty_host_physical_ladder_extras_hu(
+                                        table, host_vpos, next_vpos,
+                                    )
+                                    .map(|extras_hu| hwpunit_to_px(extras_hu as i32, self.dpi)),
+                                    _ => None,
+                                }
+                            })
+                            .flatten();
                     if is_native_picture_caption_float {
                         lanes.max_bottom()
                     } else {
-                        global_y_before + reserved_height
+                        global_y_before + reserved_height + physical_ladder_extras_px.unwrap_or(0.0)
                     }
                 } else {
                     lanes.max_bottom()
@@ -10098,12 +10138,29 @@ impl LayoutEngine {
         let pt_mt = measured_tables
             .iter()
             .find(|mt| mt.para_index == para_index && mt.control_index == control_index);
-        let repeat_fragment_outer_margin = repeats_native_empty_host_rowbreak_fragment_margin(
-            self.profile.get().hwp5_stored_pagination_layout(),
-            paragraphs,
-            para_index,
-            control_index,
-        );
+        let repeat_fragment_outer_margin = paragraphs
+            .get(para_index)
+            .map(|para| {
+                if repeats_native_empty_host_rowbreak_fragment_margin(
+                    self.profile.get().hwp5_stored_pagination_layout(),
+                    paragraphs,
+                    para_index,
+                    control_index,
+                ) {
+                    return true;
+                }
+                match para.controls.get(control_index) {
+                    Some(Control::Table(table)) => {
+                        crate::renderer::float_placement::native_empty_host_cellbreak_fragment_repeats_outer_margin(
+                            self.profile.get().hwp5_stored_pagination_layout(),
+                            para,
+                            table,
+                        )
+                    }
+                    _ => false,
+                }
+            })
+            .unwrap_or(false);
         // 비-TAC 자리차지 표에서 vert offset이 있으면 문단 시작 y 전달.
         // layout_partial_table 내부에서 vert_offset을 적용하므로 이중 적용 방지.
         // [Task #712] HwpUnit=u32 이라 `vertical_offset > 0` 가드는 음수 비트표현

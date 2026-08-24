@@ -51,13 +51,14 @@ test('onMouseUp 은 직선 끝점 종료를 finishLineEndpointDrag 로 위임한
 });
 
 // ── 결함 3: 클릭 z순서 변경 ────────────────────────────────────────────────
-test('bringShapeToFront 는 z순서 변경을 executeOperation snapshot 으로 기록한다', () => {
+test('bringShapeToFront 는 z순서 변경을 executeOperation command(SetZOrderCommand)로 기록한다', () => {
   const body = fnBody(mouseSrc, 'function bringShapeToFront');
   // 미라우팅 회귀: this.wasm.changeShapeZOrder( 직접 호출이 남으면 히스토리 우회.
   assert.doesNotMatch(body, /this\.wasm\.changeShapeZOrder\s*\(/,
     'this.wasm.changeShapeZOrder 직접 호출 금지 — executeOperation 경유여야 함');
   assert.match(body, /executeOperation\(/, 'executeOperation 경유');
-  assert.match(body, /kind:\s*'snapshot'/, "kind:'snapshot' 로 기록(메뉴 정렬 경로와 동형)");
-  assert.match(body, /operationType:\s*'changeZOrder'/, 'changeZOrder 로 분류');
-  assert.match(body, /wasm\.changeShapeZOrder\s*\(/, '뮤테이션 자체는 operation 콜백에 존재');
+  // [#5769 후속] 스냅샷 대신 역연산 커맨드 — 되돌릴 것이 스칼라 1~2개라 문서 클론이
+  // 스택에 얹힐 이유가 없다. 메뉴 정렬 경로(insert.ts changeZOrder 퍼널)와 동일 커맨드.
+  assert.match(body, /kind:\s*'command'/, "kind:'command' 로 기록(메뉴 정렬 경로와 동형)");
+  assert.match(body, /new SetZOrderCommand\(picHit\.sec/, 'z 순서 속성쌍 커맨드로 기록');
 });
