@@ -1,0 +1,84 @@
+diff --git a/packages/cli/src/build/builder.rs b/packages/cli/src/build/builder.rs
+index 2e4fc9be..88b2b844 100644
+--- a/packages/cli/src/build/builder.rs
++++ b/packages/cli/src/build/builder.rs
+@@ -29,0 +30,47 @@ use super::{BuildContext, BuildId, BuildMode, HotpatchModuleCache};
++fn tip_patch_crates(
++    tip: &str,
++    dependencies: &HashSet<String>,
++    changed: Vec<String>,
++    mut dependents_of: impl FnMut(&str) -> Vec<String>,
++) -> HashSet<String> {
++    let mut selected = HashSet::from([tip.to_string()]);
++    let mut pending = changed;
++    let mut visited = HashSet::new();
++    while let Some(name) = pending.pop() {
++        if !visited.insert(name.clone()) || (name != tip && !dependencies.contains(&name)) {
++            continue;
++        }
++        selected.insert(name.clone());
++        pending.extend(
++            dependents_of(&name)
++                .into_iter()
++                .filter(|dependent| dependent != tip && dependencies.contains(dependent)),
++        );
++    }
++    selected
++}
++
++#[cfg(test)]
++mod patch_tests {
++    use super::*;
++
++    #[test]
++    fn patch_rebuild_only_admits_the_tip_dependency_graph() {
++        let dependencies = HashSet::from(["changed".to_string(), "inside".to_string()]);
++        let selected =
++            tip_patch_crates(
++                "tip",
++                &dependencies,
++                vec!["changed".into()],
++                |name| match name {
++                    "changed" => vec!["inside".into(), "other-app".into()],
++                    _ => vec![],
++                },
++            );
++        assert_eq!(
++            selected,
++            HashSet::from(["tip".into(), "changed".into(), "inside".into()])
++        );
++    }
++}
++
+@@ -414,16 +461,8 @@ impl AppBuilder {
+-        self.modified_crates.insert(tip_crate_name.clone());
+-
+-        // Add changed crates and their transitive workspace dependents (cascade).
+-        let mut to_visit: Vec<String> = changed_crates.clone();
+-        let mut visited = HashSet::new();
+-        while let Some(c) = to_visit.pop() {
+-            if !visited.insert(c.clone()) {
+-                continue;
+-            }
+-            self.modified_crates.insert(c.clone());
+-            for dep in self.build.workspace_dependents_of(&c) {
+-                if dep != tip_crate_name && !visited.contains(&dep) {
+-                    to_visit.push(dep);
+-                }
+-            }
+-        }
++        let tip_workspace_dependencies: HashSet<String> =
++            self.build.workspace_crate_dep_names().into_iter().collect();
++        self.modified_crates.extend(tip_patch_crates(
++            &tip_crate_name,
++            &tip_workspace_dependencies,
++            changed_crates.clone(),
++            |name| self.build.workspace_dependents_of(name),
++        ));
+diff --git a/packages/cli/src/build/request.rs b/packages/cli/src/build/request.rs
+index dcd5d5b1..38aac157 100644
+--- a/packages/cli/src/build/request.rs
++++ b/packages/cli/src/build/request.rs
+@@ -3135 +3135 @@ impl BuildRequest {
+-    fn workspace_crate_dep_names(&self) -> Vec<String> {
++    pub(crate) fn workspace_crate_dep_names(&self) -> Vec<String> {

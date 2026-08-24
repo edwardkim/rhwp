@@ -234,7 +234,8 @@ const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
     level: 'warn',
     message:
       'jump_table 을 이 빌드의 subsecond JumpTable 로 읽지 못했다. dx 와 크레이트 버전이 ' +
-      '어긋났는지 `node scripts/dioxus-cli-version.mjs` 의 값과 `dx --version` 을 대조한다.',
+      '어긋났는지 `node scripts/dioxus-cli-version.mjs` 의 `version` 필드와 ' +
+      '`target/dioxus-cli/bin/dx --version` 을 대조한다.',
   },
   'patch-rejected': {
     level: 'warn',

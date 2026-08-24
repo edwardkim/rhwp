@@ -2820,9 +2820,8 @@ dependencies = [
 
 [[package]]
 name = "subsecond"
-version = "0.7.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d350d5788fa94d560d92269266a50efc77b036bfca6675e420b64df7b3211f37"
+version = "0.8.0-alpha.1"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=24f6a829df0dfa203961a98ea4cae21c2ff27e28#24f6a829df0dfa203961a98ea4cae21c2ff27e28"
 dependencies = [
  "js-sys",
  "libc",
@@ -2839,9 +2838,8 @@ dependencies = [
 
 [[package]]
 name = "subsecond-types"
-version = "0.7.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcf32d66269b5fbb8558334e8d22b657b2f7af0dd2ef56c231541099a862e464"
+version = "0.8.0-alpha.1"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=24f6a829df0dfa203961a98ea4cae21c2ff27e28#24f6a829df0dfa203961a98ea4cae21c2ff27e28"
 dependencies = [
  "serde",
 ]

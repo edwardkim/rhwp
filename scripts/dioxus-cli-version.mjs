@@ -1,16 +1,8 @@
 /**
- * 설치할 `dioxus-cli` 버전을 저장소가 실제로 컴파일하는 `subsecond` 크레이트에서 유도한다.
+ * 설치할 Dioxus CLI의 정본을 `subsecond` 의존성과 Cargo.lock에서 유도한다.
  *
- * [#4580] 두 버전은 같아야 한다 — `dx` 가 만든 점프 테이블을 `subsecond::apply_patch` 가
- * 역직렬화하므로, 어긋나면 패치가 조용히 안 먹는다(#4578). 그래서 버전이 저장소 안에 여러 벌
- * 있었고 실제로 갈라졌다: dependabot `79461bf36` 이 `Cargo.toml` 만 올렸고 나머지는
- * `de2c2c226` 에서 사람이 손으로 맞췄다.
- *
- * 사본을 `Cargo.toml` 의 정확 핀 하나로 줄이는 대신, 이 스크립트가 그 핀과 잠금 파일이 해결한
- * 버전을 맞대 보고 갈라져 있으면 **설치하지 않고 멈춘다.** 이 층의 실패는 조용하므로, 어느
- * 쪽과도 맞지 않는 CLI 를 까느니 서는 편이 낫다.
- *
- * 사용: `node scripts/dioxus-cli-version.mjs` — 버전 한 줄을 stdout 으로 낸다.
+ * registry exact version과 official git exact revision을 모두 지원한다. 어느 경우든
+ * 매니페스트 요구와 lock이 실제로 해결한 source가 다르면 설치 전에 멈춘다.
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -18,55 +10,81 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const CRATE = 'subsecond';
+const CRATES_IO_SOURCE = 'registry+https://github.com/rust-lang/crates.io-index';
 
-/** `Cargo.toml` 이 요구하는 정확 핀(`=x.y.z`). 정확 핀이 아니면 유도 자체가 성립하지 않는다. */
-function pinnedRequirement(manifest) {
-  const match = new RegExp(`^\\s*${CRATE}\\s*=\\s*\\{[^}]*version\\s*=\\s*"([^"]+)"`, 'm')
-    .exec(manifest);
-  if (!match) {
-    throw new Error(`Cargo.toml 에서 \`${CRATE}\` 의존성을 찾지 못했다`);
-  }
-  const requirement = match[1];
-  if (!requirement.startsWith('=')) {
-    throw new Error(
-      `\`${CRATE}\` 가 정확 핀이 아니다(${requirement}). dx 와 버전을 맞출 수 없으므로 `
-      + '`=x.y.z` 로 고정해야 한다.',
-    );
-  }
-  return requirement.slice(1);
+function dependencyFields(manifest) {
+  const match = new RegExp(`^\\s*${CRATE}\\s*=\\s*\\{([^}]*)\\}`, 'm').exec(manifest);
+  if (!match) throw new Error(`Cargo.toml 에서 \`${CRATE}\` 의존성을 찾지 못했다`);
+  return match[1];
 }
 
-/** `Cargo.lock` 이 해결한 버전. 실제로 컴파일되는 버전이다. */
-function resolvedVersion(lockfile) {
-  const versions = [...lockfile.matchAll(/^\[\[package\]\]\nname = "([^"]+)"\nversion = "([^"]+)"/gm)]
-    .filter(([, name]) => name === CRATE)
-    .map(([, , version]) => version);
-  if (versions.length !== 1) {
-    throw new Error(
-      `Cargo.lock 에서 \`${CRATE}\` 를 정확히 한 번 찾지 못했다(${versions.length}건)`,
-    );
+function manifestSource(manifest) {
+  const fields = dependencyFields(manifest);
+  const version = /\bversion\s*=\s*"([^"]+)"/.exec(fields)?.[1];
+  const registry = /\bregistry\s*=\s*"([^"]+)"/.exec(fields)?.[1];
+  const git = /\bgit\s*=\s*"([^"]+)"/.exec(fields)?.[1];
+  const rev = /\brev\s*=\s*"([^"]+)"/.exec(fields)?.[1];
+
+  if (version && !git && !rev) {
+    if (registry && registry !== 'crates-io') {
+      throw new Error(`\`${CRATE}\` custom registry는 dioxus-cli source로 지원하지 않는다: ${registry}`);
+    }
+    if (!version.startsWith('=')) {
+      throw new Error(
+        `\`${CRATE}\` 가 정확 핀이 아니다(${version}). dx 와 맞출 수 없으므로 정확 version 또는 git rev로 고정해야 한다.`,
+      );
+    }
+    return { kind: 'registry', version: version.slice(1) };
   }
-  return versions[0];
+  if (!version && git && rev && /^[0-9a-f]{40}$/i.test(rev)) {
+    return { kind: 'git', git, rev: rev.toLowerCase() };
+  }
+  throw new Error(
+    `\`${CRATE}\` 는 정확 registry version 또는 40자리 git rev 하나로 고정해야 한다: ${fields.trim()}`,
+  );
 }
 
-/**
- * 설치할 dioxus-cli 버전.
- *
- * @throws 매니페스트의 핀과 잠금 파일이 갈라져 있으면 — 그대로 설치하면 어느 쪽과도 맞지 않는
- *   CLI 가 깔린다.
- */
+function resolvedPackage(lockfile) {
+  const packages = lockfile
+    .split(/^\[\[package\]\]$/m)
+    .filter(block => /^\s*name = "subsecond"$/m.test(block));
+  if (packages.length !== 1) {
+    throw new Error(`Cargo.lock 에서 \`${CRATE}\` 를 정확히 한 번 찾지 못했다(${packages.length}건)`);
+  }
+  const block = packages[0];
+  const version = /^version = "([^"]+)"$/m.exec(block)?.[1];
+  const source = /^source = "([^"]+)"$/m.exec(block)?.[1];
+  if (!version || !source) throw new Error(`Cargo.lock 의 \`${CRATE}\` source를 읽지 못했다`);
+  return { version, source };
+}
+
+export function dioxusCliSource(root = ROOT) {
+  const requested = manifestSource(readFileSync(path.join(root, 'Cargo.toml'), 'utf8'));
+  const resolved = resolvedPackage(readFileSync(path.join(root, 'Cargo.lock'), 'utf8'));
+
+  if (requested.kind === 'registry') {
+    if (requested.version !== resolved.version || resolved.source !== CRATES_IO_SOURCE) {
+      throw new Error(
+        `\`${CRATE}\` registry 핀(${requested.version})과 lock(${resolved.version}, ${resolved.source})이 다르다.`,
+      );
+    }
+    return requested;
+  }
+
+  const expected = `git+${requested.git}?rev=${requested.rev}#${requested.rev}`;
+  if (resolved.source !== expected) {
+    throw new Error(
+      `\`${CRATE}\` git rev(${requested.rev})과 Cargo.lock source(${resolved.source})가 다르다.`,
+    );
+  }
+  return { ...requested, version: resolved.version };
+}
+
+/** 기존 소비자가 version 문자열만 필요할 때의 호환 API. 설치 source 판정에는 쓰지 않는다. */
 export function dioxusCliVersion(root = ROOT) {
-  const pinned = pinnedRequirement(readFileSync(path.join(root, 'Cargo.toml'), 'utf8'));
-  const resolved = resolvedVersion(readFileSync(path.join(root, 'Cargo.lock'), 'utf8'));
-  if (pinned !== resolved) {
-    throw new Error(
-      `\`${CRATE}\` 의 정확 핀(Cargo.toml: ${pinned})과 해결된 버전(Cargo.lock: ${resolved})이 `
-      + '다르다. `cargo update -p subsecond` 로 잠금 파일을 맞춘 뒤 다시 실행한다.',
-    );
-  }
-  return resolved;
+  return dioxusCliSource(root).version;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  process.stdout.write(`${dioxusCliVersion()}\n`);
+  process.stdout.write(`${JSON.stringify(dioxusCliSource())}\n`);
 }

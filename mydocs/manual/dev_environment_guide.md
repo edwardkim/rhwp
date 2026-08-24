@@ -257,7 +257,8 @@ Rust 를 고쳐도 WASM 재빌드 없이 실행 중인 브라우저에 반영하
 `applySubsecondDevtoolsMessage` 같은 export 가 생긴다.
 
 **feature 를 켜는 것과 디버그 프로파일로 빌드하는 것은 별개의 두 조건이고, 둘 다 필요하다.**
-`subsecond::HotFn::try_call`(`subsecond-0.7.10/src/lib.rs:411-414`)이 `if !cfg!(debug_assertions)`
+`subsecond::HotFn::try_call`(고정한 Dioxus `24f6a829`의
+`packages/subsecond/subsecond/src/lib.rs:411-414`)이 `if !cfg!(debug_assertions)`
 로 점프 테이블을 아예 보지 않고 원본 함수를 부른다. 그래서 릴리스 프로파일로 빌드하면 경계를
 아무리 잘 배치해도 모든 호출이 패치 이전 코드로 간다. `npm run subsecond:serve` 가 쓰는
 `dx serve --web` 은 디버그가 기본이라 지금은 맞게 동작하지만 **그 의존은 우연이다** — `--release`
@@ -281,15 +282,16 @@ npm ci
 npm run subsecond:install
 ```
 
-`subsecond:install`은 루트 `Cargo.toml` 의 `subsecond` 정확 핀에서 버전을 유도해(#4580,
-`scripts/dioxus-cli-version.mjs`) 그 버전의 `dioxus-cli`를 `../target/dioxus-cli/bin/dx`에 설치한다. 첫
+`subsecond:install`은 루트 `Cargo.toml` 의 `subsecond` 정확 핀에서 registry 버전 또는 official Git
+revision을 유도한다(#4580, `scripts/dioxus-cli-version.mjs`). Git 핀은 검증된 임시 checkout에 선언된
+workaround를 적용한 뒤 게시하고, 같은 source의 `dioxus-cli`를 `../target/dioxus-cli/bin/dx`에 설치한다. 첫
 `subsecond:serve`는 Dioxus가 맞는 `wasm-bindgen-cli`와 `esbuild`도 자동 설치하고 개발용 WASM을
 처음 빌드하므로 수 분이 걸릴 수 있다. `target/dioxus-cli/`, `target/dx/`,
 `target/rhwp-subsecond-vite/`는 로컬 생성물이며 커밋하지 않는다.
 
-`subsecond:serve`는 Dioxus 대화형 제어를 켠다. 기동 배너의 `r`(전체 rebuild), `p`(자동 rebuild
-토글), `v`(상세 로그), `/`(전체 단축키)은 실행 중인 터미널에서 사용할 수 있다. 대화형 제어를
-끄면 배너는 단축키를 계속 보여도 키 입력은 동작하지 않으므로 `--interactive false`를 쓰지 않는다.
+`subsecond:serve`는 자동화 세션의 stdin을 소비하지 않도록 `--interactive false`로 실행하고,
+상세 trace를 `target/subsecond-dx.log`에 남긴다. Rust 저장의 자동 rebuild는 그대로 동작한다.
+전체 rebuild가 필요하면 프로세스를 종료한 뒤 같은 명령을 다시 실행한다.
 
 이 경로에서는 일반 배포용 `wasm-pack build --target web --out-dir pkg`를 먼저 실행할 필요가 없다.
 `subsecond:serve`가 개발용 WASM을 `target/dx/`에 만들고, `dev:subsecond`가 필요한 JS/WASM 두 파일을
@@ -327,9 +329,9 @@ cd rhwp-studio
 npm run dev:subsecond -- --host 0.0.0.0 --port 7700
 ```
 
-최초 기동 뒤에는 터미널 1에서 `/`를 눌러 단축키 메뉴가 나타나는지 먼저 확인한다. 이 확인은
-`subsecond:serve` 스크립트가 실제 대화형 모드로 실행됐는지 검증한다. 일반 Rust 저장은 자동 rebuild가
-기본으로 켜져 있어 바로 감지하며, 필요할 때만 `r`로 전체 rebuild를 요청한다.
+최초 기동 뒤에는 `target/subsecond-dx.log`와 아래 HTTP 응답으로 build 완료를 확인한다. 일반 Rust
+저장은 자동 rebuild가 기본으로 켜져 있어 바로 감지한다. 전체 rebuild가 필요하면 `subsecond:serve`를
+종료하고 다시 시작한다.
 
 `0.0.0.0`은 Vite의 모든 NIC 수신 대기 주소다. 브라우저에는 이 서버의 실제 호스트 IP를 사용해
 `http://<host-ip>:7700/`으로 접속한다. `7711`은 Vite의 `/_dioxus`, `/wasm` 프록시 전용이므로 외부에
@@ -400,8 +402,9 @@ curl -fsS -o /dev/null -w 'vite-wasm=%{http_code}\n' http://127.0.0.1:7700/wasm/
 | wasm 패치 적용 (subsecond 크레이트 내부) | Rust panic + 전역 오류 경고 | 브라우저 콘솔 |
 
 마지막 층에는 구조적인 한계가 있다. wasm32 에서 `subsecond::apply_patch` 는 patch wasm 의
-fetch/compile/instantiate future 를 띄우고 **즉시** `Ok(())` 를 돌려주므로(subsecond 0.7.10
-`src/lib.rs:551`, `:690`), 적용 성공 여부는 `applySubsecondDevtoolsMessage` 의 반환값이 될 수 없다.
+fetch/compile/instantiate future 를 띄우고 **즉시** `Ok(())` 를 돌려주므로(고정한 Dioxus
+`24f6a829`의 `packages/subsecond/subsecond/src/lib.rs:551`, `:690`), 적용 성공 여부는
+`applySubsecondDevtoolsMessage` 의 반환값이 될 수 없다.
 그래서 그 반환값은 `patch-dispatched`("넘겼다")까지만 말하고 "적용됐다"고 말하지 않는다. future
 안의 실패는 전부 `.unwrap()`/`panic!`(`lib.rs:578-582`)이라 다음 두 곳으로만 나온다.
 
@@ -418,7 +421,8 @@ fetch/compile/instantiate future 를 띄우고 **즉시** `Ok(())` 를 돌려주
 선형 메모리와 간접 함수 테이블은 `memory.grow`/`funcs.grow` 로 늘기만 할 뿐 줄어들 수 없다. 패치 한
 건이 더하는 선형 메모리는 `(ceil(패치 byte / 64KiB) + 1) × 64KiB` 이고, 이 저장소의 디버그 베이스
 모듈은 약 123MB 다. 패치 크기 자체는 이 저장소에서 아직 실측하지 않았다 — 상류는 패치가 8MB 를 넘는
-일이 흔하다고만 적어 뒀다(`subsecond-0.7.10/src/lib.rs:604`).
+일이 흔하다고만 적어 뒀다(고정한 Dioxus `24f6a829`의
+`packages/subsecond/subsecond/src/lib.rs:604`).
 
 - 핫패치 32건마다 브라우저 콘솔에 누적 경고(`[subsecond] 이 세션에 핫패치 …건(적용 요청 기준)이
   쌓였다`)가 나온다.

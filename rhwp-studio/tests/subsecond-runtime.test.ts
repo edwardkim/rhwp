@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -590,6 +591,10 @@ test('each outcome is rendered as its own line that names where to look next', a
   messages.forEach(message =>
     assert.ok(message.length > 40, `다음에 볼 곳까지 말해야 한다: ${message}`),
   );
+  assert.match(
+    describeSubsecondSignal({ kind: 'outcome', code: 'undeserializable-jump-table' }).message,
+    /`version` 필드[\s\S]*target\/dioxus-cli\/bin\/dx --version/,
+  );
 
   assert.equal(
     describeSubsecondSignal({ kind: 'outcome', code: 'not-hot-reload' }).level,
@@ -787,22 +792,42 @@ test('devtools websocket counts only applied patches toward the accumulation', a
 });
 
 /** 매니페스트·잠금 파일 한 쌍을 담은 임시 저장소 뿌리를 만든다. */
-function fakeRepository(pin: string, locked: string): string {
+function fakeRepository(
+  pin: string,
+  locked: string,
+  registry = '',
+  source = 'registry+https://github.com/rust-lang/crates.io-index',
+): string {
   const root = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-version-'));
   writeFileSync(
     path.join(root, 'Cargo.toml'),
-    `[dependencies]\nsubsecond = { version = "${pin}", optional = true }\n`,
+    `[dependencies]\nsubsecond = { version = "${pin}"${registry ? `, registry = "${registry}"` : ''}, optional = true }\n`,
   );
   writeFileSync(
     path.join(root, 'Cargo.lock'),
-    `[[package]]\nname = "subsecond"\nversion = "${locked}"\n`,
+    `[[package]]\nname = "subsecond"\nversion = "${locked}"\nsource = "${source}"\n`,
   );
   return root;
 }
 
-test('the dioxus-cli version is derived from the crate, so it cannot drift', async () => {
-  const { dioxusCliVersion } = await import('../../scripts/dioxus-cli-version.mjs');
+function fakeGitRepository(requestedRev: string, lockedRev = requestedRev): string {
+  const root = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-git-source-'));
+  const git = 'https://github.com/DioxusLabs/dioxus.git';
+  writeFileSync(
+    path.join(root, 'Cargo.toml'),
+    `[dependencies]\nsubsecond = { git = "${git}", rev = "${requestedRev}", optional = true }\n`,
+  );
+  writeFileSync(
+    path.join(root, 'Cargo.lock'),
+    `[[package]]\nname = "subsecond"\nversion = "0.8.0-alpha.1"\nsource = "git+${git}?rev=${requestedRev}#${lockedRev}"\n`,
+  );
+  return root;
+}
+
+test('the dioxus-cli source is derived from the crate, so it cannot drift', async () => {
+  const { dioxusCliSource, dioxusCliVersion } = await import('../../scripts/dioxus-cli-version.mjs');
   const repoRoot = new URL('../../', import.meta.url);
+  const source = dioxusCliSource(fileURLToPath(repoRoot));
   const derived = dioxusCliVersion(fileURLToPath(repoRoot));
 
   // 유도값은 실제로 컴파일되는 버전이어야 한다 — 잠금 파일이 해결한 값.
@@ -821,22 +846,167 @@ test('the dioxus-cli version is derived from the crate, so it cannot drift', asy
     /\d+\.\d+\.\d+/,
     `subsecond:install 에 버전 사본이 다시 생겼다: ${installScript}`,
   );
-  assert.ok(installScript.includes('scripts/dioxus-cli-version.mjs'), installScript);
+  assert.ok(installScript.includes('scripts/install-dioxus-cli.mjs'), installScript);
+  assert.equal(source.version, derived);
 });
 
 test('a drifted or loose pin stops the install instead of fetching the wrong dx', async () => {
-  const { dioxusCliVersion } = await import('../../scripts/dioxus-cli-version.mjs');
+  const { dioxusCliSource, dioxusCliVersion } = await import('../../scripts/dioxus-cli-version.mjs');
 
   assert.equal(dioxusCliVersion(fakeRepository('=1.2.3', '1.2.3')), '1.2.3');
+  assert.equal(
+    dioxusCliVersion(fakeRepository('=1.2.3-alpha.1', '1.2.3-alpha.1')),
+    '1.2.3-alpha.1',
+  );
 
   // 핀과 잠금이 갈라진 상태. 그대로 설치하면 어느 쪽과도 맞지 않는 dx 가 깔린다.
   assert.throws(
     () => dioxusCliVersion(fakeRepository('=1.2.3', '1.2.4')),
-    /Cargo\.toml: 1\.2\.3[\s\S]*Cargo\.lock: 1\.2\.4/,
+    /registry 핀\(1\.2\.3\)[\s\S]*lock\(1\.2\.4/,
   );
 
   // 느슨한 핀이면 잠금이 언제든 앞서 나갈 수 있어 유도 자체가 성립하지 않는다.
   assert.throws(() => dioxusCliVersion(fakeRepository('1.2', '1.2.9')), /정확 핀이 아니다/);
+  assert.throws(() => dioxusCliVersion(fakeRepository('=1.2.3', '1.2.3', 'custom')), /custom registry/);
+  assert.throws(
+    () => dioxusCliVersion(fakeRepository('=1.2.3', '1.2.3', '', 'registry+https://example.test/index')),
+    /registry 핀[\s\S]*example\.test/,
+  );
+
+  const rev = '1234567890abcdef1234567890abcdef12345678';
+  assert.deepEqual(dioxusCliSource(fakeGitRepository(rev)), {
+    kind: 'git',
+    git: 'https://github.com/DioxusLabs/dioxus.git',
+    rev,
+    version: '0.8.0-alpha.1',
+  });
+  assert.throws(
+    () => dioxusCliSource(fakeGitRepository(rev, 'abcdef1234567890abcdef1234567890abcdef12')),
+    /git rev[\s\S]*Cargo\.lock source/,
+  );
+});
+
+test('the installer passes the exact Subsecond source to cargo', async () => {
+  const { dioxusCliInstallArgs, dioxusCliSourceDir } = await import('../../scripts/install-dioxus-cli.mjs');
+  const rev = '1234567890abcdef1234567890abcdef12345678';
+  const source = {
+    kind: 'git' as const,
+    git: 'https://github.com/DioxusLabs/dioxus.git',
+    rev,
+    version: '0.8.0-alpha.1',
+  };
+  const preparedSourceDir = `/repo/target/dioxus-cli-source/${rev}-patch-generation`;
+  assert.deepEqual(
+    dioxusCliInstallArgs(source, '/repo', preparedSourceDir),
+    [
+      'install', 'dioxus-cli',
+      '--path', `${preparedSourceDir}/packages/cli`,
+      '--locked', '--root', '/repo/target/dioxus-cli',
+    ],
+  );
+  const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
+  assert.match(dioxusCliSourceDir(source, repoRoot), new RegExp(`${rev}-[0-9a-f]{16}$`));
+});
+
+test('the installer rejects ignored source while allowing its build output', async () => {
+  const { verifyDioxusCliCheckoutFiles } = await import('../../scripts/install-dioxus-cli.mjs');
+  const checkout = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-checkout-'));
+  execFileSync('git', ['init', '--quiet', checkout]);
+  writeFileSync(path.join(checkout, '.git', 'info', 'exclude'), 'hidden.rs\ntarget/\n');
+  mkdirSync(path.join(checkout, 'target'));
+  writeFileSync(path.join(checkout, 'target', 'artifact'), 'build output\n');
+
+  assert.doesNotThrow(() => verifyDioxusCliCheckoutFiles(checkout));
+  writeFileSync(path.join(checkout, 'hidden.rs'), 'fn hidden() {}\n');
+  assert.throws(() => verifyDioxusCliCheckoutFiles(checkout), /ignored source[\s\S]*hidden\.rs/);
+});
+
+test('the installer rejects tracked source hidden by index flags', async () => {
+  const { verifyDioxusCliCheckoutFiles } = await import('../../scripts/install-dioxus-cli.mjs');
+  const checkout = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-index-'));
+  execFileSync('git', ['init', '--quiet', checkout]);
+  writeFileSync(path.join(checkout, 'tracked.rs'), 'fn original() {}\n');
+  execFileSync('git', ['-C', checkout, 'add', 'tracked.rs']);
+  execFileSync('git', ['-C', checkout, 'update-index', '--assume-unchanged', 'tracked.rs']);
+  writeFileSync(path.join(checkout, 'tracked.rs'), 'fn replaced() {}\n');
+
+  assert.throws(() => verifyDioxusCliCheckoutFiles(checkout), /index flag[\s\S]*tracked\.rs/);
+});
+
+test('the installer cache digest sees source bytes hidden by a Git clean filter', async () => {
+  const { dioxusCliSourceDigest, verifyDioxusPristineCheckout } = await import('../../scripts/install-dioxus-cli.mjs');
+  const checkout = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-filter-'));
+  execFileSync('git', ['init', '--quiet', checkout]);
+  writeFileSync(path.join(checkout, '.gitattributes'), 'tracked.rs filter=review-mask\n');
+  writeFileSync(path.join(checkout, 'tracked.rs'), 'fn original() {}\n');
+  execFileSync('git', ['-C', checkout, 'add', '.gitattributes', 'tracked.rs']);
+  execFileSync('git', ['-C', checkout, '-c', 'user.name=review', '-c', 'user.email=review@example.test', 'commit', '--quiet', '-m', 'base']);
+  const originalDigest = dioxusCliSourceDigest(checkout);
+  execFileSync('git', ['-C', checkout, 'config', 'filter.review-mask.clean', "sed 's/replaced/original/'"]);
+  writeFileSync(path.join(checkout, 'tracked.rs'), 'fn replaced() {}\n');
+
+  execFileSync('git', ['-C', checkout, 'diff', '--exit-code']);
+  assert.notEqual(dioxusCliSourceDigest(checkout), originalDigest);
+  assert.throws(
+    () => verifyDioxusPristineCheckout(checkout),
+    /raw source[\s\S]*tracked\.rs/,
+  );
+});
+
+test('the installer cache digest has unambiguous binary file boundaries', async () => {
+  const { dioxusCliSourceDigest } = await import('../../scripts/install-dioxus-cli.mjs');
+  const makeCheckout = (a: Uint8Array, b: Uint8Array): string => {
+    const checkout = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-digest-'));
+    execFileSync('git', ['init', '--quiet', checkout]);
+    writeFileSync(path.join(checkout, 'a'), a);
+    writeFileSync(path.join(checkout, 'b'), b);
+    execFileSync('git', ['-C', checkout, 'add', 'a', 'b']);
+    return checkout;
+  };
+  const left = makeCheckout(Buffer.from('x'), Buffer.from('y\0b\0z'));
+  const right = makeCheckout(Buffer.from('x\0b\0y'), Buffer.from('z'));
+
+  assert.notEqual(dioxusCliSourceDigest(left), dioxusCliSourceDigest(right));
+});
+
+test('the pristine checkout verifier hashes symlink targets as Git blobs', async () => {
+  const { dioxusCliSourceDigest, verifyDioxusPristineCheckout } = await import('../../scripts/install-dioxus-cli.mjs');
+  const checkout = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-symlink-'));
+  execFileSync('git', ['init', '--quiet', checkout]);
+  writeFileSync(path.join(checkout, 'target.txt'), 'contents\n');
+  mkdirSync(path.join(checkout, 'directory'));
+  symlinkSync('target.txt', path.join(checkout, 'link'));
+  symlinkSync('missing', path.join(checkout, 'broken-link'));
+  symlinkSync('directory', path.join(checkout, 'directory-link'));
+  execFileSync('git', ['-C', checkout, 'add', 'target.txt', 'link', 'broken-link', 'directory-link']);
+
+  assert.doesNotThrow(() => verifyDioxusPristineCheckout(checkout));
+  assert.match(dioxusCliSourceDigest(checkout), /^[0-9a-f]{64}$/);
+});
+
+test('the pinned Dioxus tip workaround is applied and verified as an exact diff', () => {
+  const tipPatch = readFileSync(
+    new URL('../../scripts/patches/dioxus-cli-hotpatch-tip-dependents.patch', import.meta.url),
+    'utf8',
+  );
+  assert.match(tipPatch, /workspace_crate_dep_names/);
+  assert.doesNotMatch(tipPatch, /serve\/server\.rs/);
+  const installer = readFileSync(
+    new URL('../../scripts/install-dioxus-cli.mjs', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    installer,
+    /apply', '--check', '--unidiff-zero'/,
+  );
+  assert.match(installer, /const PATCH_DIFF_ARGS/);
+  for (const flag of ['--abbrev=8', '--no-color', '--no-textconv', '--inter-hunk-context=0', '--diff-algorithm=myers', '-O/dev/null']) {
+    assert.ok(installer.includes(`'${flag}'`), flag);
+  }
+  assert.match(installer, /'status', '--porcelain=v1', '--untracked-files=all'/);
+  assert.match(installer, /rhwp-patched-v2[\s\S]*mkdtempSync[\s\S]*preparedHead[\s\S]*preparedDiff[\s\S]*writeFileSync[\s\S]*renameSync/);
+  assert.match(installer, /ls-files[\s\S]*--ignored[\s\S]*ignored source/);
+  assert.doesNotMatch(installer, /'diff', '--name-only'/);
 });
 
 /**
@@ -866,9 +1036,12 @@ test('hot-patch dev wiring is declared in the manifests and the vite config', ()
   const studioPackage = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
 
   assert.match(cargo, /subsecond-dev\s*=\s*\["dep:subsecond"\]/);
-  // 버전 숫자는 여기 적지 않는다 — 사본이 하나 더 생기면 그것이 #4580 이 없앤 드리프트다.
-  // 정확 핀이라는 사실만 본다. 그 핀에서 유도한 값의 정합은 아래 전용 테스트가 확인한다.
-  assert.match(cargo, /subsecond\s*=\s*\{\s*version\s*=\s*"=\d+\.\d+\.\d+",\s*optional\s*=\s*true\s*\}/);
+  // SHA 값은 여기 적지 않는다 — 사본이 하나 더 생기면 그것이 #4580 이 없앤 드리프트다.
+  // official git의 40자리 정확 rev라는 사실만 보고, lock과의 정합은 위 전용 테스트가 확인한다.
+  assert.match(
+    cargo,
+    /subsecond\s*=\s*\{\s*git\s*=\s*"https:\/\/github\.com\/DioxusLabs\/dioxus\.git",\s*rev\s*=\s*"[0-9a-f]{40}",\s*optional\s*=\s*true\s*\}/,
+  );
   assert.match(cargo, /members\s*=\s*\[[\s\S]*"tools\/rhwp-subsecond"/);
   assert.match(adapterCargo, /name\s*=\s*"rhwp-subsecond"/);
   assert.match(adapterCargo, /build\s*=\s*"build\.rs"/);
@@ -881,7 +1054,10 @@ test('hot-patch dev wiring is declared in the manifests and the vite config', ()
   assert.match(vite, /rhwp-subsecond-vite/);
   assert.match(vite, /rhwp-subsecond\.js/);
   assert.match(studioPackage, /"subsecond:sync"[\s\S]*rhwp-subsecond-vite/);
-  assert.match(studioPackage, /"subsecond:install"[\s\S]*cargo install dioxus-cli[\s\S]*--locked/);
+  assert.match(studioPackage, /"subsecond:install"[\s\S]*scripts\/install-dioxus-cli\.mjs/);
   assert.match(studioPackage, /"subsecond:serve"[\s\S]*--package rhwp-subsecond[\s\S]*--hot-patch/);
+  assert.match(studioPackage, /"subsecond:serve"[\s\S]*DIOXUS_LOG=[^"\s]*subsecond_cli_support=trace/);
+  assert.match(studioPackage, /"subsecond:serve"[\s\S]*--trace[\s\S]*--log-to-file target\/subsecond-dx\.log/);
+  assert.match(studioPackage, /"subsecond:serve"[\s\S]*--interactive false[\s\S]*--cargo-args=--locked[\s\S]*--keep-names/);
   assert.match(studioPackage, /"dev:subsecond"\s*:\s*"npm run subsecond:sync && RHWP_SUBSECOND=1 vite"/);
 });

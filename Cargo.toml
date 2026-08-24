@@ -265,10 +265,10 @@ ttf-parser = "0.25"
 rustybuzz = "0.20"
 
 console_error_panic_hook = { version = "0.1", optional = true }
-# [#4580] 핫패치 버전의 **유일한** 사본. `dx` 가 만든 점프 테이블을 이 크레이트가 역직렬화하므로
-# 설치할 dioxus-cli 도 같은 버전이어야 한다 — `scripts/dioxus-cli-version.mjs` 가 여기서 유도한다.
-# 정확 핀(`=`)이 아니면 그 유도가 성립하지 않는다.
-subsecond = { version = "=0.7.10", optional = true }
+# [#4580] 핫패치 source의 **유일한** 사본. `dx` 가 만든 점프 테이블을 이 크레이트가 역직렬화하므로
+# 설치할 dioxus-cli 도 같은 registry version 또는 official git rev여야 한다.
+# `scripts/dioxus-cli-version.mjs`가 이 핀과 Cargo.lock source를 대조하고 설치 source를 유도한다.
+subsecond = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "24f6a829df0dfa203961a98ea4cae21c2ff27e28", optional = true }
 
 [features]
 default = ["console_error_panic_hook"]
