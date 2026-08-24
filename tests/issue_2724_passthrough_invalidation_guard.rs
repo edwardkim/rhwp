@@ -382,6 +382,14 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "열 폭 계산만 하고 실제 반영은 열 폭 설정 뮤테이터가 한다.",
     ),
     (
+        "commands/table_ops.rs",
+        "remove_border_fill_tails_native",
+        Exempt::CallerResponsibility,
+        "[#5959] doc_info.border_fills 의 고아 꼬리 절단 + dirty 플래그 원복만 한다 — \
+         섹션 본문 IR 무변경이며 passthrough 무효화·복원은 호출자(TS undo 의 \
+         applyIds → restoreSectionRaw 3단)가 담당한다.",
+    ),
+    (
         "commands/text_editing.rs",
         "insert_text_in_cell_native",
         Exempt::DelegatesTo("replace_text_in_cell_native_impl"),
