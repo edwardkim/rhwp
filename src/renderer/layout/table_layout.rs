@@ -9900,8 +9900,57 @@ impl LayoutEngine {
             );
         }
 
-        let units =
+        let mut units =
             Self::delay_empty_anchor_topandbottom_flow_units_before_hard_break(units, cell, table);
+
+        // [#5885] 저장 사다리 종점 정합 — 중첩 표 호스트 문단이 셀 마지막이면 그
+        // 문단 뒤 간격을 흡수할 다음 유닛이 없어 유닛 합이 저장 종점보다 짧아진다
+        // (3171199 p2: 유닛 521.7 vs 저장 531.4, 행이 9.6px 짧아 바깥 행 구분선이
+        // 중첩 표 마지막 행 한가운데를 가로지르고 다음 행이 겹쳐 그려진다). 한글은
+        // 저장 사다리 종점까지 행을 닫는다. 텍스트-전용 문단 유닛은 corrected
+        // line height 가 문단 간격을 이미 담아 차이가 안 나므로, 마지막 문단이
+        // 중첩 표 호스트이고 사다리가 단조·비합성일 때만 차액을 마지막 유닛에
+        // 가산한다. use_vpos_unit_positions(같은 문단 텍스트+표 셀 한정)가 꺼진
+        // 표에서도 성립하는 물리 계약이라 별도 후처리로 둔다.
+        if native_hwp5_rowbreak_float_ladder
+            && cell_has_local_vpos_origin
+            && cell
+                .paragraphs
+                .last()
+                .is_some_and(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))))
+        {
+            let mut monotonic = true;
+            let mut prev_vpos = i32::MIN;
+            let mut stored_end = 0i32;
+            let mut any = false;
+            'scan: for p in &cell.paragraphs {
+                for seg in &p.line_segs {
+                    if line_seg_is_synthetic(seg) || seg.vertical_pos < 0 {
+                        monotonic = false;
+                        break 'scan;
+                    }
+                    if seg.vertical_pos < prev_vpos {
+                        monotonic = false;
+                        break 'scan;
+                    }
+                    prev_vpos = seg.vertical_pos;
+                    stored_end = stored_end.max(seg.vertical_pos.saturating_add(seg.line_height));
+                    any = true;
+                }
+            }
+            if monotonic && any {
+                let stored_end_px = normalized_vpos_px(stored_end);
+                let unit_sum: f64 = units.iter().map(|u| u.height).sum();
+                let shortfall = stored_end_px - unit_sum;
+                // 한 문단 간격 규모만 인정 — 그 이상은 쪽 스케일 사다리 등 다른
+                // 축이므로 손대지 않는다.
+                if shortfall > 0.5 && shortfall <= 32.0 {
+                    if let Some(last) = units.last_mut() {
+                        last.height += shortfall;
+                    }
+                }
+            }
+        }
 
         if let Ok(pattern) = std::env::var("RHWP_DIAG_CELL_UNITS") {
             if cell
