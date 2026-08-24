@@ -6,7 +6,7 @@ use super::super::height_measurer::MeasuredTable;
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, ShapeStyle};
+use super::super::{hwpunit_to_px, px_to_hwpunit, ShapeStyle};
 use super::border_rendering::{
     build_row_col_x, collect_cell_borders, render_edge_borders, render_transparent_borders,
 };
@@ -1367,7 +1367,38 @@ impl LayoutEngine {
             // [#3637] 이 조각에서 **실제로 그려지는 첫 문단**의 vpos. 아래 중첩 표
             // 문단 스냅이 쓰는 조각 원점이다. `line_segs.first()` 를 그대로 쓰면 셀
             // 전체 좌표라 연속 조각에서 원점만큼 통째로 밀린다.
-            let frag_vpos_origin = fragment_vpos_origin(cell, line_ranges.as_deref());
+            let mut frag_vpos_origin = fragment_vpos_origin(cell, line_ranges.as_deref());
+            // [#5880] 조각이 **중첩 표 호스트 문단의 중간 유닛**에서 시작하면(앞 쪽이
+            // 표의 앞 행들을 이미 그렸으면) 그 문단의 소비된 유닛 높이만큼 원점을
+            // 내린다. 호스트 문단은 표 전체가 저장 lineseg 한 줄이라 line_ranges 가
+            // 소비분을 표현하지 못하고, 원점이 문단 머리(vpos)에 남아 후속 문단
+            // 스냅이 소비분(2737927 p5: 행0·1 = 81px)만큼 아래로 밀렸다 — 밀린
+            // 조각 끝의 표·각주가 조각 상자를 넘어 clip 소실(-187자, 12줄).
+            // 텍스트 문단의 연속 조각은 line_ranges 의 start_line seg 가 이미 조각
+            // 상대 원점이므로(기존 #3637 계약) start_line==0 인 경우만 보정한다.
+            if let Some((su, _)) = cut_units {
+                if su > 0 {
+                    let units = self.cell_units(cell, table, styles);
+                    if let Some(first_unit) = units.get(su) {
+                        let first_para = first_unit.para_idx;
+                        let starts_at_line0 = line_ranges
+                            .as_deref()
+                            .and_then(|ranges| ranges.get(first_para))
+                            .is_none_or(|&(start, _)| start == 0);
+                        if starts_at_line0 {
+                            let consumed_px: f64 = units[..su]
+                                .iter()
+                                .filter(|unit| unit.para_idx == first_para)
+                                .map(|unit| unit.height)
+                                .sum();
+                            if consumed_px > 0.5 {
+                                frag_vpos_origin = frag_vpos_origin
+                                    .saturating_add(px_to_hwpunit(consumed_px, self.dpi));
+                            }
+                        }
+                    }
+                }
+            }
             let preserve_linear_single_cell_vpos = cut_units.is_some_and(|(su, _)| su == 0)
                 && matches!(
                     table.page_break,
