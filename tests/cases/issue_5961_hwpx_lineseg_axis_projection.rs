@@ -100,5 +100,59 @@ fn the_first_line_is_not_shifted() {
     );
 }
 
-// 줄을 다시 계산하면 보정폭이 지워진다는 계약은 `replace_line_segs` 가 crate 내부
-// 메서드라 `src/model/paragraph/tests.rs` 의 단위 시험이 고정한다.
+/// 보정폭이 0 인 문단(HWP5·HWP3·HML 출처)은 투영이 항등이다 — 과잉 적용 방지.
+#[test]
+fn a_zero_shift_projection_is_the_identity() {
+    use rhwp::model::paragraph::{LineSeg, Paragraph};
+
+    let para = Paragraph {
+        line_segs: vec![
+            LineSeg {
+                text_start: 0,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: 48,
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+    assert_eq!(para.line_seg_text_start(0), 0);
+    assert_eq!(
+        para.line_seg_text_start(1),
+        48,
+        "보정폭이 0 인데 투영이 값을 바꿨다 — HWP5 출처 문단까지 축을 옮기면 안 된다."
+    );
+}
+
+/// 보정폭이 실린 문단은 그만큼만 올린다 — 첫 줄(0)은 그대로.
+#[test]
+fn the_projection_adds_exactly_the_recorded_shift() {
+    use rhwp::model::paragraph::{LineSeg, Paragraph};
+
+    let para = Paragraph {
+        hwpx_axis_shift: 8,
+        line_segs: vec![
+            LineSeg {
+                text_start: 0,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: 24,
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+    assert_eq!(
+        para.line_seg_text_start(0),
+        0,
+        "문단 시작은 두 축에서 같은 자리다"
+    );
+    assert_eq!(para.line_seg_text_start(1), 32);
+}
+
+// 줄을 다시 계산하면 보정폭이 0 으로 지워진다는 계약(`replace_line_segs`)은 그 메서드가
+// crate 내부라 여기서 직접 부를 수 없다. 계약은 해당 메서드의 주석이 지키고, 어겼을 때의
+// 증상(두 번 더해진 축)은 위 투영 시험들이 잡는다.
