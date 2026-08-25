@@ -5165,7 +5165,31 @@ fn stored_ladder_encodes_spacing_before(
     // 문단 경계에서 줄 간격을 흡수한 사다리를 오탐한다(2990099·3249937 에서 +3·+1쪽 회귀).
     let intra_gap = stored_intra_line_gap(para).or_else(|| stored_intra_line_gap(prev));
     let Some(intra_gap) = intra_gap else {
-        return true; // 한 줄짜리들뿐 — 비교 기준이 없다.
+        // [#6031] 한 줄짜리 문단 연속 구간 — 줄 간 delta 표본이 없다. 직전 문단
+        // 마지막 줄의 저장 trailing ls 와 경계 gap 이 **정확히 일치**하면 사다리가
+        // 경계를 줄바꿈처럼 적은 것(sb 미인코딩)이다 (3249937 p6: gap 1400 == ls
+        // 1400, sb 1000 미반영 → 쪽-말미 2줄이 본문 밖 +40pt). ls 필드를 1차
+        // 기준으로 쓰면 경계 흡수형 사다리를 오탐하지만(아래 주석, 2990099·
+        // 3249937 +3·+1쪽 회귀), 표본 부재 시의 등가-일치 판별은 흡수형
+        // (gap < ls)과 정상형(gap ≥ ls+sb) 어느 쪽에도 걸리지 않는다.
+        // sb 하한 5px: 아주 작은 sb(예: hwp3-sample16 계보 285HU=3.8px)는 한글이
+        // 저장 흐름을 신뢰하는 문서군과 겹친다(#2158 핀 64쪽 실측 — 누락 판정 시
+        // 트림 철회 누적 +3.8px×282 경계로 65쪽 회귀). 여백 관통을 만드는 굵은
+        // sb(6.7px+)만 누락 판정한다.
+        // 추가 지문: 이 생성기 계열은 줄 피치를 lh·ls 에 양분해 적는다
+        // (ls == lh, paraPr 160% 와도 모순 — 3249937 전 문단 1400/1400).
+        // 정상 저장 사다리(ls < lh, hwp3-sample16 660/2000)는 한글이 저장
+        // 흐름을 신뢰하는 문서군과 겹치므로 등가-일치만으로 누락 판정하지 않는다.
+        if spacing_before_px > 5.0
+            && prev_last.line_spacing == prev_last.line_height
+            && prev_last.line_spacing > 0
+            && (stored_gap - prev_last.line_spacing).abs() <= 2
+            && hwpunit_to_px(prev_last.line_spacing, dpi) + spacing_before_px
+                > hwpunit_to_px(stored_gap, dpi) + 0.5
+        {
+            return false;
+        }
+        return true; // 판별 불가 — 종전 보수 유지.
     };
     // 문단 경계 간격이 줄 간격과 같으면 사다리가 경계를 줄바꿈처럼 적은 것이다.
     hwpunit_to_px(stored_gap, dpi) + 0.5 >= hwpunit_to_px(intra_gap, dpi) + spacing_before_px
@@ -15573,6 +15597,32 @@ impl TypesetEngine {
         {
             y = st.current_height;
         }
+        // [#6031] sb-누락 ladder 는 경계 하나가 아니라 **문서 전체 서명**이다 —
+        // 위 ±2px 일치 스킵만으로는 누락분이 다음 sb=0 경계의 후방 스냅으로
+        // 흘러가 되감긴다(3249937 p3: pi=36 스킵분 −6.7px 가 pi=37 스냅으로
+        // 제거, 쪽 말미 누적 +53.3px 를 typeset 만 안 본다). 렌더는 후방 스냅
+        // 상한(8px)으로 이 되감김을 거부하므로 판정 좌표와 배치 좌표가 갈라져
+        // 쪽-말미 줄이 본문 하단 밖에 그려진다(#5801 코어). 경계 검사
+        // (`stored_ladder_encodes_spacing_before`)가 누락을 확정하면 남은 열의
+        // 후방 스냅·트림을 dirty 로 철회해 두 좌표계를 일치시킨다 — 한글
+        // fresh 도 sb 를 가산한 흐름으로 쪽을 끊는다(p3 말미 810.7px 실측
+        // = 한글 809.7pt 정합, 꼬리 '바.' 줄은 한글도 4쪽 첫 줄).
+        if st.profile.hwpx_stored_layout()
+            && !st.profile.hwp3_layout()
+            && spacing_before_px > 5.0
+            && !st.vpos_ladder_dirty
+            && !stored_ladder_encodes_spacing_before(
+                paragraphs,
+                para_idx,
+                spacing_before_px,
+                self.dpi,
+            )
+        {
+            st.vpos_ladder_dirty = true;
+            if y < st.current_height {
+                y = st.current_height;
+            }
+        }
         // [#2243 진단] snap 입출력 — 동작 불변.
         if std::env::var("RHWP_DIAG_TAC").is_ok() && (y - st.current_height).abs() > 0.05 {
             eprintln!(
@@ -16538,6 +16588,14 @@ impl TypesetEngine {
         let hangul2024_blank_spill = st.profile.hangul2024_layout()
             && st.hangul2024_spill_para == Some(para_idx)
             && !st.current_items.is_empty();
+        if std::env::var("RHWP_DIAG_6031").is_ok()
+            && st.current_height + page_end_fit_height > available
+        {
+            eprintln!(
+                "DIAG_6031 pi={para_idx} cur={:.1} fit_h={page_end_fit_height:.1} avail={available:.1} single={saved_single_line_bottom_fits} list_tail={saved_list_tail_body_vpos_fits} base={:?}",
+                st.current_height, current_page_vpos_base,
+            );
+        }
         if forced_page_break_line.is_none()
             && !stored_vpos_rewind_break
             && (hangul2024_blank_spill
@@ -16972,6 +17030,11 @@ impl TypesetEngine {
                         && para.controls.is_empty()
                         && !st.current_items.is_empty()
                         && !para_near_rowbreak_table(paragraphs, para_idx)
+                        // [#6031] sb-누락 ladder(dirty) 의 꼬리 좌표는 배치 좌표가
+                        // 아니다 — 렌더 흐름은 sb 를 가산해 이미 그 아래에 있고,
+                        // 이 좌표로 붙든 줄은 본문 하단 밖에 그려진다(3249937 p3
+                        // '바.' +25.1pt). 한글 fresh 도 이 줄을 다음 쪽에 둔다.
+                        && !st.vpos_ladder_dirty
                         && saved_line_range_fits_body_tail(
                             para,
                             li,
