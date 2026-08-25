@@ -967,16 +967,9 @@ function setupZoomControls(): void {
     vm.setZoom(zoom);
   });
 
-  // 모바일: 줌 값 클릭 → 100% 토글
+  // 한컴 상황 선처럼 배율 표시와 보기 메뉴가 같은 확대/축소 대화상자를 연다.
   document.getElementById('sb-zoom-val')!.addEventListener('click', () => {
-    const currentZoom = vm.getZoom();
-    if (Math.abs(currentZoom - 1.0) < 0.05) {
-      // 현재 100% → 쪽 맞춤으로 전환
-      document.getElementById('sb-zoom-fit')!.click();
-    } else {
-      // 현재 쪽 맞춤/기타 → 100%로 전환
-      vm.setZoom(1.0);
-    }
+    dispatcher.dispatch('view:zoom-dialog');
   });
 
   document.addEventListener('keydown', (e) => {

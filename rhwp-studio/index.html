@@ -75,6 +75,7 @@
         <div class="menu-dropdown">
           <div class="md-item" data-cmd="view:zoom-in"><span class="md-icon icon-zoom-menu-in"></span><span class="md-label">확대</span><span class="md-shortcut">Shift+Num +</span></div>
           <div class="md-item" data-cmd="view:zoom-out"><span class="md-icon icon-zoom-menu-out"></span><span class="md-label">축소</span><span class="md-shortcut">Shift+Num -</span></div>
+          <div class="md-item" data-cmd="view:zoom-dialog"><span class="md-icon"></span><span class="md-label">화면 확대/축소...</span></div>
           <div class="md-sep"></div>
           <div class="md-sub">
             <span class="md-label">배율</span><span class="md-arrow">▶</span>
@@ -89,6 +90,7 @@
               <div class="md-item" data-cmd="view:zoom-150"><span class="md-icon"></span><span class="md-label">150%</span></div>
               <div class="md-item" data-cmd="view:zoom-200"><span class="md-icon"></span><span class="md-label">200%</span></div>
               <div class="md-item" data-cmd="view:zoom-300"><span class="md-icon"></span><span class="md-label">300%</span></div>
+              <div class="md-item" data-cmd="view:zoom-500"><span class="md-icon"></span><span class="md-label">500%</span></div>
             </div>
           </div>
           <div class="md-sep"></div>
@@ -665,7 +667,7 @@
         <button id="sb-zoom-fit-width" class="stb-icon-btn" title="폭 맞춤"><span class="tb-sprite icon-zoom-fit-width"></span></button>
         <button id="sb-zoom-fit" class="stb-icon-btn" title="쪽 맞춤"><span class="tb-sprite icon-zoom-fit"></span></button>
         <span class="stb-divider"></span>
-        <span id="sb-zoom-val" class="stb-zoom-val">100%</span>
+        <button id="sb-zoom-val" class="stb-zoom-val" type="button" title="화면 확대/축소 설정">100%</button>
         <button id="sb-zoom-out" class="stb-icon-btn" title="축소"><span class="tb-sprite icon-zoom-out"></span></button>
         <button id="sb-zoom-in" class="stb-icon-btn" title="확대"><span class="tb-sprite icon-zoom-in"></span></button>
       </span>
