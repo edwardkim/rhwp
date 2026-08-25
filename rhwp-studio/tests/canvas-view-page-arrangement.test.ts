@@ -84,3 +84,8 @@ test('가로 쪽 이동은 배치와 함께 한 번에 전환하고 가로 가�
   assert.match(method, /resolvePageViewSettings/);
   assert.doesNotMatch(method, /document-(?:changed|mutated)/);
 });
+
+test('개발 진단도 가로 뷰포트 안의 쪽만 보이는 쪽으로 보고한다', () => {
+  const method = classMethodSource('getVisiblePageIndices', 'getDiagnosticRenderGeneration');
+  assert.match(method, /getVisiblePages\([\s\S]*?getScrollY\(\),[\s\S]*?viewport\.height,[\s\S]*?getScrollX\(\),[\s\S]*?viewport\.width/);
+});

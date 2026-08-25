@@ -1523,6 +1523,8 @@ export class CanvasView {
     return this.virtualScroll.getVisiblePages(
       this.viewportManager.getScrollY(),
       viewport.height,
+      this.viewportManager.getScrollX(),
+      viewport.width,
     );
   }
 
