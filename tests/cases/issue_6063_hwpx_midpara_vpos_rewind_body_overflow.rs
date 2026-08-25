@@ -38,7 +38,7 @@ fn collect_body_text_lines(node: &RenderNode, lines: &mut Vec<(usize, usize, f64
     if in_body {
         if let RenderNodeType::TextLine(tl) = &node.node_type {
             if let (Some(pi), Some(li)) = (tl.para_index, tl.line_index) {
-                lines.push((pi, li, node.bbox.y + node.bbox.height));
+                lines.push((pi, li as usize, node.bbox.y + node.bbox.height));
             }
         }
     }

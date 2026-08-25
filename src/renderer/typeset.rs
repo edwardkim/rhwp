@@ -4237,13 +4237,21 @@ fn hwpx_saved_reset_fragment_matches_current_flow(
 
 /// HWPX 내부 vpos 되감김을 흐름 앵커 불일치로 버릴 때, 문단 전체를 현재 쪽에
 /// 붙이면 본문을 넘는 경우에만 저장 쪽 경계를 살린다.
+///
+/// `hwpx_saved_reset_fragment_matches_current_flow` 가 버리는 16px 드리프트보다
+/// 큰 넘침이고, 이미 쪽 하단에 붙어 있을 때만 승격한다. 쪽 중간의 키 큰 문단
+/// 되감김까지 살리며 pr-1674 가 35→36쪽으로 밀린다.
 fn keep_hwpx_internal_page_break_on_body_overflow(
     current_height: f64,
     para_fit_height: f64,
     available: f64,
     break_line: usize,
 ) -> bool {
-    break_line > 0 && current_height + para_fit_height > available
+    if break_line == 0 || available <= 0.0 {
+        return false;
+    }
+    let overflow = current_height + para_fit_height - available;
+    overflow > 16.0 && current_height >= available * 0.85
 }
 
 #[cfg(test)]
@@ -4269,6 +4277,15 @@ mod keep_hwpx_internal_page_break_on_body_overflow_contract {
     fn ignores_a_zero_break_line() {
         assert!(!keep_hwpx_internal_page_break_on_body_overflow(
             891.0, 106.9, 914.7, 0
+        ));
+    }
+
+    #[test]
+    fn does_not_promote_a_mid_page_tall_paragraph() {
+        // pr-1674: 쪽 중간에서 키 큰 문단이 남은 칸을 넘어도 저장 되감김을
+        // 쪽 경계로 올리면 오라클 35쪽이 36쪽으로 밀린다.
+        assert!(!keep_hwpx_internal_page_break_on_body_overflow(
+            500.0, 450.0, 914.7, 1
         ));
     }
 }
