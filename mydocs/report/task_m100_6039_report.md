@@ -68,12 +68,16 @@ undo, HWP/HWPX 직렬화에는 들어가지 않는다.
 ### 입력과 UI
 
 - 일반 세로 방향에서는 기존 휠 스크롤을 유지한다.
-- 가로 방향에서 휠 변환을 켜면 수직 휠의 주축 입력을 `scrollLeft`에 적용한다.
+- 가로 방향에서 휠 변환을 켜면 가로·세로 중 우세한 signed delta 하나를 `scrollLeft`에 적용하고
+  브라우저 기본 스크롤을 차단한다. 두 축을 더하지 않아 대각선 제스처가 과속하지 않으며, 단일·다중
+  페이지에서 같은 축 계약을 사용한다.
 - `Ctrl`/`Command`가 포함된 핀치·휠 확대는 일반 스크롤보다 먼저 처리하므로 우발적 배율 변경 계약을
   바꾸지 않는다.
 - 확대/축소 대화상자에서 가로 방향을 고르면 한 쪽이 즉시 선택되고 `자동`, `두 쪽`, `맞쪽`,
   `여러 쪽`은 비활성화된다. 세로 방향으로 돌아오면 다시 선택할 수 있다.
 - 통합 배율 버튼은 68px 고정 폭과 tabular 숫자를 유지해 자리 수 변화로 왼쪽 버튼이 움직이지 않는다.
+- 통합 배율 버튼의 CSS 돋보기는 18×18px 상자와 `flex-shrink: 0`을 사용해 왼쪽 확대·축소 스프라이트의
+  실제 상자 크기와 일치한다. 배율 텍스트는 36px로 조정해 버튼 전체 68px는 유지한다.
 - 가로바의 중앙 눈금은 100%를 뜻한다. 포인터가 중앙 근처에 들어오면 즉시 100%로 스냅하며,
   렌더 입력을 늦추는 별도 애니메이션은 적용하지 않는다.
 - 확대·축소는 macOS에서 `Command +/-`, Windows·Linux에서 `Ctrl +/-`를 사용한다. 상태 표시줄 호버
@@ -92,6 +96,8 @@ undo, HWP/HWPX 직렬화에는 들어가지 않는다.
 - 사용자 설정의 쪽 이동 저장·복원 계약 미존재
 - 10~500%·중앙 100% 스냅 매핑과 통합 배율 버튼 모듈 미존재
 - 확대·축소의 플랫폼별 단축키·호버 안내 계약 미존재
+- 가로 이동에서 가로 우세 입력을 native 스크롤에 맡겨 단일 페이지의 세로 성분이 새는 계약
+- 통합 배율 버튼의 CSS 돋보기가 왼쪽 18px 스프라이트보다 크게 보이는 계약
 
 구현 후 같은 테스트가 모두 통과해 기존 코드에서도 통과하던 사후 확인이 아니라 이번 변경 범위를
 직접 포착했다.
@@ -110,6 +116,10 @@ undo, HWP/HWPX 직렬화에는 들어가지 않는다.
 - 가로바 원시 위치 510은 중앙 위치 500과 100%로 스냅됐고, 스냅 범위 밖인 위치 470은 87%를 유지했다.
 - `Command+=`는 87%에서 97%로 한 번만 확대하고 `Command+-`는 다시 87%로 축소했다. 중복 명령은
   발생하지 않았으며 `Command+0`은 100%·중앙 위치로 복원했다.
+- Stage 6 단일 페이지 가로 이동에서 `scrollWidth=clientWidth=1,260px`, `scrollHeight=1,143px`,
+  `clientHeight=525px`를 확인해 native 위임 시 세로 성분만 적용되던 원인을 재확인했다.
+- 우측 통합 버튼의 돋보기와 왼쪽 축소 스프라이트가 모두 실제 18×18px 상자로 렌더되고, 배율 텍스트
+  영역은 36px, 통합 버튼은 68px를 유지했다.
 - 검증 후 사용자 설정은 `세로 방향 + 자동 + 100%`로 복원했다.
 
 ## 검증 결과
@@ -118,12 +128,15 @@ undo, HWP/HWPX 직렬화에는 들어가지 않는다.
 | --- | --- |
 | `node --test tests/zoom-status-controls.test.ts tests/page-arrangement.test.ts tests/zoom-dialog-integration.test.ts tests/navigation-keymap.test.ts tests/shortcut-map.test.ts tests/viewport-manager-smooth-zoom.test.ts tests/zoom-fit.test.ts` | 68/68 통과 |
 | `npx tsc --noEmit --pretty false` | 통과 |
-| `npm test` | 1,121 통과, 1 skip, 실패 0 |
+| `node --test tests/viewport-manager-smooth-zoom.test.ts tests/zoom-fit.test.ts` | 15/15 통과 |
+| `npm test` | 1,122 통과, 1 skip, 실패 0 |
 | `npm run build` | 통과 |
 | `git diff --check` | 통과 |
 
 Stage 5의 실패 계약과 브라우저 확인 세부 값은
 [`task_m100_6039_stage5.md`](../working/task_m100_6039_stage5.md)에 남겼다.
+가로 이동 축 잠금과 아이콘 실측은
+[`task_m100_6039_stage6.md`](../working/task_m100_6039_stage6.md)에 남겼다.
 
 ## 후속 범위
 

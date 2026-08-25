@@ -115,20 +115,31 @@
 }
 
 .icon-zoom-menu {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.icon-zoom-menu::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  width: 12px;
+  height: 12px;
   border: 2px solid currentColor;
   border-radius: 50%;
-  margin: 0 3px 2px 0;
 }
 
 .icon-zoom-menu::after {
   content: '';
   position: absolute;
-  width: 6px;
+  left: 10px;
+  top: 11px;
+  width: 7px;
   border-top: 2px solid currentColor;
-  right: -5px;
-  bottom: -3px;
   transform: rotate(45deg);
   transform-origin: left center;
 }
@@ -207,7 +218,8 @@
 }
 
 #sb-zoom-val {
-  width: 38px;
+  width: 36px;
+  flex-shrink: 0;
   font-variant-numeric: tabular-nums;
   text-align: right;
   white-space: nowrap;

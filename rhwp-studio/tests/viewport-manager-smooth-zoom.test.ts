@@ -211,7 +211,7 @@ test('vertical-dominant wheel input locks horizontal pan in every delta mode', a
   }
 });
 
-test('horizontal-dominant wheel input retains native horizontal pan', async () => {
+test('세로 쪽 이동의 가로 우세 입력은 native 가로 pan을 유지한다', async () => {
   const { ViewportManager } = await loadViewportManager();
   const viewport = new ViewportManager(new FakeEventBus() as never);
   const container = { scrollTop: 100 };
@@ -243,7 +243,7 @@ test('horizontal-dominant wheel input retains native horizontal pan', async () =
   assert.equal(container.scrollTop, 100);
 });
 
-test('가로 쪽 이동은 선택했을 때만 세로 휠을 좌우 스크롤로 바꾼다', async () => {
+test('가로 쪽 이동은 선택했을 때 가로·세로 우세 입력을 모두 좌우 스크롤로 바꾼다', async () => {
   const { ViewportManager } = await loadViewportManager();
   const viewport = new ViewportManager(new FakeEventBus() as never) as unknown as {
     setPageMovement: (value: { direction: 'horizontal'; wheelHorizontal: boolean }) => void;
@@ -274,6 +274,34 @@ test('가로 쪽 이동은 선택했을 때만 세로 휠을 좌우 스크롤로
   assert.equal(viewport.container.scrollLeft, 132);
   assert.equal(viewport.container.scrollTop, 0);
 
+  prevented = false;
+  viewport.onWheel({
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    deltaX: 24,
+    deltaY: 3,
+    deltaMode: 0,
+    preventDefault: () => { prevented = true; },
+  });
+  assert.equal(prevented, true);
+  assert.equal(viewport.container.scrollLeft, 156);
+  assert.equal(viewport.container.scrollTop, 0);
+
+  prevented = false;
+  viewport.onWheel({
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    deltaX: -10,
+    deltaY: -2,
+    deltaMode: 0,
+    preventDefault: () => { prevented = true; },
+  });
+  assert.equal(prevented, true);
+  assert.equal(viewport.container.scrollLeft, 146);
+  assert.equal(viewport.container.scrollTop, 0);
+
   viewport.setPageMovement({ direction: 'horizontal', wheelHorizontal: false });
   prevented = false;
   viewport.onWheel({
@@ -286,7 +314,7 @@ test('가로 쪽 이동은 선택했을 때만 세로 휠을 좌우 스크롤로
     preventDefault: () => { prevented = true; },
   });
   assert.equal(prevented, false);
-  assert.equal(viewport.container.scrollLeft, 132);
+  assert.equal(viewport.container.scrollLeft, 146);
 });
 
 test('an eight-pixel trackpad gesture settles within four frames and moves nearly five percent', async (t) => {
