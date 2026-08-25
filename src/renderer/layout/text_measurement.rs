@@ -1030,7 +1030,9 @@ fn measure_char_width_embedded_decision<'a>(
                 (mm.metric.em_size as f64 * 0.3) as u16,
                 "metricNarrowPunctuationOverlay",
             )
-        } else if (is_halfwidth_punct || is_halfwidth_cjk_quote(c)) && glyph_w >= mm.metric.em_size
+        } else if (is_halfwidth_punct
+            || (is_halfwidth_cjk_quote(c) && halfwidth_cjk_quote_font_confirmed(primary_name)))
+            && glyph_w >= mm.metric.em_size
         {
             (mm.metric.em_size / 2, "metricHalfwidthPunctuationOverlay")
         } else {
@@ -1371,6 +1373,21 @@ fn is_unicode_halfwidth_form(c: char) -> bool {
 /// 본문 조판에서는 법령명 낫표 뒤에 전각 공백처럼 보이는 간격이 생기지 않는다.
 pub(crate) fn is_halfwidth_cjk_quote(c: char) -> bool {
     matches!(c, '\u{300C}' | '\u{300D}')
+}
+
+/// [#6060] U+300C/300D 반각 강제가 **실측으로 확인된** 폰트인지.
+///
+/// 한글 2020 실측이 폰트별로 갈린다 — 휴먼명조 15.9pt 안건명·HY헤드라인M 30pt
+/// 제목의 `「`는 **전각 전진**(15.2/30.0pt, 30307 지방현장 보고서)인데, 종전
+/// 블랭킷 강제는 이를 절반(7.5/15.0pt)으로 눌러 낫표가 다음 글자에 붙었다.
+/// 반각이 실측된 계보(#630 법령명 낫표: 바탕·함초롬 계열 본문 조판)에만
+/// 강제를 유지하고, 그 외 폰트는 메트릭 DB 글리프 폭을 신뢰한다.
+fn halfwidth_cjk_quote_font_confirmed(primary_name: &str) -> bool {
+    // 반각 실측 계보는 돋움 계열이다 — #2020 여권신청서 '2.「여권법」제9조'
+    // (돋움체) 한컴 PDF 실측 + 같은 폰트의 단위 핀. 전각 반증(휴먼명조·
+    // HY헤드라인M, 30307 한글 2020 실측)과 겹치지 않는 최소 허용목록으로
+    // 유지하고, 실측이 없는 폰트는 메트릭 DB 글리프 폭을 신뢰한다.
+    primary_name.contains("돋움")
 }
 
 /// 3 개 이상 연속하는 dash leader 시퀀스의 일부 여부 (Task #352).

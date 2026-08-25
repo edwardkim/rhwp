@@ -445,9 +445,14 @@ impl SkiaTextReplay<'_> {
                             // 그리면 다음 글자와 겹친다. web_canvas 와 동일하게
                             // 0.5× 수평 축소로 반각 공간에 배치 (한글은 자체
                             // 내장 협폭 글리프로 렌더 — 오라클 PDF Type3 실측).
+                            // [#6060] 낫표 「」의 반각 강제는 폰트별로 갈린다 —
+                            // 측정이 실제로 반각(<0.6em)으로 전진했을 때만 축소해
+                            // 페인트가 측정을 따르게 한다(전각 측정 폰트에서
+                            // 0.5× 고정 축소하면 글리프만 절반이 된다).
                             let needs_halfwidth_scale = cluster.chars().next().is_some_and(|ch| {
                                 matches!(ch, '\u{2018}'..='\u{2027}') || is_halfwidth_cjk_quote(ch)
-                            }) && !has_ratio;
+                            }) && !has_ratio
+                                && cluster_advance(*char_idx, cluster) < font_size * 0.6;
                             if needs_halfwidth_scale {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));

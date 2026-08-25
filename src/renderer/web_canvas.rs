@@ -2390,10 +2390,22 @@ impl Renderer for WebCanvasRenderer {
                     continue;
                 }
 
-                // 반각 강제 구두점: 폰트 글리프가 전각이지만 반각 공간에 배치
+                // 반각 강제 구두점: 폰트 글리프가 전각이지만 반각 공간에 배치.
+                // [#6060] 낫표 「」의 반각은 폰트별로 갈린다 — 측정이 실제로
+                // 반각(<0.6em)으로 전진했을 때만 축소해 페인트가 측정을 따른다.
+                let measured_cluster_advance = {
+                    let end = *char_idx + cluster_str.chars().count();
+                    if end < char_positions.len() {
+                        char_positions[end] - char_positions[*char_idx]
+                    } else {
+                        0.0
+                    }
+                };
                 let needs_halfwidth_scale = (matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}')
                     || is_halfwidth_cjk_quote(ch))
-                    && !has_ratio;
+                    && !has_ratio
+                    && (measured_cluster_advance <= 0.0
+                        || measured_cluster_advance < font_size * 0.6);
 
                 if needs_halfwidth_scale {
                     self.ctx.save();
