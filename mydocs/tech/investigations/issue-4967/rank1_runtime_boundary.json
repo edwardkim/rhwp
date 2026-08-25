@@ -27,7 +27,7 @@
     },
     "nativeBinary": {
       "artifact": "target/debug/rhwp-q-font-trace",
-      "sha256": "765f56066c3db91d997fe03ee0e0171256e8430a99b76cabcc819e7779316f82"
+      "sha256": "642b80e56f7e300b1213ee78097ac91e94e8d0469dfa8135742004db8727425f"
     },
     "wasmJs": {
       "artifact": "pkg/rhwp.js",
@@ -35,7 +35,7 @@
     },
     "wasmBinary": {
       "artifact": "pkg/rhwp_bg.wasm",
-      "sha256": "7c9c9f5f31b05e6f7984c68d4bc39666a7c259c31983407f93c7f28ab9a56f08"
+      "sha256": "732834865b1f11cff04efc0130bb86ea3d554bf0842a03147ad6761c5a6653cd"
     }
   },
   "formats": [
@@ -299,5 +299,5 @@
     "privateDocumentIdentityIncluded": false,
     "fullTraceTracked": false
   },
-  "canonicalSha256": "b0e22b0a76c5e5c940459eeb9b599ee5e5e962f1c985b38e799623fdd09cced4"
+  "canonicalSha256": "b95e77121f939cfd58440afd941a100e1eb7539bf81b182e7ade708d7ea52720"
 }

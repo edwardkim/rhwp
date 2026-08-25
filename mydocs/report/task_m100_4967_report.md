@@ -233,19 +233,24 @@ rank 1 공개 정본은
 
 ### 9.5 최신 devel 제출 전 재검증
 
-작업 시작 뒤 `upstream/devel`이 51커밋 전진해 `ee7e8a6ed`가 됐다. 변경 파일 교집합은
-`mydocs/orders/20260825.md`뿐이었고 merge-tree와 실제 merge 모두 충돌 없이 양쪽 기록을 보존했다. 다만
-최신 devel의 `src/renderer/layout/text_measurement.rs`가 Q2의 추적 입력이므로, merge commit
-`e10dd2258` 뒤 기존 증적을 그대로 재사용하지 않았다.
+작업 시작 뒤 `upstream/devel`이 51커밋 전진해 `ee7e8a6ed`가 됐다. merge commit `e10dd2258`은 충돌
+없이 양쪽 기록을 보존했지만 `src/renderer/layout/text_measurement.rs`가 Q2의 추적 입력이므로 기존
+증적을 그대로 재사용하지 않았다.
+
+PR 생성 직전 devel이 다시 24커밋 전진해 `6240d255b`가 됐다. `mydocs/orders/20260826.md`의 add/add
+충돌은 원격 통합 검토 절과 #4967 절을 모두 보존해 merge commit `1252c5e5b`로 해결했다. 이번 전진에는
+font 전용 입력 source 변경은 없었지만 renderer·typeset 변경이 포함됐으므로 네이티브·WASM binary를 다시
+빌드하고 Q1·Q2를 한 번 더 실행했다.
 
 - 최신 소스 네이티브 `rhwp-q-font-trace` 재빌드 통과
 - 표준 Docker WASM 최적화 빌드 통과, 추적 `pkg/` delta 0
 - Q1 HWPX·HWP5 각 1,556건, native/WASM byte-exact, 첫 divergence `layout-name` 유지
 - Q2 current→virtual relation 0 HWPUNIT, virtual→exact 0 HWPUNIT, 최종 `no-change` 유지
 - Node 계약 8/8, Python 계약 12/12 통과
-- 새 Q1 canonical SHA-256:
-  `b0e22b0a76c5e5c940459eeb9b599ee5e5e962f1c985b38e799623fdd09cced4`
-- 새 Q2 canonical SHA-256:
-  `f50ac03f28a4b7fd53a437b9187352160a04414afaee15f932cf0a7d110be3cd`
+- 최신 Q1 canonical SHA-256:
+  `b95e77121f939cfd58440afd941a100e1eb7539bf81b182e7ade708d7ea52720`
+- 최신 Q2 canonical SHA-256:
+  `d660fc18c1a7f3100c2cf3b1ce9e70f0c893f46ce8e3345c33bab7fb1a2fe23c`
 
-따라서 최신 base 변경은 입력 계보를 갱신했지만 rank 1 제품 correction의 이득·위험 판정을 바꾸지 않는다.
+따라서 두 차례 최신 base 변경은 입력 계보를 갱신했지만 rank 1 제품 correction의 이득·위험 판정을
+바꾸지 않는다.
