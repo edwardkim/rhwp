@@ -20,9 +20,10 @@ advance와 동치여서 layout 이득이 없다. 이름 match metadata만 만들
 추가하지 않는다.
 
 두 판정은 rank 8·rank 1 lane의 종결이다. #4967은 여러 face를 순차 판정하는 tracker이며 rank 7과
-evidence-reopen lane이 남아 있으므로 **이슈는 닫지 않는다**. 2026-08-26 재확인 시 #4967은 `OPEN`, 담당자
-`edwardkim`, milestone `v1.0.0`이고 연결된 열린 PR은 없었다. 현재 rank 8 결과는
-[PR #6069](https://github.com/edwardkim/rhwp/pull/6069)로 제출됐으며 tracker 상태는 계속 `OPEN`이다.
+evidence-reopen lane이 남아 있으므로 **이슈는 닫지 않는다**. rank 1 착수 시점의 2026-08-26 재확인에서는
+#4967이 `OPEN`, 담당자 `edwardkim`, milestone `v1.0.0`이고 rank 1 연결 PR은 없었다. 이후 rank 1
+code candidate는 [PR #6081](https://github.com/edwardkim/rhwp/pull/6081)로 제출됐다. rank 8 결과는
+[PR #6069](https://github.com/edwardkim/rhwp/pull/6069)이며 tracker 상태는 계속 `OPEN`이다.
 
 ## 2. 판정 계보
 
@@ -169,8 +170,8 @@ PR #6069로 제출됐다. self-review 기록, 최신 trailing head 검증과 mer
 | W8-R1-Q4 | backend·portable 적용 정책을 설계할 것인가 | 제품 후보가 없어 불필요, 미진입 |
 | W8-R1-Q5 | product-correction 후속 이슈를 제안할 것인가 | qualified가 아니므로 자식 이슈 초안·등록 0 |
 
-단계별 local commit은 `857241ac1`, `9fc8110d3`, `e70e35ec3`에 고정했다. 제품 source와 원격 repository는
-변경하지 않았다.
+단계별 local commit은 `857241ac1`, `9fc8110d3`, `e70e35ec3`에 고정했다. 제품 source는 변경하지 않았다.
+증거·projector·계약 테스트를 포함한 최종 code candidate `b83d9d08e`는 PR #6081로 제출했다.
 
 ### 9.2 runtime miss와 correction 이득의 분리
 
@@ -254,3 +255,15 @@ font 전용 입력 source 변경은 없었지만 renderer·typeset 변경이 포
 
 따라서 두 차례 최신 base 변경은 입력 계보를 갱신했지만 rank 1 제품 correction의 이득·위험 판정을
 바꾸지 않는다.
+
+### 9.6 PR self-review 시점 최신 base 판정
+
+PR #6081의 code candidate `b83d9d08e`에서 Full CI·CodeQL·Proptest·Adapter inter-diff가 모두 성공한
+뒤 `upstream/devel`은 `35c270f47`까지 2커밋 전진했다. 전진 범위는 PR 시각 검증 절차 문서 3개뿐이며,
+`git merge-tree --write-tree b83d9d08e upstream/devel`은 충돌 없이 tree
+`55c6b3d48cbf2da2dace6cd5ee8ca48063ef334f`를 생성했다. rank 1의 source·test·fixture·판정 입력은
+변하지 않았다.
+
+따라서 review 기록만을 위해 base merge·rebase를 수행하지 않는다. self-review와 현재 상태 정정은 녹색
+code candidate 뒤의 `mydocs/` 한정 single-parent trailing commit으로 제출하고, push 뒤 review-only
+fast-pass의 최신 required aggregate와 `MERGEABLE/CLEAN`을 다시 확인한다.
