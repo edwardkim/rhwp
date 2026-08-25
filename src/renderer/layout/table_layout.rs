@@ -11355,18 +11355,23 @@ impl LayoutEngine {
             }
         }
 
-        // reset 앞 조각이 선언 박스를 채운 경우만 저장 쪽 프레임이다.
-        // 문단 로컬 vpos=0 의 줄합이 valign=CENTER 선언 높이와 비슷하면
-        // preceding+trailing 4/5 가 우연히 참이 되어 한 줄만 남기고 쪽을
-        // 비운다 (#6035). 다행·다열 표까지 1×1 로 막으면 편람 HWPX 쪽수가
-        // 무너지므로, 리셋 앞 프레임만 본다.
         reset_count >= 2
             || (reset_count == 1 && {
                 let declared_height = cell.height as i32;
-                preceding_frame_end >= declared_height.saturating_mul(4) / 5
-                    && preceding_frame_end <= declared_height
-                    && trailing_frame_end > 0
-                    && trailing_frame_end <= declared_height
+                let source_frame_span = preceding_frame_end.saturating_add(trailing_frame_end);
+                let sum_fits_declared = source_frame_span >= declared_height.saturating_mul(4) / 5
+                    && source_frame_span <= declared_height;
+                if cell.vertical_align == VerticalAlign::Center {
+                    // CENTER 평가표는 문단 로컬 vpos=0 줄합이 선언 높이와 비슷해
+                    // sum 4/5 가 우연히 참이 되고 한 줄만 남긴다 (#6035).
+                    // TOP 셀(편람 103×2)은 기존 sum 계약을 유지한다.
+                    preceding_frame_end >= declared_height.saturating_mul(4) / 5
+                        && preceding_frame_end <= declared_height
+                        && trailing_frame_end > 0
+                        && trailing_frame_end <= declared_height
+                } else {
+                    sum_fits_declared
+                }
             })
     }
 
