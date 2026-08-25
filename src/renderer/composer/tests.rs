@@ -2178,54 +2178,6 @@ fn issue4149_width_change_re_judges_via_key_mismatch() {
     );
 }
 
-/// [#5952] 저장 2줄이 composed 1줄로 접혀 셀 내폭을 넘치면 fresh 재래핑한다.
-#[test]
-fn issue5952_collapsed_stored_two_lines_rewrap_when_over_cell() {
-    let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
-    let text = "가".repeat(40);
-    let n = text.chars().count();
-    let collapsed = Paragraph {
-        text: text.clone(),
-        char_offsets: (0..n as u32).collect(),
-        char_count: n as u32 + 1,
-        char_shapes: vec![CharShapeRef {
-            start_pos: 0,
-            char_shape_id: 0,
-        }],
-        line_segs: vec![LineSeg {
-            text_start: 0,
-            line_height: 800,
-            baseline_distance: 640,
-            ..Default::default()
-        }],
-        ..Default::default()
-    };
-    let stored_two = Paragraph {
-        line_segs: vec![
-            LineSeg {
-                text_start: 0,
-                line_height: 800,
-                baseline_distance: 640,
-                ..Default::default()
-            },
-            LineSeg {
-                text_start: 20,
-                line_height: 800,
-                baseline_distance: 640,
-                ..Default::default()
-            },
-        ],
-        ..collapsed.clone()
-    };
-    let mut composed = compose_paragraph(&collapsed);
-    assert_eq!(composed.lines.len(), 1, "1-ls 문단은 1줄로 시작한다");
-    recompose_stored_single_line_if_overflowing(&mut composed, &stored_two, 40.0, &styles, 96.0);
-    assert!(
-        composed.lines.len() > 1,
-        "저장 2줄이 1줄로 접혀 셀을 넘치면 재래핑돼야 함 (#5952)"
-    );
-}
-
 /// 정합(비과밀) 판정도 memo 되고 재래핑은 일어나지 않는다.
 #[test]
 fn issue4149_fit_judgment_memoized_false_without_rewrap() {

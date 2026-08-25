@@ -118,3 +118,105 @@ fn note_box_lines_do_not_overlap_the_gongmunseo_sidebar() {
         overflow.iter().take(12).collect::<Vec<_>>()
     );
 }
+
+/// [#5952] 저장 2줄이 composed 1줄로 접혀 셀 내폭을 넘치면 fresh 재래핑한다.
+/// source-side `#[cfg(test)]` 가 아니라 integration 으로 둔다 (RustUnitTier).
+#[test]
+fn collapsed_stored_two_lines_rewrap_when_over_cell() {
+    use rhwp::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+    use rhwp::renderer::composer::{
+        compose_paragraph, recompose_stored_single_line_if_overflowing,
+    };
+    use rhwp::renderer::style_resolver::ResolvedStyleSet;
+
+    let styles = ResolvedStyleSet::default();
+    let text = "가".repeat(40);
+    let n = text.chars().count();
+    let collapsed = Paragraph {
+        text: text.clone(),
+        char_offsets: (0..n as u32).collect(),
+        char_count: n as u32 + 1,
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            line_height: 800,
+            baseline_distance: 640,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let stored_two = Paragraph {
+        line_segs: vec![
+            LineSeg {
+                text_start: 0,
+                line_height: 800,
+                baseline_distance: 640,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: 20,
+                line_height: 800,
+                baseline_distance: 640,
+                ..Default::default()
+            },
+        ],
+        ..collapsed.clone()
+    };
+    let mut composed = compose_paragraph(&collapsed);
+    assert_eq!(composed.lines.len(), 1, "1-ls 문단은 1줄로 시작한다");
+    recompose_stored_single_line_if_overflowing(&mut composed, &stored_two, 40.0, &styles, 96.0);
+    assert!(
+        composed.lines.len() > 1,
+        "저장 2줄이 1줄로 접혀 셀을 넘치면 재래핑돼야 함 (#5952)"
+    );
+}
+
+/// 빈 둘째 LINE_SEG 때문에 composed.len()==2 여도 한 줄이 글자 대부분을
+/// 들고 셀을 넘치면 재래핑한다.
+#[test]
+fn dominant_composed_line_rewrapping_two_stored_segs() {
+    use rhwp::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+    use rhwp::renderer::composer::{
+        compose_paragraph, recompose_stored_single_line_if_overflowing,
+    };
+    use rhwp::renderer::style_resolver::ResolvedStyleSet;
+
+    let styles = ResolvedStyleSet::default();
+    let text = "가".repeat(40);
+    let n = text.chars().count();
+    let stored_two = Paragraph {
+        text: text.clone(),
+        char_offsets: (0..n as u32).collect(),
+        char_count: n as u32 + 1,
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![
+            LineSeg {
+                text_start: 0,
+                line_height: 800,
+                baseline_distance: 640,
+                segment_width: 37560,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: n as u32,
+                line_height: 800,
+                baseline_distance: 640,
+                segment_width: 37560,
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+    let mut composed = compose_paragraph(&stored_two);
+    recompose_stored_single_line_if_overflowing(&mut composed, &stored_two, 40.0, &styles, 96.0);
+    assert!(
+        composed.lines.len() > 1,
+        "둘째 seg 가 빈 접힘도 재래핑돼야 함 (#5952)"
+    );
+}
