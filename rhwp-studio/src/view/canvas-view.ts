@@ -191,6 +191,12 @@ export class CanvasView {
     await Promise.resolve();
 
     console.log(`[CanvasView] ${this.pages.length}/${pageCount}페이지 로드, 총 높이: ${this.virtualScroll.getTotalHeight()}px`);
+
+    // 문서 화면이 새로 섰다 — 쪽 정보를 스스로 그리는 바깥 소비자(눈금자)에게 알린다.
+    // 지금까지 눈금자는 캐럿·스크롤·확대 이벤트에 얹혀 갱신됐다. 그 셋은 값이 그대로면
+    // 오지 않는다(문단 여백이 같은 문서를 잇달아 열기, 이미 맨 위인 문서의 scrollTop=0,
+    // 배율 그대로) — 그때 눈금자는 빈 쪽 단계에서 그린 눈금 없는 회색 띠로 남았다.
+    this.eventBus.emit('document-view-loaded');
   }
 
   /**

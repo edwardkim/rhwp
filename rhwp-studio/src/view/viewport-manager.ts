@@ -10,6 +10,7 @@ import {
   normalizePageMovementSettings,
   type PageMovementSettings,
 } from './page-movement.ts';
+import type { ZoomFitMode } from './zoom-fit.ts';
 
 const ZOOM_SETTLE_EPSILON = 0.001;
 const ZOOM_SMOOTHING_TIME_MS = 16;
@@ -31,6 +32,7 @@ export class ViewportManager {
   private zoomAnimating = false;
   private zoomTarget = 1.0;
   private zoomAnchor: ZoomAnchor = CENTER_ZOOM_ANCHOR;
+  private zoomFitMode: ZoomFitMode = 'none';
   private pageMovement: PageMovementSettings = { ...DEFAULT_PAGE_MOVEMENT };
   private onScrollBound: () => void;
   private onWheelBound: (e: WheelEvent) => void;
@@ -211,11 +213,25 @@ export class ViewportManager {
     return this.zoom;
   }
 
-  setZoom(zoom: number, anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR): void {
+  /** 지금 배율이 어떤 맞춤에서 나왔는지 — 수치로 바꾼 직후에는 'none' 이다. */
+  getZoomFitMode(): ZoomFitMode {
+    return this.zoomFitMode;
+  }
+
+  /**
+   * 배율을 정한다. `fitMode` 는 이 배율이 어떤 맞춤 규칙에서 나왔는지다 — 기본값
+   * 'none'(수치 지정)이라 휠·가로바·수치 명령은 저장된 맞춤을 자동으로 푼다.
+   */
+  setZoom(
+    zoom: number,
+    anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR,
+    fitMode: ZoomFitMode = 'none',
+  ): void {
     this.cancelZoomAnimation();
     this.zoomAnchor = normalizeZoomAnchor(anchor);
     this.zoom = this.clampZoom(zoom);
     this.zoomTarget = this.zoom;
+    this.updateZoomFitMode(fitMode);
     this.eventBus.emit('zoom-changed', this.zoom, this.zoomAnchor);
   }
 
@@ -223,13 +239,18 @@ export class ViewportManager {
     this.smoothZoomTo(this.zoomTarget + delta, anchor);
   }
 
-  smoothZoomTo(zoom: number, anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR): void {
+  smoothZoomTo(
+    zoom: number,
+    anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR,
+    fitMode: ZoomFitMode = 'none',
+  ): void {
     this.zoomAnchor = normalizeZoomAnchor(anchor);
     this.zoomTarget = this.clampZoom(zoom);
     if (Math.abs(this.zoomTarget - this.zoom) <= ZOOM_SETTLE_EPSILON) {
-      this.setZoom(this.zoomTarget, this.zoomAnchor);
+      this.setZoom(this.zoomTarget, this.zoomAnchor, fitMode);
       return;
     }
+    this.updateZoomFitMode(fitMode);
     this.zoomAnimating = true;
     if (this.zoomAnimationFrame === null) {
       this.zoomAnimationFrame = requestAnimationFrame(this.onZoomAnimationFrameBound);
@@ -260,6 +281,12 @@ export class ViewportManager {
     if (!settled) {
       this.zoomAnimationFrame = requestAnimationFrame(this.onZoomAnimationFrameBound);
     }
+  }
+
+  private updateZoomFitMode(mode: ZoomFitMode): void {
+    if (this.zoomFitMode === mode) return;
+    this.zoomFitMode = mode;
+    this.eventBus.emit('zoom-fit-mode-changed', mode);
   }
 
   private cancelZoomAnimation(): void {

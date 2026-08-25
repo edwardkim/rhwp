@@ -58,9 +58,13 @@ test('status bar and view command share the fit helpers', () => {
     'utf8',
   );
 
-  assert.match(main, /calculateFitPageZoom/);
+  // 상태바 맞춤 단추는 자체 계산을 두지 않고 메뉴·단축키와 같은 커맨드를 탄다 —
+  // 계산과 저장(setZoomFitMode) 자리가 하나여야 두 경로가 갈라지지 않는다.
+  assert.match(main, /dispatcher\.dispatch\('view:zoom-fit-width'\)/);
+  assert.match(main, /dispatcher\.dispatch\('view:zoom-fit-page'\)/);
+  assert.doesNotMatch(main, /calculateFitPageZoom/);
+  assert.doesNotMatch(main, /calculateArrangementFitWidthZoom/);
   assert.match(commands, /calculateFitPageZoom/);
-  assert.match(main, /calculateArrangementFitWidthZoom/);
   assert.match(commands, /calculateArrangementFitWidthZoom/);
   assert.doesNotMatch(main, /containerHeight - 40/);
   assert.doesNotMatch(commands, /containerH - 40/);

@@ -132,6 +132,9 @@ export class Ruler {
       eventBus.on('viewport-resize', () => { this.resize(); this.scheduleUpdate(); }),
       eventBus.on('document-changed', () => this.scheduleUpdate()),
       eventBus.on('document-view-changed', () => this.scheduleUpdate()),
+      // 문서를 새로 연 직후는 눈금자가 스스로 알 수 없는 유일한 시점이다. 크기도 다시
+      // 잡는다 — 빈 쪽 단계에서 컨테이너가 0 폭이었으면 캔버스가 0 인 채로 남는다.
+      eventBus.on('document-view-loaded', () => { this.resize(); this.scheduleUpdate(); }),
       eventBus.on('theme-changed', () => this.scheduleUpdate()),
       eventBus.on('cursor-para-changed', (props) => this.onParaChanged(props as ParaProperties)),
       eventBus.on('cursor-cell-changed', (data) => this.onCellChanged(data as { inCell: boolean; cellX?: number; cellWidth?: number })),
@@ -188,6 +191,22 @@ export class Ruler {
   update(): void {
     this.drawHorizontal();
     this.drawVertical();
+  }
+
+  /**
+   * 지금 문서의 쪽 정보를 읽는다. 없는 쪽이면 null.
+   *
+   * 문서가 갈리는 순간에는 가상 스크롤이 아직 옛 문서의 기하를 들고 있어, 새 문서에 없는
+   * 쪽 번호를 "보이는 쪽"으로 준다. 그걸 그대로 getPageInfo 에 넣으면 던지고, 예외가
+   * 그리기 도중에 나므로 눈금자는 눈금 없는 배경 띠만 남긴 채 다음 이벤트까지 그대로 있는다.
+   */
+  private pageInfoOrNull(pageIdx: number): ReturnType<WasmBridge['getPageInfo']> | null {
+    if (!Number.isInteger(pageIdx) || pageIdx < 0 || pageIdx >= this.wasm.pageCount) return null;
+    try {
+      return this.wasm.getPageInfo(pageIdx);
+    } catch {
+      return null;
+    }
   }
 
   /** 페이지 좌측 화면 좌표를 계산한다 (scroll-container 뷰포트 기준). */
@@ -447,7 +466,12 @@ export class Ruler {
       this.container.clientHeight,
     );
     const pageIdx = visiblePages.length > 0 ? visiblePages[0] : 0;
-    const pageInfo = this.wasm.getPageInfo(pageIdx);
+    const pageInfo = this.pageInfoOrNull(pageIdx);
+    if (!pageInfo) {
+      this.hPins = [];
+      ctx.restore();
+      return;
+    }
 
     // 페이지 화면 좌표 (편집 용지와 정확히 일치)
     const pageScreenLeft = this.getPageScreenLeft(scrollX);
@@ -627,7 +651,8 @@ export class Ruler {
     for (const pageIdx of visiblePages) {
       // 페이지 상단의 화면 좌표 (scroll-container 뷰포트 기준)
       const pageScreenTop = this.virtualScroll.getPageOffset(pageIdx) - scrollY;
-      const pageInfo = this.wasm.getPageInfo(pageIdx);
+      const pageInfo = this.pageInfoOrNull(pageIdx);
+      if (!pageInfo) continue;
 
       // 핀은 자기가 쓰는 여백의 경계에 선다 — 용지 끝에서 marginTop/marginBottom 만큼.
       // 본문 위 끝(= marginTop + marginHeader)에 그리면 핀 위치와 커밋 값이 머리말만큼

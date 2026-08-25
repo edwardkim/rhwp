@@ -6,6 +6,7 @@ import {
 import {
   calculateArrangementFitWidthZoom,
   calculateFitPageZoom,
+  type ZoomFitMode,
 } from './zoom-fit.ts';
 import type { PageMovementSettings } from './page-movement.ts';
 
@@ -60,6 +61,11 @@ export function detectZoomChoice(
     return { kind: 'fitPage' };
   }
   return { kind: 'custom', percent: clampCustomZoomPercent(currentZoom * 100) };
+}
+
+/** 대화상자 선택을 저장할 맞춤 배율로 바꾼다. 수치 선택은 맞춤이 아니다. */
+export function zoomFitModeFromChoice(choice: ZoomChoice): ZoomFitMode {
+  return choice.kind === 'fitWidth' || choice.kind === 'fitPage' ? choice.kind : 'none';
 }
 
 /** 대화상자 선택을 수치 배율로 바꾼다. 여러 쪽은 지정한 가로×세로 맞춤을 우선한다. */

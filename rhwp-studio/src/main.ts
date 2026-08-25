@@ -82,10 +82,8 @@ import {
   resolveRenderProfile,
   type RenderBackendFallbackReason,
 } from '@/view/render-backend';
-import {
-  calculateArrangementFitWidthZoom,
-  calculateFitPageZoom,
-} from '@/view/zoom-fit';
+import { normalizeZoomFitMode, resolveZoomFitZoom, type ZoomFitMode } from '@/view/zoom-fit';
+import { CENTER_ZOOM_ANCHOR } from '@/view/zoom-anchor';
 import { withBusyCursor } from '@/view/busy-cursor';
 import { formatPageIndicator } from '@/view/page-indicator';
 import { installEmbedRuntime } from '@/embed/runtime';
@@ -1007,35 +1005,12 @@ function setupZoomControls(): void {
     vm.setZoom(next / 100);
   });
 
-  // 폭 맞춤: 용지 폭에 맞게 줌 조절
+  // 폭 맞춤·쪽 맞춤은 메뉴/단축키와 같은 커맨드를 탄다 — 계산과 저장 자리가 하나여야 한다.
   document.getElementById('sb-zoom-fit-width')!.addEventListener('click', () => {
-    if (wasm.pageCount === 0) return;
-    const container = document.getElementById('scroll-container')!;
-    const pageInfo = wasm.getPageInfo(0);
-    // pageInfo.width는 이미 px 단위 (96dpi 기준)
-    const zoom = calculateArrangementFitWidthZoom({
-      containerWidth: container.clientWidth,
-      pageWidth: pageInfo.width,
-      arrangement: canvasView!.getPageArrangement(),
-    });
-    console.log(`[zoom-fit-width] container=${container.clientWidth} page=${pageInfo.width} zoom=${zoom.toFixed(3)}`);
-    vm.setZoom(zoom);
+    dispatcher.dispatch('view:zoom-fit-width');
   });
-
-  // 쪽 맞춤: 한 페이지 전체가 보이도록 줌 조절
   document.getElementById('sb-zoom-fit')!.addEventListener('click', () => {
-    if (wasm.pageCount === 0) return;
-    const container = document.getElementById('scroll-container')!;
-    const pageInfo = wasm.getPageInfo(0);
-    // pageInfo.width/height는 이미 px 단위 (96dpi 기준)
-    const zoom = calculateFitPageZoom(
-      container.clientWidth,
-      container.clientHeight,
-      pageInfo.width,
-      pageInfo.height,
-    );
-    console.log(`[zoom-fit-page] containerW=${container.clientWidth} containerH=${container.clientHeight} pageW=${pageInfo.width} pageH=${pageInfo.height} zoom=${zoom.toFixed(3)}`);
-    vm.setZoom(zoom);
+    dispatcher.dispatch('view:zoom-fit-page');
   });
 
   // 한컴 상황 선처럼 돋보기와 배율 표시 전체가 하나의 대화상자 진입점이다.
@@ -1071,6 +1046,12 @@ function setupEventListeners(): void {
     if (pageInfo) {
       sbSection().textContent = `구역: ${pageInfo.sectionIndex + 1} / ${totalSections}`;
     }
+  });
+
+  // 맞춤 선택은 배율 수치가 아니라 규칙이므로 그 자체를 저장한다 — 휠·가로바·수치 배율은
+  // 뷰포트가 'none' 을 알려 저장된 맞춤을 푼다.
+  eventBus.on('zoom-fit-mode-changed', (mode) => {
+    userSettings.setZoomFitMode(normalizeZoomFitMode(mode));
   });
 
   eventBus.on('zoom-level-display', (zoom) => {
@@ -1204,6 +1185,37 @@ function setupEventListeners(): void {
   });
 }
 
+/**
+ * 저장된 쪽 맞춤/폭 맞춤을 새로 연 문서에 되돌린다.
+ *
+ * 저장값은 배율 수치가 아니라 맞춤 규칙이라, 쪽 크기가 다른 문서에서도 그 문서의 쪽으로
+ * 다시 계산한다. 수치 배율('none')이면 지금 배율을 건드리지 않는다.
+ *
+ * 되돌릴 맞춤은 문서를 열기 **전에** 읽어 인자로 받는다 — 좁은 창의 자동 폭 맞춤처럼
+ * 로드 중에 배율을 정하는 경로가 저장값을 먼저 'none' 으로 지워 버리기 때문이다.
+ */
+function applySavedZoomFitMode(mode: ZoomFitMode): void {
+  if (mode === 'none') return;
+  const vm = canvasView?.getViewportManager();
+  const container = document.getElementById('scroll-container');
+  if (!vm || !container || wasm.pageCount === 0) return;
+  try {
+    // getPageInfo 의 width/height 는 이미 px 단위 (96dpi 기준)
+    const pageInfo = wasm.getPageInfo(0);
+    const zoom = resolveZoomFitZoom(mode, {
+      containerWidth: container.clientWidth,
+      containerHeight: container.clientHeight,
+      pageWidth: pageInfo.width,
+      pageHeight: pageInfo.height,
+      arrangement: canvasView?.getPageArrangement()
+        ?? userSettings.getViewSettings().pageArrangement,
+    });
+    if (zoom !== null) vm.setZoom(zoom, CENTER_ZOOM_ANCHOR, mode);
+  } catch (error) {
+    console.warn('[main] 저장된 맞춤 배율 복원 실패:', error);
+  }
+}
+
 /** 문서 초기화 공통 시퀀스 (loadFile, createNewDocument 양쪽에서 사용) */
 function applySavedTextMarkSettings(): void {
   const view = userSettings.getViewSettings();
@@ -1246,7 +1258,10 @@ async function initializeDocument(
     inputHandler?.deactivate();
     console.log('[initDoc] 4. canvasView loadDocument');
     await updateLoadProgress(82, '페이지 렌더 준비 중...');
+    const savedZoomFitMode = userSettings.getViewSettings().zoomFitMode;
     await canvasView?.loadDocument();
+    // 쪽 크기를 알 수 있는 첫 시점이다 — 저장된 맞춤은 이 문서의 쪽으로 다시 계산한다.
+    applySavedZoomFitMode(savedZoomFitMode);
     prepareCanvasKitLocalFonts(docInfo.fontsUsed);
     console.log('[initDoc] 5. toolbar setEnabled');
     await updateLoadProgress(90, '도구 모음 준비 중...');
