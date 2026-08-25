@@ -40,3 +40,19 @@ W5에서 봉인된 generator로 rank 8 fixture를 재현했다. fixture의 생�
 결과 정본은 `rank8_current_trace_baseline.json`이다. Q1에서는 현행 상태만 측정하며 metric DB, fallback,
 paint·supply 규칙은 바꾸지 않는다. Canvas2D·CanvasKit actual paint는 trace만으로 관찰할 수 없으므로
 `studioSnapshotRequired` 상태를 그대로 보존한다.
+
+## Stage W8-Q2 exact metric 가설
+
+`scripts/font_rank8_metric_hypothesis.py`는 외부 font root의 W5 exact TTF와 현행 registry가 가리키는
+`font-kopubworld@1.0.3` OTF·WOFF2를 읽어 다음 경계를 분리한다.
+
+- TTF와 CDN OTF·WOFF2는 bytes·name table·outline identity가 아니다.
+- 세 source는 fixture 53개 codepoint의 advance가 같고, TTF와 CDN source의 전체 공통 cmap 25,970개도
+  advance mismatch가 0이다.
+- CDN OTF와 WOFF2는 26,089개 cmap advance 및 fixture outline digest가 서로 같다.
+- current trace의 ratio → letter spacing → justification transform을 1,556건 모두 재생한 뒤 base advance만
+  exact `hmtx`로 바꾼다.
+- fixed-frame 대표 6축에서 metric capacity crossing의 앞당김·신규 발생은 0이다.
+
+결과 정본은 `rank8_metric_hypothesis.json`이다. Q2는 `layout-metric` 하나만 Q3 검증 대상으로
+qualification하며 font identity·paint identity, 배포 권한 또는 제품 변경을 승인하지 않는다.

@@ -1,0 +1,556 @@
+{
+  "canonicalSha256": "392f1a756fc3974f522f895ce14253ebe9f1487805da522a3907acbb5d22b0f5",
+  "executionPolicy": {
+    "fallbackMutation": false,
+    "fullCorpusRerun": false,
+    "hyperVOracleRerun": false,
+    "metricDbMutation": false,
+    "paintOrSupplyMutation": false,
+    "registryMutation": false
+  },
+  "hypothesis": {
+    "decisionPlaneCount": 1,
+    "fixedGeometryNonWorsening": true,
+    "fixtureAdvanceCompatibility": true,
+    "fontIdentityEstablished": false,
+    "nextStage": "bounded-private-cohort",
+    "paintIdentityEstablished": false,
+    "productMutationAuthorized": false,
+    "sharedCmapAdvanceCompatibility": true,
+    "status": "qualified-for-q3",
+    "targetDecisionPlane": "layout-metric"
+  },
+  "inputs": {
+    "fixture": {
+      "sha256": "f6edc8fc43dfd3256385e9752979c14a7041e50c06d36be47cef6e3486835084"
+    },
+    "fontRuleRegistryV2": {
+      "ruleIds": [
+        "rule.studio-supply.272f0ba64ebeef347d44.canvas2d",
+        "rule.studio-supply.272f0ba64ebeef347d44.canvaskit"
+      ],
+      "sha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16"
+    },
+    "fontRuleRegistryVersion": "font-kopubworld@1.0.3",
+    "q1Baseline": {
+      "canonicalSha256": "151a5eb5691a35f73c8edf73e196eed87b9f8cfd0b8e2bcf0595ddc47ed1e57a",
+      "traceSha256": "54a79a950aa138b6873632ac37f0db45ded37d4b40ac102a2816744830a659a3"
+    }
+  },
+  "issue": 4967,
+  "kind": "font-rank8-metric-hypothesis",
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "fullTraceTracked": false,
+    "privateCorpusAccessed": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "projection": {
+    "advanceDeltaHwpunit": -2725,
+    "axes": [
+      {
+        "advanceDeltaHwpunit": 3,
+        "candidateAdvanceHwpunit": 27075,
+        "currentAdvanceHwpunit": 27072,
+        "kerning": false,
+        "ratio": 80,
+        "records": 61,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": -732,
+        "candidateAdvanceHwpunit": 166637,
+        "currentAdvanceHwpunit": 167369,
+        "kerning": true,
+        "ratio": 80,
+        "records": 299,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": -31,
+        "candidateAdvanceHwpunit": 28165,
+        "currentAdvanceHwpunit": 28196,
+        "kerning": false,
+        "ratio": 80,
+        "records": 60,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -31,
+        "candidateAdvanceHwpunit": 28165,
+        "currentAdvanceHwpunit": 28196,
+        "kerning": true,
+        "ratio": 80,
+        "records": 60,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -46,
+        "candidateAdvanceHwpunit": 29234,
+        "currentAdvanceHwpunit": 29280,
+        "kerning": false,
+        "ratio": 80,
+        "records": 59,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": -46,
+        "candidateAdvanceHwpunit": 29234,
+        "currentAdvanceHwpunit": 29280,
+        "kerning": true,
+        "ratio": 80,
+        "records": 59,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": 26,
+        "candidateAdvanceHwpunit": 30482,
+        "currentAdvanceHwpunit": 30456,
+        "kerning": false,
+        "ratio": 90,
+        "records": 61,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": 26,
+        "candidateAdvanceHwpunit": 30482,
+        "currentAdvanceHwpunit": 30456,
+        "kerning": true,
+        "ratio": 90,
+        "records": 61,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": -24,
+        "candidateAdvanceHwpunit": 31674,
+        "currentAdvanceHwpunit": 31698,
+        "kerning": false,
+        "ratio": 90,
+        "records": 60,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -1072,
+        "candidateAdvanceHwpunit": 92602,
+        "currentAdvanceHwpunit": 93674,
+        "kerning": true,
+        "ratio": 90,
+        "records": 176,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -47,
+        "candidateAdvanceHwpunit": 32893,
+        "currentAdvanceHwpunit": 32940,
+        "kerning": false,
+        "ratio": 90,
+        "records": 59,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": -47,
+        "candidateAdvanceHwpunit": 32893,
+        "currentAdvanceHwpunit": 32940,
+        "kerning": true,
+        "ratio": 90,
+        "records": 59,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": 85,
+        "candidateAdvanceHwpunit": 34375,
+        "currentAdvanceHwpunit": 34290,
+        "kerning": false,
+        "ratio": 100,
+        "records": 62,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": 85,
+        "candidateAdvanceHwpunit": 34375,
+        "currentAdvanceHwpunit": 34290,
+        "kerning": true,
+        "ratio": 100,
+        "records": 62,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": 34,
+        "candidateAdvanceHwpunit": 35754,
+        "currentAdvanceHwpunit": 35720,
+        "kerning": false,
+        "ratio": 100,
+        "records": 61,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": 34,
+        "candidateAdvanceHwpunit": 35754,
+        "currentAdvanceHwpunit": 35720,
+        "kerning": true,
+        "ratio": 100,
+        "records": 61,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -999,
+        "candidateAdvanceHwpunit": 108301,
+        "currentAdvanceHwpunit": 109300,
+        "kerning": false,
+        "ratio": 100,
+        "records": 176,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": 57,
+        "candidateAdvanceHwpunit": 37157,
+        "currentAdvanceHwpunit": 37100,
+        "kerning": true,
+        "ratio": 100,
+        "records": 60,
+        "spacing": 0
+      }
+    ],
+    "candidateAdvanceHwpunit": 845252,
+    "currentAdvanceHwpunit": 847977,
+    "currentTransformReplayMismatches": 0,
+    "fixedGeometry": [
+      {
+        "advanceDeltaHwpunit": -528,
+        "boundaryDisposition": "crossing-delayed",
+        "candidateFirstFrameCrossingCharacterIndex": 44,
+        "candidateMaximumSamePartitionLineWidthPx": 474.3,
+        "candidateMinimumSamePartitionSlackPx": -87.9,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 35572,
+        "contentWidthHwpunit": 28980,
+        "context": "table-cell",
+        "currentFirstFrameCrossingCharacterIndex": 43,
+        "currentMaximumObservedLineWidthPx": 481.0,
+        "currentObservedLineCount": 1,
+        "currentParagraphAdvanceHwpunit": 36100,
+        "firstMetricBoundaryDivergenceCharacterIndex": 43,
+        "kerning": false,
+        "lineSegLane": "stored-line-lane",
+        "ratio": 100,
+        "representativeIndex": 0,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": -524,
+        "boundaryDisposition": "crossing-delayed",
+        "candidateFirstFrameCrossingCharacterIndex": 50,
+        "candidateMaximumSamePartitionLineWidthPx": 384.5,
+        "candidateMinimumSamePartitionSlackPx": 1.9,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 32000,
+        "contentWidthHwpunit": 28980,
+        "context": "table-cell",
+        "currentFirstFrameCrossingCharacterIndex": 49,
+        "currentMaximumObservedLineWidthPx": 387.0,
+        "currentObservedLineCount": 2,
+        "currentParagraphAdvanceHwpunit": 32524,
+        "firstMetricBoundaryDivergenceCharacterIndex": 49,
+        "kerning": true,
+        "lineSegLane": "fresh-candidate-lane",
+        "ratio": 90,
+        "representativeIndex": 1,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -362,
+        "boundaryDisposition": "no-crossing",
+        "candidateFirstFrameCrossingCharacterIndex": null,
+        "candidateMaximumSamePartitionLineWidthPx": 380.4,
+        "candidateMinimumSamePartitionSlackPx": 6.0,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 28527,
+        "contentWidthHwpunit": 28980,
+        "context": "table-cell",
+        "currentFirstFrameCrossingCharacterIndex": null,
+        "currentMaximumObservedLineWidthPx": 386.0,
+        "currentObservedLineCount": 1,
+        "currentParagraphAdvanceHwpunit": 28889,
+        "firstMetricBoundaryDivergenceCharacterIndex": null,
+        "kerning": true,
+        "lineSegLane": "stored-line-lane",
+        "ratio": 80,
+        "representativeIndex": 2,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": -528,
+        "boundaryDisposition": "crossing-delayed",
+        "candidateFirstFrameCrossingCharacterIndex": 45,
+        "candidateMaximumSamePartitionLineWidthPx": 344.3,
+        "candidateMinimumSamePartitionSlackPx": 48.2,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 35572,
+        "contentWidthHwpunit": 29434,
+        "context": "text-box",
+        "currentFirstFrameCrossingCharacterIndex": 44,
+        "currentMaximumObservedLineWidthPx": 353.0,
+        "currentObservedLineCount": 2,
+        "currentParagraphAdvanceHwpunit": 36100,
+        "firstMetricBoundaryDivergenceCharacterIndex": 44,
+        "kerning": false,
+        "lineSegLane": "fresh-candidate-lane",
+        "ratio": 100,
+        "representativeIndex": 0,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": -524,
+        "boundaryDisposition": "crossing-removed",
+        "candidateFirstFrameCrossingCharacterIndex": null,
+        "candidateMaximumSamePartitionLineWidthPx": 385.7,
+        "candidateMinimumSamePartitionSlackPx": 6.7,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 28928,
+        "contentWidthHwpunit": 29434,
+        "context": "text-box",
+        "currentFirstFrameCrossingCharacterIndex": 57,
+        "currentMaximumObservedLineWidthPx": 393.0,
+        "currentObservedLineCount": 1,
+        "currentParagraphAdvanceHwpunit": 29452,
+        "firstMetricBoundaryDivergenceCharacterIndex": 57,
+        "kerning": true,
+        "lineSegLane": "stored-line-lane",
+        "ratio": 90,
+        "representativeIndex": 1,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -418,
+        "boundaryDisposition": "no-crossing",
+        "candidateFirstFrameCrossingCharacterIndex": null,
+        "candidateMaximumSamePartitionLineWidthPx": 252.3,
+        "candidateMinimumSamePartitionSlackPx": 140.1,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 25934,
+        "contentWidthHwpunit": 29434,
+        "context": "text-box",
+        "currentFirstFrameCrossingCharacterIndex": null,
+        "currentMaximumObservedLineWidthPx": 259.0,
+        "currentObservedLineCount": 2,
+        "currentParagraphAdvanceHwpunit": 26352,
+        "firstMetricBoundaryDivergenceCharacterIndex": null,
+        "kerning": true,
+        "lineSegLane": "fresh-candidate-lane",
+        "ratio": 80,
+        "representativeIndex": 2,
+        "spacing": -10
+      }
+    ],
+    "fixtureCodepoints": 53,
+    "recordDeltaCounts": {
+      "narrower": 778,
+      "wider": 778
+    },
+    "records": 1556,
+    "transformKindCounts": {
+      "extraCharacterSpacing": 117,
+      "extraWordSpacing": 24,
+      "letterSpacing": 1084,
+      "ratio": 1074
+    }
+  },
+  "schemaVersion": 1,
+  "sources": {
+    "cdnOtf": {
+      "bytes": 7780312,
+      "cmapCodepointCount": 26089,
+      "fixture": {
+        "advanceSha256": "6f9412caf787b495ad2bfe42a096bcdc141163e2e6b48cb108eac1bf78325add",
+        "codepointCount": 53,
+        "missingCodepoints": 0,
+        "outlineSha256": "047e7d298f7036720ead8beedf7080a42ac3b12fa74ced747e9026c1466f66e0"
+      },
+      "flavor": null,
+      "glyphCount": 30175,
+      "label": "cdnOtf",
+      "nameTable": {
+        "family": [
+          "KoPubWorldBatang_Pro",
+          "KoPubWorldBatang_Pro Light",
+          "KoPubWorld바탕체_Pro",
+          "KoPubWorld바탕체_Pro Light"
+        ],
+        "fullName": [
+          "KoPubWorldBatang_Pro Light",
+          "KoPubWorld바탕체_Pro Light"
+        ],
+        "postScriptName": [
+          "KoPubWorldBatangPL"
+        ],
+        "preferredFamily": [
+          "KoPubWorldBatang_Pro",
+          "KoPubWorld바탕체_Pro"
+        ],
+        "preferredSubfamily": [
+          "Light"
+        ],
+        "subfamily": [
+          "Light"
+        ]
+      },
+      "os2FsType": 8,
+      "requestedNameExact": false,
+      "sfntVersion": "OTTO",
+      "sha256": "895fdc6de0ff0fe24b1a63ae16601c174c810b24daa23ade78115b7e134c4c0a",
+      "technology": "opentype-cff",
+      "unitsPerEm": 1000
+    },
+    "cdnWoff2": {
+      "bytes": 2996388,
+      "cmapCodepointCount": 26089,
+      "fixture": {
+        "advanceSha256": "6f9412caf787b495ad2bfe42a096bcdc141163e2e6b48cb108eac1bf78325add",
+        "codepointCount": 53,
+        "missingCodepoints": 0,
+        "outlineSha256": "047e7d298f7036720ead8beedf7080a42ac3b12fa74ced747e9026c1466f66e0"
+      },
+      "flavor": "woff2",
+      "glyphCount": 28733,
+      "label": "cdnWoff2",
+      "nameTable": {
+        "family": [
+          "KoPubWorldBatang_Pro",
+          "KoPubWorldBatang_Pro Light",
+          "KoPubWorld바탕체_Pro",
+          "KoPubWorld바탕체_Pro Light"
+        ],
+        "fullName": [
+          "KoPubWorldBatang_Pro Light",
+          "KoPubWorld바탕체_Pro Light"
+        ],
+        "postScriptName": [
+          "KoPubWorldBatangPL"
+        ],
+        "preferredFamily": [
+          "KoPubWorldBatang_Pro",
+          "KoPubWorld바탕체_Pro"
+        ],
+        "preferredSubfamily": [
+          "Light"
+        ],
+        "subfamily": [
+          "Light"
+        ]
+      },
+      "os2FsType": 8,
+      "requestedNameExact": false,
+      "sfntVersion": "OTTO",
+      "sha256": "679e263af731c5a23bbe666d67cc1cc5ebed2a16c3985ed7879fce5b0d447ed9",
+      "technology": "opentype-cff",
+      "unitsPerEm": 1000
+    },
+    "comparisons": {
+      "cdnOtfVsCdnWoff2": {
+        "advanceMismatchCount": 0,
+        "byteIdentity": false,
+        "commonAdvancePairSha256": "6d9b60d83e2f8c6ad5f993f65b705b2fdd025272b0097c3b6a3ee8119ec89578",
+        "commonCodepoints": 26089,
+        "fixtureAdvanceMismatchCount": 0,
+        "fixtureCodepoints": 53,
+        "fixtureOutlineDigestMatches": 53,
+        "fixtureOutlineDigestMismatches": 0,
+        "leftOnlyCodepoints": 0,
+        "nameIdentity": true,
+        "rightOnlyCodepoints": 0,
+        "technologyIdentity": true
+      },
+      "exactTtfVsCdnOtf": {
+        "advanceMismatchCount": 0,
+        "byteIdentity": false,
+        "commonAdvancePairSha256": "076e4a1de76227498c6ce959b2f1764294a23f5b0c1e80b498788858a359e785",
+        "commonCodepoints": 25970,
+        "fixtureAdvanceMismatchCount": 0,
+        "fixtureCodepoints": 53,
+        "fixtureOutlineDigestMatches": 2,
+        "fixtureOutlineDigestMismatches": 51,
+        "leftOnlyCodepoints": 1,
+        "nameIdentity": false,
+        "rightOnlyCodepoints": 119,
+        "technologyIdentity": false
+      },
+      "exactTtfVsCdnWoff2": {
+        "advanceMismatchCount": 0,
+        "byteIdentity": false,
+        "commonAdvancePairSha256": "076e4a1de76227498c6ce959b2f1764294a23f5b0c1e80b498788858a359e785",
+        "commonCodepoints": 25970,
+        "fixtureAdvanceMismatchCount": 0,
+        "fixtureCodepoints": 53,
+        "fixtureOutlineDigestMatches": 2,
+        "fixtureOutlineDigestMismatches": 51,
+        "leftOnlyCodepoints": 1,
+        "nameIdentity": false,
+        "rightOnlyCodepoints": 119,
+        "technologyIdentity": false
+      }
+    },
+    "distributionProvenance": {
+      "licenseSha256": "411e7de3f06d32aa0f1c9ab35c5760a7cbe9543ee5867ec491f9b696ed8e0816",
+      "licenseType": "KOPUS-Custom",
+      "liveReferenceVerifiedAt": "2026-08-25",
+      "officialByteLineage": "not-proven-by-package-metadata",
+      "officialLicenseReference": "https://www.heritagelab-chacl.org/9e8dfdd2-0faf-4224-a88e-6bd841c3ce06",
+      "package": "font-kopubworld",
+      "packageAuthority": "third-party-wrapper",
+      "packageRepository": "https://github.com/adrinerDP/font-kopubworld.git",
+      "packageSha256": "301715bd8dcf0f6f7943c9fce7cdebd783d435756517ce2929601919a01befa7",
+      "redistributionDecision": "not-made-in-qualification",
+      "version": "1.0.3"
+    },
+    "exactTtf": {
+      "bytes": 12301272,
+      "cmapCodepointCount": 25971,
+      "fixture": {
+        "advanceSha256": "6f9412caf787b495ad2bfe42a096bcdc141163e2e6b48cb108eac1bf78325add",
+        "codepointCount": 53,
+        "missingCodepoints": 0,
+        "outlineSha256": "67e1ad503fa08d095c4ead20e72db50f5427239169cae21c46c46b01cfad5370"
+      },
+      "flavor": null,
+      "glyphCount": 32884,
+      "label": "exactTtf",
+      "nameTable": {
+        "family": [
+          "KoPubWorldBatang",
+          "KoPubWorldBatang Light",
+          "KoPubWorld바탕체",
+          "KoPubWorld바탕체 Light"
+        ],
+        "fullName": [
+          "KoPubWorldBatang Light",
+          "KoPubWorld바탕체 Light"
+        ],
+        "postScriptName": [
+          "KoPubWorldBatangLight"
+        ],
+        "preferredFamily": [
+          "KoPubWorldBatang",
+          "KoPubWorld바탕체"
+        ],
+        "preferredSubfamily": [
+          "Light"
+        ],
+        "subfamily": [
+          "Light"
+        ]
+      },
+      "os2FsType": 8,
+      "requestedNameExact": true,
+      "sfntVersion": "\u0000\u0001\u0000\u0000",
+      "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+      "technology": "truetype-glyf",
+      "unitsPerEm": 1000
+    }
+  },
+  "stage": "W8-Q2",
+  "target": {
+    "documentFace": "KoPubWorld바탕체 Light",
+    "queueRank": 8
+  }
+}
