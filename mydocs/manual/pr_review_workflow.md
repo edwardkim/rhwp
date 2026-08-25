@@ -294,6 +294,12 @@ review 문서 경로, review_impl 작성 조건, 사전 판단 report의 범위�
 merge 전 보정하거나 별도 issue로 분리해 review 문서에 적는다. merge 후 comment에는 Visual Sweep 정본
 link와 review 문서의 실제 수치·결론을 함께 남기며, PNG는 merge commit SHA 고정 raw URL로 표시한다.
 
+renderer/layout/typeset/paint 등 사용자-visible 렌더링 변경에 HWP/HWPX/PDF fixture가 붙어 있으면
+"시각 검증을 판단 근거로 사용한 경우"가 아니라 **시각 검증 필요 후보**로 먼저 분류한다. 이때 원 PR의
+before/after 이미지나 한컴 수치만 확인하고 maintainer의 직접 visual sweep 또는 동등한 판정 없이
+`수용`·`merge 권고`로 결론 내리지 않는다. 직접 수행하지 못했으면 review 문서와 PR comment에
+`visual sweep 미실행`, `원 PR 증적만 확인`, `보류/조건부 보류` 중 하나를 명시한다.
+
 ## 5. 기존 절 번호 대응
 
 기존 링크 경로인 이 파일은 유지한다. 과거 review 문서와 보고서에 남은 절 번호를 해석할 때는 아래 표를
