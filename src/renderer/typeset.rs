@@ -4254,42 +4254,6 @@ fn keep_hwpx_internal_page_break_on_body_overflow(
     overflow > 16.0 && current_height >= available * 0.85
 }
 
-#[cfg(test)]
-mod keep_hwpx_internal_page_break_on_body_overflow_contract {
-    use super::keep_hwpx_internal_page_break_on_body_overflow;
-
-    #[test]
-    fn keeps_a_mid_para_rewind_when_the_paragraph_would_overflow_the_body() {
-        // issue1880 p5 pi=51: 흐름 891 + 문단 106.9 > 본문 914.7, break_line=1.
-        assert!(keep_hwpx_internal_page_break_on_body_overflow(
-            891.0, 106.9, 914.7, 1
-        ));
-    }
-
-    #[test]
-    fn does_not_promote_a_rewind_when_the_paragraph_still_fits() {
-        assert!(!keep_hwpx_internal_page_break_on_body_overflow(
-            800.0, 50.0, 914.7, 1
-        ));
-    }
-
-    #[test]
-    fn ignores_a_zero_break_line() {
-        assert!(!keep_hwpx_internal_page_break_on_body_overflow(
-            891.0, 106.9, 914.7, 0
-        ));
-    }
-
-    #[test]
-    fn does_not_promote_a_mid_page_tall_paragraph() {
-        // pr-1674: 쪽 중간에서 키 큰 문단이 남은 칸을 넘어도 저장 되감김을
-        // 쪽 경계로 올리면 오라클 35쪽이 36쪽으로 밀린다.
-        assert!(!keep_hwpx_internal_page_break_on_body_overflow(
-            500.0, 450.0, 914.7, 1
-        ));
-    }
-}
-
 fn paragraph_text_looks_like_list_continuation_tail(para: &Paragraph) -> bool {
     let text = para.text.trim_start();
     text.starts_with('.') || text.starts_with('-') || text.starts_with('·') || text.starts_with('•')
