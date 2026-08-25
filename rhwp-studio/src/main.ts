@@ -934,6 +934,13 @@ function setupZoomControls(): void {
   document.getElementById('sb-zoom-out')!.addEventListener('click', () => {
     vm.smoothZoomBy(-0.1);
   });
+  document.getElementById('sb-zoom-100')!.addEventListener('click', () => {
+    vm.setZoom(1.0);
+  });
+  document.getElementById('sb-zoom-range')!.addEventListener('input', (event) => {
+    const percent = Number((event.currentTarget as HTMLInputElement).value);
+    if (Number.isFinite(percent)) vm.setZoom(percent / 100);
+  });
 
   // 폭 맞춤: 용지 폭에 맞게 줌 조절
   document.getElementById('sb-zoom-fit-width')!.addEventListener('click', () => {
@@ -968,6 +975,9 @@ function setupZoomControls(): void {
 
   // 한컴 상황 선처럼 배율 표시와 보기 메뉴가 같은 확대/축소 대화상자를 연다.
   document.getElementById('sb-zoom-val')!.addEventListener('click', () => {
+    dispatcher.dispatch('view:zoom-dialog');
+  });
+  document.getElementById('sb-zoom-menu')!.addEventListener('click', () => {
     dispatcher.dispatch('view:zoom-dialog');
   });
 
@@ -1016,7 +1026,10 @@ function setupEventListeners(): void {
   });
 
   eventBus.on('zoom-level-display', (zoom) => {
-    sbZoomVal().textContent = `${Math.round((zoom as number) * 100)}%`;
+    const percent = Math.round((zoom as number) * 100);
+    sbZoomVal().textContent = `${percent}%`;
+    const range = document.getElementById('sb-zoom-range') as HTMLInputElement | null;
+    if (range) range.value = String(Math.max(5, Math.min(500, percent)));
   });
 
   // 삽입/수정 모드 토글

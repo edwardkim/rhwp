@@ -7,6 +7,7 @@ import {
   calculateArrangementFitWidthZoom,
   calculateFitPageZoom,
 } from './zoom-fit.ts';
+import type { PageMovementSettings } from './page-movement.ts';
 
 export const ZOOM_PRESET_PERCENTAGES = [100, 125, 150, 200, 300, 500] as const;
 export const MIN_CUSTOM_ZOOM_PERCENT = 10;
@@ -22,9 +23,11 @@ export type ZoomChoice =
 export interface ZoomDialogValue {
   zoomChoice: ZoomChoice;
   arrangement: PageArrangement;
+  pageMovement: PageMovementSettings;
 }
 
-export interface ResolveZoomDialogInput extends ZoomDialogValue {
+export interface ResolveZoomDialogInput
+  extends Pick<ZoomDialogValue, 'zoomChoice' | 'arrangement'> {
   viewportWidth: number;
   viewportHeight: number;
   pageWidth: number;

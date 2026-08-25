@@ -20,6 +20,7 @@ test('대화상자는 한컴 비율·쪽 모양 선택을 제공하고 저장소
   for (const label of [
     '폭 맞춤', '쪽 맞춤', '사용자 정의',
     '자동', '한 쪽', '두 쪽', '맞쪽', '여러 쪽',
+    '세로 방향', '가로 방향', '마우스 휠을 사용하여 좌우로 스크롤하기',
   ]) {
     assert.ok(dialog.includes(label), `${label} 선택지가 있어야 한다`);
   }
@@ -31,8 +32,32 @@ test('확대/축소 적용은 사용자 보기 설정과 보기 이벤트만 바
   const end = commands.indexOf("id: 'view:zoom-fit-page'", start);
   const command = commands.slice(start, end);
   assert.match(command, /userSettings\.setPageArrangement/);
-  assert.match(command, /eventBus\.emit\('page-arrangement-changed'/);
+  assert.match(command, /userSettings\.setPageMovement/);
+  assert.match(command, /eventBus\.emit\('page-view-settings-changed'/);
   assert.doesNotMatch(command, /document-(?:changed|mutated)/);
+});
+
+test('상황 선은 한글 2024 순서로 100%·축소·범위·확대·메뉴·배율을 제공한다', () => {
+  const orderedIds = [
+    'sb-zoom-fit-width',
+    'sb-zoom-fit',
+    'sb-zoom-100',
+    'sb-zoom-out',
+    'sb-zoom-range',
+    'sb-zoom-in',
+    'sb-zoom-menu',
+    'sb-zoom-val',
+  ];
+  let cursor = -1;
+  for (const id of orderedIds) {
+    const next = html.indexOf(`id="${id}"`);
+    assert.ok(next > cursor, `${id}가 한글 2024 순서에 있어야 한다`);
+    cursor = next;
+  }
+  assert.match(html, /id="sb-zoom-range"[^>]*type="range"[^>]*min="5"[^>]*max="500"/);
+  assert.match(main, /sb-zoom-100[\s\S]*?setZoom\(1\.0\)/);
+  assert.match(main, /sb-zoom-range[\s\S]*?setZoom/);
+  assert.match(main, /sb-zoom-menu[\s\S]*?view:zoom-dialog/);
 });
 
 test('ViewportManager는 여러 쪽 최소 배율과 500% 프리셋을 모두 허용한다', () => {

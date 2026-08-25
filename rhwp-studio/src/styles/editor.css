@@ -72,7 +72,8 @@
   mix-blend-mode: multiply;
 }
 
-#scroll-content.grid-mode canvas {
+#scroll-content.grid-mode canvas,
+#scroll-content.horizontal-page-movement canvas {
   box-shadow: 0 1px 4px var(--overlay-bg);
 }
 

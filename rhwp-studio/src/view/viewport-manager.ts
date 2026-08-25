@@ -5,6 +5,11 @@ import {
   type ZoomAnchor,
 } from './zoom-anchor.ts';
 import { MAX_DOCUMENT_ZOOM, MIN_DOCUMENT_ZOOM } from './page-arrangement.ts';
+import {
+  DEFAULT_PAGE_MOVEMENT,
+  normalizePageMovementSettings,
+  type PageMovementSettings,
+} from './page-movement.ts';
 
 const ZOOM_SETTLE_EPSILON = 0.001;
 const ZOOM_SMOOTHING_TIME_MS = 16;
@@ -26,6 +31,7 @@ export class ViewportManager {
   private zoomAnimating = false;
   private zoomTarget = 1.0;
   private zoomAnchor: ZoomAnchor = CENTER_ZOOM_ANCHOR;
+  private pageMovement: PageMovementSettings = { ...DEFAULT_PAGE_MOVEMENT };
   private onScrollBound: () => void;
   private onWheelBound: (e: WheelEvent) => void;
   private onZoomAnimationFrameBound: (timestamp: number) => void;
@@ -122,6 +128,19 @@ export class ViewportManager {
     if (!e.ctrlKey && !e.metaKey) {
       if (
         this.container
+        && this.pageMovement.direction === 'horizontal'
+        && this.pageMovement.wheelHorizontal
+        && !e.shiftKey
+        && deltaY !== 0
+        && Math.abs(deltaY) >= Math.abs(deltaX)
+      ) {
+        e.preventDefault();
+        this.setScrollLeft(this.container.scrollLeft + deltaY);
+        return;
+      }
+      if (
+        this.container
+        && this.pageMovement.direction === 'vertical'
         && !e.shiftKey
         && deltaY !== 0
         && Math.abs(deltaY) >= Math.abs(deltaX)
@@ -177,6 +196,10 @@ export class ViewportManager {
 
   getViewportSize(): { width: number; height: number } {
     return { width: this.viewportWidth, height: this.viewportHeight };
+  }
+
+  setPageMovement(value: PageMovementSettings): void {
+    this.pageMovement = normalizePageMovementSettings(value);
   }
 
   getZoom(): number {

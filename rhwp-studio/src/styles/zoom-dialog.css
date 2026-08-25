@@ -43,10 +43,20 @@
   cursor: pointer;
 }
 
-.zoom-dialog-option input[type='radio'] {
+.zoom-dialog-option input[type='radio'],
+.zoom-dialog-option input[type='checkbox'] {
   flex: 0 0 auto;
   margin: 0;
   accent-color: var(--color-primary);
+}
+
+.zoom-dialog-wheel-option {
+  padding-left: 22px;
+}
+
+.zoom-dialog-option input:disabled + span {
+  color: var(--color-text-hint);
+  cursor: not-allowed;
 }
 
 .zoom-dialog-number {

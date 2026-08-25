@@ -6,6 +6,11 @@ import {
   type PageArrangement,
 } from '../view/page-arrangement.ts';
 import {
+  normalizePageMovementSettings,
+  resolvePageViewSettings,
+  type PageMovementSettings,
+} from '../view/page-movement.ts';
+import {
   MAX_CUSTOM_ZOOM_PERCENT,
   MIN_CUSTOM_ZOOM_PERCENT,
   ZOOM_PRESET_PERCENTAGES,
@@ -19,6 +24,7 @@ export interface ZoomDialogOptions {
   currentZoom: number;
   fitZooms: { fitWidth: number; fitPage: number };
   arrangement: PageArrangement;
+  pageMovement: PageMovementSettings;
   onConfirm: (value: ZoomDialogValue) => void;
 }
 
@@ -26,15 +32,18 @@ export interface ZoomDialogOptions {
 export class ZoomDialog extends ModalDialog {
   private readonly initialChoice: ZoomChoice;
   private readonly initialArrangement: PageArrangement;
+  private readonly initialPageMovement: PageMovementSettings;
   private readonly callback: (value: ZoomDialogValue) => void;
   private customInput!: HTMLInputElement;
   private columnsInput!: HTMLInputElement;
   private rowsInput!: HTMLInputElement;
+  private wheelHorizontalInput!: HTMLInputElement;
 
   constructor(options: ZoomDialogOptions) {
     super('확대/축소', 540);
     this.initialChoice = detectZoomChoice(options.currentZoom, options.fitZooms);
     this.initialArrangement = normalizePageArrangement(options.arrangement);
+    this.initialPageMovement = normalizePageMovementSettings(options.pageMovement);
     this.callback = options.onConfirm;
   }
 
@@ -48,16 +57,28 @@ export class ZoomDialog extends ModalDialog {
   protected createBody(): HTMLElement {
     const body = document.createElement('div');
     body.className = 'zoom-dialog-body';
-    body.append(this.createZoomSection(), this.createArrangementSection());
+    body.append(
+      this.createZoomSection(),
+      this.createArrangementSection(),
+      this.createMovementSection(),
+    );
     return body;
   }
 
   protected onConfirm(): void {
     const zoomValue = this.selectedValue('zoom-choice');
     const arrangementValue = this.selectedValue('page-arrangement');
+    const resolved = resolvePageViewSettings(
+      this.arrangementFromValue(arrangementValue),
+      {
+        direction: this.selectedValue('page-movement'),
+        wheelHorizontal: this.wheelHorizontalInput.checked,
+      },
+    );
     this.callback({
       zoomChoice: this.zoomChoiceFromValue(zoomValue),
-      arrangement: this.arrangementFromValue(arrangementValue),
+      arrangement: resolved.arrangement,
+      pageMovement: resolved.movement,
     });
   }
 
@@ -112,6 +133,44 @@ export class ZoomDialog extends ModalDialog {
     adaptive.appendChild(customRow);
     grid.append(presets, adaptive);
     section.appendChild(grid);
+    section.addEventListener('change', () => this.updateDependentInputs());
+    queueMicrotask(() => this.updateDependentInputs());
+    return section;
+  }
+
+  private createMovementSection(): HTMLFieldSetElement {
+    const section = this.section('쪽 이동');
+    const options = document.createElement('div');
+    options.className = 'zoom-dialog-choice-column';
+    options.append(
+      this.radioRow(
+        'page-movement',
+        'vertical',
+        '세로 방향',
+        this.initialPageMovement.direction === 'vertical',
+      ),
+      this.radioRow(
+        'page-movement',
+        'horizontal',
+        '가로 방향',
+        this.initialPageMovement.direction === 'horizontal',
+      ),
+    );
+
+    const wheelLabel = document.createElement('label');
+    wheelLabel.className = 'zoom-dialog-option zoom-dialog-wheel-option';
+    this.wheelHorizontalInput = document.createElement('input');
+    this.wheelHorizontalInput.type = 'checkbox';
+    this.wheelHorizontalInput.checked = this.initialPageMovement.wheelHorizontal;
+    this.wheelHorizontalInput.setAttribute(
+      'aria-label',
+      '마우스 휠을 사용하여 좌우로 스크롤하기',
+    );
+    const wheelText = document.createElement('span');
+    wheelText.textContent = '마우스 휠을 사용하여 좌우로 스크롤하기';
+    wheelLabel.append(this.wheelHorizontalInput, wheelText);
+    options.appendChild(wheelLabel);
+    section.appendChild(options);
     section.addEventListener('change', () => this.updateDependentInputs());
     queueMicrotask(() => this.updateDependentInputs());
     return section;
@@ -248,10 +307,25 @@ export class ZoomDialog extends ModalDialog {
   }
 
   private updateDependentInputs(): void {
-    if (!this.customInput || !this.columnsInput || !this.rowsInput) return;
+    if (
+      !this.customInput
+      || !this.columnsInput
+      || !this.rowsInput
+      || !this.wheelHorizontalInput
+    ) return;
     this.customInput.disabled = this.selectedValue('zoom-choice') !== 'custom';
-    const multiple = this.selectedValue('page-arrangement') === 'multiple';
+    const horizontal = this.selectedValue('page-movement') === 'horizontal';
+    if (horizontal) {
+      const single = this.dialog.querySelector<HTMLInputElement>(
+        'input[name="page-arrangement"][value="single"]',
+      );
+      if (single) single.checked = true;
+    }
+    this.dialog.querySelectorAll<HTMLInputElement>('input[name="page-arrangement"]')
+      .forEach((input) => { input.disabled = horizontal && input.value !== 'single'; });
+    const multiple = !horizontal && this.selectedValue('page-arrangement') === 'multiple';
     this.columnsInput.disabled = !multiple;
     this.rowsInput.disabled = !multiple;
+    this.wheelHorizontalInput.disabled = !horizontal;
   }
 }
