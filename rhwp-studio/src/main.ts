@@ -76,7 +76,10 @@ import {
   resolveRenderProfile,
   type RenderBackendFallbackReason,
 } from '@/view/render-backend';
-import { calculateFitPageZoom, calculateFitWidthZoom } from '@/view/zoom-fit';
+import {
+  calculateArrangementFitWidthZoom,
+  calculateFitPageZoom,
+} from '@/view/zoom-fit';
 import { withBusyCursor } from '@/view/busy-cursor';
 import { formatPageIndicator } from '@/view/page-indicator';
 import { installEmbedRuntime } from '@/embed/runtime';
@@ -946,7 +949,11 @@ function setupZoomControls(): void {
     const container = document.getElementById('scroll-container')!;
     const pageInfo = wasm.getPageInfo(0);
     // pageInfo.width는 이미 px 단위 (96dpi 기준)
-    const zoom = calculateFitWidthZoom(container.clientWidth, pageInfo.width);
+    const zoom = calculateArrangementFitWidthZoom({
+      containerWidth: container.clientWidth,
+      pageWidth: pageInfo.width,
+      arrangement: canvasView!.getPageArrangement(),
+    });
     console.log(`[zoom-fit-width] container=${container.clientWidth} page=${pageInfo.width} zoom=${zoom.toFixed(3)}`);
     vm.setZoom(zoom);
   });
