@@ -211,8 +211,8 @@
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 4px;
+  justify-content: flex-start;
+  gap: 2px;
 }
 
 .stb-zoom-display:hover {
@@ -229,7 +229,7 @@
   width: 36px;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
-  text-align: right;
+  text-align: left;
   white-space: nowrap;
 }
 
