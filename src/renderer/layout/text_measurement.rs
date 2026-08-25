@@ -988,7 +988,13 @@ fn measure_char_width_embedded_decision<'a>(
     c: char,
     font_size: f64,
 ) -> EmbeddedWidthDecision<'a> {
-    let primary_name = font_family.split(',').next().unwrap_or(font_family).trim();
+    let primary_name = font_family
+        .split(',')
+        .next()
+        .unwrap_or(font_family)
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"');
     if let Some(w) = kopub_char_width(primary_name, c, font_size) {
         return EmbeddedWidthDecision {
             width_px: Some(w),
@@ -1030,7 +1036,9 @@ fn measure_char_width_embedded_decision<'a>(
                 (mm.metric.em_size as f64 * 0.3) as u16,
                 "metricNarrowPunctuationOverlay",
             )
-        } else if (is_halfwidth_punct || is_halfwidth_cjk_quote(c)) && glyph_w >= mm.metric.em_size
+        } else if (is_halfwidth_punct
+            || (is_halfwidth_cjk_quote(c) && is_monospace_metric(mm.metric)))
+            && glyph_w >= mm.metric.em_size
         {
             (mm.metric.em_size / 2, "metricHalfwidthPunctuationOverlay")
         } else {
@@ -1368,9 +1376,33 @@ fn is_unicode_halfwidth_form(c: char) -> bool {
 /// 한컴이 수평 조판에서 반각 advance 로 처리하는 CJK 낫표.
 ///
 /// 일부 등록 폰트는 `「」` glyph advance 를 전각으로 제공하지만, 한컴 PDF 기준
-/// 본문 조판에서는 법령명 낫표 뒤에 전각 공백처럼 보이는 간격이 생기지 않는다.
+/// 본문 조판에서는 법령명 낫표 뒤에 전각 공백처럼 보이는 간격이 생기지 않는다
+/// (#2020 돋움체 여권신청서).
+///
+/// 다만 휴먼명조·HY헤드라인M 에서는 한글이 전폭을 쓴다 (#6060). 메트릭 DB 의
+/// 「 폭은 두 계열 모두 `em_size` 이므로 일괄 반각 오버레이가 아니라 글꼴별로
+/// 갈라야 한다.
 pub(crate) fn is_halfwidth_cjk_quote(c: char) -> bool {
     matches!(c, '\u{300C}' | '\u{300D}')
+}
+
+/// 돋움체 계열은 한컴이 「」 를 반각으로 조판한다 (#2020).
+/// 휴먼명조·HY헤드라인M 같은 비례 글꼴은 전폭이다 (#6060).
+pub(crate) fn forces_halfwidth_cjk_quote(font_family: &str, c: char) -> bool {
+    if !is_halfwidth_cjk_quote(c) {
+        return false;
+    }
+    let primary = font_family
+        .split(',')
+        .next()
+        .unwrap_or(font_family)
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"');
+    primary.contains("돋움체")
+        || primary.contains("DotumChe")
+        || primary.contains("굴림체")
+        || primary.contains("GulimChe")
 }
 
 /// 3 개 이상 연속하는 dash leader 시퀀스의 일부 여부 (Task #352).
@@ -2475,6 +2507,46 @@ mod tests {
             hangul_advance >= style.font_size * 0.9,
             "뒤따르는 한글은 전각 advance 를 유지해야 함. got {:.2}",
             hangul_advance
+        );
+    }
+
+    #[test]
+    fn issue_6060_human_myeongjo_corner_quote_keeps_fullwidth() {
+        let m = EmbeddedTextMeasurer;
+        for family in [
+            "휴먼명조",
+            "'휴먼명조','Batang','바탕',serif",
+            "HumanMyeongJo",
+        ] {
+            let style = TextStyle {
+                font_family: family.to_string(),
+                font_size: 30.0,
+                ratio: 1.0,
+                ..Default::default()
+            };
+            let positions = m.compute_char_positions("「가", &style);
+            let quote_advance = positions[1] - positions[0];
+            assert!(
+                (quote_advance - 30.0).abs() < 1.5,
+                "{family} `「` 는 전각(≈30)이어야 함. got {quote_advance:.2} (반각 강제면 ≈15)"
+            );
+        }
+    }
+
+    #[test]
+    fn issue_6060_hy_headline_corner_quote_keeps_fullwidth() {
+        let m = EmbeddedTextMeasurer;
+        let style = TextStyle {
+            font_family: "HY헤드라인M".to_string(),
+            font_size: 30.0,
+            ratio: 1.0,
+            ..Default::default()
+        };
+        let positions = m.compute_char_positions("「가", &style);
+        let quote_advance = positions[1] - positions[0];
+        assert!(
+            (quote_advance - 30.0).abs() < 1.5,
+            "HY헤드라인M `「` 는 전각(≈30)이어야 함. got {quote_advance:.2} (반각 강제면 ≈15)"
         );
     }
 
