@@ -1068,9 +1068,15 @@ export class CanvasView {
       this.cancelPendingTextEditRefresh();
       this.cancelTextEditStaticLayerVerification();
       try {
-        this.releaseAllRenderedPages(true);
         this.pageRenderer.cancelAll();
         this.updateVisiblePages({ reason: 'zoom' });
+        for (const pageIdx of this.canvasPool.activePages) {
+          const canvas = this.canvasPool.getCanvas(pageIdx);
+          if (!canvas || Number(canvas.dataset.rhwpRenderedZoom) === expectedZoom) continue;
+          if (this.renderCanvas(pageIdx, canvas, { reason: 'zoom' })) continue;
+          this.pageReferenceLayer?.removePage(pageIdx);
+          this.canvasPool.release(pageIdx);
+        }
       } finally {
         this.pageReferenceLayer?.setDiagnosticsPaused(false);
       }

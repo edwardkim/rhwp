@@ -477,11 +477,82 @@ test('CanvasView scales existing pages during zoom and defers the sharp rerender
     source,
     /cancelSettledZoomRender\(resumeDiagnostics = true\)[\s\S]*?if \(resumeDiagnostics\) \{[\s\S]*?setDiagnosticsPaused\(this\.viewportManager\.isZoomAnimating\(\)\)/,
   );
-  assert.match(source, /this\.releaseAllRenderedPages\(true\)/);
   assert.match(source, /this\.updateVisiblePages\(\{ reason: 'zoom' \}\)/);
+  const settled = source.slice(
+    source.indexOf('private scheduleSettledZoomRender('),
+    source.indexOf('private cancelSettledZoomRender('),
+  );
+  assert.doesNotMatch(settled, /releaseAllRenderedPages/);
+  assert.doesNotMatch(settled, /canvasPool\.acquire/);
+  assert.doesNotMatch(settled, /clearMountedPages|retainPages/);
+  assert.equal(settled.match(/pageReferenceLayer\?\.removePage/g)?.length, 1);
+  assert.equal(settled.match(/canvasPool\.release/g)?.length, 1);
+  assert.match(
+    settled,
+    /const canvas = this\.canvasPool\.getCanvas\(pageIdx\)[\s\S]*?renderCanvas\(pageIdx, canvas, \{ reason: 'zoom' \}\)\) continue;[\s\S]*?pageReferenceLayer\?\.removePage\(pageIdx\);[\s\S]*?canvasPool\.release\(pageIdx\)/,
+  );
   assert.match(
     source,
     /this\.updateVisiblePages\(\{ reason: 'zoom' \}\);[\s\S]*?setDiagnosticsPaused\(false\)/,
   );
   assert.match(source, /dataset\.rhwpRenderedZoom = String\(zoom\)/);
+});
+
+test('settled zoom keeps the mounted canvas and PDF reference layer', async () => {
+  const previousWindow = (globalThis as { window?: unknown }).window;
+  let idle: (() => void) | null = null;
+  (globalThis as { window?: unknown }).window = {
+    requestIdleCallback(callback: () => void) { idle = callback; return 1; },
+    cancelIdleCallback() {},
+  };
+  try {
+    const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
+    const method = source.slice(
+      source.indexOf('private scheduleSettledZoomRender('),
+      source.indexOf('private cancelSettledZoomRender('),
+    );
+    const executable = method
+      .replace('private scheduleSettledZoomRender(): void {', 'function scheduleSettledZoomRender() {')
+      .replace('const run = (): void => {', 'const run = () => {')
+      .replace('const idleWindow = window as IdleCallbackWindow;', 'const idleWindow = window;');
+    const schedule = Function(
+      'SETTLED_ZOOM_RENDER_TIMEOUT_MS',
+      `${executable}\nreturn scheduleSettledZoomRender;`,
+    )(250);
+    const canvas = { dataset: { rhwpRenderedZoom: '0.5' } };
+    const calls = { clear: 0, remove: 0, release: 0, rendered: null as unknown, paused: [] as boolean[] };
+    const layer = {
+      setDiagnosticsPaused(value: boolean) { calls.paused.push(value); },
+      clearMountedPages() { calls.clear += 1; },
+      retainPages() { calls.clear += 1; },
+      removePage() { calls.remove += 1; },
+    };
+    const view = {
+      settledZoomRenderTask: null,
+      pageReferenceLayer: layer,
+      viewportManager: { getZoom: () => 1, isZoomAnimating: () => false },
+      pageRenderer: { cancelAll() {} },
+      canvasPool: { activePages: [0], getCanvas: () => canvas, release() { calls.release += 1; } },
+      disposed: false,
+      cancelSettledZoomRender() {},
+      cancelPendingTextEditRefresh() {},
+      cancelTextEditStaticLayerVerification() {},
+      updateVisiblePages() {},
+      renderCanvas(_page: number, rendered: unknown) { calls.rendered = rendered; return true; },
+    };
+    schedule.call(view);
+    assert.ok(idle);
+    idle();
+    assert.equal(calls.rendered, canvas);
+    assert.equal(view.pageReferenceLayer, layer);
+    assert.deepEqual([calls.clear, calls.remove, calls.release, calls.paused], [0, 0, 0, [true, false]]);
+    view.renderCanvas = () => false;
+    schedule.call(view);
+    assert.ok(idle);
+    idle();
+    assert.deepEqual([calls.remove, calls.release, calls.paused], [1, 1, [true, false, true, false]]);
+  } finally {
+    if (previousWindow === undefined) delete (globalThis as { window?: unknown }).window;
+    else (globalThis as { window?: unknown }).window = previousWindow;
+  }
 });
