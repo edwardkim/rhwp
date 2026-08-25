@@ -3818,6 +3818,17 @@ const SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX: f64 = 16.0;
 /// 덮고, frame 깊숙이 지나간 stale anchor(수백 px 뒤처짐)는 기각한다.
 const SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX: f64 = 64.0;
 
+/// [#2097→#5714] 표를 완결하는 마지막 행의 쪽 하단 압축 수용치 — 한글은 쪽
+/// 경계에서 말미 행이 잔여를 이 이내로 초과하면 행 밴드를 잔여로 압축해 쪽을
+/// 완결한다 (1741000 실측 초과 6.8px 수용, 삭제 전 #2097 상수 그대로).
+const TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX: f64 = 13.0;
+/// [#2097→#5714] 압축 수용은 쪽 끝자락(잔여 ≤ 이 값)에서만 — 한글의 압축은 쪽
+/// 마무리 동작이다 (1741000 잔여 73.5px 압축 vs kps-ai 잔여 237.3px 이월 실측).
+const TERMINAL_ROW_BOTTOM_SQUEEZE_MAX_REST_PX: f64 = 100.0;
+/// [#2097→#5714] 압축 수용에 필요한 콘텐츠 여유(잔여-콘텐츠) 하한 — 콘텐츠가
+/// 눌릴 공간이 없으면 한글도 이월한다 (1741000 여유 25.9px 압축 실측).
+const TERMINAL_ROW_BOTTOM_SQUEEZE_MIN_HEADROOM_PX: f64 = 12.0;
+
 fn saved_bounds_overlap_current_flow(bounds: (f64, f64), current_height: f64) -> bool {
     let (top, bottom) = bounds;
     let line_height = (bottom - top).max(0.0);
@@ -20940,6 +20951,49 @@ impl TypesetEngine {
                 }
             }
             if res.fully_consumed {
+                // [#2097→#5714] 표를 **완결하는 마지막 행**이 콘텐츠는 잔여에 다
+                // 들어가는데 선언 높이만 소폭 넘을 때, 한글은 행 밴드를 잔여로
+                // 압축해 쪽을 완결한다(1741000 r14: 선언 80.3 → 밴드 69.7, 한글
+                // 2024 PDF 실측 — p2 상단 새 행은 전체 높이, 말미 행만 압축).
+                // f8c784235 가 삭제한 BOTTOM_SQUEEZE 계약의 말미-행 한정 복원:
+                // 종전에는 앞 조각의 유령 tail 밴드가 다음 조각 첫 행을 눌러 이
+                // 핀을 우연히 대신했는데, 그 밴드 이월을 #5714 가 막으면서 실제
+                // 계약이 필요해졌다. 허용치·잔여 상한·콘텐츠 여유 하한은 삭제 전
+                // 상수 그대로(1741000 실측 기반), 중간 블록의 압축/이월 판별
+                // 불가(kps-ai 반증)는 말미-행 한정으로 배제한다.
+                let squeeze_rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                let terminal_row_bottom_squeeze = r + 1 == row_count
+                    && r > cursor_row
+                    && mt.allows_row_break_split()
+                    && !rowspan_touched[r]
+                    && row_start_cut.is_empty()
+                    && row_total > squeeze_rest + 0.5
+                    && row_total <= squeeze_rest + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
+                    && squeeze_rest <= TERMINAL_ROW_BOTTOM_SQUEEZE_MAX_REST_PX
+                    && squeeze_rest - (res.consumed_height + padding)
+                        >= TERMINAL_ROW_BOTTOM_SQUEEZE_MIN_HEADROOM_PX
+                    && !table.cells.iter().any(|cell| {
+                        cell.row as usize == r
+                            && cell.paragraphs.iter().any(|paragraph| {
+                                paragraph
+                                    .controls
+                                    .iter()
+                                    .any(|control| matches!(control, Control::Table(_)))
+                            })
+                    });
+                if terminal_row_bottom_squeeze {
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN TERMINAL_SQUEEZE r={} rest={:.1} row_total={:.1} content={:.1}",
+                            r, squeeze_rest, row_total, res.consumed_height
+                        );
+                    }
+                    consumed += cs_before + squeeze_rest;
+                    r += 1;
+                    end_row = r;
+                    end_row_height_override = Some(squeeze_rest);
+                    continue;
+                }
                 // [#2236] rowspan 블록 중간 행 밴드 컷: 행 자체 콘텐츠는 예산 안에
                 // 전부 들어가지만(fully_consumed) 행 높이가 rowspan 이웃/선언으로
                 // 늘어나 행 전체는 예산 초과인 경우, 한글은 쪽 경계에서 행 밴드를
@@ -24401,7 +24455,28 @@ impl TypesetEngine {
             let next_start_row_height_override = end_row_height_override.and_then(|limit| {
                 let full = cut_row_h.get(end_row.saturating_sub(1)).copied()?;
                 let tail = (full - limit).max(0.0);
-                (tail > 0.5).then_some(tail)
+                // [#5714] 압축된 끝행의 빈 tail 밴드는 **물리적으로 이어지는
+                // 것이 있을 때만** 다음 조각으로 넘어간다: intra-row 컷이면 그
+                // 행 자신이 이어지고, 행 경계 끝이면 경계를 가로지르는 rowspan
+                // 셀의 선언 공간이 이어진다(76076 p36 의 24.1px 밴드 — 한컴 PDF
+                // 실측, r8 rs=7 셀이 경계를 걸침). 둘 다 아니면 완결된 행의
+                // 선언 잔여는 쪽 경계에서 죽는다 — rowspan 없는 19×2 표에서
+                // 이 tail(11.0px)이 다음 조각 첫 행(새 행, 3줄 59.3px)에
+                // 씌워져 글자가 아래 행과 포개졌다(한컴 PDF 는 밴드 없이 새
+                // 행을 전체 높이로 시작).
+                let tail_band_continues = split_end_limit > 0.0
+                    || table.cells.iter().any(|cell| {
+                        (cell.row as usize) < end_row
+                            && cell.row as usize + (cell.row_span as usize).max(1) > end_row
+                    });
+                if std::env::var("RHWP_DIAG_5714").is_ok() {
+                    eprintln!(
+                        "DIAG_5714 FRAG pi={} cursor_row={} end_row={} limit={:.1} full={:.1} tail={:.1} split_end_limit={:.1} continues={}",
+                        para_idx, cursor_row, end_row, limit, full, tail,
+                        split_end_limit, tail_band_continues
+                    );
+                }
+                (tail > 0.5 && tail_band_continues).then_some(tail)
             });
             continuation.advance(end_row, split_block_start, next_cut, split_end_limit > 0.0);
             continuation.start_row_height_override = next_start_row_height_override;
