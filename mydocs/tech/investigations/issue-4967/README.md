@@ -1,16 +1,99 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4967.md
-last_verified: 2026-08-25
+canonical: mydocs/plans/task_m100_4967_v2.md
+last_verified: 2026-08-26
 ---
 
 # Issue #4967 — W8 font face 교정 qualification
 
 이 디렉터리는 W8 tracker의 첫 process canary인 rank 8 `KoPubWorld바탕체 Light`의 교정 적격성 증거를
-보존한다. rank 8 일괄 exact metric 후보는 Stage W8-Q5에서 `no-change`로 종결됐으며 제품 font mapping은
-변경하지 않는다. #4967 tracker는 rank 1·7과 evidence-reopen lane 때문에 계속 active다. 최종 판정은
+보존한다. rank 8 일괄 exact metric 후보와 rank 1 `문체부 바탕체` name-relation 후보는 각각
+Stage W8-Q5와 W8-R1-Q5에서 `no-change`로 종결됐으며 제품 font mapping은 변경하지 않는다. #4967 tracker는
+rank 7과 evidence-reopen lane 때문에 계속 active다. 최종 판정은
 [`task_m100_4967_report.md`](../../../report/task_m100_4967_report.md)에 있다.
+
+## Stage W8-R1-Q0 경계
+
+rank 1 `문체부 바탕체`는 rank 8 결론을 재사용하지 않고 기존 W3·W4·W5·W7.5 증거를 독립 대사한다.
+재현 도구는 `scripts/font_rank1_qualification.py`, 계약 테스트는
+`scripts/tests/test_font_rank1_qualification.py`다.
+
+- local-only 원장: `output/4967/w8-r1-q0/rank1_private_cohort.json`, mode `0600`
+- 공개 baseline: [`rank1_qualification_baseline.json`](rank1_qualification_baseline.json)
+- source 경계: [`rank1_source_provenance_attestation.json`](rank1_source_provenance_attestation.json)
+- 10k corpus 재parse·Hyper-V Oracle 재실행·제품 source 변경: 0
+
+기존 journal의 rank 1 cohort는 22문서(HWP 15, HWPX 7), target 209,066자다. W4 위험 208,986자와
+category·format·compressed fixed-context 수치가 일치했고 위험량 전부가 stored lane이다. exact local SFNT는
+`문체부 바탕체`와 `MBatang` family name을 함께 가지며 현행 metric projection에도 `MBatang` entry 370이
+있다. 반면 v2 registry의 두 이름에 대한 explicit rule은 없다. 이 차이가 제품 miss인지 W4 관찰 경계인지
+Stage W8-R1-Q1에서 runtime trace로 판정한다.
+
+## Stage W8-R1-Q1 runtime 관찰 경계
+
+공개 HWPX fixture와 그 fixture를 `rhwp convert --verify --verify-pages`로 결정적으로 변환한 HWP5 fixture를
+같은 Font Decision Trace에 넣었다. 변환 계보와 digest는
+[`rank1_runtime_boundary.manifest.json`](fixtures/rank1_runtime_boundary.manifest.json), HWP fixture는
+[`rank1_runtime_boundary.hwp`](fixtures/rank1_runtime_boundary.hwp)에 고정했다. font bytes와 private corpus
+identity는 포함하지 않는다.
+
+재현 도구는 `scripts/font_rank1_runtime_boundary.mjs`, 계약 테스트는
+`scripts/tests/font_rank1_runtime_boundary.test.mjs`다. 공개 정본은
+[`rank1_runtime_boundary.json`](rank1_runtime_boundary.json)이다.
+
+- HWPX와 HWP5 모두 target 1,556건이며 runtime decision semantics가 같다.
+- 두 형식 모두 requested·normalized·alias-resolved face가 `문체부 바탕체`, layout-name step은 0이다.
+- metric entry는 전건 `null`, match kind는 전건 `none`이고 heuristic width 분포도 같다.
+- 각 형식의 native·현행 WASM canonical trace는 byte-exact하며 형식 간 trace digest도 같다.
+- W4 face miss는 raw-name 계측의 오탐이 아니라 runtime에서도 재현되는 실제 unresolved 경계다.
+- 첫 divergence는 기존 `MBatang` metric anchor 전의 `layout-name` plane이다.
+
+Q1 disposition은 `qualified-for-q2-layout-name-hypothesis`다. Q2는 제품 규칙을 바꾸지 않고 가상
+`문체부 바탕체 -> MBatang` relation에서 현행 generated metric과 exact `MT.TTF hmtx`만 제한 비교한다.
+paint identity·font supply 또는 제품 변경은 아직 qualification하지 않는다.
+
+## Stage W8-R1-Q2 exact metric 제한 비교
+
+`scripts/font_rank1_metric_hypothesis.py`는 현행 generated `MBatang` entry 370, exact local `MT.TTF hmtx`,
+Q1의 current trace를 함께 읽는다. 제품 registry·metric DB·fallback을 바꾸지 않고 가상
+`문체부 바탕체 -> MBatang` relation만 적용한다. 계약 테스트는
+`scripts/tests/test_font_rank1_metric_hypothesis.py`, 공개 정본은
+[`rank1_metric_hypothesis.json`](rank1_metric_hypothesis.json)이다.
+
+- 현행 entry는 모든 Hangul 11,172자에 1,000, space에 500을 제공하고 그 밖에는 기존 heuristic을 보존한다.
+- exact source의 layout-bearing cmap은 Hangul 2,350자와 space 1자이며 현행 entry와 advance mismatch가 0이다.
+- generated entry가 exact cmap 밖 Hangul 8,822자까지 폭을 제공하므로 font identity나 exact source 계보는
+  주장하지 않는다.
+- 공개 fixture 1,556건에서 current→virtual relation과 virtual→exact advance delta가 모두 0이다.
+- 장평·자간·justification transform 13축과 fixed-frame 6축의 total advance·첫 crossing도 모두 불변이다.
+- 전체 layout-bearing domain의 base advance가 동치이므로 Q0의 private 22문서를 다시 parse하지 않았다.
+- Q0 aggregate의 bold 38,090자는 regular metric을 쓰는 metadata-only `boldFallback` 경로이며 layout
+  advance가 불변이다. projector는 bold·italic 4개 style 조합도 닫는다.
+
+rank 1 disposition은 `no-change`다. runtime name miss는 실제지만 이를 `MBatang`으로 연결해도 layout 이득이
+없고 portable supply·paint identity도 qualification되지 않았다. 제품 alias·metric·fallback 변경과
+W8-R1-Q3에는 진행하지 않는다.
+
+2026-08-26 `upstream/devel@ee7e8a6ed`와 PR 생성 직전 `upstream/devel@6240d255b`를 차례로 통합할 때마다
+새 네이티브·Docker WASM 산출물을 입력으로 Q1·Q2를 다시 실행했다. 최신 Q1은 각 형식 1,556건의
+native/WASM byte parity와 `layout-name` 경계를 유지했고, Q2는 두 advance delta와 fixed-frame crossing을
+모두 0으로 유지했다. 갱신된 canonical hash는 각 JSON 정본에 기록했으며 제품 판정은 계속 `no-change`다.
+
+## Stage W8-R1-Q5 최종 disposition
+
+rank 1은 `no-change`로 동결한다. W4 face-miss는 Q1 runtime에서도 재현됐으므로 계측 lineage 오탐이 아니다.
+반면 Q2는 가상 name relation과 exact metric이 전체 layout-bearing domain에서 현행 advance와 동치임을
+증명했다. 수정할 layout delta가 없으므로 qualified 전용 product-correction 자식 이슈와 registry operation을
+만들지 않는다. Q3·Q4는 후보 부재로 미진입한다.
+
+#4967은 rank 7과 evidence-reopen lane이 남아 있어 OPEN을 유지한다. rank 1을 다시 열려면 layout 이득을
+증명하는 새 evidence 또는 현재와 다른 하나의 decision plane 가설이 필요하다.
+
+공식 문체부 자료는 문화체육관광부 바탕체의 자유 이용·유료 판매 금지·출처 표시 조건을 설명하지만, 해당
+자료에서 local `MT.TTF`와 byte-exact한 공식 배포 artifact를 확인하지 못했다. local SFNT의
+`OS/2.fsType=2`도 restricted-license embedding을 선언한다. 따라서 Q0은 metric 계측 입력과 font bytes
+공급 권한을 분리하고 portable supply를 `blocked`로 유지한다.
 
 ## Stage W8-Q0 경계
 

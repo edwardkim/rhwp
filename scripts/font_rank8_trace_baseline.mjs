@@ -42,7 +42,7 @@ export function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
 }
 
-function regularInput(inputPath, maximumBytes = MAX_INPUT_BYTES) {
+export function regularInput(inputPath, maximumBytes = MAX_INPUT_BYTES) {
   const stats = fs.lstatSync(inputPath);
   if (stats.isSymbolicLink() || !stats.isFile()) {
     throw new Error(`input must be a regular non-symlink file: ${inputPath}`);
@@ -53,15 +53,15 @@ function regularInput(inputPath, maximumBytes = MAX_INPUT_BYTES) {
   return path.resolve(inputPath);
 }
 
-function readJson(inputPath, maximumBytes = MAX_INPUT_BYTES) {
+export function readJson(inputPath, maximumBytes = MAX_INPUT_BYTES) {
   return JSON.parse(fs.readFileSync(regularInput(inputPath, maximumBytes), 'utf8'));
 }
 
-function sha256File(inputPath, maximumBytes = MAX_INPUT_BYTES) {
+export function sha256File(inputPath, maximumBytes = MAX_INPUT_BYTES) {
   return sha256(fs.readFileSync(regularInput(inputPath, maximumBytes)));
 }
 
-function rejectAbsolutePaths(value, label = 'public') {
+export function rejectAbsolutePaths(value, label = 'public') {
   if (Array.isArray(value)) {
     value.forEach((child, index) => rejectAbsolutePaths(child, `${label}[${index}]`));
   } else if (isObject(value)) {
@@ -73,7 +73,7 @@ function rejectAbsolutePaths(value, label = 'public') {
   }
 }
 
-function repoRelative(inputPath) {
+export function repoRelative(inputPath) {
   const relative = path.relative(ROOT, path.resolve(inputPath));
   if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
     throw new Error(`artifact is outside the repository: ${inputPath}`);
@@ -81,7 +81,7 @@ function repoRelative(inputPath) {
   return relative.split(path.sep).join('/');
 }
 
-function requireEqual(actual, expected, label) {
+export function requireEqual(actual, expected, label) {
   if (canonicalJson(actual) !== canonicalJson(expected)) {
     throw new Error(`${label} mismatch`);
   }
@@ -249,7 +249,7 @@ function validateFixture(manifest, fixturePath) {
   );
 }
 
-function runNative(nativeBin, fixturePath) {
+export function runNative(nativeBin, fixturePath) {
   const result = spawnSync(
     regularInput(nativeBin, 512 * 1024 * 1024),
     [fixturePath, '--page', '0', '--max-characters', '4096', '--json'],
@@ -293,7 +293,7 @@ function runLayout(layoutBin, fixturePath) {
   return envelope;
 }
 
-async function runWasm(wasmJs, wasmBinary, fixturePath) {
+export async function runWasm(wasmJs, wasmBinary, fixturePath) {
   const module = await import(`${pathToFileURL(regularInput(wasmJs)).href}?w8=${Date.now()}`);
   await module.default({
     module_or_path: fs.readFileSync(regularInput(wasmBinary)),

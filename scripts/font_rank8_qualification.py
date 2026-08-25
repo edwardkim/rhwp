@@ -240,9 +240,11 @@ def validate_manifest_and_coverage(
     return documents, checkpoint
 
 
-def validate_target_row(row: Any, label: str) -> dict[str, Any]:
-    if not isinstance(row, dict) or row.get("font") != TARGET_FACE:
-        raise QualificationError(f"{label} is not a rank-8 usage row")
+def validate_target_row(
+    row: Any, label: str, target_face: str = TARGET_FACE
+) -> dict[str, Any]:
+    if not isinstance(row, dict) or row.get("font") != target_face:
+        raise QualificationError(f"{label} is not the requested target usage row")
     checked_nonnegative(row.get("charCount"), f"{label}.charCount")
     checked_nonnegative(row.get("documentCount"), f"{label}.documentCount")
     if row.get("documentCount") != 1:
@@ -260,7 +262,7 @@ def validate_target_row(row: Any, label: str) -> dict[str, Any]:
 
 def summarize_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
     if not rows or len(rows) > MAX_ROWS_PER_DOCUMENT:
-        raise QualificationError("rank-8 row inventory is empty or exceeds the bound")
+        raise QualificationError("target row inventory is empty or exceeds the bound")
     categories: Counter[str] = Counter()
     contexts: Counter[str] = Counter()
     total_characters = 0
@@ -307,7 +309,9 @@ def summarize_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def scan_journal(
-    journal_path: Path, documents: list[dict[str, Any]]
+    journal_path: Path,
+    documents: list[dict[str, Any]],
+    target_face: str = TARGET_FACE,
 ) -> tuple[list[dict[str, Any]], str]:
     journal_path = regular_file(journal_path, MAX_JOURNAL_BYTES)
     digest = hashlib.sha256()
@@ -340,9 +344,13 @@ def scan_journal(
             if not isinstance(usage, list) or len(usage) > MAX_ROWS_PER_DOCUMENT:
                 raise QualificationError(f"journal[{index}] decisionUsage is invalid")
             rows = [
-                validate_target_row(row, f"journal[{index}].decisionUsage[{row_index}]")
+                validate_target_row(
+                    row,
+                    f"journal[{index}].decisionUsage[{row_index}]",
+                    target_face,
+                )
                 for row_index, row in enumerate(usage)
-                if isinstance(row, dict) and row.get("font") == TARGET_FACE
+                if isinstance(row, dict) and row.get("font") == target_face
             ]
             if not rows:
                 continue
@@ -373,7 +381,7 @@ def scan_journal(
 
 def combine_document_summaries(selected: list[dict[str, Any]]) -> dict[str, Any]:
     if not selected:
-        raise QualificationError("rank-8 journal cohort is empty")
+        raise QualificationError("target journal cohort is empty")
     formats: Counter[str] = Counter()
     format_characters: Counter[str] = Counter()
     contexts: Counter[str] = Counter()
