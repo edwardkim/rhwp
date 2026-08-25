@@ -121,6 +121,7 @@
 }
 
 .stb-zoom-range-wrap {
+  --stb-zoom-thumb-size: 12px;
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -142,20 +143,35 @@
   background: transparent;
 }
 
-/* 한컴의 100% 중립 눈금. thumb 아래·위로 보이되 포인터 입력은 가로바에 통과시킨다. */
+.stb-zoom-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--stb-zoom-thumb-size);
+  height: var(--stb-zoom-thumb-size);
+  box-sizing: border-box;
+  border: 1px solid var(--color-text-secondary);
+  border-radius: 50%;
+  background: var(--color-surface-raised);
+}
+
+.stb-zoom-range::-moz-range-thumb {
+  width: var(--stb-zoom-thumb-size);
+  height: var(--stb-zoom-thumb-size);
+  box-sizing: border-box;
+  border: 1px solid var(--color-text-secondary);
+  border-radius: 50%;
+  background: var(--color-surface-raised);
+}
+
+/* 한컴의 100% 중립 눈금. thumb와 같은 높이로 뒤에 놓고 포인터 입력은 가로바에 통과시킨다. */
 .stb-zoom-neutral-mark {
   position: absolute;
-  z-index: 3;
+  z-index: 1;
   left: 50%;
-  top: 4px;
-  height: 12px;
+  top: calc((100% - var(--stb-zoom-thumb-size)) / 2);
+  height: var(--stb-zoom-thumb-size);
   border-left: 1px solid var(--color-text-secondary);
   transform: translateX(-0.5px);
   pointer-events: none;
-}
-
-.stb-zoom-range-wrap.is-neutral .stb-zoom-neutral-mark {
-  visibility: hidden;
 }
 
 .stb-zoom-range:focus-visible {

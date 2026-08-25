@@ -81,6 +81,8 @@ undo, HWP/HWPX 직렬화에는 들어가지 않는다.
   제거하고, 배율 텍스트 36px와 버튼 전체 68px 고정 폭은 유지한다.
 - 가로바의 중앙 눈금은 100%를 뜻한다. 포인터가 중앙 근처에 들어오면 즉시 100%로 스냅하며,
   렌더 입력을 늦추는 별도 애니메이션은 적용하지 않는다.
+- 가로바 손잡이와 중앙 눈금은 12px 공통 크기를 사용한다. 슬라이더를 눈금보다 앞 계층에 배치해
+  비100%에서는 중앙 눈금이 트랙 뒤에 유지되고, 100%에서는 손잡이가 눈금을 자연스럽게 덮는다.
 - 확대·축소는 macOS에서 `Command +/-`, Windows·Linux에서 `Ctrl +/-`를 사용한다. 상태 표시줄 호버
   안내도 현재 플랫폼을 감지해 `확대 (⌘+)` 또는 `확대 (Ctrl + +)`처럼 표시한다. `Ctrl`/`Command+0`의
   100% 복원 계약은 유지하고 숫자 키패드 유무에는 의존하지 않는다.
@@ -100,6 +102,7 @@ undo, HWP/HWPX 직렬화에는 들어가지 않는다.
 - 가로 이동에서 가로 우세 입력을 native 스크롤에 맡겨 단일 페이지의 세로 성분이 새는 계약
 - 통합 배율 버튼의 CSS 돋보기가 왼쪽 18px 스프라이트보다 크게 보이는 계약
 - 통합 배율 버튼이 18px SVG 대신 CSS 원·손잡이를 사용해 `Q`처럼 보이는 계약
+- 슬라이더가 브라우저 기본 손잡이 크기를 사용하고 중앙 눈금이 `z-index: 3`으로 앞에 놓이는 계약
 
 구현 후 같은 테스트가 모두 통과해 기존 코드에서도 통과하던 사후 확인이 아니라 이번 변경 범위를
 직접 포착했다.
@@ -124,6 +127,8 @@ undo, HWP/HWPX 직렬화에는 들어가지 않는다.
   영역은 36px, 통합 버튼은 68px를 유지했다.
 - SVG 돋보기의 `stroke-width=2px`, 둥근 선 끝과 `flex=0 0 18px`를 확인했고, 왼쪽 축소 스프라이트와
   같은 수직 좌표에 배치되어 CSS 의사 요소의 `Q` 모양이 사라졌다.
+- 슬라이더 손잡이와 중앙 눈금은 모두 12px로 렌더됐고, 슬라이더 `z-index=2`·눈금 `z-index=1`을
+  확인했다. 63%에서 눈금은 뒤에 보이고 100%에서는 손잡이가 눈금을 덮었으며 파란 진행 트랙은 유지됐다.
 - 검증 후 사용자 설정은 `세로 방향 + 자동 + 100%`로 복원했다.
 
 ## 검증 결과
@@ -133,7 +138,7 @@ undo, HWP/HWPX 직렬화에는 들어가지 않는다.
 | `node --test tests/zoom-status-controls.test.ts tests/page-arrangement.test.ts tests/zoom-dialog-integration.test.ts tests/navigation-keymap.test.ts tests/shortcut-map.test.ts tests/viewport-manager-smooth-zoom.test.ts tests/zoom-fit.test.ts` | 68/68 통과 |
 | `npx tsc --noEmit --pretty false` | 통과 |
 | `node --test tests/viewport-manager-smooth-zoom.test.ts tests/zoom-fit.test.ts` | 15/15 통과 |
-| `npm test` | 1,122 통과, 1 skip, 실패 0 |
+| `npm test` | 1,123 통과, 1 skip, 실패 0 |
 | `npm run build` | 통과 |
 | `git diff --check` | 통과 |
 
@@ -143,6 +148,8 @@ Stage 5의 실패 계약과 브라우저 확인 세부 값은
 [`task_m100_6039_stage6.md`](../working/task_m100_6039_stage6.md)에 남겼다.
 CSS 돋보기 회귀와 SVG 교체 검증은
 [`task_m100_6039_stage7.md`](../working/task_m100_6039_stage7.md)에 남겼다.
+슬라이더 손잡이·중앙 눈금 보정은
+[`task_m100_6039_stage8.md`](../working/task_m100_6039_stage8.md)에 남겼다.
 
 ## 후속 범위
 
