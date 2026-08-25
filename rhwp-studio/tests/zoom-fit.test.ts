@@ -79,7 +79,11 @@ test('통합 배율 버튼은 모든 배율에서 고정 폭과 tabular 숫자�
   assert.match(button, /width:\s*68px/);
   assert.match(button, /min-width:\s*68px/);
   assert.match(button, /box-sizing:\s*border-box/);
+  assert.match(button, /justify-content:\s*flex-start/);
+  assert.match(button, /gap:\s*2px/);
+  assert.match(value, /width:\s*36px/);
   assert.match(value, /font-variant-numeric:\s*tabular-nums/);
+  assert.match(value, /text-align:\s*left/);
 });
 
 test('통합 배율 버튼은 좌우 확대 아이콘과 같은 18px SVG 돋보기를 사용한다', () => {
