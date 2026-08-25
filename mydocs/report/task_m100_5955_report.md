@@ -11,7 +11,7 @@ last_verified: 2026-08-25
 - **상위 tracker**: #4960
 - **후속**: #4967 W8
 - **작업 브랜치**: `task_m100_5955`
-- **로컬 판정**: 구현·self-review·최신 base 사전 검증 완료, 원격 제출 전
+- **현재 판정**: PR #6049 Draft, PR self-review semantic guard 정정의 새 code head 제출 전
 
 ## 1. 최종 판정
 
@@ -39,9 +39,11 @@ lifecycle audit에서 유지·신규·retired·replaced·historical·dangling �
 | W7.5-5 | evidence/add/retire/replace와 rollback의 synthetic W8 rehearsal 고정 |
 | W7.5-6 | Rust·Studio·Native Skia·Docker WASM·공개 SVG 전체 제품 0-delta 검증 |
 | W7.5-7 | self-review blocker 2건 정정, 최신 `upstream/devel` merge tree 검증 |
+| W7.5-8 | PR self-review에서 v1 semantic guard 이관 누락을 재현하고 validator·negative contract 정정 |
 
-세부 명령과 단계별 수치는 [Stage W7.5-1~6 기록](../working/task_m100_5955_w7_5_stage1.md)과
-[Stage W7.5-7 기록](../working/task_m100_5955_w7_5_stage7.md)에 보존했다.
+세부 명령과 단계별 수치는 [Stage W7.5-1~6 기록](../working/task_m100_5955_w7_5_stage1.md),
+[Stage W7.5-7 기록](../working/task_m100_5955_w7_5_stage7.md)과
+[Stage W7.5-8 정정 기록](../working/task_m100_5955_w7_5_stage8.md)에 보존했다.
 
 ## 3. canonical artifact와 population
 
@@ -95,6 +97,20 @@ Stage W7.5-7에서 두 blocker를 발견해 정정했다.
 정정 뒤 v2 focused 23/23과 전체 `scripts/tests/font_rule_*.test.mjs` 93/93이 통과했다. registry·projection
 결정성 및 `git diff --check`도 다시 통과했다.
 
+PR #6049의 위 code head가 Full Actions를 통과한 뒤 수행한 두 번째 self-review에서는 더 근본적인 blocker를
+발견했다.
+
+3. v2 validator가 v1의 projection별 relation allowlist와 metric/supply semantic guard를 이관하지 않아
+   `canvas2d-paint + supply-source`, paint rule의 metric anchor와 `file://` webfont payload를 허용했다.
+   registry와 change-set payload가 공유하는 semantic validator로 v1 경계를 전수 이관했다.
+4. malformed `evidenceRecords`와 `projections`가 오류 목록 대신 `TypeError`를 만들었다. 잘못된 collection을
+   안전한 빈 순회 입력으로 분리하되 원 자료형 오류는 보존해 validator totality를 복구했다.
+
+정정 뒤 최초 재현 세 건은 모두 거부됐고 v2 focused 26/26, 전체 font-rule Node 계약 96/96, v1/v2 registry,
+projection과 pre-migration baseline check, Rust unit-tier 4,221 tests/299 modules가 통과했다. canonical registry,
+migration, generated source와 제품 mapping은 바뀌지 않았다. 기존 녹색 Actions head는 새 negative contract를
+포함하지 않으므로 merge 근거로 재사용하지 않으며, correction head의 Full CI가 새 외부 게이트다.
+
 ## 6. 최신 devel 병합 시뮬레이션
 
 2026-08-25 `upstream/devel@385e93b2c317d1f50d874fd655e88cf4b2a1ba07`은 최초 기준선보다 40커밋
@@ -122,6 +138,7 @@ Skia·Docker WASM을 반복하지 않은 이유는 Stage W7.5-6 전체 검증 �
 | schema 1.0 역사 artifact byte 보존 | 충족 |
 | initial v2 830 active/0 retired, selection tuple delta 0 | 충족 |
 | 한 rule/한 decision plane/한 projection | 충족 |
+| projection별 relation·metric·supply 소유 경계 | Stage W7.5-8 정정 뒤 충족 |
 | same-ID in-place semantic mutation 금지 | 충족 |
 | retired row 보존·runtime 제외 | 충족 |
 | evidence parent·digest와 stale parent 검증 | 충족 |
@@ -140,5 +157,6 @@ current 규칙 권위와 변경 절차는 [폰트 fallback 전략](../tech/font_
 3. pre/post tuple과 대상 projection delta, 비대상 네 projection 무변화를 검증한다.
 4. 실제 renderer 영향에 맞는 full·시각 gate를 다시 실행한다.
 
-현재 남은 #5955 절차는 경계 커밋, 승인된 remote push와 PR 생성, PR 번호 확정 뒤 self-review archive 기록,
-최신 GitHub Actions와 merge 승인이다. 이 보고서는 그 외부 상태가 완료됐다고 주장하지 않는다.
+PR #6049는 첫 code head의 녹색 CI 뒤 self-review blocker를 발견해 Draft로 전환했다. 현재 남은 #5955 절차는
+Stage W7.5-8 correction head의 승인된 remote push, 새 Full GitHub Actions, self-review archive와 오늘할일
+trailing commit, 최신 CI·Ready 전환·merge 승인이다. 이 보고서는 그 외부 상태가 완료됐다고 주장하지 않는다.

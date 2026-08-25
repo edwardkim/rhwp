@@ -115,6 +115,11 @@ tuple 의미가 달라지면 기존 rule을 `retired`로 남긴 뒤 새 `ruleId`
 hash는 같아야 한다. 폐기된 rule은 runtime에서 제외하지만 offline lifecycle audit와 W2 trace join에는
 계속 남긴다.
 
+JSON Schema는 구조와 개수 상한을 고정하지만 relation·projection 조합, metric identity, supply family·URL과
+capability agreement 같은 교차 필드 의미까지 판정하지 않는다. 이 의미 경계의 실행 권위는
+`font_rule_registry_v2.mjs`의 `validateChangeSet()`·`validateRegistryV2()`이며, W8은 schema 검사만으로 규칙을
+수용하지 않는다.
+
 ---
 
 ## 2. HWP 문서 주요 한글 폰트 라이선스 분석
@@ -785,6 +790,8 @@ HWP 문서에서 다음 폰트명들은 FONT_METRICS DB 에 정식 엔트리가 
 - [ ] evidence-only면 같은 tuple·ruleId를 유지하고, tuple 변경이면 retire-and-replace와 새 ruleId를 쓴다.
 - [ ] Rust/Studio generated 파일을 직접 편집하지 않고 `font_rule_registry_v2.mjs`의 reducer 계약과
       `font_rule_projection_gen.mjs`로 재생성한다.
+- [ ] JSON Schema 적합성에 더해 `font_rule_registry_v2.mjs`의 relation·metric·supply semantic validator를
+      통과한다.
 - [ ] layout-name 규칙이면 `rust-layout-name`, metric alias면 `rust-layout-metric` projection만 바뀌는지
       manifest digest로 확인한다.
 - [ ] FONT_METRICS 배열에 영문 DB 이름으로 엔트리 존재하는지 확인. 없으면:

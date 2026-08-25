@@ -45,6 +45,14 @@ const MIGRATION_SCHEMA_PATH = path.join(
   'issue-5955',
   'font_rule_registry_v1_to_v2_migration.schema.json',
 );
+const METRIC_LINEAGE_PATH = path.join(
+  ROOT,
+  'mydocs',
+  'tech',
+  'investigations',
+  'issue-4964',
+  'font_metric_lineage_manifest.json',
+);
 
 const PROJECTION_IDS = [
   'rust-layout-name',
@@ -77,18 +85,40 @@ const OPERATION_TYPES = [
   'retire-rule',
   'retire-and-replace',
 ];
-const PROJECTION_PLANES = {
-  'rust-layout-name': new Set(['layout-name']),
-  'rust-layout-metric': new Set(['layout-metric']),
-  'canvas2d-paint': new Set(['paint']),
-  'canvas2d-webfont': new Set(['supply']),
-  'canvaskit-sfnt': new Set(['supply', 'detection']),
+const PROJECTION_CONTRACTS = {
+  'rust-layout-name': {
+    planes: new Set(['layout-name']),
+    relations: new Set(['style-fallback']),
+  },
+  'rust-layout-metric': {
+    planes: new Set(['layout-metric']),
+    relations: new Set(['metric-surrogate', 'unknown']),
+  },
+  'canvas2d-paint': {
+    planes: new Set(['paint']),
+    relations: new Set([
+      'document-substitution',
+      'official-successor',
+      'paint-substitute',
+      'style-fallback',
+      'generic-fallback',
+    ]),
+  },
+  'canvas2d-webfont': {
+    planes: new Set(['supply']),
+    relations: new Set(['supply-source']),
+  },
+  'canvaskit-sfnt': {
+    planes: new Set(['supply', 'detection']),
+    relations: new Set(['supply-source', 'capability-detection']),
+  },
 };
 const MIGRATION_EVENT_ID = 'migration:issue-5955';
 const SEALED_EVIDENCE_ID = 'evidence.issue-5955.sealed-v1-registry';
 const SHA1_PATTERN = /^[0-9a-f]{40}$/u;
 const SHA256_PATTERN = /^[0-9a-f]{64}$/u;
 const IDENTIFIER_PATTERN = /^[a-z0-9]+(?:[._:-][a-z0-9]+)*$/u;
+const metricContractCache = new Map();
 
 export const SEALED_V1_ARTIFACTS = Object.freeze({
   'assets/font-rules/font_rule_registry.json':
@@ -121,6 +151,10 @@ function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
+function arrayOrEmpty(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 function relativePath(file, root = ROOT) {
   return path.relative(root, file).split(path.sep).join('/');
 }
@@ -145,6 +179,27 @@ function safeRepositoryPath(value) {
     && !value.split('/').includes('..')
     && !value.includes('\\')
     && !value.includes('://');
+}
+
+function safeLocalFontUrl(value) {
+  return safeRepositoryPath(value) && value.startsWith('fonts/');
+}
+
+function validateNoHostPaths(value, location, errors) {
+  function containsHostPath(candidate) {
+    if (typeof candidate === 'string') {
+      return path.posix.isAbsolute(candidate)
+        || path.win32.isAbsolute(candidate)
+        || candidate.startsWith('file://')
+        || /\/(?:home|Users)\//u.test(candidate);
+    }
+    if (Array.isArray(candidate)) return candidate.some(containsHostPath);
+    if (isObject(candidate)) return Object.values(candidate).some(containsHostPath);
+    return false;
+  }
+  if (containsHostPath(value)) {
+    errors.push(`${location} must not contain host-absolute or file URL paths`);
+  }
 }
 
 function repositoryFile(value, root) {
@@ -235,7 +290,7 @@ function validateFontPlan(plan, location, errors) {
       rejectUnknownFields(source, ['url', 'aliases'], sourceLocation, errors);
       requireFields(source, ['url', 'aliases'], sourceLocation, errors);
       validateString(source?.url, `${sourceLocation}.url`, errors);
-      if (!(source?.url?.startsWith('https://') || source?.url?.startsWith('fonts/'))) {
+      if (!(source?.url?.startsWith('https://') || safeLocalFontUrl(source?.url))) {
         errors.push(`${sourceLocation}.url violates the local/HTTPS boundary`);
       }
       if (!Array.isArray(source?.aliases) || source.aliases.length === 0
@@ -324,6 +379,126 @@ function validateSupply(supply, location, errors) {
     validateFontPlan(supply.offline, `${location}.offline`, errors);
   } else {
     errors.push(`${location} kind is invalid`);
+  }
+}
+
+function loadMetricContract(root, errors) {
+  const metricPath = path.join(root, relativePath(METRIC_LINEAGE_PATH));
+  const cacheKey = path.resolve(metricPath);
+  if (metricContractCache.has(cacheKey)) return metricContractCache.get(cacheKey);
+  let manifest;
+  try {
+    manifest = readJson(metricPath);
+  } catch (error) {
+    errors.push(`font metric lineage manifest is unavailable: ${error.message}`);
+    return null;
+  }
+  if (!Array.isArray(manifest?.entries)
+      || manifest.entries.length === 0
+      || manifest.entries.length > 4096) {
+    errors.push('font metric lineage manifest entries are invalid');
+    return null;
+  }
+  const byId = new Map();
+  const byName = new Map();
+  for (const [index, entry] of manifest.entries.entries()) {
+    if (!isObject(entry)
+        || typeof entry.entryId !== 'string'
+        || !IDENTIFIER_PATTERN.test(entry.entryId)
+        || !Number.isInteger(entry.currentIndex)
+        || entry.currentIndex < 0
+        || typeof entry.metricIdentity?.name !== 'string'
+        || entry.metricIdentity.name.length === 0
+        || entry.metricIdentity.name.length > 2048) {
+      errors.push(`font metric lineage entry ${index} is invalid`);
+      return null;
+    }
+    if (byId.has(entry.entryId)) {
+      errors.push(`font metric lineage entryId ${entry.entryId} is duplicated`);
+      return null;
+    }
+    byId.set(entry.entryId, entry);
+    const entries = byName.get(entry.metricIdentity.name) ?? [];
+    entries.push(entry);
+    byName.set(entry.metricIdentity.name, entries);
+  }
+  for (const entries of byName.values()) {
+    entries.sort((left, right) => left.currentIndex - right.currentIndex);
+  }
+  const contract = { byId, byName };
+  metricContractCache.set(cacheKey, contract);
+  return contract;
+}
+
+function validateRuleSemanticContract(
+  rule,
+  location,
+  errors,
+  { root = ROOT, payload = false } = {},
+) {
+  if (!isObject(rule)) return;
+  const projection = rule.projection ?? rule.projections?.[0];
+  const contract = PROJECTION_CONTRACTS[projection?.id];
+  if (!contract) return;
+
+  if (!contract.planes.has(rule.decisionPlane)) {
+    errors.push(`${location} has a cross-plane projection`);
+  }
+  if (!contract.relations.has(rule.relationType)) {
+    errors.push(`${location} mixes ${rule.relationType} with ${projection.id}`);
+  }
+
+  if (rule.relationType === 'unknown') {
+    if (payload) {
+      errors.push(`${location} cannot introduce a new unknown legacy rule`);
+    } else if (projection.mode !== 'legacy-preservation'
+        || rule.evidence?.evidenceStatus !== 'unknown') {
+      errors.push(`${location} unknown relation must remain sealed legacy-preservation`);
+    }
+  } else if (projection.mode !== 'direct') {
+    errors.push(`${location} only a sealed unknown relation may use legacy-preservation`);
+  }
+
+  const metricEntryIds = Array.isArray(rule.metricEntryIds) ? rule.metricEntryIds : [];
+  if (projection.id === 'rust-layout-metric') {
+    const metricContract = loadMetricContract(root, errors);
+    const expectedMetricEntryIds = metricContract?.byName
+      .get(rule.targetFaceOrPolicy)?.map(entry => entry.entryId) ?? [];
+    if (expectedMetricEntryIds.length === 0
+        || canonicalJson(metricEntryIds) !== canonicalJson(expectedMetricEntryIds)) {
+      errors.push(`${location} layout metric anchors do not match ${rule.targetFaceOrPolicy}`);
+    }
+  } else if (metricEntryIds.length !== 0) {
+    errors.push(`${location} only rust-layout-metric may reference metric entries`);
+  }
+
+  if (projection.id === 'canvas2d-webfont') {
+    if (rule.supply?.kind !== 'canvas2d-webfont') {
+      errors.push(`${location} Canvas2D webfont supply payload is missing`);
+    } else {
+      const externalUrlValid = rule.supply.external === true
+        && rule.supply.sourceUrl?.startsWith('https://');
+      const localUrlValid = rule.supply.external === false
+        && safeLocalFontUrl(rule.supply.sourceUrl);
+      if (rule.supply.fontFamily !== rule.sourceFace
+          || !(externalUrlValid || localUrlValid)) {
+        errors.push(`${location} Canvas2D family/URL/external boundary is invalid`);
+      }
+    }
+  } else if (projection.id === 'canvaskit-sfnt'
+      && rule.conditions?.profile === 'canvaskit-sfnt') {
+    if (rule.supply?.kind !== 'canvaskit-plan') {
+      errors.push(`${location} CanvasKit finite supply payload is missing`);
+    } else {
+      const agreement = (rule.supply.declaredCapability === 'sfnt-source')
+        === (rule.supply.runtimePlanStatus === 'planned');
+      if (rule.supply.fontFamily !== rule.sourceFace
+          || agreement !== rule.supply.capabilityAgreement) {
+        errors.push(`${location} CanvasKit family/capability agreement is invalid`);
+      }
+    }
+  } else if (rule.supply !== null) {
+    errors.push(`${location} non-supply projection must not carry a supply payload`);
   }
 }
 
@@ -423,7 +598,8 @@ function validateEvidenceGraph(records, externalEvidenceIds, location, errors) {
   }
   const allowedIds = new Set([...externalEvidenceIds, ...recordById.keys()]);
   for (const [index, record] of records.entries()) {
-    for (const parentId of record.parentEvidenceIds ?? []) {
+    if (!isObject(record)) continue;
+    for (const parentId of arrayOrEmpty(record.parentEvidenceIds)) {
       if (parentId === record.evidenceId) {
         errors.push(`${location}[${index}] has an evidence self-parent cycle`);
       } else if (!allowedIds.has(parentId)) {
@@ -437,7 +613,7 @@ function validateEvidenceGraph(records, externalEvidenceIds, location, errors) {
     if (visiting.has(evidenceId)) return true;
     if (visited.has(evidenceId) || !recordById.has(evidenceId)) return false;
     visiting.add(evidenceId);
-    const cyclic = (recordById.get(evidenceId).parentEvidenceIds ?? []).some(visit);
+    const cyclic = arrayOrEmpty(recordById.get(evidenceId).parentEvidenceIds).some(visit);
     visiting.delete(evidenceId);
     visited.add(evidenceId);
     return cyclic;
@@ -454,7 +630,7 @@ function validateProjection(projection, location, errors) {
   }
 }
 
-function validateRulePayload(rule, location, errors) {
+function validateRulePayload(rule, location, errors, root = ROOT) {
   const fields = [
     'ruleId',
     'relationType',
@@ -496,6 +672,7 @@ function validateRulePayload(rule, location, errors) {
   validateUniqueStrings(rule?.metricEntryIds, `${location}.metricEntryIds`, errors, 600);
   validateSupply(rule?.supply, `${location}.supply`, errors);
   validateUniqueStrings(rule?.evidenceIds, `${location}.evidenceIds`, errors, 16);
+  validateRuleSemanticContract(rule, location, errors, { root, payload: true });
 }
 
 function selectionTupleFromPayload(rule) {
@@ -553,7 +730,8 @@ function validateLifecycle(lifecycle, location, errors) {
 }
 
 function activeRules(registry) {
-  return (registry.rules ?? []).filter(rule => isObject(rule) && rule.status === 'active');
+  const rules = Array.isArray(registry?.rules) ? registry.rules : [];
+  return rules.filter(rule => isObject(rule) && rule.status === 'active');
 }
 
 function activeProjectionSemantics(registry, projectionId) {
@@ -569,17 +747,18 @@ function activeProjectionSemantics(registry, projectionId) {
 
 function refreshRegistry(registry) {
   const active = activeRules(registry);
+  const rules = Array.isArray(registry.rules) ? registry.rules : [];
   registry.summary = {
-    ruleCount: registry.rules.length,
+    ruleCount: rules.length,
     activeRuleCount: active.length,
-    retiredRuleCount: registry.rules.length - active.length,
-    countsByProjection: countBy(active.map(rule => rule.projections[0].id)),
+    retiredRuleCount: rules.length - active.length,
+    countsByProjection: countBy(active.map(rule => rule.projections?.[0]?.id)),
   };
-  registry.rulesSha256 = sha256Text(canonicalJson(registry.rules));
+  registry.rulesSha256 = sha256Text(canonicalJson(rules));
   return registry;
 }
 
-function validateRule(rule, index, errors) {
+function validateRule(rule, index, errors, root = ROOT) {
   const location = `registry.rules[${index}]`;
   const fields = [
     'ruleId',
@@ -643,10 +822,7 @@ function validateRule(rule, index, errors) {
   }
   if (!['active', 'retired'].includes(rule?.status)) errors.push(`${location}.status is invalid`);
   validateLifecycle(rule?.lifecycle, `${location}.lifecycle`, errors);
-  const projection = rule?.projections?.[0];
-  if (projection && !PROJECTION_PLANES[projection.id]?.has(rule.decisionPlane)) {
-    errors.push(`${location} has a cross-plane projection`);
-  }
+  validateRuleSemanticContract(rule, location, errors, { root });
   if (rule.status === 'active') {
     if (rule.lifecycle?.retiredBy !== null
         || rule.lifecycle?.retirementReason !== null
@@ -662,7 +838,7 @@ function validateSuccessorGraph(rules, errors) {
   const byId = new Map(rules.filter(isObject).map(rule => [rule.ruleId, rule]));
   for (const rule of rules) {
     if (!isObject(rule)) continue;
-    for (const successorId of rule.lifecycle?.successorRuleIds ?? []) {
+    for (const successorId of arrayOrEmpty(rule.lifecycle?.successorRuleIds)) {
       const successor = byId.get(successorId);
       if (!successor) {
         errors.push(`${rule.ruleId} has dangling successor ${successorId}`);
@@ -670,13 +846,13 @@ function validateSuccessorGraph(rules, errors) {
         errors.push(`${rule.ruleId} has cross-plane successor ${successorId}`);
       } else if (successor.projections?.[0]?.id !== rule.projections?.[0]?.id) {
         errors.push(`${rule.ruleId} has cross-projection successor ${successorId}`);
-      } else if (!(successor.lifecycle?.predecessorRuleIds ?? []).includes(rule.ruleId)) {
+      } else if (!arrayOrEmpty(successor.lifecycle?.predecessorRuleIds).includes(rule.ruleId)) {
         errors.push(`${rule.ruleId}/${successorId} predecessor/successor links disagree`);
       }
     }
-    for (const predecessorId of rule.lifecycle?.predecessorRuleIds ?? []) {
+    for (const predecessorId of arrayOrEmpty(rule.lifecycle?.predecessorRuleIds)) {
       const predecessor = byId.get(predecessorId);
-      if (!(predecessor?.lifecycle?.successorRuleIds ?? []).includes(rule.ruleId)) {
+      if (!arrayOrEmpty(predecessor?.lifecycle?.successorRuleIds).includes(rule.ruleId)) {
         errors.push(`${predecessorId}/${rule.ruleId} predecessor/successor links disagree`);
       }
     }
@@ -687,7 +863,7 @@ function validateSuccessorGraph(rules, errors) {
     if (visiting.has(ruleId)) return true;
     if (visited.has(ruleId) || !byId.has(ruleId)) return false;
     visiting.add(ruleId);
-    const cyclic = (byId.get(ruleId).lifecycle?.successorRuleIds ?? []).some(visit);
+    const cyclic = arrayOrEmpty(byId.get(ruleId).lifecycle?.successorRuleIds).some(visit);
     visiting.delete(ruleId);
     visited.add(ruleId);
     return cyclic;
@@ -735,6 +911,7 @@ export function validateRegistryV2(registry, root = ROOT) {
   ];
   rejectUnknownFields(registry, envelopeFields, 'registry', errors);
   requireFields(registry, envelopeFields, 'registry', errors);
+  validateNoHostPaths(registry, 'registry', errors);
   if (!SHA1_PATTERN.test(registry.sourceCommit ?? '')) {
     errors.push('registry.sourceCommit must be a lowercase 40-character Git SHA');
   }
@@ -779,8 +956,9 @@ export function validateRegistryV2(registry, root = ROOT) {
     'registry.summary',
     errors,
   );
-  const records = registry.evidenceRecords ?? [];
-  if (!Array.isArray(records) || records.length > 4096) {
+  const recordsAreValidArray = Array.isArray(registry.evidenceRecords);
+  const records = recordsAreValidArray ? registry.evidenceRecords : [];
+  if (!recordsAreValidArray || records.length > 4096) {
     errors.push('registry.evidenceRecords exceeds the 4,096 entry bound');
   } else {
     records.forEach((record, index) => (
@@ -789,18 +967,19 @@ export function validateRegistryV2(registry, root = ROOT) {
     validateEvidenceGraph(records, new Set(), 'registry.evidenceRecords', errors);
   }
   const evidenceIds = new Set(records.filter(isObject).map(record => record.evidenceId));
-  const rules = registry.rules ?? [];
-  if (!Array.isArray(rules) || rules.length > 4096) {
+  const rulesAreValidArray = Array.isArray(registry.rules);
+  const rules = rulesAreValidArray ? registry.rules : [];
+  if (!rulesAreValidArray || rules.length > 4096) {
     errors.push('registry.rules exceeds the 4,096 rule bound');
   } else {
-    rules.forEach((rule, index) => validateRule(rule, index, errors));
+    rules.forEach((rule, index) => validateRule(rule, index, errors, root));
   }
   if (new Set(rules.filter(isObject).map(rule => rule.ruleId)).size !== rules.length) {
     errors.push('registry ruleId values must be globally unique across all lifecycle states');
   }
   for (const rule of rules) {
     if (!isObject(rule)) continue;
-    if ((rule.evidenceIds ?? []).some(evidenceId => !evidenceIds.has(evidenceId))) {
+    if (arrayOrEmpty(rule.evidenceIds).some(evidenceId => !evidenceIds.has(evidenceId))) {
       errors.push(`${rule.ruleId} has a dangling evidence reference`);
     }
   }
@@ -815,9 +994,11 @@ export function validateRegistryV2(registry, root = ROOT) {
       errors.push(`${projectionId} active projection sequences must be unique and contiguous`);
     }
   }
-  const actualSummary = refreshRegistry(clone(registry)).summary;
-  if (canonicalJson(registry.summary) !== canonicalJson(actualSummary)) {
-    errors.push('registry summary does not match lifecycle state');
+  if (rulesAreValidArray) {
+    const actualSummary = refreshRegistry(clone(registry)).summary;
+    if (canonicalJson(registry.summary) !== canonicalJson(actualSummary)) {
+      errors.push('registry summary does not match lifecycle state');
+    }
   }
   if (registry.rulesSha256 !== sha256Text(canonicalJson(rules))) {
     errors.push('registry.rulesSha256 mismatch');
@@ -840,7 +1021,7 @@ function validateExpectedDelta(expectedDelta, decisionPlane, location, errors) {
   );
   if (!PROJECTION_IDS.includes(expectedDelta?.projectionId)) {
     errors.push(`${location}.projectionId is invalid`);
-  } else if (!PROJECTION_PLANES[expectedDelta.projectionId].has(decisionPlane)) {
+  } else if (!PROJECTION_CONTRACTS[expectedDelta.projectionId].planes.has(decisionPlane)) {
     errors.push(`${location} declares a cross-plane projection`);
   }
   if (!Number.isInteger(expectedDelta?.activeRuleDelta)
@@ -869,7 +1050,7 @@ function operationRuleIds(operation) {
   return [];
 }
 
-function validateOperation(operation, index, changeSet, knownEvidenceIds, errors) {
+function validateOperation(operation, index, changeSet, knownEvidenceIds, errors, root = ROOT) {
   const location = `changeSet.operations[${index}]`;
   if (!OPERATION_TYPES.includes(operation?.type)) {
     errors.push(`${location} attempts an in-place semantic mutation or unknown operation`);
@@ -904,14 +1085,15 @@ function validateOperation(operation, index, changeSet, knownEvidenceIds, errors
   requireFields(operation, fieldsByType[operation.type], location, errors);
   validateString(operation.operationId, `${location}.operationId`, errors, { identifier: true });
   if (operation.type === 'add-rule') {
-    validateRulePayload(operation.rule, `${location}.rule`, errors);
+    validateRulePayload(operation.rule, `${location}.rule`, errors, root);
     if (operation.rule?.decisionPlane !== changeSet.decisionPlane) {
       errors.push(`${location} has a cross-plane rule`);
     }
     if (operation.rule?.projection?.id !== changeSet.expectedDelta?.projectionId) {
       errors.push(`${location} targets a projection outside expectedDelta`);
     }
-    if ((operation.rule?.evidenceIds ?? []).some(evidenceId => !knownEvidenceIds.has(evidenceId))) {
+    if (arrayOrEmpty(operation.rule?.evidenceIds)
+      .some(evidenceId => !knownEvidenceIds.has(evidenceId))) {
       errors.push(`${location} has a dangling evidence reference`);
     }
   } else {
@@ -926,18 +1108,19 @@ function validateOperation(operation, index, changeSet, knownEvidenceIds, errors
       validateString(operation.retirementReason, `${location}.retirementReason`, errors);
     }
     validateUniqueStrings(operation.evidenceIds, `${location}.evidenceIds`, errors, 16, { minimum: 1 });
-    if ((operation.evidenceIds ?? []).some(evidenceId => !knownEvidenceIds.has(evidenceId))) {
+    if (arrayOrEmpty(operation.evidenceIds)
+      .some(evidenceId => !knownEvidenceIds.has(evidenceId))) {
       errors.push(`${location} has a dangling evidence reference`);
     }
     if (operation.type === 'retire-and-replace') {
-      validateRulePayload(operation.replacementRule, `${location}.replacementRule`, errors);
+      validateRulePayload(operation.replacementRule, `${location}.replacementRule`, errors, root);
       if (operation.replacementRule?.decisionPlane !== changeSet.decisionPlane) {
         errors.push(`${location} has a cross-plane replacement`);
       }
       if (operation.replacementRule?.projection?.id !== changeSet.expectedDelta?.projectionId) {
         errors.push(`${location} replacement targets a projection outside expectedDelta`);
       }
-      if ((operation.replacementRule?.evidenceIds ?? [])
+      if (arrayOrEmpty(operation.replacementRule?.evidenceIds)
         .some(evidenceId => !knownEvidenceIds.has(evidenceId))) {
         errors.push(`${location} replacement has a dangling evidence reference`);
       }
@@ -965,6 +1148,7 @@ export function validateChangeSet(changeSet, options = {}) {
   ];
   rejectUnknownFields(changeSet, fields, 'changeSet', errors);
   requireFields(changeSet, fields, 'changeSet', errors);
+  validateNoHostPaths(changeSet, 'changeSet', errors);
   validateString(changeSet.changeSetId, 'changeSet.changeSetId', errors, { identifier: true });
   if (!Number.isInteger(changeSet.issue) || changeSet.issue < 1) {
     errors.push('changeSet.issue must be a positive integer');
@@ -987,8 +1171,10 @@ export function validateChangeSet(changeSet, options = {}) {
   if (!DECISION_PLANES.includes(changeSet.decisionPlane)) {
     errors.push('changeSet.decisionPlane is invalid');
   }
-  const records = changeSet.evidenceRecords ?? [];
-  if (!Array.isArray(records) || records.length > 128) {
+  const recordsAreValidArray = Array.isArray(changeSet.evidenceRecords);
+  const records = recordsAreValidArray ? changeSet.evidenceRecords : [];
+  const existingEvidenceIds = arrayOrEmpty(options.existingEvidenceIds);
+  if (!recordsAreValidArray || records.length > 128) {
     errors.push('changeSet.evidenceRecords must contain at most 128 records');
   } else {
     records.forEach((record, index) => (
@@ -996,21 +1182,22 @@ export function validateChangeSet(changeSet, options = {}) {
     ));
     validateEvidenceGraph(
       records,
-      new Set(options.existingEvidenceIds ?? []),
+      new Set(existingEvidenceIds),
       'changeSet.evidenceRecords',
       errors,
     );
   }
   const knownEvidenceIds = new Set([
-    ...(options.existingEvidenceIds ?? []),
+    ...existingEvidenceIds,
     ...records.filter(isObject).map(record => record.evidenceId),
   ]);
-  const operations = changeSet.operations ?? [];
-  if (!Array.isArray(operations) || operations.length === 0 || operations.length > 64) {
+  const operationsAreValidArray = Array.isArray(changeSet.operations);
+  const operations = operationsAreValidArray ? changeSet.operations : [];
+  if (!operationsAreValidArray || operations.length === 0 || operations.length > 64) {
     errors.push('changeSet must contain at most 64 operations and at least one operation');
   } else {
     operations.forEach((operation, index) => (
-      validateOperation(operation, index, changeSet, knownEvidenceIds, errors)
+      validateOperation(operation, index, changeSet, knownEvidenceIds, errors, root)
     ));
     const operationIds = operations.map(operation => operation?.operationId);
     if (new Set(operationIds).size !== operationIds.length) {

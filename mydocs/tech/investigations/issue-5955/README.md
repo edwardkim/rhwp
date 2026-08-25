@@ -21,6 +21,12 @@ lifecycle join 계약을 보존한다. 실제 font mapping 변경은 후속 #496
 - current runtime projection authority는 `assets/font-rules/font_rule_registry_v2.json`의 active rule이다.
 - schema 1.0 registry와 W1 ledger는 lifecycle 이전의 역사·reference-only 대사에만 사용한다.
 
+JSON Schema는 필드 구조·자료형·개수 상한을 담당한다. projection별 relation allowlist, metric entry와 target
+identity의 일치, Canvas2D family·URL·external 결합, CanvasKit capability agreement, host path와 evidence·
+lifecycle graph 같은 교차 필드 의미는 `scripts/font_rule_registry_v2.mjs`의 수동 validator가 담당한다.
+따라서 W8 change set은 schema 적합성만으로 수용하지 않고 reducer가 호출하는 `validateChangeSet()`과
+정본 registry의 `validateRegistryV2()`를 모두 통과해야 한다.
+
 ## lifecycle 판정
 
 | 판정 | 의미 |
@@ -82,8 +88,9 @@ node --test \
 - ephemeral query model을 폐기한 뒤 base digest로 복귀하는 rollback
 
 성공한 query model은 파일로 쓰지 않으며 실제 `font_rule_registry_v2.json`의 실행 전후 raw SHA-256도
-대사한다. stale parent, in-place mutation, cross-plane, evidence cycle, unsafe path, replacement slot 위반,
-허위 delta, 중복 ID와 non-tail retirement는 원본 base를 바꾸지 않은 채 fail-closed한다. 이 rehearsal의
-통과는 #4967의 실제 mapping change set이나 제품 변경 승인이 아니다.
+대사한다. stale parent, in-place mutation, cross-plane, projection별 relation·metric·supply 소유권,
+evidence cycle, unsafe path, replacement slot 위반, 허위 delta, 중복 ID와 non-tail retirement는 원본 base를
+바꾸지 않은 채 fail-closed한다. JSON Schema만 통과한 입력도 이 semantic validator를 통과하지 못하면
+거부한다. 이 rehearsal의 통과는 #4967의 실제 mapping change set이나 제품 변경 승인이 아니다.
 
 private corpus, font bytes, 사용자 경로와 식별 파일 목록을 audit artifact나 이 디렉터리에 기록하지 않는다.

@@ -209,6 +209,134 @@ test('one change set cannot cross a decision plane', () => {
   assert.match(validateChangeSet(changed, { root: ROOT }).join('\n'), /cross-plane/);
 });
 
+test('v2 change sets preserve the sealed v1 projection semantic boundaries', () => {
+  const mixedRelation = clone(fixture('add-rule').changeSets[0]);
+  mixedRelation.operations[0].rule.relationType = 'supply-source';
+  assert.match(
+    validateChangeSet(mixedRelation, { root: ROOT }).join('\n'),
+    /mixes supply-source with canvas2d-paint/,
+  );
+
+  const mixedMetric = clone(fixture('add-rule').changeSets[0]);
+  mixedMetric.operations[0].rule.metricEntryIds = ['metric.fixture.invalid-paint-anchor'];
+  assert.match(
+    validateChangeSet(mixedMetric, { root: ROOT }).join('\n'),
+    /only rust-layout-metric may reference metric entries/,
+  );
+
+  const mixedSupply = clone(fixture('add-rule').changeSets[0]);
+  mixedSupply.operations[0].rule.supply = {
+    kind: 'canvas2d-webfont',
+    fontFamily: 'Unrelated Family',
+    sourceUrl: 'file:///home/private/font.ttf',
+    format: 'truetype',
+    unicodeRange: null,
+    external: false,
+  };
+  assert.match(
+    validateChangeSet(mixedSupply, { root: ROOT }).join('\n'),
+    /host-absolute|file URL|non-supply projection/,
+  );
+
+  const absolutePayload = clone(fixture('add-rule').changeSets[0]);
+  absolutePayload.operations[0].rule.targetFaceOrPolicy = '/tmp/private/font.ttf';
+  assert.match(
+    validateChangeSet(absolutePayload, { root: ROOT }).join('\n'),
+    /host-absolute or file URL paths/,
+  );
+});
+
+test('new supply rules enforce family URL and capability agreement', () => {
+  const webfont = clone(fixture('add-rule').changeSets[0]);
+  webfont.decisionPlane = 'supply';
+  webfont.expectedDelta.projectionId = 'canvas2d-webfont';
+  webfont.expectedDelta.unchangedProjectionIds = [
+    'rust-layout-name',
+    'rust-layout-metric',
+    'canvas2d-paint',
+    'canvaskit-sfnt',
+  ];
+  Object.assign(webfont.operations[0].rule, {
+    relationType: 'supply-source',
+    decisionPlane: 'supply',
+    projection: { id: 'canvas2d-webfont', mode: 'direct' },
+    supply: {
+      kind: 'canvas2d-webfont',
+      fontFamily: 'Unrelated Family',
+      sourceUrl: 'fonts/../private/font.woff2',
+      format: 'woff2',
+      unicodeRange: null,
+      external: false,
+    },
+  });
+  assert.match(
+    validateChangeSet(webfont, { root: ROOT }).join('\n'),
+    /Canvas2D family\/URL\/external boundary/,
+  );
+
+  const canvasKit = clone(webfont);
+  canvasKit.expectedDelta.projectionId = 'canvaskit-sfnt';
+  canvasKit.expectedDelta.unchangedProjectionIds = [
+    'rust-layout-name',
+    'rust-layout-metric',
+    'canvas2d-paint',
+    'canvas2d-webfont',
+  ];
+  Object.assign(canvasKit.operations[0].rule, {
+    conditions: { profile: 'canvaskit-sfnt' },
+    projection: { id: 'canvaskit-sfnt', mode: 'direct' },
+    supply: {
+      kind: 'canvaskit-plan',
+      fontFamily: 'Fixture Serif',
+      declaredCapability: 'sfnt-source',
+      runtimePlanStatus: 'unavailable',
+      capabilityAgreement: true,
+      online: { sources: [], unavailableFonts: [] },
+      offline: { sources: [], unavailableFonts: [] },
+    },
+  });
+  assert.match(
+    validateChangeSet(canvasKit, { root: ROOT }).join('\n'),
+    /CanvasKit family\/capability agreement/,
+  );
+});
+
+test('change sets cannot introduce a new unknown legacy-preservation rule', () => {
+  const canonical = readJson(V2_REGISTRY_PATH);
+  const sealedUnknown = canonical.rules.find(rule => (
+    rule.relationType === 'unknown' && rule.projections[0].id === 'rust-layout-metric'
+  ));
+  const changed = clone(fixture('add-rule').changeSets[0]);
+  changed.decisionPlane = 'layout-metric';
+  changed.expectedDelta.projectionId = 'rust-layout-metric';
+  changed.expectedDelta.unchangedProjectionIds = [
+    'rust-layout-name',
+    'canvas2d-paint',
+    'canvas2d-webfont',
+    'canvaskit-sfnt',
+  ];
+  changed.operations[0].rule = {
+    ruleId: 'font-rule.fixture.metric.unknown-new',
+    relationType: 'unknown',
+    decisionPlane: 'layout-metric',
+    sourceBoundaryId: sealedUnknown.sourceBoundaryId,
+    sourceFace: sealedUnknown.sourceFace,
+    targetFaceOrPolicy: sealedUnknown.targetFaceOrPolicy,
+    conditions: clone(sealedUnknown.conditions),
+    order: sealedUnknown.order,
+    projection: clone(sealedUnknown.projections[0]),
+    projectionSequence: 67,
+    metricEntryIds: clone(sealedUnknown.metricEntryIds),
+    supply: null,
+    evidenceIds: ['evidence.fixture.add-rule'],
+  };
+
+  assert.match(
+    validateChangeSet(changed, { root: ROOT }).join('\n'),
+    /cannot introduce a new unknown legacy rule/,
+  );
+});
+
 test('a command cannot relabel the decision plane of an existing rule', () => {
   const base = readJson(path.join(FIXTURE_ROOT, 'base-registry.json'));
   const changed = clone(fixture('evidence-only').changeSets[0]);
@@ -302,6 +430,36 @@ test('manual validators reject malformed nested values without throwing', () => 
   });
   assert.match(registryErrors.join('\n'), /registry\.rules\[0\] must be an object/);
 
+  const malformedRecords = clone(readJson(path.join(FIXTURE_ROOT, 'base-registry.json')));
+  malformedRecords.evidenceRecords = {};
+  assert.doesNotThrow(() => {
+    registryErrors = validateRegistryV2(malformedRecords, ROOT);
+  });
+  assert.match(registryErrors.join('\n'), /evidenceRecords/);
+
+  const malformedProjection = clone(readJson(path.join(FIXTURE_ROOT, 'base-registry.json')));
+  malformedProjection.rules[0].projections = null;
+  assert.doesNotThrow(() => {
+    registryErrors = validateRegistryV2(malformedProjection, ROOT);
+  });
+  assert.match(registryErrors.join('\n'), /projections must contain exactly one projection/);
+
+  for (const [name, mutate] of [
+    ['evidence parent IDs', registry => { registry.evidenceRecords[0].parentEvidenceIds = {}; }],
+    ['rule evidence IDs', registry => { registry.rules[0].evidenceIds = {}; }],
+    ['successor rule IDs', registry => { registry.rules[0].lifecycle.successorRuleIds = {}; }],
+    ['predecessor rule IDs', registry => { registry.rules[0].lifecycle.predecessorRuleIds = {}; }],
+  ]) {
+    const malformedCollection = clone(readJson(path.join(FIXTURE_ROOT, 'base-registry.json')));
+    mutate(malformedCollection);
+    let malformedCollectionErrors;
+    assert.doesNotThrow(
+      () => { malformedCollectionErrors = validateRegistryV2(malformedCollection, ROOT); },
+      `${name} must fail closed without throwing`,
+    );
+    assert.ok(malformedCollectionErrors.length > 0, `${name} must return validation errors`);
+  }
+
   const malformedChangeSet = clone(fixture('add-rule').changeSets[0]);
   malformedChangeSet.operations[0] = null;
   let changeSetErrors;
@@ -309,6 +467,29 @@ test('manual validators reject malformed nested values without throwing', () => 
     changeSetErrors = validateChangeSet(malformedChangeSet, { root: ROOT });
   });
   assert.match(changeSetErrors.join('\n'), /unknown operation/);
+
+  const malformedChangeSetRecords = clone(fixture('add-rule').changeSets[0]);
+  malformedChangeSetRecords.evidenceRecords = {};
+  assert.doesNotThrow(() => {
+    changeSetErrors = validateChangeSet(malformedChangeSetRecords, { root: ROOT });
+  });
+  assert.match(changeSetErrors.join('\n'), /evidenceRecords/);
+
+  for (const [name, mutate] of [
+    ['evidence parent IDs', changeSet => { changeSet.evidenceRecords[0].parentEvidenceIds = {}; }],
+    ['rule evidence IDs', changeSet => { changeSet.operations[0].rule.evidenceIds = {}; }],
+  ]) {
+    const malformedCollection = clone(fixture('add-rule').changeSets[0]);
+    mutate(malformedCollection);
+    let malformedCollectionErrors;
+    assert.doesNotThrow(
+      () => {
+        malformedCollectionErrors = validateChangeSet(malformedCollection, { root: ROOT });
+      },
+      `${name} must fail closed without throwing`,
+    );
+    assert.ok(malformedCollectionErrors.length > 0, `${name} must return validation errors`);
+  }
 });
 
 test('new and replacement rules cannot cite undeclared evidence', () => {
