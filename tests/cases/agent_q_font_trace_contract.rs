@@ -60,6 +60,41 @@ fn form_sample_json_emits_envelope() {
 }
 
 #[test]
+fn bounded_max_characters_is_forwarded_to_the_query() {
+    let src = sample();
+    let out = run(&[
+        src.as_str(),
+        "--page",
+        "0",
+        "--max-characters",
+        "1",
+        "--json",
+    ]);
+    assert_eq!(out.status.code(), Some(0), "{out:?}");
+    let v = stdout_json(&out);
+    assert_envelope(&v);
+    assert_eq!(v["trace"]["scope"]["requestedLimits"]["maxCharacters"], 1);
+    assert_eq!(v["trace"]["scope"]["appliedLimits"]["maxCharacters"], 1);
+    assert_eq!(v["trace"]["counts"]["recordsEmitted"], 1);
+}
+
+#[test]
+fn max_characters_outside_the_core_bound_is_usage() {
+    let src = sample();
+    for value in ["0", "4097", "nope"] {
+        let out = run(&[
+            src.as_str(),
+            "--page",
+            "0",
+            "--max-characters",
+            value,
+            "--json",
+        ]);
+        assert_eq!(out.status.code(), Some(2), "value={value} {out:?}");
+    }
+}
+
+#[test]
 fn unknown_flag_is_usage() {
     let src = sample();
     let out = run(&["--nope", src.as_str(), "--page", "0"]);

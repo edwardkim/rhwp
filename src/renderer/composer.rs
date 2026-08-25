@@ -1857,6 +1857,76 @@ pub(crate) fn recompose_stored_lines_in_frame(
     }
 }
 
+/// Read-only projection of the production stored-row cache decision.
+///
+/// Evidence queries use this entry instead of inferring validity from the mere
+/// presence of `LineSeg` records. The probe owns an isolated composition and
+/// frame, so it cannot publish rows or mutate the document. `Unmodelled` is a
+/// first-class answer: legacy origins, externally-owned wrap geometry and
+/// unsupported controls must not be mislabeled as cache rejection.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum StoredRowProbeDisposition {
+    Admitted,
+    Rejected,
+    Unmodelled,
+    NotApplicable,
+}
+
+impl StoredRowProbeDisposition {
+    pub(crate) const fn as_str(self) -> &'static str {
+        match self {
+            Self::Admitted => "admitted",
+            Self::Rejected => "rejected",
+            Self::Unmodelled => "unmodelled",
+            Self::NotApplicable => "notApplicable",
+        }
+    }
+}
+
+pub(crate) fn probe_stored_row_disposition(
+    para: &Paragraph,
+    paragraph_box: ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    legacy_hwp3_stored_geometry: bool,
+    miss_policy: line_breaking::StoredRowMissPolicy,
+) -> StoredRowProbeDisposition {
+    let has_authoritative_rows = !para.line_segs.is_empty()
+        && !para
+            .line_segs
+            .iter()
+            .all(|segment| segment.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
+    if !has_authoritative_rows {
+        return StoredRowProbeDisposition::NotApplicable;
+    }
+    if !paragraph_box.is_usable() {
+        return StoredRowProbeDisposition::Unmodelled;
+    }
+
+    let composed = compose_paragraph(para);
+    let inner_width_px = paragraph_box.width_px(dpi);
+    let stale = stored_rows_are_stale(&composed, para, inner_width_px, styles);
+    let mut frame = paragraph_box.frame(
+        para.line_segs
+            .first()
+            .map(|segment| segment.vertical_pos)
+            .unwrap_or(0),
+    );
+    match line_breaking::resolve_stored_line_segs_in_frame(
+        para,
+        &mut frame,
+        styles,
+        dpi,
+        legacy_hwp3_stored_geometry,
+        miss_policy,
+        stale,
+    ) {
+        Some(line_breaking::StoredRowResolution::Stored) => StoredRowProbeDisposition::Admitted,
+        Some(line_breaking::StoredRowResolution::Reflowed) => StoredRowProbeDisposition::Rejected,
+        None => StoredRowProbeDisposition::Unmodelled,
+    }
+}
+
 /// Project context-resolved source runs onto Frame-computed line boundaries.
 ///
 /// Header/footer fields and other model-one/display-many runs keep the marker in
