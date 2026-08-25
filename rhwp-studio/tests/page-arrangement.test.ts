@@ -43,10 +43,10 @@ test('여러 쪽 맞춤 배율은 가로와 세로 중 더 작은 제약을 선�
   assert.equal(zoom, 0.88, '세로: (900 - 위·아래 gap 20) / 1000');
 });
 
-test('8×8도 허용 배율 하한 안에서 전체 배열이 들어오는 값을 만든다', () => {
+test('여러 쪽 맞춤도 한컴 최소 배율 10% 아래로 내려가지 않는다', () => {
   const zoom = calculateMultiplePagesZoom({
     viewportWidth: 1600,
-    viewportHeight: 900,
+    viewportHeight: 800,
     pageWidth: 800,
     pageHeight: 1000,
     columns: 8,
@@ -54,7 +54,5 @@ test('8×8도 허용 배율 하한 안에서 전체 배열이 들어오는 값�
     pageGap: 10,
   });
 
-  assert.ok(zoom >= 0.05);
-  assert.ok(8 * 800 * zoom + 9 * 10 <= 1600 + 1e-9);
-  assert.ok(8 * 1000 * zoom + 9 * 10 <= 900 + 1e-9);
+  assert.equal(zoom, 0.1);
 });

@@ -8,7 +8,7 @@ export type PageArrangement =
 export const DEFAULT_PAGE_ARRANGEMENT: PageArrangement = { kind: 'auto' };
 export const MIN_MULTIPLE_PAGES = 1;
 export const MAX_MULTIPLE_PAGES = 8;
-export const MIN_DOCUMENT_ZOOM = 0.05;
+export const MIN_DOCUMENT_ZOOM = 0.1;
 export const MAX_DOCUMENT_ZOOM = 5;
 
 function normalizeMultipleCount(value: unknown): number {

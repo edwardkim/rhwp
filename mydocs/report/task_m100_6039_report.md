@@ -23,15 +23,14 @@ rhwp-studio의 기존 저배율 자동 다중 열 동작을 `자동`으로 보�
 
 1. 폭 맞춤
 2. 쪽 맞춤
-3. 100%
-4. 축소
-5. 배율 슬라이더
-6. 확대
-7. 확대/축소 설정 메뉴
-8. 현재 배율
+3. 축소
+4. 배율 슬라이더
+5. 확대
+6. 확대/축소 설정 아이콘과 현재 배율을 묶은 통합 버튼
 
-현재 배율 버튼과 설정 메뉴는 같은 대화상자를 열고, 슬라이더·100%·축소·확대·맞춤 버튼은 기존
-`ViewportManager` 배율 상태와 양방향으로 동기화된다.
+별도 100% 버튼은 제거했다. 통합 버튼은 하나의 hover·focus 영역으로 같은 대화상자를 열고,
+슬라이더·축소·확대·맞춤 버튼은 기존 `ViewportManager` 배율 상태와 양방향으로 동기화된다.
+배율 가로바는 10~500% 범위를 사용하며 100%가 정확히 중앙에 오도록 비선형으로 매핑했다.
 
 ## 한컴 동작과 적용 판단
 
@@ -74,7 +73,12 @@ undo, HWP/HWPX 직렬화에는 들어가지 않는다.
   바꾸지 않는다.
 - 확대/축소 대화상자에서 가로 방향을 고르면 한 쪽이 즉시 선택되고 `자동`, `두 쪽`, `맞쪽`,
   `여러 쪽`은 비활성화된다. 세로 방향으로 돌아오면 다시 선택할 수 있다.
-- 상황 선 현재 배율은 44px 고정 폭과 tabular 숫자를 유지해 자리 수 변화로 왼쪽 버튼이 움직이지 않는다.
+- 통합 배율 버튼은 68px 고정 폭과 tabular 숫자를 유지해 자리 수 변화로 왼쪽 버튼이 움직이지 않는다.
+- 가로바의 중앙 눈금은 100%를 뜻한다. 포인터가 중앙 근처에 들어오면 즉시 100%로 스냅하며,
+  렌더 입력을 늦추는 별도 애니메이션은 적용하지 않는다.
+- 확대·축소는 macOS에서 `Command +/-`, Windows·Linux에서 `Ctrl +/-`를 사용한다. 상태 표시줄 호버
+  안내도 현재 플랫폼을 감지해 `확대 (⌘+)` 또는 `확대 (Ctrl + +)`처럼 표시한다. `Ctrl`/`Command+0`의
+  100% 복원 계약은 유지하고 숫자 키패드 유무에는 의존하지 않는다.
 
 ## Test-first 계약
 
@@ -84,33 +88,42 @@ undo, HWP/HWPX 직렬화에는 들어가지 않는다.
 - `VirtualScroll`의 가로 한 행 좌표·X축 visible/prefetch 계약 미존재
 - 가로 방향 세로 휠→좌우 스크롤 변환 미존재
 - 확대/축소 대화상자의 쪽 이동 UI와 한 쪽 강제 계약 미존재
-- 상황 선의 100%·슬라이더·설정 메뉴 및 한컴 순서 미존재
+- 상황 선의 슬라이더·설정 메뉴 및 한컴 순서 미존재
 - 사용자 설정의 쪽 이동 저장·복원 계약 미존재
+- 10~500%·중앙 100% 스냅 매핑과 통합 배율 버튼 모듈 미존재
+- 확대·축소의 플랫폼별 단축키·호버 안내 계약 미존재
 
 구현 후 같은 테스트가 모두 통과해 기존 코드에서도 통과하던 사후 확인이 아니라 이번 변경 범위를
 직접 포착했다.
 
 ## 브라우저 검증
 
-`http://127.0.0.1:7700/`에서 새 문서에 쪽 나누기를 두 번 입력해 3쪽 문서로 검증했다.
+`http://127.0.0.1:7700/`에서 새 문서에 쪽 나누기를 두 번 입력해 3쪽 문서로 검증한 뒤, Stage 5
+상태 표시줄 보정을 같은 로컬 서버에서 다시 검증했다.
 
-- 상황 선의 버튼·슬라이더·설정 메뉴·현재 배율이 요청 순서와 접근성 이름으로 노출됐다.
+- 상황 선에 축소·가로바·확대·통합 배율 버튼이 요청 순서와 접근성 이름으로 노출됐다.
 - 가로 방향 선택 즉시 `한 쪽`이 선택되고 나머지 쪽 모양이 비활성화됐다.
 - 휠 좌우 스크롤 선택 항목은 가로 방향에서만 활성화됐다.
 - 적용 후 `horizontal-page-movement` 레이아웃이 활성화되고, 뷰포트 1,260px에 대해 문서 폭
   2,421px의 가로 스크롤 영역이 생성됐다.
-- 슬라이더를 125%로 옮기면 현재 배율이 125%로 동기화되고, 축소 버튼 뒤 슬라이더와 배율 표시가
-  함께 115%로 바뀌었다.
+- macOS 호버 안내가 `축소 (⌘−)`·`확대 (⌘+)`로 표시되고 통합 버튼 하나가 확대/축소 대화상자를 열었다.
+- 가로바 원시 위치 510은 중앙 위치 500과 100%로 스냅됐고, 스냅 범위 밖인 위치 470은 87%를 유지했다.
+- `Command+=`는 87%에서 97%로 한 번만 확대하고 `Command+-`는 다시 87%로 축소했다. 중복 명령은
+  발생하지 않았으며 `Command+0`은 100%·중앙 위치로 복원했다.
 - 검증 후 사용자 설정은 `세로 방향 + 자동 + 100%`로 복원했다.
 
 ## 검증 결과
 
 | 명령 | 결과 |
 | --- | --- |
-| `node --test tests/page-movement.test.ts tests/virtual-scroll-page-arrangement.test.ts tests/viewport-manager-smooth-zoom.test.ts tests/zoom-dialog.test.ts tests/zoom-dialog-integration.test.ts tests/zoom-fit.test.ts tests/user-settings.test.ts tests/canvas-view-page-arrangement.test.ts tests/virtual-scroll-grid-page.test.ts tests/page-scroll-step.test.ts` | 69/69 통과 |
-| `npm test` | 1,115 통과, 1 skip, 실패 0 |
+| `node --test tests/zoom-status-controls.test.ts tests/page-arrangement.test.ts tests/zoom-dialog-integration.test.ts tests/navigation-keymap.test.ts tests/shortcut-map.test.ts tests/viewport-manager-smooth-zoom.test.ts tests/zoom-fit.test.ts` | 68/68 통과 |
+| `npx tsc --noEmit --pretty false` | 통과 |
+| `npm test` | 1,121 통과, 1 skip, 실패 0 |
 | `npm run build` | 통과 |
 | `git diff --check` | 통과 |
+
+Stage 5의 실패 계약과 브라우저 확인 세부 값은
+[`task_m100_6039_stage5.md`](../working/task_m100_6039_stage5.md)에 남겼다.
 
 ## 후속 범위
 

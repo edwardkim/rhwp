@@ -9,10 +9,10 @@ const dialog = readFileSync(new URL('../src/ui/zoom-dialog.ts', import.meta.url)
 const style = readFileSync(new URL('../src/style.css', import.meta.url), 'utf8');
 const viewport = readFileSync(new URL('../src/view/viewport-manager.ts', import.meta.url), 'utf8');
 
-test('보기 메뉴와 상태 표시줄 배율 버튼은 같은 확대/축소 대화상자 커맨드를 연다', () => {
+test('보기 메뉴와 상태 표시줄 통합 배율 버튼은 같은 확대/축소 대화상자 커맨드를 연다', () => {
   assert.match(html, /data-cmd="view:zoom-dialog"[^>]*>[\s\S]*?화면 확대\/축소/);
-  assert.match(html, /<button[^>]*id="sb-zoom-val"/);
-  assert.match(main, /sb-zoom-val[\s\S]*?dispatcher\.dispatch\('view:zoom-dialog'\)/);
+  assert.match(html, /<button[^>]*id="sb-zoom-display"[^>]*>[\s\S]*?id="sb-zoom-val"/);
+  assert.match(main, /sb-zoom-display[\s\S]*?dispatcher\.dispatch\('view:zoom-dialog'\)/);
   assert.match(commands, /id: 'view:zoom-dialog'[\s\S]*?opensDialog: true[\s\S]*?new ZoomDialog/);
 });
 
@@ -37,16 +37,14 @@ test('확대/축소 적용은 사용자 보기 설정과 보기 이벤트만 바
   assert.doesNotMatch(command, /document-(?:changed|mutated)/);
 });
 
-test('상황 선은 한글 2024 순서로 100%·축소·범위·확대·메뉴·배율을 제공한다', () => {
+test('상황 선은 한글 2024 순서로 축소·범위·확대·통합 배율 버튼을 제공한다', () => {
   const orderedIds = [
     'sb-zoom-fit-width',
     'sb-zoom-fit',
-    'sb-zoom-100',
     'sb-zoom-out',
     'sb-zoom-range',
     'sb-zoom-in',
-    'sb-zoom-menu',
-    'sb-zoom-val',
+    'sb-zoom-display',
   ];
   let cursor = -1;
   for (const id of orderedIds) {
@@ -54,10 +52,24 @@ test('상황 선은 한글 2024 순서로 100%·축소·범위·확대·메뉴·
     assert.ok(next > cursor, `${id}가 한글 2024 순서에 있어야 한다`);
     cursor = next;
   }
-  assert.match(html, /id="sb-zoom-range"[^>]*type="range"[^>]*min="5"[^>]*max="500"/);
-  assert.match(main, /sb-zoom-100[\s\S]*?setZoom\(1\.0\)/);
-  assert.match(main, /sb-zoom-range[\s\S]*?setZoom/);
-  assert.match(main, /sb-zoom-menu[\s\S]*?view:zoom-dialog/);
+  assert.doesNotMatch(html, /id="sb-zoom-100"/);
+  assert.doesNotMatch(html, /id="sb-zoom-menu"/);
+  assert.match(html, /class="stb-zoom-range-wrap[^"]*"[\s\S]*?id="sb-zoom-range"[^>]*type="range"[^>]*min="0"[^>]*max="1000"[\s\S]*?stb-zoom-neutral-mark/);
+  assert.match(main, /sb-zoom-range[\s\S]*?zoomSliderPositionToPercent[\s\S]*?setZoom/);
+  assert.match(main, /sb-zoom-display[\s\S]*?view:zoom-dialog/);
+});
+
+test('상황 선 확대·축소는 플랫폼 단축키를 호버에 표시하고 별도 키 리스너를 만들지 않는다', () => {
+  assert.match(commands, /id: 'view:zoom-in'[\s\S]*?shortcutLabel: 'Ctrl\+\+'/);
+  assert.match(commands, /id: 'view:zoom-out'[\s\S]*?shortcutLabel: 'Ctrl\+-'/);
+  assert.match(main, /zoomPercentShortcutTitle\('확대', 'Ctrl\+\+'/);
+  assert.match(main, /zoomPercentShortcutTitle\('축소', 'Ctrl\+-'/);
+  const setupStart = main.indexOf('function setupZoomControls()');
+  const setupEnd = main.indexOf('\nlet totalSections', setupStart);
+  assert.doesNotMatch(
+    main.slice(setupStart, setupEnd),
+    /document\.addEventListener\('keydown'/,
+  );
 });
 
 test('ViewportManager는 여러 쪽 최소 배율과 500% 프리셋을 모두 허용한다', () => {

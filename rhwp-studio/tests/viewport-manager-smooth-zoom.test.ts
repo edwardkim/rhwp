@@ -418,15 +418,15 @@ test('wheel zoom emits the pointer anchor and inverse deltas restore zoom', asyn
   assert.ok(Math.abs(viewport.getZoom() - 1) < 1e-12);
 });
 
-test('zoom in and out controls use the smooth zoom path', () => {
+test('zoom in and out controls share the command smooth zoom path', () => {
   const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
   const viewCommandSource = readFileSync(
     new URL('../src/command/commands/view.ts', import.meta.url),
     'utf8',
   );
 
-  assert.match(mainSource, /sb-zoom-in[\s\S]*?smoothZoomBy\(0\.1\)/);
-  assert.match(mainSource, /sb-zoom-out[\s\S]*?smoothZoomBy\(-0\.1\)/);
+  assert.match(mainSource, /zoomIn\.addEventListener[\s\S]*?dispatcher\.dispatch\('view:zoom-in'\)/);
+  assert.match(mainSource, /zoomOut\.addEventListener[\s\S]*?dispatcher\.dispatch\('view:zoom-out'\)/);
   assert.match(viewCommandSource, /id: 'view:zoom-in'[\s\S]*?smoothZoomBy\(0\.1\)/);
   assert.match(viewCommandSource, /id: 'view:zoom-out'[\s\S]*?smoothZoomBy\(-0\.1\)/);
 });

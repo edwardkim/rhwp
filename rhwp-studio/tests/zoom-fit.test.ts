@@ -66,16 +66,18 @@ test('status bar and view command share the fit helpers', () => {
   assert.doesNotMatch(commands, /containerH - 40/);
 });
 
-test('status zoom value reserves a fixed width for every percentage', () => {
+test('통합 배율 버튼은 모든 배율에서 고정 폭과 tabular 숫자를 유지한다', () => {
   const css = readFileSync(
     new URL('../src/styles/status-bar.css', import.meta.url),
     'utf8',
   );
-  const block = css.match(/\.stb-zoom-val\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
+  const button = css.match(/\.stb-zoom-display\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
+  const value = css.match(/#sb-zoom-val\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
 
-  assert.ok(block);
-  assert.match(block, /width:\s*44px/);
-  assert.match(block, /min-width:\s*44px/);
-  assert.match(block, /box-sizing:\s*border-box/);
-  assert.match(block, /font-variant-numeric:\s*tabular-nums/);
+  assert.ok(button);
+  assert.ok(value);
+  assert.match(button, /width:\s*68px/);
+  assert.match(button, /min-width:\s*68px/);
+  assert.match(button, /box-sizing:\s*border-box/);
+  assert.match(value, /font-variant-numeric:\s*tabular-nums/);
 });
