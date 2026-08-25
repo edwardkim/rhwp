@@ -1,0 +1,6 @@
+수정 전(debug) 재현 — 이미지 생성 불가(조판 자체가 패닉):
+
+thread 'main' panicked at src/renderer/typeset.rs:
+fresh page must accept one queued table footnote or pending tail
+
+(release 는 break 로 각주 등록을 조용히 생략하고 진행)
