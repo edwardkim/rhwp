@@ -21194,20 +21194,12 @@ impl TypesetEngine {
             // native short parent에만 적용한다. 마지막 경우는 PDF가 border·label과
             // 함께 보이는 첫 child line을 현재 쪽 owner로 고정하지만 content-only
             // 높이가 25px에 근소하게 못 미치는 76076 p81→82 구조다.
-            // #6035: 12pt 한 줄(16px @96dpi) 은 sliver 가 아니다. content-only
-            // 20.8px 가 25px 오팬 문턱에 못 미쳐 4줄 CELL 행을 통째로 밀고 31pt 를
-            // 비우던 경로를, 첫 줄이 실제로 들어간 줄 단위 분할에 한해 수용한다.
-            let kept_full_source_line = mt.allows_row_break_split()
-                && mt.is_row_splittable(r)
-                && res.consumed_height >= 16.0
-                && res.consumed_height + 0.5 >= mt.min_first_line_height_for_row(r, 0.0);
             if r > cursor_row
                 && !row_split_meets_min_top_keep(
                     res.consumed_height,
                     split_total,
                     row_split_min_keep_uses_painted_height,
                 )
-                && !kept_full_source_line
             {
                 end_row = r;
             } else {
