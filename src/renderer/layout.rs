@@ -733,6 +733,9 @@ struct TableControlVars {
     is_current_empty_square_sibling_float: bool,
     is_current_visible_para_float: bool,
     is_first_empty_para_float_control: bool,
+    /// [#6032] 빈-host anchor 가 저장 vpos 로 되감겨 스냅됐는지 — 이 경우 흐름도
+    /// 물리 사다리 여분(v_off+outer)을 계상해야 다음 문단이 표 위로 올라오지 않는다.
+    rewind_anchor_snapped: bool,
     para_index: usize,
     control_index: usize,
 }
@@ -1190,6 +1193,68 @@ fn native_empty_single_topbottom_table_saved_top(
     let bottom = top + hwpunit_to_px(table.common.height as i32, dpi);
     (top >= col_area.y + col_area.height * 0.5 && bottom <= col_area.y + col_area.height + 0.5)
         .then_some(top)
+}
+
+/// [#6032] 직전 문단에서 저장 vpos가 **되감기면** 이 빈-host 자리차지 표는 한글이
+/// 새 쪽 첫 흐름 anchor로 배치한 개체다 (직전 쪽 말미 anchor의 표가 다음 쪽으로
+/// 흘러넘친 뒤). 한글은 넘친 표 아래 흐름을 outer margin만큼만 전진시키는 반면
+/// rhwp 흐름은 host 줄 간격까지 계상해 소폭 아래로 표류하고, 그 위에
+/// `vertical_offset`이 다시 얹혀 표 하단 괘선이 다음 문단 글줄을 관통한다
+/// (2912695 p2 "작성요령" 표 +6.1pt). 흐름이 저장 anchor 근방일 때만 저장 vpos로
+/// host y를 되감는다 — 큰 격차는 pagination 자체가 다른 경우라 손대지 않는다.
+fn native_empty_topbottom_rewind_anchor_saved_para_y(
+    native_hwp5_layout: bool,
+    prev_para: Option<&Paragraph>,
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    table: &crate::model::table::Table,
+    flow_para_y: f64,
+    col_area: &LayoutRect,
+    dpi: f64,
+) -> Option<f64> {
+    const MAX_REWIND_DRIFT_PX: f64 = 24.0;
+    if !native_hwp5_layout
+        || para_has_visible_text(para)
+        || !is_para_topbottom_float(&table.common)
+        || !matches!(
+            table.common.vert_rel_to,
+            crate::model::shape::VertRelTo::Para
+        )
+        || para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            != 1
+    {
+        return None;
+    }
+    let stored_vpos = |paragraph: &Paragraph| {
+        paragraph
+            .line_segs
+            .iter()
+            .rev()
+            .find(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            .map(|seg| seg.vertical_pos)
+    };
+    let host_vpos = stored_vpos(para)?;
+    let prev_vpos = stored_vpos(prev_para?)?;
+    let next_vpos = stored_vpos(next_para?)?;
+    // 되감김(쪽 경계 신호) + 다음 문단이 같은 쪽에서 host 아래로 이어지는지 확인 —
+    // 이 두 조건이 host vpos가 새 쪽의 page-relative 좌표임을 뒷받침한다.
+    if host_vpos <= 0 || host_vpos >= prev_vpos || next_vpos <= host_vpos {
+        return None;
+    }
+    let saved_para_y = col_area.y + hwpunit_to_px(host_vpos, dpi);
+    let drift = flow_para_y - saved_para_y;
+    if !(0.0 < drift && drift <= MAX_REWIND_DRIFT_PX) {
+        return None;
+    }
+    let v_off = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi).max(0.0);
+    let bottom = saved_para_y + v_off + hwpunit_to_px(table.common.height as i32, dpi);
+    (bottom <= col_area.y + col_area.height + 0.5).then_some(saved_para_y)
 }
 
 /// native HWP5의 빈-host 1×1 RowBreak 표에서 cell paragraph 경계를 넘는 저장
@@ -8207,6 +8272,7 @@ impl LayoutEngine {
             is_current_empty_square_sibling_float,
             is_current_visible_para_float,
             is_first_empty_para_float_control,
+            rewind_anchor_snapped,
             para_index,
             control_index,
         } = v;
@@ -9392,7 +9458,7 @@ impl LayoutEngine {
         } else {
             para_start_y.insert(para_index, y_offset);
         }
-        let para_y_for_table = *para_start_y.get(&para_index).unwrap_or(&y_offset);
+        let mut para_y_for_table = *para_start_y.get(&para_index).unwrap_or(&y_offset);
         if let Some(para) = paragraphs.get(para_index) {
             let is_tac = para
                 .controls
@@ -9415,6 +9481,32 @@ impl LayoutEngine {
             // 경로에는 함께 넣고 raw top/flow bottom에서만 별도로 처리한다.
             let is_current_empty_para_float =
                 is_current_empty_topbottom_float || is_current_empty_square_sibling_float;
+            // [#6032] 직전 쪽 말미 anchor 의 표가 이 쪽으로 흘러넘친 뒤의 빈-host
+            // 자리차지 anchor 는 저장 vpos 로 되감긴다. 흐름이 저장 anchor 보다 소폭
+            // 아래로 표류했으면 원천(para_y/y_offset)에서 되감아야 lane·exclusion·
+            // layout_table 이 파생하는 좌표가 전부 함께 정렬된다.
+            let mut rewind_anchor_snapped = false;
+            if is_current_empty_topbottom_float && !is_current_empty_square_sibling_float {
+                if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                    if let Some(saved_para_y) = native_empty_topbottom_rewind_anchor_saved_para_y(
+                        self.profile.get().hwp5_stored_pagination_layout(),
+                        para_index
+                            .checked_sub(1)
+                            .and_then(|prev_index| paragraphs.get(prev_index)),
+                        para,
+                        paragraphs.get(para_index + 1),
+                        t,
+                        para_y_for_table,
+                        col_area,
+                        self.dpi,
+                    ) {
+                        y_offset -= para_y_for_table - saved_para_y;
+                        para_y_for_table = saved_para_y;
+                        para_start_y.insert(para_index, saved_para_y);
+                        rewind_anchor_snapped = true;
+                    }
+                }
+            }
             let is_current_visible_para_float = para
                 .controls
                 .get(control_index)
@@ -9616,6 +9708,7 @@ impl LayoutEngine {
                     is_current_empty_square_sibling_float,
                     is_current_visible_para_float,
                     is_first_empty_para_float_control,
+                    rewind_anchor_snapped,
                     para_index,
                     control_index,
                 },
@@ -9799,12 +9892,17 @@ impl LayoutEngine {
                     // float 가 그만큼 위로 올라와 겹친다(10645 40쪽 결재란 19.7px 침범).
                     // typeset 의 place_table_with_text 흐름 가산과 대칭. 광역 규칙이
                     // 아닌 문단 단위 증거 게이트인 근거는 helper 주석(#2097 반증)에.
+                    // [#6032] anchor 가 저장 vpos 로 되감겨 스냅된 문단은 "후속이
+                    // 텍스트면 저장 vpos 재고정으로 무결" 전제가 깨진다(후속 문단
+                    // 재고정이 발동하지 않는 형상) — 사다리 정확일치 증거가 있으면
+                    // 후속이 일반 텍스트여도 여분을 계상한다.
                     let physical_ladder_extras_px =
                         ((self.profile.get().hwp5_stored_pagination_layout()
                             || self.profile.get().hwpx_stored_layout())
-                            && paragraphs
-                                .get(para_index + 1)
-                                .is_some_and(|next| para_is_empty_topbottom_table_anchor(next))
+                            && (rewind_anchor_snapped
+                                || paragraphs
+                                    .get(para_index + 1)
+                                    .is_some_and(para_is_empty_topbottom_table_anchor))
                             && para
                                 .controls
                                 .iter()
