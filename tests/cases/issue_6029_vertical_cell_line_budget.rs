@@ -59,10 +59,7 @@ fn issue_6029_vertical_cell_title_stays_in_one_column() {
     let title_chars = "항공자격국제협력팀장";
     for ch in title_chars.chars() {
         let in_column = runs.iter().any(|(x, y, t)| {
-            t.chars().count() == 1
-                && t.chars().next() == Some(ch)
-                && *y < 420.0
-                && (*x - x_ref).abs() < 1.0
+            t.chars().count() == 1 && t.starts_with(ch) && *y < 420.0 && (*x - x_ref).abs() < 1.0
         });
         assert!(
             in_column,
