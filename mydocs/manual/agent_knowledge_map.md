@@ -459,8 +459,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 
 `rowCount`/`colCount`/`changed`/`changedCount`/`invalid` 는 표 소절과 같은 뜻이되 좌표가
 다르다 — 차트의 `changed[]` 는 `{series,point|x,from,to}` 또는 구조 항목 `{op,…}` 다.
-구조 편집 거부 사유(`invalid[].reason`, #5652): `pieSeriesCountFixed`·`stockSeriesCountFixed`·
-`lastPointDeleteRefused`·`lastSeriesDeleteRefused`·`scatterXYMismatch`·`multiLevelLabelsUnsupported`·
+구조 편집 거부 사유(`invalid[].reason`, #5652·#6037): `candleAnchorBroken`(주식형 캔들의 첫·끝
+계열이 바뀜 — 원형에는 가드가 없다)·`lastPointDeleteRefused`·`lastSeriesDeleteRefused`·`scatterXYMismatch`·`multiLevelLabelsUnsupported`·
 `rowCountMismatch`·`labelsRequired`·`labelCountMismatch`·`unsafeText`·`seriesNameRequired`·
 `seriesNameNotPatchable`·`pointsNotInsertable`·`seriesNotClonable`·`selfCheckFailed`. 플래그 없이
 치수·이름·라벨이 다르면 B1 사유(`seriesCountMismatch`·`valueCountMismatch`·`seriesNameMismatch`·
