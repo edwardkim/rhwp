@@ -234,7 +234,90 @@ static HUMANMYEONGJO_LATIN_RANGES: [LatinRange; 7] = [
     },
 ];
 
-static MEASURED_FONT_METRIC_OVERLAYS: [FontMetric; 5] = [
+// [#6036] 한컴 윤고딕 720 — 한컴오피스 동봉 실폰트(HANYoonGothic720.ttf, upem 1000)
+// hmtx 직접 추출. 한글 음절 지배 폭 880/1000em (11168/11172, 예외 4자는
+// ±6 이내라 단일 폭으로 수렴). ASCII 는 hmtx 전량. 보도자료 기관명 머리에 흔한
+// 글꼴인데 메트릭 부재로 맑은 고딕 대체 폭(과대)으로 측정돼 글상자 clip 이
+// 글자를 깎았다(156509073 "경찰청" 한글 50.2pt vs rhwp 64.0pt, clip 55.1pt).
+static HANYOONGOTHIC720_LATIN_0: [u16; 95] = [
+    290, 262, 328, 587, 511, 784, 686, 201, 350, 350, 440, 586, 247, 531, 247, 423, 578, 347, 529,
+    525, 542, 535, 555, 500, 568, 555, 291, 291, 593, 554, 593, 495, 854, 659, 624, 652, 687, 588,
+    553, 695, 670, 246, 453, 599, 536, 803, 676, 734, 601, 734, 628, 546, 572, 674, 639, 856, 569,
+    572, 576, 366, 423, 366, 431, 431, 368, 527, 601, 499, 601, 530, 319, 601, 583, 234, 249, 495,
+    234, 860, 583, 580, 601, 601, 343, 416, 317, 597, 482, 707, 469, 485, 480, 396, 330, 396, 604,
+];
+static HANYOONGOTHIC720_LATIN_RANGES: [LatinRange; 1] = [LatinRange {
+    start: 0x0020,
+    end: 0x007E,
+    widths: &HANYOONGOTHIC720_LATIN_0,
+}];
+static HANYOONGOTHIC720_HANGUL_WIDTHS: [u16; 1] = [880];
+static HANYOONGOTHIC720_HANGUL: HangulMetric = HangulMetric {
+    cho_groups: 1,
+    jung_groups: 1,
+    jong_groups: 1,
+    cho_map: &FONT_0_HANGUL_CHO,
+    jung_map: &FONT_0_HANGUL_JUNG,
+    jong_map: &FONT_0_HANGUL_JONG,
+    widths: &HANYOONGOTHIC720_HANGUL_WIDTHS,
+};
+
+// [#6036] 한컴 윤고딕 740 — 한컴오피스 동봉 실폰트(HANYoonGothic740.ttf, upem 1000)
+// hmtx 직접 추출. 한글 음절 지배 폭 920/1000em (11172/11172, 예외 0자는
+// ±6 이내라 단일 폭으로 수렴). ASCII 는 hmtx 전량. 보도자료 기관명 머리에 흔한
+// 글꼴인데 메트릭 부재로 맑은 고딕 대체 폭(과대)으로 측정돼 글상자 clip 이
+// 글자를 깎았다(156509073 "경찰청" 한글 50.2pt vs rhwp 64.0pt, clip 55.1pt).
+static HANYOONGOTHIC740_LATIN_0: [u16; 95] = [
+    290, 276, 345, 618, 538, 825, 722, 211, 369, 369, 462, 617, 259, 558, 259, 445, 588, 370, 548,
+    554, 562, 554, 575, 517, 589, 575, 306, 306, 624, 583, 624, 521, 899, 686, 649, 679, 715, 611,
+    575, 724, 698, 252, 470, 654, 557, 837, 704, 765, 625, 765, 653, 567, 595, 702, 665, 893, 591,
+    595, 599, 385, 445, 385, 453, 453, 388, 546, 621, 527, 621, 571, 342, 621, 600, 232, 245, 538,
+    232, 881, 600, 609, 621, 621, 364, 435, 342, 600, 504, 741, 491, 497, 492, 417, 347, 417, 635,
+];
+static HANYOONGOTHIC740_LATIN_RANGES: [LatinRange; 1] = [LatinRange {
+    start: 0x0020,
+    end: 0x007E,
+    widths: &HANYOONGOTHIC740_LATIN_0,
+}];
+static HANYOONGOTHIC740_HANGUL_WIDTHS: [u16; 1] = [920];
+static HANYOONGOTHIC740_HANGUL: HangulMetric = HangulMetric {
+    cho_groups: 1,
+    jung_groups: 1,
+    jong_groups: 1,
+    cho_map: &FONT_0_HANGUL_CHO,
+    jung_map: &FONT_0_HANGUL_JUNG,
+    jong_map: &FONT_0_HANGUL_JONG,
+    widths: &HANYOONGOTHIC740_HANGUL_WIDTHS,
+};
+
+// [#6036] 한컴 윤고딕 760 — 한컴오피스 동봉 실폰트(HANYoonGothic760.ttf, upem 1000)
+// hmtx 직접 추출. 한글 음절 지배 폭 960/1000em (11172/11172, 예외 0자는
+// ±6 이내라 단일 폭으로 수렴). ASCII 는 hmtx 전량. 보도자료 기관명 머리에 흔한
+// 글꼴인데 메트릭 부재로 맑은 고딕 대체 폭(과대)으로 측정돼 글상자 clip 이
+// 글자를 깎았다(156509073 "경찰청" 한글 50.2pt vs rhwp 64.0pt, clip 55.1pt).
+static HANYOONGOTHIC760_LATIN_0: [u16; 95] = [
+    300, 293, 380, 655, 570, 874, 765, 223, 391, 391, 490, 654, 274, 591, 274, 471, 628, 397, 590,
+    596, 605, 596, 619, 557, 634, 619, 324, 324, 661, 617, 661, 552, 953, 740, 701, 732, 770, 660,
+    622, 780, 753, 280, 511, 706, 603, 900, 759, 823, 675, 823, 705, 613, 644, 757, 717, 959, 639,
+    644, 648, 408, 471, 408, 479, 479, 411, 594, 660, 573, 660, 615, 381, 660, 651, 261, 275, 586,
+    261, 949, 651, 648, 660, 660, 401, 472, 373, 651, 544, 780, 536, 542, 538, 442, 367, 442, 672,
+];
+static HANYOONGOTHIC760_LATIN_RANGES: [LatinRange; 1] = [LatinRange {
+    start: 0x0020,
+    end: 0x007E,
+    widths: &HANYOONGOTHIC760_LATIN_0,
+}];
+static HANYOONGOTHIC760_HANGUL_WIDTHS: [u16; 1] = [960];
+static HANYOONGOTHIC760_HANGUL: HangulMetric = HangulMetric {
+    cho_groups: 1,
+    jung_groups: 1,
+    jong_groups: 1,
+    cho_map: &FONT_0_HANGUL_CHO,
+    jung_map: &FONT_0_HANGUL_JUNG,
+    jong_map: &FONT_0_HANGUL_JONG,
+    widths: &HANYOONGOTHIC760_HANGUL_WIDTHS,
+};
+static MEASURED_FONT_METRIC_OVERLAYS: [FontMetric; 8] = [
     FontMetric {
         name: "HanyangSinMyeongJo",
         bold: false,
@@ -274,5 +357,31 @@ static MEASURED_FONT_METRIC_OVERLAYS: [FontMetric; 5] = [
         em_size: 1024,
         latin_ranges: &HUMANMYEONGJO_LATIN_RANGES,
         hangul: Some(&FONT_276_HANGUL),
+    },
+    // [#6036] 한컴 윤고딕 계열 — 동봉 TTF hmtx 실측(upem 1000). 이름은 HWPX
+    // 저장 원문("한컴 윤고딕 NNN")으로 두어 별칭 사영 없이 직접 매칭된다.
+    FontMetric {
+        name: "한컴 윤고딕 720",
+        bold: false,
+        italic: false,
+        em_size: 1000,
+        latin_ranges: &HANYOONGOTHIC720_LATIN_RANGES,
+        hangul: Some(&HANYOONGOTHIC720_HANGUL),
+    },
+    FontMetric {
+        name: "한컴 윤고딕 740",
+        bold: false,
+        italic: false,
+        em_size: 1000,
+        latin_ranges: &HANYOONGOTHIC740_LATIN_RANGES,
+        hangul: Some(&HANYOONGOTHIC740_HANGUL),
+    },
+    FontMetric {
+        name: "한컴 윤고딕 760",
+        bold: false,
+        italic: false,
+        em_size: 1000,
+        latin_ranges: &HANYOONGOTHIC760_LATIN_RANGES,
+        hangul: Some(&HANYOONGOTHIC760_HANGUL),
     },
 ];

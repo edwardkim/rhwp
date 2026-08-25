@@ -440,9 +440,12 @@ CSV 내용으로 기존 차트 N 의 숫자 값을 덮어쓴다. `chart-to-csv` 
   복제분 그대로 — 한컴은 캐시만 읽는다 #5447), 줄면 꼬리 계열이 지워진다. 따라서 "중간 행 삭제"는
   뒤 행이 앞으로 당겨지고 마지막 행이 지워지는 것과 같다(계열 색 같은 위치 서식은 위치를 따른다).
   `c:f`·레거시 `Contents`(③)·EMF 프리뷰(④)·`c:extLst`·`ho:hncChartStyle` 은 바이트 그대로다.
-  - 종류별 가드(한컴이 막지 않아 코어가 fail-closed 로 막는다 — #5447 실측): 원형·3D원형·원형대원형은
-    계열 수 **1 고정**(`pieSeriesCountFixed`), 주식형은 계열 수가 종류에 묶여(HLC=3/OHLC=4) 변경
-    거부(`stockSeriesCountFixed` — 변경은 B3 종류 변환), 마지막 1점·1계열 삭제 거부
+  - 종류별 가드(한컴이 막지 않아 코어가 fail-closed 로 막는다 — #5447·#6037 실측): 주식형 캔들
+    (`c:upDownBars`, OHLC)은 **첫 계열과 끝 계열**을 몸통으로 삼아 그 둘이 바뀌면 캔들이 엉뚱한
+    짝으로 다시 잡혀 전부 검은 박스가 되므로 거부(`candleAnchorBroken`) — 새 계열은 양끝 사이에
+    두고 첫·끝 계열은 지우지 않는다. 중간 삽입·중간 삭제와 캔들 없는 HLC 는 통과한다.
+    **원형은 계열을 더할 수 있으나** 첫 계열만 그려져 추가분이 화면에 나타나지 않는다(파손은
+    아니다 — 종류는 봉투의 `plot` 으로 미리 안다). 마지막 1점·1계열 삭제 거부
     (`lastPointDeleteRefused`/`lastSeriesDeleteRefused`), 분산형은 행 수 변경 시 X(첫 열)가 같은
     개수로 함께 와야 함(`scatterXYMismatch`), 다층 카테고리(`multiLvlStrRef`)는 행·라벨 구조 편집
     거부(`multiLevelLabelsUnsupported`).

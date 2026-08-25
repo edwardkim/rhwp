@@ -6,7 +6,7 @@
 
 use super::layout::{
     control_line_seg_index, estimate_text_width, estimate_text_width_unrounded,
-    hancom_regenerated_space_width, resolved_to_text_style,
+    hancom_regenerated_space_width, map_pua_bullet_char, resolved_to_text_style,
 };
 use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use super::{hwpunit_to_px, px_to_hwpunit, TextStyle};
@@ -469,7 +469,9 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph) {
                 .iter()
                 .any(|start| *start < run_char_end && start.saturating_add(3) > run_char_start);
             let has_pua_display = chars.iter().any(|ch| {
-                pua_plain_text_display(*ch).is_some() || map_pua_old_hangul(*ch).is_some()
+                pua_plain_text_display(*ch).is_some()
+                    || map_pua_old_hangul(*ch).is_some()
+                    || map_pua_bullet_char(*ch) != *ch
             });
             if !has_product_projection && !has_pua_display {
                 run_char_start = run_char_end;
@@ -496,7 +498,15 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph) {
                     display.extend(jamos.iter().copied());
                     changed = true;
                 } else {
-                    display.push(ch);
+                    // paint 경로(`expand_pua_display_text`)와 같이 한컴 PUA 책괄호
+                    // (U+F0854/F0855 → 《》) 등을 측정 문자열에도 올린다. 원문 PUA 는
+                    // CJK가 아니라 0.5em 휴리스틱이 되어 run bbox 가 전각 글리프보다
+                    // 짧고, 다음 라틴 run 이 한글 위에 겹친다 (#6057).
+                    let mapped = map_pua_bullet_char(ch);
+                    display.push(mapped);
+                    if mapped != ch {
+                        changed = true;
+                    }
                 }
             }
             run_char_start = run_char_end;
@@ -722,10 +732,13 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     for line_idx in 0..line_seg_count {
         let line_seg = &para.line_segs[line_idx];
 
-        // UTF-16 위치 기반으로 이 줄의 텍스트 범위 계산
-        let utf16_start = line_seg.text_start;
+        // UTF-16 위치 기반으로 이 줄의 텍스트 범위 계산.
+        // [#5961] 아래에서 `char_offsets`·`char_count` 로 투영하므로 HWP5 축으로 올려
+        // 받는다. HWPX 출처 구역 첫 문단은 저장 `textpos` 가 그만큼 짧아서, 날값을 쓰면
+        // 줄이 보정폭만큼 일찍 끊긴다(한글 대조 실측: 글자 54 를 46 으로 읽는다).
+        let utf16_start = para.line_seg_text_start(line_idx);
         let utf16_end = if line_idx + 1 < line_seg_count {
-            para.line_segs[line_idx + 1].text_start
+            para.line_seg_text_start(line_idx + 1)
         } else {
             // 마지막 줄: char_count 또는 텍스트 끝까지
             if para.char_count > 0 {
@@ -924,7 +937,8 @@ fn is_sample16_2022_bcp_orphan_tail_lineseg(para: &Paragraph) -> bool {
 
     let first = &para.line_segs[0];
     let last = &para.line_segs[1];
-    if last.text_start < para.char_count.saturating_sub(2) {
+    // [#5961] `char_count` 는 HWP5 축이므로 `text_start` 도 올려서 견준다.
+    if para.line_seg_text_start(1) < para.char_count.saturating_sub(2) {
         return false;
     }
     last.vertical_pos == first.vertical_pos + first.line_height + first.line_spacing

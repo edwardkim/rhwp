@@ -96,8 +96,10 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `report-generator.mjs` | 유틸 | active | E2E 테스트 HTML 보고서 생성기 | — | 수동 |  |
 | `responsive.test.mjs` | 상시 | active | 반응형 레이아웃 검증 | — | 수동 |  |
 | `run-render-diff.mjs` | 유틸 | active | render-diff CI 러너 (canvas/pdf diff 오케스트레이션) | — | npm+CI |  |
+| `run-with-vite.mjs` | 유틸 | active | Vite dev server 기동 + 임의 명령 실행 공용 러너 (VITE_URL 주입, 종료 코드 전파) | — | npm e2e:undo-depth |  |
 | `save-as-format.test.mjs` | 상시 | active | 저장 출력 포맷 선택 (file:save-as-hwp / file:save-as-hwpx) E2E — #1613 | biz_plan.hwp, hwpx/footnote-01.hwpx | 수동 |  |
 | `scenario-runner.mjs` | 유틸 | active | 시나리오 실행기 + 렌더 트리 측정기 + 규칙 검증기 | — | 수동 |  |
+| `vite-server.mjs` | 유틸 | active | Vite dev server 기동·대기·종료 공용 헬퍼 — node 직접 기동(win32 .cmd EINVAL 우회), taskkill 트리 정리 | — | 수동 | `run-render-diff.mjs`·`run-with-vite.mjs`에서 import |
 | `shape-inline.test.mjs` | 상시 | active | 도형 인라인 컨트롤 — 커서 이동 및 텍스트 삽입 | — | 수동 |  |
 | `shift-end.test.mjs` | 상시 | active | shift-return.hwp Shift+End 블록 선택 | shift-return.hwp | 수동 |  |
 | `table-picture-resize-1282.test.mjs` | 상시 | active | E2E 테스트 (Issue #1282): 회전된 표 셀 내부 picture 리사이즈. | ta-pic-001-r-쪽영역안제한.hwp, ta-pic-001-r-쪽영역안제한 | 수동 |  |
@@ -118,6 +120,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `typesetting.test.mjs` | 상시 | active | 조판 품질 검증 (문단부호 표시 상태) | — | 수동 |  |
 | `undo-contracts.test.mjs` | 상시 | active | 편집 undo 계약 실동작 검증 (Task #2301) | — | npm e2e:undo |  |
 | `undo-delete-fragment-bytes.test.mjs` | 상시 | active | [#5769] 다문단 선택 삭제 조각 undo 저장 바이트 왕복 동일성 (Delete 키 → Ctrl+Z → exportHwp 대조) | — | npm e2e:undo-delete-fragment-bytes |  |
+| `undo-depth-issue5769.test.mjs` | 상시 | active | [#5769] 혼합 세션(선택 삭제+재입력 R라운드) 실효 undo 깊이 무축출 계약 — 슬롯 합 0·조각 경로 다수 라운드(≥⌈R/2⌉, 짧아진 문단은 refill 분기)·스택 전량 복원·새 문서 상태 복귀. 회귀 시 예산 축출로 ③④가 깨진다 | — | npm e2e:undo-depth | E2E_DEPTH_ROUNDS 로 스모크 |
 | `undo-object-selection.test.mjs` | 상시 | active | E2E: undo/redo 후 개체/표 선택 stale ref 해제 (Task #2303) /  / 계약: undo/r | — | npm e2e:undo-object-selection |  |
 | `unsaved-changes-guard.test.mjs` | 상시 | active | #886 저장되지 않은 변경사항 보호 모달 | — | npm e2e:unsaved-guard |  |
 | `unsupported-format-error.test.mjs` | 상시 | active | 미지원 문서 오류 알림 후 정상 문서 재로드 | field-01.hwp | 수동 |  |

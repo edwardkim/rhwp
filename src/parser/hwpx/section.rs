@@ -575,6 +575,16 @@ fn parse_paragraph_body(
                                                               // 일반 동일-ID run 경계는 위치 자체가 IR이 보존할 정보이므로 제거하면 안 된다 (#3739).
     let mut preceding_run_had_sec_pr = false;
     let mut preceding_run_char_shape_id: Option<u32> = None;
+    // [#5961] HWP5 문단 축에서만 자리를 차지하는 앞머리 슬롯 수.
+    //
+    // 아래 `secPr` arm 이 `\u{0002}` 를 밀어 넣는 슬롯들 — 구역 정의와 그 안에 실려 온
+    // 첫 단 정의 — 은 HWPX 문단에는 대응 요소가 없다(`hp:secPr` 은 구역 머리 run 소속,
+    // secPr 안의 `hp:colPr` 은 템플릿이 흡수). 그 슬롯을 만들어 넣은 주체가 파서
+    // 자신이므로 개수는 추측이 아니라 사실이다.
+    //
+    // 이 값은 `text_start` 를 **고치는 데 쓰지 않는다**. `Paragraph::hwpx_axis_shift` 에
+    // 실어 두고 읽는 쪽에서만 올려 본다 — 파일 축을 옮기면 재수출이 흘러내린다.
+    let mut hwp5_only_leading_slots: u32 = 0;
     // [Task #1556] fieldEnd 의 (beginIDRef, fieldid) 를 출현 순서대로 보관 — text_parts 의
     // `\u{0004}` 와 1:1 대응. 고아 fieldEnd 복원에 사용.
     let mut field_end_attrs: Vec<(u32, u32)> = Vec::new();
@@ -666,10 +676,12 @@ fn parse_paragraph_body(
                         // 모든 chars 를 line 0 에 packing. \u{0002} 추가로 8 utf16 정합.
                         para.controls.push(Control::SectionDef(Box::new(sd)));
                         text_parts.push("\u{0002}".to_string());
+                        hwp5_only_leading_slots += 1;
                         // colPr이 있으면 ColumnDef 컨트롤 추가 (초기 단 정의) + 8 utf16.
                         if let Some(cd) = col_def_opt {
                             para.controls.push(Control::ColumnDef(cd));
                             text_parts.push("\u{0002}".to_string());
+                            hwp5_only_leading_slots += 1;
                         }
                     }
                     b"linesegarray" => {
@@ -908,6 +920,14 @@ fn parse_paragraph_body(
     para.text = visual_text;
     para.char_offsets = char_offsets;
     para.char_count = utf16_pos + 1; // +1 for 끝 마커
+
+    // [#5961] 저장 lineseg 가 HWP5 축보다 얼마나 짧은지 기록한다.
+    //
+    // 위에서 만든 `char_offsets`·`char_count`·`char_shapes` 는 확장 제어마다 8유닛을 주는
+    // HWP5 축인데 `textpos` 는 파일이 준 값 그대로라 앞머리 비점유 슬롯만큼 짧다.
+    // `text_start` 자체는 건드리지 않는다 — 파일 축을 옮기면 x2x 재수출이 왕복마다
+    // 흘러내리고 h2x 의 #5943 재기준화와 충돌한다. 읽는 쪽이 이 값으로 올려 본다.
+    para.hwpx_axis_shift = 8 * hwp5_only_leading_slots;
     para.has_para_text =
         !para.text.is_empty() || !para.controls.is_empty() || !para.title_marks.is_empty();
 

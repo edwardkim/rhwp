@@ -1117,6 +1117,19 @@ pub(crate) fn char_width_decision<'a>(
                 embedded.metric,
                 embedded.character_match,
             )
+        } else if cluster_len[i] <= 1 && is_unicode_halfwidth_form(c) {
+            // [#6023] Halfwidth and Fullwidth Forms 블록(FF00–FFEF)에서
+            // FF61–FFDC(｡｢｣､･·반각 가타카나·반각 한글 자모)와 FFE8–FFEE 는
+            // 정의상 **반각**이다. is_cjk_char 의 블록 블랭킷이 이들을 전각
+            // (1em)으로 오분류해 반각 낫표 ｢｣ 뒤가 전각 공백처럼 벌어졌다
+            // (30269 1쪽 한글 2020 PDF 실측: ｢ 전진 7.9pt = 0.5em @ 15.95pt,
+            // rhwp 16.0pt). 메트릭 DB 에 항목이 있으면 위 embedded 가 이긴다.
+            (
+                font_size * 0.5,
+                "heuristicHalfwidthForm",
+                embedded.metric,
+                embedded.character_match,
+            )
         } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
             (
                 font_size,
@@ -1340,6 +1353,16 @@ fn is_narrow_paren_for_font(font_family: &str, c: char) -> bool {
     }
     let primary = font_family.split(',').next().unwrap_or(font_family).trim();
     primary.contains("휴먼명조") || primary.contains("한양중고딕") || primary.contains("HY중고딕")
+}
+
+/// [#6023] Halfwidth and Fullwidth Forms 블록의 **반각** 구간.
+///
+/// FF00–FF60(전각 ASCII 변형)·FFE0–FFE6(전각 기호)은 전각이 맞지만,
+/// FF61–FFDC(｡｢｣､･, 반각 가타카나, 반각 한글 자모)와 FFE8–FFEE(반각 기호)는
+/// 유니코드 정의상 반각이다. 폴백 폭 분류에서 이 구간을 전각 블랭킷보다
+/// 먼저 가른다.
+fn is_unicode_halfwidth_form(c: char) -> bool {
+    ('\u{FF61}'..='\u{FFDC}').contains(&c) || ('\u{FFE8}'..='\u{FFEE}').contains(&c)
 }
 
 /// 한컴이 수평 조판에서 반각 advance 로 처리하는 CJK 낫표.

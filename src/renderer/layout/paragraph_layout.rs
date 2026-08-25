@@ -81,10 +81,13 @@ fn preserves_stored_first_visible_break_after_bottom_caption_table(para: &Paragr
     let Some(&first_visible_offset) = para.char_offsets.first() else {
         return false;
     };
+    // [#5961] `first_visible_offset` 은 `char_offsets` 값이라 HWP5 축이다. 저장
+    // `text_start` 는 출처에 따라 더 짧은 축일 수 있으므로 올려서 견준다.
     if first_visible_offset != 8
         || para.text.is_empty()
         || para.line_segs.first().map(|ls| ls.text_start) != Some(0)
-        || para.line_segs.get(1).map(|ls| ls.text_start) != Some(first_visible_offset)
+        || para.line_segs.len() < 2
+        || para.line_seg_text_start(1) != first_visible_offset
     {
         return false;
     }
@@ -133,11 +136,13 @@ pub(super) fn inline_table_stored_line_break_char_indices(para: &Paragraph) -> V
     let preserves_first_visible_break =
         preserves_stored_first_visible_break_after_bottom_caption_table(para);
     let mut indices = Vec::new();
-    for (line_index, line_seg) in para.line_segs.iter().enumerate().skip(1) {
+    for (line_index, _line_seg) in para.line_segs.iter().enumerate().skip(1) {
+        // [#5961] `char_offsets` 는 HWP5 축이므로 저장 `text_start` 를 같은 자로 올린다.
+        let seg_start = para.line_seg_text_start(line_index);
         let char_idx = para
             .char_offsets
             .iter()
-            .position(|&offset| offset >= line_seg.text_start)
+            .position(|&offset| offset >= seg_start)
             .unwrap_or(text_len);
         let is_owned_first_visible_break =
             line_index == 1 && char_idx == 0 && preserves_first_visible_break;
@@ -557,6 +562,7 @@ struct RunEmitVars {
     line_spacing_px: f64,
     max_fs: f64,
     runs_all_whitespace: bool,
+    renders_synthetic_wrap_trailing_space: bool,
     start_line: usize,
     tab_width: f64,
     section_index: usize,
@@ -2997,8 +3003,11 @@ impl LayoutEngine {
         // column-top 이 아닌 것처럼 spacing_before 를 전량 적용한다.
         let keep_continuation_spacing_before =
             self.keep_continuation_column_top_spacing_before.get();
+        // [#5601] 셀 저장-앵커 스냅 문단 — 호출자가 para_y 에서 spacing_before 를
+        // 미리 뺐으므로 column-top 트림과 무관하게 전량 재가산해야 vpos 와 맞는다.
+        let reapply_snap_spacing_before = self.reapply_snap_anchored_spacing_before.replace(false);
         if start_line == 0 && spacing_before > 0.0 {
-            if !is_column_top || keep_continuation_spacing_before {
+            if !is_column_top || keep_continuation_spacing_before || reapply_snap_spacing_before {
                 y += spacing_before;
             } else if para_index == 0 && !suppress_column_top_vpos_fallback {
                 let vpos0_px = para
@@ -4350,6 +4359,7 @@ impl LayoutEngine {
                     line_spacing_px,
                     max_fs,
                     runs_all_whitespace,
+                    renders_synthetic_wrap_trailing_space,
                     start_line,
                     tab_width,
                     section_index,
@@ -4901,6 +4911,7 @@ impl LayoutEngine {
             line_spacing_px,
             max_fs,
             runs_all_whitespace,
+            renders_synthetic_wrap_trailing_space,
             start_line,
             tab_width,
             section_index,
@@ -4917,6 +4928,43 @@ impl LayoutEngine {
             mut current_line_reserved_tac_picture_height,
         } = st;
         let is_last_run_of_line = |idx: usize| idx == comp_line.runs.len() - 1;
+        // [#5679] 줄-말미 공백에 배정된 배분 여분(extra_word_sp) 회수분.
+        // 배분 몫은 **내부 공백 수**로 나눈다(위 needs_justify 분기의
+        // rendered_space_slots) — 줄-말미 공백은 est 의 effective_used 에서도
+        // 빠져 있다. 그런데 char_width_decision 은 모든 ' ' 에 여분을 붙이므로,
+        // 말미 공백이 여분까지 얹어 그려져 run bbox 와 x 전진이 줄 상자를
+        // 여분×말미공백수 만큼 넘는다(10857 p11: '외부 평가전문위원 ' 144.0 vs
+        // 줄 122.1 — 가시 글리프는 정확히 줄 끝에서 끝나고 초과 전량이 부풀린
+        // 말미 공백). 분모에 말미 공백을 넣는 synthetic-wrap 모드는 제외.
+        let line_trailing_space_by_run: Vec<usize> = {
+            let mut counts = vec![0usize; comp_line.runs.len()];
+            if !renders_synthetic_wrap_trailing_space && extra_word_sp != 0.0 {
+                let mut budget = comp_line
+                    .runs
+                    .iter()
+                    .flat_map(|r| effective_text_for_metrics(r).chars())
+                    .collect::<Vec<char>>()
+                    .iter()
+                    .rev()
+                    .take_while(|c| **c == ' ')
+                    .count();
+                for (ri, r) in comp_line.runs.iter().enumerate().rev() {
+                    if budget == 0 {
+                        break;
+                    }
+                    let rt = effective_text_for_metrics(r);
+                    let chars_total = rt.chars().count();
+                    let tail_sp = rt.chars().rev().take_while(|c| *c == ' ').count();
+                    let take = tail_sp.min(budget);
+                    counts[ri] = take;
+                    budget -= take;
+                    if take < chars_total {
+                        break;
+                    }
+                }
+            }
+            counts
+        };
         for (run_idx, run) in comp_line.runs.iter().enumerate() {
             // 조판부호: 이 run 시작 위치 이전의 도형 마커를 먼저 삽입
             for (smi, (spos, stext)) in shape_markers.iter().enumerate() {
@@ -5135,6 +5183,11 @@ impl LayoutEngine {
             } else {
                 estimate_text_width(effective_text_for_metrics(run), &text_style)
             };
+            // [#5679] 줄-말미 공백의 배분 여분 회수 — 자연 폭은 유지한다(한글도
+            // 말미 공백 자체는 줄 상자를 넘길 수 있다). 여분이 음수(압축)여도
+            // est 가 말미 공백을 제외했으므로 동일하게 회수한다.
+            let full_width =
+                full_width - extra_word_sp * line_trailing_space_by_run[run_idx] as f64;
             // 탭 리더 계산: 탭이 포함된 run에서 채움 기호 정보 추출
             // inline_tabs를 일시 제거하여 tab_stops 기반 위치 계산과 일관되게 함
             if has_tabs && run.text.contains('\t') {
