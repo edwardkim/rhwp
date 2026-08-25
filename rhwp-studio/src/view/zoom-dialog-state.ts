@@ -3,7 +3,10 @@ import {
   normalizePageArrangement,
   type PageArrangement,
 } from './page-arrangement.ts';
-import { calculateFitPageZoom, calculateFitWidthZoom } from './zoom-fit.ts';
+import {
+  calculateArrangementFitWidthZoom,
+  calculateFitPageZoom,
+} from './zoom-fit.ts';
 
 export const ZOOM_PRESET_PERCENTAGES = [100, 125, 150, 200, 300, 500] as const;
 export const MIN_CUSTOM_ZOOM_PERCENT = 10;
@@ -73,7 +76,12 @@ export function resolveZoomDialogZoom(input: ResolveZoomDialogInput): number {
 
   switch (input.zoomChoice.kind) {
     case 'fitWidth':
-      return calculateFitWidthZoom(input.viewportWidth, input.pageWidth);
+      return calculateArrangementFitWidthZoom({
+        containerWidth: input.viewportWidth,
+        pageWidth: input.pageWidth,
+        arrangement,
+        pageGap: input.pageGap,
+      });
     case 'fitPage':
       return calculateFitPageZoom(
         input.viewportWidth,

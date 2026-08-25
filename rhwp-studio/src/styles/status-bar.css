@@ -112,7 +112,10 @@
   font-family: inherit;
   height: 20px;
   line-height: 20px;
-  min-width: 32px;
+  width: 44px;
+  min-width: 44px;
+  box-sizing: border-box;
+  font-variant-numeric: tabular-nums;
   text-align: center;
   color: var(--color-text);
   padding: 0 4px;

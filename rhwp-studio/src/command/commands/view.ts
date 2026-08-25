@@ -10,7 +10,10 @@ import {
   toggleGridVisibility,
 } from '../../view/grid-settings';
 import { HWPUNIT_PER_MM } from '../../core/hwp-constants';
-import { calculateFitPageZoom, calculateFitWidthZoom } from '../../view/zoom-fit';
+import {
+  calculateArrangementFitWidthZoom,
+  calculateFitPageZoom,
+} from '../../view/zoom-fit';
 import { applyToolboxVisibility } from '../../view/toolbox-visibility';
 import { ZoomDialog } from '../../ui/zoom-dialog';
 import { resolveZoomDialogZoom } from '../../view/zoom-dialog-state';
@@ -199,8 +202,13 @@ export const viewCommands: CommandDef[] = [
       const container = document.getElementById('scroll-container');
       if (!container) return;
       const pageInfo = services.wasm.getPageInfo(0);
+      const arrangement = userSettings.getViewSettings().pageArrangement;
       const fitZooms = {
-        fitWidth: calculateFitWidthZoom(container.clientWidth, pageInfo.width),
+        fitWidth: calculateArrangementFitWidthZoom({
+          containerWidth: container.clientWidth,
+          pageWidth: pageInfo.width,
+          arrangement,
+        }),
         fitPage: calculateFitPageZoom(
           container.clientWidth,
           container.clientHeight,
@@ -211,7 +219,7 @@ export const viewCommands: CommandDef[] = [
       new ZoomDialog({
         currentZoom: vm.getZoom(),
         fitZooms,
-        arrangement: userSettings.getViewSettings().pageArrangement,
+        arrangement,
         onConfirm(value) {
           const zoom = resolveZoomDialogZoom({
             ...value,
@@ -258,7 +266,11 @@ export const viewCommands: CommandDef[] = [
       const container = document.getElementById('scroll-container')!;
       const pi = services.wasm.getPageInfo(0);
       // pi.width는 이미 px 단위 (96dpi 기준)
-      vm.setZoom(calculateFitWidthZoom(container.clientWidth, pi.width));
+      vm.setZoom(calculateArrangementFitWidthZoom({
+        containerWidth: container.clientWidth,
+        pageWidth: pi.width,
+        arrangement: userSettings.getViewSettings().pageArrangement,
+      }));
     },
   },
   zoomLevel(50),

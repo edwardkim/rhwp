@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
+  calculateArrangementFitWidthZoom,
   calculateFitPageZoom,
   calculateFitWidthZoom,
 } from '../src/view/zoom-fit.ts';
@@ -17,6 +18,39 @@ test('fit width keeps twenty-pixel side gutters', () => {
   );
 });
 
+test('fit width uses the visible page row width for fixed arrangements', () => {
+  const metrics = { containerWidth: 883, pageWidth: 800, pageGap: 10 };
+
+  assert.equal(
+    calculateArrangementFitWidthZoom({
+      ...metrics,
+      arrangement: { kind: 'auto' },
+    }),
+    843 / 800,
+  );
+  assert.equal(
+    calculateArrangementFitWidthZoom({
+      ...metrics,
+      arrangement: { kind: 'double' },
+    }),
+    833 / 1600,
+  );
+  assert.equal(
+    calculateArrangementFitWidthZoom({
+      ...metrics,
+      arrangement: { kind: 'facing' },
+    }),
+    833 / 1600,
+  );
+  assert.equal(
+    calculateArrangementFitWidthZoom({
+      ...metrics,
+      arrangement: { kind: 'multiple', columns: 3, rows: 2 },
+    }),
+    823 / 2400,
+  );
+});
+
 test('status bar and view command share the fit helpers', () => {
   const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
   const commands = readFileSync(
@@ -26,6 +60,22 @@ test('status bar and view command share the fit helpers', () => {
 
   assert.match(main, /calculateFitPageZoom/);
   assert.match(commands, /calculateFitPageZoom/);
+  assert.match(main, /calculateArrangementFitWidthZoom/);
+  assert.match(commands, /calculateArrangementFitWidthZoom/);
   assert.doesNotMatch(main, /containerHeight - 40/);
   assert.doesNotMatch(commands, /containerH - 40/);
+});
+
+test('status zoom value reserves a fixed width for every percentage', () => {
+  const css = readFileSync(
+    new URL('../src/styles/status-bar.css', import.meta.url),
+    'utf8',
+  );
+  const block = css.match(/\.stb-zoom-val\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
+
+  assert.ok(block);
+  assert.match(block, /width:\s*44px/);
+  assert.match(block, /min-width:\s*44px/);
+  assert.match(block, /box-sizing:\s*border-box/);
+  assert.match(block, /font-variant-numeric:\s*tabular-nums/);
 });
