@@ -967,7 +967,7 @@ test('epoch observer releases ordered patches without an open document', async (
   deliveryStop?.();
 });
 
-test('failed rebuild releases the queued patch that may fix it', async () => {
+test('a failed rebuild does not block the next saved patch from being dispatched', async () => {
   const realm = globalThis as typeof globalThis & {
     __rhwpSubsecondDelivery?: unknown;
     __rhwpSubsecondRuntime?: unknown;
@@ -1035,7 +1035,7 @@ test('failed rebuild releases the queued patch that may fix it', async () => {
   deliveryStop?.();
 });
 
-test('first document revision rebuilds once when it may already contain a pending commit', async () => {
+test('opening a document after a patch rebuilds it once with the latest code', async () => {
   const realm = globalThis as typeof globalThis & {
     __rhwpSubsecondDelivery?: unknown;
     __rhwpSubsecondRuntime?: unknown;
@@ -1302,7 +1302,7 @@ test('devtools connector rolls back the first listener when the second attachmen
   assert.equal(sockets.length, 0, 'socket acquisition must not start after listener failure');
 });
 
-test('full reload tokens reload once and distinguish restarted servers', async () => {
+test('a full build reloads Studio once, and a restarted devserver reloads the new base', async () => {
   delete (globalThis as typeof globalThis & { __rhwpSubsecondDelivery?: unknown })
     .__rhwpSubsecondDelivery;
   const { connectSubsecondDevtools, getSubsecondDeliverySnapshot } = await loadRuntime();
@@ -1462,7 +1462,7 @@ test('full reload tokens reload once and distinguish restarted servers', async (
   eighth.stop?.();
 });
 
-test('devtools websocket applies one monotonic copy of each patch', async () => {
+test('rapid saves reach Studio once each and in order', async () => {
   const { connectSubsecondDevtools } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
   const applied: string[] = [];
@@ -1503,7 +1503,7 @@ test('devtools websocket applies one monotonic copy of each patch', async () => 
   disconnect?.();
 });
 
-test('queued patch keeps its original receipt provenance across reconnect', async () => {
+test('a save received before reconnect still appears after the connection returns', async () => {
   delete (globalThis as typeof globalThis & { __rhwpSubsecondDelivery?: unknown })
     .__rhwpSubsecondDelivery;
   const { connectSubsecondDevtools, getSubsecondDeliverySnapshot } = await loadRuntime();
@@ -1557,16 +1557,20 @@ test('queued patch keeps its original receipt provenance across reconnect', asyn
   stop?.();
 });
 
-test('delivery ledger records patch phases and distinguishes reconnect replay', async () => {
+test('websocket reconnect observes the replayed tip without applying it twice', async () => {
   delete (globalThis as typeof globalThis & { __rhwpSubsecondDelivery?: unknown })
     .__rhwpSubsecondDelivery;
   const { connectSubsecondDevtools, getSubsecondDeliverySnapshot } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
   const timers: Array<{ callback: () => void; delay: number }> = [];
   const commitEvents = new FakeErrorEvents();
+  const applied: string[] = [];
   let clock = 10;
   const disconnect = connectSubsecondDevtools(
-    { applySubsecondDevtoolsMessage: () => 'patch-dispatched' },
+    { applySubsecondDevtoolsMessage: message => {
+      applied.push(message);
+      return 'patch-dispatched';
+    } },
     {
       location: { protocol: 'http:', host: 'localhost:7701' },
       createWebSocket: url => new FakeWebSocket(url, sockets),
@@ -1590,6 +1594,7 @@ test('delivery ledger records patch phases and distinguishes reconnect replay', 
     detail: { patchIdentity: '/wasm/librhwp-subsecond-patch-41.wasm' },
   });
   sockets[0]?.onmessage?.({ data: patch(42) } as MessageEvent);
+  assert.deepEqual(applied, [patch(41), patch(42)]);
   let ledger = getSubsecondDeliverySnapshot()!;
   assert.equal(ledger.schemaVersion, 3);
   assert.equal(ledger.patches.at(-1)?.patchId, 42);
@@ -1624,10 +1629,11 @@ test('delivery ledger records patch phases and distinguishes reconnect replay', 
   await Promise.resolve();
   ledger = getSubsecondDeliverySnapshot()!;
   assert.equal(ledger.dispatchedPatches, 2, 'ordered history is observed but not dispatched twice');
+  assert.deepEqual(applied, [patch(41), patch(42)]);
   disconnect?.();
 });
 
-test('reconnect replay state terminates on newer patch and accepts late replay evidence', async () => {
+test('Studio catches up whether reconnect sees a newer save or a late replay', async () => {
   const run = async (lateReplay: boolean): Promise<string> => {
     delete (globalThis as typeof globalThis & { __rhwpSubsecondDelivery?: unknown })
       .__rhwpSubsecondDelivery;
@@ -1679,7 +1685,7 @@ test('reconnect replay state terminates on newer patch and accepts late replay e
   assert.equal(await run(true), 'replayed');
 });
 
-test('an unobserved async patch commit bounds the queue until a late exact commit', async () => {
+test('a slow patch never lets a newer save overtake it', async () => {
   delete (globalThis as typeof globalThis & { __rhwpSubsecondDelivery?: unknown })
     .__rhwpSubsecondDelivery;
   const {
@@ -2248,7 +2254,7 @@ function fakeGitRepository(requestedRev: string, lockedRev = requestedRev): stri
   return root;
 }
 
-test('the dioxus-cli source is derived from the crate, so it cannot drift', async () => {
+test('installer guard: dx source follows the pinned Subsecond runtime source', async () => {
   const { dioxusCliSource, dioxusCliVersion } = await import('../../scripts/dioxus-cli-version.mjs');
   const repoRoot = new URL('../../', import.meta.url);
   const source = dioxusCliSource(fileURLToPath(repoRoot));
@@ -2310,7 +2316,7 @@ test('a drifted or loose pin stops the install instead of fetching the wrong dx'
   );
 });
 
-test('the installer passes the exact Subsecond source to cargo', async () => {
+test('installer guard: cargo receives the exact dx source revision', async () => {
   const { dioxusCliInstallArgs, dioxusCliSourceDir } = await import('../../scripts/install-dioxus-cli.mjs');
   const rev = '1234567890abcdef1234567890abcdef12345678';
   const source = {
@@ -2332,7 +2338,7 @@ test('the installer passes the exact Subsecond source to cargo', async () => {
   assert.match(dioxusCliSourceDir(source, repoRoot), new RegExp(`${rev}-[0-9a-f]{16}$`));
 });
 
-test('the installer rejects ignored source while allowing its build output', async () => {
+test('installer guard: hidden dx source is rejected while build output is allowed', async () => {
   const { verifyDioxusCliCheckoutFiles } = await import('../../scripts/install-dioxus-cli.mjs');
   const checkout = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-checkout-'));
   execFileSync('git', ['init', '--quiet', checkout]);
@@ -2345,7 +2351,7 @@ test('the installer rejects ignored source while allowing its build output', asy
   assert.throws(() => verifyDioxusCliCheckoutFiles(checkout), /ignored source[\s\S]*hidden\.rs/);
 });
 
-test('the installer rejects tracked source hidden by index flags', async () => {
+test('installer guard: masked tracked dx source is rejected', async () => {
   const { verifyDioxusCliCheckoutFiles } = await import('../../scripts/install-dioxus-cli.mjs');
   const checkout = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-index-'));
   execFileSync('git', ['init', '--quiet', checkout]);
@@ -2357,7 +2363,7 @@ test('the installer rejects tracked source hidden by index flags', async () => {
   assert.throws(() => verifyDioxusCliCheckoutFiles(checkout), /index flag[\s\S]*tracked\.rs/);
 });
 
-test('the installer cache digest sees source bytes hidden by a Git clean filter', async () => {
+test('installer guard: Git filters cannot hide dx source changes', async () => {
   const { dioxusCliSourceDigest, verifyDioxusPristineCheckout } = await import('../../scripts/install-dioxus-cli.mjs');
   const checkout = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-filter-'));
   execFileSync('git', ['init', '--quiet', checkout]);
@@ -2408,7 +2414,7 @@ test('the pristine checkout verifier hashes symlink targets as Git blobs', async
   assert.match(dioxusCliSourceDigest(checkout), /^[0-9a-f]{64}$/);
 });
 
-test('the pinned Dioxus workarounds are applied and verified as exact diffs', () => {
+test('installer guard: the reviewed Dioxus workaround diff is reproduced exactly', () => {
   const tipPatch = readFileSync(
     new URL('../../scripts/patches/dioxus-cli-hotpatch-tip-dependents.patch', import.meta.url),
     'utf8',

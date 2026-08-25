@@ -55,7 +55,7 @@ index c3bf9403..81e478c9 100644
 +    use super::*;
 +
 +    #[test]
-+    fn reconnect_replays_patch_history_until_full_reload_replaces_it() {
++    fn saved_patch_history_replays_in_order_until_full_reload_replaces_it() {
 +        let mut cache = ReconnectReplayState {
 +            boot_nonce: "first-server".into(),
 +            ..Default::default()

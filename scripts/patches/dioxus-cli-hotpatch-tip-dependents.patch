@@ -31,7 +31,7 @@ index 2e4fc9be..88b2b844 100644
 +    use super::*;
 +
 +    #[test]
-+    fn patch_rebuild_only_admits_the_tip_dependency_graph() {
++    fn tip_patch_selection_excludes_unrelated_workspace_apps() {
 +        let dependencies = HashSet::from(["changed".to_string(), "inside".to_string()]);
 +        let selected =
 +            tip_patch_crates(

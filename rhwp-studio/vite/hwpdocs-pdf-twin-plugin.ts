@@ -26,7 +26,7 @@ import { fileURLToPath } from 'node:url';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { Transform, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import type { Plugin } from 'vite';
+import type { Logger, Plugin } from 'vite';
 import { isDocumentErrorLine } from '../src/dev/document-error-log.ts';
 import {
   DOCUMENT_ERROR_CAPABILITY_HEADER,
@@ -1487,6 +1487,27 @@ export function hasDocumentErrorCapability(
     && timingSafeEqual(actualBytes, expectedBytes);
 }
 
+export async function serveDocumentErrorLog(
+  req: IncomingMessage,
+  res: ServerResponse,
+  expectedCapability: string,
+  logger: Pick<Logger, 'error'>,
+): Promise<void> {
+  if (req.method !== 'POST') return json(res, 405, { status: 'error' });
+  const providedCapability = req.headers[DOCUMENT_ERROR_CAPABILITY_HEADER];
+  if (!hasDocumentErrorCapability(providedCapability, expectedCapability)) {
+    return json(res, 403, { status: 'error' });
+  }
+  try {
+    const line = await readTextBody(req, MAX_DIFF_BODY_BYTES);
+    if (!isDocumentErrorLine(line)) return json(res, 400, { status: 'error' });
+    logger.error(line, { timestamp: true, error: null });
+    return json(res, 202, { status: 'accepted' });
+  } catch {
+    return json(res, 400, { status: 'error' });
+  }
+}
+
 export function failStreamResponse(res: ServerResponse, label: string, error: unknown): void {
   const reason = (error instanceof Error ? error.message : String(error)).slice(0, 200);
   console.warn(`[hwpdocs-pdf] ${label} failed: ${reason}`);
@@ -1569,19 +1590,7 @@ export function hwpdocsPdfTwinPlugin(options: {
       server.middlewares.use(async (req, res, next) => {
         const url = new URL(req.url ?? '/', 'http://localhost');
         if (url.pathname === DOCUMENT_ERROR_LOG_PATH) {
-          if (req.method !== 'POST') return json(res, 405, { status: 'error' });
-          const providedCapability = req.headers[DOCUMENT_ERROR_CAPABILITY_HEADER];
-          if (!hasDocumentErrorCapability(providedCapability, errorLogCapability)) {
-            return json(res, 403, { status: 'error' });
-          }
-          try {
-            const line = await readTextBody(req, MAX_DIFF_BODY_BYTES);
-            if (!isDocumentErrorLine(line)) return json(res, 400, { status: 'error' });
-            console.error(line);
-            return json(res, 202, { status: 'accepted' });
-          } catch {
-            return json(res, 400, { status: 'error' });
-          }
+          return serveDocumentErrorLog(req, res, errorLogCapability, server.config.logger);
         }
         if (url.pathname === PDF_TWIN_LOOKUP_PATH) {
           if (req.method !== 'POST') return json(res, 405, { status: 'error' });

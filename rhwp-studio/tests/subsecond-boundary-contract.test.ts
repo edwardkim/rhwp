@@ -42,7 +42,7 @@ test('비활성화된 자동 투명선 경로의 고아 이벤트를 남기지 �
   assert.doesNotMatch(source('src/command/commands/view.ts'), /transparent-borders-changed/);
 });
 
-test('Subsecond fidelity harness owns hot line-break provenance and generation-safe scans', () => {
+test('wiring guard: Subsecond exposes line-break evidence and generation-safe scans', () => {
   assert.match(source('src/main.ts'), /visibilityState !== 'visible'\) return Promise\.resolve\(\)/);
   const wasmApi = source('../src/wasm_api.rs');
   const boundaries = source('../src/wasm_api/render_patch_boundary.rs');
@@ -85,7 +85,7 @@ test('Subsecond fidelity harness owns hot line-break provenance and generation-s
   );
 });
 
-test('layout state owners remain explicit Subsecond jump-table boundaries', () => {
+test('wiring guard: layout state changes still pass through Subsecond jump tables', () => {
   assert.match(source('../src/lib.rs'), /patch_epoch\(\) == 0 \{\s*\$target/);
   const frame = source('../src/renderer/layout_frame.rs');
   const lineBreaking = source('../src/renderer/composer/line_breaking.rs');

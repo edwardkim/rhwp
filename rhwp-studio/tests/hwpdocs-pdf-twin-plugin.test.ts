@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
   existsSync,
@@ -13,6 +14,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { EventEmitter } from 'node:events';
+import { Readable } from 'node:stream';
 import test from 'node:test';
 import {
   buildHwpdocsPdfTwinIndex,
@@ -24,7 +26,6 @@ import {
   findPdfTwinAcrossIndexes as findPdfTwinAcrossIndexesWithSession,
   failStreamResponse,
   ghostscriptRasterArgs,
-  hasDocumentErrorCapability,
   inspectRasterCache,
   inspectSourceCache,
   isSourceAdmissionError,
@@ -46,6 +47,7 @@ import {
   resolvePdfSnapshot,
   runCommand,
   runSourceIo,
+  serveDocumentErrorLog,
   selectReferenceCacheEvictions,
   refreshPdfTwinIndexes,
   sourceGenerationKey,
@@ -56,6 +58,7 @@ import {
   withPdfPageCountLease,
 } from '../vite/hwpdocs-pdf-twin-plugin.ts';
 import { isDocumentErrorLine } from '../src/dev/document-error-log.ts';
+import { DOCUMENT_ERROR_CAPABILITY_HEADER } from '../src/dev/pdf-twin-contract.ts';
 
 const TEST_TWIN_SESSION = {
   rasterRevision: 'ghostscript-media-rgb-v5-0000000000000000',
@@ -72,7 +75,7 @@ const findPdfTwinAcrossIndexes = (
   request: Parameters<typeof findPdfTwinAcrossIndexesWithSession>[1],
 ) => findPdfTwinAcrossIndexesWithSession(indexes, request, TEST_TWIN_SESSION);
 
-test('CLI document-error lines require a recognized type and flat attributes', () => {
+test('document-error grammar rejects malformed or multiline evidence', () => {
   assert.equal(isDocumentErrorLine(
     'line-break: [page=3 target=s0/p4/c0.0.0/g2 at=1 expected=0,37 actual=0,39]',
   ), true);
@@ -81,13 +84,52 @@ test('CLI document-error lines require a recognized type and flat attributes', (
   assert.equal(isDocumentErrorLine('line-break: [page=3]\npaint: [page=4]'), false);
 });
 
-test('document-error route predicates require the issued capability and typed line', () => {
+test('only the current Studio session can print its document error', async () => {
   const capability = 'a'.repeat(43);
   const line = 'paint: [page=3 ratio=0.1 pdfOnly=1 rhwpOnly=2 colorOnly=0 bounds=0,0,1,1]';
-  assert.equal(hasDocumentErrorCapability(undefined, capability), false);
-  assert.equal(hasDocumentErrorCapability('b'.repeat(43), capability), false);
-  assert.equal(hasDocumentErrorCapability(capability, capability), true);
-  assert.equal(isDocumentErrorLine(line), true);
+  const printed: Array<{ line: string; options: unknown }> = [];
+  const logger = {
+    error(value: string, options?: unknown) { printed.push({ line: value, options }); },
+  };
+  const send = async (provided: string, body = line) => {
+    const req = Object.assign(Readable.from([body]), {
+      method: 'POST',
+      headers: { [DOCUMENT_ERROR_CAPABILITY_HEADER]: provided },
+    });
+    const res = {
+      statusCode: 200,
+      headersSent: false,
+      destroyed: false,
+      body: '',
+      setHeader() { return this; },
+      end(chunk: string) { this.body = String(chunk); this.headersSent = true; return this; },
+    };
+    await serveDocumentErrorLog(req as never, res as never, capability, logger);
+    return res;
+  };
+  assert.equal((await send('b'.repeat(43))).statusCode, 403);
+  assert.deepEqual(printed, []);
+  assert.equal((await send(capability, '[pdf-diff] {"pageIndex":0}')).statusCode, 400);
+  assert.deepEqual(printed, []);
+  const accepted = await send(capability);
+  assert.equal(accepted.statusCode, 202);
+  assert.equal(JSON.parse(accepted.body).status, 'accepted');
+  assert.deepEqual(printed, [{ line, options: { timestamp: true, error: null } }]);
+});
+
+test('Vite renders an accepted document error with its red error tag', () => {
+  const line = 'line-break: [page=3 target=s0/p4 at=1 expected=0,7 actual=0]';
+  const env = { ...process.env, FORCE_COLOR: '1' };
+  delete env.NO_COLOR;
+  const result = spawnSync(process.execPath, [
+    '--input-type=module',
+    '--eval',
+    `import { createLogger } from 'vite'; createLogger('info', { allowClearScreen: false }).error(${JSON.stringify(line)}, { timestamp: true, error: null });`,
+  ], { cwd: new URL('../', import.meta.url), env, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stderr, /\u001b\[31m/);
+  const plain = result.stderr.replace(/\u001b\[[0-9;]*m/g, '').trimEnd();
+  assert.match(plain, /\[vite\] line-break: \[page=3 target=s0\/p4 at=1 expected=0,7 actual=0\]$/);
 });
 
 function sha256(filePath: string): string {
@@ -98,7 +140,7 @@ function resultToken(result: { pdfPageUrl: string }): string {
   return result.pdfPageUrl.split('/').at(-2)!;
 }
 
-test('same-directory same-stem PDF is resolved by document identity', async () => {
+test('PDF twin lookup finds the matching PDF in the document directory', async () => {
   const root = mkdtempSync(join(tmpdir(), 'rhwp-pdf-twin-'));
   const directory = join(root, 'agency', '2024');
   mkdirSync(directory, { recursive: true });
@@ -126,7 +168,7 @@ test('same-directory same-stem PDF is resolved by document identity', async () =
   assert.equal(result.errorLogCapability, TEST_TWIN_SESSION.errorLogCapability);
 });
 
-test('an invalid optional root does not hide a valid twin root', async () => {
+test('an unrelated bad folder does not hide a valid PDF twin', async () => {
   const validRoot = mkdtempSync(join(tmpdir(), 'rhwp-pdf-valid-root-'));
   const invalidRoot = join(validRoot, 'not-a-directory');
   const documentPath = join(validRoot, 'valid.hwp');
@@ -175,7 +217,7 @@ test('an oversized discovery tree is skipped at its entry budget', async () => {
   assert.equal(found.status, 'found');
 });
 
-test('index refresh recovers a root created after an empty startup', async () => {
+test('refreshed PDF twin lookup discovers a root created after startup', async () => {
   const parent = mkdtempSync(join(tmpdir(), 'rhwp-pdf-late-root-'));
   const root = join(parent, 'later');
   let indexes = await refreshPdfTwinIndexes([root], new Map());
@@ -187,7 +229,7 @@ test('index refresh recovers a root created after an empty startup', async () =>
   assert.equal(indexes.size, 1);
 });
 
-test('failed index refresh preserves the last-known-good root', async () => {
+test('a temporary index scan failure keeps the last-known PDF twin available', async () => {
   const root = mkdtempSync(join(tmpdir(), 'rhwp-pdf-index-recovery-'));
   writeFileSync(join(root, 'stable.hwp'), 'stable document');
   writeFileSync(join(root, 'stable.pdf'), '%PDF stable');
@@ -204,7 +246,7 @@ test('failed index refresh preserves the last-known-good root', async () => {
   assert.equal(refreshed.get(root), stable);
 });
 
-test('a successful lookup refreshes a regenerated PDF identity', async () => {
+test('replacing a PDF twin gives the next lookup its new identity', async () => {
   const root = mkdtempSync(join(tmpdir(), 'rhwp-pdf-twin-refresh-'));
   const documentPath = join(root, 'current.hwpx');
   const pdfPath = join(root, 'current.pdf');
@@ -712,7 +754,7 @@ test('cache maintenance keeps a request at the completion microtask edge', async
   assert.equal(calls, 2);
 });
 
-test('an issued PDF token survives replacement of its discovery index', async () => {
+test('an issued PDF token stays valid while another lookup refreshes the index', async () => {
   const root = mkdtempSync(join(tmpdir(), 'rhwp-pdf-token-lifetime-'));
   const documentPath = join(root, 'stable.hwp');
   writeFileSync(documentPath, 'stable document');
@@ -738,7 +780,7 @@ test('an issued PDF token survives replacement of its discovery index', async ()
   assert.equal(readFileSync(restarted.resolvePdfSnapshot(token)!, 'utf8'), '%PDF stable');
 });
 
-test('a successful lookup revalidates a replaced indexed document', async () => {
+test('regenerating the document pair cannot mix an old HWP with a new PDF', async () => {
   const root = mkdtempSync(join(tmpdir(), 'rhwp-pdf-document-refresh-'));
   const documentPath = join(root, 'current.hwp');
   const pdfPath = join(root, 'current.pdf');
@@ -1026,7 +1068,7 @@ test('ambiguity cardinality drops a pair whose PDF generation changed', async ()
   assert.equal(await isSourcePairCurrent(admitted), false);
 });
 
-test('same stem in another directory is not used as a twin', async () => {
+test('PDF twin lookup rejects a same-named PDF from another directory', async () => {
   const root = mkdtempSync(join(tmpdir(), 'rhwp-pdf-twin-'));
   const documentDirectory = join(root, 'documents');
   const pdfDirectory = join(root, 'pdfs');
@@ -1044,7 +1086,7 @@ test('same stem in another directory is not used as a twin', async () => {
   }), { status: 'none' });
 });
 
-test('same document identity in two allowed roots is ambiguous', async () => {
+test('PDF twin lookup reports ambiguity when two roots contain the same twin', async () => {
   const roots = [
     mkdtempSync(join(tmpdir(), 'rhwp-pdf-root-a-')),
     mkdtempSync(join(tmpdir(), 'rhwp-pdf-root-b-')),
@@ -1065,7 +1107,7 @@ test('same document identity in two allowed roots is ambiguous', async () => {
   ), { status: 'ambiguous' });
 });
 
-test('same name and size outside the dataset is rejected by hash', async () => {
+test('a same-sized namesake PDF is rejected when its document bytes differ', async () => {
   const root = mkdtempSync(join(tmpdir(), 'rhwp-pdf-twin-'));
   const directory = join(root, 'agency');
   mkdirSync(directory);

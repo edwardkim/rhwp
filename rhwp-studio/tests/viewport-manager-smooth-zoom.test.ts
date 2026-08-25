@@ -459,7 +459,7 @@ test('zoom in and out controls share the command smooth zoom path', () => {
   assert.match(viewCommandSource, /id: 'view:zoom-out'[\s\S]*?smoothZoomBy\(-0\.1\)/);
 });
 
-test('CanvasView scales existing pages during zoom and defers the sharp rerender after settling', () => {
+test('wiring guard: zoom preview defers sharp rerender until input settles', () => {
   const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
 
   assert.match(
@@ -498,7 +498,7 @@ test('CanvasView scales existing pages during zoom and defers the sharp rerender
   assert.match(source, /dataset\.rhwpRenderedZoom = String\(zoom\)/);
 });
 
-test('settled zoom keeps the mounted canvas and PDF reference layer', async () => {
+test('repeated zoom keeps the PDF diff visible without reloading it', async () => {
   const previousWindow = (globalThis as { window?: unknown }).window;
   let idle: (() => void) | null = null;
   (globalThis as { window?: unknown }).window = {

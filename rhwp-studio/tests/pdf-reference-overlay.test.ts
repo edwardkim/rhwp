@@ -126,7 +126,7 @@ test('HWP diagnostic capture rejects pathological page geometry before allocatio
   );
 });
 
-test('document errors are one typed CLI line with flat document attributes', () => {
+test('a line-break failure yields one detailed first-error CLI line', () => {
   assert.equal(formatFirstLineBreakError(3, [{
     coordinates: {
       sectionIdx: 0,
@@ -159,7 +159,7 @@ test('document errors are one typed CLI line with flat document attributes', () 
   ]), 'paint: [page=3 ratio=0.058526 pdfOnly=210 rhwpOnly=317 colorOnly=12 bounds=14,22,160,81]');
 });
 
-test('partial line-break provenance cannot override a proven paint error', () => {
+test('incomplete line evidence stays silent instead of fabricating a diagnosis', () => {
   assert.equal(formatFirstLineBreakError(3, [{
     comparison: { matches: false },
   }]), null);
@@ -190,7 +190,7 @@ test('partial line-break provenance cannot override a proven paint error', () =>
   }]), null, 'an undeliverable semantic line must leave paint fallback available');
 });
 
-test('document error delivery rejects an HTTP error response', async () => {
+test('a rejected log request is reported instead of silently losing the document error', async () => {
   let body: unknown = null;
   let endpoint: RequestInfo | URL | null = null;
   let capability: string | null = null;
@@ -209,7 +209,7 @@ test('document error delivery rejects an HTTP error response', async () => {
   assert.equal(body, 'page-count: [page=4 expected=3 actual=4]');
 });
 
-test('line-break error traversal follows bounded batches to the first mismatch', () => {
+test('bounded line traversal finds the first mismatch in a later result batch', () => {
   const calls: number[] = [];
   const matching = Array.from({ length: 100 }, () => ({ comparison: { matches: true } }));
   const line = findFirstLineBreakError(3, (start) => {
@@ -237,7 +237,7 @@ test('line-break error traversal follows bounded batches to the first mismatch',
   assert.equal(line, 'line-break: [page=3 target=s0/p101 at=1 expected=0,12 actual=0,13]');
 });
 
-test('structural divergence ignores low-level glyph noise but keeps layout drift', () => {
+test('minor glyph noise stays quiet while a shifted line is reported as broken layout', () => {
   const page = {
     pageIndex: 0,
     hwpFingerprint: 'noise',
@@ -315,7 +315,7 @@ test('PDF twin overload remains a retryable busy result', async (t) => {
   assert.equal(endpoint, PDF_TWIN_LOOKUP_PATH);
 });
 
-test('reference page fetch retries a transient raster 503', async () => {
+test('a temporary PDF renderer overload does not abort the whole-document comparison', async () => {
   let attempts = 0;
   const waits: number[] = [];
   const response = await fetchReferenceWithRetry(
@@ -448,7 +448,7 @@ test('horizontal rule diagnostics retain both ends when the report is bounded', 
   assert.deepEqual(diagnostics.bands.map(band => band.centerY), [1, 3, 7, 9]);
 });
 
-test('whole-document report finds the first changed page and downstream cascade range', () => {
+test('after a patch shifts page 2, the report starts there and cascades through page 3', () => {
   const emptyBands = { totalBands: 0, truncated: false, bands: [] };
   const observation = (
     pageIndex: number,
@@ -525,7 +525,7 @@ test('whole-document report finds the first changed page and downstream cascade 
   assert.equal(patched.previousRenderRevision, 'r1');
 });
 
-test('page-count-only divergence is located and a correction is not called a regression', () => {
+test('a missing final page is reported, while restoring it is not called a regression', () => {
   const emptyBands = { totalBands: 0, truncated: false, bands: [] };
   const observation = (pageIndex: number): FidelityPageObservation => ({
     pageIndex,
@@ -592,7 +592,7 @@ test('page-count-only divergence is located and a correction is not called a reg
   assert.equal(corrected.firstRegressionPage, null);
 });
 
-test('the first document divergence is selected by page before error kind', () => {
+test('the earliest broken page wins even when a later error has another kind', () => {
   assert.deepEqual(firstDocumentDivergence({
     firstStructuralDivergencePage: 0,
     hwpPageCount: 390,
@@ -697,7 +697,7 @@ test('fidelity detail queries are bounded and reject a stale scan id', () => {
   });
 });
 
-test('a completed fidelity report becomes stale when the live render changes', () => {
+test('a new render generation invalidates the previous completed error report', () => {
   const report = {
     renderRevision: 'revision-1',
     identity: { renderGeneration: 4 },
@@ -722,7 +722,7 @@ test('a completed fidelity report becomes stale when the live render changes', (
   }), false, 'same-decision CanvasKit fallback must stale the active scan');
 });
 
-test('a same-page-count document swap invalidates the old fidelity owner', () => {
+test('a new document identity invalidates the previous error even when page counts match', () => {
   const expected = { documentDigest: 'old', documentGeneration: 4 };
   assert.equal(isFidelityDocumentCurrent(expected, {
     documentDigest: 'old',
@@ -734,7 +734,7 @@ test('a same-page-count document swap invalidates the old fidelity owner', () =>
   }), false);
 });
 
-test('patch deltas require a scan of the render immediately before the patch', () => {
+test('predecessor policy accepts only the render generation immediately before a patch', () => {
   const previous = { identity: { renderGeneration: 1 } };
   assert.equal(isComparableFidelityPredecessor(previous, 'subsecond-patch', {
     previousRenderGeneration: 2,
