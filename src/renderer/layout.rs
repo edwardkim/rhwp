@@ -4649,6 +4649,7 @@ impl LayoutEngine {
                 paragraphs,
                 footnote_shape,
                 styles,
+                layout.body_area.width,
             );
             footnote_layout.update_footnote_area(fn_height);
         }
