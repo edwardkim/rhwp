@@ -1712,7 +1712,21 @@ impl HeightMeasurer {
                                         let include_trailing_ls = !is_cell_last_line
                                             || (cell_para_count > 1 && table.common.treat_as_char);
                                         if include_trailing_ls {
-                                            h + hwpunit_to_px(line.line_spacing, self.dpi)
+                                            let trailing =
+                                                hwpunit_to_px(line.line_spacing, self.dpi);
+                                            // [#6030] TAC 다문단 예외로 포함되는 셀 마지막
+                                            // 줄의 trailing 이 음수(압축 줄간격, 70% 등)면
+                                            // 0 으로 — 뒤에 줄이 없어 압축 대상이 없고,
+                                            // 한글은 마지막 글리프 박스를 lh 그대로 그려
+                                            // 행을 그만큼 키운다(2386771 심사서식 10곳
+                                            // descender 깎임). 양수 trailing 포함 회계
+                                            // (KTX TOC 핀)는 불변.
+                                            let trailing = if is_cell_last_line {
+                                                trailing.max(0.0)
+                                            } else {
+                                                trailing
+                                            };
+                                            h + trailing
                                         } else {
                                             h
                                         }
@@ -2421,7 +2435,21 @@ impl HeightMeasurer {
                                         let include_trailing_ls = !is_cell_last_line
                                             || (cell_para_count > 1 && table.common.treat_as_char);
                                         if include_trailing_ls {
-                                            h + hwpunit_to_px(line.line_spacing, self.dpi)
+                                            let trailing =
+                                                hwpunit_to_px(line.line_spacing, self.dpi);
+                                            // [#6030] TAC 다문단 예외로 포함되는 셀 마지막
+                                            // 줄의 trailing 이 음수(압축 줄간격, 70% 등)면
+                                            // 0 으로 — 뒤에 줄이 없어 압축 대상이 없고,
+                                            // 한글은 마지막 글리프 박스를 lh 그대로 그려
+                                            // 행을 그만큼 키운다(2386771 심사서식 10곳
+                                            // descender 깎임). 양수 trailing 포함 회계
+                                            // (KTX TOC 핀)는 불변.
+                                            let trailing = if is_cell_last_line {
+                                                trailing.max(0.0)
+                                            } else {
+                                                trailing
+                                            };
+                                            h + trailing
                                         } else {
                                             h
                                         }

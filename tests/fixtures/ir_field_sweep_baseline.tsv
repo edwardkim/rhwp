@@ -254,6 +254,7 @@ hwp5rb	issue5941/1490000-201600081_roadmap_research.hwp	sections[].paragraphs[].
 hwp5rb	issue6023/30269_reform_recommendation.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	177
 hwp5rb	issue6023/30269_reform_recommendation.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	3
 hwp5rb	issue6028/2307287_construction_machinery_spec.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	33
+hwp5rb	issue6030/2386771_agritech_review_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	66
 hwp5rb	issue6032/2912695_civil_petition_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	41
 hwp5rb	issue6057/29494.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	4
 hwp5rb	issue6057/29494.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
