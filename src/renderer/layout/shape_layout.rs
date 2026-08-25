@@ -414,15 +414,16 @@ fn should_reflow_matrix_textbox_lines(
     let has_axis_scale =
         (sa.render_sx.abs() - 1.0).abs() > 0.001 || (sa.render_sy.abs() - 1.0).abs() > 0.001;
     let has_rotation_or_shear = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
-    let compressed_group_child = sa.group_level > 0
-        && sa.render_sx > 0.0
-        && sa.render_sy > 0.0
-        && (sa.render_sx < 0.99 || sa.render_sy < 0.99);
+    // Y-only 축소(sy<1, sx≈1)는 저장 줄의 가로폭을 바꾸지 않는다. groupLevel>0 만으로
+    // 재래핑하면 행정업무운영편람 바탕쪽 "업무관리시스템"처럼 저장 1글자×7줄이
+    // 가용 폭(lastWidth 2374 HU) 기준 2글자 줄로 합쳐져 세로 제목이 깨진다.
+    let width_compressed_group_child =
+        sa.group_level > 0 && sa.render_sx > 0.0 && sa.render_sx < 0.99;
     has_axis_scale
         && !has_rotation_or_shear
         && text_box.paragraphs.iter().any(|para| {
             matrix_textbox_lines_need_reflow(para)
-                && (compressed_group_child
+                && (width_compressed_group_child
                     || matrix_textbox_lines_overflow_height(para, available_height, dpi))
         })
 }
@@ -4054,5 +4055,90 @@ mod tests {
         assert_eq!(para.line_segs.len(), 1);
         assert_eq!(para.line_segs[0].text_start, 0);
         assert_eq!(para.line_segs[0].segment_width, px_to_hwpunit(80.0, 96.0));
+    }
+
+    fn stacked_hangul_para() -> Paragraph {
+        // 행정업무운영편람 바탕쪽 "업무관리시스템": 저장 7줄, 줄폭 1440 HU.
+        let starts = [0u32, 1, 2, 3, 4, 5, 6];
+        Paragraph {
+            char_count: 7,
+            text: "업무관리시스템".to_string(),
+            char_offsets: (0..7).collect(),
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: starts
+                .iter()
+                .enumerate()
+                .map(|(i, start)| LineSeg {
+                    text_start: *start,
+                    vertical_pos: (i as i32) * 1172,
+                    line_height: 900,
+                    text_height: 900,
+                    baseline_distance: 765,
+                    line_spacing: 272,
+                    segment_width: 1440,
+                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                    ..Default::default()
+                })
+                .collect(),
+            ..Default::default()
+        }
+    }
+
+    fn sidebar_drawing(sx: f64, sy: f64) -> DrawingObjAttr {
+        let mut drawing = DrawingObjAttr::default();
+        drawing.shape_attr.group_level = 1;
+        drawing.shape_attr.render_sx = sx;
+        drawing.shape_attr.render_sy = sy;
+        drawing
+    }
+
+    #[test]
+    fn matrix_textbox_keeps_stored_stack_when_only_sy_is_compressed() {
+        let para = stacked_hangul_para();
+        let text_box = TextBox {
+            paragraphs: vec![para],
+            ..Default::default()
+        };
+        let drawing = sidebar_drawing(1.0, 0.429432);
+        let available_width = hwpunit_to_px(2374, 96.0);
+        let available_height = hwpunit_to_px(8766, 96.0);
+
+        assert!(
+            !should_reflow_matrix_textbox_lines(
+                true,
+                &drawing,
+                &text_box,
+                0,
+                available_width,
+                available_height,
+                96.0,
+            ),
+            "Y-only 그룹 축소는 저장 1글자 줄을 가용 폭으로 합치면 안 된다"
+        );
+    }
+
+    #[test]
+    fn matrix_textbox_still_reflows_when_group_width_is_compressed() {
+        let para = stacked_hangul_para();
+        let text_box = TextBox {
+            paragraphs: vec![para],
+            ..Default::default()
+        };
+        let drawing = sidebar_drawing(0.5, 1.0);
+        let available_width = hwpunit_to_px(2374, 96.0);
+        let available_height = hwpunit_to_px(8766, 96.0);
+
+        assert!(should_reflow_matrix_textbox_lines(
+            true,
+            &drawing,
+            &text_box,
+            0,
+            available_width,
+            available_height,
+            96.0,
+        ));
     }
 }
