@@ -3341,7 +3341,6 @@ fn stored_vpos_top_collision(prev: &Paragraph, curr: &Paragraph) -> bool {
     if para_has_visible_text(prev) || para_has_visible_text(curr) || prev.controls.is_empty() {
         return false;
     }
-
     let real = |ls: &&LineSeg| !is_synthetic_line_seg(ls);
     let (Some(prev_first), Some(prev_last), Some(curr_first)) = (
         prev.line_segs.iter().find(real),
@@ -3358,6 +3357,15 @@ fn stored_vpos_top_collision(prev: &Paragraph, curr: &Paragraph) -> bool {
         ls.tag & LineSeg::TAG_FIRST_SEGMENT != 0 && ls.segment_width > 0 && ls.line_height > 0
     };
     if !parsed_seg(prev_first) || !parsed_seg(prev_last) || !parsed_seg(curr_first) {
+        return false;
+    }
+
+    // [#6087] 앞 문단의 저장 **전진이 0**(줄간격 0%: lh + ls ≤ 0)이면 쪽을
+    // 점유하지 않으므로, 그 직후의 vpos=0 은 "다시 맨 위 주장"이 아니라 같은
+    // 자리다 — 충돌 아님. 30307: pi=0(구역/단 정의, lh 1300 + ls −1300) 직후
+    // pi=1 을 충돌로 읽어 완전한 빈 1쪽을 만들었다(한글 13쪽 vs 14쪽). p122
+    // 증거(전진 1600/22838 문단들의 연쇄 단독 쪽)는 전진 > 0 이라 불변.
+    if prev_last.line_height.saturating_add(prev_last.line_spacing) <= 0 {
         return false;
     }
 
