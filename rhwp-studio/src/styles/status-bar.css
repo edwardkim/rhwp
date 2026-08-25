@@ -107,41 +107,17 @@
   border-color: var(--ui-border-strong);
 }
 
-.stb-status-glyph {
-  position: relative;
-  display: inline-block;
-  color: var(--color-text-secondary);
-  box-sizing: border-box;
-}
-
-.icon-zoom-menu {
+.stb-zoom-menu-icon {
+  display: block;
   width: 18px;
   height: 18px;
-  border: 0;
-  margin: 0;
-  flex-shrink: 0;
-}
-
-.icon-zoom-menu::before {
-  content: '';
-  position: absolute;
-  left: 1px;
-  top: 1px;
-  width: 12px;
-  height: 12px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-}
-
-.icon-zoom-menu::after {
-  content: '';
-  position: absolute;
-  left: 10px;
-  top: 11px;
-  width: 7px;
-  border-top: 2px solid currentColor;
-  transform: rotate(45deg);
-  transform-origin: left center;
+  flex: 0 0 18px;
+  color: var(--color-text-secondary);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .stb-zoom-range-wrap {
