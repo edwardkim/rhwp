@@ -1944,6 +1944,93 @@ fn test_expand_hancom_relationship_line_pua_to_box_drawing() {
     );
 }
 
+/// [#6057] 한컴 책괄호 PUA 는 그리기뿐 아니라 측정 문자열에도 전각 《》 로
+/// 올라가야 한다. 그리기만 치환하면 run bbox 가 0.5em 짧아 다음 숫자가
+/// 한글 위에 겹친다.
+#[test]
+fn issue_6057_book_bracket_pua_expands_to_fullwidth_angle_brackets() {
+    assert_eq!(
+        crate::renderer::layout::map_pua_bullet_char('\u{F0854}'),
+        '\u{300A}'
+    );
+    assert_eq!(
+        crate::renderer::layout::map_pua_bullet_char('\u{F0855}'),
+        '\u{300B}'
+    );
+    assert_eq!(
+        expand_pua_render_text("법\u{F0855} 제"),
+        "법》 제",
+        "paint 경로가 U+F0855 를 전각 》 로 바꿔야 한다"
+    );
+}
+
+/// [#6057] 29494 1쪽 양쪽정렬 줄: '제' 다음 숫자 '1' 이 전각 간격으로 떨어져야 한다.
+#[test]
+fn issue_6057_sample_justified_je_does_not_overlap_following_digit() {
+    use crate::document_core::DocumentCore;
+    use std::path::Path;
+
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/issue6057/29494.hwp");
+    let core = DocumentCore::from_bytes(&std::fs::read(&path).expect("read 29494")).expect("open");
+    let svg = core.render_page_svg_native(0).expect("page 1 svg");
+
+    let mut glyphs: Vec<(f64, f64, char)> = Vec::new();
+    let mut rest = svg.as_str();
+    while let Some(idx) = rest.find("<text ") {
+        rest = &rest[idx + 6..];
+        let Some(tag_end) = rest.find('>') else {
+            break;
+        };
+        let attrs = &rest[..tag_end];
+        let after = &rest[tag_end + 1..];
+        let Some(text_end) = after.find("</text>") else {
+            break;
+        };
+        let text = &after[..text_end];
+        rest = &after[text_end + 7..];
+        if text.chars().count() != 1 {
+            continue;
+        }
+        let Some(ch) = text.chars().next() else {
+            continue;
+        };
+        let x = attr_f64(attrs, "x");
+        let y = attr_f64(attrs, "y");
+        if let (Some(x), Some(y)) = (x, y) {
+            glyphs.push((y, x, ch));
+        }
+    }
+    glyphs.sort_by(|a, b| {
+        a.0.partial_cmp(&b.0)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then(a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
+    });
+
+    let mut pairs = 0usize;
+    for win in glyphs.windows(2) {
+        if win[0].2 == '제' && win[1].2 == '1' && (win[0].0 - win[1].0).abs() < 1.0 {
+            let adv = win[1].1 - win[0].1;
+            assert!(
+                adv >= 16.0,
+                "y={:.1} 제→1 전진 {adv:.2}px — PUA 》 반각 측정이면 ~9.8px 로 '제' 위에 숫자가 겹친다",
+                win[0].0
+            );
+            pairs += 1;
+        }
+    }
+    assert!(
+        pairs >= 2,
+        "1쪽에 '제'+'1' 쌍이 본문·통제군 두 곳 있어야 한다 (got {pairs})"
+    );
+}
+
+fn attr_f64(attrs: &str, name: &str) -> Option<f64> {
+    let key = format!("{name}=\"");
+    let start = attrs.find(&key)? + key.len();
+    let end = attrs[start..].find('"')? + start;
+    attrs[start..end].parse().ok()
+}
+
 /// #3486 — legacy 한컴 제품명은 raw HWP의 옛자모를 보존하면서 PDF와 같은
 /// 현대 product spelling으로만 표시한다. 보통 옛한글 낱말은 건드리지 않는다.
 #[test]

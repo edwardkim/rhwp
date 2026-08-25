@@ -6,7 +6,7 @@
 
 use super::layout::{
     control_line_seg_index, estimate_text_width, estimate_text_width_unrounded,
-    hancom_regenerated_space_width, resolved_to_text_style,
+    hancom_regenerated_space_width, map_pua_bullet_char, resolved_to_text_style,
 };
 use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use super::{hwpunit_to_px, px_to_hwpunit, TextStyle};
@@ -469,7 +469,9 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph) {
                 .iter()
                 .any(|start| *start < run_char_end && start.saturating_add(3) > run_char_start);
             let has_pua_display = chars.iter().any(|ch| {
-                pua_plain_text_display(*ch).is_some() || map_pua_old_hangul(*ch).is_some()
+                pua_plain_text_display(*ch).is_some()
+                    || map_pua_old_hangul(*ch).is_some()
+                    || map_pua_bullet_char(*ch) != *ch
             });
             if !has_product_projection && !has_pua_display {
                 run_char_start = run_char_end;
@@ -496,7 +498,15 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph) {
                     display.extend(jamos.iter().copied());
                     changed = true;
                 } else {
-                    display.push(ch);
+                    // paint 경로(`expand_pua_display_text`)와 같이 한컴 PUA 책괄호
+                    // (U+F0854/F0855 → 《》) 등을 측정 문자열에도 올린다. 원문 PUA 는
+                    // CJK가 아니라 0.5em 휴리스틱이 되어 run bbox 가 전각 글리프보다
+                    // 짧고, 다음 라틴 run 이 한글 위에 겹친다 (#6057).
+                    let mapped = map_pua_bullet_char(ch);
+                    display.push(mapped);
+                    if mapped != ch {
+                        changed = true;
+                    }
                 }
             }
             run_char_start = run_char_end;
