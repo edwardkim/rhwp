@@ -6383,7 +6383,26 @@ impl LayoutEngine {
                                 text_y_start + hwpunit_to_px(next_seg.vertical_pos, self.dpi);
                             // layout_table 기반 para_y와 다음 문단 vpos 중
                             // 더 큰 값 사용 (표가 LINE_SEG보다 클 수 있으므로)
-                            para_y = para_y.max(next_vpos_y);
+                            // [#6044] 저장 vpos 는 한글 줄 top 이라 spacing_before 가
+                            // 이미 들어 있다. 다음 문단이 layout_composed_paragraph 를
+                            // 타면 앞 간격이 한 번 더 더해져 중첩 박스 뒤가 +10pt 부풀고
+                            // 고정 높이 상자 마지막 줄이 하단 괘선에 잘린다. block 표
+                            // 문단은 그 경로를 안 타므로 빼지 않는다.
+                            let next_has_block_table = next_para
+                                .controls
+                                .iter()
+                                .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char));
+                            let next_spacing_before = if next_has_block_table {
+                                0.0
+                            } else {
+                                styles
+                                    .para_styles
+                                    .get(next_para.para_shape_id as usize)
+                                    .map(|s| s.spacing_before)
+                                    .unwrap_or(0.0)
+                                    .max(0.0)
+                            };
+                            para_y = para_y.max(next_vpos_y - next_spacing_before);
                         }
                     }
                 }
