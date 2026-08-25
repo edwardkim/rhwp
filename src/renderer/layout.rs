@@ -9493,6 +9493,39 @@ impl LayoutEngine {
                         if Self::tac_stored_band_is_outer_box(para, t) {
                             y_offset += hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
                         }
+                        // [#5809 실측②] 직전 TAC 의 seg 전진은 줄 간격까지만 담는다.
+                        // **문단이 바뀌는** TAC-모순(treat_as_char + 자리차지) 빈 host
+                        // 표는 자기 문단의 위 간격(sb)을 여기서 받아야 한다 — 건너뛰면
+                        // 표가 저장 사다리보다 sb 만큼 위에 앉는다. 156518601 실측:
+                        // 5쪽 그림 표(sb 20px)가 한글·저장 사다리(간격 28px = ls 8 +
+                        // sb 20) 대비 19.8px 위, 9쪽 연속 host 4개(sb 6.7px)는 표당
+                        // ~sb 씩 계단 누적. 같은 문단 안의 후속 TAC(vpos 델타 전진이
+                        // 간격을 이미 담음)와 구분하기 위해 첫 컨트롤로 한정한다.
+                        if control_index == 0
+                            && !is_column_top
+                            && self.profile.get().hwpx_stored_layout()
+                            && t.common.treat_as_char
+                            && matches!(
+                                t.common.text_wrap,
+                                crate::model::shape::TextWrap::TopAndBottom
+                            )
+                            && !para_has_non_whitespace_text(para)
+                        {
+                            let spacing_before = styles
+                                .para_styles
+                                .get(ps_id)
+                                .map(|ps| ps.spacing_before.max(0.0))
+                                .unwrap_or(0.0);
+                            if spacing_before > 0.0 {
+                                y_offset += spacing_before;
+                                if std::env::var("RHWP_DIAG_TAC").is_ok() {
+                                    eprintln!(
+                                        "DIAG_PAINT_SB pi={} sb={:.1} y={:.1}",
+                                        para_index, spacing_before, y_offset,
+                                    );
+                                }
+                            }
+                        }
                     }
                 } else if !is_current_empty_para_float {
                     if let Some(ps) = styles.para_styles.get(ps_id) {
