@@ -2439,9 +2439,9 @@ pub(crate) use table_layout::border_style_has_diagonal;
 pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
-    extract_tab_leaders_with_extended, find_next_tab_stop, hancom_regenerated_space_width,
-    is_cjk_char, is_halfwidth_cjk_quote, resolved_to_text_style, split_into_clusters,
-    trace_char_width_decisions, CharWidthDecision,
+    extract_tab_leaders_with_extended, find_next_tab_stop, forces_halfwidth_cjk_quote,
+    hancom_regenerated_space_width, is_cjk_char, is_halfwidth_cjk_quote, resolved_to_text_style,
+    split_into_clusters, trace_char_width_decisions, CharWidthDecision,
 };
 // [Task #826] map_pua_bullet_char 는 통합 테스트 (tests/issue_826.rs) 에서 직접 검증
 // (PUA substitution 매핑 정합) — pub 노출.
