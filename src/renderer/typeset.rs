@@ -938,6 +938,9 @@ struct TypesetState {
     current_start_height: f64,
     /// 현재 단에 미주 흐름 항목이 포함되어 있는지 여부
     current_endnote_flow: bool,
+    /// [#5886] 현재 단에 문단-사이 compact 되감김을 넣었으면, 이후 문단도
+    /// 렌더 순차 적층이 용지 밖으로 나가는지 시뮬한다.
+    column_had_compact_endnote_rewind: bool,
     /// [Task #1082] 현재 단에서 마지막으로 배치된 본문 FullParagraph 의 bottom vpos (HU,
     /// 섹션 절대값). 미주 vpos-delta 누적의 첫 항목 base 시드용. 단 advance 시 None.
     prev_body_bottom_vpos: Option<i32>,
@@ -4195,6 +4198,7 @@ impl TypesetState {
             current_height: 0.0,
             current_start_height: 0.0,
             current_endnote_flow: false,
+            column_had_compact_endnote_rewind: false,
             prev_body_bottom_vpos: None,
             flow_underrun: 0.0,
             hangul2024_reclaimed: 0.0,
@@ -4789,6 +4793,7 @@ impl TypesetState {
                 );
             }
             self.hangul2024_reclaimed = 0.0;
+            self.column_had_compact_endnote_rewind = false;
             self.reset_vpos_cursor();
         } else {
             self.push_new_page();
@@ -4872,6 +4877,7 @@ impl TypesetState {
         }
         self.hangul2024_reclaimed = 0.0;
         self.current_endnote_flow = false;
+        self.column_had_compact_endnote_rewind = false;
         self.current_footnote_height = 0.0;
         self.current_bottom_fixed_exclusion = 0.0;
         self.bottom_fixed_consumed_flow = 0.0;
@@ -10457,14 +10463,15 @@ impl TypesetEngine {
             // [#5886] 기본 B 에서는 문단-사이 되감김이 용지 밖(+56px)으로
             // 나갈 때만 시뮬을 켠다. 24px A2 overflow 를 B 에 흘리면
             // split_endnote_to_fit 가 1375/1139 질문 흐름을 가른다.
-            // 시뮬은 렌더처럼 되감김 문단을 순차 적층한다(acc 는 올리지 않음).
-            let simulated_endnote_bottom = if ssot_level >= EnSsotLevel::A2
-                || (compact_endnote_separator_profile
-                    && local_vpos_rewind
-                    && st.col_count > 1
-                    && !st.current_items.is_empty()
-                    && st.current_height > available * 0.5)
-            {
+            // B 시뮬은 scratch LayoutEngine(렌더와 동일 경로)으로 하단을 읽는다.
+            // acc 는 올리지 않는다.
+            let page_offcanvas_sim = compact_endnote_separator_profile
+                && st.profile.hwpx_stored_layout()
+                && st.col_count > 1
+                && !st.current_items.is_empty()
+                && st.current_height > available * 0.5
+                && (local_vpos_rewind || st.column_had_compact_endnote_rewind);
+            let simulated_endnote_bottom = if ssot_level >= EnSsotLevel::A2 || page_offcanvas_sim {
                 self.simulate_endnote_column_bottom_y(
                     &st,
                     paragraphs,
@@ -10483,8 +10490,7 @@ impl TypesetEngine {
             } else {
                 None
             };
-            let page_offcanvas_with_para = compact_endnote_separator_profile
-                && local_vpos_rewind
+            let page_offcanvas_with_para = page_offcanvas_sim
                 && simulated_endnote_bottom
                     .is_some_and(|bottom| bottom > available + ENDNOTE_PAGE_OFFCANVAS_GUARD_PX);
             // 구분선 없는 큰 미주 block에서는 다줄 수식 문단의 advance가
@@ -10939,10 +10945,14 @@ impl TypesetEngine {
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
             }
-            // [#5886] 문단-사이 되감김만: 시뮬 하단이 용지 밖 가드를 넘으면
-            // 단/쪽을 넘긴다. 내부 rewind 분할(1375)과 문항 경계(1139)는 유지.
-            if page_offcanvas_with_para && !st.current_items.is_empty() {
-                split_endnote_to_fit = None;
+            // [#5886] HWPX 문단-사이 되감김 이후 순차 적층이 용지 밖이면
+            // 단/쪽을 넘긴다. 같은 문서 .hwp 는 이미 넘긴다. 분할 가능한
+            // 다줄(1375)과 문항 경계(1139)는 HWP 경로라 그대로.
+            if page_offcanvas_with_para
+                && !st.current_items.is_empty()
+                && split_endnote_to_fit.is_none()
+                && !internal_vpos_rewind
+            {
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
                 prev_en_content_bottom_vpos = None;
@@ -13168,6 +13178,9 @@ impl TypesetEngine {
                 prev_en_bottom_vpos = Some(tb);
                 prev_en_content_bottom_vpos = this_content_bottom_offset.or(this_bottom_offset);
             }
+            if local_vpos_rewind {
+                st.column_had_compact_endnote_rewind = true;
+            }
         }
         EndnoteFlowState {
             vpos_offset,
@@ -13929,7 +13942,10 @@ impl TypesetEngine {
         // scratch `LayoutEngine` 으로 **1회 순차 렌더**해 정확한 단 bottom 을 읽는다. items 를
         // 로컬 0-기반 재색인해 build_single_column 경로(vpos forward-jump·trailing·text_start_line
         // 등 렌더 dispatch)를 그대로 태운다 → sim==render 구조 보장.
-        if ssot_level >= EnSsotLevel::A3 {
+        // [#5886] B-level page_offcanvas 도 이 경로를 쓴다. HeightCursor 휴리스틱은
+        // 저장 span/75% 되감김으로 순차 렌더(+69.7px)를 과소 계상해 알짜 풀이가
+        // 용지 밖에 남았다. acc·A2 스냅은 그대로 휴리스틱.
+        if ssot_level >= EnSsotLevel::A3 || sequential_compact_rewind {
             // 로컬 인덱스를 **+1 오프셋**하고 인덱스 0 에 더미 para 를 둔다. 렌더의
             // `layout_composed_paragraph` 는 `para_index == 0` + column-top + 첫 줄 vpos>0 이면
             // 절대 vpos 를 가산하는 fallback(섹션 첫 문단 제목용)이 있는데, 실제 미주 para 는
