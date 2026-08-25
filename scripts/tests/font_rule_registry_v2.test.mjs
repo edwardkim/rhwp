@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { canonicalJson, sha256Text } from '../font_rule_ledger.mjs';
 import {
   assertSealedV1Artifacts,
   buildInitialRegistryV2,
@@ -224,6 +225,43 @@ test('a command cannot relabel the decision plane of an existing rule', () => {
     () => reduceRegistryV2(base, [changed], { root: ROOT }),
     /current rule crosses the declared decision plane/,
   );
+});
+
+test('registry validator rejects a successor in another projection of the same decision plane', () => {
+  const changed = clone(readJson(V2_REGISTRY_PATH));
+  const retired = changed.rules
+    .filter(rule => (
+      rule.status === 'active' && rule.projections[0].id === 'canvas2d-webfont'
+    ))
+    .sort((left, right) => left.projectionSequence - right.projectionSequence)
+    .at(-1);
+  const successor = changed.rules.find(rule => (
+    rule.status === 'active'
+      && rule.decisionPlane === retired.decisionPlane
+      && rule.projections[0].id === 'canvaskit-sfnt'
+  ));
+
+  retired.status = 'retired';
+  retired.lifecycle.retiredBy = 'change.fixture.cross-projection';
+  retired.lifecycle.retirementReason = 'Synthetic cross-projection successor';
+  retired.lifecycle.successorRuleIds = [successor.ruleId];
+  successor.lifecycle.predecessorRuleIds = [retired.ruleId];
+
+  const active = changed.rules.filter(rule => rule.status === 'active');
+  const countsByProjection = {};
+  for (const rule of active) {
+    const projectionId = rule.projections[0].id;
+    countsByProjection[projectionId] = (countsByProjection[projectionId] ?? 0) + 1;
+  }
+  changed.summary = {
+    ruleCount: changed.rules.length,
+    activeRuleCount: active.length,
+    retiredRuleCount: changed.rules.length - active.length,
+    countsByProjection: Object.fromEntries(Object.entries(countsByProjection).sort()),
+  };
+  changed.rulesSha256 = sha256Text(canonicalJson(changed.rules));
+
+  assert.match(validateRegistryV2(changed, ROOT).join('\n'), /cross-projection successor/);
 });
 
 test('evidence cycles and self-parent edges are rejected', () => {

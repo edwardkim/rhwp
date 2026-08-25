@@ -2,7 +2,7 @@
 kind: investigation
 status: active
 canonical: mydocs/plans/task_m100_5955.md
-last_verified: 2026-08-24
+last_verified: 2026-08-25
 ---
 
 # Issue #5955 — font rule lifecycle registry와 trace audit
@@ -34,7 +34,7 @@ lifecycle join 계약을 보존한다. 실제 font mapping 변경은 후속 #496
 | `dangling` | v2 lifecycle·봉인 W1 ledger·W2 drift 선언 어디에도 근거가 없는 ID |
 
 resolver는 v2 registry 전체, successor/predecessor graph와 evidence parent graph를 먼저 검증한다. cycle,
-cross-plane replacement, dangling evidence가 있으면 한 ID도 분류하지 않고 fail-closed한다.
+cross-plane·cross-projection replacement, dangling evidence가 있으면 한 ID도 분류하지 않고 fail-closed한다.
 
 ## offline CLI
 

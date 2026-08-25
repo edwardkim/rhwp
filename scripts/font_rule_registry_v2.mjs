@@ -668,6 +668,8 @@ function validateSuccessorGraph(rules, errors) {
         errors.push(`${rule.ruleId} has dangling successor ${successorId}`);
       } else if (successor.decisionPlane !== rule.decisionPlane) {
         errors.push(`${rule.ruleId} has cross-plane successor ${successorId}`);
+      } else if (successor.projections?.[0]?.id !== rule.projections?.[0]?.id) {
+        errors.push(`${rule.ruleId} has cross-projection successor ${successorId}`);
       } else if (!(successor.lifecycle?.predecessorRuleIds ?? []).includes(rule.ruleId)) {
         errors.push(`${rule.ruleId}/${successorId} predecessor/successor links disagree`);
       }

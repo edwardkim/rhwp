@@ -30,7 +30,7 @@ Stage W7.5-3에서 대사한 값과 같다.
 - WSL2 Ubuntu 24, 논리 CPU 16개, RAM 약 31 GiB
 - Docker Server 29.7.2
 - cargo-nextest 0.9.137; 저장소 권고 0.9.140 안내는 비차단 warning
-- Cargo 고정 target: `/home/edward/mygithub/rhwp/target/pr-review`
+- Cargo 고정 target: 저장소 상대경로 `target/pr-review`
 - detached review worktree에서 integration suite를 prepare·check하고 Cargo 전체 검증을 실행했다.
 - nextest는 host 기본 동시성을 사용했다. 다른 Cargo·Rust 작업을 겹쳐 실행하지 않았다.
 - review worktree는 검증 뒤 clean 상태에서 제거했다. generated suite·manifest는 source branch에
