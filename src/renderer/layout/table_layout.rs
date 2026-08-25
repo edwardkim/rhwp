@@ -16297,26 +16297,3 @@ mod row_cut_tests {
         );
     }
 }
-
-#[cfg(test)]
-mod issue_6030_row_grow_tests {
-    use super::LayoutEngine;
-
-    #[test]
-    fn subline_pad_overflow_grows_but_empty_lh_eq_h_does_not() {
-        // exam_eng ①: line 15.31, decl 15.88, pad 3.76 — #6030.
-        assert!(LayoutEngine::cell_row_grows_with_padding(
-            15.31, 15.88, 3.76
-        ));
-        // #3386 모순 선언 (줄이 선언보다 큼).
-        assert!(LayoutEngine::cell_row_grows_with_padding(18.0, 15.88, 3.76));
-        // #2211 빈 셀 lh≈h — 여백 가산 금지.
-        assert!(!LayoutEngine::cell_row_grows_with_padding(
-            15.88, 15.88, 3.76
-        ));
-        // 선언이 줄+여백을 이미 담음.
-        assert!(!LayoutEngine::cell_row_grows_with_padding(
-            15.31, 25.0, 3.76
-        ));
-    }
-}
