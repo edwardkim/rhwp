@@ -75,3 +75,10 @@ hash는 mode `0600` local-only 결과에만 둔다.
 결과는 `blocked`이며 W8-Q4로 진행하지 않는다. 재개 조건은 같은 composition snapshot에서 TextLine
 frame·context와 stored-row admission을 함께 제공하는 읽기 전용 evidence query다. 이 query 보강과 제품
 변경은 현재 qualification의 승인 범위가 아니다.
+
+## Stage W8-Q3R same-snapshot evidence query
+
+승인된 보강은 쪽당 하나의 `PageRenderTree`를 Font Decision Trace, TextLine frame/context와 stored-row cache
+disposition이 함께 소비하게 한다. 기존 trace API와 hash는 유지하고 새 결합 query만 추가한다. frame
+provenance가 불완전한 문단은 `unmodelled`로 남기며, query 결과로 제품 metric·registry·fallback·paint·supply를
+변경하지 않는다. 구현 검증 뒤에도 Q0의 동일 6문서만 다시 판정한다.
