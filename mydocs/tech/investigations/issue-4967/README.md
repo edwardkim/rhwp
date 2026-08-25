@@ -8,8 +8,9 @@ last_verified: 2026-08-25
 # Issue #4967 — W8 font face 교정 qualification
 
 이 디렉터리는 W8 tracker의 첫 process canary인 rank 8 `KoPubWorld바탕체 Light`의 교정 적격성 증거를
-보존한다. 현재 단계는 제품 font mapping 변경이 아니라 기존 W3·W4·W5·W7.5 증거의 호환성과 실사용
-cohort를 판정하는 query 단계다.
+보존한다. rank 8 일괄 exact metric 후보는 Stage W8-Q5에서 `no-change`로 종결됐으며 제품 font mapping은
+변경하지 않는다. #4967 tracker는 rank 1·7과 evidence-reopen lane 때문에 계속 active다. 최종 판정은
+[`task_m100_4967_report.md`](../../../report/task_m100_4967_report.md)에 있다.
 
 ## Stage W8-Q0 경계
 
