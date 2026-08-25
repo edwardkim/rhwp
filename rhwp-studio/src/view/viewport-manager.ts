@@ -131,11 +131,16 @@ export class ViewportManager {
         && this.pageMovement.direction === 'horizontal'
         && this.pageMovement.wheelHorizontal
         && !e.shiftKey
-        && deltaY !== 0
-        && Math.abs(deltaY) >= Math.abs(deltaX)
       ) {
-        e.preventDefault();
-        this.setScrollLeft(this.container.scrollLeft + deltaY);
+        // 트랙패드의 가로 우세 입력도 브라우저 native 스크롤에 맡기지 않는다.
+        // 두 축을 더하면 대각선 제스처가 과속하므로 우세한 signed delta 하나만 쓴다.
+        const horizontalDelta = Math.abs(deltaX) > Math.abs(deltaY)
+          ? deltaX
+          : deltaY;
+        if (horizontalDelta !== 0) {
+          e.preventDefault();
+          this.setScrollLeft(this.container.scrollLeft + horizontalDelta);
+        }
         return;
       }
       if (

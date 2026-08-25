@@ -81,3 +81,25 @@ test('통합 배율 버튼은 모든 배율에서 고정 폭과 tabular 숫자�
   assert.match(button, /box-sizing:\s*border-box/);
   assert.match(value, /font-variant-numeric:\s*tabular-nums/);
 });
+
+test('통합 배율 버튼의 돋보기는 좌우 확대 아이콘과 같은 18px 상자를 사용한다', () => {
+  const css = readFileSync(
+    new URL('../src/styles/status-bar.css', import.meta.url),
+    'utf8',
+  );
+  const icon = css.match(/\.icon-zoom-menu\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
+  const ring = css.match(/\.icon-zoom-menu::before\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
+  const handle = css.match(/\.icon-zoom-menu::after\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
+
+  assert.ok(icon);
+  assert.ok(ring);
+  assert.ok(handle);
+  assert.match(icon, /width:\s*18px/);
+  assert.match(icon, /height:\s*18px/);
+  assert.match(icon, /border:\s*0/);
+  assert.match(icon, /margin:\s*0/);
+  assert.match(icon, /flex-shrink:\s*0/);
+  assert.match(ring, /width:\s*12px/);
+  assert.match(ring, /height:\s*12px/);
+  assert.match(handle, /width:\s*7px/);
+});
