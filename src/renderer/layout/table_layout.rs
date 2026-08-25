@@ -3416,6 +3416,20 @@ impl LayoutEngine {
                 .all(|p| !crate::renderer::para_has_no_stored_line_segs(p))
     }
 
+    /// 저장 LINE_SEG 셀의 행을 줄 흐름+상하 여백으로 키울지 (#3386, #6030).
+    ///
+    /// - 줄 흐름이 선언보다 1.5px 넘게 크면 모순 선언 — 여백 포함 재성장 (#3386).
+    /// - 줄은 선언 안에 들어가지만 여백을 더하면 넘치는 반 줄 미만 초과:
+    ///   한글은 행을 늘린다 (#6030). 빈 셀 `lh≈h` (#2211) 는
+    ///   `line_based + 0.5 < declared` 가 거짓이라 제외.
+    fn cell_row_grows_with_padding(line_based: f64, declared: f64, pad_v: f64) -> bool {
+        if line_based > declared + 1.5 {
+            true
+        } else {
+            line_based + 0.5 < declared && line_based + pad_v > declared
+        }
+    }
+
     /// [#3386] MeasuredTable 행높이를 행별 저장 선언(cellSz)으로 교정한다.
     /// 발동 조건(전부 충족 시에만):
     /// - 모든 셀이 row_span==1 이고 저장 LINE_SEG 를 보유(#2211 술어)
@@ -3582,12 +3596,15 @@ impl LayoutEngine {
                         } else {
                             f64::MAX
                         };
-                        if line_based > decl_h + 1.5 {
+                        let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
+                            + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
+                        let pad_v = (pad_top + pad_bottom).max(raw_pad_v);
+                        if Self::cell_row_grows_with_padding(line_based, decl_h, pad_v) {
                             // 한글 실좌표는 원(cellMargin) 상하 여백 가산 — resolve
                             // 축소 pad(0.9×2)가 아니라 저장 1.9×2 로 18.4px 재현.
-                            let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
-                                + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
-                            line_based + (pad_top + pad_bottom).max(raw_pad_v)
+                            // #6030: 줄은 선언 안이지만 여백까지 합치면 반 줄 미만으로
+                            // 넘치는 셀도 키운다 (빈 셀 lh≈h #2211 은 제외).
+                            line_based + pad_v
                         } else {
                             line_based
                         }
@@ -3712,10 +3729,11 @@ impl LayoutEngine {
                     } else {
                         f64::MAX
                     };
-                    if line_based > decl_h + 1.5 {
-                        let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
-                            + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
-                        line_based + (pad_top + pad_bottom).max(raw_pad_v)
+                    let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
+                        + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
+                    let pad_v = (pad_top + pad_bottom).max(raw_pad_v);
+                    if Self::cell_row_grows_with_padding(line_based, decl_h, pad_v) {
+                        line_based + pad_v
                     } else {
                         line_based
                     }
@@ -16277,5 +16295,28 @@ mod row_cut_tests {
             fp(&spacer),
             "공백 스페이서 클래스 전이는 지문이 변해야 한다"
         );
+    }
+}
+
+#[cfg(test)]
+mod issue_6030_row_grow_tests {
+    use super::LayoutEngine;
+
+    #[test]
+    fn subline_pad_overflow_grows_but_empty_lh_eq_h_does_not() {
+        // exam_eng ①: line 15.31, decl 15.88, pad 3.76 — #6030.
+        assert!(LayoutEngine::cell_row_grows_with_padding(
+            15.31, 15.88, 3.76
+        ));
+        // #3386 모순 선언 (줄이 선언보다 큼).
+        assert!(LayoutEngine::cell_row_grows_with_padding(18.0, 15.88, 3.76));
+        // #2211 빈 셀 lh≈h — 여백 가산 금지.
+        assert!(!LayoutEngine::cell_row_grows_with_padding(
+            15.88, 15.88, 3.76
+        ));
+        // 선언이 줄+여백을 이미 담음.
+        assert!(!LayoutEngine::cell_row_grows_with_padding(
+            15.31, 25.0, 3.76
+        ));
     }
 }

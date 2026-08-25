@@ -2510,8 +2510,11 @@ impl HeightMeasurer {
             // 칸 클립에 잘린다(156682735 제목 셋째 줄 8.3px 잘림). 한글은 저장
             // 좌표에 여유가 있는 행에서만 부족분을 흡수한다 — 행별 하한을 저장
             // lineseg 내용 높이(pad_top + max(vertpos+vertsize) + pad_bottom)로
-            // 잡고, 여유(slack) 비례로만 줄인다. 하한 합이 이미 선언을 넘는
-            // 형상은 종전 비례 축소로 폴백한다.
+            // 잡고, 여유(slack) 비례로만 줄인다.
+            // [#6030] 하한 합이 이미 선언을 넘는 형상(모든 행이 내용+여백으로
+            // 꽉 참)은 균일 축소하지 않는다. 그 폴백은 하한 아래까지 눌러
+            // 마지막 글줄을 clip 한다 (exam_eng 선택지 ① 1.3px, 심사서식
+            // 반 줄 미만 초과). 한글은 그 행을 내용에 맞춰 키운다.
             let mut floors = vec![0.0f64; row_count];
             for cell in &table.cells {
                 let r = cell.row as usize;
@@ -2552,13 +2555,10 @@ impl HeightMeasurer {
                     let slack = (*h - f).max(0.0);
                     *h -= deficit * slack / total_slack;
                 }
+                common_h
             } else {
-                let scale = common_h / raw_table_height;
-                for h in &mut row_heights {
-                    *h *= scale;
-                }
+                raw_table_height
             }
-            common_h
         } else if !table.common.treat_as_char
             && common_h > 0.0
             && raw_table_height > common_h + 0.5
