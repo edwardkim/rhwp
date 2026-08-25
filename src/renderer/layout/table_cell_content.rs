@@ -76,7 +76,47 @@ impl LayoutEngine {
         let mut chars: Vec<CharInfo> = Vec::new();
         let mut columns: Vec<ColumnInfo> = Vec::new();
 
-        for (cp_idx, composed) in composed_paras.iter().enumerate() {
+        // [#6029] 세로쓰기의 줄(세로줄) 예산은 **칸 높이**다. 호출자가 넘긴
+        // composed 는 가로쓰기 계약의 칸-너비 재분할(recompose, Task #671)을
+        // 이미 거쳤는데, 세로 칸의 저장 lineseg 는 세로줄 extent 를
+        // horzsize(=칸 높이 축)에 담으므로 그 재분할이 "가로로 넘친 한 줄"로
+        // 오인해 열을 2~3자마다 쪼갠다 — 3200477 "담당" 열(폭 ≈17pt)에서
+        // 직함 27자 중 18자가 칸 밖으로 밀려 소실됐다(한글 2020 은 칸 높이
+        // ~113pt 한 열에 11자). 여기서 원문으로 다시 compose 해(저장 lineseg
+        // 의 열 구조 보존) 칸 **높이** measure 로만 재분할한다.
+        let height_recomposed: Vec<Option<ComposedParagraph>> = paragraphs
+            .iter()
+            .map(|para| {
+                if !para.text.is_empty() {
+                    let mut fresh = compose_paragraph(para);
+                    crate::renderer::composer::recompose_cell_lines_in_frame(
+                        &mut fresh,
+                        para,
+                        crate::renderer::composer::ParagraphBox::content_width_px(
+                            inner_area.height,
+                            self.dpi,
+                        ),
+                        styles,
+                        self.dpi,
+                        self.profile.get().legacy_hwp3_stored_geometry(),
+                    );
+                    Some(fresh)
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let composed_paras: Vec<&ComposedParagraph> = composed_paras
+            .iter()
+            .enumerate()
+            .map(|(idx, comp)| {
+                height_recomposed
+                    .get(idx)
+                    .and_then(|o| o.as_ref())
+                    .unwrap_or(comp)
+            })
+            .collect();
+        for (cp_idx, &composed) in composed_paras.iter().enumerate() {
             let para = paragraphs.get(cp_idx);
             let alignment = get_alignment(composed.para_style_id);
 
