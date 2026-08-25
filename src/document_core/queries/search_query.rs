@@ -7,6 +7,47 @@ use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 
+/// 병적으로 깊은 중첩(손상/악의적 문서)에서 순회가 스택을 태우지 않게 하는 상한.
+/// `grep` / `table_extract::MAX_NEST_DEPTH` / `explain` / `hidden_text` / `chart_extract` 와
+/// 같은 값 — 깊이 0..=7 만 방문한다. 검색과 grep 이 서로 다른 깊이를 보면 "grep 은 찾는데
+/// 바꾸지는 못하는" 어긋남이 생기므로 반드시 같이 간다.
+const MAX_NEST_DEPTH: usize = 8;
+
+/// 표 셀·글상자 안의 매치 좌표.
+///
+/// `parent_para` 는 바깥 표/글상자가 놓인 **본문 문단**이고, `path` 는 거기서부터 깊이마다
+/// `(control_index, cell_index, cell_para_index)` 를 하나씩 쌓은 경로다. 글상자는
+/// `cell_index = 0` sentinel 을 쓴다 — `resolve_cell_paragraph_mut` /
+/// `reflow_cell_paragraph_by_path` 등 기존 path 코어와 **같은 표현**이라 그대로 넘길 수 있다.
+///
+/// [#2792] 종전에는 평면 4-튜플이라 깊이 1(바깥 셀)까지밖에 못 가리켰고, 그래서 셀 안의
+/// 표는 검색에서 조용히 누락됐다(`replaceAll` 이 `{"ok":true,"count":0}` 을 성공으로 반환).
+#[derive(Debug, Clone)]
+struct CellHit {
+    parent_para: usize,
+    path: Vec<(usize, usize, usize)>,
+}
+
+impl CellHit {
+    /// 중첩 깊이. 바깥 셀이 1.
+    fn depth(&self) -> usize {
+        self.path.len()
+    }
+
+    /// 깊이 1이면 종전 평면 좌표 `(parent_para, ctrl_idx, cell_idx, cell_para)`.
+    ///
+    /// 종전 결과 JSON(`cellContext`)을 **바이트까지 그대로** 유지하기 위한 것이다. 깊이 2
+    /// 이상은 이 표현으로 담을 수 없으므로 `None` 이고, 결과에는 `cellPath` 로 실린다.
+    fn flat(&self) -> Option<(usize, usize, usize, usize)> {
+        match self.path.as_slice() {
+            [(ctrl_idx, cell_idx, cell_para_idx)] => {
+                Some((self.parent_para, *ctrl_idx, *cell_idx, *cell_para_idx))
+            }
+            _ => None,
+        }
+    }
+}
+
 /// 검색 결과 위치 정보
 #[derive(Debug, Clone)]
 struct SearchHit {
@@ -14,8 +55,8 @@ struct SearchHit {
     para: usize,
     char_offset: usize,
     length: usize,
-    /// 표 셀 등 중첩 컨텍스트: (parent_para, ctrl_idx, cell_idx, cell_para)
-    cell_context: Option<(usize, usize, usize, usize)>,
+    /// 표 셀·글상자 안의 매치면 그 경로. 본문 매치면 `None`.
+    cell_context: Option<CellHit>,
     /// `cell_context`가 표 셀이 아니라 글상자 문단을 가리키는지 여부.
     /// Find/F3의 새 opt-in은 표 셀 좌표만 이동·치환할 수 있으므로 이 둘을 구분한다.
     is_text_box: bool,
@@ -110,134 +151,174 @@ fn search_first_body(doc: &DocumentCore, query: &str, case_sensitive: bool) -> O
     None
 }
 
-/// 문서 전체를 순회하며 query와 일치하는 모든 위치를 반환
-fn search_all(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Vec<SearchHit> {
-    let mut results = vec![];
+/// 한 컨테이너 문단(본문/셀/글상자)에서 그 문단 자신의 매치를 모은다.
+///
+/// 문단 텍스트와 그 문단 안 수식 script 를 같은 규칙으로 훑는다. 컨트롤을 타고 더
+/// 내려가는 일은 하지 않는다 — 하강은 `search_nested_controls` 가 맡는다.
+#[allow(clippy::too_many_arguments)]
+fn push_container_hits(
+    container: &crate::model::paragraph::Paragraph,
+    sec_idx: usize,
+    para_idx: usize,
+    cell: Option<&CellHit>,
+    is_text_box: bool,
+    query: &str,
+    case_sensitive: bool,
+    results: &mut Vec<SearchHit>,
+) {
     let qlen = query.chars().count();
-
-    for (sec_idx, section) in doc.document.sections.iter().enumerate() {
-        for (para_idx, para) in section.paragraphs.iter().enumerate() {
-            // 본문 문단
-            for offset in find_in_text(&para.text, query, case_sensitive) {
+    for offset in find_in_text(&container.text, query, case_sensitive) {
+        results.push(SearchHit {
+            sec: sec_idx,
+            para: para_idx,
+            char_offset: offset,
+            length: qlen,
+            cell_context: cell.cloned(),
+            is_text_box,
+            equation_control: None,
+        });
+    }
+    // 수식 스크립트 — 렌더 트리(EquationNode)가 아니라 IR을 직접 순회하므로
+    // #3419(export-text/markdown 쪽 수식 텍스트화)와는 별개 경로. 셀/글상자와
+    // 별도 equation_control 로 표시해 커서 이동 대상에서는 제외한다.
+    for (equation_index, control) in container.controls.iter().enumerate() {
+        if let Control::Equation(equation) = control {
+            for offset in find_in_text(&equation.script, query, case_sensitive) {
                 results.push(SearchHit {
                     sec: sec_idx,
                     para: para_idx,
                     char_offset: offset,
                     length: qlen,
-                    cell_context: None,
-                    is_text_box: false,
-                    equation_control: None,
+                    cell_context: cell.cloned(),
+                    is_text_box,
+                    equation_control: Some(equation_index),
                 });
             }
+        }
+    }
+}
 
-            // 표 셀
-            for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
-                match ctrl {
-                    Control::Table(table) => {
-                        for (cell_idx, cell) in table.cells.iter().enumerate() {
-                            for (cell_para_idx, cell_para) in cell.paragraphs.iter().enumerate() {
-                                for offset in find_in_text(&cell_para.text, query, case_sensitive) {
-                                    results.push(SearchHit {
-                                        sec: sec_idx,
-                                        para: para_idx,
-                                        char_offset: offset,
-                                        length: qlen,
-                                        cell_context: Some((
-                                            para_idx,
-                                            ctrl_idx,
-                                            cell_idx,
-                                            cell_para_idx,
-                                        )),
-                                        is_text_box: false,
-                                        equation_control: None,
-                                    });
-                                }
-                                for (equation_index, control) in
-                                    cell_para.controls.iter().enumerate()
-                                {
-                                    if let Control::Equation(equation) = control {
-                                        for offset in
-                                            find_in_text(&equation.script, query, case_sensitive)
-                                        {
-                                            results.push(SearchHit {
-                                                sec: sec_idx,
-                                                para: para_idx,
-                                                char_offset: offset,
-                                                length: qlen,
-                                                cell_context: Some((
-                                                    para_idx,
-                                                    ctrl_idx,
-                                                    cell_idx,
-                                                    cell_para_idx,
-                                                )),
-                                                is_text_box: false,
-                                                equation_control: Some(equation_index),
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }
+/// `container` 의 컨트롤을 타고 표 셀·글상자 안으로 내려가며 매치를 모은다.
+///
+/// [#2792] 셀 문단의 컨트롤에 또 표가 있으면 그 안까지 재귀한다. 종전에는 이 하강이
+/// 없어서 — 셀 문단 컨트롤 순회가 수식만 봤다 — 중첩 표 텍스트가 검색·치환 양쪽에서
+/// 조용히 버려졌다. `prefix` 는 지금까지 내려온 경로이며, 재귀 전후로 push/pop 한다.
+///
+/// 매치는 **문서 순서**로 쌓인다: 셀 문단 자신의 매치를 먼저 넣고 그 문단이 품은 더
+/// 깊은 표로 내려간다. `replace_matches_native` 는 이 순서를 뒤집어 뒤에서부터 치환하므로,
+/// 같은 문단 안 여러 매치의 오프셋이 서로를 밀지 않는다.
+fn search_nested_controls(
+    container: &crate::model::paragraph::Paragraph,
+    sec_idx: usize,
+    parent_para: usize,
+    prefix: &mut Vec<(usize, usize, usize)>,
+    query: &str,
+    case_sensitive: bool,
+    results: &mut Vec<SearchHit>,
+) {
+    if prefix.len() >= MAX_NEST_DEPTH {
+        return;
+    }
+
+    for (ctrl_idx, ctrl) in container.controls.iter().enumerate() {
+        match ctrl {
+            Control::Table(table) => {
+                for (cell_idx, cell) in table.cells.iter().enumerate() {
+                    for (cell_para_idx, cell_para) in cell.paragraphs.iter().enumerate() {
+                        prefix.push((ctrl_idx, cell_idx, cell_para_idx));
+                        let hit = CellHit {
+                            parent_para,
+                            path: prefix.clone(),
+                        };
+                        push_container_hits(
+                            cell_para,
+                            sec_idx,
+                            parent_para,
+                            Some(&hit),
+                            false,
+                            query,
+                            case_sensitive,
+                            results,
+                        );
+                        search_nested_controls(
+                            cell_para,
+                            sec_idx,
+                            parent_para,
+                            prefix,
+                            query,
+                            case_sensitive,
+                            results,
+                        );
+                        prefix.pop();
                     }
-                    Control::Shape(shape) => {
-                        if let Some(tb) = get_textbox_from_shape(shape) {
-                            for (tb_para_idx, tb_para) in tb.paragraphs.iter().enumerate() {
-                                for offset in find_in_text(&tb_para.text, query, case_sensitive) {
-                                    results.push(SearchHit {
-                                        sec: sec_idx,
-                                        para: para_idx,
-                                        char_offset: offset,
-                                        length: qlen,
-                                        cell_context: Some((para_idx, ctrl_idx, 0, tb_para_idx)),
-                                        is_text_box: true,
-                                        equation_control: None,
-                                    });
-                                }
-                                for (equation_index, control) in tb_para.controls.iter().enumerate()
-                                {
-                                    if let Control::Equation(equation) = control {
-                                        for offset in
-                                            find_in_text(&equation.script, query, case_sensitive)
-                                        {
-                                            results.push(SearchHit {
-                                                sec: sec_idx,
-                                                para: para_idx,
-                                                char_offset: offset,
-                                                length: qlen,
-                                                cell_context: Some((
-                                                    para_idx,
-                                                    ctrl_idx,
-                                                    0,
-                                                    tb_para_idx,
-                                                )),
-                                                is_text_box: true,
-                                                equation_control: Some(equation_index),
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // 수식 스크립트 — 렌더 트리(EquationNode)가 아니라 IR을 직접 순회하므로
-                    // #3419(export-text/markdown 쪽 수식 텍스트화)와는 별개 경로. 셀/글상자와
-                    // 별도 equation_control 로 표시해 커서 이동 대상에서는 제외한다.
-                    Control::Equation(eq) => {
-                        for offset in find_in_text(&eq.script, query, case_sensitive) {
-                            results.push(SearchHit {
-                                sec: sec_idx,
-                                para: para_idx,
-                                char_offset: offset,
-                                length: qlen,
-                                cell_context: None,
-                                is_text_box: false,
-                                equation_control: Some(ctrl_idx),
-                            });
-                        }
-                    }
-                    _ => {}
                 }
             }
+            Control::Shape(shape) => {
+                if let Some(tb) = get_textbox_from_shape(shape) {
+                    for (tb_para_idx, tb_para) in tb.paragraphs.iter().enumerate() {
+                        // 글상자는 cell_index = 0 sentinel — path 코어와 같은 규약.
+                        prefix.push((ctrl_idx, 0, tb_para_idx));
+                        let hit = CellHit {
+                            parent_para,
+                            path: prefix.clone(),
+                        };
+                        push_container_hits(
+                            tb_para,
+                            sec_idx,
+                            parent_para,
+                            Some(&hit),
+                            true,
+                            query,
+                            case_sensitive,
+                            results,
+                        );
+                        search_nested_controls(
+                            tb_para,
+                            sec_idx,
+                            parent_para,
+                            prefix,
+                            query,
+                            case_sensitive,
+                            results,
+                        );
+                        prefix.pop();
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+/// 문서 전체를 순회하며 query와 일치하는 모든 위치를 반환
+fn search_all(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Vec<SearchHit> {
+    let mut results = vec![];
+
+    for (sec_idx, section) in doc.document.sections.iter().enumerate() {
+        for (para_idx, para) in section.paragraphs.iter().enumerate() {
+            // 본문 문단 (자신의 텍스트 + 수식)
+            push_container_hits(
+                para,
+                sec_idx,
+                para_idx,
+                None,
+                false,
+                query,
+                case_sensitive,
+                &mut results,
+            );
+
+            // 표 셀·글상자 — 중첩 표까지 내려간다
+            let mut prefix = Vec::new();
+            search_nested_controls(
+                para,
+                sec_idx,
+                para_idx,
+                &mut prefix,
+                query,
+                case_sensitive,
+                &mut results,
+            );
         }
     }
     results
@@ -284,9 +365,20 @@ impl DocumentCore {
             // Find/F3가 이동·치환할 수 있는 것은 표 셀의 일반 텍스트뿐이다. 글상자와
             // 수식은 `cellContext`만으로는 표와 구분하거나 안전하게 편집할 수 없으므로
             // 기존 제외 범위를 유지한다.
+            //
+            // [#2792] 중첩 셀(깊이 ≥2)도 여기서는 제외한다. 그 히트는 결과 JSON 에
+            // `cellContext` 대신 `cellPath` 로 실리는데, 호출자(studio find-dialog)는
+            // `cellContext` 가 없으면 **본문 좌표 분기**로 떨어져 표가 놓인 바깥 문단을
+            // 고친다 — #3865 가 경고한 바로 그 손상이다. 이동·단건 치환이 path 를 받게
+            // 되면(이슈의 경로 기반 선택 축) 이 조건만 풀면 된다. 전체 치환
+            // (`replace_all_native`)은 이 필터를 타지 않으므로 이미 중첩까지 고친다.
             all_hits
                 .iter()
-                .filter(|h| !h.is_text_box && h.equation_control.is_none())
+                .filter(|h| {
+                    !h.is_text_box
+                        && h.equation_control.is_none()
+                        && h.cell_context.as_ref().is_none_or(|cell| cell.depth() == 1)
+                })
                 .collect()
         } else {
             all_hits
@@ -354,10 +446,7 @@ impl DocumentCore {
         let mut json_parts: Vec<String> = Vec::with_capacity(hits.len());
         for h in &hits {
             let cell_ctx = match &h.cell_context {
-                Some((pp, ci, cell, cp)) => format!(
-                    ",\"cellContext\":{{\"parentPara\":{},\"ctrlIdx\":{},\"cellIdx\":{},\"cellPara\":{}}}",
-                    pp, ci, cell, cp
-                ),
+                Some(cell) => format_cell_context(cell),
                 None => String::new(),
             };
             let equation_ctx = h
@@ -476,41 +565,25 @@ impl DocumentCore {
         let mut count = 0usize;
         let mut affected_sections: Vec<usize> = Vec::new();
         let mut affected_body_paragraphs: Vec<(usize, usize)> = Vec::new();
-        let mut affected_cell_paragraphs: Vec<(usize, usize, usize, usize, usize)> = Vec::new();
+        // (구역, 부모 문단, 경로) — 경로의 마지막 엔트리가 곧 대상 셀 문단이다.
+        let mut affected_cell_paragraphs: Vec<(usize, usize, Vec<(usize, usize, usize)>)> =
+            Vec::new();
         let mut body_flow_boundaries = std::collections::BTreeMap::new();
 
         for hit in &all_hits {
-            if let Some((parent_para, ctrl_idx, cell_idx, cell_para_idx)) = hit.cell_context {
+            if let Some(cell) = hit.cell_context.as_ref() {
                 // 표 셀 내부 치환
                 let section = self
                     .document
                     .sections
                     .get_mut(hit.sec)
                     .ok_or_else(|| HwpError::RenderError("구역 범위 초과".into()))?;
-                let para = section
-                    .paragraphs
-                    .get_mut(parent_para)
-                    .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
 
-                let nested_para = match para.controls.get_mut(ctrl_idx) {
-                    Some(Control::Table(table)) => {
-                        let cell = table
-                            .cells
-                            .get_mut(cell_idx)
-                            .ok_or_else(|| HwpError::RenderError("셀 범위 초과".into()))?;
-                        cell.paragraphs
-                            .get_mut(cell_para_idx)
-                            .ok_or_else(|| HwpError::RenderError("셀 문단 범위 초과".into()))?
-                    }
-                    Some(Control::Shape(shape)) => {
-                        let tb = crate::document_core::helpers::get_textbox_from_shape_mut(shape)
-                            .ok_or_else(|| HwpError::RenderError("글상자 없음".into()))?;
-                        tb.paragraphs
-                            .get_mut(cell_para_idx)
-                            .ok_or_else(|| HwpError::RenderError("글상자 문단 범위 초과".into()))?
-                    }
-                    _ => continue,
-                };
+                // [#2792] 평면 좌표를 손으로 풀던 자리다. 경로 해석은 이미 있는 path 코어에
+                // 맡긴다 — 표·글상자(cell_index = 0 sentinel)를 깊이 제한 없이 같은 규칙으로
+                // 내려가므로, 셀 안의 표도 바깥 셀과 똑같이 닿는다.
+                let nested_para =
+                    Self::resolve_cell_paragraph_mut(section, cell.parent_para, &cell.path)?;
                 if let Some(equation_index) = hit.equation_control {
                     let equation = match nested_para.controls.get_mut(equation_index) {
                         Some(Control::Equation(equation)) => equation,
@@ -524,13 +597,7 @@ impl DocumentCore {
                 } else {
                     nested_para.delete_text_at(hit.char_offset, hit.length);
                     nested_para.insert_text_at(hit.char_offset, new_text);
-                    affected_cell_paragraphs.push((
-                        hit.sec,
-                        parent_para,
-                        ctrl_idx,
-                        cell_idx,
-                        cell_para_idx,
-                    ));
+                    affected_cell_paragraphs.push((hit.sec, cell.parent_para, cell.path.clone()));
                 }
                 count += 1;
                 affected_sections.push(hit.sec);
@@ -614,29 +681,33 @@ impl DocumentCore {
             }
             affected_cell_paragraphs.sort_unstable();
             affected_cell_paragraphs.dedup();
+            // [#2792] 평면 좌표 reflow(`reflow_cell_paragraph`)는 깊이 1까지만 닿는다.
+            // #2755 가 깊이 ≥2 용으로 만들어 둔 path 판을 그대로 쓴다.
+            //
+            // 두 by_path 함수는 **마지막 엔트리의 문단 인덱스를 보지 않고** 그 셀의 문단
+            // 목록만 잡는다(대상 문단은 뒤 인자로 따로 받는다). 그래서 흐름 재계산을 묶는
+            // 키에서는 마지막 문단 인덱스를 0 으로 정규화해 "같은 셀"을 한 덩어리로 만든다.
             let mut cell_flow_starts = std::collections::BTreeMap::new();
-            for &(section_idx, parent_para, control_idx, cell_idx, cell_para_idx) in
-                &affected_cell_paragraphs
-            {
-                self.reflow_cell_paragraph(
-                    section_idx,
-                    parent_para,
-                    control_idx,
-                    cell_idx,
-                    cell_para_idx,
-                );
+            for (section_idx, parent_para, path) in &affected_cell_paragraphs {
+                let Some(inner_para) = path.last().map(|entry| entry.2) else {
+                    continue;
+                };
+                self.reflow_cell_paragraph_by_path(*section_idx, *parent_para, path, inner_para);
+
+                let mut container_key = path.clone();
+                if let Some(last) = container_key.last_mut() {
+                    last.2 = 0;
+                }
                 cell_flow_starts
-                    .entry((section_idx, parent_para, control_idx, cell_idx))
-                    .and_modify(|start: &mut usize| *start = (*start).min(cell_para_idx))
-                    .or_insert(cell_para_idx);
+                    .entry((*section_idx, *parent_para, container_key))
+                    .and_modify(|start: &mut usize| *start = (*start).min(inner_para))
+                    .or_insert(inner_para);
             }
-            for ((section_idx, parent_para, control_idx, cell_idx), start_para) in cell_flow_starts
-            {
-                self.recalculate_cell_paragraph_vpos_native(
+            for ((section_idx, parent_para, path), start_para) in cell_flow_starts {
+                self.recalculate_cell_paragraph_vpos_by_path(
                     section_idx,
                     parent_para,
-                    control_idx,
-                    cell_idx,
+                    &path,
                     start_para,
                     None,
                 );
@@ -720,12 +791,36 @@ impl DocumentCore {
     }
 }
 
+/// 셀 히트의 JSON 조각.
+///
+/// 깊이 1은 종전 `cellContext` 를 **바이트까지 그대로** 낸다 — 기존 소비자(studio
+/// find-dialog 의 이동·단건 치환)는 무회귀이고, 중첩이 없는 문서의 결과 JSON 은 종전과 같다.
+/// 깊이 2 이상은 그 표현에 담을 수 없으므로 `cellPath` 배열로 싣는다. 배열 모양은
+/// `DocumentCore::parse_cell_path` 의 입력과 같아서, 소비자가 받은 값을 그대로 by_path
+/// API 에 되먹일 수 있다(부모 문단은 결과의 `para` 가 곧 `parentPara` 다).
+fn format_cell_context(cell: &CellHit) -> String {
+    if let Some((parent_para, ctrl_idx, cell_idx, cell_para_idx)) = cell.flat() {
+        return format!(
+            ",\"cellContext\":{{\"parentPara\":{},\"ctrlIdx\":{},\"cellIdx\":{},\"cellPara\":{}}}",
+            parent_para, ctrl_idx, cell_idx, cell_para_idx
+        );
+    }
+    let entries: Vec<String> = cell
+        .path
+        .iter()
+        .map(|(ctrl_idx, cell_idx, cell_para_idx)| {
+            format!(
+                "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                ctrl_idx, cell_idx, cell_para_idx
+            )
+        })
+        .collect();
+    format!(",\"cellPath\":[{}]", entries.join(","))
+}
+
 fn format_search_hit(hit: &SearchHit, wrapped: bool) -> String {
     let cell_ctx = match &hit.cell_context {
-        Some((pp, ci, cell, cp)) => format!(
-            ",\"cellContext\":{{\"parentPara\":{},\"ctrlIdx\":{},\"cellIdx\":{},\"cellPara\":{}}}",
-            pp, ci, cell, cp
-        ),
+        Some(cell) => format_cell_context(cell),
         None => String::new(),
     };
     let equation_ctx = hit
