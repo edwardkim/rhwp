@@ -1,0 +1,383 @@
+{
+  "canonicalSha256": "6a972d5574efe81d616d45d403bbe5ba07e4b24f889eb3a0a66ddf1019514413",
+  "currentMetric": {
+    "bold": false,
+    "currentIndex": 370,
+    "emSize": 1000,
+    "entryId": "font-metric.e6fdb023c2acf414807d",
+    "italic": false,
+    "metricDataSha256": "4a731b237f741c99c34f9bbb937a1083a5f033b1af1ccc0439e89a98a8c711e7",
+    "name": "MBatang",
+    "originKind": "historical-generated-snapshot",
+    "originStatus": "unknown",
+    "widthProjectionSha256": "db1a7f375e382fdbff1e06c7e25f2220ee3e7fb7c77556ddbc4fa3ea4a47a12b"
+  },
+  "exactSource": {
+    "cmapCodepoints": 2356,
+    "embeddingDisposition": "restricted-license-embedding",
+    "glyphCount": 2357,
+    "officialArtifactByteMatch": false,
+    "os2FsType": 2,
+    "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+    "unitsPerEm": 1000
+  },
+  "executionPolicy": {
+    "fullCorpusRerun": false,
+    "hyperVOracleRerun": false,
+    "productMutation": false,
+    "virtualRelationOnly": true
+  },
+  "exhaustiveLayoutDomain": {
+    "boundedCohortCharacterEnumerationRequired": false,
+    "boundedCohortReparsePerformed": false,
+    "currentToVirtual": {
+      "hangulAdvanceHwpunit": 1000,
+      "hangulCodepoints": 11172,
+      "otherCodepoints": "generated-metric-miss-preserves-current-heuristic",
+      "spaceAdvanceHwpunit": 500
+    },
+    "disposition": "all-layout-bearing-codepoints-observationally-equivalent",
+    "generatedHangulCodepoints": 11172,
+    "generatedHangulOutsideExactCmap": 8822,
+    "transformClosure": "equal-base-advance-preserves-ratio-spacing-justification-and-clamp-result",
+    "virtualToExact": {
+      "advanceMismatchCount": 0,
+      "exactHangulCodepoints": 2350,
+      "exactLayoutBearingCodepoints": 2351,
+      "exactNonLayoutControlCodepoints": 5,
+      "sourceMissingCodepoints": "preserve-virtual-result"
+    }
+  },
+  "hypothesis": {
+    "decisionPlaneCount": 0,
+    "layoutBenefitObserved": false,
+    "metricSourceExactLineageEstablished": false,
+    "nextStage": "stop-rank1-no-change",
+    "productMutationAuthorized": false,
+    "reason": "The virtual layout-name relation selects MBatang metadata but changes no fixture advance; the exact source is advance-compatible for every source-covered layout codepoint.",
+    "status": "no-change",
+    "targetDecisionPlane": null
+  },
+  "inputs": {
+    "fixture": {
+      "artifact": "mydocs/tech/investigations/issue-4963/fixtures/oracle_typesetting_fixture.hwpx",
+      "sha256": "8ded3aff6f0286ee5ee4ad9c66732026fa627220b529e5d0fa7b9d51bc3ddb3f"
+    },
+    "metricLineage": {
+      "artifact": "mydocs/tech/investigations/issue-4964/font_metric_lineage_manifest.json",
+      "sha256": "aee36c2ba18d572cdfc773534413c09f8e9a5e108fef2eefdfee5e415c4e3b0e"
+    },
+    "metricSource": {
+      "artifact": "src/renderer/font_metrics_generated.rs",
+      "sha256": "b093ca08bd7200bed211569df90e1e964ce090a2a9522bc29e1bbb3fa9d5c3cb"
+    },
+    "nativeBinary": {
+      "artifact": "target/debug/rhwp-q-font-trace",
+      "sha256": "92a8b59bf26c4ed70cee71ea81ca1f8feec1f8e643e87a9f18eeb81d1dda7c59"
+    },
+    "q0Baseline": {
+      "artifact": "mydocs/tech/investigations/issue-4967/rank1_qualification_baseline.json",
+      "canonicalSha256": "51c2c6354ee5f8821db49e6e71690928461d1dc811ee76a8f1b246d382a13003"
+    },
+    "q1Baseline": {
+      "artifact": "mydocs/tech/investigations/issue-4967/rank1_runtime_boundary.json",
+      "canonicalSha256": "fe935443632d37715ed142edc475c4a4ec1f00aba2928615df5a02439bcc8267"
+    },
+    "textMeasurementSource": {
+      "artifact": "src/renderer/layout/text_measurement.rs",
+      "sha256": "3610bcf3ff7c845436de37f22b0826623125bed754073d05c7bbf5baece0ca21"
+    }
+  },
+  "issue": 4967,
+  "kind": "font-rank1-metric-hypothesis",
+  "metricCompatibility": {
+    "exactCmapCodepoints": 2356,
+    "exactHangulCodepoints": 2350,
+    "exactLayoutAdvanceMismatches": 0,
+    "exactLayoutBearingCodepoints": 2351,
+    "fixtureCodepoints": 53,
+    "fixtureExactCoveredCodepoints": 16,
+    "fixtureExactCoveredRecords": 616,
+    "fixtureExactMissingCodepoints": 37,
+    "fixtureExactMissingRecords": 940,
+    "fixtureGeneratedMetricHitRecords": 616,
+    "fixtureGeneratedMetricMissRecords": 940,
+    "fixtureRecords": 1556,
+    "fontIdentityEstablished": false,
+    "generatedHangulCodepoints": 11172,
+    "generatedHangulOutsideExactCmap": 8822,
+    "paintIdentityEstablished": false
+  },
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "fullTraceTracked": false,
+    "privateCorpusAccessed": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "projection": {
+    "axes": [
+      {
+        "additiveSpacing": "0",
+        "currentAdvanceHwpunit": 56392,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 56392,
+        "letterSpacing": "-0.6666666666666667",
+        "negativeSpacingClamp": false,
+        "ratio": "0.8",
+        "records": 120,
+        "virtualAdvanceHwpunit": 56392,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "0",
+        "currentAdvanceHwpunit": 128160,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 128160,
+        "letterSpacing": "-1.3333333333333335",
+        "negativeSpacingClamp": false,
+        "ratio": "0.8",
+        "records": 285,
+        "virtualAdvanceHwpunit": 128160,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "0.583050847458",
+        "currentAdvanceHwpunit": 28889,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 28889,
+        "letterSpacing": "-1.3333333333333335",
+        "negativeSpacingClamp": false,
+        "ratio": "0.8",
+        "records": 59,
+        "virtualAdvanceHwpunit": 28889,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "26.3666666667",
+        "currentAdvanceHwpunit": 37392,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 37392,
+        "letterSpacing": "-1.3333333333333335",
+        "negativeSpacingClamp": false,
+        "ratio": "0.8",
+        "records": 16,
+        "virtualAdvanceHwpunit": 37392,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "0",
+        "currentAdvanceHwpunit": 58560,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 58560,
+        "letterSpacing": "0",
+        "negativeSpacingClamp": false,
+        "ratio": "0.8",
+        "records": 118,
+        "virtualAdvanceHwpunit": 58560,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "-0.319770114943",
+        "currentAdvanceHwpunit": 29452,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 29452,
+        "letterSpacing": "-0.6666666666666667",
+        "negativeSpacingClamp": false,
+        "ratio": "0.9",
+        "records": 58,
+        "virtualAdvanceHwpunit": 29452,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "0",
+        "currentAdvanceHwpunit": 90824,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 90824,
+        "letterSpacing": "-0.6666666666666667",
+        "negativeSpacingClamp": false,
+        "ratio": "0.9",
+        "records": 170,
+        "virtualAdvanceHwpunit": 90824,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "2.8",
+        "currentAdvanceHwpunit": 5096,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 5096,
+        "letterSpacing": "-0.6666666666666667",
+        "negativeSpacingClamp": false,
+        "ratio": "0.9",
+        "records": 8,
+        "virtualAdvanceHwpunit": 5096,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "0",
+        "currentAdvanceHwpunit": 60912,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 60912,
+        "letterSpacing": "-1.3333333333333335",
+        "negativeSpacingClamp": false,
+        "ratio": "0.9",
+        "records": 122,
+        "virtualAdvanceHwpunit": 60912,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "0",
+        "currentAdvanceHwpunit": 65880,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 65880,
+        "letterSpacing": "0",
+        "negativeSpacingClamp": false,
+        "ratio": "0.9",
+        "records": 118,
+        "virtualAdvanceHwpunit": 65880,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "0",
+        "currentAdvanceHwpunit": 71440,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 71440,
+        "letterSpacing": "-0.6666666666666667",
+        "negativeSpacingClamp": false,
+        "ratio": "1",
+        "records": 122,
+        "virtualAdvanceHwpunit": 71440,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "0",
+        "currentAdvanceHwpunit": 68580,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 68580,
+        "letterSpacing": "-1.3333333333333335",
+        "negativeSpacingClamp": false,
+        "ratio": "1",
+        "records": 124,
+        "virtualAdvanceHwpunit": 68580,
+        "virtualToExactDeltaHwpunit": 0
+      },
+      {
+        "additiveSpacing": "0",
+        "currentAdvanceHwpunit": 146400,
+        "currentToVirtualDeltaHwpunit": 0,
+        "exactAdvanceHwpunit": 146400,
+        "letterSpacing": "0",
+        "negativeSpacingClamp": false,
+        "ratio": "1",
+        "records": 236,
+        "virtualAdvanceHwpunit": 146400,
+        "virtualToExactDeltaHwpunit": 0
+      }
+    ],
+    "currentAdvanceHwpunit": 847977,
+    "currentToVirtualDeltaHwpunit": 0,
+    "currentTransformReplayMismatches": 0,
+    "exactAdvanceHwpunit": 847977,
+    "fixedGeometry": [
+      {
+        "contentWidthHwpunit": 28980,
+        "context": "table-cell",
+        "currentAdvanceHwpunit": 36100,
+        "currentFirstFrameCrossingCharacterIndex": 43,
+        "disposition": "unchanged",
+        "exactAdvanceHwpunit": 36100,
+        "exactFirstFrameCrossingCharacterIndex": 43,
+        "records": 58,
+        "representativeIndex": 0,
+        "virtualAdvanceHwpunit": 36100,
+        "virtualFirstFrameCrossingCharacterIndex": 43
+      },
+      {
+        "contentWidthHwpunit": 28980,
+        "context": "table-cell",
+        "currentAdvanceHwpunit": 32524,
+        "currentFirstFrameCrossingCharacterIndex": 49,
+        "disposition": "unchanged",
+        "exactAdvanceHwpunit": 32524,
+        "exactFirstFrameCrossingCharacterIndex": 49,
+        "records": 58,
+        "representativeIndex": 1,
+        "virtualAdvanceHwpunit": 32524,
+        "virtualFirstFrameCrossingCharacterIndex": 49
+      },
+      {
+        "contentWidthHwpunit": 28980,
+        "context": "table-cell",
+        "currentAdvanceHwpunit": 28889,
+        "currentFirstFrameCrossingCharacterIndex": null,
+        "disposition": "unchanged",
+        "exactAdvanceHwpunit": 28889,
+        "exactFirstFrameCrossingCharacterIndex": null,
+        "records": 59,
+        "representativeIndex": 2,
+        "virtualAdvanceHwpunit": 28889,
+        "virtualFirstFrameCrossingCharacterIndex": null
+      },
+      {
+        "contentWidthHwpunit": 29434,
+        "context": "text-box",
+        "currentAdvanceHwpunit": 36100,
+        "currentFirstFrameCrossingCharacterIndex": 44,
+        "disposition": "unchanged",
+        "exactAdvanceHwpunit": 36100,
+        "exactFirstFrameCrossingCharacterIndex": 44,
+        "records": 58,
+        "representativeIndex": 0,
+        "virtualAdvanceHwpunit": 36100,
+        "virtualFirstFrameCrossingCharacterIndex": 44
+      },
+      {
+        "contentWidthHwpunit": 29434,
+        "context": "text-box",
+        "currentAdvanceHwpunit": 29452,
+        "currentFirstFrameCrossingCharacterIndex": 57,
+        "disposition": "unchanged",
+        "exactAdvanceHwpunit": 29452,
+        "exactFirstFrameCrossingCharacterIndex": 57,
+        "records": 58,
+        "representativeIndex": 1,
+        "virtualAdvanceHwpunit": 29452,
+        "virtualFirstFrameCrossingCharacterIndex": 57
+      },
+      {
+        "contentWidthHwpunit": 29434,
+        "context": "text-box",
+        "currentAdvanceHwpunit": 26352,
+        "currentFirstFrameCrossingCharacterIndex": null,
+        "disposition": "unchanged",
+        "exactAdvanceHwpunit": 26352,
+        "exactFirstFrameCrossingCharacterIndex": null,
+        "records": 59,
+        "representativeIndex": 2,
+        "virtualAdvanceHwpunit": 26352,
+        "virtualFirstFrameCrossingCharacterIndex": null
+      }
+    ],
+    "recordDeltaCounts": {
+      "currentToVirtualChanged": 0,
+      "equal": 1556,
+      "virtualToExactChanged": 0
+    },
+    "records": 1556,
+    "transformKindCounts": {
+      "extraCharacterSpacing": 117,
+      "extraWordSpacing": 24,
+      "letterSpacing": 1084,
+      "ratio": 1074
+    },
+    "virtualRelationAdvanceHwpunit": 847977,
+    "virtualToExactDeltaHwpunit": 0
+  },
+  "schemaVersion": 1,
+  "stage": "W8-R1-Q2",
+  "target": {
+    "documentFace": "문체부 바탕체",
+    "queueRank": 1,
+    "virtualCanonicalFace": "MBatang"
+  }
+}

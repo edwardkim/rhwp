@@ -2,7 +2,7 @@
 kind: investigation
 status: active
 canonical: mydocs/plans/task_m100_4967_v2.md
-last_verified: 2026-08-25
+last_verified: 2026-08-26
 ---
 
 # Issue #4967 — W8 font face 교정 qualification
@@ -51,6 +51,26 @@ identity는 포함하지 않는다.
 Q1 disposition은 `qualified-for-q2-layout-name-hypothesis`다. Q2는 제품 규칙을 바꾸지 않고 가상
 `문체부 바탕체 -> MBatang` relation에서 현행 generated metric과 exact `MT.TTF hmtx`만 제한 비교한다.
 paint identity·font supply 또는 제품 변경은 아직 qualification하지 않는다.
+
+## Stage W8-R1-Q2 exact metric 제한 비교
+
+`scripts/font_rank1_metric_hypothesis.py`는 현행 generated `MBatang` entry 370, exact local `MT.TTF hmtx`,
+Q1의 current trace를 함께 읽는다. 제품 registry·metric DB·fallback을 바꾸지 않고 가상
+`문체부 바탕체 -> MBatang` relation만 적용한다. 계약 테스트는
+`scripts/tests/test_font_rank1_metric_hypothesis.py`, 공개 정본은
+[`rank1_metric_hypothesis.json`](rank1_metric_hypothesis.json)이다.
+
+- 현행 entry는 모든 Hangul 11,172자에 1,000, space에 500을 제공하고 그 밖에는 기존 heuristic을 보존한다.
+- exact source의 layout-bearing cmap은 Hangul 2,350자와 space 1자이며 현행 entry와 advance mismatch가 0이다.
+- generated entry가 exact cmap 밖 Hangul 8,822자까지 폭을 제공하므로 font identity나 exact source 계보는
+  주장하지 않는다.
+- 공개 fixture 1,556건에서 current→virtual relation과 virtual→exact advance delta가 모두 0이다.
+- 장평·자간·justification transform 13축과 fixed-frame 6축의 total advance·첫 crossing도 모두 불변이다.
+- 전체 layout-bearing domain의 base advance가 동치이므로 Q0의 private 22문서를 다시 parse하지 않았다.
+
+rank 1 disposition은 `no-change`다. runtime name miss는 실제지만 이를 `MBatang`으로 연결해도 layout 이득이
+없고 portable supply·paint identity도 qualification되지 않았다. 제품 alias·metric·fallback 변경과
+W8-R1-Q3에는 진행하지 않는다.
 
 공식 문체부 자료는 문화체육관광부 바탕체의 자유 이용·유료 판매 금지·출처 표시 조건을 설명하지만, 해당
 자료에서 local `MT.TTF`와 byte-exact한 공식 배포 artifact를 확인하지 못했다. local SFNT의
