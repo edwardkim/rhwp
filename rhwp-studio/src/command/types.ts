@@ -40,7 +40,7 @@ export interface EditorContext {
   canUndo: boolean;
   /** Redo 가능한가? */
   canRedo: boolean;
-  /** 현재 줌 레벨 (0.5 ~ 4.0) */
+  /** 현재 줌 레벨 (0.1 ~ 5.0) */
   zoom: number;
   /** 조판부호 보이기 모드인가? */
   showControlCodes: boolean;

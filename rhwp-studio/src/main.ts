@@ -68,6 +68,12 @@ import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
+import { detectPlatformKind } from '@/engine/navigation-keymap';
+import {
+  percentToZoomSliderPosition,
+  zoomPercentShortcutTitle,
+  zoomSliderPositionToPercent,
+} from '@/view/zoom-status-controls';
 import { RendererSession, type RendererSessionDiagnostics } from '@/view/renderer-session';
 import {
   resolveCanvasKitRenderModeRequest,
@@ -76,7 +82,10 @@ import {
   resolveRenderProfile,
   type RenderBackendFallbackReason,
 } from '@/view/render-backend';
-import { calculateFitPageZoom, calculateFitWidthZoom } from '@/view/zoom-fit';
+import {
+  calculateArrangementFitWidthZoom,
+  calculateFitPageZoom,
+} from '@/view/zoom-fit';
 import { withBusyCursor } from '@/view/busy-cursor';
 import { formatPageIndicator } from '@/view/page-indicator';
 import { installEmbedRuntime } from '@/embed/runtime';
@@ -90,6 +99,8 @@ const documentState = new DocumentDirtyState(eventBus);
 documentState.installBeforeUnload(window);
 const autosaveManager = new AutosaveManager({
   exportBytes: () => wasm.exportHwp(),
+  // exportHwp()는 평문 HWP 바이트를 만든다. 보호 문서에서는 복구본을 남기지 않는다 (#5992).
+  isRecoveryBlocked: () => wasm.requiresPasswordForSave,
   schedule: autosaveScheduleFromUserSettings(),
   onStatus: handleAutosaveStatus,
 });
@@ -388,13 +399,20 @@ function handleAutosaveStatus(status: AutosaveStatus): void {
     return;
   }
 
-  const restoreTarget = autosavePreviousMessage;
+  const restoreTarget = autosavePreviousMessage
+    ?? (status.state === 'blocked' ? message.textContent ?? '' : null);
   autosavePreviousMessage = null;
-  const nextMessage = status.state === 'saved'
-    ? `복구용 자동 저장 완료 (${formatBytes(status.byteLength)})`
-    : '복구용 자동 저장 실패';
+  let nextMessage: string;
+  if (status.state === 'saved') {
+    nextMessage = `복구용 자동 저장 완료 (${formatBytes(status.byteLength)})`;
+  } else if (status.state === 'blocked') {
+    // 실패가 아니라 의도된 차단이므로 구분해서 알린다 (#5992).
+    nextMessage = '보호 문서는 복구용 자동 저장을 하지 않습니다';
+  } else {
+    nextMessage = '복구용 자동 저장 실패';
+  }
   message.textContent = nextMessage;
-  if (restoreTarget !== null) {
+  if (restoreTarget !== null && restoreTarget !== nextMessage) {
     autosaveStatusRestoreTimer = setTimeout(() => {
       if (message.textContent === nextMessage) {
         message.textContent = restoreTarget;
@@ -760,6 +778,11 @@ function setupModalFocusRestore(): void {
 
 /** 포커스 주인과 무관하게 문서를 움직여야 하는 키 — 편집기 경로로 넘긴다. */
 const DOCUMENT_NAVIGATION_KEYS = new Set(['PageUp', 'PageDown', 'Home', 'End']);
+const GLOBAL_ZOOM_SHORTCUTS = new Set([
+  'view:zoom-in',
+  'view:zoom-out',
+  'view:zoom-100',
+]);
 
 /**
  * 전역 단축키 핸들러 — InputHandler.active 여부와 무관하게 동작해야 하는 단축키.
@@ -791,6 +814,14 @@ function setupGlobalShortcuts(): void {
         canvasView?.scrollByPage(e.key === 'PageUp' ? -1 : 1);
         return;
       }
+    }
+    // 배율 키는 편집 textarea에서는 InputHandler가 소유하고, 그 밖의 포커스에서는
+    // 이 전역 경로가 같은 커맨드를 한 번만 실행한다. 브라우저 기본 페이지 줌은 막는다.
+    const globalShortcutId = matchShortcut(e, defaultShortcuts);
+    if (globalShortcutId && GLOBAL_ZOOM_SHORTCUTS.has(globalShortcutId)) {
+      e.preventDefault();
+      dispatcher.dispatch(globalShortcutId);
+      return;
     }
     // textarea가 아닌 곳에 포커스가 빠진 활성 편집기는 자체 keydown을 받지 못한다.
     // 이때 undo/redo만 dispatcher로 보완한다. textarea가 target이면 위에서 이미 return하므로
@@ -924,12 +955,56 @@ function setupFileInput(): void {
 function setupZoomControls(): void {
   if (!canvasView) return;
   const vm = canvasView.getViewportManager();
+  const zoomIn = document.getElementById('sb-zoom-in') as HTMLButtonElement;
+  const zoomOut = document.getElementById('sb-zoom-out') as HTMLButtonElement;
+  const zoomRange = document.getElementById('sb-zoom-range') as HTMLInputElement;
+  const zoomRangeWrap = zoomRange.closest('.stb-zoom-range-wrap')!;
+  const platform = detectPlatformKind();
 
-  document.getElementById('sb-zoom-in')!.addEventListener('click', () => {
-    vm.smoothZoomBy(0.1);
+  zoomIn.title = zoomPercentShortcutTitle('확대', 'Ctrl++', platform);
+  zoomOut.title = zoomPercentShortcutTitle('축소', 'Ctrl+-', platform);
+  zoomIn.addEventListener('click', () => {
+    dispatcher.dispatch('view:zoom-in');
   });
-  document.getElementById('sb-zoom-out')!.addEventListener('click', () => {
-    vm.smoothZoomBy(-0.1);
+  zoomOut.addEventListener('click', () => {
+    dispatcher.dispatch('view:zoom-out');
+  });
+  zoomRange.addEventListener('input', () => {
+    const percent = zoomSliderPositionToPercent(Number(zoomRange.value));
+    zoomRange.value = String(percentToZoomSliderPosition(percent));
+    zoomRange.setAttribute('aria-valuetext', `${percent}%`);
+    zoomRangeWrap.classList.toggle('is-neutral', percent === 100);
+    vm.setZoom(percent / 100);
+  });
+  zoomRange.addEventListener('keydown', (event) => {
+    const current = Math.round(vm.getZoom() * 100);
+    let next: number | null = null;
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        next = current - 1;
+        break;
+      case 'ArrowRight':
+      case 'ArrowUp':
+        next = current + 1;
+        break;
+      case 'PageDown':
+        next = current - 10;
+        break;
+      case 'PageUp':
+        next = current + 10;
+        break;
+      case 'Home':
+        next = 10;
+        break;
+      case 'End':
+        next = 500;
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    vm.setZoom(next / 100);
   });
 
   // 폭 맞춤: 용지 폭에 맞게 줌 조절
@@ -938,7 +1013,11 @@ function setupZoomControls(): void {
     const container = document.getElementById('scroll-container')!;
     const pageInfo = wasm.getPageInfo(0);
     // pageInfo.width는 이미 px 단위 (96dpi 기준)
-    const zoom = calculateFitWidthZoom(container.clientWidth, pageInfo.width);
+    const zoom = calculateArrangementFitWidthZoom({
+      containerWidth: container.clientWidth,
+      pageWidth: pageInfo.width,
+      arrangement: canvasView!.getPageArrangement(),
+    });
     console.log(`[zoom-fit-width] container=${container.clientWidth} page=${pageInfo.width} zoom=${zoom.toFixed(3)}`);
     vm.setZoom(zoom);
   });
@@ -959,30 +1038,9 @@ function setupZoomControls(): void {
     vm.setZoom(zoom);
   });
 
-  // 모바일: 줌 값 클릭 → 100% 토글
-  document.getElementById('sb-zoom-val')!.addEventListener('click', () => {
-    const currentZoom = vm.getZoom();
-    if (Math.abs(currentZoom - 1.0) < 0.05) {
-      // 현재 100% → 쪽 맞춤으로 전환
-      document.getElementById('sb-zoom-fit')!.click();
-    } else {
-      // 현재 쪽 맞춤/기타 → 100%로 전환
-      vm.setZoom(1.0);
-    }
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (!e.ctrlKey && !e.metaKey) return;
-    if (e.key === '=' || e.key === '+') {
-      e.preventDefault();
-      vm.smoothZoomBy(0.1);
-    } else if (e.key === '-') {
-      e.preventDefault();
-      vm.smoothZoomBy(-0.1);
-    } else if (e.key === '0') {
-      e.preventDefault();
-      vm.setZoom(1.0);
-    }
+  // 한컴 상황 선처럼 돋보기와 배율 표시 전체가 하나의 대화상자 진입점이다.
+  document.getElementById('sb-zoom-display')!.addEventListener('click', () => {
+    dispatcher.dispatch('view:zoom-dialog');
   });
 }
 
@@ -1016,7 +1074,17 @@ function setupEventListeners(): void {
   });
 
   eventBus.on('zoom-level-display', (zoom) => {
-    sbZoomVal().textContent = `${Math.round((zoom as number) * 100)}%`;
+    const percent = Math.round((zoom as number) * 100);
+    sbZoomVal().textContent = `${percent}%`;
+    const range = document.getElementById('sb-zoom-range') as HTMLInputElement | null;
+    if (range) {
+      range.value = String(percentToZoomSliderPosition(percent));
+      range.setAttribute('aria-valuetext', `${percent}%`);
+      range.closest('.stb-zoom-range-wrap')?.classList.toggle(
+        'is-neutral',
+        percent === 100,
+      );
+    }
   });
 
   // 삽입/수정 모드 토글

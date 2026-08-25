@@ -5,6 +5,13 @@
  * 섹션별 확장 가능한 구조.
  */
 
+import type { PageArrangement } from '../view/page-arrangement.ts';
+import {
+  DEFAULT_PAGE_MOVEMENT,
+  resolvePageViewSettings,
+  type PageMovementSettings,
+} from '../view/page-movement.ts';
+
 /** 대표 글꼴 세트 (7개 언어별 글꼴) */
 export interface FontSet {
   name: string;
@@ -66,6 +73,10 @@ export interface ViewSettings {
   toolbarBasic: boolean;
   /** 서식 도구 상자(서식 도구 모음) 표시 여부 */
   toolbarFormat: boolean;
+  /** 배율과 독립적으로 유지하는 페이지 화면 배치 */
+  pageArrangement: PageArrangement;
+  /** 쪽을 세로/가로 어느 방향으로 이어 볼지와 휠 변환 설정 */
+  pageMovement: PageMovementSettings;
 }
 
 /** 복구용 자동저장 설정 */
@@ -158,6 +169,8 @@ function defaultSettings(): AppSettings {
       clipView: true,
       toolbarBasic: true,
       toolbarFormat: true,
+      pageArrangement: { kind: 'auto' },
+      pageMovement: { ...DEFAULT_PAGE_MOVEMENT },
     },
     autosave: {
       recoveryEnabled: true,
@@ -224,6 +237,7 @@ class UserSettingsService {
       const dialog: Partial<DialogSettings> = parsed.dialog ?? {};
       const view: Partial<ViewSettings> = parsed.view ?? {};
       const autosave: Partial<AutosaveSettings> = parsed.autosave ?? {};
+      const pageView = resolvePageViewSettings(view.pageArrangement, view.pageMovement);
       return {
         version: parsed.version ?? defaults.version,
         font: {
@@ -266,6 +280,8 @@ class UserSettingsService {
             view.toolbarFormat,
             defaults.view.toolbarFormat,
           ),
+          pageArrangement: pageView.arrangement,
+          pageMovement: pageView.movement,
         },
         autosave: {
           ...defaults.autosave,
@@ -401,6 +417,23 @@ class UserSettingsService {
   /** 서식 도구 상자 표시 설정 */
   setToolbarFormat(value: boolean): void {
     this.data.view.toolbarFormat = value;
+    this.save();
+  }
+
+  /** 페이지 화면 배치 설정 */
+  setPageArrangement(value: PageArrangement): void {
+    this.data.view.pageArrangement = resolvePageViewSettings(
+      value,
+      this.data.view.pageMovement,
+    ).arrangement;
+    this.save();
+  }
+
+  /** 페이지를 세로/가로 어느 방향으로 이어 볼지 저장한다. */
+  setPageMovement(value: PageMovementSettings): void {
+    const pageView = resolvePageViewSettings(this.data.view.pageArrangement, value);
+    this.data.view.pageArrangement = pageView.arrangement;
+    this.data.view.pageMovement = pageView.movement;
     this.save();
   }
 

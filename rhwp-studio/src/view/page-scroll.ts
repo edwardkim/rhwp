@@ -33,10 +33,10 @@ function maxScrollTop(virtualScroll: VirtualScroll, viewportHeight: number): num
 function nextRowBoundary(
   virtualScroll: VirtualScroll,
   scrollY: number,
-  step: number,
+  rowStarts: readonly number[],
   limit: number,
 ): number {
-  for (let page = 0; page < virtualScroll.pageCount; page += step) {
+  for (const page of rowStarts) {
     const top = rowTop(virtualScroll, page);
     if (top > scrollY + EPSILON) return top;
   }
@@ -47,10 +47,10 @@ function nextRowBoundary(
 function prevRowBoundary(
   virtualScroll: VirtualScroll,
   scrollY: number,
-  step: number,
+  rowStarts: readonly number[],
 ): number {
-  const lastRowStart = Math.floor((virtualScroll.pageCount - 1) / step) * step;
-  for (let page = lastRowStart; page >= 0; page -= step) {
+  for (let row = rowStarts.length - 1; row >= 0; row--) {
+    const page = rowStarts[row];
     const top = rowTop(virtualScroll, page);
     if (top < scrollY - EPSILON) return top;
   }
@@ -69,7 +69,8 @@ function prevRowBoundary(
  *   보여주지 않고 건너뛰었다. 이제 화면 하나씩 밟아 내려가되 **착지점은 항상 쪽 경계**라,
  *   몇 번을 눌러도 쪽 머리 정렬이 어긋나지 않는다.
  *
- * 그리드 모드에서는 한 행의 쪽들이 같은 offset 을 가지므로 행 단위(`pagesPerRow`)로 센다.
+ * 그리드 모드에서는 `VirtualScroll`이 제공하는 실제 행 시작 목록으로 센다. 맞쪽처럼 첫 행이나
+ * 마지막 행에 빈 슬롯이 있어도 페이지 인덱스 산술로 행을 추정하지 않는다.
  */
 export function scrollByPageStep(
   virtualScroll: VirtualScroll,
@@ -81,11 +82,11 @@ export function scrollByPageStep(
   const scrollY = viewportManager.getScrollY();
   const viewportHeight = viewportManager.getViewportSize().height;
   const limit = maxScrollTop(virtualScroll, viewportHeight);
-  const step = Math.max(1, virtualScroll.pagesPerRow);
+  const rowStarts = virtualScroll.getRowStartPages();
 
   const target = direction > 0
-    ? Math.min(nextRowBoundary(virtualScroll, scrollY, step, limit), scrollY + viewportHeight)
-    : Math.max(prevRowBoundary(virtualScroll, scrollY, step), scrollY - viewportHeight);
+    ? Math.min(nextRowBoundary(virtualScroll, scrollY, rowStarts, limit), scrollY + viewportHeight)
+    : Math.max(prevRowBoundary(virtualScroll, scrollY, rowStarts), scrollY - viewportHeight);
 
   const clamped = Math.max(0, Math.min(target, limit));
   if (Math.abs(clamped - scrollY) < EPSILON) return NO_MOVE;

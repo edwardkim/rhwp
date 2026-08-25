@@ -339,17 +339,17 @@
   }
   .stb-divider { display: none; }
   .stb-message { display: none; }
-  /* 모바일 줌: 쪽맞춤 + 100% 토글만 표시 */
+  /* 모바일 줌: 쪽맞춤 + 통합 배율 메뉴만 표시 */
   #sb-zoom-fit-width { display: none; }
   #sb-zoom-out { display: none; }
+  .stb-zoom-range-wrap { display: none; }
   #sb-zoom-in { display: none; }
-  /* 줌 값 표시를 100% 토글 버튼으로 활용 */
-  .stb-zoom-val {
-    min-width: 44px;
+  /* 통합 배율 표시를 확대/축소 대화상자 진입점으로 활용 */
+  .stb-zoom-display {
     cursor: pointer;
     border-radius: var(--radius-sm);
   }
-  .stb-zoom-val:active {
+  .stb-zoom-display:active {
     background: var(--color-hover-bg);
   }
   /* 줌 버튼 터치 타겟 확대 */

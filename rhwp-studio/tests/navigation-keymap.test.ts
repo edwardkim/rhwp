@@ -116,6 +116,8 @@ test('formatShortcutLabel은 macOS에서 modifier를 Apple 기호로 치환한�
   assert.equal(formatShortcutLabel('Alt+Shift+V', 'mac'), '⌥⇧V');
   assert.equal(formatShortcutLabel('Shift+Alt+J', 'mac'), '⇧⌥J');
   assert.equal(formatShortcutLabel('Shift+Num +', 'mac'), '⇧Num +');
+  assert.equal(formatShortcutLabel('Ctrl++', 'mac'), '⌘+');
+  assert.equal(formatShortcutLabel('Ctrl+-', 'mac'), '⌘-');
 });
 
 test('formatShortcutLabel은 한컴 표 줄/칸 단축키를 플랫폼별로 표시한다', () => {

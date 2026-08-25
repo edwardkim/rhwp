@@ -17,6 +17,16 @@ import {
 } from './renderer-session';
 import { applyGridOverlayBox, createGridClipCornerOverlay, createGridOverlay } from './grid-overlay';
 import { getGridViewSettings } from './grid-settings';
+import { userSettings } from '@/core/user-settings';
+import {
+  normalizePageArrangement,
+  pageArrangementsEqual,
+  type PageArrangement,
+} from './page-arrangement.ts';
+import {
+  resolvePageViewSettings,
+  type PageMovementSettings,
+} from './page-movement.ts';
 import {
   calculateAnchoredScroll,
   CENTER_ZOOM_ANCHOR,
@@ -48,6 +58,8 @@ export class CanvasView {
   private coordinateSystem: CoordinateSystem;
 
   private scrollContent: HTMLElement;
+  private pageArrangement: PageArrangement;
+  private pageMovement: PageMovementSettings;
   private pages: PageInfo[] = [];
   private currentVisiblePages: number[] = [];
   private unsubscribers: (() => void)[] = [];
@@ -77,6 +89,14 @@ export class CanvasView {
     this.pageRenderer = new PageRenderer(wasm);
     this.viewportManager = new ViewportManager(eventBus);
     this.coordinateSystem = new CoordinateSystem(this.virtualScroll);
+    const viewSettings = userSettings.getViewSettings();
+    const pageView = resolvePageViewSettings(
+      viewSettings.pageArrangement,
+      viewSettings.pageMovement,
+    );
+    this.pageArrangement = pageView.arrangement;
+    this.pageMovement = pageView.movement;
+    this.viewportManager.setPageMovement(this.pageMovement);
 
     this.scrollContent = container.querySelector('#scroll-content')!;
     this.viewportManager.attachTo(container);
@@ -91,6 +111,16 @@ export class CanvasView {
           zoom as number,
           normalizeZoomAnchor(anchor as Partial<ZoomAnchor> | undefined),
         );
+      }),
+      eventBus.on('page-arrangement-changed', (arrangement) => {
+        this.setPageArrangement(normalizePageArrangement(arrangement));
+      }),
+      eventBus.on('page-view-settings-changed', (payload) => {
+        const value = payload as {
+          arrangement?: unknown;
+          pageMovement?: unknown;
+        };
+        this.setPageViewSettings(value.arrangement, value.pageMovement);
       }),
       eventBus.on('document-page-invalidated', (payload) => {
         void this.refreshInvalidatedPageForMutation(payload);
@@ -356,13 +386,24 @@ export class CanvasView {
   private recalcLayout(): void {
     const zoom = this.viewportManager.getZoom();
     const viewport = this.viewportManager.getViewportSize();
-    this.virtualScroll.setPageDimensions(this.pages, zoom, viewport.width);
+    this.virtualScroll.setPageDimensions(
+      this.pages,
+      zoom,
+      viewport.width,
+      this.pageArrangement,
+      this.pageMovement.direction,
+      viewport.height,
+    );
     this.scrollContent.style.height = `${this.virtualScroll.getTotalHeight()}px`;
     this.scrollContent.style.width = `${this.virtualScroll.getTotalWidth()}px`;
     this.layoutViewportSize = viewport;
 
     // 그리드 모드 CSS 클래스 토글
     this.scrollContent.classList.toggle('grid-mode', this.virtualScroll.isGridMode());
+    this.scrollContent.classList.toggle(
+      'horizontal-page-movement',
+      this.virtualScroll.isHorizontalMode(),
+    );
 
     // [#3377] 좌표계가 바뀌어도 기렌더 캔버스·오버레이는 renderCanvas 밖에서 재배치되지
     // 않아, 첫 로딩 중 스크롤바 등장(clientWidth −15px) 같은 재계산 뒤에 신·구 좌표계가
@@ -405,10 +446,21 @@ export class CanvasView {
   /** 스크롤/리사이즈 시 보이는 페이지를 갱신한다 */
   private updateVisiblePages(): void {
     const scrollY = this.viewportManager.getScrollY();
-    const { height: vpHeight } = this.viewportManager.getViewportSize();
+    const scrollX = this.viewportManager.getScrollX();
+    const { width: vpWidth, height: vpHeight } = this.viewportManager.getViewportSize();
 
-    const prefetchPages = this.virtualScroll.getPrefetchPages(scrollY, vpHeight);
-    const visiblePages = this.virtualScroll.getVisiblePages(scrollY, vpHeight);
+    const prefetchPages = this.virtualScroll.getPrefetchPages(
+      scrollY,
+      vpHeight,
+      scrollX,
+      vpWidth,
+    );
+    const visiblePages = this.virtualScroll.getVisiblePages(
+      scrollY,
+      vpHeight,
+      scrollX,
+      vpWidth,
+    );
     const visibleSet = new Set(visiblePages);
 
     // 벗어난 페이지 해제
@@ -439,7 +491,9 @@ export class CanvasView {
       const vpCenter = scrollY + vpHeight / 2;
       // [#2560] 그리드 모드에서 getPageAtY 는 행의 마지막 쪽을 준다. 상태바가
       // 3열이면 첫 행에서 "3 / N" 으로 표시되고 1·2쪽은 현재 쪽이 될 수 없었다.
-      const currentPage = this.virtualScroll.getRowFirstPageAtY(vpCenter);
+      const currentPage = this.virtualScroll.isHorizontalMode()
+        ? this.virtualScroll.getPageAtPoint(scrollX + vpWidth / 2, vpCenter)
+        : this.virtualScroll.getRowFirstPageAtY(vpCenter);
       this.eventBus.emit(
         'current-page-changed',
         currentPage,
@@ -1052,6 +1106,91 @@ export class CanvasView {
     return this.virtualScroll;
   }
 
+  /**
+   * 문서 내용과 무관한 페이지 화면 배치를 바꾼다.
+   *
+   * 중심 쪽을 전환 전후 같은 뷰포트 앵커에 놓고, 실제 행·열 슬롯 토폴로지가 달라진 경우에만
+   * Canvas 내용을 버린다. 좌표만 달라지면 recalcLayout()의 reposition 경로로 기존 Canvas를 쓴다.
+   */
+  setPageArrangement(arrangement: PageArrangement): boolean {
+    return this.setPageViewSettings(arrangement, this.pageMovement);
+  }
+
+  setPageMovement(movement: PageMovementSettings): boolean {
+    return this.setPageViewSettings(this.pageArrangement, movement);
+  }
+
+  setPageViewSettings(
+    arrangementValue: unknown,
+    movementValue: unknown,
+  ): boolean {
+    if (this.disposed) return false;
+    const next = resolvePageViewSettings(arrangementValue, movementValue);
+    const movementUnchanged = this.pageMovement.direction === next.movement.direction
+      && this.pageMovement.wheelHorizontal === next.movement.wheelHorizontal;
+    if (pageArrangementsEqual(this.pageArrangement, next.arrangement) && movementUnchanged) {
+      return false;
+    }
+
+    if (this.pages.length === 0) {
+      this.pageArrangement = next.arrangement;
+      this.pageMovement = next.movement;
+      this.viewportManager.setPageMovement(this.pageMovement);
+      return true;
+    }
+
+    const scrollTop = this.viewportManager.getScrollY();
+    const scrollLeft = this.viewportManager.getScrollX();
+    const { width: viewportWidth, height: viewportHeight } = this.viewportManager.getViewportSize();
+    const focusPage = this.virtualScroll.getPageAtPoint(
+      scrollLeft + viewportWidth / 2,
+      scrollTop + viewportHeight / 2,
+    );
+    const oldBox = this.getZoomPageBox(focusPage, viewportWidth);
+    const previousTopology = this.virtualScroll.getLayoutTopologyKey();
+
+    this.pageArrangement = next.arrangement;
+    this.pageMovement = next.movement;
+    this.viewportManager.setPageMovement(this.pageMovement);
+    this.recalcLayout();
+
+    const nextTopology = this.virtualScroll.getLayoutTopologyKey();
+    const newBox = this.getZoomPageBox(focusPage, viewportWidth);
+    const nextScroll = calculateAnchoredScroll(
+      oldBox,
+      newBox,
+      {
+        width: viewportWidth,
+        height: viewportHeight,
+        scrollLeft,
+        scrollTop,
+      },
+      CENTER_ZOOM_ANCHOR,
+    );
+    this.viewportManager.setScrollLeft(this.clampScrollLeft(nextScroll.scrollLeft));
+    this.viewportManager.setScrollTop(nextScroll.scrollTop);
+
+    if (previousTopology !== nextTopology) {
+      this.cancelPendingTextEditRefresh();
+      this.cancelTextEditStaticLayerVerification();
+      this.cancelPendingPrefetch();
+      this.releaseAllRenderedPages();
+      this.pageRenderer.cancelAll();
+    }
+    this.updateVisiblePages();
+    return true;
+  }
+
+  getPageArrangement(): PageArrangement {
+    return this.pageArrangement.kind === 'multiple'
+      ? { ...this.pageArrangement }
+      : { kind: this.pageArrangement.kind };
+  }
+
+  getPageMovement(): PageMovementSettings {
+    return { ...this.pageMovement };
+  }
+
   getViewportManager(): ViewportManager {
     return this.viewportManager;
   }
@@ -1061,7 +1200,13 @@ export class CanvasView {
     if (!Number.isInteger(pageIndex) || pageIndex < 0 || pageIndex >= this.virtualScroll.pageCount) {
       return false;
     }
-    this.viewportManager.setScrollTop(this.virtualScroll.getPageOffset(pageIndex));
+    if (this.virtualScroll.isHorizontalMode()) {
+      this.viewportManager.setScrollLeft(this.clampScrollLeft(
+        this.virtualScroll.getPageLeft(pageIndex) - this.virtualScroll.getPageGap(),
+      ));
+    } else {
+      this.viewportManager.setScrollTop(this.virtualScroll.getPageOffset(pageIndex));
+    }
     return true;
   }
 

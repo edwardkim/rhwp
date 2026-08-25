@@ -1,0 +1,84 @@
+.zoom-dialog {
+  max-width: calc(100vw - 24px);
+}
+
+.zoom-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.zoom-dialog-section {
+  min-width: 0;
+  margin: 0;
+  padding: 10px 14px 14px;
+}
+
+.zoom-dialog-section > .dialog-section-title {
+  padding: 0 5px;
+  margin: 0;
+}
+
+.zoom-dialog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 28px;
+}
+
+.zoom-dialog-choice-column {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.zoom-dialog-option {
+  display: flex;
+  min-height: 26px;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.zoom-dialog-option input[type='radio'],
+.zoom-dialog-option input[type='checkbox'] {
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+.zoom-dialog-wheel-option {
+  padding-left: 22px;
+}
+
+.zoom-dialog-option input:disabled + span {
+  color: var(--color-text-hint);
+  cursor: not-allowed;
+}
+
+.zoom-dialog-number {
+  width: 68px;
+  margin-left: auto;
+}
+
+.zoom-dialog-number:disabled {
+  background: var(--ui-surface-muted);
+  color: var(--color-text-hint);
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.zoom-dialog-multiply {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 560px) {
+  .zoom-dialog-grid {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}

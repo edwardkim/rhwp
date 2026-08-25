@@ -63,6 +63,7 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   // 줌
   [{ key: '=', ctrl: true }, 'view:zoom-in'],
   [{ key: '+', ctrl: true }, 'view:zoom-in'],
+  [{ key: '+', ctrl: true, shift: true }, 'view:zoom-in'],
   [{ key: '-', ctrl: true }, 'view:zoom-out'],
   [{ key: '0', ctrl: true }, 'view:zoom-100'],
 

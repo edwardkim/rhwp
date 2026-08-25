@@ -221,8 +221,8 @@ impl DocumentCore {
 
     /// 문서를 검색해 주소가 붙은 매치 목록을 돌려준다.
     ///
-    /// 본문·표 셀·글상자·중첩 표를 순회한다. 치환 엔진(`search_all` /
-    /// `replace_all_native`)은 바깥 셀까지만 본다 — 이 함수만 중첩 표를 내려간다.
+    /// 본문·표 셀·글상자·중첩 표를 순회한다. 치환 계열은 별도 검색 순회
+    /// (`search_all_text_native`/`replace_all_native`)와 범위·순서를 맞춘다.
     /// `limit` 이 `Some` 이면 그 개수에서 멈춘다.
     ///
     /// 기존 계약과 완전히 동일한 얇은 래퍼다(`context: None`) — `grep_with_context` 로
@@ -452,34 +452,147 @@ impl DocumentCore {
                                             return out;
                                         }
                                     }
-                                    for (equation_idx, nested_control) in
+                                    for (nested_control_idx, nested_control) in
                                         tp.controls.iter().enumerate()
                                     {
-                                        if let Control::Equation(equation) = nested_control {
-                                            for offset in super::search_query::find_matches(
-                                                &equation.script,
-                                                query,
-                                                case_sensitive,
-                                            ) {
-                                                out.push(make_at(
-                                                    page,
+                                        match nested_control {
+                                            Control::Equation(equation) => {
+                                                for offset in super::search_query::find_matches(
                                                     &equation.script,
-                                                    offset,
-                                                    None,
-                                                    Some(TextBoxRef {
-                                                        control: ctrl_idx,
-                                                        paragraph: tp_idx,
-                                                    }),
-                                                    Some(EquationRef {
-                                                        control: equation_idx,
-                                                    }),
-                                                    tb_ctx_before.clone(),
-                                                    tb_ctx_after.clone(),
-                                                ));
-                                                if limit.is_some_and(|n| out.len() >= n) {
-                                                    return out;
+                                                    query,
+                                                    case_sensitive,
+                                                ) {
+                                                    out.push(make_at(
+                                                        page,
+                                                        &equation.script,
+                                                        offset,
+                                                        None,
+                                                        Some(TextBoxRef {
+                                                            control: ctrl_idx,
+                                                            paragraph: tp_idx,
+                                                        }),
+                                                        Some(EquationRef {
+                                                            control: nested_control_idx,
+                                                        }),
+                                                        tb_ctx_before.clone(),
+                                                        tb_ctx_after.clone(),
+                                                    ));
+                                                    if limit.is_some_and(|n| out.len() >= n) {
+                                                        return out;
+                                                    }
                                                 }
                                             }
+                                            Control::Table(table) => {
+                                                // 글상자 안 표도 검색 범위에 포함한다. flat `cell`
+                                                // 주소로는 글상자 내부 표의 정확한 경로를 표현할 수
+                                                // 없으므로, match에는 글상자 호스트를 싣는다.
+                                                let mut queue = std::collections::VecDeque::new();
+                                                queue.push_back((table, 0usize));
+                                                while let Some((current, depth)) = queue.pop_front()
+                                                {
+                                                    if depth >= MAX_NEST_DEPTH {
+                                                        continue;
+                                                    }
+                                                    for cell in current.cells.iter() {
+                                                        for (cp_idx, cp) in
+                                                            cell.paragraphs.iter().enumerate()
+                                                        {
+                                                            let (cell_ctx_before, cell_ctx_after) =
+                                                                match context {
+                                                                    Some(n) => {
+                                                                        let (b, a) = context_window(
+                                                                            &cell.paragraphs,
+                                                                            cp_idx,
+                                                                            n,
+                                                                        );
+                                                                        (Some(b), Some(a))
+                                                                    }
+                                                                    None => (None, None),
+                                                                };
+                                                            let match_page = if depth == 0 {
+                                                                page
+                                                            } else {
+                                                                None
+                                                            };
+                                                            for offset in
+                                                                super::search_query::find_matches(
+                                                                    &cp.text,
+                                                                    query,
+                                                                    case_sensitive,
+                                                                )
+                                                            {
+                                                                let mut hit = make_at(
+                                                                    match_page,
+                                                                    &cp.text,
+                                                                    offset,
+                                                                    None,
+                                                                    Some(TextBoxRef {
+                                                                        control: ctrl_idx,
+                                                                        paragraph: tp_idx,
+                                                                    }),
+                                                                    None,
+                                                                    cell_ctx_before.clone(),
+                                                                    cell_ctx_after.clone(),
+                                                                );
+                                                                hit.nested_depth = depth;
+                                                                out.push(hit);
+                                                                if limit
+                                                                    .is_some_and(|n| out.len() >= n)
+                                                                {
+                                                                    return out;
+                                                                }
+                                                            }
+                                                            for (
+                                                                inner_control_idx,
+                                                                inner_control,
+                                                            ) in cp.controls.iter().enumerate()
+                                                            {
+                                                                match inner_control {
+                                                                    Control::Equation(equation) => {
+                                                                        for offset in super::search_query::find_matches(
+                                                                            &equation.script,
+                                                                            query,
+                                                                            case_sensitive,
+                                                                        ) {
+                                                                            let mut hit = make_at(
+                                                                                match_page,
+                                                                                &equation.script,
+                                                                                offset,
+                                                                                None,
+                                                                                Some(TextBoxRef {
+                                                                                    control: ctrl_idx,
+                                                                                    paragraph: tp_idx,
+                                                                                }),
+                                                                                Some(EquationRef {
+                                                                                    control: inner_control_idx,
+                                                                                }),
+                                                                                cell_ctx_before.clone(),
+                                                                                cell_ctx_after.clone(),
+                                                                            );
+                                                                            hit.nested_depth =
+                                                                                depth;
+                                                                            out.push(hit);
+                                                                            if limit.is_some_and(
+                                                                                |n| out.len() >= n,
+                                                                            ) {
+                                                                                return out;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    Control::Table(inner) => {
+                                                                        queue.push_back((
+                                                                            inner,
+                                                                            depth + 1,
+                                                                        ));
+                                                                    }
+                                                                    _ => {}
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            _ => {}
                                         }
                                     }
                                 }

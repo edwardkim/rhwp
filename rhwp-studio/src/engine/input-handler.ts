@@ -3682,11 +3682,18 @@ export class InputHandler {
   private scrollCaretIntoView(rect: import('@/core/types').CursorRect): void {
     const zoom = this.viewportManager.getZoom();
     const pageOffset = this.virtualScroll.getPageOffset(rect.pageIndex);
+    const pageLeft = this.virtualScroll.getPageLeftResolved(
+      rect.pageIndex,
+      this.container.scrollWidth,
+    );
     const caretDocY = pageOffset + rect.y * zoom;
+    const caretDocX = pageLeft + rect.x * zoom;
     const caretHeight = rect.height * zoom;
 
     const scrollTop = this.container.scrollTop;
     const viewHeight = this.container.clientHeight;
+    const scrollLeft = this.container.scrollLeft;
+    const viewWidth = this.container.clientWidth;
     const margin = 20; // 여백 px
 
     if (caretDocY < scrollTop + margin) {
@@ -3695,6 +3702,12 @@ export class InputHandler {
     } else if (caretDocY + caretHeight > scrollTop + viewHeight - margin) {
       // 캐럿이 화면 아래쪽 밖
       this.container.scrollTop = caretDocY + caretHeight - viewHeight + margin;
+    }
+
+    if (caretDocX < scrollLeft + margin) {
+      this.container.scrollLeft = Math.max(0, caretDocX - margin);
+    } else if (caretDocX > scrollLeft + viewWidth - margin) {
+      this.container.scrollLeft = caretDocX - viewWidth + margin;
     }
   }
 

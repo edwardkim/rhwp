@@ -809,6 +809,10 @@ export interface SearchResult {
     cellIdx: number;
     cellPara: number;
   };
+  /** 중첩 표/글상자 매치의 전체 경로 */
+  cellPath?: CellPathEntry[];
+  /** 수식 스크립트 매치 시 문단 controls 안의 Equation 인덱스 */
+  equationControl?: number;
 }
 
 /** 전체 검색 결과 항목 */
@@ -825,6 +829,10 @@ export interface SearchHit {
     cellIdx: number;
     cellPara: number;
   };
+  /** 중첩 표/글상자 매치의 전체 경로 */
+  cellPath?: CellPathEntry[];
+  /** 수식 스크립트 매치 시 문단 controls 안의 Equation 인덱스 */
+  equationControl?: number;
 }
 
 /** 치환 결과 */
