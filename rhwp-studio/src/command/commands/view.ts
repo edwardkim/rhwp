@@ -12,6 +12,8 @@ import {
 import { HWPUNIT_PER_MM } from '../../core/hwp-constants';
 import { calculateFitPageZoom, calculateFitWidthZoom } from '../../view/zoom-fit';
 import { applyToolboxVisibility } from '../../view/toolbox-visibility';
+import { ZoomDialog } from '../../ui/zoom-dialog';
+import { resolveZoomDialogZoom } from '../../view/zoom-dialog-state';
 
 const PX_TO_MM = 25.4 / 96;
 
@@ -187,6 +189,48 @@ export const viewCommands: CommandDef[] = [
     },
   },
   {
+    id: 'view:zoom-dialog',
+    label: '화면 확대/축소...',
+    opensDialog: true,
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const vm = services.getViewportManager();
+      if (!vm || services.wasm.pageCount === 0) return;
+      const container = document.getElementById('scroll-container');
+      if (!container) return;
+      const pageInfo = services.wasm.getPageInfo(0);
+      const fitZooms = {
+        fitWidth: calculateFitWidthZoom(container.clientWidth, pageInfo.width),
+        fitPage: calculateFitPageZoom(
+          container.clientWidth,
+          container.clientHeight,
+          pageInfo.width,
+          pageInfo.height,
+        ),
+      };
+      new ZoomDialog({
+        currentZoom: vm.getZoom(),
+        fitZooms,
+        arrangement: userSettings.getViewSettings().pageArrangement,
+        onConfirm(value) {
+          const zoom = resolveZoomDialogZoom({
+            ...value,
+            viewportWidth: container.clientWidth,
+            viewportHeight: container.clientHeight,
+            pageWidth: pageInfo.width,
+            pageHeight: pageInfo.height,
+            pageGap: 10,
+          });
+          userSettings.setPageArrangement(value.arrangement);
+          const arrangement = userSettings.getViewSettings().pageArrangement;
+          services.eventBus.emit('page-arrangement-changed', arrangement);
+          vm.setZoom(zoom);
+          services.eventBus.emit('command-state-changed');
+        },
+      }).show();
+    },
+  },
+  {
     id: 'view:zoom-fit-page',
     label: '쪽 맞춤',
     shortcutLabel: 'Ctrl+G,P',
@@ -224,6 +268,7 @@ export const viewCommands: CommandDef[] = [
   zoomLevel(150),
   zoomLevel(200),
   zoomLevel(300),
+  zoomLevel(500),
   themeModeCommand('system', '시스템 설정'),
   themeModeCommand('light', '밝게'),
   themeModeCommand('dark', '어둡게'),

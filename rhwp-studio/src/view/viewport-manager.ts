@@ -4,9 +4,8 @@ import {
   normalizeZoomAnchor,
   type ZoomAnchor,
 } from './zoom-anchor.ts';
+import { MAX_DOCUMENT_ZOOM, MIN_DOCUMENT_ZOOM } from './page-arrangement.ts';
 
-const MIN_ZOOM = 0.25;
-const MAX_ZOOM = 4.0;
 const ZOOM_SETTLE_EPSILON = 0.001;
 const ZOOM_SMOOTHING_TIME_MS = 16;
 const WHEEL_ZOOM_SENSITIVITY = 0.00625;
@@ -246,7 +245,7 @@ export class ViewportManager {
   }
 
   private clampZoom(zoom: number): number {
-    return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
+    return Math.max(MIN_DOCUMENT_ZOOM, Math.min(MAX_DOCUMENT_ZOOM, zoom));
   }
 
   setScrollTop(y: number): void {
