@@ -9961,7 +9961,16 @@ impl LayoutEngine {
                     // 가시 콘텐츠를 가지므로 리셋 보존.
                     hard_break_before: hard_break_before
                         && (has_table_in_para || para_has_visible_text),
-                    stored_frame_break_before: false,
+                    // [#6013] 빈 문단이어도 **쪽-스케일 저장 프레임 되감김**
+                    // (is_stored_frame_rewind: 직전 끝이 본문 절반 이상 내려간 뒤
+                    // 되감김)은 나른다 — 30269 p[17](vpos 67053+1200 → 500)이
+                    // 이 플래그를 잃으면 capacity cut 이 저장 chunk 경계 0.8px
+                    // 앞(28유닛)에서 멈춰 마지막 줄이 다음 쪽으로 밀린다(한글
+                    // 2020 은 29유닛 수용). hard_break_before 는 #1488 그대로
+                    // 꺼져 있어 빈 문단 리셋이 쪽을 강제 분할하지는 않는다 —
+                    // 이 플래그는 absorb_tail_before_stored_frame_break 의 흡수
+                    // 목표로만 쓰인다.
+                    stored_frame_break_before: stored_frame_break_before_para,
                     vpos_gap_before: vpos_gap_before && !collapse_empty_rowbreak_spacer,
                     para_idx: pi,
                     vis_start: 0,
@@ -10052,8 +10061,12 @@ impl LayoutEngine {
                         // 양산하던 여분 빈 연속 페이지 회귀를 제거한다. 가시 텍스트 문단 사이
                         // 리셋(Task #993 의도)은 그대로 하드 브레이크로 보존한다.
                         hard_break_before: hard_break_before && para_has_visible_text,
-                        stored_frame_break_before: para_has_visible_text
-                            && stored_frame_break_before(li),
+                        // [#6013] 쪽-스케일 저장 프레임 되감김은 빈 문단이어도
+                        // 나른다(위 whole-para 분기와 동일 원칙 — 판정 자체가
+                        // is_stored_frame_rewind 의 본문-절반 하한을 통과한 신호다).
+                        // hard_break_before 는 #1488 그대로 가시 문단 한정이라
+                        // 빈 문단 리셋이 쪽을 강제 분할하지는 않는다.
+                        stored_frame_break_before: stored_frame_break_before(li),
                         vpos_gap_before: vpos_gap_before && !collapse_empty_rowbreak_spacer,
                         para_idx: pi,
                         vis_start: if collapse_empty_rowbreak_spacer {
