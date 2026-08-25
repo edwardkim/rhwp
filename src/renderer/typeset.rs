@@ -4238,22 +4238,22 @@ fn hwpx_saved_reset_fragment_matches_current_flow(
 /// HWPX 내부 vpos 되감김을 흐름 앵커 불일치로 버릴 때, 문단 전체를 현재 쪽에
 /// 붙이면 본문을 넘는 경우에만 저장 쪽 경계를 살린다.
 ///
-/// `hwpx_saved_reset_fragment_matches_current_flow` 가 버리는 16px 드리프트보다
-/// 큰 넘침이고, 남은 칸이 한 줄 남짓일 때만 승격한다. 0.85·본문 하한은 쪽 중간
-/// 키 큰 문단과 아직 여유가 있는 하단 문단까지 올려 pr-1674(35→36)·3075729
-/// (13→14) 쪽수를 민다. issue1880 5쪽 pi=51 은 남은 칸 ≈24px 이다.
+/// 저장 쪽 경계가 **첫 줄 뒤**(break_line=1)이고, 남은 칸이 한 줄 남짓일 때만
+/// 승격한다. 2줄 이상 머리의 중간 되감김(3075729 2쪽 제4조 br=2)이나 여유가
+/// 남은 하단 문단까지 올리면 Linux CI 에서도 13→14쪽이 된다. issue1880 5쪽
+/// 제10조는 br=1, 남은 칸 ≈24px.
 fn keep_hwpx_internal_page_break_on_body_overflow(
     current_height: f64,
     para_fit_height: f64,
     available: f64,
     break_line: usize,
 ) -> bool {
-    if break_line == 0 || available <= 0.0 {
+    if break_line != 1 || available <= 0.0 {
         return false;
     }
     let remaining = available - current_height;
     let overflow = current_height + para_fit_height - available;
-    overflow > 16.0 && remaining > 0.0 && remaining < 40.0
+    overflow > 16.0 && remaining > 0.0 && remaining < 32.0
 }
 
 fn paragraph_text_looks_like_list_continuation_tail(para: &Paragraph) -> bool {
