@@ -1,7 +1,7 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4967.md
+canonical: mydocs/plans/task_m100_4967_v2.md
 last_verified: 2026-08-25
 ---
 
@@ -11,6 +11,28 @@ last_verified: 2026-08-25
 보존한다. rank 8 일괄 exact metric 후보는 Stage W8-Q5에서 `no-change`로 종결됐으며 제품 font mapping은
 변경하지 않는다. #4967 tracker는 rank 1·7과 evidence-reopen lane 때문에 계속 active다. 최종 판정은
 [`task_m100_4967_report.md`](../../../report/task_m100_4967_report.md)에 있다.
+
+## Stage W8-R1-Q0 경계
+
+rank 1 `문체부 바탕체`는 rank 8 결론을 재사용하지 않고 기존 W3·W4·W5·W7.5 증거를 독립 대사한다.
+재현 도구는 `scripts/font_rank1_qualification.py`, 계약 테스트는
+`scripts/tests/test_font_rank1_qualification.py`다.
+
+- local-only 원장: `output/4967/w8-r1-q0/rank1_private_cohort.json`, mode `0600`
+- 공개 baseline: [`rank1_qualification_baseline.json`](rank1_qualification_baseline.json)
+- source 경계: [`rank1_source_provenance_attestation.json`](rank1_source_provenance_attestation.json)
+- 10k corpus 재parse·Hyper-V Oracle 재실행·제품 source 변경: 0
+
+기존 journal의 rank 1 cohort는 22문서(HWP 15, HWPX 7), target 209,066자다. W4 위험 208,986자와
+category·format·compressed fixed-context 수치가 일치했고 위험량 전부가 stored lane이다. exact local SFNT는
+`문체부 바탕체`와 `MBatang` family name을 함께 가지며 현행 metric projection에도 `MBatang` entry 370이
+있다. 반면 v2 registry의 두 이름에 대한 explicit rule은 없다. 이 차이가 제품 miss인지 W4 관찰 경계인지
+Stage W8-R1-Q1에서 runtime trace로 판정한다.
+
+공식 문체부 자료는 문화체육관광부 바탕체의 자유 이용·유료 판매 금지·출처 표시 조건을 설명하지만, 해당
+자료에서 local `MT.TTF`와 byte-exact한 공식 배포 artifact를 확인하지 못했다. local SFNT의
+`OS/2.fsType=2`도 restricted-license embedding을 선언한다. 따라서 Q0은 metric 계측 입력과 font bytes
+공급 권한을 분리하고 portable supply를 `blocked`로 유지한다.
 
 ## Stage W8-Q0 경계
 
