@@ -73,8 +73,8 @@
       <div class="menu-item" data-menu="view">
         <span class="menu-title">보기</span>
         <div class="menu-dropdown">
-          <div class="md-item" data-cmd="view:zoom-in"><span class="md-icon icon-zoom-menu-in"></span><span class="md-label">확대</span><span class="md-shortcut">Shift+Num +</span></div>
-          <div class="md-item" data-cmd="view:zoom-out"><span class="md-icon icon-zoom-menu-out"></span><span class="md-label">축소</span><span class="md-shortcut">Shift+Num -</span></div>
+          <div class="md-item" data-cmd="view:zoom-in"><span class="md-icon icon-zoom-menu-in"></span><span class="md-label">확대</span><span class="md-shortcut">Ctrl++</span></div>
+          <div class="md-item" data-cmd="view:zoom-out"><span class="md-icon icon-zoom-menu-out"></span><span class="md-label">축소</span><span class="md-shortcut">Ctrl+-</span></div>
           <div class="md-item" data-cmd="view:zoom-dialog"><span class="md-icon"></span><span class="md-label">화면 확대/축소...</span></div>
           <div class="md-sep"></div>
           <div class="md-sub">
@@ -666,12 +666,16 @@
       <span class="stb-right">
         <button id="sb-zoom-fit-width" class="stb-icon-btn" title="폭 맞춤"><span class="tb-sprite icon-zoom-fit-width"></span></button>
         <button id="sb-zoom-fit" class="stb-icon-btn" title="쪽 맞춤"><span class="tb-sprite icon-zoom-fit"></span></button>
-        <button id="sb-zoom-100" class="stb-icon-btn" type="button" title="100%"><span class="stb-status-glyph icon-zoom-actual"></span></button>
         <button id="sb-zoom-out" class="stb-icon-btn" title="축소"><span class="tb-sprite icon-zoom-out"></span></button>
-        <input id="sb-zoom-range" class="stb-zoom-range" type="range" min="5" max="500" step="1" value="100" aria-label="화면 확대/축소 배율">
+        <span class="stb-zoom-range-wrap is-neutral">
+          <input id="sb-zoom-range" class="stb-zoom-range" type="range" min="0" max="1000" step="1" value="500" aria-label="화면 확대/축소 배율" aria-valuetext="100%">
+          <span class="stb-zoom-neutral-mark" aria-hidden="true"></span>
+        </span>
         <button id="sb-zoom-in" class="stb-icon-btn" title="확대"><span class="tb-sprite icon-zoom-in"></span></button>
-        <button id="sb-zoom-menu" class="stb-icon-btn" type="button" title="화면 확대/축소 메뉴"><span class="stb-status-glyph icon-zoom-menu"></span></button>
-        <button id="sb-zoom-val" class="stb-zoom-val" type="button" title="화면 확대/축소 설정">100%</button>
+        <button id="sb-zoom-display" class="stb-zoom-display" type="button" title="화면 확대/축소 설정">
+          <span class="stb-status-glyph icon-zoom-menu" aria-hidden="true"></span>
+          <span id="sb-zoom-val">100%</span>
+        </button>
       </span>
     </footer>
   </div>

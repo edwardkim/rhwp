@@ -175,7 +175,7 @@ export const viewCommands: CommandDef[] = [
     id: 'view:zoom-in',
     label: '확대',
     icon: 'icon-zoom-menu-in',
-    shortcutLabel: 'Shift+Num +',
+    shortcutLabel: 'Ctrl++',
     execute(services) {
       const vm = services.getViewportManager();
       if (vm) vm.smoothZoomBy(0.1);
@@ -185,7 +185,7 @@ export const viewCommands: CommandDef[] = [
     id: 'view:zoom-out',
     label: '축소',
     icon: 'icon-zoom-menu-out',
-    shortcutLabel: 'Shift+Num -',
+    shortcutLabel: 'Ctrl+-',
     execute(services) {
       const vm = services.getViewportManager();
       if (vm) vm.smoothZoomBy(-0.1);

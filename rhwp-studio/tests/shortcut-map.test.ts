@@ -70,3 +70,15 @@ test('표 줄/칸 추가·지우기 단축키는 대화상자 명령으로 매�
   assert.equal(command({ key: 'Delete', altKey: true }), 'table:delete-row-col');
   assert.equal(command({ key: 'delete', altKey: true }), 'table:delete-row-col');
 });
+
+test('확대·축소는 노트북에서도 가능한 Ctrl/Command +/-로 통일한다', () => {
+  assert.equal(command({ key: '+', ctrlKey: true }), 'view:zoom-in');
+  assert.equal(command({ key: '+', ctrlKey: true, shiftKey: true }), 'view:zoom-in');
+  assert.equal(command({ key: '=', ctrlKey: true }), 'view:zoom-in');
+  assert.equal(command({ key: '-', ctrlKey: true }), 'view:zoom-out');
+  assert.equal(command({ key: '+', metaKey: true }, 'mac'), 'view:zoom-in');
+  assert.equal(command({ key: '+', metaKey: true, shiftKey: true }, 'mac'), 'view:zoom-in');
+  assert.equal(command({ key: '-', metaKey: true }, 'mac'), 'view:zoom-out');
+  assert.equal(command({ key: '+', code: 'NumpadAdd', shiftKey: true }), null);
+  assert.equal(command({ key: '-', code: 'NumpadSubtract', shiftKey: true }), null);
+});

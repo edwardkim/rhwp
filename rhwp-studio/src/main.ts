@@ -68,6 +68,12 @@ import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
+import { detectPlatformKind } from '@/engine/navigation-keymap';
+import {
+  percentToZoomSliderPosition,
+  zoomPercentShortcutTitle,
+  zoomSliderPositionToPercent,
+} from '@/view/zoom-status-controls';
 import { RendererSession, type RendererSessionDiagnostics } from '@/view/renderer-session';
 import {
   resolveCanvasKitRenderModeRequest,
@@ -771,6 +777,11 @@ function setupModalFocusRestore(): void {
 
 /** 포커스 주인과 무관하게 문서를 움직여야 하는 키 — 편집기 경로로 넘긴다. */
 const DOCUMENT_NAVIGATION_KEYS = new Set(['PageUp', 'PageDown', 'Home', 'End']);
+const GLOBAL_ZOOM_SHORTCUTS = new Set([
+  'view:zoom-in',
+  'view:zoom-out',
+  'view:zoom-100',
+]);
 
 /**
  * 전역 단축키 핸들러 — InputHandler.active 여부와 무관하게 동작해야 하는 단축키.
@@ -802,6 +813,14 @@ function setupGlobalShortcuts(): void {
         canvasView?.scrollByPage(e.key === 'PageUp' ? -1 : 1);
         return;
       }
+    }
+    // 배율 키는 편집 textarea에서는 InputHandler가 소유하고, 그 밖의 포커스에서는
+    // 이 전역 경로가 같은 커맨드를 한 번만 실행한다. 브라우저 기본 페이지 줌은 막는다.
+    const globalShortcutId = matchShortcut(e, defaultShortcuts);
+    if (globalShortcutId && GLOBAL_ZOOM_SHORTCUTS.has(globalShortcutId)) {
+      e.preventDefault();
+      dispatcher.dispatch(globalShortcutId);
+      return;
     }
     // textarea가 아닌 곳에 포커스가 빠진 활성 편집기는 자체 keydown을 받지 못한다.
     // 이때 undo/redo만 dispatcher로 보완한다. textarea가 target이면 위에서 이미 return하므로
@@ -935,19 +954,56 @@ function setupFileInput(): void {
 function setupZoomControls(): void {
   if (!canvasView) return;
   const vm = canvasView.getViewportManager();
+  const zoomIn = document.getElementById('sb-zoom-in') as HTMLButtonElement;
+  const zoomOut = document.getElementById('sb-zoom-out') as HTMLButtonElement;
+  const zoomRange = document.getElementById('sb-zoom-range') as HTMLInputElement;
+  const zoomRangeWrap = zoomRange.closest('.stb-zoom-range-wrap')!;
+  const platform = detectPlatformKind();
 
-  document.getElementById('sb-zoom-in')!.addEventListener('click', () => {
-    vm.smoothZoomBy(0.1);
+  zoomIn.title = zoomPercentShortcutTitle('확대', 'Ctrl++', platform);
+  zoomOut.title = zoomPercentShortcutTitle('축소', 'Ctrl+-', platform);
+  zoomIn.addEventListener('click', () => {
+    dispatcher.dispatch('view:zoom-in');
   });
-  document.getElementById('sb-zoom-out')!.addEventListener('click', () => {
-    vm.smoothZoomBy(-0.1);
+  zoomOut.addEventListener('click', () => {
+    dispatcher.dispatch('view:zoom-out');
   });
-  document.getElementById('sb-zoom-100')!.addEventListener('click', () => {
-    vm.setZoom(1.0);
+  zoomRange.addEventListener('input', () => {
+    const percent = zoomSliderPositionToPercent(Number(zoomRange.value));
+    zoomRange.value = String(percentToZoomSliderPosition(percent));
+    zoomRange.setAttribute('aria-valuetext', `${percent}%`);
+    zoomRangeWrap.classList.toggle('is-neutral', percent === 100);
+    vm.setZoom(percent / 100);
   });
-  document.getElementById('sb-zoom-range')!.addEventListener('input', (event) => {
-    const percent = Number((event.currentTarget as HTMLInputElement).value);
-    if (Number.isFinite(percent)) vm.setZoom(percent / 100);
+  zoomRange.addEventListener('keydown', (event) => {
+    const current = Math.round(vm.getZoom() * 100);
+    let next: number | null = null;
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        next = current - 1;
+        break;
+      case 'ArrowRight':
+      case 'ArrowUp':
+        next = current + 1;
+        break;
+      case 'PageDown':
+        next = current - 10;
+        break;
+      case 'PageUp':
+        next = current + 10;
+        break;
+      case 'Home':
+        next = 10;
+        break;
+      case 'End':
+        next = 500;
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    vm.setZoom(next / 100);
   });
 
   // 폭 맞춤: 용지 폭에 맞게 줌 조절
@@ -981,26 +1037,9 @@ function setupZoomControls(): void {
     vm.setZoom(zoom);
   });
 
-  // 한컴 상황 선처럼 배율 표시와 보기 메뉴가 같은 확대/축소 대화상자를 연다.
-  document.getElementById('sb-zoom-val')!.addEventListener('click', () => {
+  // 한컴 상황 선처럼 돋보기와 배율 표시 전체가 하나의 대화상자 진입점이다.
+  document.getElementById('sb-zoom-display')!.addEventListener('click', () => {
     dispatcher.dispatch('view:zoom-dialog');
-  });
-  document.getElementById('sb-zoom-menu')!.addEventListener('click', () => {
-    dispatcher.dispatch('view:zoom-dialog');
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (!e.ctrlKey && !e.metaKey) return;
-    if (e.key === '=' || e.key === '+') {
-      e.preventDefault();
-      vm.smoothZoomBy(0.1);
-    } else if (e.key === '-') {
-      e.preventDefault();
-      vm.smoothZoomBy(-0.1);
-    } else if (e.key === '0') {
-      e.preventDefault();
-      vm.setZoom(1.0);
-    }
   });
 }
 
@@ -1037,7 +1076,14 @@ function setupEventListeners(): void {
     const percent = Math.round((zoom as number) * 100);
     sbZoomVal().textContent = `${percent}%`;
     const range = document.getElementById('sb-zoom-range') as HTMLInputElement | null;
-    if (range) range.value = String(Math.max(5, Math.min(500, percent)));
+    if (range) {
+      range.value = String(percentToZoomSliderPosition(percent));
+      range.setAttribute('aria-valuetext', `${percent}%`);
+      range.closest('.stb-zoom-range-wrap')?.classList.toggle(
+        'is-neutral',
+        percent === 100,
+      );
+    }
   });
 
   // 삽입/수정 모드 토글

@@ -83,7 +83,7 @@
   flex-wrap: nowrap;
 }
 
-/* 한컴 2024 상황 선: 맞춤·100% 뒤에 축소-슬라이더-확대를 잇는다. */
+/* 한컴 2024 상황 선: 맞춤 뒤에 축소-슬라이더-확대-배율 메뉴를 잇는다. */
 #sb-zoom-out { margin-left: 8px; }
 #sb-zoom-in { margin-right: 8px; }
 
@@ -114,20 +114,12 @@
   box-sizing: border-box;
 }
 
-.icon-zoom-actual {
-  width: 13px;
-  height: 13px;
-  border: 2px solid currentColor;
-  box-shadow: inset 0 0 0 2px var(--color-surface-raised);
-  background: var(--ui-active);
-}
-
 .icon-zoom-menu {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   border: 2px solid currentColor;
   border-radius: 50%;
-  margin: 0 3px 3px 0;
+  margin: 0 3px 2px 0;
 }
 
 .icon-zoom-menu::after {
@@ -141,14 +133,42 @@
   transform-origin: left center;
 }
 
-.stb-zoom-range {
+.stb-zoom-range-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
   width: 150px;
   min-width: 80px;
   height: 20px;
   margin: 0 3px;
+}
+
+.stb-zoom-range {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 20px;
+  margin: 0;
   padding: 0;
   accent-color: var(--accent-primary);
   cursor: pointer;
+  background: transparent;
+}
+
+/* 한컴의 100% 중립 눈금. thumb 아래·위로 보이되 포인터 입력은 가로바에 통과시킨다. */
+.stb-zoom-neutral-mark {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 4px;
+  height: 12px;
+  border-left: 1px solid var(--color-text-secondary);
+  transform: translateX(-0.5px);
+  pointer-events: none;
+}
+
+.stb-zoom-range-wrap.is-neutral .stb-zoom-neutral-mark {
+  visibility: hidden;
 }
 
 .stb-zoom-range:focus-visible {
@@ -156,32 +176,41 @@
   outline-offset: 1px;
 }
 
-/* 줌 값 표시 — 한컴 .btn_dropdown (height:20px) */
-.stb-zoom-val {
+/* 돋보기와 배율은 한컴처럼 하나의 hover/focus/click 영역을 쓴다. */
+.stb-zoom-display {
   font-size: var(--font-size-sm);
   font-family: inherit;
   height: 20px;
   line-height: 20px;
-  width: 44px;
-  min-width: 44px;
+  width: 68px;
+  min-width: 68px;
   box-sizing: border-box;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
   color: var(--color-text);
   padding: 0 4px;
   border: 1px solid transparent;
   background: transparent;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
 }
 
-.stb-zoom-val:hover {
+.stb-zoom-display:hover {
   background: var(--ui-hover);
   border-color: var(--ui-border-strong);
 }
 
-.stb-zoom-val:focus-visible {
+.stb-zoom-display:focus-visible {
   outline: 1px solid var(--color-focus-border);
   outline-offset: 1px;
+}
+
+#sb-zoom-val {
+  width: 38px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
 }
 
 /* 줌 스프라이트 아이콘 — 한컴 hcwo.css 참조 (row 24, -960px) */
