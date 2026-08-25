@@ -23804,6 +23804,7 @@ impl TypesetEngine {
         fragment_has_intra_row_cut: bool,
         terminal_fragment: bool,
         relax_terminal_table_footnote_fit: bool,
+        queued_fresh_page: bool,
     ) {
         let note_fits = |st: &TypesetState, content_height: f64, draw_separator: bool| {
             // 단일단의 중간 RowBreak fragment 뒤에는 같은 page에 이어질 본문이 없다.
@@ -23879,9 +23880,16 @@ impl TypesetEngine {
         }
 
         while let Some(note) = notes.get(continuation.next_table_footnote) {
-            let force_source_page_split = note
-                .fragment_split
-                .is_some_and(|split| split.force_next_page);
+            // [#5966] `force_next_page` 는 "이 각주를 다음 물리 쪽에 두라"는 저장
+            // 지시다. 큐 소진을 위해 **강제로 연 새 쪽**에서는 이미 충족됐으므로
+            // 일반 fit 경로(원자 배치)로 보낸다 — 종전에는 이 단락이 원자 배치를
+            // 차단했고, 마커 행이 현재 fragment 밖이면 분할 필터도 기각해 빈 새
+            // 쪽에서 진행 불가(디버그 불변식 패닉, 1130000-202100008: note 0
+            // h=90.1px 가 avail 876.9px 에 들어가는데도 정지).
+            let force_source_page_split = !queued_fresh_page
+                && note
+                    .fragment_split
+                    .is_some_and(|split| split.force_next_page);
             if force_source_page_split || !note_fits(st, note.content_height, true) {
                 // p728 note 77처럼 table cell 안의 stored vpos reset이 실제 footnote
                 // page boundary를 명시하고, marker row가 지금 확정한 intermediate
@@ -24620,6 +24628,7 @@ impl TypesetEngine {
                         fragment_starts_intra_row,
                         true,
                         relax_terminal_table_footnote_fit && is_continuation,
+                    false,
                     );
                     // terminal fragment에 들어가지 못한 URL 각주는 새 page의 footer
                     // lane에 먼저 예약한다. 다음 본문은 그 reservation을 보고 같은
@@ -24643,6 +24652,7 @@ impl TypesetEngine {
                             fragment_starts_intra_row,
                             true,
                             relax_terminal_table_footnote_fit && is_continuation,
+                        true,
                         );
                         st.reset_vpos_after_queued_table_footnote_page = true;
                         let after = (
@@ -24703,6 +24713,7 @@ impl TypesetEngine {
                     fragment_starts_intra_row || !split_end_cut.is_empty(),
                     false,
                     false,
+                false,
                 );
             }
             st.advance_column_or_new_page();
