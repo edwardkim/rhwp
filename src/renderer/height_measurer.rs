@@ -2502,6 +2502,9 @@ impl HeightMeasurer {
         // 1/1.8 로 눌려 셀 텍스트가 겹치던 결함. 경미한 초과(2%~150%)는 종전대로
         // 속성 높이 유지(#672 한컴 정합 — 의도적 압축 존중).
         const TAC_SHRINK_MAX_OVERFLOW_RATIO: f64 = 1.5;
+        // [#6030] 하한 합이 선언을 넘는 양을 이보다 작게만 키운다.
+        // exam_eng 선택지 표는 행당 ~3px·합 ~20px. 거대 overfill 은 수백 px.
+        const TAC_FLOOR_OVERFLOW_NOSHRINK_CAP_PX: f64 = 48.0;
         let shrink_threshold = (common_h * TAC_SHRINK_THRESHOLD_RATIO).max(1.0);
         let table_height = if table.common.treat_as_char
             && common_h > 0.0
@@ -2558,8 +2561,17 @@ impl HeightMeasurer {
                     *h -= deficit * slack / total_slack;
                 }
                 common_h
-            } else {
+            } else if deficit <= TAC_FLOOR_OVERFLOW_NOSHRINK_CAP_PX {
+                // [#6030] 선택지·심사서식처럼 하한 합이 선언을 반 줄 미만으로
+                // 넘는 표는 균일 축소하지 않는다. 거대 overfill 표는 종전
+                // 비례 축소를 유지한다 (overflow_cell_baseline).
                 raw_table_height
+            } else {
+                let scale = common_h / raw_table_height.max(0.5);
+                for h in &mut row_heights {
+                    *h *= scale;
+                }
+                common_h
             }
         } else if !table.common.treat_as_char
             && common_h > 0.0
