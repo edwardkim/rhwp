@@ -1,41 +1,31 @@
-const MAX_REFERENCE_FETCH_ATTEMPTS = 3;
+const MAX_ATTEMPTS = 3;
 
-function waitForRetry(delay: number, signal: AbortSignal): Promise<void> {
+function wait(ms: number, signal?: AbortSignal | null): Promise<void> {
+  if (signal?.aborted) return Promise.reject(new DOMException('aborted', 'AbortError'));
   return new Promise((resolve, reject) => {
-    const abort = (): void => {
+    const timer = setTimeout(done, ms);
+    const abort = () => done(new DOMException('aborted', 'AbortError'));
+    signal?.addEventListener('abort', abort, { once: true });
+    function done(error?: DOMException): void {
       clearTimeout(timer);
-      signal.removeEventListener('abort', abort);
-      reject(new DOMException('reference retry aborted', 'AbortError'));
-    };
-    const done = (): void => {
-      signal.removeEventListener('abort', abort);
-      resolve();
-    };
-    const timer = setTimeout(done, delay);
-    signal.addEventListener('abort', abort, { once: true });
-    if (signal.aborted) abort();
+      signal?.removeEventListener('abort', abort);
+      error ? reject(error) : resolve();
+    }
   });
 }
 
-export async function fetchReferenceWithRetry(
-  src: string,
-  signal: AbortSignal,
-  options: {
-    send?: typeof fetch;
-    wait?: (delayMs: number, signal: AbortSignal) => Promise<void>;
-  } = {},
+export async function fetchWithBusyRetry(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  send: typeof fetch = fetch,
 ): Promise<Response> {
-  const send = options.send ?? fetch;
-  const wait = options.wait ?? waitForRetry;
-  for (let attempt = 1; attempt <= MAX_REFERENCE_FETCH_ATTEMPTS; attempt++) {
-    if (signal.aborted) throw new DOMException('reference image load aborted', 'AbortError');
-    const response = await send(src, { signal });
-    if (response.status !== 503 || attempt === MAX_REFERENCE_FETCH_ATTEMPTS) return response;
-    const retryAfter = Number(response.headers.get('Retry-After'));
-    const delay = Number.isFinite(retryAfter)
-      ? Math.min(2_000, Math.max(100, retryAfter * 1_000))
-      : 1_000;
-    await wait(delay, signal);
+  for (let attempt = 1; ; attempt += 1) {
+    if (init.signal?.aborted) throw new DOMException('aborted', 'AbortError');
+    const response = await send(input, init);
+    if (response.status !== 503 || attempt === MAX_ATTEMPTS) return response;
+    const seconds = Number(response.headers.get('Retry-After'));
+    const delay = Number.isFinite(seconds) ? Math.min(2_000, Math.max(0, seconds * 1_000)) : 250;
+    await response.body?.cancel();
+    await wait(delay, init.signal);
   }
-  throw new Error('reference retry exhausted');
 }

@@ -15,6 +15,8 @@ interface TextRunInfo {
   cellPath?: Array<{ controlIndex: number; cellIndex: number; cellParaIndex: number }>;
   groupPath?: number[];
   lineContainerWidthHwp?: number;
+  streamStartUtf16?: number;
+  streamEndUtf16?: number;
   flowContext?: 'body' | 'header' | 'footer' | 'masterPage' | 'footnote';
 }
 
@@ -30,6 +32,8 @@ export interface LineBreakProvenanceTarget {
   pageIndex?: number;
   textX?: number;
   lineContainerWidthHwp?: number;
+  visibleStartUtf16?: number;
+  visibleEndUtf16?: number;
 }
 
 export interface LineBreakProvenanceOptions {
@@ -295,6 +299,8 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
             pageIndex: page,
             textX: run.x,
             lineContainerWidthHwp: run.lineContainerWidthHwp,
+            visibleStartUtf16: run.streamStartUtf16,
+            visibleEndUtf16: run.streamEndUtf16,
           };
           const key = JSON.stringify({
             sectionIdx: target.sectionIdx,
@@ -306,14 +312,24 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
           const existing = targets.get(key);
           if (!existing) {
             targets.set(key, target);
-          } else if (
-            existing.lineContainerWidthHwp != null
-            && target.lineContainerWidthHwp != null
-            && existing.lineContainerWidthHwp !== target.lineContainerWidthHwp
-          ) {
-            // One scalar frame cannot honestly represent a paragraph whose visible line bands
-            // have different widths (for example, unreplayed Square/Tight wrap geometry).
-            existing.lineContainerWidthHwp = undefined;
+          } else {
+            if (target.visibleStartUtf16 != null && target.visibleEndUtf16 != null) {
+              existing.visibleStartUtf16 = Math.min(
+                existing.visibleStartUtf16 ?? target.visibleStartUtf16,
+                target.visibleStartUtf16,
+              );
+              existing.visibleEndUtf16 = Math.max(
+                existing.visibleEndUtf16 ?? target.visibleEndUtf16,
+                target.visibleEndUtf16,
+              );
+            }
+            if (existing.lineContainerWidthHwp != null
+              && target.lineContainerWidthHwp != null
+              && existing.lineContainerWidthHwp !== target.lineContainerWidthHwp) {
+              // One scalar frame cannot honestly represent a paragraph whose visible line bands
+              // have different widths (for example, unreplayed Square/Tight wrap geometry).
+              existing.lineContainerWidthHwp = undefined;
+            }
           }
         }
       }
@@ -323,7 +339,8 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
       let cursor = offset;
       let processed = 0;
       while (available && cursor < targetList.length && processed < limit) {
-        const report = inspectLineBreak(targetList[cursor], {
+        const target = targetList[cursor];
+        const report = inspectLineBreak(target, {
           geometry: options.geometry ?? false,
           measurement: options.measurement ?? false,
           geometryMode: options.geometryMode,
@@ -335,6 +352,29 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
         if (report && (report as { status?: string }).status === 'error') {
           if (errors.length < limit) errors.push(report);
         } else if (report) {
+          const diagnostic = report as {
+            textUtf16Length?: number;
+            comparison?: {
+              matches?: boolean | null;
+              firstMismatchIndex?: number | null;
+              storedMismatchUtf16Start?: number | null;
+              freshMismatchUtf16Start?: number | null;
+              storedUtf16Starts?: number[];
+              freshUtf16Starts?: number[];
+            };
+          };
+          const comparison = diagnostic.comparison;
+          if (comparison?.matches === false) {
+            const index = comparison.firstMismatchIndex;
+            const boundaries = Number.isSafeInteger(index)
+              ? [comparison.storedMismatchUtf16Start, comparison.freshMismatchUtf16Start]
+                .filter((value): value is number => Number.isSafeInteger(value))
+              : [];
+            if (!boundaries.some(value => value >= target.visibleStartUtf16!
+              && (value < target.visibleEndUtf16!
+                || (value === target.visibleEndUtf16
+                  && value === diagnostic.textUtf16Length)))) continue;
+          }
           reports.push(report);
         }
       }

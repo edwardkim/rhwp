@@ -3307,6 +3307,7 @@ impl DocumentCore {
 
         // 렌더 트리에서 TextRun 노드를 재귀적으로 수집
         fn collect_text_runs(
+            #[cfg(feature = "subsecond-dev")] core: &DocumentCore,
             node: &RenderNode,
             runs: &mut Vec<String>,
             group_path: &mut Vec<usize>,
@@ -3364,8 +3365,60 @@ impl DocumentCore {
                     String::new()
                 };
 
+                #[cfg(feature = "subsecond-dev")]
+                let stream_coords = (|| {
+                    if flow_context != "body" {
+                        return None;
+                    }
+                    let (section_idx, para_idx, char_start) = (
+                        text_run.section_index?,
+                        text_run.para_index?,
+                        text_run.char_start?,
+                    );
+                    let cell_path = text_run
+                        .cell_context
+                        .as_ref()
+                        .map(|ctx| {
+                            ctx.path
+                                .iter()
+                                .map(|entry| {
+                                    (entry.control_index, entry.cell_index, entry.cell_para_index)
+                                })
+                                .collect::<Vec<_>>()
+                        })
+                        .unwrap_or_default();
+                    let parent_para_idx = text_run
+                        .cell_context
+                        .as_ref()
+                        .map(|ctx| ctx.parent_para_index)
+                        .unwrap_or(para_idx);
+                    let paragraph = if group_path.is_empty() {
+                        core.resolve_control_para(section_idx, parent_para_idx, &cell_path)
+                            .ok()?
+                    } else {
+                        core.resolve_group_textbox_paragraph(
+                            section_idx,
+                            parent_para_idx,
+                            &cell_path,
+                            group_path,
+                        )
+                        .ok()?
+                    };
+                    let (start, end) = super::line_break_provenance::paragraph_stream_range(
+                        paragraph,
+                        char_start,
+                        char_start + text_run.text.chars().count(),
+                    );
+                    Some(format!(
+                        ",\"streamStartUtf16\":{start},\"streamEndUtf16\":{end}"
+                    ))
+                })()
+                .unwrap_or_default();
+                #[cfg(not(feature = "subsecond-dev"))]
+                let stream_coords = String::new();
+
                 let diagnostic_coords = format!(
-                    ",\"groupPath\":[{}],\"lineContainerWidthHwp\":{},\"flowContext\":\"{}\"",
+                    ",\"groupPath\":[{}],\"lineContainerWidthHwp\":{},\"flowContext\":\"{}\"{}",
                     group_path
                         .iter()
                         .map(usize::to_string)
@@ -3373,6 +3426,7 @@ impl DocumentCore {
                         .join(","),
                     line_width_hwp.unwrap_or(0),
                     flow_context,
+                    stream_coords,
                 );
 
                 let escaped_font = super::super::helpers::json_escape(&text_run.style.font_family);
@@ -3428,7 +3482,16 @@ impl DocumentCore {
                 if group {
                     group_path.push(index);
                 }
-                collect_text_runs(child, runs, group_path, line_width_hwp, flow_context, dpi);
+                collect_text_runs(
+                    #[cfg(feature = "subsecond-dev")]
+                    core,
+                    child,
+                    runs,
+                    group_path,
+                    line_width_hwp,
+                    flow_context,
+                    dpi,
+                );
                 if group {
                     group_path.pop();
                 }
@@ -3437,6 +3500,8 @@ impl DocumentCore {
 
         let mut runs = Vec::new();
         collect_text_runs(
+            #[cfg(feature = "subsecond-dev")]
+            self,
             &tree.root,
             &mut runs,
             &mut Vec::new(),

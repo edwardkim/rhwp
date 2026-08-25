@@ -107,16 +107,21 @@ struct ParagraphBoxTrace {
     width_px: f64,
 }
 
-pub(super) fn first_partition_mismatch(stored: &[LineSeg], fresh: &[LineSeg]) -> Option<usize> {
+pub(super) fn first_partition_mismatch(stored: &Paragraph, fresh: &Paragraph) -> Option<usize> {
     stored
+        .line_segs
         .iter()
-        .zip(fresh)
-        .position(|(stored, fresh)| {
-            stored.text_start != fresh.text_start
-                || stored.is_first_segment() != fresh.is_first_segment()
-                || stored.is_last_segment() != fresh.is_last_segment()
+        .zip(&fresh.line_segs)
+        .enumerate()
+        .position(|(index, (stored_segment, fresh_segment))| {
+            stored.line_seg_text_start(index) != fresh.line_seg_text_start(index)
+                || stored_segment.is_first_segment() != fresh_segment.is_first_segment()
+                || stored_segment.is_last_segment() != fresh_segment.is_last_segment()
         })
-        .or_else(|| (stored.len() != fresh.len()).then_some(stored.len().min(fresh.len())))
+        .or_else(|| {
+            (stored.line_segs.len() != fresh.line_segs.len())
+                .then_some(stored.line_segs.len().min(fresh.line_segs.len()))
+        })
 }
 
 fn stored_cache_is_eligible(paragraph: &Paragraph) -> bool {
@@ -147,6 +152,38 @@ fn stored_rows_are_well_formed(line_segs: &[LineSeg]) -> bool {
     expects_first
 }
 
+pub(crate) fn paragraph_stream_range(
+    paragraph: &Paragraph,
+    start_scalar: usize,
+    end_scalar: usize,
+) -> (u32, u32) {
+    let scalar_count = paragraph.text.chars().count();
+    let offset = |index: usize| {
+        paragraph
+            .char_offsets
+            .get(index)
+            .copied()
+            .unwrap_or_else(|| {
+                if index >= scalar_count {
+                    paragraph.char_count.saturating_sub(1)
+                } else {
+                    paragraph
+                        .text
+                        .chars()
+                        .take(index)
+                        .map(|character| character.len_utf16() as u32)
+                        .sum()
+                }
+            })
+    };
+    let start = if start_scalar == 0 {
+        0
+    } else {
+        offset(start_scalar)
+    };
+    (start, offset(end_scalar).max(start))
+}
+
 pub(super) fn descend_group_path_segment<'a>(
     shape: &'a ShapeObject,
     group_path: &[usize],
@@ -171,14 +208,70 @@ pub(super) fn descend_group_path_segment<'a>(
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct BoundaryComparison {
+pub(crate) struct BoundaryComparison {
     comparable: bool,
     matches: Option<bool>,
     first_mismatch_index: Option<usize>,
+    stored_mismatch_utf16_start: Option<u32>,
+    fresh_mismatch_utf16_start: Option<u32>,
+    stored_mismatch_row_part: Option<&'static str>,
+    fresh_mismatch_row_part: Option<&'static str>,
     stored_starts_truncated: bool,
     stored_utf16_starts: Vec<u32>,
     fresh_starts_truncated: bool,
     fresh_utf16_starts: Vec<u32>,
+}
+
+fn row_part(segment: &LineSeg) -> &'static str {
+    match (segment.is_first_segment(), segment.is_last_segment()) {
+        (true, true) => "single",
+        (true, false) => "first",
+        (false, true) => "last",
+        (false, false) => "middle",
+    }
+}
+
+pub(crate) fn compare_boundaries(
+    stored: &Paragraph,
+    fresh: &Paragraph,
+    comparable: bool,
+    limit: usize,
+) -> BoundaryComparison {
+    let mismatch = first_partition_mismatch(stored, fresh);
+    let reported = comparable.then_some(mismatch).flatten();
+    BoundaryComparison {
+        comparable,
+        matches: comparable.then_some(mismatch.is_none()),
+        first_mismatch_index: reported,
+        stored_mismatch_utf16_start: reported
+            .filter(|&index| index < stored.line_segs.len())
+            .map(|index| stored.line_seg_text_start(index)),
+        fresh_mismatch_utf16_start: reported
+            .filter(|&index| index < fresh.line_segs.len())
+            .map(|index| fresh.line_seg_text_start(index)),
+        stored_mismatch_row_part: reported
+            .and_then(|index| stored.line_segs.get(index))
+            .map(row_part),
+        fresh_mismatch_row_part: reported
+            .and_then(|index| fresh.line_segs.get(index))
+            .map(row_part),
+        stored_starts_truncated: stored.line_segs.len() > limit,
+        stored_utf16_starts: stored
+            .line_segs
+            .iter()
+            .enumerate()
+            .map(|(index, _)| stored.line_seg_text_start(index))
+            .take(limit)
+            .collect(),
+        fresh_starts_truncated: fresh.line_segs.len() > limit,
+        fresh_utf16_starts: fresh
+            .line_segs
+            .iter()
+            .enumerate()
+            .map(|(index, _)| fresh.line_seg_text_start(index))
+            .take(limit)
+            .collect(),
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -203,6 +296,7 @@ struct MeasurementTraceLane {
 struct LineBreakProvenanceReport {
     schema_version: u8,
     coordinates: ParagraphCoordinates,
+    text_utf16_length: u32,
     paragraph_box: ParagraphBoxTrace,
     geometry_source: &'static str,
     fresh_geometry_complete: bool,
@@ -293,7 +387,7 @@ impl DocumentCore {
                             },
                         );
                         if let Some(lines) = band_lines {
-                            fresh_paragraph.line_segs = lines;
+                            fresh_paragraph.replace_line_segs(lines);
                         } else {
                             reflow_line_segs(
                                 &mut fresh_paragraph,
@@ -309,22 +403,6 @@ impl DocumentCore {
         let carves_truncated = carves.truncated;
         let carve_records = carves.records;
 
-        let stored_start_count = paragraph.line_segs.len();
-        let fresh_start_count = fresh_paragraph.line_segs.len();
-        let first_mismatch_index =
-            first_partition_mismatch(&paragraph.line_segs, &fresh_paragraph.line_segs);
-        let stored_utf16_starts = paragraph
-            .line_segs
-            .iter()
-            .map(|segment| segment.text_start)
-            .take(max_records)
-            .collect::<Vec<_>>();
-        let fresh_utf16_starts = fresh_paragraph
-            .line_segs
-            .iter()
-            .map(|segment| segment.text_start)
-            .take(max_records)
-            .collect::<Vec<_>>();
         let declared = paragraph_box.declared_horizontal();
         let effective = paragraph_box.effective();
         let frame_comparable = stored_cache_is_eligible(paragraph)
@@ -348,6 +426,7 @@ impl DocumentCore {
                     .collect(),
                 group_path: options.group_path.clone(),
             },
+            text_utf16_length: paragraph.char_count.saturating_sub(1),
             paragraph_box: ParagraphBoxTrace {
                 coordinate_system: if cell_path.is_empty() {
                     "column-relative"
@@ -361,15 +440,12 @@ impl DocumentCore {
             },
             geometry_source,
             fresh_geometry_complete,
-            comparison: BoundaryComparison {
-                comparable: frame_comparable,
-                matches: frame_comparable.then_some(first_mismatch_index.is_none()),
-                first_mismatch_index: frame_comparable.then_some(first_mismatch_index).flatten(),
-                stored_starts_truncated: stored_start_count > stored_utf16_starts.len(),
-                stored_utf16_starts,
-                fresh_starts_truncated: fresh_start_count > fresh_utf16_starts.len(),
-                fresh_utf16_starts,
-            },
+            comparison: compare_boundaries(
+                paragraph,
+                &fresh_paragraph,
+                frame_comparable,
+                max_records,
+            ),
             geometry: TraceLane {
                 enabled: options.geometry,
                 owner: if !options.geometry {
@@ -399,7 +475,7 @@ impl DocumentCore {
     /// not paragraph controls. `group_path` is the separate render-tree child axis emitted by
     /// `getPageTextLayout`; combining the two makes the diagnostic coordinate round-trippable
     /// without changing cursor/table path semantics.
-    fn resolve_group_textbox_paragraph<'a>(
+    pub(super) fn resolve_group_textbox_paragraph<'a>(
         &'a self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -659,94 +735,5 @@ impl DocumentCore {
             "container-owner-frame-padding-may-shrink",
             false,
         ))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn stored_frame_report(core: &DocumentCore) -> serde_json::Value {
-        let report = core
-            .line_break_provenance_native(
-                0,
-                0,
-                &[],
-                r#"{"geometry":true,"measurement":true,"geometryMode":"stored-lineseg"}"#,
-            )
-            .expect("line-break report");
-        serde_json::from_str(&report).expect("report JSON")
-    }
-
-    #[test]
-    fn report_exposes_the_actual_stored_and_fresh_line_boundaries() {
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/calc-cell.hwp");
-        let bytes = std::fs::read(path).expect("read fixture");
-        let core = DocumentCore::from_bytes(&bytes).expect("parse fixture");
-        let value = stored_frame_report(&core);
-        assert_eq!(value["coordinates"]["sectionIdx"], 0);
-        assert!(value["comparison"]["storedUtf16Starts"].is_array());
-        assert!(value["comparison"]["freshUtf16Starts"].is_array());
-        assert!(value["geometry"]["records"].is_array());
-        assert!(value["measurement"]["records"]["records"].is_array());
-    }
-
-    #[test]
-    fn untrusted_stored_rows_cannot_become_a_line_break_error() {
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/calc-cell.hwp");
-        let bytes = std::fs::read(path).expect("read fixture");
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse fixture");
-        for segment in &mut core.document.sections[0].paragraphs[0].line_segs {
-            segment.column_start = 0;
-            segment.segment_width = 1_200;
-            segment.tag = LineSeg::TAG_SINGLE_SEGMENT_LINE;
-        }
-        let original = core.document.sections[0].paragraphs[0].line_segs.clone();
-        let original_report = stored_frame_report(&core);
-        assert_eq!(original_report["freshGeometryComplete"], true);
-        let mut synthetic = original.clone();
-        for segment in &mut synthetic {
-            segment.tag |= LineSeg::TAG_IMPLEMENTATION_PROPERTY;
-        }
-        for (label, lines, geometry_complete) in [
-            ("missing", vec![], false),
-            ("synthetic", synthetic, true),
-            (
-                "malformed",
-                vec![
-                    LineSeg {
-                        tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                        text_start: 8,
-                        segment_width: 1_200,
-                        ..Default::default()
-                    },
-                    LineSeg {
-                        tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                        text_start: 4,
-                        segment_width: 1_200,
-                        ..Default::default()
-                    },
-                ],
-                true,
-            ),
-        ] {
-            core.document.sections[0].paragraphs[0].line_segs = lines;
-            let paragraph = &core.document.sections[0].paragraphs[0];
-            assert!(
-                !stored_cache_is_eligible(paragraph)
-                    || !stored_rows_are_well_formed(&paragraph.line_segs),
-                "{label}"
-            );
-            let report = stored_frame_report(&core);
-            assert_eq!(
-                report["freshGeometryComplete"], geometry_complete,
-                "{label}"
-            );
-            assert!(report["comparison"]["matches"].is_null(), "{label}");
-        }
-
-        core.document.sections[0].paragraphs[0].line_segs = original;
-        core.document.sections[0].paragraphs[0].invalidate_layout_inputs();
-        assert!(stored_frame_report(&core)["comparison"]["matches"].is_null());
     }
 }

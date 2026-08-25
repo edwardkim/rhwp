@@ -179,10 +179,7 @@ type ActivePdfReference = PageReferenceLayer & {
   readonly pdfName: string;
   destroy(): Promise<void>;
   startBaselineScan(): void;
-  onRenderCodePatched(
-    renderRevision: string,
-    previousRenderGeneration: number,
-  ): void;
+  onRenderCodePatched(): void;
 };
 let activePdfReference: ActivePdfReference | null = null;
 let pdfReferenceGeneration = 0;
@@ -230,11 +227,9 @@ async function activatePdfReference(
     if (result.status !== 'found') {
       const label = result.status === 'ambiguous'
         ? 'PDF twin 모호함'
-        : result.status === 'busy'
-          ? 'PDF twin 사용 중 — 잠시 후 다시 열기'
-          : result.status === 'error'
-            ? 'PDF twin 오류'
-            : 'PDF twin 없음';
+        : result.status === 'error'
+          ? 'PDF twin 오류'
+          : 'PDF twin 없음';
       sbMessage().textContent += ` · ${label}`;
       console.info(`[pdf-reference] ${result.status}`);
       return;
@@ -247,23 +242,16 @@ async function activatePdfReference(
       result.pdfPageCount,
       result.pdfName,
       {
+        errorLogCapability: result.errorLogCapability,
         documentDigest: wasm.documentDigest,
         documentGeneration: wasm.documentGeneration,
         referenceGeneration: generation,
-        errorLogCapability: result.errorLogCapability,
         getDocumentDigest: () => wasm.documentDigest,
         getDocumentGeneration: () => wasm.documentGeneration,
         getHwpPageCount: () => wasm.pageCount,
         capturePage: (pageIndex, sampleWidth, signal) => {
           if (!canvasView) throw new Error('CanvasView is unavailable');
           return canvasView.capturePageForDiagnostics(pageIndex, sampleWidth, signal);
-        },
-        gotoPage: pageIndex => canvasView?.gotoPage(pageIndex) ?? false,
-        getRenderRevision: () => {
-          const doc = wasm.borrowDocumentHandle() as { getRenderCodeRevision?: () => string } | null;
-          return typeof doc?.getRenderCodeRevision === 'function'
-            ? doc.getRenderCodeRevision()
-            : null;
         },
         getRenderGeneration: () => canvasView?.getDiagnosticRenderGeneration() ?? 0,
       },
@@ -305,13 +293,9 @@ async function startDevelopmentRenderRuntime(): Promise<void> {
     stopDevelopmentRenderRuntime = runtime.startDevelopmentRenderRuntime(
       wasm.getWasmModuleExports(),
       () => wasm.borrowDocumentHandle(),
-      revision => {
-        const previousRenderGeneration = canvasView?.getDiagnosticRenderGeneration() ?? 0;
+      () => {
         refreshPatchedRender();
-        activePdfReference?.onRenderCodePatched(
-          revision,
-          previousRenderGeneration,
-        );
+        activePdfReference?.onRenderCodePatched();
       },
       { measureHeapBytes: () => wasm.getWasmLinearMemoryBytes() },
     );

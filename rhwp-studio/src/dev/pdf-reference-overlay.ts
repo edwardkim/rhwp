@@ -6,43 +6,35 @@ import type {
 import {
   computeReferencePixelDiff,
   detectHorizontalRuleBands,
-} from './pdf-reference-diff';
+} from './pdf-reference-diff.ts';
 import {
   buildFidelityScanReport,
-  compareDiagnosticBands,
-  fingerprintPagePixels,
   firstDocumentDivergence,
   isFidelityDocumentCurrent,
-  isComparableFidelityPredecessor,
   isFidelityScanCurrent,
-  queryFidelityPage,
-  queryFidelityPages,
   summarizeFidelityScan,
-  type FidelityPageQuery,
-  type FidelityPageQueryResult,
   type FidelityPageObservation,
   type FidelityScanReport,
   type FidelityScanSummary,
-} from './fidelity-scan';
+} from './fidelity-scan.ts';
 import {
   formatDocumentError,
   findFirstLineBreakError,
   sendDocumentErrorLine,
   type LineBreakVisibleResult,
-} from './document-error-log';
-import { DiagnosticPauseGate, yieldToInteractiveWork } from './fidelity-yield';
-import { fetchReferenceWithRetry } from './pdf-reference-fetch';
+} from './document-error-log.ts';
+import { DiagnosticPauseGate, yieldToInteractiveWork } from './fidelity-yield.ts';
+import { fetchWithBusyRetry } from './pdf-reference-fetch.ts';
 
 const DIFF_SAMPLE_WIDTH = 512;
 const WHOLE_SCAN_SAMPLE_WIDTH = 256;
 const DIFF_THRESHOLD = 24;
-const MAX_SCAN_HISTORY = 8;
 
 export interface PdfReferenceHarnessOptions {
+  errorLogCapability: string;
   documentDigest: string | null;
   documentGeneration: number;
   referenceGeneration: number;
-  errorLogCapability: string;
   getDocumentDigest(): string | null;
   getDocumentGeneration(): number;
   getHwpPageCount(): number;
@@ -51,21 +43,7 @@ export interface PdfReferenceHarnessOptions {
     sampleWidth: number,
     signal?: AbortSignal,
   ): Promise<DiagnosticPageCapture>;
-  gotoPage(pageIndex: number): boolean;
-  getRenderRevision(): string | null;
   getRenderGeneration(): number;
-}
-
-interface FidelityScanTarget {
-  renderRevision: string | null;
-  renderGeneration: number;
-  previousRenderGeneration: number | null;
-}
-
-interface SupersededFidelityScan {
-  scanId: number;
-  completedPages: number;
-  target: FidelityScanTarget;
 }
 
 interface FidelityHarnessState {
@@ -74,9 +52,6 @@ interface FidelityHarnessState {
   completedPages: number;
   totalPages: number;
   latestReport: FidelityScanReport | null;
-  history: FidelityScanSummary[];
-  activeTarget: FidelityScanTarget | null;
-  supersededScans: SupersededFidelityScan[];
   lastError: string | null;
 }
 
@@ -88,22 +63,10 @@ export type FidelityHarnessSnapshot = Omit<FidelityHarnessState, 'status' | 'lat
   latestReport: FidelityScanSummary | null;
 };
 
-type FidelityPageResult = ReturnType<typeof queryFidelityPage>;
-type FidelityNavigationResult = {
-  scanId: number | null;
-  current: boolean;
-  pageIndex: number | null;
-  navigatedPageIndex: number | null;
-  navigated: boolean;
-};
-
 export interface FidelityHarnessApi {
   readonly schemaVersion: 1;
   snapshot(): FidelityHarnessSnapshot;
-  pages(query?: FidelityPageQuery): FidelityPageQueryResult;
-  page(pageIndex: number, scanId?: number): FidelityPageResult;
   scan(): Promise<FidelityScanSummary | null>;
-  gotoFirstRegression(scanId?: number): FidelityNavigationResult;
 }
 
 type FidelityHarnessWindow = Window & {
@@ -139,6 +102,11 @@ interface ReferencePixelCapture {
 
 /** Ghostscript가 PDF MediaBox 기준으로 만든 페이지 PNG를 Studio 페이지 좌표계에 겹친다. */
 export class PdfReferenceOverlay implements PageReferenceLayer {
+  private readonly pageImageBaseUrl: string;
+  private readonly pixelWidth: number;
+  private readonly pageCount: number | null;
+  readonly pdfName: string;
+  private readonly harness: PdfReferenceHarnessOptions;
   private readonly mounted = new Map<number, MountedReferencePage>();
   private readonly referenceKey: string;
   private destroyed = false;
@@ -150,12 +118,17 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   private readonly harnessApi: FidelityHarnessApi;
 
   constructor(
-    private readonly pageImageBaseUrl: string,
-    private readonly pixelWidth: number,
-    private readonly pageCount: number | null,
-    readonly pdfName: string,
-    private readonly harness: PdfReferenceHarnessOptions,
+    pageImageBaseUrl: string,
+    pixelWidth: number,
+    pageCount: number | null,
+    pdfName: string,
+    harness: PdfReferenceHarnessOptions,
   ) {
+    this.pageImageBaseUrl = pageImageBaseUrl;
+    this.pixelWidth = pixelWidth;
+    this.pageCount = pageCount;
+    this.pdfName = pdfName;
+    this.harness = harness;
     const segments = pageImageBaseUrl.split('/').filter(Boolean);
     this.referenceKey = segments.at(-2) ?? pageImageBaseUrl;
     this.harnessState = {
@@ -164,21 +137,15 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       completedPages: 0,
       totalPages: 0,
       latestReport: null,
-      history: [],
-      activeTarget: null,
-      supersededScans: [],
       lastError: null,
     };
     this.harnessApi = {
       schemaVersion: 1,
       snapshot: () => this.harnessSnapshot(),
-      pages: query => this.queryPages(query),
-      page: (pageIndex, scanId) => this.pageReport(pageIndex, scanId),
       scan: async () => {
         const report = await this.scanWholeDocument('manual');
         return report ? summarizeFidelityScan(report) : null;
       },
-      gotoFirstRegression: scanId => this.gotoFirstRegression(scanId),
     };
     const harnessWindow = window as FidelityHarnessWindow;
     harnessWindow.__rhwpFidelityHarness = this.harnessApi;
@@ -199,45 +166,16 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       latestReport: this.harnessState.latestReport
         ? summarizeFidelityScan(this.harnessState.latestReport)
         : null,
-      history: this.harnessState.history,
-      activeTarget: this.harnessState.activeTarget,
-      supersededScans: this.harnessState.supersededScans,
       lastError: this.harnessState.lastError,
     });
-  }
-
-  private queryPages(query: FidelityPageQuery = {}): FidelityPageQueryResult {
-    if (this.harnessState.activeScanId !== null || !this.latestReportIsCurrent()) {
-      const stale = queryFidelityPages(this.harnessState.latestReport, query);
-      return { ...stale, current: false, items: [] };
-    }
-    return queryFidelityPages(this.harnessState.latestReport, query);
-  }
-
-  private pageReport(pageIndex: number, scanId?: number): FidelityPageResult {
-    if (this.harnessState.activeScanId !== null || !this.latestReportIsCurrent()) {
-      return {
-        scanId: this.harnessState.latestReport?.scanId ?? null,
-        current: false,
-        item: null,
-      };
-    }
-    return queryFidelityPage(this.harnessState.latestReport, pageIndex, scanId);
   }
 
   startBaselineScan(): void {
     void this.scanWholeDocument('baseline');
   }
 
-  onRenderCodePatched(
-    renderRevision: string,
-    previousRenderGeneration: number,
-  ): void {
-    void this.scanWholeDocument('subsecond-patch', {
-      renderRevision,
-      renderGeneration: this.harness.getRenderGeneration(),
-      previousRenderGeneration,
-    });
+  onRenderCodePatched(): void {
+    void this.scanWholeDocument('subsecond-patch');
   }
 
   private ownerKey(): string {
@@ -248,19 +186,11 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     ].join(':');
   }
 
-  private currentScanTarget(): FidelityScanTarget {
-    return {
-      renderRevision: this.harness.getRenderRevision(),
-      renderGeneration: this.harness.getRenderGeneration(),
-      previousRenderGeneration: null,
-    };
-  }
-
   private latestReportIsCurrent(): boolean {
     return !this.destroyed
       && this.documentIsCurrent()
       && this.harnessState.activeScanId === null
-      && isFidelityScanCurrent(this.harnessState.latestReport, this.currentScanTarget());
+      && isFidelityScanCurrent(this.harnessState.latestReport, this.harness.getRenderGeneration());
   }
 
   private documentIsCurrent(): boolean {
@@ -273,27 +203,19 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   private endScan(status: FidelityHarnessState['status']): void {
     this.harnessState.status = status;
     this.harnessState.activeScanId = null;
-    this.harnessState.activeTarget = null;
   }
 
   private documentErrorLine(
     report: FidelityScanReport,
   ): string | null {
     const first = firstDocumentDivergence(report);
-    if (!first) return null;
-    if (first.kind === 'page-count') {
-      return formatDocumentError('page-count', [
-        ['page', first.pageIndex + 1],
-        ['expected', report.pdfPageCount ?? 0],
-        ['actual', report.hwpPageCount],
-      ]);
-    }
-    if (first.kind === 'structural') {
+    for (const page of report.pages) {
+      if (first?.kind === 'page-count' && page.pageIndex >= first.pageIndex) break;
       try {
         const inspect = (window as FidelityHarnessWindow).rhwpDev?.lineBreakVisible;
         const lineBreak = inspect ? findFirstLineBreakError(
-          first.pageIndex + 1,
-          start => inspect(first.pageIndex, {
+          page.pageIndex + 1,
+          start => inspect(page.pageIndex, {
             start,
             limit: 100,
             geometry: false,
@@ -302,19 +224,24 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
         ) : null;
         if (lineBreak) return lineBreak;
       } catch {
-        // A semantic inspector failure must not suppress the already-proven paint error.
+        // A semantic inspector failure must not suppress proven paint/page-count evidence.
       }
-    }
-    const firstDivergentPage = report.pages.find(page => page.pageIndex === first.pageIndex) ?? null;
-    if (firstDivergentPage) {
-      const bounds = firstDivergentPage.bounds;
+      if (page.pageIndex !== report.firstStructuralDivergencePage) continue;
+      const bounds = page.bounds;
       return formatDocumentError('paint', [
-        ['page', firstDivergentPage.pageIndex + 1],
-        ['ratio', firstDivergentPage.mismatchRatio],
-        ['pdfOnly', firstDivergentPage.pdfOnlyPixels],
-        ['rhwpOnly', firstDivergentPage.hwpOnlyPixels],
-        ['colorOnly', firstDivergentPage.colorMismatchPixels],
+        ['page', page.pageIndex + 1],
+        ['ratio', page.mismatchRatio],
+        ['pdfOnly', page.pdfOnlyPixels],
+        ['rhwpOnly', page.hwpOnlyPixels],
+        ['colorOnly', page.colorMismatchPixels],
         ['bounds', bounds ? `${bounds.x},${bounds.y},${bounds.width},${bounds.height}` : 'none'],
+      ]);
+    }
+    if (first?.kind === 'page-count') {
+      return formatDocumentError('page-count', [
+        ['page', first.pageIndex + 1],
+        ['expected', report.pdfPageCount ?? 0],
+        ['actual', report.hwpPageCount],
       ]);
     }
     return null;
@@ -328,58 +255,37 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     });
   }
 
-  private rememberSupersededScan(
-    scanId: number,
-    completedPages: number,
-    target: FidelityScanTarget,
-  ): void {
-    if (this.harnessState.supersededScans.some(scan => scan.scanId === scanId)) return;
-    this.harnessState.supersededScans.push({ scanId, completedPages, target });
-    const overflow = this.harnessState.supersededScans.length - 16;
-    if (overflow > 0) this.harnessState.supersededScans.splice(0, overflow);
-  }
-
   private async scanWholeDocument(
     trigger: FidelityScanReport['trigger'],
-    target = this.currentScanTarget(),
   ): Promise<FidelityScanReport | null> {
     if (this.destroyed) return null;
     const scanId = ++this.scanSerial;
-    if (this.harnessState.activeScanId !== null && this.harnessState.activeTarget) {
-      this.rememberSupersededScan(
-        this.harnessState.activeScanId,
-        this.harnessState.completedPages,
-        this.harnessState.activeTarget,
-      );
-    }
     this.scanAbortController?.abort();
     const abortController = new AbortController();
     this.scanAbortController = abortController;
     const hwpPageCount = this.harness.getHwpPageCount();
     const sharedPageCount = Math.min(hwpPageCount, this.pageCount ?? hwpPageCount);
+    const renderGeneration = this.harness.getRenderGeneration();
     const startedAt = performance.now();
     this.harnessState.status = 'scanning';
     this.harnessState.activeScanId = scanId;
-    this.harnessState.activeTarget = target;
     this.harnessState.completedPages = 0;
     this.harnessState.totalPages = sharedPageCount;
     this.harnessState.lastError = null;
 
-    const renderTargetChanged = (): boolean =>
+    const targetChanged = (): boolean =>
       hwpPageCount !== this.harness.getHwpPageCount()
-      || target.renderRevision !== this.harness.getRenderRevision()
-      || target.renderGeneration !== this.harness.getRenderGeneration();
-    const targetChanged = (): boolean => !this.documentIsCurrent() || renderTargetChanged();
-    const abandonIfStale = (completedPages: number): boolean => {
+      || renderGeneration !== this.harness.getRenderGeneration()
+      || !this.documentIsCurrent();
+    const abandonIfStale = (): boolean => {
       const stale = abortController.signal.aborted
         || this.destroyed
         || scanId !== this.scanSerial
         || targetChanged();
       if (!stale) return false;
       if (!this.destroyed && scanId === this.scanSerial) {
-        this.rememberSupersededScan(scanId, completedPages, target);
         this.endScan('idle');
-        if (!abortController.signal.aborted && this.documentIsCurrent() && renderTargetChanged()) {
+        if (!abortController.signal.aborted && this.documentIsCurrent()) {
           queueMicrotask(() => {
             if (this.destroyed || this.scanSerial !== scanId) return;
             void this.scanWholeDocument(trigger);
@@ -389,66 +295,64 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       return true;
     };
 
+    const buildReport = (
+      observations: FidelityPageObservation[],
+      scanComplete: boolean,
+    ): FidelityScanReport => buildFidelityScanReport({
+      scanId,
+      trigger,
+      identity: {
+        documentKey: this.referenceKey,
+        documentDigest: this.harness.documentDigest,
+        documentGeneration: this.harness.documentGeneration,
+        referenceGeneration: this.harness.referenceGeneration,
+        renderGeneration,
+        pdfName: this.pdfName,
+      },
+      hwpPageCount: scanComplete ? hwpPageCount : sharedPageCount,
+      pdfPageCount: scanComplete ? this.pageCount : sharedPageCount,
+      observations,
+      startedAt,
+      completedAt: performance.now(),
+    });
+    let errorDelivered = false;
+    const deliverFirstError = (report: FidelityScanReport): void => {
+      if (errorDelivered) return;
+      const line = this.documentErrorLine(report);
+      if (!line) return;
+      this.deliverDocumentError(line);
+      errorDelivered = true;
+    };
+
     try {
       const observations: FidelityPageObservation[] = [];
       for (let pageIndex = 0; pageIndex < sharedPageCount; pageIndex++) {
         await this.diagnosticsPause.wait(abortController.signal);
-        if (abandonIfStale(pageIndex)) return null;
+        if (abandonIfStale()) return null;
         const capture = await this.harness.capturePage(
           pageIndex,
           WHOLE_SCAN_SAMPLE_WIDTH,
           abortController.signal,
         );
-        if (abandonIfStale(pageIndex)) return null;
+        if (abandonIfStale()) return null;
         const reference = await this.loadReferencePixels(
           pageIndex,
           capture.width,
           capture.height,
           abortController.signal,
         );
-        observations.push(this.observePage(pageIndex, capture, reference));
+        if (abandonIfStale()) return null;
+        const observation = this.observePage(pageIndex, capture, reference);
+        observations.push(observation);
         this.harnessState.completedPages = pageIndex + 1;
+        deliverFirstError(buildReport([observation], false));
         await yieldToInteractiveWork(abortController.signal);
       }
-      if (abandonIfStale(observations.length)) return null;
-      const previousCandidate = this.harnessState.latestReport?.identity.documentKey === this.referenceKey
-        && this.harnessState.latestReport.identity.documentGeneration === this.harness.documentGeneration
-        ? this.harnessState.latestReport
-        : null;
-      const previous = isComparableFidelityPredecessor(previousCandidate, trigger, target)
-        ? previousCandidate
-        : null;
-      const report = buildFidelityScanReport({
-        scanId,
-        trigger,
-        identity: {
-          documentKey: this.referenceKey,
-          documentDigest: this.harness.documentDigest,
-          documentGeneration: this.harness.documentGeneration,
-          referenceGeneration: this.harness.referenceGeneration,
-          renderGeneration: target.renderGeneration,
-          pdfName: this.pdfName,
-        },
-        renderRevision: target.renderRevision,
-        hwpPageCount,
-        pdfPageCount: this.pageCount,
-        observations,
-        previous,
-        startedAt,
-        completedAt: performance.now(),
-        supersededBetween: this.harnessState.supersededScans
-          .filter(scan => scan.scanId > (previous?.scanId ?? 0) && scan.scanId < scanId)
-          .map(scan => ({
-            scanId: scan.scanId,
-            renderRevision: scan.target.renderRevision,
-          })),
-      });
+      if (abandonIfStale()) return null;
+      const report = buildReport(observations, true);
       this.harnessState.latestReport = report;
-      this.harnessState.history.push(summarizeFidelityScan(report));
-      this.harnessState.history.splice(0, Math.max(0, this.harnessState.history.length - MAX_SCAN_HISTORY));
       this.endScan('ready');
-      const documentError = this.documentErrorLine(report);
-      if (documentError) this.deliverDocumentError(documentError);
+      deliverFirstError(report);
       return report;
     } catch (error) {
       if (abortController.signal.aborted || this.destroyed || scanId !== this.scanSerial) return null;
@@ -472,7 +376,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   ): Promise<ReferencePixelCapture> {
     if (signal.aborted) throw new DOMException('reference image load aborted', 'AbortError');
     const src = `${this.pageImageBaseUrl}/${pageIndex}.png?width=${width}`;
-    const response = await fetchReferenceWithRetry(src, signal);
+    const response = await fetchWithBusyRetry(src, { signal });
     if (!response.ok) throw new Error(`reference page ${pageIndex} failed to load (${response.status})`);
     const image = await createImageBitmap(await response.blob());
     try {
@@ -521,7 +425,6 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     );
     return {
       pageIndex,
-      hwpFingerprint: `${capture.width}x${capture.height}:${fingerprintPagePixels(capture.pixels)}`,
       hwpSize: { width: capture.width, height: capture.height },
       referenceSize: { width: reference.width, height: reference.height },
       mismatch: computeReferencePixelDiff(hwpPixels, referencePixels, width, height, DIFF_THRESHOLD),
@@ -529,32 +432,6 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       pdfHorizontalRules: bands(referencePixels),
       hwpInkRows: bands(hwpPixels, true),
       pdfInkRows: bands(referencePixels, true),
-    };
-  }
-
-  private gotoFirstRegression(scanId?: number): FidelityNavigationResult {
-    const report = this.harnessState.latestReport;
-    const current = this.latestReportIsCurrent()
-      && (scanId === undefined || scanId === report?.scanId);
-    if (!report || !current) {
-      return {
-        scanId: report?.scanId ?? null,
-        current,
-        pageIndex: null,
-        navigatedPageIndex: null,
-        navigated: false,
-      };
-    }
-    const pageIndex = report.firstRegressionPage ?? report.firstDivergentPage;
-    const navigablePage = pageIndex === null
-      ? null
-      : Math.min(pageIndex, Math.max(0, report.hwpPageCount - 1));
-    return {
-      scanId: report.scanId,
-      current,
-      pageIndex,
-      navigatedPageIndex: navigablePage,
-      navigated: navigablePage !== null && this.harness.gotoPage(navigablePage),
     };
   }
 

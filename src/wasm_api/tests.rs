@@ -2951,6 +2951,133 @@ fn test_cell_text_layout_contains_cell_info() {
         .as_i64()
         .is_some_and(|width| width > 0));
     assert_eq!(grouped["flowContext"], "body");
+
+    #[cfg(feature = "subsecond-dev")]
+    {
+        use crate::document_core::queries::line_break_provenance::{
+            compare_boundaries, paragraph_stream_range,
+        };
+
+        assert!(grouped["streamStartUtf16"].is_u64());
+        assert!(grouped["streamEndUtf16"].is_u64());
+        for (text, char_offsets, expected) in [
+            ("😀A", vec![0, 2], [(0, 2), (2, 3)]),
+            ("AB", vec![0, 8], [(0, 8), (8, 9)]),
+        ] {
+            let paragraph = Paragraph {
+                text: text.into(),
+                char_offsets,
+                char_count: expected[1].1 + 1,
+                ..Default::default()
+            };
+            assert_eq!(paragraph_stream_range(&paragraph, 0, 1), expected[0]);
+            assert_eq!(paragraph_stream_range(&paragraph, 1, 2), expected[1]);
+        }
+        let prefixed = Paragraph {
+            text: "AB".into(),
+            char_offsets: vec![8, 9],
+            char_count: 11,
+            ..Default::default()
+        };
+        assert_eq!(paragraph_stream_range(&prefixed, 0, 1), (0, 9));
+        assert_eq!(paragraph_stream_range(&prefixed, 1, 2), (9, 10));
+        let paragraph = |starts: &[u32], shift| Paragraph {
+            line_segs: starts
+                .iter()
+                .map(|&text_start| LineSeg {
+                    text_start,
+                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                    ..Default::default()
+                })
+                .collect(),
+            hwpx_axis_shift: shift,
+            char_count: 512,
+            ..Default::default()
+        };
+        let compare = |stored: &Paragraph, fresh: &Paragraph| {
+            serde_json::to_value(compare_boundaries(stored, fresh, true, 128)).unwrap()
+        };
+        assert_eq!(
+            compare(&paragraph(&[0, 1], 8), &paragraph(&[0, 9], 0))["matches"],
+            true
+        );
+        for (stored, fresh, expected) in [
+            ((&[0, 1][..], 8), (&[0, 10][..], 0), (Some(9), Some(10))),
+            ((&[0][..], 8), (&[0, 9][..], 0), (None, Some(9))),
+            ((&[0, 1][..], 8), (&[0][..], 0), (Some(9), None)),
+        ] {
+            let value = compare(&paragraph(stored.0, stored.1), &paragraph(fresh.0, fresh.1));
+            assert_eq!(value["storedMismatchUtf16Start"].as_u64(), expected.0);
+            assert_eq!(value["freshMismatchUtf16Start"].as_u64(), expected.1);
+        }
+        let starts = (0..130).collect::<Vec<_>>();
+        let stored = paragraph(&starts, 0);
+        for (change, expected) in [(false, (129, "single")), (true, (128, "first"))] {
+            let mut fresh = paragraph(&starts, 0);
+            if change {
+                fresh.line_segs[128].tag = LineSeg::TAG_FIRST_SEGMENT;
+            } else {
+                fresh.line_segs[128].text_start += 1;
+            }
+            let value = compare(&stored, &fresh);
+            assert_eq!(value["firstMismatchIndex"], 128);
+            assert_eq!(value["freshMismatchUtf16Start"], expected.0);
+            assert_eq!(value["freshMismatchRowPart"], expected.1);
+            assert_eq!(value["storedStartsTruncated"], true);
+            assert_eq!(value["freshStartsTruncated"], true);
+        }
+        let report = |core: &DocumentCore| {
+            serde_json::from_str::<Value>(
+                &core
+                    .line_break_provenance_native(
+                        0,
+                        0,
+                        &[],
+                        r#"{"geometry":true,"measurement":true,"geometryMode":"stored-lineseg"}"#,
+                    )
+                    .expect("line-break report"),
+            )
+            .expect("line-break JSON")
+        };
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/calc-cell.hwp");
+        let bytes = std::fs::read(path).expect("read fixture");
+        let mut core = DocumentCore::from_bytes(&bytes).expect("parse fixture");
+        for segment in &mut core.document.sections[0].paragraphs[0].line_segs {
+            segment.column_start = 0;
+            segment.segment_width = 1_200;
+            segment.tag = LineSeg::TAG_SINGLE_SEGMENT_LINE;
+        }
+        let original = core.document.sections[0].paragraphs[0].line_segs.clone();
+        let value = report(&core);
+        assert!(value["comparison"]["storedUtf16Starts"].is_array());
+        assert!(value["comparison"]["freshUtf16Starts"].is_array());
+        assert!(value["geometry"]["records"].is_array());
+        assert!(value["measurement"]["records"]["records"].is_array());
+
+        let mut synthetic = original.clone();
+        synthetic
+            .iter_mut()
+            .for_each(|segment| segment.tag |= LineSeg::TAG_IMPLEMENTATION_PROPERTY);
+        let descending = vec![
+            LineSeg {
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                text_start: 8,
+                ..Default::default()
+            },
+            LineSeg {
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                text_start: 4,
+                ..Default::default()
+            },
+        ];
+        for lines in [Vec::new(), synthetic, descending] {
+            core.document.sections[0].paragraphs[0].line_segs = lines;
+            assert!(report(&core)["comparison"]["matches"].is_null());
+        }
+        core.document.sections[0].paragraphs[0].line_segs = original;
+        core.document.sections[0].paragraphs[0].invalidate_layout_inputs();
+        assert!(report(&core)["comparison"]["matches"].is_null());
+    }
 }
 
 #[test]

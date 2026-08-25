@@ -1,10 +1,8 @@
-import {
-  DOCUMENT_ERROR_CAPABILITY_HEADER,
-  DOCUMENT_ERROR_LOG_PATH,
-} from './pdf-twin-contract.ts';
+import { DOCUMENT_ERROR_LOG_PATH } from './pdf-twin-contract.ts';
 
 export type DocumentErrorType = 'line-break' | 'page-count' | 'paint';
 export interface LineBreakDiagnostic {
+  textUtf16Length?: number;
   coordinates?: {
     sectionIdx?: number;
     paragraphIdx?: number | null;
@@ -16,6 +14,10 @@ export interface LineBreakDiagnostic {
     comparable?: boolean;
     matches?: boolean | null;
     firstMismatchIndex?: number | null;
+    storedMismatchUtf16Start?: number | null;
+    freshMismatchUtf16Start?: number | null;
+    storedMismatchRowPart?: 'single' | 'first' | 'middle' | 'last' | null;
+    freshMismatchRowPart?: 'single' | 'first' | 'middle' | 'last' | null;
     storedStartsTruncated?: boolean;
     storedUtf16Starts?: number[];
     freshStartsTruncated?: boolean;
@@ -29,9 +31,8 @@ export interface LineBreakVisibleResult {
 }
 
 const isIndex = (value: unknown): value is number => Number.isSafeInteger(value) && Number(value) >= 0;
-const isStarts = (value: unknown): value is number[] =>
-  Array.isArray(value) && value.length <= 2_048 && value.every(isIndex);
-
+const isRowPart = (value: unknown): value is string =>
+  value === 'single' || value === 'first' || value === 'middle' || value === 'last';
 /** Render one CLI-stable document error as `type: [flat document attributes]`. */
 export function formatDocumentError(
   type: DocumentErrorType,
@@ -52,22 +53,21 @@ export function formatFirstLineBreakError(
   if (!Number.isSafeInteger(page) || page < 1) return null;
   for (const { coordinates, comparison } of diagnostics) {
     const paragraph = coordinates?.parentParaIdx ?? coordinates?.paragraphIdx;
-    const stored = comparison?.storedUtf16Starts;
-    const fresh = comparison?.freshUtf16Starts;
+    const stored = comparison?.storedMismatchUtf16Start;
+    const fresh = comparison?.freshMismatchUtf16Start;
+    const storedPart = comparison?.storedMismatchRowPart;
+    const freshPart = comparison?.freshMismatchRowPart;
     if (
       !coordinates
       || !comparison
       || comparison.comparable !== true
       || comparison.matches !== false
-      || comparison.storedStartsTruncated !== false
-      || comparison.freshStartsTruncated !== false
       || !isIndex(coordinates.sectionIdx)
       || !isIndex(paragraph)
       || !isIndex(comparison.firstMismatchIndex)
-      || !isStarts(stored)
-      || !isStarts(fresh)
-      || stored.length + fresh.length === 0
-      || comparison.firstMismatchIndex >= Math.max(stored.length, fresh.length)
+      || !(stored === null ? storedPart === null : isIndex(stored) && isRowPart(storedPart))
+      || !(fresh === null ? freshPart === null : isIndex(fresh) && isRowPart(freshPart))
+      || (stored === null && fresh === null)
       || !(coordinates.cellPath ?? []).every(entry =>
         isIndex(entry.controlIndex) && isIndex(entry.cellIndex) && isIndex(entry.cellParaIndex))
       || !(coordinates.groupPath ?? []).every(isIndex)
@@ -83,8 +83,8 @@ export function formatFirstLineBreakError(
       ['page', page],
       ['target', target],
       ['at', comparison.firstMismatchIndex],
-      ['expected', stored.join(',') || '-'],
-      ['actual', fresh.join(',') || '-'],
+      ['expected', stored === null ? '-' : `${stored}:${storedPart}`],
+      ['actual', fresh === null ? '-' : `${fresh}:${freshPart}`],
     ]);
     return isDocumentErrorLine(line) ? line : null;
   }
@@ -127,11 +127,12 @@ export async function sendDocumentErrorLine(
   send: typeof fetch = fetch,
 ): Promise<void> {
   if (!isDocumentErrorLine(line)) throw new Error('invalid document error line');
+  if (!/^[A-Za-z0-9_-]{43}$/.test(capability)) throw new Error('invalid document error capability');
   const response = await send(DOCUMENT_ERROR_LOG_PATH, {
     method: 'POST',
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
-      [DOCUMENT_ERROR_CAPABILITY_HEADER]: capability,
+      'x-rhwp-harness-capability': capability,
     },
     body: line,
     keepalive: true,
