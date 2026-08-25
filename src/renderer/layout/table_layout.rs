@@ -11320,6 +11320,11 @@ impl LayoutEngine {
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
             )
+            // 다행·다열 CELL 평가표의 문단 로컬 vpos=0 은 쪽 프레임이 아니다.
+            // valign=CENTER 셀은 선언 높이가 줄합과 비슷해 아래 4/5 검사가
+            // 우연히 참이 되고, 한 줄만 남긴 채 쪽을 비운다 (#6035).
+            || table.row_count != 1
+            || table.col_count != 1
             || cell.height >= 0x8000_0000
             || cell.paragraphs.iter().any(|paragraph| {
                 paragraph
@@ -15444,6 +15449,43 @@ mod row_cut_tests {
         let r = eng.advance_row_cut(&t, 0, &[], 80.0, &styles);
         assert_eq!(r.end_cut, vec![4], "하단 vpos 리셋은 저장 쪽 경계로 보존");
         assert!(!r.fully_consumed);
+    }
+
+    #[test]
+    fn test_advance_row_cut_multirow_cell_local_vpos_reset_is_not_a_page_break() {
+        // #6035: 147행 3열 CELL 평가표. 한 행 안 문단이 모두 vpos=0 으로 시작하는
+        // 것은 HWPX 문단 로컬 좌표이지 쪽 프레임이 아니다. 1×1 거대 셀 전용
+        // declared-frame 판정이 여기서 참이면 한 줄만 남기고 쪽을 비운다.
+        let eng = LayoutEngine::new(96.0);
+        eng.set_layout_profile(crate::model::provenance::LayoutCompatibilityProfile::new(
+            false, false, true, true, false, false,
+        ));
+        let styles = ResolvedStyleSet::default();
+        let mut cells = Vec::new();
+        for row in 0..10u16 {
+            for col in 0..3u16 {
+                let paragraphs = if row == 5 && col == 0 {
+                    vec![visible_text_para(1, 0), visible_text_para(3, 0)]
+                } else {
+                    vec![visible_text_para(1, 0)]
+                };
+                let mut c = cell(row, col, paragraphs);
+                c.height = 6657;
+                cells.push(c);
+            }
+        }
+        let mut t = rowbreak_table(cells);
+        t.common.height = 63914;
+        let r = eng.advance_row_cut(&t, 5, &[], 800.0, &styles);
+        assert_eq!(
+            r.end_cut,
+            vec![4, 1, 1],
+            "다행 다열 표의 문단 로컬 vpos=0 은 쪽을 가르지 않는다"
+        );
+        assert!(
+            r.fully_consumed,
+            "800px 예산에 4줄+빈칸이 모두 들어가야 한다"
+        );
     }
 
     #[test]
