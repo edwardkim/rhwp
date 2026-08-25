@@ -239,6 +239,7 @@ hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].ce
 hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	52
 hwp5rb	issue5885/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	30
 hwp5rb	issue5885/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	6
+hwp5rb	issue6032/2912695_civil_petition_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	41
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
