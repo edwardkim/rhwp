@@ -4239,8 +4239,9 @@ fn hwpx_saved_reset_fragment_matches_current_flow(
 /// 붙이면 본문을 넘는 경우에만 저장 쪽 경계를 살린다.
 ///
 /// `hwpx_saved_reset_fragment_matches_current_flow` 가 버리는 16px 드리프트보다
-/// 큰 넘침이고, 이미 쪽 하단에 붙어 있을 때만 승격한다. 쪽 중간의 키 큰 문단
-/// 되감김까지 살리며 pr-1674 가 35→36쪽으로 밀린다.
+/// 큰 넘침이고, 남은 칸이 한 줄 남짓일 때만 승격한다. 0.85·본문 하한은 쪽 중간
+/// 키 큰 문단과 아직 여유가 있는 하단 문단까지 올려 pr-1674(35→36)·3075729
+/// (13→14) 쪽수를 민다. issue1880 5쪽 pi=51 은 남은 칸 ≈24px 이다.
 fn keep_hwpx_internal_page_break_on_body_overflow(
     current_height: f64,
     para_fit_height: f64,
@@ -4250,8 +4251,9 @@ fn keep_hwpx_internal_page_break_on_body_overflow(
     if break_line == 0 || available <= 0.0 {
         return false;
     }
+    let remaining = available - current_height;
     let overflow = current_height + para_fit_height - available;
-    overflow > 16.0 && current_height >= available * 0.85
+    overflow > 16.0 && remaining > 0.0 && remaining < 40.0
 }
 
 fn paragraph_text_looks_like_list_continuation_tail(para: &Paragraph) -> bool {
