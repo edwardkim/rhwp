@@ -3599,11 +3599,15 @@ impl LayoutEngine {
                         let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
                             + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
                         let pad_v = (pad_top + pad_bottom).max(raw_pad_v);
-                        if Self::cell_row_grows_with_padding(line_based, decl_h, pad_v) {
+                        if Self::cell_row_grows_with_padding(line_based, decl_h, pad_v)
+                            && (line_based > decl_h + 1.5 || row_count <= 20)
+                        {
                             // 한글 실좌표는 원(cellMargin) 상하 여백 가산 — resolve
                             // 축소 pad(0.9×2)가 아니라 저장 1.9×2 로 18.4px 재현.
                             // #6030: 줄은 선언 안이지만 여백까지 합치면 반 줄 미만으로
                             // 넘치는 셀도 키운다 (빈 셀 lh≈h #2211 은 제외).
+                            // 거대 행 수 표의 행당 수 px 성장은 쪽 밖 셀 페인트로
+                            // 번지니(#overflow_cell_baseline) 선택지 규모만 허용.
                             line_based + pad_v
                         } else {
                             line_based
@@ -3732,7 +3736,9 @@ impl LayoutEngine {
                     let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
                         + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
                     let pad_v = (pad_top + pad_bottom).max(raw_pad_v);
-                    if Self::cell_row_grows_with_padding(line_based, decl_h, pad_v) {
+                    if Self::cell_row_grows_with_padding(line_based, decl_h, pad_v)
+                        && (line_based > decl_h + 1.5 || row_count <= 20)
+                    {
                         line_based + pad_v
                     } else {
                         line_based
