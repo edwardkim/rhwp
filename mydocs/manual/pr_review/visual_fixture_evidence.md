@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-24
+last_verified: 2026-08-26
 ---
 
 # 시각·fixture 증적
@@ -15,6 +15,19 @@ renderer, layout, typeset, paint, WASM 출력, HWP/HWPX/PDF fixture, 페이지 �
 최종 판단은 PR이 약속한 사용자-visible 변경 범위다. renderer/layout/paint 개선은 기준 PDF와의 시각 차이가
 blocker가 될 수 있지만, parser·serializer 구조 보존 PR은 visual 차이를 참고 자료로 기록하고 그 차이만으로
 merge를 보류하지 않는다.
+
+renderer/layout/typeset/paint 등 사용자-visible 렌더링 경로가 바뀌고 HWP/HWPX/PDF fixture가 함께 있으면,
+reviewer는 source PR이 첨부한 before/after나 수치만으로 "시각 검증 완료"라고 쓰지 않는다. 통합 head에서
+직접 만든 기준 PDF·visual sweep 또는 reviewer가 직접 연 기준 PDF/PNG 판정이 있어야 수용 근거가 된다.
+
+직접 visual sweep 또는 동등한 판정을 수행하지 못한 경우 review 문서의 최종 권고는 다음처럼 제한한다.
+
+- `보류`: PR 주장이 시각 결과 자체이고 기준 산출물을 확인하지 못했다.
+- `조건부 보류`: 코드·회귀 테스트는 통과했지만 시각 asset 확인이 남았다.
+- `수용 아님`: 원 PR 증적만 확인했고 maintainer 검증이 없는 상태다.
+
+이 상태에서는 "원 PR 증적 확인", "numeric/contract test 통과", "IR sweep baseline 통과" 같은 표현을
+"visual sweep 통과"와 섞지 않는다.
 
 visual sweep을 실제 검토 근거로 쓰면 review 문서에 다음을 모두 기록한다.
 

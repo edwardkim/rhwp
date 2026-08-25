@@ -65,6 +65,26 @@ Cargo 성공은 시각 검증 판정을 대체하지 않는다. 다음 중 하�
 - PR이 기준 PDF, 한컴 출력, 페이지 수, render-diff, visual regression 해결을 주장한다.
 - HWP/HWPX sample, 기준 PDF, golden, visual fixture를 추가·갱신한다.
 
+다음 조합은 "필요 여부 검토"가 아니라 **merge/수용 판정 전 직접 증적 필수**다.
+
+- renderer/layout/typeset/paint/page-visible 경로가 바뀌고, PR 또는 관련 issue에 HWP/HWPX/PDF fixture가
+  첨부·추가되어 있다.
+- PR 설명이 특정 문서의 페이지, 표, 줄바꿈, clipping, 겹침, 여백, z-order, 그림·도형 배치 개선을
+  주장한다.
+
+이 경우 review 문서의 최종 권고를 `merge` 또는 `수용`으로 쓰기 전에 다음 중 하나를 완료해야 한다.
+
+- `rhwp info --json`으로 원본 HWP/HWPX의 저장 버전을 확인하고, 버전에 맞는 MCP 기준 PDF를 만든 뒤,
+  visual sweep 대표 PNG와 요약 지표를 실제로 열어 확인한다.
+- 이미 PR branch에 포함된 기준 PDF/PNG를 쓰는 경우에도, 그 파일을 직접 열어 PR 주장의 페이지·영역이
+  해결됐는지 확인하고, 원본·기준·검토 asset의 경로와 SHA-256을 review 문서에 적는다.
+- 직접 시각 검증을 수행하지 못하면 최종 권고는 `보류` 또는 `조건부 보류`로 적고, "원 PR 제공
+  before/after만 확인했고 maintainer visual sweep은 미실행"처럼 누락 범위를 명시한다.
+
+원 PR이 before/after 이미지나 수치를 제공했더라도 maintainer가 직접 확인한 visual sweep 또는 동등한
+시각 판정 없이 이를 "시각 검증 통과"로 승격하지 않는다. 특히 통합 cherry-pick PR에서는 source PR의
+증적을 참고 자료로만 기록하고, 통합 head의 실제 산출물로 다시 확인했는지 별도 항목으로 적는다.
+
 개체 geometry 무회귀의 재실증은 다음 명령을 사용할 수 있다. 추적 개체가 없는 0→0 행은 근거로 삼지 않는다.
 
 ~~~bash
