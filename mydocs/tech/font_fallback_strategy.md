@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/font_fallback_strategy.md
-last_verified: 2026-08-24
+last_verified: 2026-08-25
 ---
 
 # CJK 폰트 폴백 전략 보고서
@@ -25,6 +25,12 @@ last_verified: 2026-08-24
 > 2026-08-24 현행화: 현재 registry schema 1.0은 W1/W6에서 이행한 830개 active rule을 봉인한
 > read-only authority다. 제품 규칙의 추가·의미 수정·폐기는 schema 1.0 JSON이나 generated projection을
 > 직접 고치지 않고, 별도 승인된 다음 schema 판과 evidence delta 계약을 먼저 마련한다.
+>
+> 2026-08-25 현행화: current runtime authority는 lifecycle schema 2.0의
+> `assets/font-rules/font_rule_registry_v2.json`이다. schema 1.0은 byte가 봉인된 역사 anchor로 남고,
+> runtime은 v2의 active rule만 다섯 backend projection으로 생성한다. 이후 제품 규칙 변경은 같은 ID의
+> 제자리 수정이 아니라 issue-scoped append-only change set과 evidence parent·digest, pre/post semantic
+> delta를 거쳐야 한다.
 
 ## 목차
 
@@ -83,9 +89,11 @@ canonical source `assets/fonts/`에는 재배포 가능한 WOFF2 36개가 Git으
 
 ### 1.5 현재 규칙 권위와 결정면
 
-현재 유한 mapping의 정본은 `assets/font-rules/font_rule_registry.json`이고, runtime은 JSON을 직접 읽지
-않는다. `scripts/font_rule_projection_gen.mjs`가 다음 다섯 정적 산출물을 만들며 각 소비자는 자기
-결정면만 읽는다.
+현재 유한 mapping의 정본은 lifecycle schema 2.0의
+`assets/font-rules/font_rule_registry_v2.json`이고, runtime은 JSON을 직접 읽지 않는다.
+`scripts/font_rule_projection_gen.mjs`가 v2의 active rule만 다음 다섯 정적 산출물로 만들며 각 소비자는
+자기 결정면만 읽는다. schema 1.0의 `font_rule_registry.json`은 W1/W6 일회 이행을 증명하는 봉인된
+역사 anchor이지 현재 제품 projection의 입력이 아니다.
 
 | projection | 의미 |
 | --- | --- |
@@ -99,11 +107,18 @@ canonical source `assets/fonts/`에는 재배포 가능한 WOFF2 36개가 Git으
 CSS 사용 가능, webfont URL 계획, CanvasKit SFNT bytes 확보는 서로 다른 사실이다. W2 Font Decision
 Trace는 실제 선택이 끝난 뒤 generated `ruleId`를 설명할 뿐 규칙 선택 권위가 아니다.
 
-schema 1.0은 현재 결과를 재현하는 봉인판이다. 동일 의미의 generator·serialization 결함은 registry
-semantic bytes를 유지한 채 정정할 수 있지만, 제품 규칙 변경을 위해 수량·status·historical evidence
-제약을 느슨하게 만들지 않는다. 새 규칙·의미 수정·폐기는 별도 이슈에서 다음 schema 판, migration
-manifest, `active`·`retired` lifecycle과 pre/post semantic delta를 먼저 승인한다. 폐기된 rule도 삭제하지
-않고 trace·감사 계보에 남긴다.
+schema 1.0은 현재 결과의 역사 기준을 재현하는 봉인판이고, schema 2.0은 변경 가능한 제품 query model이다.
+두 JSON이나 generated projection을 직접 편집하지 않는다. 제품 변경은 승인된 append-only change set을
+side-effect-free reducer에 적용해 v2 registry를 재생성한다. evidence 보강은 selection tuple을 유지하고,
+tuple 의미가 달라지면 기존 rule을 `retired`로 남긴 뒤 새 `ruleId`와 predecessor·successor를 만든다.
+한 change set은 한 decision plane과 한 backend projection만 소유하며, 다른 네 projection의 semantic
+hash는 같아야 한다. 폐기된 rule은 runtime에서 제외하지만 offline lifecycle audit와 W2 trace join에는
+계속 남긴다.
+
+JSON Schema는 구조와 개수 상한을 고정하지만 relation·projection 조합, metric identity, supply family·URL과
+capability agreement 같은 교차 필드 의미까지 판정하지 않는다. 이 의미 경계의 실행 권위는
+`font_rule_registry_v2.mjs`의 `validateChangeSet()`·`validateRegistryV2()`이며, W8은 schema 검사만으로 규칙을
+수용하지 않는다.
 
 ---
 
@@ -767,11 +782,16 @@ HWP 문서에서 다음 폰트명들은 FONT_METRICS DB 에 정식 엔트리가 
 **새 한글 폰트 규칙을 제안할 때 반드시 확인**:
 
 - [ ] layout-name, layout-metric, paint, supply, detection 중 결정면과 relation을 먼저 확정한다.
-- [ ] `assets/font-rules/font_rule_registry.json`의 현재 schema 판이 그 변경을 허용하는지 확인한다.
-      schema 1.0은 read-only이므로 제품 규칙 변경이면 다음 schema 판의 별도 이슈·계획·승인이 먼저다.
+- [ ] schema 1.0 `font_rule_registry.json`과 schema 2.0 `font_rule_registry_v2.json`, generated source를
+      직접 편집하지 않는다. 제품 규칙 변경은 별도 이슈·계획 승인을 받은 append-only change set으로만
+      시작한다.
 - [ ] 기존 W1 snapshot을 갱신하지 않고 새 evidence parent·digest와 rule 유지·신규·retirement 판정을
       migration manifest에 기록한다.
-- [ ] Rust/Studio generated 파일을 직접 편집하지 않고 `font_rule_projection_gen.mjs`로 재생성한다.
+- [ ] evidence-only면 같은 tuple·ruleId를 유지하고, tuple 변경이면 retire-and-replace와 새 ruleId를 쓴다.
+- [ ] Rust/Studio generated 파일을 직접 편집하지 않고 `font_rule_registry_v2.mjs`의 reducer 계약과
+      `font_rule_projection_gen.mjs`로 재생성한다.
+- [ ] JSON Schema 적합성에 더해 `font_rule_registry_v2.mjs`의 relation·metric·supply semantic validator를
+      통과한다.
 - [ ] layout-name 규칙이면 `rust-layout-name`, metric alias면 `rust-layout-metric` projection만 바뀌는지
       manifest digest로 확인한다.
 - [ ] FONT_METRICS 배열에 영문 DB 이름으로 엔트리 존재하는지 확인. 없으면:

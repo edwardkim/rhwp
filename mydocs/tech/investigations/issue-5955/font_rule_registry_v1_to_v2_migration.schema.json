@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/issue-5955/font_rule_registry_v1_to_v2_migration.schema.json",
+  "title": "rhwp font rule registry v1 to v2 migration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "issue",
+    "sourceCommit",
+    "schema",
+    "fromSchema",
+    "fromRegistry",
+    "toSchema",
+    "toRegistry",
+    "summary",
+    "mappings",
+    "projectionDeltas",
+    "mappingsSha256"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "2.0" },
+    "kind": { "const": "font-rule-registry-v1-to-v2-migration" },
+    "issue": { "const": 5955 },
+    "sourceCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "schema": { "$ref": "#/$defs/pathDigest" },
+    "fromSchema": { "$ref": "#/$defs/pathDigest" },
+    "fromRegistry": { "$ref": "#/$defs/pathDigest" },
+    "toSchema": { "$ref": "#/$defs/pathDigest" },
+    "toRegistry": { "$ref": "#/$defs/pathDigest" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v1RuleCount", "v2ActiveRuleCount", "v2RetiredRuleCount", "carryForwardCount"],
+      "properties": {
+        "v1RuleCount": { "const": 830 },
+        "v2ActiveRuleCount": { "const": 830 },
+        "v2RetiredRuleCount": { "const": 0 },
+        "carryForwardCount": { "const": 830 }
+      }
+    },
+    "mappings": {
+      "type": "array",
+      "minItems": 830,
+      "maxItems": 830,
+      "items": { "$ref": "#/$defs/mapping" }
+    },
+    "projectionDeltas": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/projectionDelta" }
+    },
+    "mappingsSha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nonEmptyString": { "type": "string", "minLength": 1, "maxLength": 2048 },
+    "pathDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/nonEmptyString" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "v1RuleId",
+        "v2RuleId",
+        "disposition",
+        "beforeRuleSha256",
+        "afterRuleSha256",
+        "beforeSelectionTupleSha256",
+        "afterSelectionTupleSha256"
+      ],
+      "properties": {
+        "v1RuleId": { "$ref": "#/$defs/nonEmptyString" },
+        "v2RuleId": { "$ref": "#/$defs/nonEmptyString" },
+        "disposition": { "const": "carry-forward" },
+        "beforeRuleSha256": { "$ref": "#/$defs/sha256" },
+        "afterRuleSha256": { "$ref": "#/$defs/sha256" },
+        "beforeSelectionTupleSha256": { "$ref": "#/$defs/sha256" },
+        "afterSelectionTupleSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "projectionDelta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["projectionId", "beforeCount", "afterCount", "beforeSemanticSha256", "afterSemanticSha256", "status"],
+      "properties": {
+        "projectionId": {
+          "enum": [
+            "rust-layout-name",
+            "rust-layout-metric",
+            "canvas2d-paint",
+            "canvas2d-webfont",
+            "canvaskit-sfnt"
+          ]
+        },
+        "beforeCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "afterCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "beforeSemanticSha256": { "$ref": "#/$defs/sha256" },
+        "afterSemanticSha256": { "$ref": "#/$defs/sha256" },
+        "status": { "const": "unchanged" }
+      }
+    }
+  }
+}
