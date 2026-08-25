@@ -104,3 +104,34 @@ test('통합 배율 버튼은 좌우 확대 아이콘과 같은 18px SVG 돋보�
   assert.match(icon, /stroke-linecap:\s*round/);
   assert.doesNotMatch(css, /\.icon-zoom-menu::(?:before|after)/);
 });
+
+test('배율 슬라이더 손잡이와 100% 눈금은 같은 12px 크기이며 눈금이 뒤에 놓인다', () => {
+  const css = readFileSync(
+    new URL('../src/styles/status-bar.css', import.meta.url),
+    'utf8',
+  );
+  const wrap = css.match(/\.stb-zoom-range-wrap\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
+  const range = css.match(/\.stb-zoom-range\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
+  const mark = css.match(/\.stb-zoom-neutral-mark\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
+  const webkitThumb = css.match(
+    /\.stb-zoom-range::-webkit-slider-thumb\s*\{(?<rules>[^}]*)\}/,
+  )?.groups?.rules;
+  const firefoxThumb = css.match(
+    /\.stb-zoom-range::-moz-range-thumb\s*\{(?<rules>[^}]*)\}/,
+  )?.groups?.rules;
+
+  assert.ok(wrap);
+  assert.ok(range);
+  assert.ok(mark);
+  assert.ok(webkitThumb);
+  assert.ok(firefoxThumb);
+  assert.match(wrap, /--stb-zoom-thumb-size:\s*12px/);
+  assert.match(range, /z-index:\s*2/);
+  assert.match(mark, /z-index:\s*1/);
+  assert.match(mark, /height:\s*var\(--stb-zoom-thumb-size\)/);
+  assert.match(webkitThumb, /width:\s*var\(--stb-zoom-thumb-size\)/);
+  assert.match(webkitThumb, /height:\s*var\(--stb-zoom-thumb-size\)/);
+  assert.match(firefoxThumb, /width:\s*var\(--stb-zoom-thumb-size\)/);
+  assert.match(firefoxThumb, /height:\s*var\(--stb-zoom-thumb-size\)/);
+  assert.doesNotMatch(css, /\.stb-zoom-range-wrap\.is-neutral[\s\S]*?visibility:\s*hidden/);
+});
