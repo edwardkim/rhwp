@@ -583,6 +583,62 @@ struct VisibleFloatExclusion {
     /// 자기 표가 만든 zone 에 밀리면 안 된다 — 한컴은 제목을 문단 앵커(표 위)에 두고
     /// 양수 offset 표를 그 아래에 둔다. consume 시 self-owned zone 을 skip 하는 데 쓴다.
     owner_para: usize,
+    /// true: 후속 본문 줄도 이 밴드를 피한다(자리차지 T&B 표).
+    /// false: 본문은 옆을 흐르고, 후속 자리차지(T&B) 표만 밴드 아래로 밀린다
+    /// (어울림 Square 그림, #5929).
+    blocks_text: bool,
+}
+
+/// 그린 노드에서 해당 컨트롤의 페인트 bbox 를 찾는다.
+fn find_painted_control_bbox(
+    node: &RenderNode,
+    para_index: usize,
+    control_index: usize,
+) -> Option<BoundingBox> {
+    let hit = match &node.node_type {
+        RenderNodeType::Image(img) => {
+            img.para_index == Some(para_index) && img.control_index == Some(control_index)
+        }
+        _ => false,
+    };
+    if hit && node.bbox.height > 0.0 {
+        return Some(node.bbox);
+    }
+    node.children
+        .iter()
+        .rev()
+        .find_map(|child| find_painted_control_bbox(child, para_index, control_index))
+}
+
+/// [#5929] 어울림(Square) 그림은 본문 흐름 y 를 밀지 않지만, allowOverlap=0 이면
+/// 후속 자리차지(T&B) 표는 그림과 겹치면 안 된다. 본문 텍스트는 그림 옆을 흐르므로
+/// `blocks_text=false`.
+fn square_picture_side_wrap_exclusion(
+    para: &Paragraph,
+    para_index: usize,
+    control_index: usize,
+    col_node: &RenderNode,
+) -> Option<VisibleFloatExclusion> {
+    let Control::Picture(pic) = para.controls.get(control_index)? else {
+        return None;
+    };
+    if pic.common.treat_as_char
+        || pic.common.allow_overlap
+        || !matches!(pic.common.text_wrap, TextWrap::Square)
+        || !matches!(pic.common.vert_rel_to, VertRelTo::Para)
+    {
+        return None;
+    }
+    let bbox = find_painted_control_bbox(col_node, para_index, control_index)?;
+    if bbox.height <= 0.0 {
+        return None;
+    }
+    Some(VisibleFloatExclusion {
+        top: bbox.y,
+        bottom: bbox.y + bbox.height,
+        owner_para: para_index,
+        blocks_text: false,
+    })
 }
 
 fn render_node_contains_text_for_para(node: &RenderNode, para_index: usize) -> bool {
@@ -6608,7 +6664,8 @@ impl LayoutEngine {
                     if let Some(probe) = single_line_probe {
                         if probe > 0.0
                             && visible_float_exclusions.iter().any(|zone| {
-                                zone.owner_para < item_para
+                                zone.blocks_text
+                                    && zone.owner_para < item_para
                                     && prev_item_is_owner_line(zone.owner_para)
                                     && y_before_vpos_adjust + probe <= zone.top + 0.5
                                     && y_offset + 0.5 >= zone.top
@@ -6716,6 +6773,11 @@ impl LayoutEngine {
                     // [#2439] 단, 같은 문단의 표 항목 뒤에 emit 된 post-text(서명란)는
                     // 이미 표 뒤 순서로 확정된 것이므로 자기 exclusion 도 소비해야 한다.
                     if zone.owner_para == item_para && !same_owner_table_precedes {
+                        continue;
+                    }
+                    // [#5929] 어울림 그림 밴드는 본문 텍스트가 옆을 흐른다 — 자리차지
+                    // 표만 피하면 된다 (layout_table_control_block 의 consult).
+                    if !zone.blocks_text {
                         continue;
                     }
                     if item_para_inkless {
@@ -8078,6 +8140,18 @@ impl LayoutEngine {
                     &ctx,
                     y_offset,
                 );
+                // [#5929] 어울림 그림은 흐름 y 를 되돌리므로, 후속 T&B 표가
+                // 그림 페인트 bbox 를 피할 수 있게 exclusion 을 남긴다.
+                if let Some(para) = ctx.paragraphs.get(*para_index) {
+                    if let Some(zone) = square_picture_side_wrap_exclusion(
+                        para,
+                        *para_index,
+                        *control_index,
+                        col_node,
+                    ) {
+                        visible_float_exclusions.push(zone);
+                    }
+                }
             }
             PageItem::EndnoteSeparator {
                 separator_length,
@@ -8728,6 +8802,10 @@ impl LayoutEngine {
                                 } else {
                                     0.0
                                 }
+                            } else if !zone.blocks_text {
+                                // [#5929] 어울림 그림 아래 자리차지 표는 바깥 위 여백을
+                                // 유지한다(한컴: 표가 그림 바닥에 붙지 않음).
+                                visible_outer_top_px.max(v_off.max(0.0))
                             } else {
                                 v_off.max(0.0)
                             };
@@ -9028,6 +9106,7 @@ impl LayoutEngine {
                             top: table_visual_top,
                             bottom: table_visual_end + margin_bottom_px + host_line_spacing_px,
                             owner_para: para_index,
+                            blocks_text: true,
                         });
                     }
                 }
