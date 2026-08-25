@@ -4235,6 +4235,44 @@ fn hwpx_saved_reset_fragment_matches_current_flow(
         .is_some_and(|seg| !is_synthetic_line_seg(seg) && seg.vertical_pos == 0)
 }
 
+/// HWPX 내부 vpos 되감김을 흐름 앵커 불일치로 버릴 때, 문단 전체를 현재 쪽에
+/// 붙이면 본문을 넘는 경우에만 저장 쪽 경계를 살린다.
+fn keep_hwpx_internal_page_break_on_body_overflow(
+    current_height: f64,
+    para_fit_height: f64,
+    available: f64,
+    break_line: usize,
+) -> bool {
+    break_line > 0 && current_height + para_fit_height > available
+}
+
+#[cfg(test)]
+mod keep_hwpx_internal_page_break_on_body_overflow_contract {
+    use super::keep_hwpx_internal_page_break_on_body_overflow;
+
+    #[test]
+    fn keeps_a_mid_para_rewind_when_the_paragraph_would_overflow_the_body() {
+        // issue1880 p5 pi=51: 흐름 891 + 문단 106.9 > 본문 914.7, break_line=1.
+        assert!(keep_hwpx_internal_page_break_on_body_overflow(
+            891.0, 106.9, 914.7, 1
+        ));
+    }
+
+    #[test]
+    fn does_not_promote_a_rewind_when_the_paragraph_still_fits() {
+        assert!(!keep_hwpx_internal_page_break_on_body_overflow(
+            800.0, 50.0, 914.7, 1
+        ));
+    }
+
+    #[test]
+    fn ignores_a_zero_break_line() {
+        assert!(!keep_hwpx_internal_page_break_on_body_overflow(
+            891.0, 106.9, 914.7, 0
+        ));
+    }
+}
+
 fn paragraph_text_looks_like_list_continuation_tail(para: &Paragraph) -> bool {
     let text = para.text.trim_start();
     text.starts_with('.') || text.starts_with('-') || text.starts_with('·') || text.starts_with('•')
@@ -16695,6 +16733,8 @@ impl TypesetEngine {
         .filter(|break_line| {
             // HWPX의 reset은 local writer cursor도 재사용한다. 현재 flow와
             // anchor가 맞지 않는 reset은 physical page 경계로 승격하지 않는다.
+            // 다만 되감긴 꼬리를 현재 쪽에 붙이면 본문을 넘는 경우에는 그 저장
+            // 쪽 경계가 넘침의 증거이므로 흐름 드리프트로 버리지 않는다.
             !st.profile.hwpx_stored_layout()
                 || st.current_items.is_empty()
                 || hwpx_saved_reset_fragment_matches_current_flow(
@@ -16704,6 +16744,12 @@ impl TypesetEngine {
                     *break_line,
                     current_page_vpos_base.unwrap_or(0),
                     self.dpi,
+                )
+                || keep_hwpx_internal_page_break_on_body_overflow(
+                    st.current_height,
+                    fmt.height_for_fit,
+                    available,
+                    *break_line,
                 )
         });
         let forced_page_break_line = internal_forced_page_break_line
