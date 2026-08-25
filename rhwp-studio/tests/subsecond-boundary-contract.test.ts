@@ -65,9 +65,9 @@ test('Subsecond fidelity harness owns hot line-break provenance and generation-s
   assert.match(overlay, /referenceGeneration/);
   assert.match(fidelity, /downstreamChangedPageRange/);
   assert.match(overlay, /findFirstLineBreakError/);
-  assert.match(overlay, /current\.desiredSrc !== src/);
-  assert.match(overlay, /current\.loadingSrc = ''/);
-  assert.match(overlay, /current\.imageRetryCount >= 3/);
+  assert.match(overlay, /mounted\.desiredSrc === src/);
+  assert.match(overlay, /mounted\.pendingImage = null/);
+  assert.match(overlay, /mounted\.imageRetryCount >= 3/);
   assert.match(
     canvasView,
     /nextDiagnosticRenderGeneration\([\s\S]*?decisionChanged,[\s\S]*?changed/,

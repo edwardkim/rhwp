@@ -66,6 +66,7 @@ test('fidelity scan yield keeps a timer fallback when idle callbacks are suspend
 
 test('diagnostic pause blocks the next page capture and abort releases it', async () => {
   const gate = new DiagnosticPauseGate();
+  assert.equal(Object.getOwnPropertyDescriptor(DiagnosticPauseGate.prototype, 'paused')?.set, undefined);
   const firstSignal = new AbortController();
   gate.set(true);
   let resumed = false;

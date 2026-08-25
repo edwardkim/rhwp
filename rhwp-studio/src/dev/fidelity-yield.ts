@@ -1,12 +1,10 @@
-const IDLE_TIMEOUT_MS = 500;
-
 type IdleWindow = Window & {
   requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
   cancelIdleCallback?: (id: number) => void;
 };
 
 export class DiagnosticPauseGate {
-  private waiting = new Set<() => void>();
+  private readonly waiting = new Set<() => void>();
   private value = false;
 
   get paused(): boolean {
@@ -16,8 +14,7 @@ export class DiagnosticPauseGate {
   set(paused: boolean): void {
     if (this.value === paused) return;
     this.value = paused;
-    if (paused) return;
-    for (const resume of Array.from(this.waiting)) resume();
+    if (!paused) for (const resume of this.waiting) resume();
   }
 
   wait(signal: AbortSignal): Promise<void> {
@@ -41,17 +38,17 @@ export function yieldToInteractiveWork(signal: AbortSignal): Promise<void> {
   }
   return new Promise(resolve => {
     const idleWindow = window as IdleWindow;
-    let idleId: number | null = null;
-    let timerId: number | null = null;
+    let idleId: number | undefined;
+    let timerId: number | undefined;
     const finish = (): void => {
       signal.removeEventListener('abort', finish);
-      if (idleId !== null) idleWindow.cancelIdleCallback?.(idleId);
-      if (timerId !== null) window.clearTimeout(timerId);
+      if (idleId !== undefined) idleWindow.cancelIdleCallback?.(idleId);
+      if (timerId !== undefined) window.clearTimeout(timerId);
       resolve();
     };
     signal.addEventListener('abort', finish, { once: true });
     const hasIdleCallback = typeof idleWindow.requestIdleCallback === 'function';
-    timerId = window.setTimeout(finish, hasIdleCallback ? IDLE_TIMEOUT_MS : 16);
-    if (hasIdleCallback) idleId = idleWindow.requestIdleCallback(finish, { timeout: IDLE_TIMEOUT_MS });
+    timerId = window.setTimeout(finish, hasIdleCallback ? 500 : 16);
+    if (hasIdleCallback) idleId = idleWindow.requestIdleCallback!(finish, { timeout: 500 });
   });
 }

@@ -259,7 +259,7 @@ async function activatePdfReference(
     }
 
     const { PdfReferenceOverlay } = await import('@/dev/pdf-reference-overlay');
-    const overlay = await PdfReferenceOverlay.open(
+    const overlay = new PdfReferenceOverlay(
       result.pdfPageUrl,
       result.pdfPageWidth,
       result.pdfPageCount,

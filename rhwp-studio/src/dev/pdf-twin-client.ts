@@ -28,26 +28,19 @@ export async function lookupPdfTwin(
   });
   if (response.status === 404) return { status: 'none' };
   if (response.status === 503) {
-    const busy = await response.json() as { status?: unknown; retryAfterMs?: unknown };
+    const { retryAfterMs } = await response.json() as { retryAfterMs?: unknown };
     return {
       status: 'busy',
-      retryAfterMs: typeof busy.retryAfterMs === 'number'
-        ? Math.min(30_000, Math.max(100, busy.retryAfterMs))
+      retryAfterMs: typeof retryAfterMs === 'number'
+        ? Math.min(30_000, Math.max(100, retryAfterMs))
         : 1_000,
     };
   }
   if (!response.ok) throw new Error(`PDF twin lookup failed (${response.status})`);
   const result = await response.json() as PdfTwinLookupResponse;
-  if (
-    result.status === 'found'
-    || result.status === 'none'
-    || result.status === 'ambiguous'
-  ) {
-    if (
-      result.status === 'found'
-      && !/^[A-Za-z0-9_-]{43}$/.test(result.errorLogCapability)
-    ) throw new Error('PDF twin lookup returned an invalid capability');
-    return result;
+  if (result.status === 'found' && !/^[A-Za-z0-9_-]{43}$/.test(result.errorLogCapability)) {
+    throw new Error('PDF twin lookup returned an invalid capability');
   }
+  if (['found', 'none', 'ambiguous'].includes(result.status)) return result;
   throw new Error('PDF twin lookup returned an invalid response');
 }

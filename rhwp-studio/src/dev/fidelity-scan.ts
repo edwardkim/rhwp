@@ -1,6 +1,5 @@
 import type {
   HorizontalRuleDiagnostics,
-  PixelDiffBounds,
   PixelDiffMetrics,
 } from './pdf-reference-diff';
 
@@ -25,22 +24,13 @@ export interface FidelityPageObservation {
   pdfInkRows: HorizontalRuleDiagnostics;
 }
 
-export interface FidelityPageReport {
+export interface FidelityPageReport extends PixelDiffMetrics {
   pageIndex: number;
   hwpFingerprint: string;
   hwpSize: { width: number; height: number };
   referenceSize: { width: number; height: number };
   referenceHeightDelta: number;
-  mismatchPixels: number;
-  pdfOnlyPixels: number;
-  hwpOnlyPixels: number;
-  colorMismatchPixels: number;
-  comparedPixels: number;
-  mismatchRatio: number;
-  meanAbsoluteError: number;
-  maxAbsoluteError: number;
   mismatchRatioDelta: number | null;
-  bounds: PixelDiffBounds | null;
   changedFromPrevious: boolean | null;
   horizontalRuleDelta: DiagnosticBandDelta;
   inkRowDelta: DiagnosticBandDelta;
@@ -89,6 +79,8 @@ export type FirstDocumentDivergence = {
   kind: 'structural' | 'page-count';
   pageIndex: number;
 };
+
+const round = (value: number, digits: number): number => Number(value.toFixed(digits));
 
 export function isFidelityDocumentCurrent(
   expected: { documentDigest: string | null; documentGeneration: number },
@@ -233,17 +225,14 @@ export function compareDiagnosticBands(
   const pairedCount = Math.min(hwp.bands.length, pdf.bands.length);
   const deltas = Array.from({ length: pairedCount }, (_, index) =>
     Math.abs(hwp.bands[index].centerY - pdf.bands[index].centerY));
+  const mean = deltas.reduce((sum, value) => sum + value, 0) / deltas.length;
   return {
     hwpCount: hwp.totalBands,
     pdfCount: pdf.totalBands,
     countDelta: hwp.totalBands - pdf.totalBands,
     pairedCount,
-    maxCenterDelta: deltas.length > 0
-      ? Number(Math.max(...deltas).toFixed(3))
-      : null,
-    meanCenterDelta: deltas.length > 0
-      ? Number((deltas.reduce((sum, value) => sum + value, 0) / deltas.length).toFixed(3))
-      : null,
+    maxCenterDelta: deltas.length ? round(Math.max(...deltas), 3) : null,
+    meanCenterDelta: deltas.length ? round(mean, 3) : null,
   };
 }
 
@@ -264,35 +253,27 @@ export function buildFidelityScanReport(input: {
   const previousByPage = new Map(
     input.previous?.pages.map(page => [page.pageIndex, page]) ?? [],
   );
-  const pages = input.observations.map((observation): FidelityPageReport => {
-    const previous = previousByPage.get(observation.pageIndex);
-    const mismatchRatio = Number(observation.mismatch.mismatchRatio.toFixed(6));
+  const pages = input.observations.map((page): FidelityPageReport => {
+    const previous = previousByPage.get(page.pageIndex);
+    const mismatchRatio = round(page.mismatch.mismatchRatio, 6);
     return {
-      pageIndex: observation.pageIndex,
-      hwpFingerprint: observation.hwpFingerprint,
-      hwpSize: observation.hwpSize,
-      referenceSize: observation.referenceSize,
-      referenceHeightDelta: observation.referenceSize.height - observation.hwpSize.height,
-      mismatchPixels: observation.mismatch.mismatchPixels,
-      pdfOnlyPixels: observation.mismatch.pdfOnlyPixels,
-      hwpOnlyPixels: observation.mismatch.hwpOnlyPixels,
-      colorMismatchPixels: observation.mismatch.colorMismatchPixels,
-      comparedPixels: observation.mismatch.comparedPixels,
+      pageIndex: page.pageIndex,
+      hwpFingerprint: page.hwpFingerprint,
+      hwpSize: page.hwpSize,
+      referenceSize: page.referenceSize,
+      referenceHeightDelta: page.referenceSize.height - page.hwpSize.height,
+      ...page.mismatch,
       mismatchRatio,
-      meanAbsoluteError: Number(observation.mismatch.meanAbsoluteError.toFixed(3)),
-      maxAbsoluteError: Number(observation.mismatch.maxAbsoluteError.toFixed(3)),
+      meanAbsoluteError: round(page.mismatch.meanAbsoluteError, 3),
+      maxAbsoluteError: round(page.mismatch.maxAbsoluteError, 3),
       mismatchRatioDelta: previous
-        ? Number((mismatchRatio - previous.mismatchRatio).toFixed(6))
+        ? round(mismatchRatio - previous.mismatchRatio, 6)
         : null,
-      bounds: observation.mismatch.bounds,
       changedFromPrevious: previous
-        ? previous.hwpFingerprint !== observation.hwpFingerprint
+        ? previous.hwpFingerprint !== page.hwpFingerprint
         : null,
-      horizontalRuleDelta: compareDiagnosticBands(
-        observation.hwpHorizontalRules,
-        observation.pdfHorizontalRules,
-      ),
-      inkRowDelta: compareDiagnosticBands(observation.hwpInkRows, observation.pdfInkRows),
+      horizontalRuleDelta: compareDiagnosticBands(page.hwpHorizontalRules, page.pdfHorizontalRules),
+      inkRowDelta: compareDiagnosticBands(page.hwpInkRows, page.pdfInkRows),
     };
   });
   const changedPages = pages
@@ -306,7 +287,7 @@ export function buildFidelityScanReport(input: {
       changedPages.push(pageIndex);
     }
   }
-  const uniqueChangedPages = Array.from(new Set(changedPages)).sort((left, right) => left - right);
+  const changed = Array.from(new Set(changedPages)).sort((left, right) => left - right);
   const sharedPageCount = Math.min(input.hwpPageCount, input.pdfPageCount ?? input.hwpPageCount);
   const pageCountDivergence = input.pdfPageCount !== null
     && input.hwpPageCount !== input.pdfPageCount;
@@ -319,14 +300,16 @@ export function buildFidelityScanReport(input: {
   const countRegressed = previousPageCountError !== null
     && currentPageCountError !== null
     && currentPageCountError > previousPageCountError;
-  const firstRegressionPage = pages.find(page =>
-    page.mismatchRatioDelta !== null && page.mismatchRatioDelta > 0)?.pageIndex
-    ?? (countRegressed ? sharedPageCount : null);
+  const countBoundary = pageCountDivergence ? sharedPageCount : null;
+  const firstPage = (predicate: (page: FidelityPageReport) => boolean, fallback = countBoundary) =>
+    pages.find(predicate)?.pageIndex ?? fallback;
+  const firstRegressionPage = firstPage(
+    page => page.mismatchRatioDelta !== null && page.mismatchRatioDelta > 0,
+    countRegressed ? sharedPageCount : null,
+  );
   const pixelMismatchPageCount = pages.filter(page => page.mismatchPixels > 0).length;
-  const firstDivergentPage = pages.find(page => page.mismatchPixels > 0)?.pageIndex
-    ?? (pageCountDivergence ? sharedPageCount : null);
-  const firstStructuralDivergencePage = pages.find(isStructuralPageDivergence)?.pageIndex
-    ?? (pageCountDivergence ? sharedPageCount : null);
+  const firstDivergentPage = firstPage(page => page.mismatchPixels > 0);
+  const firstStructuralDivergencePage = firstPage(isStructuralPageDivergence);
   return {
     schemaVersion: 1,
     scanId: input.scanId,
@@ -351,10 +334,10 @@ export function buildFidelityScanReport(input: {
     firstDivergentPage,
     firstStructuralDivergencePage,
     firstRegressionPage,
-    downstreamChangedPageRange: uniqueChangedPages.length > 0
+    downstreamChangedPageRange: changed.length > 0
       ? {
-          start: uniqueChangedPages[0],
-          end: uniqueChangedPages[uniqueChangedPages.length - 1],
+          start: changed[0],
+          end: changed[changed.length - 1],
         }
       : null,
     pages,

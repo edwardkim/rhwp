@@ -45,6 +45,11 @@ const DEFAULT_HORIZONTAL_RULE_OPTIONS = {
   minCoverageRatio: 0.55,
   maxBands: 96,
 } as const;
+const DIFF_COLORS = [
+  [220, 53, 69],
+  [15, 118, 110],
+  [217, 119, 6],
+] as const;
 
 function roundedRatio(value: number): number {
   return Number(value.toFixed(4));
@@ -195,30 +200,14 @@ export function computeReferencePixelDiff(
     if (absoluteError < threshold) continue;
 
     mismatchPixels += 1;
+    const inkDelta = referenceInk - hwpInk;
+    const kind = inkDelta > threshold / 2 ? 0 : inkDelta < -threshold / 2 ? 1 : 2;
+    if (kind === 0) pdfOnlyPixels += 1;
+    else if (kind === 1) hwpOnlyPixels += 1;
+    else colorMismatchPixels += 1;
     if (mismatchMask) {
-      const inkDelta = referenceInk - hwpInk;
-      if (inkDelta > threshold / 2) {
-        pdfOnlyPixels += 1;
-        mismatchMask[offset] = 220;
-        mismatchMask[offset + 1] = 53;
-        mismatchMask[offset + 2] = 69;
-      } else if (inkDelta < -threshold / 2) {
-        hwpOnlyPixels += 1;
-        mismatchMask[offset] = 15;
-        mismatchMask[offset + 1] = 118;
-        mismatchMask[offset + 2] = 110;
-      } else {
-        colorMismatchPixels += 1;
-        mismatchMask[offset] = 217;
-        mismatchMask[offset + 1] = 119;
-        mismatchMask[offset + 2] = 6;
-      }
+      mismatchMask.set(DIFF_COLORS[kind], offset);
       mismatchMask[offset + 3] = Math.min(210, Math.max(56, Math.round(absoluteError * 0.82)));
-    } else {
-      const inkDelta = referenceInk - hwpInk;
-      if (inkDelta > threshold / 2) pdfOnlyPixels += 1;
-      else if (inkDelta < -threshold / 2) hwpOnlyPixels += 1;
-      else colorMismatchPixels += 1;
     }
     const x = pixel % width;
     const y = Math.floor(pixel / width);

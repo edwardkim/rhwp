@@ -11,25 +11,26 @@ export function boundedPageRasterSize(
   pixelWidth: number,
   label = 'page',
 ): { width: number; height: number } {
-  const aspectRatio = pageSize.height / pageSize.width;
-  const pixelHeight = Math.round(pixelWidth * aspectRatio);
+  const { minWidth, maxWidth, maxHeight, maxPixels, maxAspectRatio } = PAGE_RASTER_BUDGET;
+  const aspect = pageSize.height / pageSize.width;
+  const height = Math.round(pixelWidth * aspect);
   if (
     !Number.isSafeInteger(pixelWidth)
-    || pixelWidth < PAGE_RASTER_BUDGET.minWidth
-    || pixelWidth > PAGE_RASTER_BUDGET.maxWidth
+    || pixelWidth < minWidth
+    || pixelWidth > maxWidth
     || !Number.isFinite(pageSize.width)
     || !Number.isFinite(pageSize.height)
-    || !(pageSize.width > 0)
-    || !(pageSize.height > 0)
-    || !Number.isFinite(aspectRatio)
-    || aspectRatio > PAGE_RASTER_BUDGET.maxAspectRatio
-    || aspectRatio < 1 / PAGE_RASTER_BUDGET.maxAspectRatio
-    || !Number.isSafeInteger(pixelHeight)
-    || pixelHeight <= 0
-    || pixelHeight > PAGE_RASTER_BUDGET.maxHeight
-    || pixelWidth * pixelHeight > PAGE_RASTER_BUDGET.maxPixels
+    || pageSize.width <= 0
+    || pageSize.height <= 0
+    || !Number.isFinite(aspect)
+    || aspect > maxAspectRatio
+    || aspect < 1 / maxAspectRatio
+    || !Number.isSafeInteger(height)
+    || height <= 0
+    || height > maxHeight
+    || pixelWidth * height > maxPixels
   ) {
     throw new Error(`${label} raster dimensions exceed the harness budget`);
   }
-  return { width: pixelWidth, height: pixelHeight };
+  return { width: pixelWidth, height };
 }

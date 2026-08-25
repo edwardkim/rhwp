@@ -18,7 +18,6 @@ import {
   queryFidelityPage,
   queryFidelityPages,
   summarizeFidelityScan,
-  type FidelityPageReport,
   type FidelityPageQuery,
   type FidelityPageQueryResult,
   type FidelityPageObservation,
@@ -72,8 +71,6 @@ interface SupersededFidelityScan {
 }
 
 interface FidelityHarnessState {
-  schemaVersion: 1;
-  owner: string;
   status: 'idle' | 'scanning' | 'ready' | 'error' | 'destroyed';
   activeScanId: number | null;
   completedPages: number;
@@ -85,38 +82,30 @@ interface FidelityHarnessState {
   lastError: string | null;
 }
 
-export interface FidelityHarnessSnapshot {
+export type FidelityHarnessSnapshot = Omit<FidelityHarnessState, 'status' | 'latestReport'> & {
   schemaVersion: 1;
   owner: string;
   status: FidelityHarnessState['status'] | 'stale';
   current: boolean;
-  activeScanId: number | null;
-  completedPages: number;
-  totalPages: number;
   latestReport: FidelityScanSummary | null;
-  history: FidelityScanSummary[];
-  activeTarget: FidelityScanTarget | null;
-  supersededScans: SupersededFidelityScan[];
-  lastError: string | null;
-}
+};
+
+type FidelityPageResult = ReturnType<typeof queryFidelityPage>;
+type FidelityNavigationResult = {
+  scanId: number | null;
+  current: boolean;
+  pageIndex: number | null;
+  navigatedPageIndex: number | null;
+  navigated: boolean;
+};
 
 export interface FidelityHarnessApi {
   readonly schemaVersion: 1;
   snapshot(): FidelityHarnessSnapshot;
   pages(query?: FidelityPageQuery): FidelityPageQueryResult;
-  page(pageIndex: number, scanId?: number): {
-    scanId: number | null;
-    current: boolean;
-    item: FidelityPageReport | null;
-  };
+  page(pageIndex: number, scanId?: number): FidelityPageResult;
   scan(): Promise<FidelityScanSummary | null>;
-  gotoFirstRegression(scanId?: number): {
-    scanId: number | null;
-    current: boolean;
-    pageIndex: number | null;
-    navigatedPageIndex: number | null;
-    navigated: boolean;
-  };
+  gotoFirstRegression(scanId?: number): FidelityNavigationResult;
 }
 
 type FidelityHarnessWindow = Window & {
@@ -135,11 +124,9 @@ interface MountedReferencePage {
   diffCanvas: HTMLCanvasElement;
   pendingImage: HTMLImageElement | null;
   desiredSrc: string;
-  loadingSrc: string;
   expectedCssHeight: number;
   sourceCanvas: HTMLCanvasElement;
   lastZoom: number | null;
-  diffSequence: number;
   diffTimer: number | null;
   imageRetryTimer: number | null;
   imageRetryCount: number;
@@ -164,7 +151,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   private readonly harnessState: FidelityHarnessState;
   private readonly harnessApi: FidelityHarnessApi;
 
-  private constructor(
+  constructor(
     private readonly pageImageBaseUrl: string,
     private readonly pixelWidth: number,
     private readonly pageCount: number | null,
@@ -174,8 +161,6 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     const segments = pageImageBaseUrl.split('/').filter(Boolean);
     this.referenceKey = segments.at(-2) ?? pageImageBaseUrl;
     this.harnessState = {
-      schemaVersion: 1,
-      owner: this.ownerKey(),
       status: 'idle',
       activeScanId: null,
       completedPages: 0,
@@ -203,9 +188,9 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
 
   private harnessSnapshot(): FidelityHarnessSnapshot {
     const current = this.latestReportIsCurrent();
-    return {
+    return structuredClone({
       schemaVersion: 1,
-      owner: this.harnessState.owner,
+      owner: this.ownerKey(),
       status: this.harnessState.status === 'ready' && !current
         ? 'stale'
         : this.harnessState.status,
@@ -216,11 +201,11 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       latestReport: this.harnessState.latestReport
         ? summarizeFidelityScan(this.harnessState.latestReport)
         : null,
-      history: structuredClone(this.harnessState.history),
-      activeTarget: structuredClone(this.harnessState.activeTarget),
-      supersededScans: structuredClone(this.harnessState.supersededScans),
+      history: this.harnessState.history,
+      activeTarget: this.harnessState.activeTarget,
+      supersededScans: this.harnessState.supersededScans,
       lastError: this.harnessState.lastError,
-    };
+    });
   }
 
   private queryPages(query: FidelityPageQuery = {}): FidelityPageQueryResult {
@@ -231,11 +216,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     return queryFidelityPages(this.harnessState.latestReport, query);
   }
 
-  private pageReport(pageIndex: number, scanId?: number): {
-    scanId: number | null;
-    current: boolean;
-    item: FidelityPageReport | null;
-  } {
+  private pageReport(pageIndex: number, scanId?: number): FidelityPageResult {
     if (this.harnessState.activeScanId !== null || !this.latestReportIsCurrent()) {
       return {
         scanId: this.harnessState.latestReport?.scanId ?? null,
@@ -244,16 +225,6 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       };
     }
     return queryFidelityPage(this.harnessState.latestReport, pageIndex, scanId);
-  }
-
-  static async open(
-    pageImageBaseUrl: string,
-    pixelWidth: number,
-    pageCount: number | null,
-    pdfName: string,
-    harness: PdfReferenceHarnessOptions,
-  ): Promise<PdfReferenceOverlay> {
-    return new PdfReferenceOverlay(pageImageBaseUrl, pixelWidth, pageCount, pdfName, harness);
   }
 
   startBaselineScan(): void {
@@ -302,6 +273,12 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       documentDigest: this.harness.getDocumentDigest(),
       documentGeneration: this.harness.getDocumentGeneration(),
     });
+  }
+
+  private endScan(status: FidelityHarnessState['status']): void {
+    this.harnessState.status = status;
+    this.harnessState.activeScanId = null;
+    this.harnessState.activeTarget = null;
   }
 
   private documentErrorLine(
@@ -363,12 +340,8 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   ): void {
     if (this.harnessState.supersededScans.some(scan => scan.scanId === scanId)) return;
     this.harnessState.supersededScans.push({ scanId, completedPages, target });
-    if (this.harnessState.supersededScans.length > 16) {
-      this.harnessState.supersededScans.splice(
-        0,
-        this.harnessState.supersededScans.length - 16,
-      );
-    }
+    const overflow = this.harnessState.supersededScans.length - 16;
+    if (overflow > 0) this.harnessState.supersededScans.splice(0, overflow);
   }
 
   private async scanWholeDocument(
@@ -410,9 +383,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       if (!stale) return false;
       if (!this.destroyed && scanId === this.scanSerial) {
         this.rememberSupersededScan(scanId, completedPages, target);
-        this.harnessState.status = 'idle';
-        this.harnessState.activeScanId = null;
-        this.harnessState.activeTarget = null;
+        this.endScan('idle');
         if (!abortController.signal.aborted && this.documentIsCurrent() && renderTargetChanged()) {
           queueMicrotask(() => {
             if (this.destroyed || this.scanSerial !== scanId) return;
@@ -480,30 +451,21 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       });
       this.harnessState.latestReport = report;
       this.harnessState.history.push(summarizeFidelityScan(report));
-      if (this.harnessState.history.length > MAX_SCAN_HISTORY) {
-        this.harnessState.history.splice(0, this.harnessState.history.length - MAX_SCAN_HISTORY);
-      }
-      this.harnessState.status = 'ready';
-      this.harnessState.activeScanId = null;
-      this.harnessState.activeTarget = null;
+      this.harnessState.history.splice(0, Math.max(0, this.harnessState.history.length - MAX_SCAN_HISTORY));
+      this.endScan('ready');
       const documentError = this.documentErrorLine(report);
       if (documentError) this.deliverDocumentError(documentError);
       return report;
     } catch (error) {
       if (abortController.signal.aborted || this.destroyed || scanId !== this.scanSerial) return null;
-      this.harnessState.status = 'error';
-      this.harnessState.activeScanId = null;
-      this.harnessState.activeTarget = null;
+      this.endScan('error');
       this.harnessState.lastError = error instanceof Error ? error.message : String(error);
       console.warn('[pdf-fidelity] whole-document scan failed:', error);
       return null;
     } finally {
       if (this.scanAbortController === abortController) {
         this.scanAbortController = null;
-        if (this.harnessState.activeScanId === scanId) {
-          this.harnessState.activeScanId = null;
-          this.harnessState.activeTarget = null;
-        }
+        if (this.harnessState.activeScanId === scanId) this.endScan(this.harnessState.status);
       }
     }
   }
@@ -546,69 +508,37 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     capture: DiagnosticPageCapture,
     reference: ReferencePixelCapture,
   ): FidelityPageObservation {
-    const comparisonHeight = reference.surfaceHeight;
-    const hwpPixels = new Uint8ClampedArray(capture.width * comparisonHeight * 4).fill(255);
-    hwpPixels.set(capture.pixels.subarray(0, capture.width * capture.height * 4));
-    const referencePixels = new Uint8ClampedArray(capture.width * comparisonHeight * 4).fill(255);
-    referencePixels.set(reference.pixels.subarray(0, capture.width * comparisonHeight * 4));
-    const horizontalRuleOptions = {
-      inkThreshold: 96,
-      minSpanRatio: 0.35,
-      minCoverageRatio: 0.55,
-      maxBands: 96,
-    } as const;
-    const inkRowOptions = {
-      inkThreshold: 96,
-      minSpanRatio: 1.1,
-      minCoverageRatio: 0.012,
-      maxBands: 96,
-    } as const;
+    const { width } = capture;
+    const height = reference.surfaceHeight;
+    const pad = (pixels: Uint8ClampedArray): Uint8ClampedArray => {
+      const surface = new Uint8ClampedArray(width * height * 4).fill(255);
+      surface.set(pixels.subarray(0, surface.length));
+      return surface;
+    };
+    const hwpPixels = pad(capture.pixels);
+    const referencePixels = pad(reference.pixels);
+    const bands = (pixels: Uint8ClampedArray, rows = false) => detectHorizontalRuleBands(
+      pixels,
+      width,
+      height,
+      rows
+        ? { inkThreshold: 96, minSpanRatio: 1.1, minCoverageRatio: 0.012, maxBands: 96 }
+        : { inkThreshold: 96, minSpanRatio: 0.35, minCoverageRatio: 0.55, maxBands: 96 },
+    );
     return {
       pageIndex,
       hwpFingerprint: `${capture.width}x${capture.height}:${fingerprintPagePixels(capture.pixels)}`,
       hwpSize: { width: capture.width, height: capture.height },
       referenceSize: { width: reference.width, height: reference.height },
-      mismatch: computeReferencePixelDiff(
-        hwpPixels,
-        referencePixels,
-        capture.width,
-        comparisonHeight,
-        DIFF_THRESHOLD,
-      ),
-      hwpHorizontalRules: detectHorizontalRuleBands(
-        hwpPixels,
-        capture.width,
-        comparisonHeight,
-        horizontalRuleOptions,
-      ),
-      pdfHorizontalRules: detectHorizontalRuleBands(
-        referencePixels,
-        capture.width,
-        comparisonHeight,
-        horizontalRuleOptions,
-      ),
-      hwpInkRows: detectHorizontalRuleBands(
-        hwpPixels,
-        capture.width,
-        comparisonHeight,
-        inkRowOptions,
-      ),
-      pdfInkRows: detectHorizontalRuleBands(
-        referencePixels,
-        capture.width,
-        comparisonHeight,
-        inkRowOptions,
-      ),
+      mismatch: computeReferencePixelDiff(hwpPixels, referencePixels, width, height, DIFF_THRESHOLD),
+      hwpHorizontalRules: bands(hwpPixels),
+      pdfHorizontalRules: bands(referencePixels),
+      hwpInkRows: bands(hwpPixels, true),
+      pdfInkRows: bands(referencePixels, true),
     };
   }
 
-  private gotoFirstRegression(scanId?: number): {
-    scanId: number | null;
-    current: boolean;
-    pageIndex: number | null;
-    navigatedPageIndex: number | null;
-    navigated: boolean;
-  } {
+  private gotoFirstRegression(scanId?: number): FidelityNavigationResult {
     const report = this.harnessState.latestReport;
     const current = this.latestReportIsCurrent()
       && (scanId === undefined || scanId === report?.scanId);
@@ -645,10 +575,12 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     if (!mounted) {
       const host = document.createElement('div');
       host.className = 'pdf-reference-overlay';
-      host.dataset.rhwpReferencePage = String(request.pageIndex);
-      host.dataset.rhwpReferenceDocument = this.referenceKey;
-      host.dataset.rhwpReferenceRenderer = 'ghostscript-media-png';
-      host.dataset.rhwpReferenceReady = 'false';
+      Object.assign(host.dataset, {
+        rhwpReferencePage: String(request.pageIndex),
+        rhwpReferenceDocument: this.referenceKey,
+        rhwpReferenceRenderer: 'ghostscript-media-png',
+        rhwpReferenceReady: 'false',
+      });
       host.setAttribute('aria-hidden', 'true');
       const diffCanvas = document.createElement('canvas');
       diffCanvas.className = 'pdf-reference-diff';
@@ -659,11 +591,9 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
         diffCanvas,
         pendingImage: null,
         desiredSrc: '',
-        loadingSrc: '',
         expectedCssHeight: 0,
         sourceCanvas: request.sourceCanvas,
         lastZoom: null,
-        diffSequence: 0,
         diffTimer: null,
         imageRetryTimer: null,
         imageRetryCount: 0,
@@ -679,7 +609,6 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       && Math.abs(mounted.lastZoom - request.zoom) > 1e-6;
     mounted.lastZoom = request.zoom;
     if (!zoomOnly) {
-      mounted.diffSequence += 1;
       if (mounted.image) this.scheduleDiff(request.pageIndex, mounted);
     }
     if (mounted.desiredSrc === src) return;
@@ -733,8 +662,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     this.scanAbortController?.abort();
     this.scanAbortController = null;
     this.clearMountedPages();
-    this.harnessState.status = 'destroyed';
-    this.harnessState.activeScanId = null;
+    this.endScan('destroyed');
     const harnessWindow = window as FidelityHarnessWindow;
     if (harnessWindow.__rhwpFidelityHarness === this.harnessApi) {
       delete harnessWindow.__rhwpFidelityHarness;
@@ -753,56 +681,43 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     image.decoding = 'async';
     image.draggable = false;
     mounted.pendingImage = image;
-    mounted.loadingSrc = src;
     if (!mounted.image) mounted.host.dataset.rhwpReferenceGeometry = 'loading';
+    const active = (): boolean =>
+      !this.destroyed && this.mounted.get(pageIndex) === mounted && mounted.desiredSrc === src;
+    const loading = (): boolean => active() && mounted.pendingImage === image;
 
-    image.addEventListener('load', () => {
+    image.onload = () => {
       void image.decode().catch(() => {}).then(() => {
-        const current = this.mounted.get(pageIndex);
-        if (
-          this.destroyed
-          || current !== mounted
-          || current.pendingImage !== image
-          || current.desiredSrc !== src
-          || current.loadingSrc !== src
-        ) return;
-
-        this.recordGeometry(pageIndex, current, image);
-        if (current.image) current.image.replaceWith(image);
-        else current.host.appendChild(image);
-        current.image = image;
-        current.pendingImage = null;
-        current.loadingSrc = '';
-        if (current.imageRetryTimer !== null) window.clearTimeout(current.imageRetryTimer);
-        current.imageRetryTimer = null;
-        current.imageRetryCount = 0;
-        current.host.dataset.rhwpReferenceReady = 'true';
-        this.scheduleDiff(pageIndex, current);
+        if (!loading()) return;
+        this.recordGeometry(pageIndex, mounted, image);
+        if (mounted.image) mounted.image.replaceWith(image);
+        else mounted.host.appendChild(image);
+        mounted.image = image;
+        mounted.pendingImage = null;
+        if (mounted.imageRetryTimer !== null) window.clearTimeout(mounted.imageRetryTimer);
+        mounted.imageRetryTimer = null;
+        mounted.imageRetryCount = 0;
+        mounted.host.dataset.rhwpReferenceReady = 'true';
+        this.scheduleDiff(pageIndex, mounted);
       });
-    }, { once: true });
-    image.addEventListener('error', () => {
-      const current = this.mounted.get(pageIndex);
-      if (current !== mounted || current.pendingImage !== image) return;
-      current.pendingImage = null;
-      current.loadingSrc = '';
-      if (current.imageRetryCount >= 3) {
-        if (!current.image) current.host.dataset.rhwpReferenceGeometry = 'error';
+    };
+    image.onerror = () => {
+      if (!loading()) return;
+      mounted.pendingImage = null;
+      if (mounted.imageRetryCount >= 3) {
+        if (!mounted.image) mounted.host.dataset.rhwpReferenceGeometry = 'error';
         return;
       }
-      current.imageRetryCount += 1;
-      const retryCount = current.imageRetryCount;
-      current.imageRetryTimer = window.setTimeout(() => {
-        current.imageRetryTimer = null;
+      const retry = ++mounted.imageRetryCount;
+      mounted.imageRetryTimer = window.setTimeout(() => {
+        mounted.imageRetryTimer = null;
         if (
-          this.destroyed
-          || this.mounted.get(pageIndex) !== current
-          || current.desiredSrc !== src
-          || current.loadingSrc !== ''
-          || current.imageRetryCount !== retryCount
+          !active()
+          || mounted.imageRetryCount !== retry
         ) return;
-        this.loadReplacement(pageIndex, current, src);
-      }, Math.min(2_000, 250 * 2 ** (retryCount - 1)));
-    }, { once: true });
+        this.loadReplacement(pageIndex, mounted, src);
+      }, Math.min(2_000, 250 * 2 ** (retry - 1)));
+    };
     image.src = src;
   }
 
@@ -831,10 +746,9 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       mounted.diffTimer = null;
       return;
     }
-    const sequence = mounted.diffSequence;
     mounted.diffTimer = window.setTimeout(() => {
       mounted.diffTimer = null;
-      if (this.destroyed || this.mounted.get(pageIndex) !== mounted || sequence !== mounted.diffSequence) return;
+      if (this.destroyed || this.mounted.get(pageIndex) !== mounted) return;
       this.reportDiff(pageIndex, mounted);
     }, 120);
   }
@@ -923,11 +837,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   }
 
   private applyPageBox(host: HTMLDivElement, sourceCanvas: HTMLCanvasElement): void {
-    host.style.top = sourceCanvas.style.top;
-    host.style.left = sourceCanvas.style.left;
-    host.style.transform = sourceCanvas.style.transform;
-    host.style.transformOrigin = sourceCanvas.style.transformOrigin;
-    host.style.width = sourceCanvas.style.width;
-    host.style.height = sourceCanvas.style.height;
+    const { top, left, transform, transformOrigin, width, height } = sourceCanvas.style;
+    Object.assign(host.style, { top, left, transform, transformOrigin, width, height });
   }
 }
