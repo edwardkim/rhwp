@@ -44,6 +44,11 @@ use super::pagination::{
     PaginationResult,
 };
 
+/// [#5886] 미주 다단이 본문 하단 24px bleed 를 지나 **용지 밖**까지 그리는
+/// 잔여만 단 전환한다. 수식 line-box 로그 허용(48~68px)보다 크고, 실측
+/// 2022.hwpx 12쪽 초과(+198px)보다는 작다.
+const ENDNOTE_PAGE_OFFCANVAS_GUARD_PX: f64 = 80.0;
+
 /// [#4654] 전면 크기 그림 낱장 배치는 문단의 비인라인 그림 중 엄격한 과반일 때만 쓴다.
 ///
 /// 정확히 절반인 문단까지 낱장 정책을 적용하면 기존 pile 문서의 다수 그림 흐름을
@@ -8994,8 +8999,17 @@ impl TypesetEngine {
                 //    질문 흐름(단 배치)을 흔들어 issue_1139/1261/1284 10건
                 //    회귀. → 잔여 divergence 는 overflow 무영향이고 안전
                 //    정합 불가하므로 보류. acc 는 A(rewind)/C(TAC)만 SSOT.
+                // [#5886] 문단-사이 compact 되감김은 한 줄 겹침 가정
+                // (`min_vpos_rewind_height`)인데, 렌더는 다줄 풀이를 순차
+                // 적층한다. 그 과소 계상이 2022.hwpx 12쪽을 용지 밖(+198px)으로
+                // 그린다. 한 줄 꼬리(겹침이 실제인 경우)는 기존 경로를 유지한다.
+                let sequential_local_rewind = compact_local_rewind
+                    && line_advances_sum
+                        > min_vpos_rewind_height + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX;
                 let acc = if ssot_level >= EnSsotLevel::A && internal_vpos_rewind {
                     line_advances_sum.max(min_vpos_rewind_height)
+                } else if sequential_local_rewind {
+                    line_advances_sum
                 } else {
                     acc_legacy
                 };
@@ -10444,7 +10458,13 @@ impl TypesetEngine {
             }
             // [Task #1363 v2 Stage 3] A2: 새 para 를 이어붙인 렌더-정합 시뮬
             // bottom 으로 fit 판정 (saved line_segs 기반 → 렌더와 일치).
-            let a2_overflow_with_para = if ssot_level >= EnSsotLevel::A2 {
+            // [#5886] 기본 B 에서도 시뮬 하단이 용지 밖 가드를 넘으면 단 전환.
+            let simulated_endnote_bottom = if ssot_level >= EnSsotLevel::A2
+                || (compact_endnote_separator_profile
+                    && st.col_count > 1
+                    && !st.current_items.is_empty()
+                    && st.current_height > available * 0.5)
+            {
                 self.simulate_endnote_column_bottom_y(
                     &st,
                     paragraphs,
@@ -10453,10 +10473,13 @@ impl TypesetEngine {
                     en_col_w,
                     Some(en_para_idx),
                 )
-                .map(|bottom| bottom > available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX)
             } else {
                 None
             };
+            let a2_overflow_with_para = simulated_endnote_bottom
+                .map(|bottom| bottom > available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX);
+            let page_offcanvas_with_para = simulated_endnote_bottom
+                .is_some_and(|bottom| bottom > available + ENDNOTE_PAGE_OFFCANVAS_GUARD_PX);
             // 구분선 없는 큰 미주 block에서는 다줄 수식 문단의 advance가
             // frame을 약간 넘더라도 실제 보이는 줄은 하단 frame 안에 남는다.
             // 이 tail을 통째로 유지해야 다음 단의 새 문항 시작점이 한컴과 맞는다.
@@ -10908,6 +10931,14 @@ impl TypesetEngine {
             {
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
+            }
+            // [#5886] A2 는 local_vpos_rewind 를 건너뛴다. 문단-사이 되감김을
+            // 겹침으로 남겨 두면 렌더 순차 적층이 용지 밖으로 나간다.
+            if page_offcanvas_with_para && !st.current_items.is_empty() {
+                split_endnote_to_fit = None;
+                st.advance_column_or_new_page();
+                prev_en_bottom_vpos = None;
+                prev_en_content_bottom_vpos = None;
             }
             let large_between_split_head_render_overflows = self
                 .judge_large_between_split_head_render_overflows(
