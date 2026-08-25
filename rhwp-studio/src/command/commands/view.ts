@@ -10,8 +10,13 @@ import {
   toggleGridVisibility,
 } from '../../view/grid-settings';
 import { HWPUNIT_PER_MM } from '../../core/hwp-constants';
-import { calculateFitPageZoom, calculateFitWidthZoom } from '../../view/zoom-fit';
+import {
+  calculateArrangementFitWidthZoom,
+  calculateFitPageZoom,
+} from '../../view/zoom-fit';
 import { applyToolboxVisibility } from '../../view/toolbox-visibility';
+import { ZoomDialog } from '../../ui/zoom-dialog';
+import { resolveZoomDialogZoom } from '../../view/zoom-dialog-state';
 
 const PX_TO_MM = 25.4 / 96;
 
@@ -170,7 +175,7 @@ export const viewCommands: CommandDef[] = [
     id: 'view:zoom-in',
     label: '확대',
     icon: 'icon-zoom-menu-in',
-    shortcutLabel: 'Shift+Num +',
+    shortcutLabel: 'Ctrl++',
     execute(services) {
       const vm = services.getViewportManager();
       if (vm) vm.smoothZoomBy(0.1);
@@ -180,10 +185,63 @@ export const viewCommands: CommandDef[] = [
     id: 'view:zoom-out',
     label: '축소',
     icon: 'icon-zoom-menu-out',
-    shortcutLabel: 'Shift+Num -',
+    shortcutLabel: 'Ctrl+-',
     execute(services) {
       const vm = services.getViewportManager();
       if (vm) vm.smoothZoomBy(-0.1);
+    },
+  },
+  {
+    id: 'view:zoom-dialog',
+    label: '화면 확대/축소...',
+    opensDialog: true,
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const vm = services.getViewportManager();
+      if (!vm || services.wasm.pageCount === 0) return;
+      const container = document.getElementById('scroll-container');
+      if (!container) return;
+      const pageInfo = services.wasm.getPageInfo(0);
+      const viewSettings = userSettings.getViewSettings();
+      const arrangement = viewSettings.pageArrangement;
+      const fitZooms = {
+        fitWidth: calculateArrangementFitWidthZoom({
+          containerWidth: container.clientWidth,
+          pageWidth: pageInfo.width,
+          arrangement,
+        }),
+        fitPage: calculateFitPageZoom(
+          container.clientWidth,
+          container.clientHeight,
+          pageInfo.width,
+          pageInfo.height,
+        ),
+      };
+      new ZoomDialog({
+        currentZoom: vm.getZoom(),
+        fitZooms,
+        arrangement,
+        pageMovement: viewSettings.pageMovement,
+        onConfirm(value) {
+          const zoom = resolveZoomDialogZoom({
+            ...value,
+            viewportWidth: container.clientWidth,
+            viewportHeight: container.clientHeight,
+            pageWidth: pageInfo.width,
+            pageHeight: pageInfo.height,
+            pageGap: 10,
+          });
+          userSettings.setPageMovement(value.pageMovement);
+          userSettings.setPageArrangement(value.arrangement);
+          const view = userSettings.getViewSettings();
+          services.eventBus.emit('page-view-settings-changed', {
+            arrangement: view.pageArrangement,
+            pageMovement: view.pageMovement,
+          });
+          vm.setZoom(zoom);
+          services.eventBus.emit('command-state-changed');
+        },
+      }).show();
     },
   },
   {
@@ -214,7 +272,11 @@ export const viewCommands: CommandDef[] = [
       const container = document.getElementById('scroll-container')!;
       const pi = services.wasm.getPageInfo(0);
       // pi.width는 이미 px 단위 (96dpi 기준)
-      vm.setZoom(calculateFitWidthZoom(container.clientWidth, pi.width));
+      vm.setZoom(calculateArrangementFitWidthZoom({
+        containerWidth: container.clientWidth,
+        pageWidth: pi.width,
+        arrangement: userSettings.getViewSettings().pageArrangement,
+      }));
     },
   },
   zoomLevel(50),
@@ -224,6 +286,7 @@ export const viewCommands: CommandDef[] = [
   zoomLevel(150),
   zoomLevel(200),
   zoomLevel(300),
+  zoomLevel(500),
   themeModeCommand('system', '시스템 설정'),
   themeModeCommand('light', '밝게'),
   themeModeCommand('dark', '어둡게'),

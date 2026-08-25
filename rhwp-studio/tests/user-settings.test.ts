@@ -260,6 +260,92 @@ test('저장된 도구 상자 설정은 다시 시작해도 복원된다', async
   }
 });
 
+test('쪽 배치는 자동이 기본이며 여러 쪽 설정을 정규화해 저장·복원한다', async () => {
+  const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+  const store = new Map<string, string>();
+  const mockStorage = {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key: string) {
+      return store.get(key) ?? null;
+    },
+    key(index: number) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      store.delete(key);
+    },
+    setItem(key: string, value: string) {
+      store.set(key, value);
+    },
+  } as Storage;
+
+  (globalThis as { localStorage?: Storage }).localStorage = mockStorage;
+  try {
+    userSettings.setPageArrangement({ kind: 'multiple', columns: 12, rows: 0 });
+    assert.deepEqual(userSettings.getViewSettings().pageArrangement, {
+      kind: 'multiple',
+      columns: 8,
+      rows: 1,
+    });
+    const stored = JSON.parse(store.get('rhwp-settings') ?? '{}');
+    assert.deepEqual(stored.view.pageArrangement, {
+      kind: 'multiple',
+      columns: 8,
+      rows: 1,
+    });
+
+    store.set('rhwp-settings', JSON.stringify({ view: {} }));
+    const fresh = await import('../src/core/user-settings.ts?restart=page-arrangement');
+    assert.deepEqual(fresh.userSettings.getViewSettings().pageArrangement, { kind: 'auto' });
+  } finally {
+    userSettings.setPageArrangement({ kind: 'auto' });
+    (globalThis as { localStorage?: Storage }).localStorage = originalStorage;
+  }
+});
+
+test('쪽 이동은 세로가 기본이며 가로 휠 설정을 저장·복원한다', async () => {
+  const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+  const store = new Map<string, string>();
+  const mockStorage = {
+    get length() { return store.size; },
+    clear() { store.clear(); },
+    getItem(key: string) { return store.get(key) ?? null; },
+    key(index: number) { return Array.from(store.keys())[index] ?? null; },
+    removeItem(key: string) { store.delete(key); },
+    setItem(key: string, value: string) { store.set(key, value); },
+  } as Storage;
+
+  (globalThis as { localStorage?: Storage }).localStorage = mockStorage;
+  try {
+    userSettings.setPageMovement({ direction: 'horizontal', wheelHorizontal: false });
+    assert.deepEqual(userSettings.getViewSettings().pageMovement, {
+      direction: 'horizontal',
+      wheelHorizontal: false,
+    });
+    const stored = JSON.parse(store.get('rhwp-settings') ?? '{}');
+    assert.deepEqual(stored.view.pageMovement, {
+      direction: 'horizontal',
+      wheelHorizontal: false,
+    });
+
+    store.set('rhwp-settings', JSON.stringify({ view: {} }));
+    const fresh = await import('../src/core/user-settings.ts?restart=page-movement');
+    assert.deepEqual(fresh.userSettings.getViewSettings().pageMovement, {
+      direction: 'vertical',
+      wheelHorizontal: true,
+    });
+  } finally {
+    userSettings.setPageMovement({ direction: 'vertical', wheelHorizontal: true });
+    userSettings.setPageArrangement({ kind: 'auto' });
+    (globalThis as { localStorage?: Storage }).localStorage = originalStorage;
+  }
+});
+
 test('복구용 자동저장 설정은 rhwp-settings에 저장된다', () => {
   const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
   const store = new Map<string, string>();

@@ -1712,7 +1712,21 @@ impl HeightMeasurer {
                                         let include_trailing_ls = !is_cell_last_line
                                             || (cell_para_count > 1 && table.common.treat_as_char);
                                         if include_trailing_ls {
-                                            h + hwpunit_to_px(line.line_spacing, self.dpi)
+                                            let trailing =
+                                                hwpunit_to_px(line.line_spacing, self.dpi);
+                                            // [#6030] TAC 다문단 예외로 포함되는 셀 마지막
+                                            // 줄의 trailing 이 음수(압축 줄간격, 70% 등)면
+                                            // 0 으로 — 뒤에 줄이 없어 압축 대상이 없고,
+                                            // 한글은 마지막 글리프 박스를 lh 그대로 그려
+                                            // 행을 그만큼 키운다(2386771 심사서식 10곳
+                                            // descender 깎임). 양수 trailing 포함 회계
+                                            // (KTX TOC 핀)는 불변.
+                                            let trailing = if is_cell_last_line {
+                                                trailing.max(0.0)
+                                            } else {
+                                                trailing
+                                            };
+                                            h + trailing
                                         } else {
                                             h
                                         }
@@ -2421,7 +2435,21 @@ impl HeightMeasurer {
                                         let include_trailing_ls = !is_cell_last_line
                                             || (cell_para_count > 1 && table.common.treat_as_char);
                                         if include_trailing_ls {
-                                            h + hwpunit_to_px(line.line_spacing, self.dpi)
+                                            let trailing =
+                                                hwpunit_to_px(line.line_spacing, self.dpi);
+                                            // [#6030] TAC 다문단 예외로 포함되는 셀 마지막
+                                            // 줄의 trailing 이 음수(압축 줄간격, 70% 등)면
+                                            // 0 으로 — 뒤에 줄이 없어 압축 대상이 없고,
+                                            // 한글은 마지막 글리프 박스를 lh 그대로 그려
+                                            // 행을 그만큼 키운다(2386771 심사서식 10곳
+                                            // descender 깎임). 양수 trailing 포함 회계
+                                            // (KTX TOC 핀)는 불변.
+                                            let trailing = if is_cell_last_line {
+                                                trailing.max(0.0)
+                                            } else {
+                                                trailing
+                                            };
+                                            h + trailing
                                         } else {
                                             h
                                         }
@@ -2502,6 +2530,9 @@ impl HeightMeasurer {
         // 1/1.8 로 눌려 셀 텍스트가 겹치던 결함. 경미한 초과(2%~150%)는 종전대로
         // 속성 높이 유지(#672 한컴 정합 — 의도적 압축 존중).
         const TAC_SHRINK_MAX_OVERFLOW_RATIO: f64 = 1.5;
+        // [#6030] 하한 합이 선언을 넘는 양을 이보다 작게만 키운다.
+        // exam_eng 선택지 표는 행당 ~3px·합 ~20px. 거대 overfill 은 수백 px.
+        const TAC_FLOOR_OVERFLOW_NOSHRINK_CAP_PX: f64 = 48.0;
         let shrink_threshold = (common_h * TAC_SHRINK_THRESHOLD_RATIO).max(1.0);
         let table_height = if table.common.treat_as_char
             && common_h > 0.0
@@ -2512,8 +2543,11 @@ impl HeightMeasurer {
             // 칸 클립에 잘린다(156682735 제목 셋째 줄 8.3px 잘림). 한글은 저장
             // 좌표에 여유가 있는 행에서만 부족분을 흡수한다 — 행별 하한을 저장
             // lineseg 내용 높이(pad_top + max(vertpos+vertsize) + pad_bottom)로
-            // 잡고, 여유(slack) 비례로만 줄인다. 하한 합이 이미 선언을 넘는
-            // 형상은 종전 비례 축소로 폴백한다.
+            // 잡고, 여유(slack) 비례로만 줄인다.
+            // [#6030] 하한 합이 이미 선언을 넘는 형상(모든 행이 내용+여백으로
+            // 꽉 참)은 균일 축소하지 않는다. 그 폴백은 하한 아래까지 눌러
+            // 마지막 글줄을 clip 한다 (exam_eng 선택지 ① 1.3px, 심사서식
+            // 반 줄 미만 초과). 한글은 그 행을 내용에 맞춰 키운다.
             let mut floors = vec![0.0f64; row_count];
             for cell in &table.cells {
                 let r = cell.row as usize;
@@ -2554,13 +2588,19 @@ impl HeightMeasurer {
                     let slack = (*h - f).max(0.0);
                     *h -= deficit * slack / total_slack;
                 }
+                common_h
+            } else if deficit <= TAC_FLOOR_OVERFLOW_NOSHRINK_CAP_PX {
+                // [#6030] 선택지·심사서식처럼 하한 합이 선언을 반 줄 미만으로
+                // 넘는 표는 균일 축소하지 않는다. 거대 overfill 표는 종전
+                // 비례 축소를 유지한다 (overflow_cell_baseline).
+                raw_table_height
             } else {
-                let scale = common_h / raw_table_height;
+                let scale = common_h / raw_table_height.max(0.5);
                 for h in &mut row_heights {
                     *h *= scale;
                 }
+                common_h
             }
-            common_h
         } else if !table.common.treat_as_char
             && common_h > 0.0
             && raw_table_height > common_h + 0.5

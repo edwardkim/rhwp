@@ -28,11 +28,34 @@ struct ReplaceTextArgs<'a> {
     occurrence: Option<usize>,
 }
 
+fn collect_replacement_hits(
+    doc: &rhwp::document_core::DocumentCore,
+    find: &str,
+    case_sensitive: bool,
+) -> Result<Vec<serde_json::Value>, String> {
+    let json = doc
+        .search_all_text_native(find, case_sensitive, true)
+        .map_err(|e| format!("{e:?}"))?;
+    serde_json::from_str::<Vec<serde_json::Value>>(&json)
+        .map_err(|e| format!("search_all_text_native JSON 파싱 실패: {e}"))
+}
+
+fn replacement_changed_para(hit: &serde_json::Value) -> Option<(usize, usize)> {
+    let sec = hit.get("sec")?.as_u64()? as usize;
+    let para = hit
+        .get("cellContext")
+        .and_then(|cell| cell.get("parentPara"))
+        .or_else(|| hit.get("para"))?
+        .as_u64()? as usize;
+    Some((sec, para))
+}
+
 /// `edit replace-text` — 문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비).
 ///
 /// [#3373] 검증된 코어 경로(`replace_all` — 역순 치환으로 오프셋 안전, 본문+표 셀)를
 /// 재사용하므로 새 편집 로직이 없다. `--dry-run` 은 파일 생성 경로를 타지 않고
-/// 읽기 전용 `grep` 으로 치환 예정 건수만 보고한다. **0건이면 출력 파일을 만들지
+/// 실제 치환과 같은 검색 순회(`search_all_text_native`)로 치환 예정 건수만 보고한다.
+/// **0건이면 출력 파일을 만들지
 /// 않는다** — 무변경 산출물이 생기지 않게 한다.
 pub(super) fn edit_replace_text(args: &[String]) -> i32 {
     let ReplaceTextArgs {
@@ -87,27 +110,31 @@ pub(super) fn edit_replace_text(args: &[String]) -> i32 {
         Err(e) => return e.report(),
     };
 
+    let replacement_hits = match collect_replacement_hits(&doc, find, !ignore_case) {
+        Ok(hits) => hits,
+        Err(e) => {
+            eprintln!("오류: 치환 대상 검색 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let selected_hits: Vec<&serde_json::Value> = match occurrence {
+        Some(n) => replacement_hits.get(n).into_iter().collect(),
+        None => replacement_hits.iter().collect(),
+    };
+
     // [#3712] 치환 전 매치 주소를 붙잡는다 — 문자열 치환은 문단 인덱스를 밀지 않는다.
     let changed_paras: Vec<(usize, usize)> = if dry_run {
         Vec::new()
     } else {
-        let all = doc.grep(find, !ignore_case, None);
-        match occurrence {
-            Some(n) => all
-                .get(n)
-                .map(|m| vec![(m.section, m.paragraph)])
-                .unwrap_or_default(),
-            None => all.iter().map(|m| (m.section, m.paragraph)).collect(),
-        }
+        selected_hits
+            .iter()
+            .filter_map(|hit| replacement_changed_para(hit))
+            .collect()
     };
 
     let replaced_count = if dry_run {
-        // 파일을 건드리지 않는다 — 읽기 전용 검색으로 치환 예정 건수만 센다.
-        match occurrence {
-            // dry-run + occurrence: 그 순번이 존재하면 1, 아니면 0.
-            Some(n) => usize::from(doc.grep(find, !ignore_case, None).len() > n),
-            None => doc.grep(find, !ignore_case, None).len(),
-        }
+        // 파일을 건드리지 않는다 — 실제 치환과 같은 순회로 예정 건수만 센다.
+        selected_hits.len()
     } else {
         let result = match match occurrence {
             Some(n) => doc.replace_nth_native(find, replace, !ignore_case, n),

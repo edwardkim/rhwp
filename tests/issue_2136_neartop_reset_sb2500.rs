@@ -7,8 +7,10 @@
 //! - 수정 전: `native_near_top_reset` 상한 `cv <= 2000` 에 500HU 차로 배제 →
 //!   측정 fit(853+63 ≤ 가용)으로 pi1 이 1쪽 말미에 과적. (실문서 148753276 pi46:
 //!   p4 used 942px > 본문 933.6px, 한글 p5 — 10k r12 PI TAIL_PUSH 계열.)
-//! - 수정 후: 상한 2500HU(#1750 split-precheck 상한과 정합, sb±150 일치 조건 유지)
-//!   → pi1 은 새 쪽 시작.
+//! - #2136 수정 후(잔여 미검사): 상한 2500HU 로 리셋 인식 → 합성 픽스처가 2쪽.
+//! - #5921: 한글 2020 PDF 는 1쪽. 잔여(80px) > pi1 필요(63px) 이면 리셋을
+//!   적용하지 않는다. 실문서 과적(148753276, used 942>933.6)은 잔여가 없어
+//!   리셋이 유지된다.
 
 use std::fs;
 use std::path::Path;
@@ -23,19 +25,18 @@ fn load_doc() -> rhwp::wasm_api::HwpDocument {
 }
 
 #[test]
-fn issue_2136_sb2500_reset_starts_new_page() {
+fn issue_2136_sb2500_reset_is_recognized_but_fits_on_page_1() {
     let doc = load_doc();
     assert_eq!(
         doc.page_count(),
-        2,
-        "sb=2500HU 저장 리셋 문단은 새 쪽 시작 (#2136)"
+        1,
+        "합성 픽스처는 한글 2020 처럼 1쪽 — 잔여에 들어가는 near-top 리셋은 가르지 않는다 (#5921)"
     );
 
-    let page2 = doc.dump_page_items(Some(1));
+    let page1 = doc.dump_page_items(Some(0));
     assert!(
-        page2.contains("pi=1"),
-        "pi=1 은 저장 리셋(vpos=2500=sb)대로 2쪽 시작이어야 한다 — 1쪽 말미 과적은 \
-         #2136 회귀\n--- page 2 ---\n{}",
-        page2
+        page1.contains("pi=1"),
+        "pi=1 은 1쪽 잔여에 들어간다. 2쪽으로 밀리면 #5921 회귀\n--- page 1 ---\n{}",
+        page1
     );
 }
