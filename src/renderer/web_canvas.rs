@@ -380,6 +380,11 @@ pub struct WebCanvasRenderer {
     /// 보수적인 ink envelope와 겹치지 않을 때만 Canvas 호출 전에 건너뛴다.
     partial_clip: Option<BoundingBox>,
     partial_context_saved: bool,
+    /// [#6028] soft-wrap 줄의 마지막 텍스트 run 이 가진 줄-말미 공백 수 —
+    /// svg.rs 와 같은 계약(밑줄/취소선 길이에서 제외). 문단 마지막 줄·강제
+    /// 줄바꿈 줄(서명란 밑줄 공백)은 대상 아님.
+    soft_wrap_decoration_trim: Option<(u32, usize)>,
+    active_decoration_trim: usize,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -404,6 +409,8 @@ impl WebCanvasRenderer {
             render_profile: RenderProfile::Screen,
             partial_clip: None,
             partial_context_saved: false,
+            soft_wrap_decoration_trim: None,
+            active_decoration_trim: 0,
         })
     }
 
@@ -513,6 +520,31 @@ impl WebCanvasRenderer {
             return;
         }
 
+        // [#6028] soft-wrap 줄-말미 공백 트림 대상 특정 (svg.rs 와 동일 규칙).
+        if matches!(&node.node_type, RenderNodeType::TextLine(_)) {
+            self.soft_wrap_decoration_trim = node
+                .children
+                .iter()
+                .rev()
+                .find_map(|child| {
+                    if let RenderNodeType::TextRun(run) = &child.node_type {
+                        if run.text.chars().any(|ch| ch != ' ') {
+                            if run.is_para_end || run.is_line_break_end {
+                                return Some(None);
+                            }
+                            let trailing =
+                                run.text.chars().rev().take_while(|ch| *ch == ' ').count();
+                            if trailing > 0 {
+                                return Some(Some((child.id, trailing)));
+                            }
+                            return Some(None);
+                        }
+                    }
+                    None
+                })
+                .flatten();
+        }
+
         match &node.node_type {
             RenderNodeType::Page(page) => {
                 self.begin_page(page.width, page.height);
@@ -521,7 +553,12 @@ impl WebCanvasRenderer {
                 self.render_page_background(&node.bbox, bg);
             }
             RenderNodeType::TextRun(run) => {
+                self.active_decoration_trim = match self.soft_wrap_decoration_trim {
+                    Some((id, trim)) if id == node.id => trim,
+                    _ => 0,
+                };
                 self.render_text_run(&node.bbox, run);
+                self.active_decoration_trim = 0;
             }
             RenderNodeType::Rectangle(rect) => {
                 self.render_rectangle(&node.bbox, rect, false);
@@ -2403,9 +2440,19 @@ impl Renderer for WebCanvasRenderer {
             }
         }
 
+        // [#6028] soft-wrap 줄-말미 공백은 장식선 길이에서 제외 (svg.rs 동일 계약).
+        let decoration_width = {
+            let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
+            let trim = self.active_decoration_trim.min(trailing);
+            let n = text.chars().count();
+            char_positions
+                .get(n - trim)
+                .copied()
+                .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0))
+        };
         // 밑줄 처리
         if !matches!(style.underline, UnderlineType::None) {
-            let text_width = *char_positions.last().unwrap_or(&0.0);
+            let text_width = decoration_width;
             let ul_color = if style.underline_color != 0 {
                 color_to_css(style.underline_color)
             } else {
@@ -2430,7 +2477,7 @@ impl Renderer for WebCanvasRenderer {
 
         // 취소선 처리
         if style.strikethrough {
-            let text_width = *char_positions.last().unwrap_or(&0.0);
+            let text_width = decoration_width;
             let strike_y = y - font_size * 0.3;
             let st_color = if style.strike_color != 0 {
                 color_to_css(style.strike_color)

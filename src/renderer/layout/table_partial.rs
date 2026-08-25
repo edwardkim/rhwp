@@ -858,15 +858,27 @@ impl LayoutEngine {
             let straddles_fragment_end = cell_row < render_range_end
                 && (cell_end_row > render_range_end
                     || (cell_end_row == render_range_end && !end_cut.is_empty()));
-            let is_rowbreak_straddle = !is_block_split
-                && !is_in_split_row
+            // [#6024] block-split 조각이라도 **컷이 비어 있는 쪽 경계**(행 경계
+            // 컷)의 straddle rowspan 셀은 split-block 범위(is_in_split_row)에
+            // 잡히지 않는다 — 그대로 두면 연속 조각이 병합 셀 내용을 처음부터
+            // 재렌더한다(10857 p9: 밴드 라벨 '10·사무분장 조정' 중복, 한글은 빈
+            // 칸). 컷이 있는 쪽 경계는 종전대로 cell_cut_window 가 소관한다.
+            let straddle_start_uncovered =
+                straddles_fragment_start && (!is_block_split || start_cut.is_empty());
+            let straddle_end_uncovered =
+                straddles_fragment_end && (!is_block_split || end_cut.is_empty());
+            // CellBreak 표의 경계 straddle rowspan 셀도 같은 기전으로 중복된다
+            // (10857 p67 '조사관 교육훈련', pb=CellBreak 실측) — 높이-유닛 컷은
+            // 분할 모드와 무관한 산술이라 함께 적용한다.
+            let is_rowbreak_straddle = !is_in_split_row
                 && cell.row_span > 1
                 && !is_repeated_header_cell
                 && matches!(
                     table.page_break,
                     crate::model::table::TablePageBreak::RowBreak
+                        | crate::model::table::TablePageBreak::CellBreak
                 )
-                && (straddles_fragment_start || straddles_fragment_end);
+                && (straddle_start_uncovered || straddle_end_uncovered);
             // HWP5 저장 pagination 계약의 정확한 2행 rowspan/2문단 형상은 문단 하나가
             // 행 하나의 저장 owner다. 여기서 일반 높이 컷을 적용하면 첫 문단의 trailing
             // line/문단 간격이 첫 행보다 커져 양쪽 문단이 continuation에 재방출될 수

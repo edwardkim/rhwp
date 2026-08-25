@@ -4704,6 +4704,8 @@ impl LayoutEngine {
             .zip(cell.paragraphs.iter())
             .enumerate()
         {
+            // [#5601] 이 문단이 저장-앵커 스냅으로 spacing_before 를 선차감했는지.
+            let mut snap_anchored_with_spacing_before = false;
             let (start_line, end_line) = fragment_line_ranges
                 .as_ref()
                 .and_then(|ranges| ranges.get(cp_idx).copied())
@@ -4793,6 +4795,12 @@ impl LayoutEngine {
             let use_saved_cell_para_vpos = use_top_vpos_anchor
                 || trust_stored_cell_flow
                 || has_initial_tac_shape_host(&cell.paragraphs);
+            if std::env::var("RHWP_DIAG_5601B").is_ok() && trust_stored_cell_flow {
+                eprintln!(
+                    "DIAG5601B cp={cp_idx} use={use_saved_cell_para_vpos} anchor={has_stored_para_anchor} restart={local_vpos_restart_seen} para_y_in={para_y:.1} first_vpos={:?}",
+                    para.line_segs.first().map(|s| s.vertical_pos)
+                );
+            }
             if use_saved_cell_para_vpos
                 && (!has_nested_table || trust_stored_cell_flow)
                 && has_stored_para_anchor
@@ -4816,6 +4824,10 @@ impl LayoutEngine {
                         // layout_composed_paragraph()가 spacing_before를 더하므로
                         // 호출 전에 그 값을 빼서 최종 line top이 vpos와 일치하게 한다.
                         para_y = anchored_y - spacing_before;
+                        // [#5601] Center/Bottom 셀의 column-top 문단은 composed 의
+                        // suppress 경로가 재가산까지 막아 앞 간격이 유실된다 —
+                        // 이 문단의 composed 호출 직전에 전량 재가산 토글을 켠다.
+                        snap_anchored_with_spacing_before = spacing_before > 0.0;
                     }
                 }
             }
@@ -4893,6 +4905,11 @@ impl LayoutEngine {
                     None
                 };
                 let composed_for_layout = numbered_comp.as_ref().unwrap_or(composed);
+                // [#5601] 스냅 선차감 문단은 composed 가 column-top 트림과 무관하게
+                // spacing_before 를 전량 재가산해야 vpos 와 맞는다(읽는 즉시 clear).
+                if snap_anchored_with_spacing_before {
+                    self.reapply_snap_anchored_spacing_before.set(true);
+                }
                 para_y = self.layout_composed_paragraph(
                     tree,
                     cell_node,
@@ -6366,7 +6383,26 @@ impl LayoutEngine {
                                 text_y_start + hwpunit_to_px(next_seg.vertical_pos, self.dpi);
                             // layout_table 기반 para_y와 다음 문단 vpos 중
                             // 더 큰 값 사용 (표가 LINE_SEG보다 클 수 있으므로)
-                            para_y = para_y.max(next_vpos_y);
+                            // [#6044] 저장 vpos 는 한글 줄 top 이라 spacing_before 가
+                            // 이미 들어 있다. 다음 문단이 layout_composed_paragraph 를
+                            // 타면 앞 간격이 한 번 더 더해져 중첩 박스 뒤가 +10pt 부풀고
+                            // 고정 높이 상자 마지막 줄이 하단 괘선에 잘린다. block 표
+                            // 문단은 그 경로를 안 타므로 빼지 않는다.
+                            let next_has_block_table = next_para
+                                .controls
+                                .iter()
+                                .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char));
+                            let next_spacing_before = if next_has_block_table {
+                                0.0
+                            } else {
+                                styles
+                                    .para_styles
+                                    .get(next_para.para_shape_id as usize)
+                                    .map(|s| s.spacing_before)
+                                    .unwrap_or(0.0)
+                                    .max(0.0)
+                            };
+                            para_y = para_y.max(next_vpos_y - next_spacing_before);
                         }
                     }
                 }
@@ -6871,11 +6907,9 @@ impl LayoutEngine {
             // 지오메트리를 신뢰한다: 정렬 기준 콘텐츠 높이를 저장 extent 로
             // 바꾸고, 문단 배치도 저장 vpos 스냅을 강제한다 (한컴 실측:
             // 가사 top = 셀 top + pad + 센터 오프셋(저장 extent 기준) + vpos).
-            let (stored_flow_extent, stored_flow_line_sum) = if (!has_nested_table
-                || hwpx_noninline_tac_nested_stored_flow)
-                && !cell.paragraphs.is_empty()
-                && cell.paragraphs.iter().all(|p| !p.line_segs.is_empty())
-            {
+            let all_paras_have_segs = !cell.paragraphs.is_empty()
+                && cell.paragraphs.iter().all(|p| !p.line_segs.is_empty());
+            let (raw_stored_flow_extent, raw_stored_flow_line_sum) = if all_paras_have_segs {
                 cell.paragraphs
                     .iter()
                     .flat_map(|p| p.line_segs.iter())
@@ -6887,6 +6921,26 @@ impl LayoutEngine {
                         )
                     })
                     .fold((0.0f64, 0.0f64), |(ext, sum), (e, h)| (ext.max(e), sum + h))
+            } else {
+                (0.0, 0.0)
+            };
+            // [#5601] 중첩 표를 품은 셀도, **재조판 스택은 셀 안높이를 넘치는데
+            // 저장 사다리는 담기는** 잘림 구조에서는 저장 흐름 후보로 연다. 00451
+            // (협약서 1×1 tac 상자 안에 안내 표): 재조판이 줄간격을 +23px 부풀려
+            // 마지막 줄 "“을” : (인)" 이 셀 clip 밖(845.4 > 843.2)으로 나가 소실
+            // — 한글 2024 PDF·저장 사다리 실측은 그 줄을 셀 안(825.3)에 담는다.
+            // Task #362 의 반증(kps-ai p56: vpos 를 쓰면 +19.5px 클립)은 잘림
+            // 방향이 반대(재조판은 담기고 vpos 가 넘침)라 이 판별자에 안 걸린다.
+            let nested_stored_overflow_rescue = has_nested_table
+                && table.common.treat_as_char
+                && self.profile.get().hwp5_stored_pagination_layout()
+                && raw_stored_flow_extent > 0.0
+                && raw_stored_flow_extent <= inner_height + 0.5;
+            let (stored_flow_extent, stored_flow_line_sum) = if !has_nested_table
+                || hwpx_noninline_tac_nested_stored_flow
+                || nested_stored_overflow_rescue
+            {
+                (raw_stored_flow_extent, raw_stored_flow_line_sum)
             } else {
                 (0.0, 0.0)
             };
@@ -6926,10 +6980,23 @@ impl LayoutEngine {
             // extent와 자체 측정값이 같아도 문단별 vpos가 하위 표의 실제 위치를
             // 담고 있다. 이 경우에는 total height는 변하지 않지만 순차 배치만
             // 저장 anchor로 복원해야 한다 (#3820 p144).
+            // [#5601] native HWP5 tac 표의 중첩-표 셀에서, 저장 앵커 흐름이 셀
+            // 안높이에 담기고 비-flow 개체도 그 안이면(모든 문단 앵커 유효),
+            // extent==total 이어도 저장 앵커 배치를 신뢰한다 — 재조판 배치는
+            // 줄간격을 부풀려(00451: +23px) 마지막 줄이 셀 clip 밖으로 나가는데
+            // 측정 total 은 정합(753.7)이라 압축 조건으로는 못 잡는다. Task #362
+            // 의 반증(kps-ai p56: 누적 vpos 가 셀을 넘쳐 클립)은 extent 가
+            // inner 를 넘어 이 판별자(ext ≤ inner)에 안 걸린다.
+            let native_tac_nested_stored_anchor_fits = has_nested_table
+                && table.common.treat_as_char
+                && self.profile.get().hwp5_stored_pagination_layout()
+                && stored_flow_extent > 0.0
+                && stored_flow_extent <= inner_height + 0.5;
             let trust_stored_cell_flow = stored_flow_shape_is_trusted
                 && (stored_flow_extent + 0.5 < total_content_height
                     || (hwpx_noninline_tac_nested_stored_flow
-                        && (stored_flow_extent - total_content_height).abs() <= 0.5));
+                        && (stored_flow_extent - total_content_height).abs() <= 0.5)
+                    || native_tac_nested_stored_anchor_fits);
             let total_content_height = if trust_stored_cell_flow {
                 stored_flow_extent
             } else {
@@ -9961,7 +10028,16 @@ impl LayoutEngine {
                     // 가시 콘텐츠를 가지므로 리셋 보존.
                     hard_break_before: hard_break_before
                         && (has_table_in_para || para_has_visible_text),
-                    stored_frame_break_before: false,
+                    // [#6013] 빈 문단이어도 **쪽-스케일 저장 프레임 되감김**
+                    // (is_stored_frame_rewind: 직전 끝이 본문 절반 이상 내려간 뒤
+                    // 되감김)은 나른다 — 30269 p[17](vpos 67053+1200 → 500)이
+                    // 이 플래그를 잃으면 capacity cut 이 저장 chunk 경계 0.8px
+                    // 앞(28유닛)에서 멈춰 마지막 줄이 다음 쪽으로 밀린다(한글
+                    // 2020 은 29유닛 수용). hard_break_before 는 #1488 그대로
+                    // 꺼져 있어 빈 문단 리셋이 쪽을 강제 분할하지는 않는다 —
+                    // 이 플래그는 absorb_tail_before_stored_frame_break 의 흡수
+                    // 목표로만 쓰인다.
+                    stored_frame_break_before: stored_frame_break_before_para,
                     vpos_gap_before: vpos_gap_before && !collapse_empty_rowbreak_spacer,
                     para_idx: pi,
                     vis_start: 0,
@@ -10052,8 +10128,12 @@ impl LayoutEngine {
                         // 양산하던 여분 빈 연속 페이지 회귀를 제거한다. 가시 텍스트 문단 사이
                         // 리셋(Task #993 의도)은 그대로 하드 브레이크로 보존한다.
                         hard_break_before: hard_break_before && para_has_visible_text,
-                        stored_frame_break_before: para_has_visible_text
-                            && stored_frame_break_before(li),
+                        // [#6013] 쪽-스케일 저장 프레임 되감김은 빈 문단이어도
+                        // 나른다(위 whole-para 분기와 동일 원칙 — 판정 자체가
+                        // is_stored_frame_rewind 의 본문-절반 하한을 통과한 신호다).
+                        // hard_break_before 는 #1488 그대로 가시 문단 한정이라
+                        // 빈 문단 리셋이 쪽을 강제 분할하지는 않는다.
+                        stored_frame_break_before: stored_frame_break_before(li),
                         vpos_gap_before: vpos_gap_before && !collapse_empty_rowbreak_spacer,
                         para_idx: pi,
                         vis_start: if collapse_empty_rowbreak_spacer {
@@ -10147,6 +10227,122 @@ impl LayoutEngine {
                 if shortfall > 0.5 && shortfall <= 32.0 {
                     if let Some(last) = units.last_mut() {
                         last.height += shortfall;
+                    }
+                }
+            }
+        }
+
+        // [#5782] 저장 사다리 구간별 스팬 정합 — 중첩 표 호스트 유닛은 표 높이
+        // 분해값이라 호스트 문단 뒤 간격이 없다. 텍스트 문단 유닛은 corrected
+        // line height 가 문단 간격을 담아 다음 유닛이 그 갭을 흡수하지만, 호스트
+        // 문단 뒤 갭(특히 lh 미흡수 표: 표가 줄 아래로 흐르고 다음 문단 vpos 가
+        // 그 공간을 증언)은 아무 유닛도 담지 않아 유닛 합이 저장 스팬보다 짧아진다.
+        // 그러면 쪽나눔 회계(유닛 합)와 페인트(저장 vpos)가 어긋나 조각 셀 clip 이
+        // 마지막 글줄과 표 아래 괘선을 삼킨다(2181727 p7: 회계 867.5 vs 저장
+        // 891.1, 19.8px 절단 · 3171199 p3: 7.6px). 한글은 저장 스팬대로 조각을
+        // 닫는다. 저장 vpos 정렬(use_vpos_unit_positions)은 "같은 문단 텍스트+표"
+        // 셀 한정이라 마커-전용 호스트 문단 셀에선 꺼져 있다 — 이 후처리는 그
+        // 형상에서 리셋(쪽 경계) 구간별로 유닛 합을 저장 스팬에 맞춘다.
+        if native_hwp5_rowbreak_float_ladder && cell_has_local_vpos_origin {
+            // 리셋 경계로 (문단, 줄) 키의 구간을 나눈다. 비합성 사다리만 신뢰.
+            // 키는 (para_idx, line_idx) 사전식 — 문단 중간 리셋(쪽 경계가 문단
+            // 안에 있는 흔한 형상)도 줄 단위로 정확히 갈린다.
+            type SegKey = (usize, usize);
+            let mut all_stored = true;
+            // (start_key, end_key_exclusive, first_vpos, end_vpos, has_table_host,
+            //  리셋으로 닫힌 구간인가)
+            let mut spans: Vec<(SegKey, SegKey, i32, i32, bool, bool)> = Vec::new();
+            let mut cur: Option<(SegKey, i32, i32, bool)> = None;
+            let mut prev_end = i32::MIN;
+            'seg_scan: for (pi, p) in cell.paragraphs.iter().enumerate() {
+                let hosts_table = p.controls.iter().any(|c| matches!(c, Control::Table(_)));
+                for (si, seg) in p.line_segs.iter().enumerate() {
+                    if line_seg_is_synthetic(seg) || seg.vertical_pos < 0 {
+                        all_stored = false;
+                        break 'seg_scan;
+                    }
+                    let reset = prev_end != i32::MIN && seg.vertical_pos < prev_end;
+                    if reset {
+                        if let Some((s, fv, ev, host)) = cur.take() {
+                            // 다음 줄이 위로 되감겼다 = 이 구간은 여기서 닫혔다.
+                            spans.push((s, (pi, si), fv, ev, host, true));
+                        }
+                    }
+                    let end = seg.vertical_pos.saturating_add(seg.line_height);
+                    match &mut cur {
+                        Some((_, _, ev, host)) => {
+                            *ev = (*ev).max(end);
+                            // 컨트롤은 호스트 줄(첫 줄)이 속한 구간에 귀속한다.
+                            *host |= hosts_table && si == 0;
+                        }
+                        None => cur = Some(((pi, si), seg.vertical_pos, end, hosts_table)),
+                    }
+                    prev_end = end;
+                }
+            }
+            if let Some((s, fv, ev, host)) = cur.take() {
+                // 마지막 구간은 셀 안에서 닫혔다는 증거가 없다 — 열린 채로 표시한다.
+                spans.push((s, (usize::MAX, 0), fv, ev, host, false));
+            }
+            if all_stored && !spans.is_empty() {
+                // 대상은 **리셋으로 닫힌** 구간 중 표-호스트를 품은 것뿐이다.
+                //
+                // 닫힌 구간은 저장 사다리가 "여기서 조각이 끝났다"를 스스로 증언한다
+                // (다음 줄이 위로 되감겼다). 그 구간의 유닛 합은 한 쪽 조각의 회계
+                // 전부이므로 저장 스팬에 맞춰도 조각이 자기 경계를 넘지 않는다.
+                //
+                // 반면 **마지막 열린 구간**은 셀 안에 끝 증거가 없다. 그 높이는 남은
+                // 흐름이 어디서 잘리는지에 달렸고, 저장 스팬은 이 셀이 쪽 하단까지
+                // 쓸 수 있었을 때의 값이다. 거기에 맞춰 마지막 유닛을 키우면 조각이
+                // 쪽 하단을 넘어 자라, 다음 쪽 소유 줄이 이 쪽 clip 안으로 끌려
+                // 들어온다 — issue3637 `regulatory_impact_nested_table_escape.hwpx`
+                // 에서 p26 이 p27 첫 줄("사업체노동력조사")을 가시 상태로 물고,
+                // 같은 문서에 `LAYOUT_OVERFLOW_CELL` 14줄이 새로 생겼다.
+                //
+                // 셀 **끝**의 종점 정합은 이 후처리의 몫이 아니다. 리셋이 없는
+                // 단조 사다리(단일 구간)에서 마지막 문단이 표 호스트인 경우는 위
+                // #5885 후처리가 셀 종점 기준으로 이미 닫는다. 둘은 겹치지 않는다.
+                for (sk, ek, fv, ev, host, closed) in &spans {
+                    if !*closed {
+                        continue; // 열린 마지막 구간 — 쪽 하단을 넘길 위험
+                    }
+                    if !*host {
+                        continue; // 텍스트-전용 구간은 corrected lh 로 이미 정합
+                    }
+                    let span_px = hwpunit_to_px(ev - fv, self.dpi);
+                    let mut unit_sum = 0.0f64;
+                    let mut last_unit: Option<usize> = None;
+                    for (ui, u) in units.iter().enumerate() {
+                        let key: SegKey = (u.para_idx, u.vis_start);
+                        if key >= *sk && key < *ek {
+                            unit_sum += u.height;
+                            last_unit = Some(ui);
+                        }
+                    }
+                    // 구간 **끝**이 호스트일 때만 보정한다. 이 후처리의 근거는
+                    // "호스트 문단 뒤 갭을 흡수할 유닛이 없다"인데, 호스트 뒤에 같은
+                    // 구간의 텍스트 유닛이 더 있으면 그 갭은 이미 그 유닛의 corrected
+                    // line height 가 담는다 — 그때 차액을 또 얹으면 구간이 실제보다
+                    // 길어져 조각이 쪽 하단을 넘는다. issue3637
+                    // `regulatory_impact_nested_table_escape.hwpx` 의 문단 7~27 구간이
+                    // 그 형상이다(span 941.1 · 유닛 합 922.3 · 차액 18.7, 구간 끝은
+                    // 호스트가 아니라 문단 27 본문). 그 18.7 을 얹으면 p26 조각이
+                    // 8.2px 넘쳐 p27 소유 줄("사업체노동력조사")이 p26 clip 안으로
+                    // 끌려 들어오고 `LAYOUT_OVERFLOW_CELL` 14줄이 새로 생겼다.
+                    let ends_on_host = last_unit.is_some_and(|ui| {
+                        cell.paragraphs.get(units[ui].para_idx).is_some_and(|p| {
+                            p.controls.iter().any(|c| matches!(c, Control::Table(_)))
+                        })
+                    });
+                    if !ends_on_host {
+                        continue;
+                    }
+                    let shortfall = span_px - unit_sum;
+                    // 한두 문단 간격 규모만 인정 — 그 이상은 다른 축.
+                    if shortfall > 0.5 && shortfall <= 32.0 {
+                        if let Some(ui) = last_unit {
+                            units[ui].height += shortfall;
+                        }
                     }
                 }
             }
@@ -10586,6 +10782,40 @@ impl LayoutEngine {
             && !next.hard_break_before
             && consumed_height + units[j].height <= avail_height
             && consumed_height + units[j].height + next.height > avail_height
+    }
+
+    /// [#6045] 잔여 쪽 높이에 안 들어가는 TopAndBottom 원자 그림은 강제 소비하지
+    /// 않는다. 쪽보다 큰 개체는 진행 보장을 위해 그대로 두고, 다음 쪽 본문에
+    /// 들어가면 그쪽에서 통째로 그린다.
+    ///
+    /// `advance_row_cut` 의 `j==start` 강제 소비가 156684746 표8 r7c1 서울경제TV
+    /// 캡처(h=289px)를 9쪽 y=991 에 올려 지면(1122) 밖으로 자르고, 10쪽 오른쪽
+    /// 칸을 빈 칸으로 남겼다.
+    fn should_defer_overflowing_top_and_bottom_entry(
+        &self,
+        unit: &CellUnit,
+        unit_idx: usize,
+        start: usize,
+        consumed_in_cell: f64,
+        cell_avail: f64,
+    ) -> bool {
+        // 페이지 렌더 경로만 `current_body_area` 를 채운다. typeset scan 은
+        // (0,0,0,0) 이라 96dpi A4 본문(≈1028px) 근사로 "다음 쪽에 들어가면"
+        // 을 판정한다.
+        let page_body_h = {
+            let body = self.current_body_area.get().3;
+            if body > 0.5 {
+                body
+            } else {
+                1100.0
+            }
+        };
+        unit_idx == start
+            && consumed_in_cell <= 0.5
+            && unit.top_and_bottom_flow
+            && !unit.empty_spacer
+            && unit.height > cell_avail + 0.5
+            && unit.height <= page_body_h + 0.5
     }
 
     fn rewind_rowbreak_fragment_tail_before_topandbottom_flow(
@@ -11304,6 +11534,10 @@ impl LayoutEngine {
                         }
                     }
                 }
+                if self.should_defer_overflowing_top_and_bottom_entry(u, j, start, h, avail_height)
+                {
+                    break;
+                }
                 // [Task #1658] 미세 fragment 낭비 페이지 방지: 거대 셀이 페이지를 가로질러 분할될
                 // 때 셀 내용 vpos reset(hard_break_before)이 촘촘하면, 잔여공간이 충분한데도 reset 마다
                 // 페이지를 끊어 2줄 이하만 담은 낭비 페이지가 양산된다(법령 별표 거대 셀:
@@ -11582,7 +11816,17 @@ impl LayoutEngine {
             && !block_has_top_and_bottom_flow;
         let allow_midpage_reset_absorb =
             self.profile.get().hwpx_stored_layout() || block_has_top_and_bottom_flow;
+        let cell_spacing_px = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
+        let mut row_y = 0.0;
+        let mut prev_row: Option<u16> = None;
+        let mut prev_row_h = 0.0;
         for (i, cell) in cells.iter().enumerate() {
+            if prev_row.is_some_and(|row| row != cell.row) {
+                row_y += prev_row_h + cell_spacing_px;
+                prev_row_h = 0.0;
+            }
+            prev_row = Some(cell.row);
+            let cell_avail = (avail_height - row_y).max(0.0);
             let units = self.cell_units(cell, table, styles);
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
             let mut j = start;
@@ -11606,6 +11850,9 @@ impl LayoutEngine {
                         .all(|unit| unit.empty_spacer && !unit.hard_break_before)
                 {
                     j = units.len();
+                    break;
+                }
+                if self.should_defer_overflowing_top_and_bottom_entry(u, j, start, h, cell_avail) {
                     break;
                 }
                 let strict_saved_frame_break = u.stored_frame_break_before;
@@ -11707,6 +11954,7 @@ impl LayoutEngine {
             if h > consumed_height {
                 consumed_height = h;
             }
+            prev_row_h = prev_row_h.max(h);
             // [#2097 진단] 셀별 walk 결과 — 동작 불변.
             if std::env::var("RHWP_DIAG_BLKCUT").is_ok() {
                 let stop = if j >= units.len() {
@@ -11853,6 +12101,9 @@ impl LayoutEngine {
                     break;
                 }
                 if j == start && !allow_force_progress && h + u.height > cell_budget {
+                    break;
+                }
+                if self.should_defer_overflowing_top_and_bottom_entry(u, j, start, h, cell_budget) {
                     break;
                 }
                 h += u.height;

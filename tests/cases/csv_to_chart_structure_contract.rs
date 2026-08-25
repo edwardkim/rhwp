@@ -11,6 +11,8 @@ use std::process::{Command, Output};
 
 const BAR: &str = "samples/chart/세로막대형/묶은세로막대형.hwpx";
 const PIE: &str = "samples/chart/원형/원형대원형.hwpx";
+/// [#6037] OHLC — `c:upDownBars` 를 가진 유일한 코퍼스 문서. 캔들 앵커 가드의 대상이다.
+const OHLC: &str = "samples/chart/기타/시가고가저가종가.hwpx";
 
 fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
@@ -231,11 +233,15 @@ fn structure_flag_adds_and_removes_series_and_renames() {
     assert_eq!(records(&back)[0], ",이름바뀐계열,계열 2", "{back}");
 }
 
-/// 원형에 계열을 더하는 CSV 는 `--structure` 여도 가드가 막는다 — exit 2 + `pieSeriesCountFixed`.
+/// [#6037] 원형에 계열을 더하는 CSV 는 **통과한다** — 파손이 아니라 무효과다.
+///
+/// 꼬리에 붙으므로 원본 계열이 첫 자리에 남아 그림이 유지된다. 되읽은 CSV 의 첫 열이 원본
+/// 계열명 그대로인지로 그것을 고정한다.
 #[test]
-fn pie_series_add_via_csv_exits_two_with_pie_guard() {
+fn pie_series_add_via_csv_is_allowed() {
     let dir = tmp_dir();
     let (file, csv_path, body) = seed(PIE, &dir);
+    let head = records(&body)[0].clone();
     let rows: Vec<String> = records(&body)
         .iter()
         .enumerate()
@@ -250,10 +256,42 @@ fn pie_series_add_via_csv_exits_two_with_pie_guard() {
     std::fs::write(&csv_path, join(&rows)).unwrap();
     let dest = dir.join("pie.hwpx");
     let out = csv_to_chart(&file, &csv_path, &dest, &["--structure"]);
+    assert_eq!(out.status.code(), Some(0), "{out:?}");
+    assert!(dest.exists(), "통과했는데 파일이 없다");
+    let back = run(&["chart-to-csv", &path_str(&dest), "--chart", "1"]);
+    let back = String::from_utf8_lossy(&back.stdout).to_string();
+    assert_eq!(
+        records(&back)[0],
+        format!("{head},추가계열"),
+        "원본 계열이 첫 자리에 남아야 그림이 유지된다: {back}"
+    );
+}
+
+/// [#6037] OHLC 에 **꼬리로** 계열을 더하는 CSV 는 막힌다 — exit 2 + `candleAnchorBroken`.
+///
+/// 캔들 몸통이 첫↔끝 계열이므로 끝이 새 계열로 바뀌면 전부 검은 박스가 된다(한컴 실측).
+#[test]
+fn stock_tail_series_add_via_csv_exits_two_with_candle_guard() {
+    let dir = tmp_dir();
+    let (file, csv_path, body) = seed(OHLC, &dir);
+    let rows: Vec<String> = records(&body)
+        .iter()
+        .enumerate()
+        .map(|(i, r)| {
+            if i == 0 {
+                format!("{r},추가계열")
+            } else {
+                format!("{r},1")
+            }
+        })
+        .collect();
+    std::fs::write(&csv_path, join(&rows)).unwrap();
+    let dest = dir.join("ohlc.hwpx");
+    let out = csv_to_chart(&file, &csv_path, &dest, &["--structure"]);
     assert_eq!(out.status.code(), Some(2), "{out:?}");
     let env = json_of(&out);
     assert!(
-        reasons(&env).contains(&"pieSeriesCountFixed".to_string()),
+        reasons(&env).contains(&"candleAnchorBroken".to_string()),
         "{env}"
     );
     assert!(env["wrote"].as_array().expect("wrote").is_empty());
@@ -264,20 +302,24 @@ fn pie_series_add_via_csv_exits_two_with_pie_guard() {
 #[test]
 fn set_chart_data_dry_run_goes_through_core_validation() {
     let dir = tmp_dir();
-    let pie = path_str(&sample(PIE));
+    let ohlc = path_str(&sample(OHLC));
+    // 꼬리에 계열을 붙여 끝 계열을 바꾼다 — candleAnchorBroken 대상.
     let data = serde_json::json!({
         "structure": true,
         "series": [
-            {"name": "계열 1", "values": ["1", "2", "3", "4"]},
+            {"name": "시가", "values": ["44", "22", "21", "33"]},
+            {"name": "고가", "values": ["55", "57", "57", "59"]},
+            {"name": "저가", "values": ["11", "12", "13", "21"]},
+            {"name": "종가", "values": ["32", "35", "34", "35"]},
             {"name": "추가계열", "values": ["1", "2", "3", "4"]}
         ],
     })
     .to_string();
-    let dest = dir.join("dry_pie.hwpx");
+    let dest = dir.join("dry_ohlc.hwpx");
     let out = run(&[
         "edit",
         "set-chart-data",
-        &pie,
+        &ohlc,
         "--chart",
         "1",
         "--data",
@@ -294,7 +336,7 @@ fn set_chart_data_dry_run_goes_through_core_validation() {
     );
     let env = json_of(&out);
     assert!(
-        reasons(&env).contains(&"pieSeriesCountFixed".to_string()),
+        reasons(&env).contains(&"candleAnchorBroken".to_string()),
         "{env}"
     );
     assert!(!dest.exists());

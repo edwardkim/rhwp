@@ -142,6 +142,16 @@ pub struct ChartSeries {
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ChartData {
     pub series: Vec<ChartSeries>,
+    /// [#6037] plot 안에 `<c:upDownBars>` 캔들 장치가 있는가.
+    ///
+    /// 주식형 OHLC 만 갖는다. 이 장치는 **첫 계열과 끝 계열**을 몸통으로 삼으므로,
+    /// 계열을 더하거나 지워 **끝 계열이 바뀌면 몸통이 엉뚱한 짝으로 다시 잡혀** 캔들이
+    /// 통째로 검은 박스가 된다(#6037 한컴 실측 — 꼬리 삽입·꼬리 삭제 2건). 반대로 중간
+    /// 삽입·중간 삭제는 끝이 유지되어 정상이고, 장치가 없는 HLC 는 꼬리를 건드려도 정상이다.
+    ///
+    /// 렌더 쪽 모델의 동명 필드(`crate::OoxmlChartSeries::has_up_down_bars`, C2a #2277)와
+    /// 같은 토큰을 보지만, 이쪽은 편집 검증용이라 **차트 단위**로 둔다.
+    pub has_up_down_bars: bool,
 }
 
 /// 스캔 실패 사유.
@@ -265,6 +275,8 @@ struct ScanState {
     pt_start: Option<(usize, usize)>,
     /// [#5652] 열려 있는 라벨/값 블록.
     block: Option<BlockBuild>,
+    /// [#6037] `<c:upDownBars>` 를 한 번이라도 봤는가 — 차트 단위 플래그.
+    has_up_down_bars: bool,
 }
 
 impl ScanState {
@@ -281,6 +293,7 @@ impl ScanState {
             ser_start: 0,
             pt_start: None,
             block: None,
+            has_up_down_bars: false,
         }
     }
 
@@ -606,6 +619,8 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
                     }
                     // `<c:ptCount val="n"></c:ptCount>` 꼴(코퍼스 0건) — 빈 요소와 같이 다룬다.
                     b"ptCount" => note_pt_count(&mut state, text, tag_range, e),
+                    // [#6037] 캔들 장치 — plot 의 자식이라 계열 밖에서 나온다.
+                    b"upDownBars" => state.has_up_down_bars = true,
                     b"idx" | b"order" => note_series_index(&mut state, text, tag_range, e),
                     local => {
                         if let Some(kind) = plot_kind(local) {
@@ -643,6 +658,8 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
                         }
                     }
                     b"idx" | b"order" => note_series_index(&mut state, text, tag_range, e),
+                    // [#6037] `<c:upDownBars/>` 자기닫힘 꼴(코퍼스 0건) — 여는 태그와 같이 본다.
+                    b"upDownBars" => state.has_up_down_bars = true,
                     _ => {}
                 }
             }
@@ -774,6 +791,7 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
 
     Ok(ChartData {
         series: state.series,
+        has_up_down_bars: state.has_up_down_bars,
     })
 }
 

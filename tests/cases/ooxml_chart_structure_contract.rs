@@ -997,3 +997,61 @@ fn apply_value_edits_is_an_unchanged_wrapper() {
     assert_eq!(via_values, via_chart);
     assert!(String::from_utf8_lossy(&via_values).contains("<c:v>99</c:v>"));
 }
+
+// ---------------------------------------------------------------------------
+// [#6037] 캔들 장치 — upDownBars 스캔
+// ---------------------------------------------------------------------------
+
+/// 주식형 골격. `WITH_CANDLE` 이면 `<c:upDownBars>` 를 계열 뒤에 단다(한컴 OHLC 배치).
+fn stock_xml(with_candle: bool) -> String {
+    let candle = if with_candle {
+        concat!(
+            r#"<c:upDownBars><c:gapWidth val="150"/>"#,
+            r#"<c:upBars/><c:downBars/></c:upDownBars>"#,
+        )
+    } else {
+        ""
+    };
+    format!(
+        concat!(
+            r#"<c:chartSpace><c:chart><c:plotArea><c:stockChart>"#,
+            r#"<c:ser><c:idx val="0"/><c:order val="0"/>"#,
+            r#"<c:tx><c:strRef><c:strCache><c:ptCount val="1"/>"#,
+            r#"<c:pt idx="0"><c:v>고가</c:v></c:pt></c:strCache></c:strRef></c:tx>"#,
+            r#"<c:val><c:numRef><c:numCache><c:ptCount val="1"/>"#,
+            r#"<c:pt idx="0"><c:v>55</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>"#,
+            r#"<c:hiLowLines/>{candle}"#,
+            r#"</c:stockChart></c:plotArea></c:chart></c:chartSpace>"#,
+        ),
+        candle = candle
+    )
+}
+
+/// 캔들 장치가 있으면 차트 단위로 표가 선다 — 계열 밖(plot 자식)에 있어도 잡는다.
+#[test]
+fn up_down_bars_is_scanned_at_chart_level() {
+    let with = scan_chart_values(stock_xml(true).as_bytes()).expect("스캔");
+    assert!(
+        with.has_up_down_bars,
+        "plot 자식 <c:upDownBars> 를 차트 단위로 잡아야 한다"
+    );
+    assert_eq!(with.series.len(), 1, "계열 스캔이 함께 성립한다");
+    assert_eq!(with.series[0].plot, PlotKind::Stock);
+}
+
+/// HLC 처럼 캔들 장치가 없으면 표가 서지 않는다 — `hiLowLines` 만으로는 켜지지 않는다.
+#[test]
+fn up_down_bars_is_absent_without_the_candle_element() {
+    let without = scan_chart_values(stock_xml(false).as_bytes()).expect("스캔");
+    assert!(
+        !without.has_up_down_bars,
+        "hiLowLines 만 있는 HLC 는 캔들 장치가 없다"
+    );
+}
+
+/// 주식형이 아닌 차트에는 서지 않는다.
+#[test]
+fn up_down_bars_is_absent_on_non_stock_charts() {
+    let data = scan_chart_values(TWO_SERIES_BAR.as_bytes()).expect("스캔");
+    assert!(!data.has_up_down_bars);
+}

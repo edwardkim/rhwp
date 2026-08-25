@@ -203,6 +203,23 @@ fn labels_shared(data: &ChartData) -> bool {
         })
 }
 
+/// [#6037] `PlotKind` → 봉투 표기. OOXML 요소 이름에서 `Chart` 를 뺀 camelCase 다.
+fn plot_name(kind: PlotKind) -> &'static str {
+    match kind {
+        PlotKind::Bar => "bar",
+        PlotKind::Line => "line",
+        PlotKind::Area => "area",
+        PlotKind::Pie => "pie",
+        PlotKind::OfPie => "ofPie",
+        PlotKind::Doughnut => "doughnut",
+        PlotKind::Radar => "radar",
+        PlotKind::Scatter => "scatter",
+        PlotKind::Bubble => "bubble",
+        PlotKind::Stock => "stock",
+        PlotKind::Other => "other",
+    }
+}
+
 fn chart_data_json(chart: &ChartRef, data: &ChartData, source: ChartSource) -> serde_json::Value {
     let axis = match data.series.first().map(|s| s.axis) {
         Some(SeriesAxis::Scatter) => "scatter",
@@ -214,6 +231,12 @@ fn chart_data_json(chart: &ChartRef, data: &ChartData, source: ChartSource) -> s
         "ok": true,
         "chart": chart.index + 1,
         "axis": axis,
+        // [#6037] plot 종류 — 표면이 "이 편집이 화면에 나타나는가"를 사전에 판단할 근거다.
+        // 예: 원형은 첫 계열만 그리므로 계열을 더해도 보이지 않는다(거부는 하지 않는다).
+        // `axis` 와 같이 **첫 계열 기준**이다 — 코퍼스 전건이 단일 plot 이다.
+        "plot": data.series.first().map(|s| plot_name(s.plot)).unwrap_or("other"),
+        // [#6037] 캔들 장치 — 있으면 끝 계열을 바꾸는 구조 편집이 거부된다(candleAnchorBroken).
+        "hasUpDownBars": data.has_up_down_bars,
         "source": match source {
             ChartSource::ZipPart => "zipPart",
             ChartSource::NestedCopy => "nestedCopy",
@@ -513,21 +536,52 @@ fn validate_structure(data: &ChartData, edits: &ChartEdits) -> Vec<serde_json::V
     }
 
     // 2) 종류별 가드 — 계열 수 변경.
-    if k_new != k {
-        if data
-            .series
-            .iter()
-            .any(|s| matches!(s.plot, PlotKind::Pie | PlotKind::OfPie))
-        {
+    //
+    // [#6037] 술어가 "계열 수가 바뀌는가"에서 "그리기 장치와 짝이 맞는가"로 좁혀졌다.
+    // 한컴 실측 12변종이 가른 것은 개수가 아니라 둘이었다 — 값이 빈 계열이 끼는가(rhwp 는
+    // `is_number` 로 애초에 못 만든다)와, 캔들 짝(첫 계열↔끝 계열)이 유지되는가.
+    // 원형은 계열을 더해도 파손이 없어(첫 계열만 그린다) 가드를 두지 않는다.
+    if k_new != k && data.has_up_down_bars {
+        // `c:upDownBars` 는 **첫 계열과 끝 계열**을 몸통으로 삼는다(시가↔종가). 어느 쪽이든
+        // 바뀌면 몸통이 엉뚱한 짝으로 다시 잡혀 캔들이 통째로 검은 박스가 된다. 중간 삽입·
+        // 중간 삭제는 양끝이 그대로라 정상이다.
+        //
+        // 끝 쪽은 한컴 실측 2건(꼬리 삽입·꼬리 삭제)이 파손을 확인했고, 첫 쪽은 **미실측**이라
+        // 장치의 동작에서 추론해 fail-closed 로 함께 막는다(#6037 S5 판정 번들에서 확인).
+        let ends_kept = |old: Option<&ChartSeries>, new: Option<&SeriesEdits>| {
+            // 그대로라고 볼 근거 둘 — 하나라도 서면 통과. 한쪽만 보면 각각 오탐이 난다
+            // (이름만: 개명+개수변경 / 값만: 그 계열 값 편집+개수변경).
+            let name_kept = match (
+                old.and_then(|s| s.name.as_deref()),
+                new.and_then(|s| s.name.as_deref()),
+            ) {
+                (Some(a), Some(b)) => a == b,
+                _ => false,
+            };
+            let values_kept = match (old, new) {
+                (Some(a), Some(b)) => a
+                    .values
+                    .iter()
+                    .map(|p| p.text.as_str())
+                    .eq(b.values.iter().map(String::as_str)),
+                _ => false,
+            };
+            name_kept || values_kept
+        };
+        let broken_end = if !ends_kept(data.series.first(), edits.series.first()) {
+            Some(("first", data.series.first(), edits.series.first()))
+        } else if !ends_kept(data.series.last(), edits.series.last()) {
+            Some(("last", data.series.last(), edits.series.last()))
+        } else {
+            None
+        };
+        if let Some((end, old, new)) = broken_end {
             out.push(serde_json::json!({
-                "reason": "pieSeriesCountFixed", "expected": k, "actual": k_new,
-                "message": "원형·3D원형·원형대원형 차트는 계열 수가 1 로 고정입니다 — 한컴은 2번째 계열을 조용히 무시합니다(#5447).",
-            }));
-        }
-        if data.series.iter().any(|s| s.plot == PlotKind::Stock) {
-            out.push(serde_json::json!({
-                "reason": "stockSeriesCountFixed", "expected": k, "actual": k_new,
-                "message": "주식형 차트는 계열 수가 종류에 묶입니다(HLC=3 / OHLC=4) — 변경은 종류 변환(B3)으로만 합니다. 한컴은 캔들 장치를 남긴 채 틀리게 그립니다(#5447).",
+                "reason": "candleAnchorBroken",
+                "end": end,
+                "expected": old.and_then(|s| s.name.clone()),
+                "actual": new.and_then(|s| s.name.clone()),
+                "message": "주식형 캔들(c:upDownBars)은 첫 계열과 끝 계열을 몸통으로 삼습니다 — 어느 한쪽이 바뀌면 몸통이 엉뚱한 짝으로 다시 잡혀 캔들이 전부 검은 박스가 됩니다(#6037 한컴 실측). 새 계열은 양끝 사이에 두고, 첫·끝 계열은 지우지 마십시오.",
             }));
         }
     }

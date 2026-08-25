@@ -133,6 +133,15 @@ pub struct SvgRenderer {
     pub annotate_metric_font: bool,
     /// [#4709] 현재 페이지에서 배치에 쓰인 메트릭 face 수집 (루트 주석용).
     metric_faces: std::collections::BTreeSet<String>,
+    /// [#6028] soft-wrap 줄의 마지막 텍스트 run 이 가진 줄-말미 공백 수.
+    /// TextLine 진입 시 (해당 run 의 node id, 공백 수)로 세팅되고, 그 run 의
+    /// draw_text 가 밑줄/취소선 길이에서 이 공백들을 제외한다 — 한글은 wrap 이
+    /// 소비한 구분 공백을 줄에 남기지 않아 장식선이 마지막 글리프에서 끝난다
+    /// (2307287 4쪽 실측). 문단 마지막 줄·강제 줄바꿈 줄의 밑줄 친 말미 공백
+    /// (서명란, issue_157)은 저자 콘텐츠라 제외하지 않는다.
+    soft_wrap_decoration_trim: Option<(u32, usize)>,
+    /// draw_text 한 회 한정 활성 트림 수 (위 필드에서 파생).
+    active_decoration_trim: usize,
 }
 
 /// 디버그 오버레이용 문단 경계 정보
@@ -209,6 +218,8 @@ impl SvgRenderer {
             font_bold_families: std::collections::HashSet::new(),
             annotate_metric_font: false,
             metric_faces: std::collections::BTreeSet::new(),
+            soft_wrap_decoration_trim: None,
+            active_decoration_trim: 0,
         }
     }
 
@@ -403,12 +414,17 @@ impl SvgRenderer {
                         ));
                     }
                 } else {
+                    self.active_decoration_trim = match self.soft_wrap_decoration_trim {
+                        Some((id, trim)) if id == node.id => trim,
+                        _ => 0,
+                    };
                     self.draw_text(
                         run.display_or_text(),
                         node.bbox.x,
                         node.bbox.y + run.baseline,
                         &run.style,
                     );
+                    self.active_decoration_trim = 0;
                 }
                 if self.show_paragraph_marks || self.show_control_codes {
                     // 조판부호 마커 TextRun은 공백 기호 표시 건너뛰기
@@ -644,6 +660,33 @@ impl SvgRenderer {
                     .push_str(&format!("<g clip-path=\"url(#{})\">", clip_id));
             }
             _ => {}
+        }
+
+        // [#6028] soft-wrap 줄의 마지막 텍스트 run 을 찾아 줄-말미 공백 수를
+        // 기록한다. 문단 마지막 줄(is_para_end)·강제 줄바꿈 줄(is_line_break_end)
+        // 은 말미 공백이 저자 콘텐츠(밑줄 서명란 등)라 대상에서 뺀다.
+        if matches!(&node.node_type, RenderNodeType::TextLine(_)) {
+            self.soft_wrap_decoration_trim = node
+                .children
+                .iter()
+                .rev()
+                .find_map(|child| {
+                    if let RenderNodeType::TextRun(run) = &child.node_type {
+                        if run.text.chars().any(|ch| ch != ' ') {
+                            if run.is_para_end || run.is_line_break_end {
+                                return Some(None);
+                            }
+                            let trailing =
+                                run.text.chars().rev().take_while(|ch| *ch == ' ').count();
+                            if trailing > 0 {
+                                return Some(Some((child.id, trailing)));
+                            }
+                            return Some(None);
+                        }
+                    }
+                    None
+                })
+                .flatten();
         }
 
         // 디버그 오버레이: 문단/표 경계 수집 (셀 내부·머리말·꼬리말 제외)
@@ -3046,8 +3089,22 @@ impl Renderer for SvgRenderer {
         // 밑줄 처리 — [#5730] 아래 밑줄은 기준선 + 0.17em (한글 2022 프로브 실측,
         // 6개 크기 선형). 종전 고정 +2.0px 은 큰 글꼴에서 디센더를 가로질렀다.
         // 이중/삼중선(shape 7~10)의 선별 위치·굵기도 em 비례 실측표를 따른다.
+        // [#6028] soft-wrap 줄-말미 공백은 장식선(밑줄/취소선)에서 제외 —
+        // 한글은 wrap 이 소비한 구분 공백을 줄에 남기지 않아 선이 마지막
+        // 글리프에서 끝난다(2307287 4쪽: rhwp 밑줄이 글자 끝 +6.5~9.8pt 로
+        // 표 오른쪽 괘선 밖까지 나감, 한글은 -1.2pt 안). active 트림은
+        // TextLine 진입부가 soft-wrap 줄의 마지막 텍스트 run 에만 배정한다.
+        let decoration_width = {
+            let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
+            let trim = self.active_decoration_trim.min(trailing);
+            let n = text.chars().count();
+            char_positions
+                .get(n - trim)
+                .copied()
+                .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0))
+        };
         if !matches!(style.underline, UnderlineType::None) {
-            let text_width = *char_positions.last().unwrap_or(&0.0);
+            let text_width = decoration_width;
             // 밑줄 색은 CHAR_SHAPE 의 **고정 위치 필수 필드**다(doc_info.rs 의
             // text_color 바로 뒤). COLORREF 0 은 "미지정"이 아니라 **검정**이므로
             // sentinel 로 쓸 수 없다 — 종전 `!= 0` 검사는 문서가 명시한 검정 밑줄을
@@ -3090,7 +3147,7 @@ impl Renderer for SvgRenderer {
 
         // 취소선 처리
         if style.strikethrough {
-            let text_width = *char_positions.last().unwrap_or(&0.0);
+            let text_width = decoration_width;
             let strike_y = y - font_size * 0.3;
             let st_color = if style.strike_color != 0 {
                 color_to_svg(style.strike_color)

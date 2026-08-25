@@ -3818,6 +3818,17 @@ const SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX: f64 = 16.0;
 /// 덮고, frame 깊숙이 지나간 stale anchor(수백 px 뒤처짐)는 기각한다.
 const SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX: f64 = 64.0;
 
+/// [#2097→#5714] 표를 완결하는 마지막 행의 쪽 하단 압축 수용치 — 한글은 쪽
+/// 경계에서 말미 행이 잔여를 이 이내로 초과하면 행 밴드를 잔여로 압축해 쪽을
+/// 완결한다 (1741000 실측 초과 6.8px 수용, 삭제 전 #2097 상수 그대로).
+const TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX: f64 = 13.0;
+/// [#2097→#5714] 압축 수용은 쪽 끝자락(잔여 ≤ 이 값)에서만 — 한글의 압축은 쪽
+/// 마무리 동작이다 (1741000 잔여 73.5px 압축 vs kps-ai 잔여 237.3px 이월 실측).
+const TERMINAL_ROW_BOTTOM_SQUEEZE_MAX_REST_PX: f64 = 100.0;
+/// [#2097→#5714] 압축 수용에 필요한 콘텐츠 여유(잔여-콘텐츠) 하한 — 콘텐츠가
+/// 눌릴 공간이 없으면 한글도 이월한다 (1741000 여유 25.9px 압축 실측).
+const TERMINAL_ROW_BOTTOM_SQUEEZE_MIN_HEADROOM_PX: f64 = 12.0;
+
 fn saved_bounds_overlap_current_flow(bounds: (f64, f64), current_height: f64) -> bool {
     let (top, bottom) = bounds;
     let line_height = (bottom - top).max(0.0);
@@ -3882,7 +3893,14 @@ fn saved_table_bounds_fit_at_flow_tail(
     // body 933.6 인데 흐름 790.4(드리프트 +42.2px) 기준 적합검사가 밀어 40쪽 vs
     // 한글 39쪽 — 이하 절 전체가 한 쪽씩 밀렸다). 흐름이 frame 깊숙이(허용 초과)
     // 지나간 쪽 상단 stale anchor 는 여전히 일반 fit 경로에 맡긴다.
-    let current_flow_inside_source_frame = top <= current_height
+    //
+    // [#5941 3240179] `top == 0` 은 frame 위치 증거가 아니라 "쪽 시작" vpos
+    // 센티널이다 — 그 값에 드리프트 허용을 적용하면 흐름이 42~48px 내려간
+    // 상태에서도 쪽-말미 크기 표(913~918px)가 현재 쪽에 강제로 앉아 문서가
+    // 3쪽 압축된다(16→13, 한글 18). 실제 frame(top>0, 원 케이스 748.2)만
+    // 이 갈래의 대상이다. top==0 + 흐름 0 은 기존 anchored 갈래가 그대로 담당.
+    let current_flow_inside_source_frame = top > 0.0
+        && top <= current_height
         && current_height <= top + SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX
         && current_height <= bounds.1;
     table_height.is_finite()
@@ -3992,12 +4010,32 @@ fn saved_tail_overflow_to_fit(
     current_height: f64,
     fit_height: f64,
     body_height: f64,
+    footnote_height: f64,
 ) -> Option<f64> {
     let (top, bottom) = bounds;
+    // [#5941 f8c784235] 누적 드리프트로 현재 흐름이 저장 tail 을 이미 지나친
+    // 경우(cur > bottom)에도, 흐름이 tail 상단에서 드리프트 허용 안에 있으면
+    // 그 tail 은 여전히 이 쪽의 source 증거다 — 1490000-201600081 p61: 저장
+    // 853.9..868.5(body 876.9 안)인데 흐름 878.3(top+24.4)이라 overlap 이 깨져
+    // 꼬리 한 줄이 단독 쪽으로 밀렸다(304→312 의 대표 기전; 부모 r37 은 고정
+    // 20px 허용치로 덮던 형상). 허용 폭은 #5822 와 같은 드리프트 상수를 쓰고,
+    // top == 0 은 쪽-시작 vpos 센티널이라 드리프트 갈래에서 제외한다(#6027).
+    // 드리프트 갈래는 **흐름이 이미 body 를 넘긴 상태**(cur > body)에서만 —
+    // 흐름이 body 안이면(잔여가 몇 px 라도) tail 의 쪽 배정은 일반 fit 의 소관이고,
+    // 한글도 그때는 tail 을 다음 쪽으로 넘긴다(task1725 국제고속선기준 242쪽 핀:
+    // cur 1006.1 < body 1009.1 인데 grant 를 주면 241 로 압축). 흐름이 body 를
+    // 이미 넘긴 뒤(직전 문단이 넘겨 쓴 상태)의 tail 만 저장 bot 까지의 정확한
+    // 차이로 구제한다 — 대표 p61: cur 878.3 > body 876.9. 각주 실가용도 함께
+    // 요구해 각주 쪽의 과대 구제를 막는다.
+    let drift_reaches_saved_tail = top > 0.0
+        && current_height > bottom
+        && current_height > body_height
+        && current_height - top <= SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX
+        && bottom <= body_height - footnote_height;
     (top >= 0.0
         && bottom <= body_height
-        && saved_bounds_overlap_current_flow(bounds, current_height))
-    .then(|| (current_height + fit_height - bottom).max(0.0))
+        && (saved_bounds_overlap_current_flow(bounds, current_height) || drift_reaches_saved_tail))
+        .then(|| (current_height + fit_height - bottom).max(0.0))
 }
 
 fn saved_line_range_fits_body_tail(
@@ -16083,6 +16121,7 @@ impl TypesetEngine {
                         st.current_height,
                         fmt.height_for_fit,
                         st.base_available_height(),
+                        st.current_footnote_height,
                     )
                 })
                 .unwrap_or(0.0)
@@ -20546,6 +20585,18 @@ impl TypesetEngine {
                 && row_start_cut.is_empty()
                 && !table.text_reflowed_after_edit
                 && stored_source_frame.is_some();
+            // [#5584 ②] 조각 **중간 행**(r > cursor_row)에서도 capacity cut 이 저장
+            // 프레임 끝 직전에 멈추면 다음 fragment 가 짧은 tail(한 유닛)만 소유해
+            // 쪽 하나가 늘어난다 — 3232693 p1: r=7 budget 153.9 에 141.3 소비 후
+            // 다음 유닛(21.3)이 12.7px 부족으로 밀리고, p2 가 그 한 유닛만 담은 채
+            // 저장 리셋에서 끊겨 5쪽(한글 4쪽). opening 경로와 같은 저장 계약이되,
+            // 중간 행은 근소 초과(한 유닛 규모)일 때만 프레임 끝까지 당긴다 —
+            // 상한은 아래 확장 지점에서 검사한다.
+            let mid_source_frame = !is_continuation
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !table.text_reflowed_after_edit
+                && stored_source_frame.is_some();
             let single_visible_source_frame = st.profile.hwpx_stored_layout()
                 && stored_source_frame.is_some()
                 && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
@@ -20764,7 +20815,15 @@ impl TypesetEngine {
                 && !ordinary_cut_ends_at_plain_text_saved_reset)
                 || terminal_source_frame
                 || continued_source_frame
-                || opening_source_frame;
+                || opening_source_frame
+                || mid_source_frame;
+            // [#5584 ②] 중간 행 갈래만의 확장 상한 — 근소 부족(한 유닛 규모)일 때만.
+            let mid_frame_only = mid_source_frame
+                && !opening_source_frame
+                && !terminal_source_frame
+                && !continued_source_frame
+                && !(terminal_response_before_empty_spacer
+                    && !ordinary_cut_ends_at_plain_text_saved_reset);
             let mut uses_source_frame_tail = false;
             if (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
                 && !table.common.treat_as_char
@@ -20794,7 +20853,36 @@ impl TypesetEngine {
                     })
                 };
                 if let Some(source_tail_cut) = source_tail_cut {
-                    if source_tail_cut.consumed_height > res.consumed_height + 0.5 {
+                    // [#5584 ②] 중간 행 갈래는 near-miss(행 대부분을 담고 마지막
+                    // 한 유닛 규모만 부족)에 한정한다 — ① 확장 ≤24px(한 유닛 규모)
+                    // ② 확장 전 소비가 확장의 3배 이상(행을 거의 다 담은 상태).
+                    // ② 가 없으면 budget 이 0 에 가까운 행(그 행이 통째로 다음 쪽감)
+                    // 의 첫 유닛까지 강제로 당겨 382쪽 편람 계약(#4763, issue_3931/
+                    // 3930/5801 핀)이 381 로 무너진다.
+                    let extension = source_tail_cut.consumed_height - res.consumed_height;
+                    // 확장 안 하면 다음 조각이 "한 유닛 + 프레임 리셋 + 소량 꼬리"
+                    // sliver 가 되는 형상만 — 프레임 경계 뒤 같은 행의 잔여가 소량
+                    // (0.5, 64px] 이어야 그 sliver 형상이다. 잔여가 크면(382쪽 편람
+                    // r=5 실측: near-miss 시그니처는 동형이나 잔여 949.9px = 다음
+                    // 조각의 본체) 확장이 오히려 쪽 경계를 옮긴다(#4763 핀 —
+                    // issue_3931/3930/5801 이 381 로 무너짐). 3232693 은 잔여 38.4px.
+                    let frame_tail_rest = if mid_frame_only {
+                        layout_engine.row_cut_content_height(
+                            table,
+                            r,
+                            &source_tail_cut.end_cut,
+                            &[],
+                            styles,
+                        )
+                    } else {
+                        0.0
+                    };
+                    let mid_extension_ok = !mid_frame_only
+                        || (extension <= 24.0
+                            && res.consumed_height >= 3.0 * extension
+                            && frame_tail_rest > 0.5
+                            && frame_tail_rest <= 64.0);
+                    if extension > 0.5 && mid_extension_ok {
                         // Downstream fit/retry decisions must reason in the
                         // same frame-sized budget as the cut.  The precise
                         // physical overfill is measured from the painted
@@ -20863,6 +20951,49 @@ impl TypesetEngine {
                 }
             }
             if res.fully_consumed {
+                // [#2097→#5714] 표를 **완결하는 마지막 행**이 콘텐츠는 잔여에 다
+                // 들어가는데 선언 높이만 소폭 넘을 때, 한글은 행 밴드를 잔여로
+                // 압축해 쪽을 완결한다(1741000 r14: 선언 80.3 → 밴드 69.7, 한글
+                // 2024 PDF 실측 — p2 상단 새 행은 전체 높이, 말미 행만 압축).
+                // f8c784235 가 삭제한 BOTTOM_SQUEEZE 계약의 말미-행 한정 복원:
+                // 종전에는 앞 조각의 유령 tail 밴드가 다음 조각 첫 행을 눌러 이
+                // 핀을 우연히 대신했는데, 그 밴드 이월을 #5714 가 막으면서 실제
+                // 계약이 필요해졌다. 허용치·잔여 상한·콘텐츠 여유 하한은 삭제 전
+                // 상수 그대로(1741000 실측 기반), 중간 블록의 압축/이월 판별
+                // 불가(kps-ai 반증)는 말미-행 한정으로 배제한다.
+                let squeeze_rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                let terminal_row_bottom_squeeze = r + 1 == row_count
+                    && r > cursor_row
+                    && mt.allows_row_break_split()
+                    && !rowspan_touched[r]
+                    && row_start_cut.is_empty()
+                    && row_total > squeeze_rest + 0.5
+                    && row_total <= squeeze_rest + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
+                    && squeeze_rest <= TERMINAL_ROW_BOTTOM_SQUEEZE_MAX_REST_PX
+                    && squeeze_rest - (res.consumed_height + padding)
+                        >= TERMINAL_ROW_BOTTOM_SQUEEZE_MIN_HEADROOM_PX
+                    && !table.cells.iter().any(|cell| {
+                        cell.row as usize == r
+                            && cell.paragraphs.iter().any(|paragraph| {
+                                paragraph
+                                    .controls
+                                    .iter()
+                                    .any(|control| matches!(control, Control::Table(_)))
+                            })
+                    });
+                if terminal_row_bottom_squeeze {
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN TERMINAL_SQUEEZE r={} rest={:.1} row_total={:.1} content={:.1}",
+                            r, squeeze_rest, row_total, res.consumed_height
+                        );
+                    }
+                    consumed += cs_before + squeeze_rest;
+                    r += 1;
+                    end_row = r;
+                    end_row_height_override = Some(squeeze_rest);
+                    continue;
+                }
                 // [#2236] rowspan 블록 중간 행 밴드 컷: 행 자체 콘텐츠는 예산 안에
                 // 전부 들어가지만(fully_consumed) 행 높이가 rowspan 이웃/선언으로
                 // 늘어나 행 전체는 예산 초과인 경우, 한글은 쪽 경계에서 행 밴드를
@@ -24324,7 +24455,28 @@ impl TypesetEngine {
             let next_start_row_height_override = end_row_height_override.and_then(|limit| {
                 let full = cut_row_h.get(end_row.saturating_sub(1)).copied()?;
                 let tail = (full - limit).max(0.0);
-                (tail > 0.5).then_some(tail)
+                // [#5714] 압축된 끝행의 빈 tail 밴드는 **물리적으로 이어지는
+                // 것이 있을 때만** 다음 조각으로 넘어간다: intra-row 컷이면 그
+                // 행 자신이 이어지고, 행 경계 끝이면 경계를 가로지르는 rowspan
+                // 셀의 선언 공간이 이어진다(76076 p36 의 24.1px 밴드 — 한컴 PDF
+                // 실측, r8 rs=7 셀이 경계를 걸침). 둘 다 아니면 완결된 행의
+                // 선언 잔여는 쪽 경계에서 죽는다 — rowspan 없는 19×2 표에서
+                // 이 tail(11.0px)이 다음 조각 첫 행(새 행, 3줄 59.3px)에
+                // 씌워져 글자가 아래 행과 포개졌다(한컴 PDF 는 밴드 없이 새
+                // 행을 전체 높이로 시작).
+                let tail_band_continues = split_end_limit > 0.0
+                    || table.cells.iter().any(|cell| {
+                        (cell.row as usize) < end_row
+                            && cell.row as usize + (cell.row_span as usize).max(1) > end_row
+                    });
+                if std::env::var("RHWP_DIAG_5714").is_ok() {
+                    eprintln!(
+                        "DIAG_5714 FRAG pi={} cursor_row={} end_row={} limit={:.1} full={:.1} tail={:.1} split_end_limit={:.1} continues={}",
+                        para_idx, cursor_row, end_row, limit, full, tail,
+                        split_end_limit, tail_band_continues
+                    );
+                }
+                (tail > 0.5 && tail_band_continues).then_some(tail)
             });
             continuation.advance(end_row, split_block_start, next_cut, split_end_limit > 0.0);
             continuation.start_row_height_override = next_start_row_height_override;
